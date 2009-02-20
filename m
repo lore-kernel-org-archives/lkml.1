@@ -1,69 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbZBTTuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZBTTuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbZBTTuc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 14:50:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZBTTuX
+	id S1756214AbZBTTuq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 14:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZBTTuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 14:50:23 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54164 "EHLO
+	Fri, 20 Feb 2009 14:50:24 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43683 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483AbZBTTuX (ORCPT
+	with ESMTP id S1751596AbZBTTuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Feb 2009 14:50:23 -0500
-Message-Id: <20090220193239.561624242@goodmis.org>
+Message-Id: <20090220195021.732071932@goodmis.org>
+References: <20090220193239.561624242@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 20 Feb 2009 14:32:39 -0500
+Date: Fri, 20 Feb 2009 14:32:40 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 0/4] [git pull v2 @num@/@total@] updates for tip
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/4] ftrace: allow archs to preform pre and post process for code modification
+Content-Disposition: inline; filename=0001-ftrace-allow-archs-to-preform-pre-and-post-process.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+This patch creates the weak functions: ftrace_arch_code_modify_prepare
+and ftrace_arch_code_modify_post_process that are called before and
+after the stop machine is called to modify the kernel text.
 
-I incorporated your comments, and rebased against your tip/x86/urgent
-branch.
+If the arch needs to do pre or post processing, it only needs to define
+these functions.
 
-Updates are:
- - rename ftrace_arch_modify_* to ftrace_arch_code_modify_*
- - use pr_debug over KERN_INFO in set_kernel_text_*
- - removed comment about ftrace on set_kernel_text_*
- - use return instead of goto to break out of double loop
- - merged akpm's suggestion into 2cd patch
+[ Update: Ingo Molnar suggested using the name ftrace_arch_code_modify_*
+          over using ftrace_arch_modify_* ]
 
-My last commit is:
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/linux/ftrace.h |    3 +++
+ kernel/trace/ftrace.c  |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
- 4377245aa93b65b6597e4b7bb460fb9abc48b56b
- ftrace: break out modify loop immediately on detection of error
-
-Because I did recently rebase, you might want to confirm that
-the SHA1 matches and is not stale data.
-
-Please pull the latest tip/x86/ftrace tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/x86/ftrace
-
-
-Steven Rostedt (4):
-      ftrace: allow archs to preform pre and post process for code modification
-      ftrace, x86: make kernel text writable only for conversions
-      ftrace: immediately stop code modification if failure is detected
-      ftrace: break out modify loop immediately on detection of error
-
-----
- arch/x86/include/asm/cacheflush.h |    5 +++++
- arch/x86/kernel/ftrace.c          |   17 +++++++++++++++++
- arch/x86/mm/init_32.c             |   35 ++++++++++++++++++++++++++++++++---
- arch/x86/mm/init_64.c             |   37 ++++++++++++++++++++++++++++++++-----
- include/linux/ftrace.h            |    3 +++
- kernel/trace/ftrace.c             |   33 ++++++++++++++++++++++++++++++++-
- 6 files changed, 121 insertions(+), 9 deletions(-)
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 677432b..fdb2a89 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -99,6 +99,9 @@ stack_trace_sysctl(struct ctl_table *table, int write,
+ /* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
+ #include <asm/ftrace.h>
+ 
++int ftrace_arch_code_modify_prepare(void);
++int ftrace_arch_code_modify_post_process(void);
++
+ enum {
+ 	FTRACE_FL_FREE		= (1 << 0),
+ 	FTRACE_FL_FAILED	= (1 << 1),
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index fdf913d..72316d9 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -585,6 +585,24 @@ ftrace_code_disable(struct module *mod, struct dyn_ftrace *rec)
+ 	return 1;
+ }
+ 
++/*
++ * archs can override this function if they must do something
++ * before the modifying code is performed.
++ */
++int __weak ftrace_arch_code_modify_prepare(void)
++{
++	return 0;
++}
++
++/*
++ * archs can override this function if they must do something
++ * after the modifying code is performed.
++ */
++int __weak ftrace_arch_code_modify_post_process(void)
++{
++	return 0;
++}
++
+ static int __ftrace_modify_code(void *data)
+ {
+ 	int *command = data;
+@@ -607,7 +625,17 @@ static int __ftrace_modify_code(void *data)
+ 
+ static void ftrace_run_update_code(int command)
+ {
++	int ret;
++
++	ret = ftrace_arch_code_modify_prepare();
++	FTRACE_WARN_ON(ret);
++	if (ret)
++		return;
++
+ 	stop_machine(__ftrace_modify_code, &command, NULL);
++
++	ret = ftrace_arch_code_modify_post_process();
++	FTRACE_WARN_ON(ret);
+ }
+ 
+ static ftrace_func_t saved_ftrace_func;
+-- 
+1.5.6.5
 
 -- 
