@@ -1,106 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZBTK3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbZBTKh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbZBTK3h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 05:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbZBTK30
+	id S1756956AbZBTKh6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 05:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZBTKhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 05:29:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49111 "EHLO mx3.mail.elte.hu"
+	Fri, 20 Feb 2009 05:37:46 -0500
+Received: from lucidpixels.com ([75.144.35.66]:57334 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754268AbZBTK3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 05:29:25 -0500
-Date: Fri, 20 Feb 2009 11:29:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: stefanr@s5r6.in-berlin.de, yanghy@cn.fujitsu.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       petkovbb@googlemail.com
-Subject: Re: [PATCHv2 00/11]Get rid of all the old macro DMA_nBIT_MASK and
-	use DMA_BIT_MASK(n) instead
-Message-ID: <20090220102904.GA28581@elte.hu>
-References: <499CFDC8.1070600@cn.fujitsu.com> <499D0221.9090407@cn.fujitsu.com> <20090219081403.GA5400@elte.hu> <499D1ED9.4040005@cn.fujitsu.com> <499D2728.1080208@cn.fujitsu.com> <499D54F6.7000108@s5r6.in-berlin.de> <20090219150851.GC22611@elte.hu> <20090219151409.0d61de2a.akpm@linux-foundation.org>
+	id S1752094AbZBTKhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 05:37:45 -0500
+Date: Fri, 20 Feb 2009 05:37:44 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: General question (scheduler) with SSDs?
+In-Reply-To: <20090220094356.GB26124@silver.sucs.org>
+Message-ID: <alpine.DEB.1.10.0902200534450.14422@p34.internal.lan>
+References: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan> <20090220094356.GB26124@silver.sucs.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090219151409.0d61de2a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Thu, 19 Feb 2009 16:08:51 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> > 
-> > > Yang Hongyang wrote:
-> > > > v1->v2:fix s/micro/macro typo and keep the old defines
-> > > >             of DMA_nBIT_MASK
-> > > > ----------------------
-> > > > Replace all DMA_nBIT_MASK macro with the new DMA_BIT_MASK(n) macro
-> > > > 
-> > > > 01:Replace all DMA_64BIT_MASK macro with DMA_BIT_MASK(64)
-> > > > 02:Replace all DMA_48BIT_MASK macro with DMA_BIT_MASK(48)
-> > > > 03:Replace all DMA_40BIT_MASK macro with DMA_BIT_MASK(40)
-> > > > 04:Replace all DMA_39BIT_MASK macro with DMA_BIT_MASK(39)
-> > > > 05:Replace all DMA_35BIT_MASK macro with DMA_BIT_MASK(35)
-> > > > 06:Replace all DMA_32BIT_MASK macro with DMA_BIT_MASK(32)
-> > > > 07:Replace all DMA_31BIT_MASK macro with DMA_BIT_MASK(31)
-> > > > 08:Replace all DMA_30BIT_MASK macro with DMA_BIT_MASK(30)
-> > > > 09:Replace all DMA_28BIT_MASK macro with DMA_BIT_MASK(28)
-> > > > 10:Replace all DMA_24BIT_MASK macro with DMA_BIT_MASK(24)
-> > > > 11:Update the old macro DMA_nBIT_MASK related documentations
-> > > > 
-> > > 
-> > > Shouldn't you organize the patch series per subsystem, not per old
-> > > macro?  And then Cc the respective maintainers?
-> > > 
-> > > As it stands, the patches cannot be routed through the normal channels;
-> > > yet there is no fundamental reason to handle these patches differently
-> > > from normal patches.
-> > 
-> > Traditionally such trivially correct convert-it-all patches 
-> > lived in -mm and were merged upstream in one go, near the end of 
-> > the merge window.
-> > 
-> > Sprinkling it into dozens of subsystem channels (some of which 
-> > are very unreliable) is neither good nor an economic use of our 
-> > resources.
-> > 
-> > Patches that can potentially cause trouble should go via the 
-> > usual channels.
-> > 
-> 
-> yes, fun.
-> 
-> I hit several rejects merging these, easily fixed.  After this 
-> lot is merged there will probably be a few unconverted sites 
-> which will need a second pass.  After that we can think about 
-> removing the old #defines.
+On Fri, 20 Feb 2009, Sitsofe Wheeler wrote:
 
-Yeah. I wanted to suggest for you to _drop_ all conflicts - 
-because the old defines still live.
+> Whoops, I didn't mean to send that previous half formed mail :) Sorry.
+>
+> As mentioned in another mail there was a discussion on
+> http://lkml.org/lkml/2009/1/31/28 and long thread talking about the
+> introduction of the rotational flag here
+> http://lkml.org/lkml/2009/1/5/340 . Cheapo SSDs or even USB keys are not
+> auto detected as non-rotational devices by the kernel and after a bit of
+> poking about I've come up with the following udev rules for my
+> particular cases:
+>
+> SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{model}=="ASUS-PHISON *", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
+> SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{idVendor}=="0951", ATTRS{idProduct}=="1606", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
+> SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{manufacturer}=="SanDisk", ATTRS{product}=="Cruzer Micro", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
+>
+> Ever since the rotational option appeared I've been trying cfq but prior
+> to that I was using noop or deadline. However it doesn't look like
+> anyone has sat down and run the numbers to see what affect the
+> ioscheulder/rotational flag is having on cheapo SSDs - all the
+> suggestions are anecdotal. Could you run some benchmarks with these
+> different options and report back the results?
+>
+> -- 
+> Sitsofe | http://sucs.org/~sits/
+>
 
-That makes it the easiest for you to keep it all merged up in 
-the future too with minimum fuss, and we need a second pass 
-anyway so dropping a few hunks is no big issue.
+$ grep rotational -r /usr/src/linux/
+/usr/src/linux/drivers/scsi/NCR5380.c: * USLEEP_POLL should be a maximum rotational latency.
+/usr/src/linux/fs/partitions/sun.c:             __be16 rspeed;     /* Disk rotational speed */
+/usr/src/linux/fs/ufs/ufs_fs.h: * Compute the cylinder and rotational position of a cyl block addr.
+/usr/src/linux/fs/ufs/ufs_fs.h: __fs32  fs_nrpos;               /* number of rotational positions */
+/usr/src/linux/fs/ufs/ufs_fs.h:#define UFS_42POSTBLFMT          -1      /* 4.2BSD rotational table format */
+/usr/src/linux/fs/ufs/ufs_fs.h:#define UFS_DYNAMICPOSTBLFMT     1       /* dynamic rotational table format */
+/usr/src/linux/fs/ufs/ufs_fs.h: __s32   s_nrpos;        /* number of rotational positions */
+/usr/src/linux/include/linux/blkdev.h:#define QUEUE_FLAG_NONROT      14 /* non-rotational device (SSD) */
+/usr/src/linux/include/linux/genhd.h:   __u16   d_rpm;                  /* rotational speed */
 
-[ But since you merged it up that's fine too - it's just that 
-  code that got changed recently and created conflicts has a 
-  higher chance of being changed in the near future too - and 
-  causing you ongoing conflicts in that area, in the next ~1.5 
-  months until the next merge window closes. ]
+# find /sys/|grep -i rotational
+#
 
-	Ingo
+Which kernel{option} do you enable to enable support for that option in /sys?
+
+Justin.
+
