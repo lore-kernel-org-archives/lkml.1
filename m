@@ -1,88 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZBTO55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZBTPJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758165AbZBTO55 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 09:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZBTO5s
+	id S1754700AbZBTPJZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 10:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZBTPJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 09:57:48 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:65322 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752198AbZBTO5r (ORCPT
+	Fri, 20 Feb 2009 10:09:16 -0500
+Received: from svb-lan-93.maglan.ru ([62.64.8.93]:49862 "EHLO
+	zimbra.svb.sbrf.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752358AbZBTPJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 09:57:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=l+nyvTNnKadM9bhdnOdCkEO7Go0qFOT+XdJ+bXgZIcFgryz5znpXPcQABr+l7Bl+Dg
-         uCA8rGejjbCpqB9PCAiVa728vu7pnHpXa8FZ4ytNy8uINGc7Jr/RjfWHab+d4Nz4sWZH
-         a/gTpdO2IkmshRkH3ZEVNvXRJEqHp8F7piM4E=
+	Fri, 20 Feb 2009 10:09:15 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -2.499
+Message-ID: <499EC717.3000502@sbmag.ru>
+Date: Sat, 21 Feb 2009 02:07:03 +1100
+From: zaharov <zaharov@sbmag.ru>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090112)
 MIME-Version: 1.0
-In-Reply-To: <20090220140157.GA12799@elte.hu>
-References: <20090220134121.GA19575@damson.getinternet.no>
-	 <20090220135000.GA9616@elte.hu> <20090220140157.GA12799@elte.hu>
-Date: Fri, 20 Feb 2009 15:51:28 +0100
-Message-ID: <19f34abd0902200651k7e86aebay5398ef5ac0578561@mail.gmail.com>
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org
+Subject: Re: SMP Kernel
+References: <499EB742.4050208@sundmangroup.com> <499EBAC6.60804@sbmag.ru> <499EC317.6010506@sundmangroup.com>
+In-Reply-To: <499EC317.6010506@sundmangroup.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/20 Ingo Molnar <mingo@elte.hu>:
+Matias wrote:
+> Hi,
+> Ok, since the memory is shared between all the cores the Kernel can be
+> invoked by any core receiving an interrupt and thus executed by that
+> core?
 >
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> If the above is right then how come that two separate CPUs can wake
+> up, schedule and context-switch completely in parallel?
+> Are there an independent scheduler per cpu?
 >
->> ah, indeed:
+> Directly from the sched-design.txt
+>
+> - 'perfect' SMP scalability. With the new scheduler there is no 'big'
+>   runqueue_lock anymore - it's all per-CPU runqueues and locks - two
+>   tasks on two separate CPUs can wake up, schedule and context-switch
+>   completely in parallel, without any interlocking. All
+>   scheduling-relevant data is structured for maximum scalability.
+>
+>
+> Thx // Matias
+>
+>
+>
+>
+>
+> zaharov skrev:
+>> Matias wrote:
+>>  
+>>> Hello,
+>>> When an SMP enabled kernel is booted on a Dual Core x86 machine ( Core
+>>> 0-1 ) I guess the Kernel is decompressed and started on core 0.
+>>> At some point in time the kernel becomes SMP aware and can then
+>>> distribute threads on Cores 0 and 1.
+>>>
+>>> Now, does the non-threaded part of the kernel with the scheduler
+>>> continue to run solely on Core 0?
+>>>
+>>> Cheers // Matias
+>>> -- 
+>>> To unsubscribe from this list: send the line "unsubscribe
+>>> linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>
+>>>     
+>> Kernel may run on any core .
+>> When kernel end bootstrap and run init he execute hlt op.
+>> After all live in kernel  interrupt driven.
 >>
->>         list_del_rcu(&va->list);
->>
->> i suspect it could be hit big time in a workload that opens
->> more than 512 files, as expand_files() uses a
->> vmalloc()+vfree() pair in that case.
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>   
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
-> hm, perhaps it's not a problem after all. The freeing is done
-> via rcu, and list_del_rcu() leaves the forward pointer intact.
 
-Well, it's not the particular line that you posted, in any case.
-That's &va->list, but the traversed list is &va->purge_list.
-
-I thought it would be the line:
-
-        call_rcu(&va->rcu_head, rcu_free_va);
-
-(which does kfree() in the callback) that was the problem.
-
->
-> So how did it happen that the entry got kfree()d before the loop
-> was done? We are in a spinlocked section so the CPU should not
-> have entered rcu processing.
-
-I added some printks to __free_vmap_area() and rcu_free_va(), and it
-shows that the kfree() is being called immediately (inside the list
-traversal). So the call_rcu() is happening immediately (or almost
-immediately).
-
-If I've understood correctly, the RCU processing can happen inside a
-spinlock, as long as interrupts are enabled. (Won't the timer IRQ
-trigger softirq processing, which triggers RCU callback processing,
-for example?)
-
-And interrupts are enabled when this happens: EFLAGS: 00000292
-
-Please correct me if I am wrong!
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Kernel use IPC primitives. All shared resources like lists, buffers,etc
+protect by spinlock,mutex,etc.
+Scheduler not run completely in parallel.
+Scheduler  run like this [lock_shred_resource -> shcedule ->
+unlock_shared_resource]
+I think this list not for discuss this. You need read any Operating
+system design book.
+IMHO
+ 
