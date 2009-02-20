@@ -1,139 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZBTNu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZBTN5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbZBTNu2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 08:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZBTNuR
+	id S1754881AbZBTN5f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 08:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbZBTN50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 08:50:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36323 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115AbZBTNuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 08:50:15 -0500
-Date: Fri, 20 Feb 2009 14:50:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>, stable@kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Message-ID: <20090220135000.GA9616@elte.hu>
-References: <20090220134121.GA19575@damson.getinternet.no>
+	Fri, 20 Feb 2009 08:57:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60567 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbZBTN5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 08:57:25 -0500
+Date: Fri, 20 Feb 2009 08:57:22 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Huang Ying <ying.huang@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: use the right protections for split-up pagetables
+In-Reply-To: <20090220072915.GB28085@elte.hu>
+Message-ID: <alpine.DEB.2.00.0902200856330.29217@gandalf.stny.rr.com>
+References: <20090220011316.379904625@goodmis.org> <alpine.LFD.2.00.0902191753240.21686@localhost.localdomain> <alpine.DEB.1.10.0902192107230.31658@gandalf.stny.rr.com> <alpine.LFD.2.00.0902191923300.21686@localhost.localdomain>
+ <20090220072915.GB28085@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220134121.GA19575@damson.getinternet.no>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+On Fri, 20 Feb 2009, Ingo Molnar wrote:
 
-> >From f90fae887ed82bc9369e9f95960e175fef3e5d97 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Fri, 20 Feb 2009 14:35:09 +0100
-> Subject: [PATCH] mm: fix lazy vmap purging (use-after-free error)
 > 
-> I just got this new warning from kmemcheck:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
->     WARNING: kmemcheck: Caught 32-bit read from freed memory (c7806a60)
->     a06a80c7ecde70c1a04080c700000000a06709c1000000000000000000000000
->      f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f
->      ^
+> > So the whole
+> > 
+> >         ref_prot = pte_pgprot(pte_mkexec(pte_clrhuge(*kpte)));
+> >         pgprot_val(ref_prot) |= _PAGE_PRESENT;
+> >         __set_pmd_pte(kpte, address, mk_pte(base, ref_prot));
+> > 
+> > sequence is utter crap, I think. The whole "ref_prot" there 
+> > should be just _pgprot(_KERNPG_TABLE), I think. I don't think 
+> > there is any other valid value.
 > 
->     Pid: 0, comm: swapper Not tainted (2.6.29-rc4 #230)
->     EIP: 0060:[<c1096df7>] EFLAGS: 00000286 CPU: 0
->     EIP is at __purge_vmap_area_lazy+0x117/0x140
->     EAX: 00070f43 EBX: c7806a40 ECX: c1677080 EDX: 00027b66
->     ESI: 00002001 EDI: c170df0c EBP: c170df00 ESP: c178830c
->      DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
->     CR0: 80050033 CR2: c7806b14 CR3: 01775000 CR4: 00000690
->     DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
->     DR6: 00004000 DR7: 00000000
->      [<c1096f3e>] free_unmap_vmap_area_noflush+0x6e/0x70
->      [<c1096f6a>] remove_vm_area+0x2a/0x70
->      [<c1097025>] __vunmap+0x45/0xe0
->      [<c10970de>] vunmap+0x1e/0x30
->      [<c1008ba5>] text_poke+0x95/0x150
->      [<c1008ca9>] alternatives_smp_unlock+0x49/0x60
->      [<c171ef47>] alternative_instructions+0x11b/0x124
->      [<c171f991>] check_bugs+0xbd/0xdc
->      [<c17148c5>] start_kernel+0x2ed/0x360
->      [<c171409e>] __init_begin+0x9e/0xa9
->      [<ffffffff>] 0xffffffff
+> Agreed, split_large_page() was just plain confused here - there 
+> was no hidden reason for this logic. It makes no sense to bring 
+> any pte level protection information to the PMD level because a 
+> pmd entry covers a set of 512 ptes so there's no singular 
+> protection attribute that can be carried to it.
 > 
-> It happened here:
+> The right solution is what you suggested: to use the most 
+> permissive protection bits for the pmd, i.e. _KERNPG_TABLE. 
+> Since the protection bits get combined, this makes the pte 
+> protections control the final behavior of the mapping - so 
+> subsequent code patching and similar activities will work fine.
 > 
->     $ addr2line -e vmlinux -i c1096df7
->     mm/vmalloc.c:540
+> The bug was mostly harmless until Steve hacked his kernel to 
+> have the right (large) size of readonly, text and data areas. I 
+> never hit such an ftrace hang even with allyesconfig bzImage 
+> bootups [which has obscenely large text and data sections], so i 
+> think something in Steve's tree was also needed to trigger it: 
+> an unusually large readonly data section.
 > 
-> Code:
+> I've queued up the fix below in tip:x86/urgent and will send a 
+> pull request later today if it passes testing. Steve, does this 
+> solve the bug you've hit?
+
+Yep, I've already tried this fix. It works fine.
+
+-- Steve
+
 > 
-> 	list_for_each_entry(va, &valist, purge_list)
-> 		__free_vmap_area(va);
+> With this fix i dont think the other bits from Steve's series 
+> (patch 1-4) are needed at all - those patches expose PMD details 
+> in various places that iterate over ptes - that's ugly and 
+> unnecessary as well if the PMD's protection is permissive.
 > 
-> It's this instruction:
+> [ Also, since you suggested the fix i've added your Acked-by, 
+>   let me know if you dont agree with any aspect of the fix. ]
 > 
->     mov    0x20(%ebx),%edx
+> 	Ingo
 > 
-> Which corresponds to a dereference of va->purge_list.next:
+> ---------------->
+> >From f07eb4c47d5d4a70dc8eb8e2c158741cd6c69948 Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri, 20 Feb 2009 08:04:13 +0100
+> Subject: [PATCH] x86: use the right protections for split-up pagetables
 > 
->     (gdb) p ((struct vmap_area *) 0)->purge_list.next
->     Cannot access memory at address 0x20
+> Steven Rostedt found a bug in where in his modified kernel
+> ftrace was unable to modify the kernel text, due to the PMD
+> itself having been marked read-only as well in
+> split_large_page().
 > 
-> It seems that we should use "safe" list traversal here, as the element
-> is freed inside the loop. Please verify that this is the right fix.
+> The fix, suggested by Linus, is to not try to 'clone' the
+> reference protection of a huge-page, but to use the standard
+> (and permissive) page protection bits of KERNPG_TABLE.
 > 
-> Cc: Nick Piggin <npiggin@suse.de>
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> The 'cloning' makes sense for the ptes but it's a confused and
+> incorrect concept at the page table level - because the
+> pagetable entry is a set of all ptes and hence cannot
+> 'clone' any single protection attribute - the ptes can be any
+> mixture of protections.
+> 
+> With the permissive KERNPG_TABLE, even if the pte protections
+> get changed after this point (due to ftrace doing code-patching
+> or other similar activities like kprobes), the resulting combined
+> protections will still be correct and the pte's restrictive
+> (or permissive) protections will control it.
+> 
+> Also update the comment.
+> 
+> This bug was there for a long time but has not caused visible
+> problems before as it needs a rather large read-only area to
+> trigger. Steve possibly hacked his kernel with some really
+> large arrays or so. Anyway, the bug is definitely worth fixing.
+> 
+> [ Huang Ying also experienced problems in this area when writing
+>   the EFI code, but the real bug in split_large_page() was not
+>   realized back then. ]
+> 
+> Reported-by: Steven Rostedt <rostedt@goodmis.org>
+> Reported-by: Huang Ying <ying.huang@intel.com>
+> Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > ---
->  mm/vmalloc.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+>  arch/x86/mm/pageattr.c |   15 +++++----------
+>  1 files changed, 5 insertions(+), 10 deletions(-)
 > 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index 75f49d3..cda20b2 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -498,6 +498,7 @@ static void __purge_vmap_area_lazy(unsigned long *start, unsigned long *end,
->  	static DEFINE_SPINLOCK(purge_lock);
->  	LIST_HEAD(valist);
->  	struct vmap_area *va;
-> +	struct vmap_area *n_va;
->  	int nr = 0;
+> diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+> index 8ca0d85..17d5d1a 100644
+> --- a/arch/x86/mm/pageattr.c
+> +++ b/arch/x86/mm/pageattr.c
+> @@ -508,18 +508,13 @@ static int split_large_page(pte_t *kpte, unsigned long address)
+>  #endif
 >  
 >  	/*
-> @@ -537,7 +538,7 @@ static void __purge_vmap_area_lazy(unsigned long *start, unsigned long *end,
+> -	 * Install the new, split up pagetable. Important details here:
+> +	 * Install the new, split up pagetable.
+>  	 *
+> -	 * On Intel the NX bit of all levels must be cleared to make a
+> -	 * page executable. See section 4.13.2 of Intel 64 and IA-32
+> -	 * Architectures Software Developer's Manual).
+> -	 *
+> -	 * Mark the entry present. The current mapping might be
+> -	 * set to not present, which we preserved above.
+> +	 * We use the standard kernel pagetable protections for the new
+> +	 * pagetable protections, the actual ptes set above control the
+> +	 * primary protection behavior:
+>  	 */
+> -	ref_prot = pte_pgprot(pte_mkexec(pte_clrhuge(*kpte)));
+> -	pgprot_val(ref_prot) |= _PAGE_PRESENT;
+> -	__set_pmd_pte(kpte, address, mk_pte(base, ref_prot));
+> +	__set_pmd_pte(kpte, address, mk_pte(base, _pgprot(_KERNPG_TABLE)));
+>  	base = NULL;
 >  
->  	if (nr) {
->  		spin_lock(&vmap_area_lock);
-> -		list_for_each_entry(va, &valist, purge_list)
-> +		list_for_each_entry_safe(va, n_va, &valist, purge_list)
->  			__free_vmap_area(va);
->  		spin_unlock(&vmap_area_lock);
-
-ah, indeed:
-
-        list_del_rcu(&va->list);
-
-i suspect it could be hit big time in a workload that opens more 
-than 512 files, as expand_files() uses a vmalloc()+vfree() pair 
-in that case.
-
-Nice catch! .29 must-have. The bug was introduced in 
-v2.6.27-5616-gdb64fe0:
-
-  db64fe0: mm: rewrite vmap layer
-
-So 2.6.28 is affected too.
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+>  out_unlock:
+> 
+> 
