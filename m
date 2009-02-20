@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZBTSNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZBTSOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbZBTSNr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 13:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZBTSNC
+	id S1755697AbZBTSOH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 13:14:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZBTSNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 13:13:02 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:3139 "EHLO
+	Fri, 20 Feb 2009 13:13:04 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:3142 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752655AbZBTSM7 (ORCPT
+	by vger.kernel.org with ESMTP id S1752752AbZBTSNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 13:12:59 -0500
-Date: Fri, 20 Feb 2009 20:33:20 +0300
+	Fri, 20 Feb 2009 13:13:00 -0500
+Date: Fri, 20 Feb 2009 20:33:31 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/13] sdhci: Add support for hosts with strict 32 bit
-	addressing
-Message-ID: <20090220173320.GG7583@oksana.dev.rtsoft.ru>
+Subject: [PATCH 12/13] sdhci: Add quirk for controllers with max. block
+	size up to 4096 bytes
+Message-ID: <20090220173331.GL7583@oksana.dev.rtsoft.ru>
 References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -30,107 +30,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SDHCI driver must take special care when working with "triggering"
-registers on hosts with strict 32 bit addressing.
-
-In FSL eSDHC hosts all registers are 32 bit width, writing to the
-first half of any register will cause [undefined?] write the second
-half of the register. That is, 16 bit write to the TRANSFER_MODE
-register, makes hardware see a bogus write to the COMMAND register
-(these two registers are adjacent).
-
-This patch adds SDHCI_QUIRK_32BIT_REGISTERS quirk. When specified,
-the sdhci driver will try to "pack" all dangerous writes into single
-32 bit write transaction.
+FSL eSDHC controllers can support maximum block size up to 4096
+bytes. The MBL (Maximum Block Length) field in the capabilities
+register extended by one bit, and bits 13:15 in the block size
+register reserved.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   19 ++++++++++++++-----
- drivers/mmc/host/sdhci.h |    4 ++++
- 2 files changed, 18 insertions(+), 5 deletions(-)
+ drivers/mmc/host/sdhci.c |   28 ++++++++++++++++++++--------
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 22 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index d668625..1c36a25 100644
+index 91f021d..4397694 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -825,13 +825,13 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+@@ -682,6 +682,7 @@ static void sdhci_set_transfer_irqs(struct sdhci_host *host)
+ 
+ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ {
++	u16 blksz;
+ 	u8 count;
+ 	u8 ctrl;
+ 	int ret;
+@@ -831,7 +832,12 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ 	sdhci_set_transfer_irqs(host);
+ 
+ 	/* We do not handle DMA boundaries, so set it to max (512 KiB) */
+-	sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, data->blksz), SDHCI_BLOCK_SIZE);
++	if (host->quirks & SDHCI_QUIRK_MAX_BLK_SZ_4096)
++		blksz = data->blksz;
++	else
++		blksz = SDHCI_MAKE_BLKSZ(7, data->blksz);
++
++	sdhci_writew(host, blksz, SDHCI_BLOCK_SIZE);
  	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
  }
  
--static void sdhci_set_transfer_mode(struct sdhci_host *host,
-+static u16 sdhci_get_transfer_mode(struct sdhci_host *host,
- 	struct mmc_data *data)
- {
- 	u16 mode;
- 
- 	if (data == NULL)
--		return;
-+		return 0;
- 
- 	WARN_ON(!host->data);
- 
-@@ -843,7 +843,7 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
- 	if (host->flags & SDHCI_REQ_USE_DMA)
- 		mode |= SDHCI_TRNS_DMA;
- 
--	sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
-+	return mode;
- }
- 
- static void sdhci_finish_data(struct sdhci_host *host)
-@@ -895,6 +895,7 @@ static void sdhci_finish_data(struct sdhci_host *host)
- static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- {
- 	int flags;
-+	u16 xfer_mode;
- 	u32 mask;
- 	unsigned long timeout;
- 
-@@ -933,7 +934,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 
- 	sdhci_writel(host, cmd->arg, SDHCI_ARGUMENT);
- 
--	sdhci_set_transfer_mode(host, cmd->data);
-+	xfer_mode = sdhci_get_transfer_mode(host, cmd->data);
- 
- 	if ((cmd->flags & MMC_RSP_136) && (cmd->flags & MMC_RSP_BUSY)) {
- 		printk(KERN_ERR "%s: Unsupported response type!\n",
-@@ -959,7 +960,15 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 	if (cmd->data)
- 		flags |= SDHCI_CMD_DATA;
- 
--	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags), SDHCI_COMMAND);
-+	if (host->quirks & SDHCI_QUIRK_32BIT_REGISTERS) {
-+		sdhci_writel(host,
-+			SDHCI_MAKE_CMD_32BIT(cmd->opcode, flags, xfer_mode),
-+			SDHCI_TRANSFER_MODE);
+@@ -1840,13 +1846,19 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	 * Maximum block size. This varies from controller to controller and
+ 	 * is specified in the capabilities register.
+ 	 */
+-	mmc->max_blk_size = (caps & SDHCI_MAX_BLOCK_MASK) >> SDHCI_MAX_BLOCK_SHIFT;
+-	if (mmc->max_blk_size >= 3) {
+-		printk(KERN_WARNING "%s: Invalid maximum block size, "
+-			"assuming 512 bytes\n", mmc_hostname(mmc));
+-		mmc->max_blk_size = 512;
+-	} else
+-		mmc->max_blk_size = 512 << mmc->max_blk_size;
++	if (host->quirks & SDHCI_QUIRK_MAX_BLK_SZ_4096) {
++		mmc->max_blk_size = 3;
 +	} else {
-+		sdhci_writew(host, xfer_mode, SDHCI_TRANSFER_MODE);
-+		sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags),
-+			SDHCI_COMMAND);
++		mmc->max_blk_size = (caps & SDHCI_MAX_BLOCK_MASK) >>
++				SDHCI_MAX_BLOCK_SHIFT;
++		if (mmc->max_blk_size >= 3) {
++			printk(KERN_WARNING "%s: Invalid maximum block size, "
++				"assuming 512 bytes\n", mmc_hostname(mmc));
++			mmc->max_blk_size = 0;
++		}
 +	}
- }
++
++	mmc->max_blk_size = 512 << mmc->max_blk_size;
  
- static void sdhci_finish_command(struct sdhci_host *host)
+ 	/*
+ 	 * Maximum block count.
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 051fef5..7b115d8 100644
+index 5c5a950..c8628b4 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -44,6 +44,8 @@
- #define  SDHCI_CMD_RESP_SHORT_BUSY 0x03
- 
- #define SDHCI_MAKE_CMD(c, f) (((c & 0xff) << 8) | (f & 0xff))
-+#define SDHCI_MAKE_CMD_32BIT(c, f, m) \
-+	((((c) & 0xff) << 24) | (((f) & 0xff) << 16) | ((m) & 0x37))
- 
- #define SDHCI_RESPONSE		0x10
- 
-@@ -221,6 +223,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
- /* Controller reports inverted write-protect state */
- #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
-+/* Controller has all registers of 32 bit width */
-+#define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
+@@ -231,6 +231,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<20)
+ /* Controller losing signal/interrupt enable states after reset */
+ #define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET		(1<<21)
++/* Controller supports nonstandard maximum block length of 4096 bytes */
++#define SDHCI_QUIRK_MAX_BLK_SZ_4096			(1<<22)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
