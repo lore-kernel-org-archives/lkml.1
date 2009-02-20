@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbZBTXbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZBTXlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756478AbZBTXbU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 18:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZBTXbN
+	id S1755432AbZBTXlS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 18:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZBTXlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 18:31:13 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:34269 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753249AbZBTXbM (ORCPT
+	Fri, 20 Feb 2009 18:41:00 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:42161 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753219AbZBTXk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 18:31:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=Jh9xEW9Ci/2LDnoy10EdK9+exz84wMljjmRmj1MXO3+nr6W1zppjBHa69Ji12PLlZA
-         DTRBrtfMBHTINmfvl/tlTqGRBvrBpE6Y9/9jxwLmOTLhzFnfyuG9yBm0g4iB65bV8VVH
-         f2vk7Lml2tG76oxC+zgzg1Ml5vhxa7oQkevJ8=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <499F3709.2050501@linux.vnet.ibm.com>
-References: <20090121185021.GA8852@elte.hu>
-	 <499DD4BE.2000704@linux.vnet.ibm.com> <20090220081040.GA11490@elte.hu>
-	 <499F30F4.509@linux.vnet.ibm.com> <1235170078.4736.42.camel@laptop>
-	 <499F3709.2050501@linux.vnet.ibm.com>
-Date: Sat, 21 Feb 2009 00:24:53 +0100
-Message-ID: <7c86c4470902201524i413adea4udb4637da1053ffb5@mail.gmail.com>
-Subject: Re: [announce] Performance Counters for Linux, v6
-From: stephane eranian <eranian@googlemail.com>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 20 Feb 2009 18:40:59 -0500
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.29-rc5
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090220152305.8a2e384f.akpm@linux-foundation.org>
+References: <1235170927.9025.42.camel@localhost.localdomain>
+	 <20090220152305.8a2e384f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 20 Feb 2009 23:40:56 +0000
+Message-Id: <1235173256.9025.47.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 21, 2009 at 12:04 AM, Corey Ashford
-<cjashfor@linux.vnet.ibm.com> wrote:
->
->
-> Peter Zijlstra wrote:
->>
->> On Fri, 2009-02-20 at 14:38 -0800, Corey Ashford wrote:
->>>
->>> There may be other non-event-related changes that will not be handled
->>> quite as well in this way.  In the original email I hinted at that we may
->>> want an option for mmap'd sample buffers at some point, and so I'm not clear
->>> how you'd provide an ABI to request mmap'd buffers (you would probably need
->>> to be able to request the size and get back a pointer to the mmap'd buffer).
->>>  Would this be done through a special sys_perf_counter_open call?  Or
->>> through a subsequent ioctl call on the group leader after an open (which
->>> requires the counters to be initially disabled), etc.
->>
->> What's stopping a regular mmap() call using the fd obtained from
->> sys_perf_counter_open() ?
->
-> Perhaps nothing.  I don't know why it didn't occur to me that this could be
-> done.  If PCL supports this, great!
->
-That has always been the way, I thought this could be done with PCL.
-Except that I don't know who decides the size of the mmap().
+On Fri, 2009-02-20 at 15:23 -0800, Andrew Morton wrote:
+> On Fri, 20 Feb 2009 17:02:07 -0600
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > This is a bunch of assorted bug fixes (with several in the qlogic
+> > drivers).
+> > 
+> > The patch is available at
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> > 
+> > The short changelog is:
+> > 
+> > Andrew Vasquez (3):
+> >       qla2xxx: Update version number to 8.03.00-k3.
+> >       qla2xxx: Mask out 'reserved' bits while processing FLT regions.
+> >       qla2xxx: Properly acknowledge IDC notification messages.
+> > 
+> > Anirban Chakraborty (2):
+> >       qla2xxx: Correct slab-error overwrite during vport creation and deletion.
+> >       qla2xxx: Remove interrupt request bit check in the response processing pat
+> > 
+> > Brian King (3):
+> >       ibmvfc: Increase cancel timeout
+> >       ibmvfc: Fix rport relogin
+> >       ibmvfc: Fix command timeout errors
+> > 
+> > James Smart (1):
+> >       scsi_scan: add missing interim SDEV_DEL state if slave_alloc fails
+> > 
+> > Julia Lawall (1):
+> >       lpfc: introduce missing kfree
+> > 
+> > Martin Peschke (1):
+> >       sg: fix device number in blktrace data
+> > 
+> > Mike Christie (1):
+> >       libiscsi: Fix scsi command timeout oops in iscsi_eh_timed_out
+> > 
+> > Robert Jennings (1):
+> >       ibmvscsi: Correct DMA mapping leak
+> > 
+> > Shyam_Iyer@Dell.com (1):
+> >       qla2xxx: fix Kernel Panic with Qlogic 2472 Card.
+> 
+> Did the mpt-fusion MSI problems get sorted out?  I think so...
+
+Yes, but in the PCI tree.
+
+> I believe that "scsi: mpt: suppress debugobjects warning" is 2.6.29
+> material.  Sent 11 Feb, no response.
+
+This is http://bugzilla.kernel.org/show_bug.cgi?id=12662 which is
+reported fixed with no code changes.
+
+> Also I believe that "hptiop: add new PCI device ID" should be in 2.6.29
+> (and earlier), below.  I can send this on if you like.
+
+I have this marked for inclusion, I'm just sending out the fixes that
+have been incubating in next prior to reconstructing a new fixes tree.
+
+James
+
+
