@@ -1,89 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZBTK5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZBTLAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbZBTK5l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 05:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZBTK5a
+	id S1757547AbZBTLAg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 06:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbZBTLAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 05:57:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54434 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750784AbZBTK53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 05:57:29 -0500
-Date: Fri, 20 Feb 2009 11:56:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-Subject: Re: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single
-	ipi fallback for smp_call_function_many())
-Message-ID: <20090220105640.GE28581@elte.hu>
-References: <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de> <1234923702.29823.7.camel@vayu> <20090218135945.GC23125@wotan.suse.de> <1234982620.29823.22.camel@vayu> <20090218191757.GD8889@elte.hu> <1235001314.14523.2.camel@vayu> <20090219122031.GC1703@elte.hu> <1235080824.14523.19.camel@vayu>
+	Fri, 20 Feb 2009 06:00:25 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:35019 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751194AbZBTLAX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 06:00:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=mQp5YTZpRx/UAizF7PGW3RnTqd7TSjmtLBbRD3Hmo6YknQc7ULcWExyXbkxu3TCq/1
+         EWq4g5m+RyGBKcwEfckxOqKo8yCSWqVLGzckYGUDAtNDe4MDF3rCWiClMOE4DlW8eEeL
+         vE3ng4bb6xjepdrCFOcvz5HoeCExEKnUTjoM8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235080824.14523.19.camel@vayu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Fri, 20 Feb 2009 14:00:21 +0300
+Message-ID: <a4423d670902200300n1d1bfdeeg6daca4b32989c9d3@mail.gmail.com>
+Subject: next-20090220: XFS, IMA: BUG: sleeping function called from invalid 
+	context at mm/slub.c:1613
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       xfs@oss.sgi.com, Mimi Zohar <zohar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+I have applied the following patch from Mimi Zohar
+http://marc.info/?l=linux-next&m=123509665514552
 
-> On Thu, 2009-02-19 at 04:20 -0800, Ingo Molnar wrote:
-> > Could you please refresh this patch to latest tip:master? The 
-> > APIC drivers moved to arch/x86/kernel/apic/.
-> 
-> Appended the refreshed patch. Thanks.
+That is why it is dirty.
+The kernel can not boot without it when IMA is enabled.
 
-thanks. Two details i noticed:
 
-Firstly:
-
-> +++ b/arch/x86/kernel/apic/x2apic_cluster.c
-> +++ b/arch/x86/kernel/apic/x2apic_phys.c
-
-how about x2apic_uv.c? It uses uv_write_global_mmr64() in its 
-IPI sending method, which uses:
-
-static inline void uv_write_global_mmr64(int pnode, unsigned long offset,
-                                unsigned long val)
-{
-        *uv_global_mmr64_address(pnode, offset) = val;
-}
-
-which uses ->mmr_base, which is mapped via:
-
-        init_extra_mapping_uc(UV_LOCAL_MMR_BASE, UV_LOCAL_MMR_SIZE);
-
-so it should be fine because uncached - but at minimum we should 
-put a comment into x2apic_uv.c that the generic IPI code relies 
-on the lowlevel code serializing - i.e. relies on the UC PAT 
-attribute.
-
-Secondly, you added smp_mb(), which will translate to an MFENCE. 
-
-But in theory it should be enough to have a wmb() here. [Note, 
-not an smp_wmb() that i suggested before.] That will translate 
-to an SFENCE - which will serialize writes but still allows 
-reads/prefetches to pass.
-
-So the question is, is an SFENCE there enough to serialize the 
-WRMSR with previous memory-writes? It's not specified in the 
-x2apic docs as far as i could see.
-
-	Ingo
+BUG: sleeping function called from invalid context at mm/slub.c:1613
+in_atomic(): 1, irqs_disabled(): 0, pid: 1514, name: mkdir
+3 locks held by mkdir/1514:
+ #0:  (&type->i_mutex_dir_key#2/1){+.+.+.}, at: [<ffffffff802d3460>]
+lookup_create+0x30/0xd0
+ #1:  (&(&ip->i_lock)->mr_lock/1){+.+.+.}, at: [<ffffffff803ca77f>]
+xfs_ilock+0xdf/0x120
+ #2:  (&pag->pag_ici_lock){++++.+}, at: [<ffffffff803caed6>]
+xfs_iget+0x156/0x650
+Pid: 1514, comm: mkdir Not tainted 2.6.29-rc5-next-20090220-dirty #1
+Call Trace:
+ [<ffffffff8026ad33>] ? __debug_show_held_locks+0x13/0x30
+ [<ffffffff80234fe5>] __might_sleep+0x105/0x140
+ [<ffffffff802c6191>] kmem_cache_alloc+0xd1/0x100
+ [<ffffffff8045fb29>] ima_iint_insert+0x49/0xf0
+ [<ffffffff8045fbed>] ima_inode_alloc+0x1d/0x30
+ [<ffffffff802dfa5f>] inode_init_always+0xaf/0x250
+ [<ffffffff803caf86>] xfs_iget+0x206/0x650
+ [<ffffffff803eb8e8>] xfs_trans_iget+0x208/0x250
+ [<ffffffff803ce571>] xfs_ialloc+0xc1/0x700
+ [<ffffffff803ec6f9>] xfs_dir_ialloc+0xa9/0x340
+ [<ffffffff8025e009>] ? down_write_nested+0x79/0x90
+ [<ffffffff803ef0c1>] xfs_create+0x3e1/0x690
+ [<ffffffff803fb813>] xfs_vn_mknod+0x63/0xf0
+ [<ffffffff803fb8ae>] xfs_vn_mkdir+0xe/0x10
+ [<ffffffff802d487c>] vfs_mkdir+0x8c/0xd0
+ [<ffffffff802d6a56>] sys_mkdirat+0x106/0x120
+ [<ffffffff8020bc0c>] ? sysret_check+0x27/0x62
+ [<ffffffff8026c79d>] ? trace_hardirqs_on_caller+0x17d/0x1e0
+ [<ffffffff802d6a83>] sys_mkdir+0x13/0x20
+ [<ffffffff8020bbdb>] system_call_fastpath+0x16/0x1b
+BUG: sleeping function called from invalid context at mm/slub.c:1613
+in_atomic(): 1, irqs_disabled(): 0, pid: 1514, name: mkdir
+3 locks held by mkdir/1514:
+ #0:  (&type->i_mutex_dir_key#2/1){+.+.+.}, at: [<ffffffff802d3460>]
+lookup_create+0x30/0xd0
+ #1:  (&(&ip->i_lock)->mr_lock/1){+.+.+.}, at: [<ffffffff803ca77f>]
+xfs_ilock+0xdf/0x120
+ #2:  (&pag->pag_ici_lock){++++.+}, at: [<ffffffff803caed6>]
+xfs_iget+0x156/0x650
+Pid: 1514, comm: mkdir Not tainted 2.6.29-rc5-next-20090220-dirty #1
+Call Trace:
+ [<ffffffff8026ad33>] ? __debug_show_held_locks+0x13/0x30
+ [<ffffffff80234fe5>] __might_sleep+0x105/0x140
+ [<ffffffff802c6191>] kmem_cache_alloc+0xd1/0x100
+ [<ffffffff8048131a>] radix_tree_preload+0x6a/0xf0
+ [<ffffffff8045fb3b>] ima_iint_insert+0x5b/0xf0
+ [<ffffffff8045fbed>] ima_inode_alloc+0x1d/0x30
+ [<ffffffff802dfa5f>] inode_init_always+0xaf/0x250
+ [<ffffffff803caf86>] xfs_iget+0x206/0x650
+ [<ffffffff803eb8e8>] xfs_trans_iget+0x208/0x250
+ [<ffffffff803ce571>] xfs_ialloc+0xc1/0x700
+ [<ffffffff803ec6f9>] xfs_dir_ialloc+0xa9/0x340
+ [<ffffffff8025e009>] ? down_write_nested+0x79/0x90
+ [<ffffffff803ef0c1>] xfs_create+0x3e1/0x690
+ [<ffffffff803fb813>] xfs_vn_mknod+0x63/0xf0
+ [<ffffffff803fb8ae>] xfs_vn_mkdir+0xe/0x10
+ [<ffffffff802d487c>] vfs_mkdir+0x8c/0xd0
+ [<ffffffff802d6a56>] sys_mkdirat+0x106/0x120
+ [<ffffffff8020bc0c>] ? sysret_check+0x27/0x62
+ [<ffffffff8026c79d>] ? trace_hardirqs_on_caller+0x17d/0x1e0
+ [<ffffffff802d6a83>] sys_mkdir+0x13/0x20
+ [<ffffffff8020bbdb>] system_call_fastpath+0x16/0x1b
