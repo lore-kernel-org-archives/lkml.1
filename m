@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZBTQes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZBTQhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbZBTQes (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 11:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZBTQej
+	id S1755287AbZBTQhI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 11:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZBTQg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 11:34:39 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:50231 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbZBTQei (ORCPT
+	Fri, 20 Feb 2009 11:36:56 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:49580 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbZBTQgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 11:34:38 -0500
-Subject: [GIT PULL] Btrfs patches for 2.6.29-rc
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 20 Feb 2009 11:33:50 -0500
-Message-Id: <1235147630.13249.21.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.499EDB74.0215:SCFSTAT928724,ss=1,fgs=0
+	Fri, 20 Feb 2009 11:36:55 -0500
+Date: Fri, 20 Feb 2009 16:36:51 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       lenb@kernel.org
+Subject: Re: [PATCH] oqo: depends on INPUT_POLLDEV
+Message-ID: <20090220163651.GA698@srcf.ucam.org>
+References: <20090220083007.7bd0a153.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090220083007.7bd0a153.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Fri, Feb 20, 2009 at 08:30:07AM -0800, Randy Dunlap wrote:
 
-We're hammering on fixes for performance, stack reduction and enospc in
-an experimental btrfs tree, but one of the things that fell out as a
-stable patch is a fix for an oops on directory fsyncs from NFS.
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> oqo driver uses polled input functions, so make it depend
+> on INPUT_POLLDEV.
+> 
+> ERROR: "input_register_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
+> ERROR: "input_allocate_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
+> ERROR: "input_free_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
+> ERROR: "input_unregister_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc:	Matthew Garrett <mjg59@srcf.ucam.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+Acked-by: Matthew Garrett <mjg@redhat.com>
 
-Chris Mason (1):                                          
-      Btrfs: check file pointer in btrfs_sync_file        
+I've got a cleaned up version of this written now - I'll push it to Len 
+later today.
 
-
- file.c |    8 ++++----                                          
- 1 file changed, 4 insertions(+), 4 deletions
-
--chris
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
