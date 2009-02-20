@@ -1,221 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759746AbZBTRNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZBTRN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759746AbZBTRNY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758911AbZBTRKo
+	id S1755119AbZBTRN5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758481AbZBTRLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:10:44 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:36537 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758905AbZBTRKm (ORCPT
+	Fri, 20 Feb 2009 12:11:03 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:46563 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759134AbZBTRLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:10:42 -0500
+	Fri, 20 Feb 2009 12:11:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=FjrOZkvnrJOH1jQxD+mtfaCf4Uu6zj1sauOBLMBOICjXZeGHpmIRxkif9WL3NfyAnV
-         hV1yVW9N5+5Yli55vkh1fgr893tS78GXQcI8bwnuQF9UbTXDoJGRuzXycECVvKR2pul/
-         mXkoEBKgdw2rhyNIFNw8LhcIPFyvs/faeQSUQ=
+        b=W7KsDjHlqlKCEJyrLWMMh1FtDojJLLQA2Dd5OMZ+a4uoT54b/E1OOuaBrXP6UV4qBi
+         hutAvS3lGJb6N91O1p0C+jw8ENUVkjYmRGfwKU3qAwXaKBWbgY6AZp9ZJGrvA8pwrXLf
+         1/38a1ESpmxa2clS3GR8Ir+DR0T2HYTr5VVl4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 20 Feb 2009 18:12:36 +0100
-Message-Id: <20090220171236.25429.25264.sendpatchset@localhost.localdomain>
+Date: Fri, 20 Feb 2009 18:12:54 +0100
+Message-Id: <20090220171254.25429.6029.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090220171139.25429.26702.sendpatchset@localhost.localdomain>
 References: <20090220171139.25429.26702.sendpatchset@localhost.localdomain>
-Subject: [PATCH 08/10] ide: move ide_map_sg() call out from ->dma_setup method
+Subject: [PATCH 10/10] ide: sanitize ide_build_sglist() and ide_destroy_dmatable()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: move ide_map_sg() call out from ->dma_setup method
+Subject: [PATCH] ide: sanitize ide_build_sglist() and ide_destroy_dmatable()
 
-Move ide_map_sg() call from ->dma_setup implementations
-and ide_destroy_dmatable() one from *_build_dmatable() to
-ide_dma_prepare().
+* Move ide_map_sg() calls out from ide_build_sglist()
+  to ide_dma_prepare().
+
+* Pass command to ide_destroy_dmatable().
+
+* Rename ide_build_sglist() to ide_dma_map_sg()
+  and ide_destroy_dmatable() to ide_dma_unmap_sg().
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/au1xxx-ide.c  |    8 ++------
- drivers/ide/ide-dma-sff.c |    2 --
- drivers/ide/ide-dma.c     |    8 ++++++--
- drivers/ide/pmac.c        |    6 +-----
- drivers/ide/scc_pata.c    |    4 +---
- drivers/ide/sgiioc4.c     |    6 +-----
- drivers/ide/trm290.c      |    5 ++---
- drivers/ide/tx4939ide.c   |    6 +-----
- 8 files changed, 14 insertions(+), 31 deletions(-)
+ drivers/ide/ide-atapi.c |    2 -
+ drivers/ide/ide-cd.c    |    2 -
+ drivers/ide/ide-dma.c   |   50 ++++++++++++++++++++++++------------------------
+ drivers/ide/sgiioc4.c   |    7 +++---
+ include/linux/ide.h     |    3 --
+ 5 files changed, 32 insertions(+), 32 deletions(-)
 
-Index: b/drivers/ide/au1xxx-ide.c
+Index: b/drivers/ide/ide-atapi.c
 ===================================================================
---- a/drivers/ide/au1xxx-ide.c
-+++ b/drivers/ide/au1xxx-ide.c
-@@ -272,9 +272,7 @@ static int auide_build_dmatable(ide_driv
- 	if (count)
- 		return 1;
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -284,7 +284,7 @@ static ide_startstop_t ide_pc_intr(ide_d
  
-- use_pio_instead:
--	ide_destroy_dmatable(drive);
--
-+use_pio_instead:
- 	return 0; /* revert to PIO for this request */
- }
+ 		drive->waiting_for_dma = 0;
+ 		rc = hwif->dma_ops->dma_end(drive);
+-		ide_destroy_dmatable(drive);
++		ide_dma_unmap_sg(drive, cmd);
  
-@@ -290,10 +288,8 @@ static void auide_dma_start(ide_drive_t 
- 
- static int auide_dma_setup(ide_drive_t *drive, struct ide_cmd *cmd)
- {
--	if (auide_build_dmatable(drive, cmd) == 0) {
--		ide_map_sg(drive, cmd);
-+	if (auide_build_dmatable(drive, cmd) == 0)
- 		return 1;
--	}
- 
- 	drive->waiting_for_dma = 1;
- 	return 0;
-Index: b/drivers/ide/ide-dma-sff.c
+ 		if (rc || (drive->media == ide_tape && (stat & ATA_ERR))) {
+ 			if (drive->media == ide_floppy)
+Index: b/drivers/ide/ide-cd.c
 ===================================================================
---- a/drivers/ide/ide-dma-sff.c
-+++ b/drivers/ide/ide-dma-sff.c
-@@ -166,8 +166,6 @@ use_pio_instead:
- 	printk(KERN_ERR "%s: %s\n", drive->name,
- 		count ? "DMA table too small" : "empty DMA table?");
- 
--	ide_destroy_dmatable(drive);
--
- 	return 0; /* revert to PIO for this request */
- }
- EXPORT_SYMBOL_GPL(ide_build_dmatable);
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -640,7 +640,7 @@ static ide_startstop_t cdrom_newpc_intr(
+ 		drive->dma = 0;
+ 		drive->waiting_for_dma = 0;
+ 		dma_error = hwif->dma_ops->dma_end(drive);
+-		ide_destroy_dmatable(drive);
++		ide_dma_unmap_sg(drive, cmd);
+ 		if (dma_error) {
+ 			printk(KERN_ERR PFX "%s: DMA %s error\n", drive->name,
+ 					write ? "write" : "read");
 Index: b/drivers/ide/ide-dma.c
 ===================================================================
 --- a/drivers/ide/ide-dma.c
 +++ b/drivers/ide/ide-dma.c
-@@ -566,8 +566,12 @@ int ide_dma_prepare(ide_drive_t *drive, 
+@@ -89,17 +89,16 @@ static const struct drive_list_entry dri
+ ide_startstop_t ide_dma_intr(ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
++	struct ide_cmd *cmd = &hwif->cmd;
+ 	u8 stat = 0, dma_stat = 0;
+ 
+ 	drive->waiting_for_dma = 0;
+ 	dma_stat = hwif->dma_ops->dma_end(drive);
+-	ide_destroy_dmatable(drive);
++	ide_dma_unmap_sg(drive, cmd);
+ 	stat = hwif->tp_ops->read_status(hwif);
+ 
+ 	if (OK_STAT(stat, DRIVE_READY, drive->bad_wstat | ATA_DRQ)) {
+ 		if (!dma_stat) {
+-			struct ide_cmd *cmd = &hwif->cmd;
+-
+ 			if ((cmd->tf_flags & IDE_TFLAG_FS) == 0)
+ 				ide_finish_cmd(drive, cmd, stat);
+ 			else
+@@ -119,8 +118,8 @@ int ide_dma_good_drive(ide_drive_t *driv
+ }
+ 
+ /**
+- *	ide_build_sglist	-	map IDE scatter gather for DMA I/O
+- *	@drive: the drive to build the DMA table for
++ *	ide_dma_map_sg	-	map IDE scatter gather for DMA I/O
++ *	@drive: the drive to map the DMA table for
+  *	@cmd: command
+  *
+  *	Perform the DMA mapping magic necessary to access the source or
+@@ -129,23 +128,19 @@ int ide_dma_good_drive(ide_drive_t *driv
+  *	operate in a portable fashion.
+  */
+ 
+-static int ide_build_sglist(ide_drive_t *drive, struct ide_cmd *cmd)
++static int ide_dma_map_sg(ide_drive_t *drive, struct ide_cmd *cmd)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	struct scatterlist *sg = hwif->sg_table;
+ 	int i;
+ 
+-	ide_map_sg(drive, cmd);
+-
+ 	if (cmd->tf_flags & IDE_TFLAG_WRITE)
+ 		cmd->sg_dma_direction = DMA_TO_DEVICE;
+ 	else
+ 		cmd->sg_dma_direction = DMA_FROM_DEVICE;
+ 
+ 	i = dma_map_sg(hwif->dev, sg, cmd->sg_nents, cmd->sg_dma_direction);
+-	if (i == 0)
+-		ide_map_sg(drive, cmd);
+-	else {
++	if (i) {
+ 		cmd->orig_sg_nents = cmd->sg_nents;
+ 		cmd->sg_nents = i;
+ 	}
+@@ -154,7 +149,7 @@ static int ide_build_sglist(ide_drive_t 
+ }
+ 
+ /**
+- *	ide_destroy_dmatable	-	clean up DMA mapping
++ *	ide_dma_unmap_sg	-	clean up DMA mapping
+  *	@drive: The drive to unmap
+  *
+  *	Teardown mappings after DMA has completed. This must be called
+@@ -164,15 +159,14 @@ static int ide_build_sglist(ide_drive_t 
+  *	time.
+  */
+ 
+-void ide_destroy_dmatable(ide_drive_t *drive)
++void ide_dma_unmap_sg(ide_drive_t *drive, struct ide_cmd *cmd)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+-	struct ide_cmd *cmd = &hwif->cmd;
+ 
+ 	dma_unmap_sg(hwif->dev, hwif->sg_table, cmd->orig_sg_nents,
+ 		     cmd->sg_dma_direction);
+ }
+-EXPORT_SYMBOL_GPL(ide_destroy_dmatable);
++EXPORT_SYMBOL_GPL(ide_dma_unmap_sg);
+ 
+ /**
+  *	ide_dma_off_quietly	-	Generic DMA kill
+@@ -471,6 +465,7 @@ ide_startstop_t ide_dma_timeout_retry(id
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	const struct ide_dma_ops *dma_ops = hwif->dma_ops;
++	struct ide_cmd *cmd = &hwif->cmd;
+ 	struct request *rq;
+ 	ide_startstop_t ret = ide_stopped;
+ 
+@@ -482,7 +477,7 @@ ide_startstop_t ide_dma_timeout_retry(id
+ 		printk(KERN_WARNING "%s: DMA timeout error\n", drive->name);
+ 		drive->waiting_for_dma = 0;
+ 		(void)dma_ops->dma_end(drive);
+-		ide_destroy_dmatable(drive);
++		ide_dma_unmap_sg(drive, cmd);
+ 		ret = ide_error(drive, "dma timeout error",
+ 				hwif->tp_ops->read_status(hwif));
+ 	} else {
+@@ -495,7 +490,7 @@ ide_startstop_t ide_dma_timeout_retry(id
+ 					hwif->tp_ops->read_status(hwif));
+ 			drive->waiting_for_dma = 0;
+ 			(void)dma_ops->dma_end(drive);
+-			ide_destroy_dmatable(drive);
++			ide_dma_unmap_sg(drive, cmd);
+ 		}
+ 	}
+ 
+@@ -572,14 +567,19 @@ int ide_dma_prepare(ide_drive_t *drive, 
+ 	const struct ide_dma_ops *dma_ops = drive->hwif->dma_ops;
  
  	if ((drive->dev_flags & IDE_DFLAG_USING_DMA) == 0 ||
- 	    (dma_ops->dma_check && dma_ops->dma_check(drive, cmd)) ||
--	    ide_build_sglist(drive, cmd) == 0 ||
--	    dma_ops->dma_setup(drive, cmd))
-+	    ide_build_sglist(drive, cmd) == 0)
- 		return 1;
-+	if (dma_ops->dma_setup(drive, cmd)) {
-+		ide_destroy_dmatable(drive);
-+		ide_map_sg(drive, cmd);
-+		return 1;
-+	}
+-	    (dma_ops->dma_check && dma_ops->dma_check(drive, cmd)) ||
+-	    ide_build_sglist(drive, cmd) == 0)
+-		return 1;
+-	if (dma_ops->dma_setup(drive, cmd)) {
+-		ide_destroy_dmatable(drive);
+-		ide_map_sg(drive, cmd);
+-		return 1;
+-	}
++	    (dma_ops->dma_check && dma_ops->dma_check(drive, cmd)))
++		goto out;
++	ide_map_sg(drive, cmd);
++	if (ide_dma_map_sg(drive, cmd) == 0)
++		goto out_map;
++	if (dma_ops->dma_setup(drive, cmd))
++		goto out_dma_unmap;
+ 	drive->waiting_for_dma = 1;
  	return 0;
++out_dma_unmap:
++	ide_dma_unmap_sg(drive, cmd);
++out_map:
++	ide_map_sg(drive, cmd);
++out:
++	return 1;
  }
-Index: b/drivers/ide/pmac.c
-===================================================================
---- a/drivers/ide/pmac.c
-+++ b/drivers/ide/pmac.c
-@@ -1493,8 +1493,6 @@ static int pmac_ide_build_dmatable(ide_d
- 	printk(KERN_DEBUG "%s: empty DMA table?\n", drive->name);
- 
- use_pio_instead:
--	ide_destroy_dmatable(drive);
--
- 	return 0; /* revert to PIO for this request */
- }
- 
-@@ -1510,10 +1508,8 @@ static int pmac_ide_dma_setup(ide_drive_
- 	u8 unit = drive->dn & 1, ata4 = (pmif->kind == controller_kl_ata4);
- 	u8 write = !!(cmd->tf_flags & IDE_TFLAG_WRITE);
- 
--	if (pmac_ide_build_dmatable(drive, cmd) == 0) {
--		ide_map_sg(drive, cmd);
-+	if (pmac_ide_build_dmatable(drive, cmd) == 0)
- 		return 1;
--	}
- 
- 	/* Apple adds 60ns to wrDataSetup on reads */
- 	if (ata4 && (pmif->timings[unit] & TR_66_UDMA_EN)) {
-Index: b/drivers/ide/scc_pata.c
-===================================================================
---- a/drivers/ide/scc_pata.c
-+++ b/drivers/ide/scc_pata.c
-@@ -321,10 +321,8 @@ static int scc_dma_setup(ide_drive_t *dr
- 	u8 dma_stat;
- 
- 	/* fall back to pio! */
--	if (ide_build_dmatable(drive, cmd) == 0) {
--		ide_map_sg(drive, cmd);
-+	if (ide_build_dmatable(drive, cmd) == 0)
- 		return 1;
--	}
- 
- 	/* PRD table */
- 	out_be32((void __iomem *)(hwif->dma_base + 8), hwif->dmatable_dma);
 Index: b/drivers/ide/sgiioc4.c
 ===================================================================
 --- a/drivers/ide/sgiioc4.c
 +++ b/drivers/ide/sgiioc4.c
-@@ -478,8 +478,6 @@ static int sgiioc4_build_dmatable(ide_dr
- 	}
- 
- use_pio_instead:
--	ide_destroy_dmatable(drive);
--
- 	return 0;		/* revert to PIO for this request */
+@@ -277,11 +277,12 @@ static void sgiioc4_dma_host_set(ide_dri
+ 		sgiioc4_clearirq(drive);
  }
  
-@@ -488,11 +486,9 @@ static int sgiioc4_dma_setup(ide_drive_t
- 	int ddir;
- 	u8 write = !!(cmd->tf_flags & IDE_TFLAG_WRITE);
- 
--	if (sgiioc4_build_dmatable(drive, cmd) == 0) {
-+	if (sgiioc4_build_dmatable(drive, cmd) == 0)
- 		/* try PIO instead of DMA */
--		ide_map_sg(drive, cmd);
- 		return 1;
--	}
- 
- 	if (write)
- 		/* Writes TO the IOC4 FROM Main Memory */
-Index: b/drivers/ide/trm290.c
-===================================================================
---- a/drivers/ide/trm290.c
-+++ b/drivers/ide/trm290.c
-@@ -193,11 +193,10 @@ static int trm290_dma_setup(ide_drive_t 
- 	unsigned int count, rw = (cmd->tf_flags & IDE_TFLAG_WRITE) ? 1 : 2;
- 
- 	count = ide_build_dmatable(drive, cmd);
--	if (count == 0) {
--		ide_map_sg(drive, cmd);
-+	if (count == 0)
- 		/* try PIO instead of DMA */
- 		return 1;
--	}
+-static void
+-sgiioc4_resetproc(ide_drive_t * drive)
++static void sgiioc4_resetproc(ide_drive_t *drive)
+ {
++	struct ide_cmd *cmd = &drive->hwif->cmd;
 +
- 	outl(hwif->dmatable_dma | rw, hwif->dma_base);
- 	drive->waiting_for_dma = 1;
- 	/* start DMA */
-Index: b/drivers/ide/tx4939ide.c
-===================================================================
---- a/drivers/ide/tx4939ide.c
-+++ b/drivers/ide/tx4939ide.c
-@@ -279,8 +279,6 @@ use_pio_instead:
- 	printk(KERN_ERR "%s: %s\n", drive->name,
- 		count ? "DMA table too small" : "empty DMA table?");
- 
+ 	sgiioc4_dma_end(drive);
 -	ide_destroy_dmatable(drive);
--
- 	return 0; /* revert to PIO for this request */
++	ide_dma_unmap_sg(drive, cmd);
+ 	sgiioc4_clearirq(drive);
  }
- #else
-@@ -294,10 +292,8 @@ static int tx4939ide_dma_setup(ide_drive
- 	u8 rw = (cmd->tf_flags & IDE_TFLAG_WRITE) ? 0 : ATA_DMA_WR;
  
- 	/* fall back to PIO! */
--	if (tx4939ide_build_dmatable(drive, cmd) == 0) {
--		ide_map_sg(drive, cmd);
-+	if (tx4939ide_build_dmatable(drive, cmd) == 0)
- 		return 1;
--	}
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1438,8 +1438,7 @@ int ide_allocate_dma_engine(ide_hwif_t *
+ void ide_release_dma_engine(ide_hwif_t *);
  
- 	/* PRD table */
- 	tx4939ide_writel(hwif->dmatable_dma, base, TX4939IDE_PRD_Ptr);
+ int ide_dma_prepare(ide_drive_t *, struct ide_cmd *);
+-
+-void ide_destroy_dmatable(ide_drive_t *);
++void ide_dma_unmap_sg(ide_drive_t *, struct ide_cmd *);
+ 
+ #ifdef CONFIG_BLK_DEV_IDEDMA_SFF
+ int config_drive_for_dma(ide_drive_t *);
