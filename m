@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbZBTB2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbZBTBdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbZBTB2B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 20:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZBTB1w
+	id S1758202AbZBTBdc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 20:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZBTBdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 20:27:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45818 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752869AbZBTB1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 20:27:51 -0500
-Message-ID: <499E070E.3090304@kernel.org>
-Date: Fri, 20 Feb 2009 10:27:42 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, mingo@elte.hu
-Subject: Re: [PATCH 08/10] vmalloc: add un/map_kernel_range_noflush()
-References: <1234958676-27618-1-git-send-email-tj@kernel.org> <1234958676-27618-9-git-send-email-tj@kernel.org> <200902192317.28696.nickpiggin@yahoo.com.au>
-In-Reply-To: <200902192317.28696.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Thu, 19 Feb 2009 20:33:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36169 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754396AbZBTBdW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 20:33:22 -0500
+Date: Thu, 19 Feb 2009 17:32:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       peterz@infradead.org, fweisbec@gmail.com, torvalds@linux-foundation.org,
+       arjan@infradead.org, rusty@rustcorp.com.au,
+       mathieu.desnoyers@polymtl.ca, hpa@zytor.com, srostedt@redhat.com
+Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
+ conversions
+Message-Id: <20090219173210.73318ebc.akpm@linux-foundation.org>
+In-Reply-To: <20090220011521.003556651@goodmis.org>
+References: <20090220011316.379904625@goodmis.org>
+	<20090220011521.003556651@goodmis.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Feb 2009 01:27:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Wednesday 18 February 2009 23:04:34 Tejun Heo wrote:
->> Impact: two more public map/unmap functions
->>
->> Implement map_kernel_range_noflush() and unmap_kernel_range_noflush().
->> These functions respectively map and unmap address range in kernel VM
->> area but doesn't do any vcache or tlb flushing.  These will be used by
->> new percpu allocator.
-> 
-> Hmm... I have no real issues with this, although the caller is going
-> to have to be very careful not to introduce bugs (which I'm sure you
-> were ;)).
-> 
-> Maybe can you add comments specifying the minimum of which flushes
-> are required and when, to scare people away from using them?
+On Thu, 19 Feb 2009 20:13:20 -0500
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Yeap, will add comments.
+> +int ftrace_arch_modify_prepare(void)
+> +{
+> +	/* at boot up, we are still writable */
+> +	if (system_state != SYSTEM_RUNNING)
+> +		return 0;
+> +
+> +	set_kernel_text_rw();
+> +	return 0;
+> +}
+> +
+> +int ftrace_arch_modify_post_process(void)
+> +{
+> +	/* at boot up, we are still writable */
+> +	if (system_state != SYSTEM_RUNNING)
+> +		return 0;
+> +
+> +	set_kernel_text_ro();
+> +	return 0;
+> +}
 
-Thanks.
+It would be prudent to avoid using system_state.  People can change the
+point at which it transitions and can unexpectedly insert (or move)
+code to sites where system_state has new values, etc.  It was a bad
+idea.
 
--- 
-tejun
+It would be clearer and more robust to create your own little flag for
+this purpose and set to it true and false at the places where that is
+appropriate for this application.  It's just one more byte...
