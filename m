@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbZBTC2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZBTC3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbZBTC2s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 21:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZBTC2g
+	id S1753232AbZBTC3I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 21:29:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbZBTC2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 21:28:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50618 "EHLO mx1.redhat.com"
+	Thu, 19 Feb 2009 21:28:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50635 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751784AbZBTC2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 21:28:35 -0500
+	id S1755313AbZBTC2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 21:28:47 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,35 +19,34 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        "Metzger, Markus T" <markus.t.metzger@intel.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] forget_original_parent: do not abuse
-	child->ptrace_entry
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 11 February 2009 22:12:18 +0100 <20090211211218.GA16850@redhat.com>
-References: <20090211211218.GA16850@redhat.com>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20090220022823.9127AFC2F7@magilla.sf.frob.com>
-Date: Thu, 19 Feb 2009 18:28:23 -0800 (PST)
+Subject: Re: [PATCH 3/4] move exit_ptrace() from forget_original_parent() to
+	do_exit()
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 11 February 2009 22:12:21 +0100 <20090211211221.GA16857@redhat.com>
+References: <20090211211221.GA16857@redhat.com>
+X-Windows: dissatisfaction guaranteed.
+Message-Id: <20090220022832.CA587FC2F7@magilla.sf.frob.com>
+Date: Thu, 19 Feb 2009 18:28:32 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - rename ptrace_dead to dead_childs.
+> If we ever change exit_ptrace() to do the blocking calls, it makes
+> sense to move it after exit_signals().
 
-s/dead_childs/dead_children/
+I'm not sure I understand this comment.  I guess you just mean that if we
+block, we should be sure to do the exit_signals() pass-the-pending-buck
+work afterwards.  OK.  But I think we want it after exit_signals anyway so
+that ptrace_traceme() can check PF_EXITING (cf 1/4 review).
 
-> Actually, I don't understand why do we notify /sbin/init when we
-> reparent a zombie, probably it is better to reap it unconditionally.
-
-It is traditional behavior.  It gives the init implementation the option to
-report/log/analyze the details of abandoned zombies.  (Whether or not that
-really seems useful, there is no good reason to restrict the possibility.)
-
-> +/*
-> +* Any that need to be release_task'd are put on the @dead list.
-> + */
-
-Missing leading space on the second comment lien.
-
-Modulo those cosmetic things, ACK on this.
+Also, I think this patch should be the very last of the series.  The others
+reorganize code but we don't think they really reorder anything.  This one
+we thinks reorders things in a way that's fine, but it clearly does a big
+shift of the ordering of where ptrace cleanups happen relative to lots of
+other tear-down.  So that seems the most likely to cause some unimagined
+subtle regression down the line.  If it comes to a bisect that hits this
+patch, I think we'd rather be comparing one with all those tweaks to
+forget_original_parent merged in as the baseline than juggling their
+incremental effects after this one's big reordering.
 
 
 Thanks,
