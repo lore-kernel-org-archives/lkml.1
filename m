@@ -1,100 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbZBTRwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZBTRxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbZBTRwp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZBTRwg
+	id S1754031AbZBTRxK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZBTRwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:52:36 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41548 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbZBTRwf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:52:35 -0500
-Date: Fri, 20 Feb 2009 12:52:33 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/5] ftrace, x86: make kernel text writable only for
- conversions
-In-Reply-To: <20090220173035.GI24538@elte.hu>
-Message-ID: <alpine.DEB.2.00.0902201247220.13747@gandalf.stny.rr.com>
-References: <20090220163846.709775139@goodmis.org> <20090220164045.827841413@goodmis.org> <20090220173035.GI24538@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 20 Feb 2009 12:52:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38593 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752523AbZBTRwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 12:52:53 -0500
+Date: Fri, 20 Feb 2009 18:52:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull v2] x86 page fault checker
+Message-ID: <20090220175239.GM24538@elte.hu>
+References: <alpine.DEB.2.00.0902201012220.29217@gandalf.stny.rr.com> <20090220155036.GA3225@elte.hu> <alpine.DEB.2.00.0902201232510.13747@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902201232510.13747@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 20 Feb 2009, Ingo Molnar wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
+> Ingo,
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-> > index b55b4a7..5564cf3 100644
-> > --- a/arch/x86/include/asm/ftrace.h
-> > +++ b/arch/x86/include/asm/ftrace.h
-> > @@ -80,4 +80,14 @@ extern void return_to_handler(void);
-> >  #endif /* __ASSEMBLY__ */
-> >  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-> >  
-> > +#ifndef __ASSEMBLY__
-> > +#ifdef CONFIG_DEBUG_RODATA
-> > +void set_kernel_text_rw(void);
-> > +void set_kernel_text_ro(void);
-> > +#else
-> > +static inline void set_kernel_text_rw(void) { }
-> > +static inline void set_kernel_text_ro(void) { }
-> > +#endif
-> > +#endif /* __ASSEMBLY__ */
-> 
-> The proper place for this is where the other pagetable attribute 
-> functions reside: arch/x86/include/asm/cacheflush.h.
+> I added your suggestion, and even tested it out. I cherry picked
+> a branch to remove your split_large fix, added this output, and then
+> added the changes that triggered the original bug. I got a very nasty 
+> warning, but the kernel resumed fine.
 
-Heh, I put it there because I was not sure where the proper place should 
-go. I figured someone would comment and tell me where to put it ;-)
+Pulled into tip:x86/mm. It's not urgent in terms of .29 
+material, agreed?
 
-> 
-> > +/* used by ftrace */
-> > +void set_kernel_text_rw(void)
-> > +{
-> > +	unsigned long start = PFN_ALIGN(_text);
-> > +	unsigned long size = PFN_ALIGN(_etext) - start;
-> > +
-> > +	printk(KERN_INFO "Set kernel text: %lx - %lx for read write\n",
-> > +	       start, start+size);
-> > +
-> > +	set_pages_rw(virt_to_page(start), size >> PAGE_SHIFT);
-> 
-> Wont this be executed by every suspend/resume cycle? I'm not 
-> sure we want a KERN_INFO printout every time.
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/mm/fault.c:495 do_page_fault+0x2aa/0x890()
+> Hardware name: Precision WorkStation 470   
+> PMD has incorrect permission bits
+> [...]
 
-Yeah, agreed. My original thought was to allow a sysadmin to know when
-something was changing the kernel text to read/write. But it does fill
-up the logs quite a bit. I'll switch it to a pr_debug.
+Tested trees are much apprecitated! :-)
 
-> 
-> > +/* used by ftrace */
-> > +void set_kernel_text_rw(void)
-> 
-> i'd leave out the 'used by ftrace' bit - more uses might arise. 
-> How does kprobes get around readonly pages, it uses these APIs 
-> too, right?
-
-kprobes uses text_poke. text_poke uses vmap to create its own page table 
-pointers to the text memory, does the modification and then removes the 
-pointers. This is quite heavy weight and since ftrace needs to modify 10s 
-of thousands of areas, converting all of kernel text page tables is much 
-more efficient.
-
-Note, if kprobes did change the original page tables, then it too would 
-have hit the split_large_page bug too.
-
--- Steve
-
+	Ingo
