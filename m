@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZBTEux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZBTEyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbZBTEux (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 23:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZBTEup
+	id S1754856AbZBTEyO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 23:54:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZBTEx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 23:50:45 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:16526 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbZBTEuo (ORCPT
+	Thu, 19 Feb 2009 23:53:58 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:46827 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751697AbZBTEx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 23:50:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Td+z/KO9XTweKB1QAArFYyaI7xCM0/mQAaLnpCWnMiD6bCLv0ge6oEWulNzVMpTyID
-         wJcoOZ/5mUY9dJu0/757ZYjDVL2nv62iHLXeXw6gHlF9R/kF+YC/PMIaIVbyy9z68AEi
-         KUE9xdqnP/rpSSBQ/dolqcLs2jXRDM7Bi14Kc=
+	Thu, 19 Feb 2009 23:53:57 -0500
+Date: Fri, 20 Feb 2009 12:53:27 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: akpm@linux-foundation.org, penberg@cs.helsinki.fi, chas@cmf.nrl.navy.mil,
+       johnpol@2ka.mipt.ru, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/7] crypto: use kzfree()
+Message-ID: <20090220045327.GA17680@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20090219144713.192894dd.akpm@linux-foundation.org>
-References: <4d34a0a70902181905v20b0971ep80af49686b8b27dd@mail.gmail.com>
-	 <4d34a0a70902181923h75a34efx5ff9dc67d83830b7@mail.gmail.com>
-	 <20090219144713.192894dd.akpm@linux-foundation.org>
-Date: Fri, 20 Feb 2009 13:50:43 +0900
-Message-ID: <4d34a0a70902192050r461f7475k385d0b293386aa8@mail.gmail.com>
-Subject: Re: [PATCH] leds: Add BD2802GU LED driver
-From: Kim Kyuwon <chammoru@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net, kyungmin.park@samsung.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217184135.837159784@cmpxchg.org>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Johannes Weiner <hannes@cmpxchg.org> wrote:
+> Use kzfree() instead of memset() + kfree().
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
 
->
-> Your email client has wordwrapped the patch and has replaced all tabs
-> with eight spaces.  Please fix that up when resending.
-> Documentation/email-clients.txt has some gmail tips.
->
-> I had a go at cleaning it up, and found lots of code whcih was indented
-> with seven-spaces.  Perhaps this file was origininaly edited with
-> space-space-space-space indenting.  If so, please don't do that - use
-> hard tab characters.
->
-> Anyway, I ended up with soemthing reasonable-looking which actually
-> compiles.  Please check the result.
->
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-To make sure that this patch is well-formated, I sent this patch to myself
-first, and then forwarded it to the LKML. I think this 'forwarding' makes the
-problem worse. Sorry for the problem :)
-
-And thank you for reviewing this driver and giving me valuable comments.
-
-I will resend the patch as following Gmail tips in 'email-clients.txt'
-and yours.
-
-Regards,
-
+Thanks,
 -- 
-Kim Kyuwon
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
