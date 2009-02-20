@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZBTPsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbZBTPsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759614AbZBTPsx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 10:48:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758898AbZBTPrE
+	id S1759514AbZBTPsh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 10:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZBTPrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 10:47:04 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:35459 "EHLO
+	Fri, 20 Feb 2009 10:47:00 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:35456 "EHLO
 	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754102AbZBTPq4 (ORCPT
+	by vger.kernel.org with ESMTP id S1754600AbZBTPqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 10:46:56 -0500
+	Fri, 20 Feb 2009 10:46:55 -0500
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Alessandro Zummo <a.zummo@towertech.it>
 Cc: rtc-linux@googlegroups.com, Kyle McMartin <kyle@mcmartin.ca>,
@@ -18,613 +18,184 @@ Cc: rtc-linux@googlegroups.com, Kyle McMartin <kyle@mcmartin.ca>,
        linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
        linux-kernel@vger.kernel.org,
        Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH/RFC 5/5] rtc: Kill genrtc, as all its users have been converted to rtc-generic
-Date: Fri, 20 Feb 2009 16:46:49 +0100
-Message-Id: <1235144809-32468-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH/RFC 4/5] powerpc: Enable rtc-generic, and kill rtc-ppc
+Date: Fri, 20 Feb 2009 16:46:48 +0100
+Message-Id: <1235144809-32468-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1235144809-32468-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1235144809-32468-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1235144809-32468-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1235144809-32468-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1235144809-32468-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1235144809-32468-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Warning: genrtc and rtc-generic are not 100% userspace compatible:
-  - /dev/rtc provided by genrtc uses a misc character device (10:135)
-  - /dev/rtc provided by rtc-generic uses a dynamic character device
+Create the "rtc-generic" platform device if ppc_md.get_rtc_time is set.
+Kill rtc-ppc, as rtc-generic offers the same functionality in a more generic
+way.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/char/Kconfig  |   25 ---
- drivers/char/Makefile |    1 -
- drivers/char/genrtc.c |  527 -------------------------------------------------
- 3 files changed, 0 insertions(+), 553 deletions(-)
- delete mode 100644 drivers/char/genrtc.c
+ arch/powerpc/Kconfig       |    4 ++
+ arch/powerpc/kernel/time.c |   22 ++++++++++++++
+ drivers/rtc/Kconfig        |    8 -----
+ drivers/rtc/Makefile       |    1 -
+ drivers/rtc/rtc-ppc.c      |   69 --------------------------------------------
+ 5 files changed, 26 insertions(+), 78 deletions(-)
+ delete mode 100644 drivers/rtc/rtc-ppc.c
 
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 735bbe2..c0960a1 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -840,31 +840,6 @@ config JS_RTC
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called js-rtc.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 40b7981..82e47b0 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -85,6 +85,10 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default y if 64BIT
  
--config GEN_RTC
--	tristate "Generic /dev/rtc emulation"
--	depends on RTC!=y && !IA64 && !ARM && !M32R && !MIPS && !SPARC && !FRV && !S390 && !SUPERH && !AVR32 && !BLACKFIN
--	---help---
--	  If you say Y here and create a character special file /dev/rtc with
--	  major number 10 and minor number 135 using mknod ("man mknod"), you
--	  will get access to the real time clock (or hardware clock) built
--	  into your computer.
++config ARCH_HAS_GENERIC_RTC
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index c956403..616c7d3 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -1127,3 +1127,25 @@ void div128_by_32(u64 dividend_high, u64 dividend_low,
+ 	dr->result_low  = ((u64)y << 32) + z;
+ 
+ }
++
++static struct platform_device rtc_generic_dev = {
++	.name = "rtc-generic",
++	.id = -1,
++};
++
++static int __init rtc_init(void)
++{
++	int ret;
++
++	if (!ppc_md.get_rtc_time)
++		return -ENODEV;
++
++	ret = platform_device_register(&rtc_generic_dev);
++	if (ret < 0)
++		pr_err("Unable to register rtc device...\n");
++
++	/* not necessarily an error */
++	return 0;
++}
++
++module_init(rtc_init);
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 3e58182..9964a72 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -685,14 +685,6 @@ config RTC_DRV_GENERIC
+ 	  RTC abstraction. If you do not know what you are doing, you should
+ 	  just say Y.
+ 
+-config RTC_DRV_PPC
+-       tristate "PowerPC machine dependent RTC support"
+-       depends on PPC
+-       help
+-	 The PowerPC kernel has machine-specific functions for accessing
+-	 the RTC. This exposes that functionality through the generic RTC
+-	 class.
 -
--	  It reports status information via the file /proc/driver/rtc and its
--	  behaviour is set by various ioctls on /dev/rtc. If you enable the
--	  "extended RTC operation" below it will also provide an emulation
--	  for RTC_UIE which is required by some programs and may improve
--	  precision in some cases.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called genrtc.
--
--config GEN_RTC_X
--	bool "Extended RTC operation"
--	depends on GEN_RTC
--	help
--	  Provides an emulation for RTC_UIE which is required by some programs
--	  and may improve precision of the generic RTC support in some cases.
--
- config EFI_RTC
- 	bool "EFI Real Time Clock Services"
- 	depends on IA64
-diff --git a/drivers/char/Makefile b/drivers/char/Makefile
-index 565e473..c9432f0 100644
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -75,7 +75,6 @@ obj-$(CONFIG_APPLICOM)		+= applicom.o
- obj-$(CONFIG_SONYPI)		+= sonypi.o
- obj-$(CONFIG_RTC)		+= rtc.o
- obj-$(CONFIG_HPET)		+= hpet.o
--obj-$(CONFIG_GEN_RTC)		+= genrtc.o
- obj-$(CONFIG_EFI_RTC)		+= efirtc.o
- obj-$(CONFIG_DS1302)		+= ds1302.o
- obj-$(CONFIG_XILINX_HWICAP)	+= xilinx_hwicap/
-diff --git a/drivers/char/genrtc.c b/drivers/char/genrtc.c
+ config RTC_DRV_PXA
+        tristate "PXA27x/PXA3xx"
+        depends on ARCH_PXA
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 9c18a01..bd209a5 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -56,7 +56,6 @@ obj-$(CONFIG_RTC_DRV_PCF8583)	+= rtc-pcf8583.o
+ obj-$(CONFIG_RTC_DRV_PL030)	+= rtc-pl030.o
+ obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
+ obj-$(CONFIG_RTC_DRV_GENERIC)	+= rtc-generic.o
+-obj-$(CONFIG_RTC_DRV_PPC)	+= rtc-ppc.o
+ obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
+ obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
+ obj-$(CONFIG_RTC_DRV_RS5C313)	+= rtc-rs5c313.o
+diff --git a/drivers/rtc/rtc-ppc.c b/drivers/rtc/rtc-ppc.c
 deleted file mode 100644
-index aac0985..0000000
---- a/drivers/char/genrtc.c
+index c8e97e2..0000000
+--- a/drivers/rtc/rtc-ppc.c
 +++ /dev/null
-@@ -1,527 +0,0 @@
+@@ -1,69 +0,0 @@
 -/*
-- *	Real Time Clock interface for
-- *		- q40 and other m68k machines,
-- *		- HP PARISC machines
-- *		- PowerPC machines
-- *      emulate some RTC irq capabilities in software
+- * RTC driver for ppc_md RTC functions
 - *
-- *      Copyright (C) 1999 Richard Zidlicky
+- * © 2007 Red Hat, Inc.
 - *
-- *	based on Paul Gortmaker's rtc.c device and
-- *           Sam Creasey Generic rtc driver
+- * Author: David Woodhouse <dwmw2@infradead.org>
 - *
-- *	This driver allows use of the real time clock (built into
-- *	nearly all computers) from user space. It exports the /dev/rtc
-- *	interface supporting various ioctl() and also the /proc/driver/rtc
-- *	pseudo-file for status information.
-- *
-- *	The ioctls can be used to set the interrupt behaviour where
-- *	supported.
-- *
-- *	The /dev/rtc interface will block on reads until an interrupt
-- *	has been received. If a RTC interrupt has already happened,
-- *	it will output an unsigned long and then block. The output value
-- *	contains the interrupt status in the low byte and the number of
-- *	interrupts since the last read in the remaining high bytes. The
-- *	/dev/rtc interface can also be used with the select(2) call.
-- *
-- *	This program is free software; you can redistribute it and/or
-- *	modify it under the terms of the GNU General Public License
-- *	as published by the Free Software Foundation; either version
-- *	2 of the License, or (at your option) any later version.
-- *
--
-- *      1.01 fix for 2.3.X                    rz@linux-m68k.org
-- *      1.02 merged with code from genrtc.c   rz@linux-m68k.org
-- *      1.03 make it more portable            zippel@linux-m68k.org
-- *      1.04 removed useless timer code       rz@linux-m68k.org
-- *      1.05 portable RTC_UIE emulation       rz@linux-m68k.org
-- *      1.06 set_rtc_time can return an error trini@kernel.crashing.org
-- *      1.07 ported to HP PARISC (hppa)	      Helge Deller <deller@gmx.de>
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
 - */
 -
--#define RTC_VERSION	"1.07"
 -
 -#include <linux/module.h>
--#include <linux/errno.h>
--#include <linux/miscdevice.h>
--#include <linux/fcntl.h>
--
+-#include <linux/err.h>
 -#include <linux/rtc.h>
--#include <linux/init.h>
--#include <linux/poll.h>
--#include <linux/proc_fs.h>
--#include <linux/smp_lock.h>
--#include <linux/workqueue.h>
+-#include <linux/platform_device.h>
+-#include <asm/machdep.h>
 -
--#include <asm/uaccess.h>
--#include <asm/system.h>
--#include <asm/rtc.h>
--
--/*
-- *	We sponge a minor off of the misc major. No need slurping
-- *	up another valuable major dev number for this. If you add
-- *	an ioctl, make sure you don't conflict with SPARC's RTC
-- *	ioctls.
-- */
--
--static DECLARE_WAIT_QUEUE_HEAD(gen_rtc_wait);
--
--/*
-- *	Bits in gen_rtc_status.
-- */
--
--#define RTC_IS_OPEN		0x01	/* means /dev/rtc is in use	*/
--
--static unsigned char gen_rtc_status;	/* bitmapped status byte.	*/
--static unsigned long gen_rtc_irq_data;	/* our output to the world	*/
--
--/* months start at 0 now */
--static unsigned char days_in_mo[] =
--{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
--
--static int irq_active;
--
--#ifdef CONFIG_GEN_RTC_X
--static struct work_struct genrtc_task;
--static struct timer_list timer_task;
--
--static unsigned int oldsecs;
--static int lostint;
--static unsigned long tt_exp;
--
--static void gen_rtc_timer(unsigned long data);
--
--static volatile int stask_active;              /* schedule_work */
--static volatile int ttask_active;              /* timer_task */
--static int stop_rtc_timers;                    /* don't requeue tasks */
--static DEFINE_SPINLOCK(gen_rtc_lock);
--
--static void gen_rtc_interrupt(unsigned long arg);
--
--/*
-- * Routine to poll RTC seconds field for change as often as possible,
-- * after first RTC_UIE use timer to reduce polling
-- */
--static void genrtc_troutine(struct work_struct *work)
+-static int ppc_rtc_read_time(struct device *dev, struct rtc_time *tm)
 -{
--	unsigned int tmp = get_rtc_ss();
--	
--	if (stop_rtc_timers) {
--		stask_active = 0;
--		return;
--	}
--
--	if (oldsecs != tmp){
--		oldsecs = tmp;
--
--		timer_task.function = gen_rtc_timer;
--		timer_task.expires = jiffies + HZ - (HZ/10);
--		tt_exp=timer_task.expires;
--		ttask_active=1;
--		stask_active=0;
--		add_timer(&timer_task);
--
--		gen_rtc_interrupt(0);
--	} else if (schedule_work(&genrtc_task) == 0)
--		stask_active = 0;
--}
--
--static void gen_rtc_timer(unsigned long data)
--{
--	lostint = get_rtc_ss() - oldsecs ;
--	if (lostint<0) 
--		lostint = 60 - lostint;
--	if (time_after(jiffies, tt_exp))
--		printk(KERN_INFO "genrtc: timer task delayed by %ld jiffies\n",
--		       jiffies-tt_exp);
--	ttask_active=0;
--	stask_active=1;
--	if ((schedule_work(&genrtc_task) == 0))
--		stask_active = 0;
--}
--
--/* 
-- * call gen_rtc_interrupt function to signal an RTC_UIE,
-- * arg is unused.
-- * Could be invoked either from a real interrupt handler or
-- * from some routine that periodically (eg 100HZ) monitors
-- * whether RTC_SECS changed
-- */
--static void gen_rtc_interrupt(unsigned long arg)
--{
--	/*  We store the status in the low byte and the number of
--	 *	interrupts received since the last read in the remainder
--	 *	of rtc_irq_data.  */
--
--	gen_rtc_irq_data += 0x100;
--	gen_rtc_irq_data &= ~0xff;
--	gen_rtc_irq_data |= RTC_UIE;
--
--	if (lostint){
--		printk("genrtc: system delaying clock ticks?\n");
--		/* increment count so that userspace knows something is wrong */
--		gen_rtc_irq_data += ((lostint-1)<<8);
--		lostint = 0;
--	}
--
--	wake_up_interruptible(&gen_rtc_wait);
--}
--
--/*
-- *	Now all the various file operations that we export.
-- */
--static ssize_t gen_rtc_read(struct file *file, char __user *buf,
--			size_t count, loff_t *ppos)
--{
--	unsigned long data;
--	ssize_t retval;
--
--	if (count != sizeof (unsigned int) && count != sizeof (unsigned long))
--		return -EINVAL;
--
--	if (file->f_flags & O_NONBLOCK && !gen_rtc_irq_data)
--		return -EAGAIN;
--
--	retval = wait_event_interruptible(gen_rtc_wait,
--			(data = xchg(&gen_rtc_irq_data, 0)));
--	if (retval)
--		goto out;
--
--	/* first test allows optimizer to nuke this case for 32-bit machines */
--	if (sizeof (int) != sizeof (long) && count == sizeof (unsigned int)) {
--		unsigned int uidata = data;
--		retval = put_user(uidata, (unsigned int __user *)buf) ?:
--			sizeof(unsigned int);
--	}
--	else {
--		retval = put_user(data, (unsigned long __user *)buf) ?:
--			sizeof(unsigned long);
--	}
--out:
--	return retval;
--}
--
--static unsigned int gen_rtc_poll(struct file *file,
--				 struct poll_table_struct *wait)
--{
--	poll_wait(file, &gen_rtc_wait, wait);
--	if (gen_rtc_irq_data != 0)
--		return POLLIN | POLLRDNORM;
+-	ppc_md.get_rtc_time(tm);
 -	return 0;
 -}
 -
--#endif
--
--/*
-- * Used to disable/enable interrupts, only RTC_UIE supported
-- * We also clear out any old irq data after an ioctl() that
-- * meddles with the interrupt enable/disable bits.
-- */
--
--static inline void gen_clear_rtc_irq_bit(unsigned char bit)
+-static int ppc_rtc_set_time(struct device *dev, struct rtc_time *tm)
 -{
--#ifdef CONFIG_GEN_RTC_X
--	stop_rtc_timers = 1;
--	if (ttask_active){
--		del_timer_sync(&timer_task);
--		ttask_active = 0;
--	}
--	while (stask_active)
--		schedule();
--
--	spin_lock(&gen_rtc_lock);
--	irq_active = 0;
--	spin_unlock(&gen_rtc_lock);
--#endif
+-	return ppc_md.set_rtc_time(tm);
 -}
 -
--static inline int gen_set_rtc_irq_bit(unsigned char bit)
--{
--#ifdef CONFIG_GEN_RTC_X
--	spin_lock(&gen_rtc_lock);
--	if ( !irq_active ) {
--		irq_active = 1;
--		stop_rtc_timers = 0;
--		lostint = 0;
--		INIT_WORK(&genrtc_task, genrtc_troutine);
--		oldsecs = get_rtc_ss();
--		init_timer(&timer_task);
--
--		stask_active = 1;
--		if (schedule_work(&genrtc_task) == 0){
--			stask_active = 0;
--		}
--	}
--	spin_unlock(&gen_rtc_lock);
--	gen_rtc_irq_data = 0;
--	return 0;
--#else
--	return -EINVAL;
--#endif
--}
--
--static int gen_rtc_ioctl(struct inode *inode, struct file *file,
--			 unsigned int cmd, unsigned long arg)
--{
--	struct rtc_time wtime;
--	struct rtc_pll_info pll;
--	void __user *argp = (void __user *)arg;
--
--	switch (cmd) {
--
--	case RTC_PLL_GET:
--	    if (get_rtc_pll(&pll))
--	 	    return -EINVAL;
--	    else
--		    return copy_to_user(argp, &pll, sizeof pll) ? -EFAULT : 0;
--
--	case RTC_PLL_SET:
--		if (!capable(CAP_SYS_TIME))
--			return -EACCES;
--		if (copy_from_user(&pll, argp, sizeof(pll)))
--			return -EFAULT;
--	    return set_rtc_pll(&pll);
--
--	case RTC_UIE_OFF:	/* disable ints from RTC updates.	*/
--		gen_clear_rtc_irq_bit(RTC_UIE);
--		return 0;
--
--	case RTC_UIE_ON:	/* enable ints for RTC updates.	*/
--	        return gen_set_rtc_irq_bit(RTC_UIE);
--
--	case RTC_RD_TIME:	/* Read the time/date from RTC	*/
--		/* this doesn't get week-day, who cares */
--		memset(&wtime, 0, sizeof(wtime));
--		get_rtc_time(&wtime);
--
--		return copy_to_user(argp, &wtime, sizeof(wtime)) ? -EFAULT : 0;
--
--	case RTC_SET_TIME:	/* Set the RTC */
--	    {
--		int year;
--		unsigned char leap_yr;
--
--		if (!capable(CAP_SYS_TIME))
--			return -EACCES;
--
--		if (copy_from_user(&wtime, argp, sizeof(wtime)))
--			return -EFAULT;
--
--		year = wtime.tm_year + 1900;
--		leap_yr = ((!(year % 4) && (year % 100)) ||
--			   !(year % 400));
--
--		if ((wtime.tm_mon < 0 || wtime.tm_mon > 11) || (wtime.tm_mday < 1))
--			return -EINVAL;
--
--		if (wtime.tm_mday < 0 || wtime.tm_mday >
--		    (days_in_mo[wtime.tm_mon] + ((wtime.tm_mon == 1) && leap_yr)))
--			return -EINVAL;
--
--		if (wtime.tm_hour < 0 || wtime.tm_hour >= 24 ||
--		    wtime.tm_min < 0 || wtime.tm_min >= 60 ||
--		    wtime.tm_sec < 0 || wtime.tm_sec >= 60)
--			return -EINVAL;
--
--		return set_rtc_time(&wtime);
--	    }
--	}
--
--	return -EINVAL;
--}
--
--/*
-- *	We enforce only one user at a time here with the open/close.
-- *	Also clear the previous interrupt data on an open, and clean
-- *	up things on a close.
-- */
--
--static int gen_rtc_open(struct inode *inode, struct file *file)
--{
--	lock_kernel();
--	if (gen_rtc_status & RTC_IS_OPEN) {
--		unlock_kernel();
--		return -EBUSY;
--	}
--
--	gen_rtc_status |= RTC_IS_OPEN;
--	gen_rtc_irq_data = 0;
--	irq_active = 0;
--	unlock_kernel();
--
--	return 0;
--}
--
--static int gen_rtc_release(struct inode *inode, struct file *file)
--{
--	/*
--	 * Turn off all interrupts once the device is no longer
--	 * in use and clear the data.
--	 */
--
--	gen_clear_rtc_irq_bit(RTC_PIE|RTC_AIE|RTC_UIE);
--
--	gen_rtc_status &= ~RTC_IS_OPEN;
--	return 0;
--}
--
--
--#ifdef CONFIG_PROC_FS
--
--/*
-- *	Info exported via "/proc/driver/rtc".
-- */
--
--static int gen_rtc_proc_output(char *buf)
--{
--	char *p;
--	struct rtc_time tm;
--	unsigned int flags;
--	struct rtc_pll_info pll;
--
--	p = buf;
--
--	flags = get_rtc_time(&tm);
--
--	p += sprintf(p,
--		     "rtc_time\t: %02d:%02d:%02d\n"
--		     "rtc_date\t: %04d-%02d-%02d\n"
--		     "rtc_epoch\t: %04u\n",
--		     tm.tm_hour, tm.tm_min, tm.tm_sec,
--		     tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, 1900);
--
--	tm.tm_hour = tm.tm_min = tm.tm_sec = 0;
--
--	p += sprintf(p, "alarm\t\t: ");
--	if (tm.tm_hour <= 24)
--		p += sprintf(p, "%02d:", tm.tm_hour);
--	else
--		p += sprintf(p, "**:");
--
--	if (tm.tm_min <= 59)
--		p += sprintf(p, "%02d:", tm.tm_min);
--	else
--		p += sprintf(p, "**:");
--
--	if (tm.tm_sec <= 59)
--		p += sprintf(p, "%02d\n", tm.tm_sec);
--	else
--		p += sprintf(p, "**\n");
--
--	p += sprintf(p,
--		     "DST_enable\t: %s\n"
--		     "BCD\t\t: %s\n"
--		     "24hr\t\t: %s\n"
--		     "square_wave\t: %s\n"
--		     "alarm_IRQ\t: %s\n"
--		     "update_IRQ\t: %s\n"
--		     "periodic_IRQ\t: %s\n"
--		     "periodic_freq\t: %ld\n"
--		     "batt_status\t: %s\n",
--		     (flags & RTC_DST_EN) ? "yes" : "no",
--		     (flags & RTC_DM_BINARY) ? "no" : "yes",
--		     (flags & RTC_24H) ? "yes" : "no",
--		     (flags & RTC_SQWE) ? "yes" : "no",
--		     (flags & RTC_AIE) ? "yes" : "no",
--		     irq_active ? "yes" : "no",
--		     (flags & RTC_PIE) ? "yes" : "no",
--		     0L /* freq */,
--		     (flags & RTC_BATT_BAD) ? "bad" : "okay");
--	if (!get_rtc_pll(&pll))
--	    p += sprintf(p,
--			 "PLL adjustment\t: %d\n"
--			 "PLL max +ve adjustment\t: %d\n"
--			 "PLL max -ve adjustment\t: %d\n"
--			 "PLL +ve adjustment factor\t: %d\n"
--			 "PLL -ve adjustment factor\t: %d\n"
--			 "PLL frequency\t: %ld\n",
--			 pll.pll_value,
--			 pll.pll_max,
--			 pll.pll_min,
--			 pll.pll_posmult,
--			 pll.pll_negmult,
--			 pll.pll_clock);
--	return p - buf;
--}
--
--static int gen_rtc_read_proc(char *page, char **start, off_t off,
--			     int count, int *eof, void *data)
--{
--	int len = gen_rtc_proc_output (page);
--        if (len <= off+count) *eof = 1;
--	*start = page + off;
--	len -= off;
--        if (len>count) len = count;
--        if (len<0) len = 0;
--	return len;
--}
--
--static int __init gen_rtc_proc_init(void)
--{
--	struct proc_dir_entry *r;
--
--	r = create_proc_read_entry("driver/rtc", 0, NULL, gen_rtc_read_proc, NULL);
--	if (!r)
--		return -ENOMEM;
--	return 0;
--}
--#else
--static inline int gen_rtc_proc_init(void) { return 0; }
--#endif /* CONFIG_PROC_FS */
--
--
--/*
-- *	The various file operations we support.
-- */
--
--static const struct file_operations gen_rtc_fops = {
--	.owner		= THIS_MODULE,
--#ifdef CONFIG_GEN_RTC_X
--	.read		= gen_rtc_read,
--	.poll		= gen_rtc_poll,
--#endif
--	.ioctl		= gen_rtc_ioctl,
--	.open		= gen_rtc_open,
--	.release	= gen_rtc_release,
+-static const struct rtc_class_ops ppc_rtc_ops = {
+-	.set_time = ppc_rtc_set_time,
+-	.read_time = ppc_rtc_read_time,
 -};
 -
--static struct miscdevice rtc_gen_dev =
+-static struct rtc_device *rtc;
+-static struct platform_device *ppc_rtc_pdev;
+-
+-static int __init ppc_rtc_init(void)
 -{
--	.minor		= RTC_MINOR,
--	.name		= "rtc",
--	.fops		= &gen_rtc_fops,
--};
+-	if (!ppc_md.get_rtc_time || !ppc_md.set_rtc_time)
+-		return -ENODEV;
 -
--static int __init rtc_generic_init(void)
--{
--	int retval;
+-	ppc_rtc_pdev = platform_device_register_simple("ppc-rtc", 0, NULL, 0);
+-	if (IS_ERR(ppc_rtc_pdev))
+-		return PTR_ERR(ppc_rtc_pdev);
 -
--	printk(KERN_INFO "Generic RTC Driver v%s\n", RTC_VERSION);
--
--	retval = misc_register(&rtc_gen_dev);
--	if (retval < 0)
--		return retval;
--
--	retval = gen_rtc_proc_init();
--	if (retval) {
--		misc_deregister(&rtc_gen_dev);
--		return retval;
+-	rtc = rtc_device_register("ppc_md", &ppc_rtc_pdev->dev,
+-				  &ppc_rtc_ops, THIS_MODULE);
+-	if (IS_ERR(rtc)) {
+-		platform_device_unregister(ppc_rtc_pdev);
+-		return PTR_ERR(rtc);
 -	}
 -
 -	return 0;
 -}
 -
--static void __exit rtc_generic_exit(void)
+-static void __exit ppc_rtc_exit(void)
 -{
--	remove_proc_entry ("driver/rtc", NULL);
--	misc_deregister(&rtc_gen_dev);
+-	rtc_device_unregister(rtc);
+-	platform_device_unregister(ppc_rtc_pdev);
 -}
 -
+-module_init(ppc_rtc_init);
+-module_exit(ppc_rtc_exit);
 -
--module_init(rtc_generic_init);
--module_exit(rtc_generic_exit);
--
--MODULE_AUTHOR("Richard Zidlicky");
 -MODULE_LICENSE("GPL");
--MODULE_ALIAS_MISCDEV(RTC_MINOR);
+-MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
+-MODULE_DESCRIPTION("Generic RTC class driver for PowerPC");
 -- 
 1.6.0.4
 
