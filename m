@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbZBTSNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbZBTSNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbZBTSNR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 13:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZBTSNA
+	id S1753060AbZBTSNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 13:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZBTSNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 13:13:00 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:3140 "EHLO
+	Fri, 20 Feb 2009 13:13:01 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:3141 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752660AbZBTSM7 (ORCPT
+	by vger.kernel.org with ESMTP id S1752665AbZBTSM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Feb 2009 13:12:59 -0500
-Date: Fri, 20 Feb 2009 20:33:28 +0300
+Date: Fri, 20 Feb 2009 20:33:08 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/13] sdhci: Add quirk for controllers that need small
-	delays for PIO
-Message-ID: <20090220173328.GJ7583@oksana.dev.rtsoft.ru>
+Subject: [PATCH 01/13] sdhci: Add quirk for controllers with no end-of-busy
+	IRQ
+Message-ID: <20090220173308.GA7583@oksana.dev.rtsoft.ru>
 References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -30,42 +30,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Small udelay is needed to make eSDHC work in PIO mode. Without
-the delay reading causes endless interrupt storm, and writing
-corrupts data. The first guess would be that we must wait for
-some bit in some register, but I didn't find any reliable bits
-that change before and after the delay.
+From: Ben Dooks <ben-linux@fluff.org>
 
+The Samsung SDHCI (and FSL eSDHC) controller block seems to fail
+to generate an INT_DATA_END after the transfer has completed and
+the bus busy state finished.
+
+Changes in e809517f6fa5803a5a1cd56026f0e2190fc13d5c to use the
+new busy method are the cause of the behaviour change.
+
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |    3 +++
+ drivers/mmc/host/sdhci.c |    5 ++++-
  drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ 2 files changed, 6 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index f63db25..eff615d 100644
+index 6b2d1f9..0a1f5c5 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -391,6 +391,9 @@ static void sdhci_transfer_pio(struct sdhci_host *host)
- 		mask = ~0;
- 
- 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
-+		if (host->quirks & SDHCI_QUIRK_PIO_NEEDS_DELAY)
-+			udelay(100);
+@@ -1291,8 +1291,11 @@ static void sdhci_cmd_irq(struct sdhci_host *host, u32 intmask)
+ 		if (host->cmd->data)
+ 			DBG("Cannot wait for busy signal when also "
+ 				"doing a data transfer");
+-		else
++		else if (!(host->quirks & SDHCI_QUIRK_NO_BUSY_IRQ))
+ 			return;
 +
- 		if (host->data->flags & MMC_DATA_READ)
- 			sdhci_read_block_pio(host);
- 		else
++		/* The controller does not support the end-of-busy IRQ,
++		 * fall through and take the SDHCI_INT_RESPONSE */
+ 	}
+ 
+ 	if (intmask & SDHCI_INT_RESPONSE)
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 63b436a..44c820a 100644
+index 3efba23..2d08dd4 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -227,6 +227,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
- /* Controller has nonstandard clock management */
- #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<19)
-+/* Controller does not like fast PIO transfers */
-+#define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<20)
+@@ -210,6 +210,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_BROKEN_SMALL_PIO			(1<<13)
+ /* Controller supports high speed but doesn't have the caps bit set */
+ #define SDHCI_QUIRK_FORCE_HIGHSPEED			(1<<14)
++/* Controller does not provide transfer-complete interrupt when not busy */
++#define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<15)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
