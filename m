@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZBTJmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZBTJn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZBTJmI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 04:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbZBTJlz
+	id S1755954AbZBTJn4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 04:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZBTJnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 04:41:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50037 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753915AbZBTJly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 04:41:54 -0500
-Date: Fri, 20 Feb 2009 10:41:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: enable x2apic early at the first point
-Message-ID: <20090220094123.GJ24555@elte.hu>
-References: <499DD40F.40102@kernel.org> <1235081612.14523.23.camel@vayu> <499DE05A.40804@kernel.org> <1235086118.14523.40.camel@vayu> <20090220083528.GB24555@elte.hu> <20090220090912.GA4632@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220090912.GA4632@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 20 Feb 2009 04:43:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34646 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753915AbZBTJns (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 04:43:48 -0500
+Date: Fri, 20 Feb 2009 01:43:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: airlied@linux.ie, benh@kernel.crashing.org,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drm: Preserve SHMLBA bits in hash key for _DRM_SHM
+ mappings.
+Message-Id: <20090220014334.c3d66c6b.akpm@linux-foundation.org>
+In-Reply-To: <20090220.005414.260531522.davem@davemloft.net>
+References: <20090218.154102.122148224.davem@davemloft.net>
+	<20090219152726.9551fb7a.akpm@linux-foundation.org>
+	<20090220.005414.260531522.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Feb 2009 00:54:14 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 
-* Gleb Natapov <gleb@redhat.com> wrote:
-
-> > > I will post couple of patches, which revert's Gleb's patch 
-> > > and another fix for the early boot failure issue, 
-> > > tomorrow.
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Thu, 19 Feb 2009 15:27:26 -0800
 > 
-> If you'll revert my patch it will not be possible to use 
-> x2apic in KVM (at least without KVM implementing interrupt 
-> remapping which is unneeded otherwise) and x2apic interface is 
-> much better for vitalization. Instead of reverting the patch 
-> it will be better to add check if x2apic can be used without 
-> intr-remmaping (all CPUs belong to cluster 0) or allow 
-> enabling of x2apic without IR if running as a guest.
+> > eg:
+> > 
+> > arch/xtensa/include/asm/shmparam.h
+> > #define SHMLBA  ((PAGE_SIZE > DCACHE_WAY_SIZE)? PAGE_SIZE : DCACHE_WAY_SIZE)
+> > 
+> > 
+> > But including linux/shm.h here seems a bit silly.   We'll see..
+> 
+> If DRM even builds on XTENSA, let alone is usable there, I'll
+> buy you a lollipop.
 
-yep, that would be required - because your patch can break real 
-systems right now. Mind sending me a fix for it?
+heh, OK.  But the risk is there.
 
-I've applied Yinghai's fix as well, so please base it on latest 
-tip:master.
+<tries to test sparc32 allmodconfig>
 
-	Ingo
+scripts/mod/empty.c:1: error: -m64 is not supported by this configuration
+scripts/mod/empty.c:1: error: -mlong-double-64 not allowed with -m64
+scripts/mod/empty.c:1: error: -mcmodel= is not supported on 32 bit systems
+
+<retires hurt>
+
