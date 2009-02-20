@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZBTC4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZBTC7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbZBTC4s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 21:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZBTC4h
+	id S1755549AbZBTC7I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 21:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZBTC6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 21:56:37 -0500
-Received: from web33507.mail.mud.yahoo.com ([68.142.206.156]:40491 "HELO
-	web33507.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755430AbZBTC4g (ORCPT
+	Thu, 19 Feb 2009 21:58:55 -0500
+Received: from web33506.mail.mud.yahoo.com ([68.142.206.155]:34493 "HELO
+	web33506.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752724AbZBTC6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 21:56:36 -0500
+	Thu, 19 Feb 2009 21:58:54 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=KmMAxReQ/G6ujE0zYl99EpSk7vpZxDHmToA4QzC9TKlgApr7x0HMMjjmNuQF24a0JW/OmPSh6loNE0j8fTLgWP0AuO43uKsEpV8e1fiJP9LmKuH0+YzKFGH1cuIS6eZ6EMvTImX9q2CC9LRfEjQdxw38dPAGsISDawBXhz4xZ4c=;
-X-YMail-OSG: wHNyU8AVM1noKIt24B2oFFlBRbx2xWK3FtMeUtPpGpC1VwqYvpjwK8c9HZI9tuP011VjXP4IU8OjwfrZBu9CASzDD5wvWc9u34g9x3XAcjs97IHHhLEWUn2JuopXXPE4cWAJaI6hZvAVb0cHHgOJDtm5fdEpvoGNlIJrNE6iKZj16h8W1eqelaaFh4sE
+  b=o3OplM8NrpCaK0xPwW+6j+L4jan4jIYabucdtlctVZ5THfCD6aLN/KCdPwMYyIBFQuhC3n7MSEw//bePcUb95Skx4828u6JuZQoqxNpQA39XGrVEMDAIOzMWg71kG0qMul5zYRKNBDjpTWhkjk0BR/xf0VnMJgxdSK2gSnOaYn0=;
+X-YMail-OSG: xySshyQVM1lixoej_kvM9jszQFAfP4629mZKzlGltjT9.eyVcED1SctoOk0s6YthvlBnVjC7BNYrvfVN7UK1SyOVQCos7ENytwN8gPTkjPvI0G2ia19WSHvkmGe2w0Qwhw2x5vJ26Cb94bPHK3bsBYLOejqwvhPjyOJu6afb.js1H4wUtzOGcoxg3JZc
 X-Mailer: YahooMailWebService/0.7.260.1
-Date: Thu, 19 Feb 2009 18:49:54 -0800 (PST)
+Date: Thu, 19 Feb 2009 18:52:14 -0800 (PST)
 From: Nick Levinson <nick_levinson@yahoo.com>
-Subject: suggest shutdown process end with on-screen message
+Subject: suggest allowing comments in current syslog and other logs
 To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <274106.42702.qm@web33507.mail.mud.yahoo.com>
+Message-ID: <752772.60434.qm@web33506.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During shutdown, the screen goes uniformly dark. It's easy to confuse it with already being off. Turning power off prematurely can crash Linux for the next startup. I don't know if it's premature once the screen has reached uniform darkness, and I'm not willing to take the chance of trying it out, since recovering from a crash can be a looooooooooong process.
+An unusual series of log events might be readily explainable by root or another user, the best time to do so might be shortly after the time of the events, and the best place to do so might be in the log.
 
-Compare to old Win95a (and maybe new Win), which displays a message telling me it's now safe to turn the computer's power off.
+Which other user/s should be allowed to comment directly in the log should be up to root. Nonroot users authorized to comment could be one or more, or all, human users and/or one or more, or all, nonhuman users.
 
-Suggestion: Create a configurable text message (no special font or artwork) that displays when the screen becomes uniformly dark and stays up till it's safe to power down. Let us decide what message we want, so we can edit it to be compatible with our hardware setup, such as "When this message goes away, you may turn the power off.", "Now in the final stages of shutting down. When this message disappears, implement Procedure 3J75.2 and call your CIO at home.", or simply "x" or whatever.
+A facility to add a comment to the current position or a prior position in the log should be available, with the comment necessarily date-time stamped and commenter-signed. Prior positions should be any in the current log that is related to an event under the commenter's control, so a nonroot user should not be able to comment in a root-generated event. Or a comment-only entry should be insertable between other events regardless of whose events they were.
 
-If no text can be displayed then, perhaps allow us to post a message just before text is impossible, and to have that message stay up for a configurable number of seconds, e.g., for 20 seconds, "When this message disappears in 20 seconds or less, wait another 15 seconds for the screen to go from dark to black before turning power off."
+The facility should allow root to scroll back in the log, so root can find the appropriate location to comment. A nonroot user should only be able to specify the date and time where the comment should be positioned within the log without being able to read the log; if such a date and time do not exist in the log, the facility should have a root-specified protocol for positioning the comment (e.g., at the beginning of entries for the date) without revealing the location or the use of the protocol to the user.
 
-Reboot should be treated separately. Perhaps a configurable message could announce "Rebooting under way." or "Keep power on; awaiting reboot within 1 minute."
+A root-editable library of template comments should be available, to allow standardizing. A user should be able to maintain their own editable set or template of comments without knowledge of root's template; root should be able to supply an initial template to a user.
 
-My current Linux laptop does not need its power turned off, but I unplug the power cable and might not have a functioning battery at that moment.
+A comment by root only should be cleanly removable, to leave no trace of its presence. A comment by any other user should be removable but with a trace of the prior comment necessarily remaining, unless root wants to authorize or perform clean removal.
 
-This is not needed for lean distros. It is needed as Linux moves toward more friendliness for wider user bases.
+One admission: I don't have the requisite programming skill, so I'd like to put the idea out for others to take.
 
-I'm running Linux Fedora Core 4 with kernel <2.6.11-1.1369_FC4>.
+What do you think?
 
-Thanks.
+Thank you.
 
 -- 
 Nick
