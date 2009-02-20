@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZBTNAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbZBTNBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbZBTNAe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 08:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZBTNAX
+	id S1757937AbZBTNBw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 08:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZBTNBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 08:00:23 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:58316 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754283AbZBTNAW (ORCPT
+	Fri, 20 Feb 2009 08:01:43 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:52773 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbZBTNBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 08:00:22 -0500
-Date: Fri, 20 Feb 2009 18:30:05 +0530
+	Fri, 20 Feb 2009 08:01:43 -0500
+Date: Fri, 20 Feb 2009 18:31:31 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
        a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
        mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
        vatsa@linux.vnet.ibm.com, arjan@infradead.org
-Subject: [RFC PATCH 3/4] timers: identifying the existing pinned hrtimers.
-Message-ID: <20090220130005.GC19762@linux.vnet.ibm.com>
+Subject: [RFC PATCH 4/4] timers: logic to enable timer migration.
+Message-ID: <20090220130131.GD19762@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 Mail-Followup-To: linux-kernel@vger.kernel.org,
 	linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
@@ -36,86 +36,82 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-02-20 18:25:16]:
 
-The following pinned hrtimers have been identified and marked:
-1)sched_rt_period_timer
-2)tick_sched_timer
-3)stack_trace_timer_fn
+This patch migrates all non pinned timers and hrtimers to the target
+CPU.
 
+Timer migration is enabled by setting the sysfs entry of the
+particular CPU. At the time of queuing a timer, it is checked to see
+if migration is enabled for that particular CPU. If so, the target CPU
+base is set as the new timer base and the timer is queued on that CPU.
 
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- kernel/sched.c               |    5 +++--
- kernel/time/tick-sched.c     |    7 ++++---
- kernel/trace/trace_sysprof.c |    3 ++-
- 3 files changed, 9 insertions(+), 6 deletions(-)
+ kernel/hrtimer.c |   12 +++++++++++-
+ kernel/timer.c   |   15 ++++++++++++++-
+ 2 files changed, 25 insertions(+), 2 deletions(-)
 
-Index: git-2.6/kernel/sched.c
+Index: git-2.6/kernel/timer.c
 ===================================================================
---- git-2.6.orig/kernel/sched.c
-+++ git-2.6/kernel/sched.c
-@@ -236,7 +236,7 @@ static void start_rt_bandwidth(struct rt
- 
- 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
- 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
--		hrtimer_start_expires(&rt_b->rt_period_timer,
-+		hrtimer_start_expires_pinned(&rt_b->rt_period_timer,
- 				HRTIMER_MODE_ABS);
- 	}
- 	spin_unlock(&rt_b->rt_runtime_lock);
-@@ -1129,7 +1129,8 @@ static __init void init_hrtick(void)
-  */
- static void hrtick_start(struct rq *rq, u64 delay)
+--- git-2.6.orig/kernel/timer.c
++++ git-2.6/kernel/timer.c
+@@ -616,7 +616,7 @@ int __mod_timer(struct timer_list *timer
  {
--	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
-+	hrtimer_start_pinned(&rq->hrtick_timer, ns_to_ktime(delay),
-+				HRTIMER_MODE_REL);
- }
+ 	struct tvec_base *base, *new_base;
+ 	unsigned long flags;
+-	int ret = 0;
++	int ret = 0, target_cpu;
  
- static inline void init_hrtick(void)
-Index: git-2.6/kernel/time/tick-sched.c
+ 	timer_stats_timer_set_start_info(timer);
+ 	BUG_ON(!timer->function);
+@@ -631,6 +631,18 @@ int __mod_timer(struct timer_list *timer
+ 	debug_timer_activate(timer);
+ 
+ 	new_base = __get_cpu_var(tvec_bases);
++	/*
++	 * @target_cpu: The CPU to which timers are to be migrated.
++	 * If timer migration is disabled, target_cpu = this_cpu.
++	 */
++	target_cpu = __get_cpu_var(enable_timer_migration);
++	if (!tbase_get_pinned(timer->base) && cpu_online(target_cpu)) {
++		new_base = per_cpu(tvec_bases, target_cpu);
++		timer_set_base(timer, new_base);
++		timer->expires = expires;
++		internal_add_timer(new_base, timer);
++		goto out;
++	}
+ 
+ 	if (base != new_base) {
+ 		/*
+@@ -652,6 +664,7 @@ int __mod_timer(struct timer_list *timer
+ 
+ 	timer->expires = expires;
+ 	internal_add_timer(base, timer);
++out:
+ 	spin_unlock_irqrestore(&base->lock, flags);
+ 
+ 	return ret;
+Index: git-2.6/kernel/hrtimer.c
 ===================================================================
---- git-2.6.orig/kernel/time/tick-sched.c
-+++ git-2.6/kernel/time/tick-sched.c
-@@ -348,7 +348,7 @@ void tick_nohz_stop_sched_tick(int inidl
- 		ts->idle_expires = expires;
+--- git-2.6.orig/kernel/hrtimer.c
++++ git-2.6/kernel/hrtimer.c
+@@ -198,8 +198,18 @@ int pinned)
+ {
+ 	struct hrtimer_clock_base *new_base;
+ 	struct hrtimer_cpu_base *new_cpu_base;
++	int target_cpu;
++
++	/*
++	 * @target_cpu: CPU to which the timers are to be migrated.
++	 * If timer migration is disabled, target_cpu = this_cpu
++	 */
++	target_cpu = __get_cpu_var(enable_timer_migration);
++	if (cpu_online(target_cpu) && !pinned)
++		new_cpu_base = &per_cpu(hrtimer_bases, target_cpu);
++	else
++		new_cpu_base = &__get_cpu_var(hrtimer_bases);
  
- 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
--			hrtimer_start(&ts->sched_timer, expires,
-+			hrtimer_start_pinned(&ts->sched_timer, expires,
- 				      HRTIMER_MODE_ABS);
- 			/* Check, if the timer was already in the past */
- 			if (hrtimer_active(&ts->sched_timer))
-@@ -394,7 +394,7 @@ static void tick_nohz_restart(struct tic
- 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+-	new_cpu_base = &__get_cpu_var(hrtimer_bases);
+ 	new_base = &new_cpu_base->clock_base[base->index];
  
- 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
--			hrtimer_start_expires(&ts->sched_timer,
-+			hrtimer_start_expires_pinned(&ts->sched_timer,
- 				      HRTIMER_MODE_ABS);
- 			/* Check, if the timer was already in the past */
- 			if (hrtimer_active(&ts->sched_timer))
-@@ -698,7 +698,8 @@ void tick_setup_sched_timer(void)
- 
- 	for (;;) {
- 		hrtimer_forward(&ts->sched_timer, now, tick_period);
--		hrtimer_start_expires(&ts->sched_timer, HRTIMER_MODE_ABS);
-+		hrtimer_start_expires_pinned(&ts->sched_timer,
-+						HRTIMER_MODE_ABS);
- 		/* Check, if the timer was already in the past */
- 		if (hrtimer_active(&ts->sched_timer))
- 			break;
-Index: git-2.6/kernel/trace/trace_sysprof.c
-===================================================================
---- git-2.6.orig/kernel/trace/trace_sysprof.c
-+++ git-2.6/kernel/trace/trace_sysprof.c
-@@ -203,7 +203,8 @@ static void start_stack_timer(void *unus
- 	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
- 	hrtimer->function = stack_trace_timer_fn;
- 
--	hrtimer_start(hrtimer, ns_to_ktime(sample_period), HRTIMER_MODE_REL);
-+	hrtimer_start_pinned(hrtimer, ns_to_ktime(sample_period),
-+				HRTIMER_MODE_REL);
- }
- 
- static void start_stack_timers(void)
+ 	if (base != new_base) {
