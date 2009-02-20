@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759178AbZBTRa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbZBTRbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759178AbZBTRa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbZBTRat
+	id S1759342AbZBTRbZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZBTRbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:30:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49680 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292AbZBTRas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:30:48 -0500
-Date: Fri, 20 Feb 2009 18:30:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/5] ftrace, x86: make kernel text writable only for
-	conversions
-Message-ID: <20090220173035.GI24538@elte.hu>
-References: <20090220163846.709775139@goodmis.org> <20090220164045.827841413@goodmis.org>
+	Fri, 20 Feb 2009 12:31:15 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:40451 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753657AbZBTRbN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 12:31:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=bL4u+MMGnDrbXnOTWpTkFmNSx9mvfw+TfZQs9e2AhEexQ9i3QCW2KE/2UHogCavMIg
+         oVYEn4ApaStL++xDJI1yjuffvkBsbilK1e1i9W6McIZJQLm2s/EdBl1JMoLXJQ4PO7t/
+         ltMHATXsZjfgLr/fOCsx6BsryveJ4PpdO3ptY=
+Date: Fri, 20 Feb 2009 18:31:08 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
+Message-ID: <20090220173107.GH5732@nowhere>
+References: <499edf47.1818d00a.060b.2b8d@mx.google.com> <499EE162.4050008@oracle.com> <20090220172241.GF24538@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090220164045.827841413@goodmis.org>
+In-Reply-To: <20090220172241.GF24538@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 20, 2009 at 06:22:41PM +0100, Ingo Molnar wrote:
+> 
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > > This is what happens on the following build error:
+> > > 
+> > > kernel/built-in.o: In function `marker_update_probe_range':
+> > > (.text+0x52f64): undefined reference to `tracepoint_probe_register_noupdate'
+> > > kernel/built-in.o: In function `marker_update_probe_range':
+> > > (.text+0x52f74): undefined reference to `tracepoint_probe_unregister_noupdate'
+> > > kernel/built-in.o: In function `marker_update_probe_range':
+> > > (.text+0x52fb9): undefined reference to `tracepoint_probe_unregister_noupdate'
+> > > kernel/built-in.o: In function `marker_update_probes':
+> > > marker.c:(.text+0x530ba): undefined reference to `tracepoint_probe_update_all'
+> > > 
+> > > CONFIG_KVM_TRACE will select CONFIG_MARKER, but the latter 
+> > > depends on CONFIG_TRACEPOINTS which will not be selected.
+> > > 
+> > > A temporary fix is to make CONFIG_MARKER select 
+> > > CONFIG_TRACEPOINTS, though it doesn't fix the source KConfig 
+> > > dependency handling problem.
+> > > 
+> > > Reported-by: Ingo Molnar <mingo@elte.hu>
+> > > Cc: Roman Zippel <zippel@linux-m68k.org>
+> > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > > ---
+> > >  init/Kconfig |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/init/Kconfig b/init/Kconfig
+> > > index b6400a5..a93f957 100644
+> > > --- a/init/Kconfig
+> > > +++ b/init/Kconfig
+> > > @@ -975,7 +975,7 @@ config TRACEPOINTS
+> > >  
+> > >  config MARKERS
+> > >  	bool "Activate markers"
+> > > -	depends on TRACEPOINTS
+> > > +	select TRACEPOINTS
+> > >  	help
+> > >  	  Place an empty function call at each marker site. Can be
+> > >  	  dynamically changed for a probe function.
+> > 
+> > but using "select" instead of "depends on" just causes the 
+> > kind of problem that you described, whereas using "depends on" 
+> > does follow dependency chains.
+> 
+> Well, as long as the secondary selects are 'expanded' along the 
+> line of dependencies, it should still be fine. With an 
+> increasing number of dependencies it quickly becomes ugly 
+> though. This might be one of the cases where it works.
+> 
+> Eventually we should eliminate markers, their uses can either be 
+> converted to new-style tracepoints, or to ftrace_printk().
+> 
+> 	Ingo
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+ftrace_printk adds more overhead if not used since it inconditionally
+send the trace, unless the related TRACE_ITER_PRINTK flag on ftrace is unset.
 
-> diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-> index b55b4a7..5564cf3 100644
-> --- a/arch/x86/include/asm/ftrace.h
-> +++ b/arch/x86/include/asm/ftrace.h
-> @@ -80,4 +80,14 @@ extern void return_to_handler(void);
->  #endif /* __ASSEMBLY__ */
->  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
->  
-> +#ifndef __ASSEMBLY__
-> +#ifdef CONFIG_DEBUG_RODATA
-> +void set_kernel_text_rw(void);
-> +void set_kernel_text_ro(void);
-> +#else
-> +static inline void set_kernel_text_rw(void) { }
-> +static inline void set_kernel_text_ro(void) { }
-> +#endif
-> +#endif /* __ASSEMBLY__ */
+I don't know how markers work, but the documentation describes that a single branch
+check is done in case the probe is disabled.
 
-The proper place for this is where the other pagetable attribute 
-functions reside: arch/x86/include/asm/cacheflush.h.
+With ftrace_printk, even if TRACE_ITER_PRINTK is unset, this is still
+one call and one branch check. So for hot callsite it's unappropriate.
 
-> +/* used by ftrace */
-> +void set_kernel_text_rw(void)
-> +{
-> +	unsigned long start = PFN_ALIGN(_text);
-> +	unsigned long size = PFN_ALIGN(_etext) - start;
-> +
-> +	printk(KERN_INFO "Set kernel text: %lx - %lx for read write\n",
-> +	       start, start+size);
-> +
-> +	set_pages_rw(virt_to_page(start), size >> PAGE_SHIFT);
+IMHO, tracepoints are more suited to replace markers if they have to.
 
-Wont this be executed by every suspend/resume cycle? I'm not 
-sure we want a KERN_INFO printout every time.
-
-> +/* used by ftrace */
-> +void set_kernel_text_rw(void)
-
-i'd leave out the 'used by ftrace' bit - more uses might arise. 
-How does kprobes get around readonly pages, it uses these APIs 
-too, right?
-
-	Ingo
