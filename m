@@ -1,138 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbZBTEhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZBTEjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755468AbZBTEhA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 23:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZBTEgu
+	id S1756021AbZBTEjx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 23:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZBTEjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 23:36:50 -0500
-Received: from smtp106.prem.mail.sp1.yahoo.com ([98.136.44.61]:20170 "HELO
-	smtp106.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751379AbZBTEgt (ORCPT
+	Thu, 19 Feb 2009 23:39:45 -0500
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:33720 "EHLO
+	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753171AbZBTEjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 23:36:49 -0500
-X-YMail-OSG: 1KZ8.HkVM1kTZwrQ1PTX_yU3hEkhQsKLhm.n4xvL2hH5RizqSsllnuK1sHZpV__NKZGBf5yk9XRWIIl8p3HCw0BsIIeV5QyWUNfj0AI7uMdzqkVTrbnuHCNb86MgSSzGDEFxr1jiPb6b.mPnI2sruxXrQlblDMtRvE9Y1WiyGZfdpVI0VyJ2PVSvah._BpqnG3B.97NxBDMr2zutWwlRK1zFg8bqsi50WsqF4ngncgB4iEip.xnNtVIfKhbS1fCInkaPvNz4earlclumi4Iwsswq
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <499E3353.7020305@schaufler-ca.com>
-Date: Thu, 19 Feb 2009 20:36:35 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Thu, 19 Feb 2009 23:39:44 -0500
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [net-next PATCH 2/5] igb: add vfs_allocated_count as placeholder for
+	number of vfs
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, gospo@redhat.com,
+       Alexander Duyck <alexander.h.duyck@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Yu Zhao <yu.zhao@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Thu, 19 Feb 2009 20:39:23 -0800
+Message-ID: <20090220043922.29650.58034.stgit@lost.foo-projects.org>
+In-Reply-To: <20090220043902.29650.35055.stgit@lost.foo-projects.org>
+References: <20090220043902.29650.35055.stgit@lost.foo-projects.org>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: etienne <etienne.basset@numericable.fr>
-CC: Paul Moore <paul.moore@hp.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       LSM <linux-security-module@vger.kernel.org>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
-References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com> <499C40C1.20106@schaufler-ca.com> <499C62E4.1030600@numericable.fr>
-In-Reply-To: <499C62E4.1030600@numericable.fr>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-etienne wrote:
-> ...
->> Etienne, thank you very much for the work you've done so far. Paul,
->> thank you for your recommendations.
->>     
->
-> well, I'll try to explain my use case for SMACK, could you please tell me if this makes sense and if it is doable and sane with SMACK :
->
-> I have single-user computer that, for simplicity sake, do only web browsing with firefox; 
-> the attack vector i'm concerned with is malicious web pages, that could execute malicious code on my computer or worse erase some of my data; 
->
-> so i express the following security policy in a tool-agnostic way :
-> 1. firefox can access internet
->   
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-In Smack terms then you want the process label of your browser
-process to have access to hosts on the internet in general. The
-easy way to do this is for it to run with the ambient label
-(cat /smack/ambient to see it) which will be the floor label "_"
-unless you change it. Note that your browser will need to talk
-to the X11 server as well, so processes with the label of the
-browser will need write access to processes with the label of the
-X11 server, and visa versa.
+This is the first step in supporting sr-iov.  The vf_allocated_count value
+will be 0 until we actually have vfs present.  In the meantime it
+represents an offset value for the start of the queues.
 
-> 2. firefox can read/write it's configuration directory in my $HOME
->   
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: Yu Zhao <yu.zhao@intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+---
 
-The label of the process will have to match the label of that
-directory for this to work.
+ drivers/net/igb/igb.h      |    9 ++++++---
+ drivers/net/igb/igb_main.c |   17 +++++++++++------
+ 2 files changed, 17 insertions(+), 9 deletions(-)
 
-> 3. firefox can read/write to a download directory
->   
-
-Again, the label will have to match.
-
-> 4. firefox can execute kpdf, okular, vlc etc...
->   
-
-All these files will have the floor label "_" by design, so this
-is easy,
-> 5. firefox can read system files
->   
-
-Again, system files will have the floor label, so this is easy.
-
-> 6. firefox can write to temporary folder
->   
-
-Do you need to use /tmp, or does firefox respect $TMPDIR?
-You can set the label of /tmp to the star "*" label if worse
-comes to worst.
-
-> pretty simple. So I expect the 'tool' to express this policy in very few line; (i had a look at selinux/refpolicy, and I'm ashamed I was too lazy to test/understand further).
-
-Don't be ashamed. I wrote Smack because I was too lazy to figure
-out SELinux policy.
-
->  And if possible a mainline tool would be a big bonus.
->
-> So I decided to give  smack  a try, and here are my notes/interrogations :
->
-> rule 1. if i understand correctly, I have to load the following smack rule  
-> "firefox _ rwx" 
-> well, as '_' is the default objectlabel for all system files, it means that firefox will have smack 'w' access on system. 
->
-> So first issue : is it possible to express network access in another way?
-> Or maybe I have to relabel  /bin/, /sbin etc with a custom system label ?
->   
-
-If you want firefox to talk on the internet, and have
-no other processes talk on the internet including the X11 server,
-you need to run firefox with a different label from everything
-else. This will make it difficult to talk to the X11 server.
-
-> rule 2-6 : easy to implement with smack, i label my $HOME with some label and download/cfg dir with other labels
-> Firefox won't have rw access to my $HOME hehe
->
-> Second issue : what is the simplest way to start firefox with the firefox label?
-> I used the following hack : write a small program (i used cap_mac_admin, could have been suid) that :
-> a) set /proc/self/attr/current
-> b) drop capabilities
-> c) start firefox
-> Is there a cleanest way, can a process be started with its objectlabel?
->
->   
-
-I have a newsmack program, but all that it does is what your "hack"
-does.
-
-> Third issue : there seems to be  no way to log/audit access violations, have you plans to implement that?
->   
-
-Hmm. Audit should be working.
-
-> best regards,
-> Etienne
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->   
+diff --git a/drivers/net/igb/igb.h b/drivers/net/igb/igb.h
+index 49fc0da..3d3e5f6 100644
+--- a/drivers/net/igb/igb.h
++++ b/drivers/net/igb/igb.h
+@@ -57,8 +57,10 @@ struct igb_adapter;
+ #define IGB_MIN_ITR_USECS                 10
+ 
+ /* Transmit and receive queues */
+-#define IGB_MAX_RX_QUEUES                  4
+-#define IGB_MAX_TX_QUEUES                  4
++#define IGB_MAX_RX_QUEUES     (adapter->vfs_allocated_count ? \
++                               (adapter->vfs_allocated_count > 6 ? 1 : 2) : 4)
++#define IGB_MAX_TX_QUEUES     IGB_MAX_RX_QUEUES
++#define IGB_ABS_MAX_TX_QUEUES     4
+ 
+ /* RX descriptor control thresholds.
+  * PTHRESH - MAC will consider prefetch if it has fewer than this number of
+@@ -267,9 +269,10 @@ struct igb_adapter {
+ 	unsigned int flags;
+ 	u32 eeprom_wol;
+ 
+-	struct igb_ring *multi_tx_table[IGB_MAX_TX_QUEUES];
++	struct igb_ring *multi_tx_table[IGB_ABS_MAX_TX_QUEUES];
+ 	unsigned int tx_ring_count;
+ 	unsigned int rx_ring_count;
++	unsigned int vfs_allocated_count;
+ };
+ 
+ #define IGB_FLAG_HAS_MSI           (1 << 0)
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index d2cd58b..014570a 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -312,6 +312,7 @@ module_exit(igb_exit_module);
+ static void igb_cache_ring_register(struct igb_adapter *adapter)
+ {
+ 	int i;
++	unsigned int rbase_offset = adapter->vfs_allocated_count;
+ 
+ 	switch (adapter->hw.mac.type) {
+ 	case e1000_82576:
+@@ -321,9 +322,11 @@ static void igb_cache_ring_register(struct igb_adapter *adapter)
+ 		 * and continue consuming queues in the same sequence
+ 		 */
+ 		for (i = 0; i < adapter->num_rx_queues; i++)
+-			adapter->rx_ring[i].reg_idx = Q_IDX_82576(i);
++			adapter->rx_ring[i].reg_idx = rbase_offset +
++			                              Q_IDX_82576(i);
+ 		for (i = 0; i < adapter->num_tx_queues; i++)
+-			adapter->tx_ring[i].reg_idx = Q_IDX_82576(i);
++			adapter->tx_ring[i].reg_idx = rbase_offset +
++			                              Q_IDX_82576(i);
+ 		break;
+ 	case e1000_82575:
+ 	default:
+@@ -423,7 +426,7 @@ static void igb_assign_vector(struct igb_adapter *adapter, int rx_queue,
+ 		   a vector number along with a "valid" bit.  Sadly, the layout
+ 		   of the table is somewhat counterintuitive. */
+ 		if (rx_queue > IGB_N0_QUEUE) {
+-			index = (rx_queue >> 1);
++			index = (rx_queue >> 1) + adapter->vfs_allocated_count;
+ 			ivar = array_rd32(E1000_IVAR0, index);
+ 			if (rx_queue & 0x1) {
+ 				/* vector goes into third byte of register */
+@@ -438,7 +441,7 @@ static void igb_assign_vector(struct igb_adapter *adapter, int rx_queue,
+ 			array_wr32(E1000_IVAR0, index, ivar);
+ 		}
+ 		if (tx_queue > IGB_N0_QUEUE) {
+-			index = (tx_queue >> 1);
++			index = (tx_queue >> 1) + adapter->vfs_allocated_count;
+ 			ivar = array_rd32(E1000_IVAR0, index);
+ 			if (tx_queue & 0x1) {
+ 				/* vector goes into high byte of register */
+@@ -1157,7 +1160,8 @@ static int __devinit igb_probe(struct pci_dev *pdev,
+ 	pci_save_state(pdev);
+ 
+ 	err = -ENOMEM;
+-	netdev = alloc_etherdev_mq(sizeof(struct igb_adapter), IGB_MAX_TX_QUEUES);
++	netdev = alloc_etherdev_mq(sizeof(struct igb_adapter),
++	                           IGB_ABS_MAX_TX_QUEUES);
+ 	if (!netdev)
+ 		goto err_alloc_etherdev;
+ 
+@@ -2029,6 +2033,7 @@ static void igb_configure_rx(struct igb_adapter *adapter)
+ 				writel(reta.dword,
+ 				       hw->hw_addr + E1000_RETA(0) + (j & ~3));
+ 		}
++
+ 		mrqc = E1000_MRQC_ENABLE_RSS_4Q;
+ 
+ 		/* Fill out hash function seeds */
+@@ -3150,7 +3155,7 @@ static int igb_xmit_frame_adv(struct sk_buff *skb, struct net_device *netdev)
+ 	struct igb_ring *tx_ring;
+ 
+ 	int r_idx = 0;
+-	r_idx = skb->queue_mapping & (IGB_MAX_TX_QUEUES - 1);
++	r_idx = skb->queue_mapping & (IGB_ABS_MAX_TX_QUEUES - 1);
+ 	tx_ring = adapter->multi_tx_table[r_idx];
+ 
+ 	/* This goes back to the question of how to logically map a tx queue
 
