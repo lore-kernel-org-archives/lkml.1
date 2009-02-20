@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZBTBHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbZBTBMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbZBTBHm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 20:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758245AbZBTBHZ
+	id S1758194AbZBTBMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 20:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZBTBMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 20:07:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38478 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758194AbZBTBHX (ORCPT
+	Thu, 19 Feb 2009 20:12:01 -0500
+Received: from smtpout04-01.prod.mesa1.secureserver.net ([64.202.165.196]:56438
+	"HELO smtpout04.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751832AbZBTBMA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 20:07:23 -0500
-Date: Thu, 19 Feb 2009 17:07:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mike.miller@hp.com
-Subject: Re: [GIT PULL] block bits for 2.6.29-rc5
-Message-Id: <20090219170715.47781cc2.akpm@linux-foundation.org>
-In-Reply-To: <20090218144105.GZ30821@kernel.dk>
-References: <20090218144105.GZ30821@kernel.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Feb 2009 20:12:00 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 20:12:00 EST
+From: "Beau Gould \(OSS\)" <beau@open-source-staffing.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [JOB] Linux Kernel Engineer, Portland, OR | 80-100k 
+Date: Thu, 19 Feb 2009 20:05:18 -0500
+Message-ID: <C62FD209A2A14456A322CC26995861B4@EMACHINE>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.2616
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Feb 2009 15:41:06 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+The Linux Kernel Engineer will be responsible for developing product
+capabilities in the areas of I/O subsystem and drivers, file systems,
+device drivers, file data related memory management, as well as
+associated user space tools and utilities.
 
-> @@ -3404,6 +3601,24 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
->  	int dac, return_code;
->  	InquiryData_struct *inq_buff = NULL;
->  
-> +	if (reset_devices) {
-> +		/* Reset the controller with a PCI power-cycle */
-> +		if (cciss_hard_reset_controller(pdev) || cciss_reset_msi(pdev))
-> +			return -ENODEV;
-> +
-> +		/* Some devices (notably the HP Smart Array 5i Controller)
-> +		   need a little pause here */
-> +		schedule_timeout_uninterruptible(30*HZ);
+Basic Qualifications 
+* Education: Masters Degree in Computer Science 
+* Overall Experience: 2-5 years or equivalent experience 
+* 2 years of experience in Kernel development, preferably Linux 
+* Fluency in C is expected, as are solid written and verbal
+communications skills 
+* Kernel-level expertise in the implementation of Linux Device Drivers
+and File systems 
 
-little!
+Desired Qualifications 
+* Deep knowledge in the design, implementation of Kernels and Operating
+Systems 
+* Deep understanding of Linux Kernels Virtual memory, Storage/File and
+I/O subsystems 
+* Development Experience on a contemporary Linux-2.6 Kernel is a must 
 
-Perhaps we should do a printk("no, your machine is not dead") here.
+To be considered, please reply with a paragraph or two on how your
+experience relates to the position and submit your resume and salary
+requirements to bg @ capitalmarketsp.com 
+
+Thank you, 
+
+Beau Gould 
+Executive Advisor 
+Capital Markets Placement 
+www.cmp.jobs 
+bg @ capitalmarketsp.com 
+
