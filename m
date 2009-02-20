@@ -1,88 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbZBTGum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZBTGzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbZBTGum (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 01:50:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZBTGug
+	id S1753280AbZBTGzQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 01:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbZBTGyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 01:50:36 -0500
-Received: from host2.marvell.com ([65.219.4.2]:25035 "EHLO maili.marvell.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751023AbZBTGuf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 01:50:35 -0500
-From: Jason Chagas <CHAGAS@marvell.com>
-To: Eric Miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Eric Miao <ymiao3@marvell.com>, Jason Chagas <CHAGAS@marvell.com>
-Date: Thu, 19 Feb 2009 22:50:35 -0800
-Subject: RE: [PATCH] MAINTAINERS: update pxa168 maintainers
-Thread-Topic: [PATCH] MAINTAINERS: update pxa168 maintainers
-Thread-Index: AcmSmKCAtTUZAnNbQVeMPhIWTqXFlQAja4cA
-Message-ID: <F71A24FDAED97E4CB6D3A8E8A97D5C5441BC621C@SC-VEXCH1.marvell.com>
-References: <1235051161-8858-1-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-2-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-3-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-4-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-5-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-6-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-7-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-8-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-9-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-10-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-11-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-12-git-send-email-eric.y.miao@gmail.com>
- <1235051161-8858-13-git-send-email-eric.y.miao@gmail.com>
-In-Reply-To: <1235051161-8858-13-git-send-email-eric.y.miao@gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 20 Feb 2009 06:50:34.0212 (UTC) FILETIME=[87713240:01C99327]
+	Fri, 20 Feb 2009 01:54:54 -0500
+Received: from mga11.intel.com ([192.55.52.93]:48050 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751893AbZBTGyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 01:54:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,239,1233561600"; 
+   d="scan'208";a="432595085"
+From: Yu Zhao <yu.zhao@intel.com>
+To: jbarnes@virtuousgeek.org
+Cc: linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
+Subject: [PATCH v10 3/7] PCI: reserve bus range for SR-IOV device
+Date: Fri, 20 Feb 2009 14:54:44 +0800
+Message-Id: <1235112888-9524-4-git-send-email-yu.zhao@intel.com>
+X-Mailer: git-send-email 1.6.1
+In-Reply-To: <1235112888-9524-1-git-send-email-yu.zhao@intel.com>
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  -----Original Message-----
-> From: Eric Miao [mailto:eric.y.miao@gmail.com]
-> Sent: Thursday, February 19, 2009 8:46 AM
-> To: LKML
-> Cc: linux-arm-kernel; Eric Miao; Jason Chagas
-> Subject: [PATCH] MAINTAINERS: update pxa168 maintainers
->
-> From: Eric Miao <eric.miao@marvell.com>
->
-> Signed-off-by: Eric Miao <eric.miao@marvell.com>
-> Cc: Jason Chagas <jason.chagas@marvell.com>
-> ---
->  MAINTAINERS |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 799f9d8..a6b44f3 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3534,6 +3534,14 @@ M:       linux@arm.linux.org.uk
-> L:     linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
-> S:     Maintained
->
-> +PXA168 SUPPORT
-> +P:     Eric Miao
-> +M:     eric.miao@marvell.com
-> +P:     Jason Chagas
-> +M:     jason.chagas@marvell.com
-> +L:     linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
-> +S:     Supported
-> +
->  PXA MMCI DRIVER
->  S:     Orphan
->
-> --
-> 1.6.0.4
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+---
+ drivers/pci/iov.c   |   34 ++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h   |    5 +++++
+ drivers/pci/probe.c |    3 +++
+ 3 files changed, 42 insertions(+), 0 deletions(-)
 
-Acked-by: Jason Chagas <jason.chagas@marvell.com>
-
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index 3bca8f8..0b80437 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -14,6 +14,16 @@
+ #include "pci.h"
+ 
+ 
++static inline void virtfn_bdf(struct pci_dev *dev, int id, u8 *busnr, u8 *devfn)
++{
++	u16 bdf;
++
++	bdf = (dev->bus->number << 8) + dev->devfn +
++	      dev->sriov->offset + dev->sriov->stride * id;
++	*busnr = bdf >> 8;
++	*devfn = bdf & 0xff;
++}
++
+ static int sriov_init(struct pci_dev *dev, int pos)
+ {
+ 	int i;
+@@ -208,3 +218,27 @@ void pci_restore_iov_state(struct pci_dev *dev)
+ 	if (dev->sriov)
+ 		sriov_restore_state(dev);
+ }
++
++/**
++ * pci_iov_bus_range - find bus range used by Virtual Function
++ * @bus: the PCI bus
++ *
++ * Returns max number of buses (exclude current one) used by Virtual
++ * Functions.
++ */
++int pci_iov_bus_range(struct pci_bus *bus)
++{
++	int max = 0;
++	u8 busnr, devfn;
++	struct pci_dev *dev;
++
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		if (!dev->sriov)
++			continue;
++		virtfn_bdf(dev, dev->sriov->total - 1, &busnr, &devfn);
++		if (busnr > max)
++			max = busnr;
++	}
++
++	return max ? max - bus->number : 0;
++}
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index b24c9e2..2cf32f5 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -217,6 +217,7 @@ extern void pci_iov_release(struct pci_dev *dev);
+ extern int pci_iov_resource_bar(struct pci_dev *dev, int resno,
+ 				enum pci_bar_type *type);
+ extern void pci_restore_iov_state(struct pci_dev *dev);
++extern int pci_iov_bus_range(struct pci_bus *bus);
+ #else
+ static inline int pci_iov_init(struct pci_dev *dev)
+ {
+@@ -234,6 +235,10 @@ static inline int pci_iov_resource_bar(struct pci_dev *dev, int resno,
+ static inline void pci_restore_iov_state(struct pci_dev *dev)
+ {
+ }
++static inline int pci_iov_bus_range(struct pci_bus *bus)
++{
++	return 0;
++}
+ #endif /* CONFIG_PCI_IOV */
+ 
+ #endif /* DRIVERS_PCI_H */
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 03b6f29..4c8abd0 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1078,6 +1078,9 @@ unsigned int __devinit pci_scan_child_bus(struct pci_bus *bus)
+ 	for (devfn = 0; devfn < 0x100; devfn += 8)
+ 		pci_scan_slot(bus, devfn);
+ 
++	/* Reserve buses for SR-IOV capability. */
++	max += pci_iov_bus_range(bus);
++
+ 	/*
+ 	 * After performing arch-dependent fixup of the bus, look behind
+ 	 * all PCI-to-PCI bridges on this bus.
+-- 
+1.6.1
 
