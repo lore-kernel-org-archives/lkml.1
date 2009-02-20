@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZBTWpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZBTWr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbZBTWpK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 17:45:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZBTWo6
+	id S1755313AbZBTWr2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 17:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZBTWrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 17:44:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57685 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbZBTWo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 17:44:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 20 Feb 2009 23:44:18 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org> <200902201146.59944.rjw@sisk.pl> <200902202305.09992.oliver@neukum.org>
-In-Reply-To: <200902202305.09992.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 20 Feb 2009 17:47:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42810 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752441AbZBTWrT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 17:47:19 -0500
+Date: Fri, 20 Feb 2009 14:46:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       eric@lammerts.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH][retry 2] Conform L3 Cache Index Disable to Linux
+ standards From:  Eric Lammerts <eric@lammerts.org>
+Message-Id: <20090220144619.82a5f076.akpm@linux-foundation.org>
+In-Reply-To: <200902201550.47415.mark.langsdorf@amd.com>
+References: <200902201550.47415.mark.langsdorf@amd.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902202344.20040.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 February 2009, Oliver Neukum wrote:
-> Am Freitag 20 Februar 2009 11:46:55 schrieb Rafael J. Wysocki:
-> > On Thursday 19 February 2009, Oliver Neukum wrote:
-> > > Am Donnerstag 19 Februar 2009 23:21:46 schrieb Rafael J. Wysocki:
-> > > > > That's the whole point behind userspace wakelocks!  They provide a
-> > > > > mechanism for userspace to tell the kernel when (as far as userspace
-> > >
-> > > is
-> > >
-> > > > > concerned) it is or is not okay to auto-sleep.
-> > > >
-> > > > Still, one can go further and observe that the user space can in fact
-> > > > start automatic suspend by itself whenever it knows it's appropriate
-> > > > ...
-> > >
-> > > User space initiating this is a race condition.
-> >
-> > Do you mean a race with the other user space processes or with the kernel?
-> 
-> With the set of runnable processes.There's always a window between
-> evaluating the current set of runnable tasks and telling the kernel to sleep.
-> IMO the most elegant solution would be a task attribute that would signal
-> the kernel that a task should not count as keeping the system busy even
-> if it is runnable and trigger the sleep in kernel space.
+On Fri, 20 Feb 2009 15:50:47 -0600
+Mark Langsdorf <mark.langsdorf@amd.com> wrote:
 
-Please see my last reply to Arve (http://lkml.org/lkml/2009/2/20/182) and tell
-me what you think.
+> Add ABI Documentation entry and fix some /sys directory formating
+> issues with the L3 Cache Index Disable feature for future AMD
+> processors. __Add a check to disable it for family 0x10 models
+> that do not support it yet.
 
-Best,
-Rafael
+This change clashes with (what I assume to be) Rusty changes in
+linux-next's arch/x86/kernel/cpu/intel_cacheinfo.c:
+
+--- /tmp/1	2009-02-20 14:41:06.000000000 -0800
++++ /tmp/2	2009-02-20 14:40:52.000000000 -0800
+@@ -24,7 +24,8 @@
+ 
+ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
+ {
+-	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
++	int node = cpu_to_node(cpumask_first(mask));
+ 	struct pci_dev *dev = NULL;
+ 	ssize_t ret = 0;
+ 	int i;
+@@ -58,7 +59,8 @@
+ store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
+ 		    size_t count)
+ {
+-	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
++	int node = cpu_to_node(cpumask_first(mask));
+ 	struct pci_dev *dev = NULL;
+ 	unsigned int ret, index, val;
+ 
+
+I think those chagnes will need to be carried forward into the new
+code.
+
+I made that change when applying this patch locally.  If Ingo applies
+this to his tree, Stephen gets to do the same fix for linux-next
+integration.
+
