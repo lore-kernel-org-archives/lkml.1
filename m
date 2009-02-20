@@ -1,106 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZBTEeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbZBTEhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbZBTEeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 23:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbZBTEeJ
+	id S1755468AbZBTEhA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 23:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZBTEgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 23:34:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47216 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbZBTEeI (ORCPT
+	Thu, 19 Feb 2009 23:36:50 -0500
+Received: from smtp106.prem.mail.sp1.yahoo.com ([98.136.44.61]:20170 "HELO
+	smtp106.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751379AbZBTEgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 23:34:08 -0500
-Date: Thu, 19 Feb 2009 23:34:06 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Huang Ying <ying.huang@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] changes for tip, and a nasty x86 page table bug 
-In-Reply-To: <alpine.LFD.2.00.0902192007400.21686@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0902192322240.29217@gandalf.stny.rr.com>
-References: <20090220011316.379904625@goodmis.org> <alpine.LFD.2.00.0902191753240.21686@localhost.localdomain> <alpine.DEB.1.10.0902192107230.31658@gandalf.stny.rr.com> <alpine.LFD.2.00.0902191923300.21686@localhost.localdomain>
- <alpine.DEB.2.00.0902192254040.29217@gandalf.stny.rr.com> <alpine.LFD.2.00.0902192007400.21686@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 19 Feb 2009 23:36:49 -0500
+X-YMail-OSG: 1KZ8.HkVM1kTZwrQ1PTX_yU3hEkhQsKLhm.n4xvL2hH5RizqSsllnuK1sHZpV__NKZGBf5yk9XRWIIl8p3HCw0BsIIeV5QyWUNfj0AI7uMdzqkVTrbnuHCNb86MgSSzGDEFxr1jiPb6b.mPnI2sruxXrQlblDMtRvE9Y1WiyGZfdpVI0VyJ2PVSvah._BpqnG3B.97NxBDMr2zutWwlRK1zFg8bqsi50WsqF4ngncgB4iEip.xnNtVIfKhbS1fCInkaPvNz4earlclumi4Iwsswq
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <499E3353.7020305@schaufler-ca.com>
+Date: Thu, 19 Feb 2009 20:36:35 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: etienne <etienne.basset@numericable.fr>
+CC: Paul Moore <paul.moore@hp.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       LSM <linux-security-module@vger.kernel.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
+References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com> <499C40C1.20106@schaufler-ca.com> <499C62E4.1030600@numericable.fr>
+In-Reply-To: <499C62E4.1030600@numericable.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+etienne wrote:
+> ...
+>> Etienne, thank you very much for the work you've done so far. Paul,
+>> thank you for your recommendations.
+>>     
+>
+> well, I'll try to explain my use case for SMACK, could you please tell me if this makes sense and if it is doable and sane with SMACK :
+>
+> I have single-user computer that, for simplicity sake, do only web browsing with firefox; 
+> the attack vector i'm concerned with is malicious web pages, that could execute malicious code on my computer or worse erase some of my data; 
+>
+> so i express the following security policy in a tool-agnostic way :
+> 1. firefox can access internet
+>   
 
-On Thu, 19 Feb 2009, Linus Torvalds wrote:
-> 
-> On Thu, 19 Feb 2009, Steven Rostedt wrote:
-> > 
-> > Is this something worthy of 29? I could whip up a patch against your 
-> > latest tree.
-> 
-> I think it's a real issue, but I do have to admit that I don't see why it 
-> would only trigegr for you. Is it just because the trace stuff ends up 
-> setting pages to RW, and you have to have had a lot of read-only stuff to 
-> get a whole read-only PMD to begin with?
+In Smack terms then you want the process label of your browser
+process to have access to hosts on the internet in general. The
+easy way to do this is for it to run with the ambient label
+(cat /smack/ambient to see it) which will be the floor label "_"
+unless you change it. Note that your browser will need to talk
+to the X11 server as well, so processes with the label of the
+browser will need write access to processes with the label of the
+X11 server, and visa versa.
 
-The PMD read only has been there before ftrace. Setting the 
-CONFIG_DEBUG_RODATA causes the issue. After the the 2M page is set to read 
-only, the change to set the NX bits for the data section creates the PMD 
-with the read write bit cleared.
+> 2. firefox can read/write it's configuration directory in my $HOME
+>   
 
-The thing I do differently was that I needed to modify the text section
-after this has been set. ftrace does a mass change upon user request, so 
-the simple thing was to enable the pages as read-write, modify, then set 
-back to read only.
+The label of the process will have to match the label of that
+directory for this to work.
 
-Other code (kprobes and such) uses text_poke to make their changes. This 
-goes through the process of creating vmalloc areas to point to the 
-necessary code to change. The kernel proper page tables are not touched. 
-So basically, it does a back door to make the change. This avoids the bug 
-by not needing to convert those PTEs protected by a read only PMD into 
-read-write pages.
+> 3. firefox can read/write to a download directory
+>   
 
-I hit the bug by trying to write to the addresses protected by the
-read only PMD.
+Again, the label will have to match.
 
-> 
-> So there's two things that make me nervous:
-> 
->  - I do think the KERNPG_TABLE thing is the right thing, and I _think_ 
->    that code is just confused, and we should just do KERNPG_TABLE rather 
->    than play with confused bits one by one (PRESENT, RW, NX) to the point 
->    of just making for more confusion.
+> 4. firefox can execute kpdf, okular, vlc etc...
+>   
 
-I agree with you here. I just did this change on my local tree and my code 
-still works.
+All these files will have the floor label "_" by design, so this
+is easy,
+> 5. firefox can read system files
+>   
 
-> 
->    But I'd like some of the people involved with that code confirm that. 
->    Either a "Yeah, we were just confused" or "No, there's this really 
->    subtle thing going on, liek this: ..."
-> 
->  - The fact that apparently you're the first one to hit this. I realize 
->    that you do odd things with ftrace. Was it the fact that you made the 
->    "set_memory_ro()" area larger, and then more dynamically mark it back 
->    to read-write that you hit it? Haven't we done things like that before?
+Again, system files will have the floor label, so this is easy.
 
-No, I was just the first one to try to convert these pages back to rw and
-write to them.
+> 6. firefox can write to temporary folder
+>   
 
-> 
-> But that said, I'd love to fix this for 2.6.29, especially if somebody 
-> can resolve the two worries above. I do _not_ want to take your patch that 
-> makes confused code even more confused, unless somebody really explains 
-> why a pure KERNPG_TABLE isn't right.
+Do you need to use /tmp, or does firefox respect $TMPDIR?
+You can set the label of /tmp to the star "*" label if worse
+comes to worst.
 
-OK, agreed. I'll wait on Thomas et.al. for a response, and let me get to 
-bed.
+> pretty simple. So I expect the 'tool' to express this policy in very few line; (i had a look at selinux/refpolicy, and I'm ashamed I was too lazy to test/understand further).
 
--- Steve
+Don't be ashamed. I wrote Smack because I was too lazy to figure
+out SELinux policy.
+
+>  And if possible a mainline tool would be a big bonus.
+>
+> So I decided to give  smack  a try, and here are my notes/interrogations :
+>
+> rule 1. if i understand correctly, I have to load the following smack rule  
+> "firefox _ rwx" 
+> well, as '_' is the default objectlabel for all system files, it means that firefox will have smack 'w' access on system. 
+>
+> So first issue : is it possible to express network access in another way?
+> Or maybe I have to relabel  /bin/, /sbin etc with a custom system label ?
+>   
+
+If you want firefox to talk on the internet, and have
+no other processes talk on the internet including the X11 server,
+you need to run firefox with a different label from everything
+else. This will make it difficult to talk to the X11 server.
+
+> rule 2-6 : easy to implement with smack, i label my $HOME with some label and download/cfg dir with other labels
+> Firefox won't have rw access to my $HOME hehe
+>
+> Second issue : what is the simplest way to start firefox with the firefox label?
+> I used the following hack : write a small program (i used cap_mac_admin, could have been suid) that :
+> a) set /proc/self/attr/current
+> b) drop capabilities
+> c) start firefox
+> Is there a cleanest way, can a process be started with its objectlabel?
+>
+>   
+
+I have a newsmack program, but all that it does is what your "hack"
+does.
+
+> Third issue : there seems to be  no way to log/audit access violations, have you plans to implement that?
+>   
+
+Hmm. Audit should be working.
+
+> best regards,
+> Etienne
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>   
 
