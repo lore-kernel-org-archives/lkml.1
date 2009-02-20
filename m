@@ -1,153 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbZBTQK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbZBTQLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbZBTQK1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 11:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZBTQKM
+	id S1758589AbZBTQLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 11:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZBTQLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 11:10:12 -0500
-Received: from www17.your-server.de ([213.133.104.17]:46626 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbZBTQKJ (ORCPT
+	Fri, 20 Feb 2009 11:11:23 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:22143 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbZBTQLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 11:10:09 -0500
-Subject: Re: [Announce] 2.6.29-rc4-rt2
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Thomas Gleixner <tglx@tglx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       "jens.axboe" <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-In-Reply-To: <1235116151.4736.12.camel@laptop>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
-	 <1235111568.3363.3.camel@localhost.localdomain>
-	 <1235116151.4736.12.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 20 Feb 2009 16:09:08 +0100
-Message-Id: <1235142548.3588.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+	Fri, 20 Feb 2009 11:11:22 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: etienne <etienne.basset@numericable.fr>
+Subject: Re: [PATCH] SMACK netlabel fixes v2
+Date: Fri, 20 Feb 2009 11:11:10 -0500
+User-Agent: KMail/1.11.0 (Linux/2.6.27-gentoo-r8; KDE/4.2.0; i686; ; )
+Cc: Casey Schaufler <casey@schaufler-ca.com>,
+       "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902191024.50198.paul.moore@hp.com> <499DE9A3.7070702@numericable.fr>
+In-Reply-To: <499DE9A3.7070702@numericable.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Disposition: inline
+Message-Id: <200902201111.10319.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 20.02.2009, 08:49 +0100 schrieb Peter Zijlstra:
-> On Fri, 2009-02-20 at 07:32 +0100, Thomas Meyer wrote:
-> > Are you interested in these BUG reports?
-> 
-> Yes we are, thanks!
-> 
-> > Without CONFIG_HIGHPTE kernel boots and seems to work correct, but I'm
-> > hitting these two BUGs:
-> 
-> They appear to be identical, so I'll consider them two instances of one
-> bug :-)
-> 
-> > [   19.840100] BUG: sleeping function called from invalid context at arch/x86/mm/highmem_32.c:8
-> > [   19.840105] in_atomic(): 0, irqs_disabled(): 1, pid: 718, name: IRQ-14
-> > [   19.840110] Pid: 718, comm: IRQ-14 Tainted: G        W  2.6.29-rc4-rt2-tip #55
-> > [   19.840113] Call Trace:
-> > [   19.840123]  [<c0444cbd>] __might_sleep+0xda/0xf0
-> > [   19.840128]  [<c043ee31>] kmap+0x50/0x77
-> > [   19.840133]  [<c0663e35>] sg_miter_next+0xc1/0xdf
-> > [   19.840137]  [<c0663ee8>] sg_copy_buffer+0x95/0xc5
-> > [   19.840141]  [<c0663f35>] sg_copy_to_buffer+0x1d/0x33
-> > [   19.840149]  [<c0774ab1>] atapi_qc_complete+0x25a/0x2c5
-> > [   19.840153]  [<c076dece>] __ata_qc_complete+0xb4/0xcd
-> > [   19.840157]  [<c076f844>] ata_qc_complete+0x1be/0x1d7
-> > [   19.840162]  [<c077c812>] ata_hsm_qc_complete+0xa9/0xd3
-> > [   19.840166]  [<c077ceb7>] ata_sff_hsm_move+0x67b/0x6da
-> > [   19.840171]  [<c077d19b>] ata_sff_interrupt+0x15d/0x205
-> > [   19.840176]  [<c049440a>] handle_IRQ_event+0x4b/0xce
-> > [   19.840180]  [<c0494ac7>] do_irqd+0x141/0x271
-> > [   19.840184]  [<c0494986>] ? do_irqd+0x0/0x271
-> > [   19.840189]  [<c0467022>] kthread+0x4a/0x82
-> > [   19.840192]  [<c0466fd8>] ? kthread+0x0/0x82
-> > [   19.840197]  [<c0420b67>] kernel_thread_helper+0x7/0x10
-> 
-> sg_copy_buffer() seems to disable IRQs, however since on -rt everything
-> is a irq-thread and kmap is preemptible, we don't appear to have that
-> need.
-> 
-> CC'd everybody who ever touched the file.
-> 
+On Thursday 19 February 2009 06:22:11 pm etienne wrote:
+> Hi Paul,
+>
+> thanks for your comments, please find below an updated version of the
+> patch, I hope it is fine with you and Casey. (i didnt remove the 'mask_bits
+> = (1<<31)' of your last comment :
+> => i think it's much obvious that it represent binary 1000..00 than
+> 0x80000000, but that may be just me :)
+
+Fair enough, it was a pretty nit-picky comment :)
+
+> I redid some basics tests, it seems i've not messed things too much :)
+>
+> For the moving to standard list, I guess I could try to do that; (even
+> other smack list, yes want my bonus points! ;) ) After a quick list.h grep
+> i think i'll have to implement a 'sorted insert' anyway. But please allow
+> me to do that on top of my patch
+
+That is fine, the patch below is still a good improvement, no need to hold it 
+up for the list conversion.
+
+Reviewed-by: Paul Moore <paul.moore@hp.com>
+
+> --
+>
+> the following patch (against 2.6.29rc5) fixes a few issues in the
+> smack/netlabel area : 1) smack_host_label disregard a "0.0.0.0/0 @" rule
+> (or other label), preventing 'tagged' tasks to access Internet (many
+> systems drop packets with IP options) 2) netmasks were not handled
+> correctly, they were stored in a way _not equivalent_  to conversion to
+> be32 (it was equivalent for /0, /8, /16, /24, /32 masks but not other
+> masks) 3) smack_netlbladdr prefixes (IP/mask) were not consistent (mask&IP
+> was not done), so there could have been different list entries for the same
+> IP prefix; if those entries had different labels, well ... 4) they were not
+> sorted
+>
+> 1) 2) 3) are bugs, 4) is a more cosmetic issue.
+> The patch :
+> -creates a new helper smk_netlbladdr_insert to insert a smk_netlbladdr,
+> sorted by netmask length -use the new sorted nature of  smack_netlbladdrs
+> list to simplify smack_host_label : the first match _will_ be the more
+> specific
+> -corrects endianness issues in smk_write_netlbladdr &  netlbladdr_seq_show
+>
+> The patch are "tested" so that they no crash the system; cat
+> /smack/netlabel is now sorted and always consistent. Some basics ping tests
+> to '@' and other label combination seems ok See   an extract of my tests
+> bellow the patch
+>
+> regards,
+> Etienne
+>
+> Signed-off-by: <etienne.basset@numericable.fr>
 > ---
->  lib/scatterlist.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/lib/scatterlist.c b/lib/scatterlist.c
-> index b7b449d..4c6510d 100644
-> --- a/lib/scatterlist.c
-> +++ b/lib/scatterlist.c
-> @@ -426,7 +426,7 @@ static size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents,
->  
->  	sg_miter_start(&miter, sgl, nents, SG_MITER_ATOMIC);
->  
-> -	local_irq_save(flags);
-> +	local_irq_save_nort(flags);
->  
->  	while (sg_miter_next(&miter) && offset < buflen) {
->  		unsigned int len;
-> @@ -445,7 +445,7 @@ static size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents,
->  
->  	sg_miter_stop(&miter);
->  
-> -	local_irq_restore(flags);
-> +	local_irq_restore_nort(flags);
->  	return offset;
+>
+>
+> security/smack/smack_lsm.c |   43 +++++------------------------
+>  security/smack/smackfs.c   |   64
+> +++++++++++++++++++++++++++++++++---------- 2 files changed, 57
+> insertions(+), 50 deletions(-)
+>
+> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+> index 0278bc0..e7ded13 100644
+> --- a/security/smack/smack_lsm.c
+> +++ b/security/smack/smack_lsm.c
+> @@ -1498,58 +1498,31 @@ static int smack_socket_post_create(struct socket
+> *sock, int family, * looks for host based access restrictions
+>   *
+>   * This version will only be appropriate for really small
+> - * sets of single label hosts. Because of the masking
+> - * it cannot shortcut out on the first match. There are
+> - * numerious ways to address the problem, but none of them
+> - * have been applied here.
+> + * sets of single label hosts.
+>   *
+>   * Returns the label of the far end or NULL if it's not special.
+>   */
+>  static char *smack_host_label(struct sockaddr_in *sip)
+>  {
+>  	struct smk_netlbladdr *snp;
+> -	char *bestlabel = NULL;
+>  	struct in_addr *siap = &sip->sin_addr;
+> -	struct in_addr *liap;
+> -	struct in_addr *miap;
+> -	struct in_addr bestmask;
+>
+>  	if (siap->s_addr == 0)
+>  		return NULL;
+>
+> -	bestmask.s_addr = 0;
+> -
+>  	for (snp = smack_netlbladdrs; snp != NULL; snp = snp->smk_next) {
+> -		liap = &snp->smk_host.sin_addr;
+> -		miap = &snp->smk_mask;
+> -		/*
+> -		 * If the addresses match after applying the list entry mask
+> -		 * the entry matches the address. If it doesn't move along to
+> -		 * the next entry.
+> -		 */
+> -		if ((liap->s_addr & miap->s_addr) !=
+> -		    (siap->s_addr & miap->s_addr))
+> -			continue;
+>  		/*
+> -		 * If the list entry mask identifies a single address
+> -		 * it can't get any more specific.
+> +		 * we break after finding the first match because
+> +		 * the list is sorted from longest to shortest mask
+> +		 * so we have found the most specific match
+>  		 */
+> -		if (miap->s_addr == 0xffffffff)
+> +		if ((&snp->smk_host.sin_addr)->s_addr  ==
+> +			(siap->s_addr & (&snp->smk_mask)->s_addr)) {
+>  			return snp->smk_label;
+> -		/*
+> -		 * If the list entry mask is less specific than the best
+> -		 * already found this entry is uninteresting.
+> -		 */
+> -		if ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr)
+> -			continue;
+> -		/*
+> -		 * This is better than any entry found so far.
+> -		 */
+> -		bestmask.s_addr = miap->s_addr;
+> -		bestlabel = snp->smk_label;
+> +		}
+>  	}
+>
+> -	return bestlabel;
+> +	return NULL;
 >  }
->  
+>
+>  /**
+> diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+> index 8e42800..51f0efc 100644
+> --- a/security/smack/smackfs.c
+> +++ b/security/smack/smackfs.c
+> @@ -650,10 +650,6 @@ static void *netlbladdr_seq_next(struct seq_file *s,
+> void *v, loff_t *pos)
+>
+>  	return skp;
+>  }
+> -/*
+> -#define BEMASK	0x80000000
+> -*/
+> -#define BEMASK	0x00000001
+>  #define BEBITS	(sizeof(__be32) * 8)
+>
+>  /*
+> @@ -663,12 +659,10 @@ static int netlbladdr_seq_show(struct seq_file *s,
+> void *v) {
+>  	struct smk_netlbladdr *skp = (struct smk_netlbladdr *) v;
+>  	unsigned char *hp = (char *) &skp->smk_host.sin_addr.s_addr;
+> -	__be32 bebits;
+> -	int maskn = 0;
+> +	int maskn;
+> +	u32 temp_mask = be32_to_cpu(skp->smk_mask.s_addr);
+>
+> -	for (bebits = BEMASK; bebits != 0; maskn++, bebits <<= 1)
+> -		if ((skp->smk_mask.s_addr & bebits) == 0)
+> -			break;
+> +	for (maskn = 0; temp_mask; temp_mask <<= 1, maskn++);
+>
+>  	seq_printf(s, "%u.%u.%u.%u/%d %s\n",
+>  		hp[0], hp[1], hp[2], hp[3], maskn, skp->smk_label);
+> @@ -702,6 +696,42 @@ static int smk_open_netlbladdr(struct inode *inode,
+> struct file *file) }
+>
+>  /**
+> + * smk_netlbladdr_insert
+> + * @new : netlabel to insert
+> + *
+> + * This helper insert netlabel in the smack_netlbladdrs list
+> + * sorted by netmask length (longest to smallest)
+> + */
+> +static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
+> +{
+> +	struct smk_netlbladdr *m;
+> +
+> +	if (smack_netlbladdrs == NULL) {
+> +		smack_netlbladdrs = new;
+> +		return;
+> +	}
+> +
+> +	/* the comparison '>' is a bit hacky, but works */
+> +	if (new->smk_mask.s_addr > smack_netlbladdrs->smk_mask.s_addr) {
+> +		new->smk_next = smack_netlbladdrs;
+> +		smack_netlbladdrs = new;
+> +		return;
+> +	}
+> +	for (m = smack_netlbladdrs; m != NULL; m = m->smk_next) {
+> +		if (m->smk_next == NULL) {
+> +			m->smk_next = new;
+> +			return;
+> +		}
+> +		if (new->smk_mask.s_addr > m->smk_next->smk_mask.s_addr) {
+> +			new->smk_next = m->smk_next;
+> +			m->smk_next = new;
+> +			return;
+> +		}
+> +	}
+> +}
+> +
+> +
+> +/**
+>   * smk_write_netlbladdr - write() for /smack/netlabel
+>   * @filp: file pointer, not actually used
+>   * @buf: where to get the data from
+> @@ -724,8 +754,9 @@ static ssize_t smk_write_netlbladdr(struct file *file,
+> const char __user *buf, struct netlbl_audit audit_info;
+>  	struct in_addr mask;
+>  	unsigned int m;
+> -	__be32 bebits = BEMASK;
+> +	u32 mask_bits = (1<<31);
+>  	__be32 nsa;
+> +	u32 temp_mask;
+>
+>  	/*
+>  	 * Must have privilege.
+> @@ -761,10 +792,13 @@ static ssize_t smk_write_netlbladdr(struct file
+> *file, const char __user *buf, if (sp == NULL)
+>  		return -EINVAL;
+>
+> -	for (mask.s_addr = 0; m > 0; m--) {
+> -		mask.s_addr |= bebits;
+> -		bebits <<= 1;
+> +	for (temp_mask = 0; m > 0; m--) {
+> +		temp_mask |= mask_bits;
+> +		mask_bits >>= 1;
+>  	}
+> +	mask.s_addr = cpu_to_be32(temp_mask);
+> +
+> +	newname.sin_addr.s_addr &= mask.s_addr;
+>  	/*
+>  	 * Only allow one writer at a time. Writes should be
+>  	 * quite rare and small in any case.
+> @@ -772,6 +806,7 @@ static ssize_t smk_write_netlbladdr(struct file *file,
+> const char __user *buf, mutex_lock(&smk_netlbladdr_lock);
+>
+>  	nsa = newname.sin_addr.s_addr;
+> +	/* try to find if the prefix is already in the list */
+>  	for (skp = smack_netlbladdrs; skp != NULL; skp = skp->smk_next)
+>  		if (skp->smk_host.sin_addr.s_addr == nsa &&
+>  		    skp->smk_mask.s_addr == mask.s_addr)
+> @@ -787,9 +822,8 @@ static ssize_t smk_write_netlbladdr(struct file *file,
+> const char __user *buf, rc = 0;
+>  			skp->smk_host.sin_addr.s_addr = newname.sin_addr.s_addr;
+>  			skp->smk_mask.s_addr = mask.s_addr;
+> -			skp->smk_next = smack_netlbladdrs;
+>  			skp->smk_label = sp;
+> -			smack_netlbladdrs = skp;
+> +			smk_netlbladdr_insert(skp);
+>  		}
+>  	} else {
+>  		rc = netlbl_cfg_unlbl_static_del(&init_net, NULL,
 
-With above patch I get a lot of warnings in 
-
-lib/scatterlist.c:395 sg_miter_stop+0x5a/0xa4().
-
-Like:
-[   34.946650] ------------[ cut here ]------------
-[   34.946653] WARNING: at lib/scatterlist.c:395 sg_miter_stop+0x5a/0xa4()
-[   34.946655] Hardware name: MacBookPro1,1
-[   34.946657] Modules linked in: ath5k mac80211 cfg80211 video [last unloaded: scsi_wait_scan]
-[   34.946665] Pid: 8, comm: sirq-block/0 Tainted: G        W  2.6.29-rc4-rt2-tip #56
-[   34.946690] Call Trace:
-[   34.946694]  [<c0451e50>] warn_slowpath+0x8a/0xd3
-[   34.946698]  [<c09ab0e4>] ? __spin_unlock+0x1e/0x43
-[   34.946703]  [<c04476d6>] ? enqueue_task_fair+0x2df/0x331
-[   34.946707]  [<c0442c7c>] ? enqueue_task+0x70/0x8e
-[   34.946711]  [<c044cf91>] ? try_to_wake_up+0x2eb/0x306
-[   34.946715]  [<c0663e0a>] sg_miter_stop+0x5a/0xa4
-[   34.946719]  [<c0663fd6>] sg_copy_buffer+0xa3/0xbe
-[   34.946723]  [<c0664041>] sg_copy_from_buffer+0x1d/0x33
-[   34.946728]  [<c0774c3d>] ata_scsi_rbuf_fill+0x59/0x90
-[   34.946731]  [<c07760ed>] ? ata_scsiop_inq_80+0x0/0x41
-[   34.946735]  [<c0755b3e>] ? scsi_done+0x0/0x2d
-[   34.946739]  [<c0755b3e>] ? scsi_done+0x0/0x2d
-[   34.946743]  [<c0774e24>] ata_scsi_simulate+0x1b0/0x1f8
-[   34.946747]  [<c0755b3e>] ? scsi_done+0x0/0x2d
-[   34.946752]  [<c0775178>] ata_scsi_queuecmd+0x16d/0x1bc
-[   34.946756]  [<c0755de0>] scsi_dispatch_cmd+0x18a/0x208
-[   34.946760]  [<c075b378>] scsi_request_fn+0x349/0x487
-[   34.946764]  [<c064bcb6>] blk_invoke_request_fn+0x75/0x146
-[   34.946768]  [<c064c671>] __blk_run_queue+0x2d/0x42
-[   34.946772]  [<c064c6ac>] blk_run_queue+0x26/0x46
-[   34.946775]  [<c075a836>] scsi_run_queue+0x283/0x321
-[   34.946780]  [<c075b6c9>] scsi_next_command+0x36/0x54
-[   34.946783]  [<c075b8e2>] scsi_end_request+0x84/0xa1
-[   34.946787]  [<c075beb9>] scsi_io_completion+0x1a4/0x3a6
-[   34.946792]  [<c075c1be>] ? scsi_device_unbusy+0x8c/0xa3
-[   34.946796]  [<c0755b25>] scsi_finish_command+0xd3/0xec
-[   34.946800]  [<c075c3bc>] scsi_softirq_done+0x104/0x11d
-[   34.946804]  [<c06505df>] blk_done_softirq+0x5f/0x7e
-[   34.946808]  [<c04575e3>] ksoftirqd+0x12d/0x223
-[   34.946813]  [<c04574b6>] ? ksoftirqd+0x0/0x223
-[   34.946816]  [<c0467022>] kthread+0x4a/0x82
-[   34.946820]  [<c0466fd8>] ? kthread+0x0/0x82
-[   34.946824]  [<c0420b67>] kernel_thread_helper+0x7/0x10
-[   34.946827] ---[ end trace a7919e7f17c0a754 ]---
-
+-- 
+paul moore
+linux @ hp
 
