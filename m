@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZBTRe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbZBTReA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbZBTRe3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbZBTRdU
+	id S1759832AbZBTReA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbZBTRdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:33:20 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:2976 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755586AbZBTRdT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Feb 2009 12:33:19 -0500
-Date: Fri, 20 Feb 2009 20:33:17 +0300
+Received: from rtsoft3.corbina.net ([85.21.88.6]:2958 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754948AbZBTRdS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 12:33:18 -0500
+Date: Fri, 20 Feb 2009 20:33:14 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/13] sdhci: Add support for card-detection polling
-Message-ID: <20090220173317.GE7583@oksana.dev.rtsoft.ru>
+Subject: [PATCH 03/13] sdhci: Split card-detection IRQs management from
+	sdhci_init()
+Message-ID: <20090220173314.GC7583@oksana.dev.rtsoft.ru>
 References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -29,81 +30,203 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds SDHCI_QUIRK_BROKEN_CARD_DETECTION quirk. When specified,
-sdhci driver will set MMC_CAP_NEEDS_POLL MMC host capability, and won't
-enable card insert/remove interrupts.
+Card detection interrupts should be handled separately as they should
+not be enabled before mmc_add_host() returns and should be disabled
+before calling mmc_remove_host(). The same is for suspend and resume
+routines.
 
-This is needed for hosts with unreliable card detection, such as FSL
-eSDHC. The original eSDHC driver was tring to "debounce" card-detection
-IRQs by reading present state and disabling particular interrupts. But
-with this debouncing scheme I noticed that sometimes we miss card
-insertion/removal events.
+sdhci_init() no longer enables card-detection irqs. Instead, two new
+functions implemented: sdhci_enable_card_detection() and
+sdhci_disable_card_detection().
+
+New sdhci_reinit() call implemented to behave the same way as the old
+sdhci_init().
+
+Also, this patch implements and uses few new helpers to manage IRQs in
+a more conveinient way, that is:
+
+- sdhci_clear_set_irqs()
+- sdhci_unmask_irqs()
+- sdhci_mask_irqs()
+- SDHCI_INT_ALL_MASK constant
+
+sdhci_enable_sdio_irq() converted to these new helpers, plus the
+helpers will be used by the subsequent patches.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   17 ++++++++++++++---
- drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 16 insertions(+), 3 deletions(-)
+ drivers/mmc/host/sdhci.c |   78 ++++++++++++++++++++++++++++++++++++----------
+ drivers/mmc/host/sdhci.h |    4 ++
+ 2 files changed, 65 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 2728e90..782fb58 100644
+index 8682f7f..fadaeb8 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -167,6 +167,9 @@ static void sdhci_set_card_detection(struct sdhci_host *host, bool enable)
- {
- 	u32 irqs = SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT;
- 
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		return;
-+
- 	if (enable)
- 		sdhci_unmask_irqs(host, irqs);
- 	else
-@@ -1110,13 +1113,18 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 
- 	host->mrq = mrq;
- 
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		goto send;
-+
- 	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)
- 		|| (host->flags & SDHCI_DEVICE_DEAD)) {
- 		host->mrq->cmd->error = -ENOMEDIUM;
- 		tasklet_schedule(&host->finish_tasklet);
--	} else
--		sdhci_send_command(host, mrq->cmd);
--
-+		goto out;
-+	}
-+send:
-+	sdhci_send_command(host, mrq->cmd);
-+out:
- 	mmiowb();
- 	spin_unlock_irqrestore(&host->lock, flags);
+@@ -142,6 +142,47 @@ u8 sdhci_readb(struct sdhci_host *host, int reg)
  }
-@@ -1742,6 +1750,9 @@ int sdhci_add_host(struct sdhci_host *host)
- 	mmc->f_max = host->max_clk;
- 	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
+ EXPORT_SYMBOL_GPL(sdhci_readb);
  
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		mmc->caps |= MMC_CAP_NEEDS_POLL;
++static void sdhci_clear_set_irqs(struct sdhci_host *host, u32 clear, u32 set)
++{
++	u32 ier;
 +
- 	if ((caps & SDHCI_CAN_DO_HISPD) ||
- 		(host->quirks & SDHCI_QUIRK_FORCE_HIGHSPEED))
- 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
++	ier = sdhci_readl(host, SDHCI_INT_ENABLE);
++	ier &= ~clear;
++	ier |= set;
++	sdhci_writel(host, ier, SDHCI_INT_ENABLE);
++	sdhci_writel(host, ier, SDHCI_SIGNAL_ENABLE);
++}
++
++static void sdhci_unmask_irqs(struct sdhci_host *host, u32 irqs)
++{
++	sdhci_clear_set_irqs(host, 0, irqs);
++}
++
++static void sdhci_mask_irqs(struct sdhci_host *host, u32 irqs)
++{
++	sdhci_clear_set_irqs(host, irqs, 0);
++}
++
++static void sdhci_set_card_detection(struct sdhci_host *host, bool enable)
++{
++	u32 irqs = SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT;
++
++	if (enable)
++		sdhci_unmask_irqs(host, irqs);
++	else
++		sdhci_mask_irqs(host, irqs);
++}
++
++static void sdhci_enable_card_detection(struct sdhci_host *host)
++{
++	sdhci_set_card_detection(host, true);
++}
++
++static void sdhci_disable_card_detection(struct sdhci_host *host)
++{
++	sdhci_set_card_detection(host, false);
++}
++
+ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ {
+ 	unsigned long timeout;
+@@ -175,20 +216,21 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 
+ static void sdhci_init(struct sdhci_host *host)
+ {
+-	u32 intmask;
+-
+ 	sdhci_reset(host, SDHCI_RESET_ALL);
+ 
+-	intmask = SDHCI_INT_BUS_POWER | SDHCI_INT_DATA_END_BIT |
++	sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK,
++		SDHCI_INT_BUS_POWER | SDHCI_INT_DATA_END_BIT |
+ 		SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_INDEX |
+ 		SDHCI_INT_END_BIT | SDHCI_INT_CRC | SDHCI_INT_TIMEOUT |
+-		SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT |
+ 		SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL |
+ 		SDHCI_INT_DMA_END | SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE |
+-		SDHCI_INT_ADMA_ERROR;
++		SDHCI_INT_ADMA_ERROR);
++}
+ 
+-	sdhci_writel(host, intmask, SDHCI_INT_ENABLE);
+-	sdhci_writel(host, intmask, SDHCI_SIGNAL_ENABLE);
++static void sdhci_reinit(struct sdhci_host *host)
++{
++	sdhci_init(host);
++	sdhci_enable_card_detection(host);
+ }
+ 
+ static void sdhci_activate_led(struct sdhci_host *host)
+@@ -1087,7 +1129,7 @@ static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 	 */
+ 	if (ios->power_mode == MMC_POWER_OFF) {
+ 		sdhci_writel(host, 0, SDHCI_SIGNAL_ENABLE);
+-		sdhci_init(host);
++		sdhci_reinit(host);
+ 	}
+ 
+ 	sdhci_set_clock(host, ios->clock);
+@@ -1148,7 +1190,6 @@ static void sdhci_enable_sdio_irq(struct mmc_host *mmc, int enable)
+ {
+ 	struct sdhci_host *host;
+ 	unsigned long flags;
+-	u32 ier;
+ 
+ 	host = mmc_priv(mmc);
+ 
+@@ -1157,15 +1198,10 @@ static void sdhci_enable_sdio_irq(struct mmc_host *mmc, int enable)
+ 	if (host->flags & SDHCI_DEVICE_DEAD)
+ 		goto out;
+ 
+-	ier = sdhci_readl(host, SDHCI_INT_ENABLE);
+-
+-	ier &= ~SDHCI_INT_CARD_INT;
+ 	if (enable)
+-		ier |= SDHCI_INT_CARD_INT;
+-
+-	sdhci_writel(host, ier, SDHCI_INT_ENABLE);
+-	sdhci_writel(host, ier, SDHCI_SIGNAL_ENABLE);
+-
++		sdhci_unmask_irqs(host, SDHCI_INT_CARD_INT);
++	else
++		sdhci_mask_irqs(host, SDHCI_INT_CARD_INT);
+ out:
+ 	mmiowb();
+ 
+@@ -1507,6 +1543,8 @@ int sdhci_suspend_host(struct sdhci_host *host, pm_message_t state)
+ {
+ 	int ret;
+ 
++	sdhci_disable_card_detection(host);
++
+ 	ret = mmc_suspend_host(host->mmc, state);
+ 	if (ret)
+ 		return ret;
+@@ -1539,6 +1577,8 @@ int sdhci_resume_host(struct sdhci_host *host)
+ 	if (ret)
+ 		return ret;
+ 
++	sdhci_enable_card_detection(host);
++
+ 	return 0;
+ }
+ 
+@@ -1792,6 +1832,8 @@ int sdhci_add_host(struct sdhci_host *host)
+ 
+ 	mmc_add_host(mmc);
+ 
++	sdhci_enable_card_detection(host);
++
+ 	printk(KERN_INFO "%s: SDHCI controller on %s [%s] using %s%s\n",
+ 		mmc_hostname(mmc), host->hw_name, dev_name(mmc_dev(mmc)),
+ 		(host->flags & SDHCI_USE_ADMA)?"A":"",
+@@ -1833,6 +1875,8 @@ void sdhci_remove_host(struct sdhci_host *host, int dead)
+ 		spin_unlock_irqrestore(&host->lock, flags);
+ 	}
+ 
++	sdhci_disable_card_detection(host);
++
+ 	mmc_remove_host(host->mmc);
+ 
+ #ifdef SDHCI_USE_LEDS_CLASS
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 45c8309..b10920d 100644
+index e907441..45c8309 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -217,6 +217,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_FORCE_HIGHSPEED			(1<<14)
- /* Controller does not provide transfer-complete interrupt when not busy */
- #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<15)
-+/* Controller has unreliable card detection */
-+#define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
+@@ -124,6 +124,10 @@
+ 		SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL | \
+ 		SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_DATA_CRC | \
+ 		SDHCI_INT_DATA_END_BIT)
++#define SDHCI_INT_ALL_MASK	(SDHCI_INT_CMD_MASK | SDHCI_INT_DATA_MASK | \
++		SDHCI_INT_CARD_INSERT | SDHCI_INT_CARD_REMOVE | \
++		SDHCI_INT_CARD_INT | SDHCI_INT_ERROR | SDHCI_INT_BUS_POWER | \
++		SDHCI_INT_ACMD12ERR | SDHCI_INT_ADMA_ERROR)
  
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
+ #define SDHCI_ACMD12_ERR	0x3C
+ 
 -- 
 1.5.6.5
 
