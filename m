@@ -1,48 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZBTJpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZBTJwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbZBTJpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 04:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZBTJpE
+	id S1752516AbZBTJwH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 04:52:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZBTJvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 04:45:04 -0500
-Received: from stinky.trash.net ([213.144.137.162]:44940 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbZBTJpD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 04:45:03 -0500
-Message-ID: <499E7B9B.6030603@trash.net>
-Date: Fri, 20 Feb 2009 10:44:59 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 20 Feb 2009 04:51:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60092 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752201AbZBTJvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 04:51:50 -0500
+Date: Fri, 20 Feb 2009 10:51:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: enable x2apic early at the first point
+Message-ID: <20090220095127.GK24555@elte.hu>
+References: <499DD40F.40102@kernel.org>
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
-References: <1235070082-7069-1-git-send-email-wg@grandegger.com> <1235070082-7069-2-git-send-email-wg@grandegger.com> <1235070082-7069-3-git-send-email-wg@grandegger.com> <1235070082-7069-4-git-send-email-wg@grandegger.com>
-In-Reply-To: <1235070082-7069-4-git-send-email-wg@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499DD40F.40102@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wolfgang Grandegger wrote:
-> The CAN network device driver interface provides a generic interface to
-> setup, configure and monitor CAN network devices. It exports a set of
-> common data structures and functions, which all real CAN network device
-> drivers should use. Please have a look to the SJA1000 or MSCAN driver
-> to understand how to use them. The name of the module is can-dev.ko.
-> 
-> Furthermore adds a SYSFS interface to set and get CAN device properties.
-> When the CAN device is registered, a set of SYSFS files is created in
-> "/sys/class/net/canX/". These files allow to set and get device
-> properties like bit-timing parameters, state, controller mode and CAN
-> statistics.
 
-Is sysfs really the best choice for this? It has the usual problems,
-you can't change multiple parameters at once atomically. Now, I don't
-know whether this is actually (and currently) a problem for CAN, but
-given that we already have a generic netlink interface for creating
-network interfaces that can easily support this, what are the reasons
-for adding a new interface instead of using the existing one?
+* Yinghai Lu <yinghai@kernel.org> wrote:
+
+> Impact: fix bug.
+> 
+> otherwise will get panic from early_acpi_boot_init()
+> also make disable_x2apic global, so could use it it x2_apic_xxx.c
+> and can get warning if preenabled system using nox2apic.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/kernel/apic/apic.c           |    3 +--
+>  arch/x86/kernel/apic/x2apic_cluster.c |    5 ++++-
+>  arch/x86/kernel/apic/x2apic_phys.c    |    5 ++++-
+>  arch/x86/kernel/apic/x2apic_uv_x.c    |    4 +++-
+>  drivers/pci/dmar.c                    |    3 ++-
+>  5 files changed, 14 insertions(+), 6 deletions(-)
+
+I've applied it because it fixes a real bug, but this code 
+really needs a cleanup. Look at the repeat patterns:
+
+> Index: linux-2.6/arch/x86/kernel/apic/x2apic_cluster.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apic/x2apic_cluster.c
+> +++ linux-2.6/arch/x86/kernel/apic/x2apic_cluster.c
+> @@ -14,8 +14,11 @@ DEFINE_PER_CPU(u32, x86_cpu_to_logical_a
+>  
+>  static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+>  {
+> -	if (cpu_has_x2apic)
+> +	if (cpu_has_x2apic && !disable_x2apic) {
+> +		x2apic = 1;
+> +		enable_x2apic();
+>  		return 1;
+> +	}
+>  
+>  	return 0;
+>  }
+> Index: linux-2.6/arch/x86/kernel/apic/x2apic_phys.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apic/x2apic_phys.c
+> +++ linux-2.6/arch/x86/kernel/apic/x2apic_phys.c
+> @@ -21,8 +21,11 @@ early_param("x2apic_phys", set_x2apic_ph
+>  
+>  static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+>  {
+> -	if (cpu_has_x2apic && x2apic_phys)
+> +	if (cpu_has_x2apic && !disable_x2apic && x2apic_phys) {
+> +		x2apic = 1;
+> +		enable_x2apic();
+>  		return 1;
+> +	}
+>  
+>  	return 0;
+>  }
+> Index: linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apic/x2apic_uv_x.c
+> +++ linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c
+> @@ -41,8 +41,10 @@ static int uv_acpi_madt_oem_check(char *
+>  			uv_system_type = UV_LEGACY_APIC;
+>  		else if (!strcmp(oem_table_id, "UVX"))
+>  			uv_system_type = UV_X2APIC;
+> -		else if (!strcmp(oem_table_id, "UVH")) {
+> +		else if (!strcmp(oem_table_id, "UVH") && !disable_x2apic) {
+>  			uv_system_type = UV_NON_UNIQUE_APIC;
+> +			x2apic = 1;
+> +			enable_x2apic();
+>  			return 1;
+>  		}
+>  	}
+
+Such repeat patterns with small variations are always the sign 
+of an inefficient code structure.
+
+The clean approach would be to have one generic helper function 
+concentrated into enable_x2apic(). So instead of:
+
+ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+	if (cpu_has_x2apic && !disable_x2apic && x2apic_phys) {
+		x2apic = 1;
+		enable_x2apic();
+		return 1;
+	}
+
+	return 0;
+ }
+
+We'd have:
+
+ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+	if (!x2apic_phys)
+		return 0;
+
+	return x86_enable_x2apic();
+ }
+
+That way all the repeat and common functionality (and the return 
+code logic) is concentrated into enable_x2apic(), and the 
+x2apic_acpi_madt_oem_check() function has _only_ its own special 
+check open-coded. (namely, whether physical ID delivery mode is 
+forced off.)
+
+Okay?
+
+	Ingo
