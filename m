@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbZBTBm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbZBTBor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbZBTBm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 20:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZBTBmU
+	id S1758952AbZBTBor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 20:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZBTBoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 20:42:20 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:35259 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754846AbZBTBmT (ORCPT
+	Thu, 19 Feb 2009 20:44:38 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64852 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754573AbZBTBoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 20:42:19 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Thu, 19 Feb 2009 20:41:58 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
+	Thu, 19 Feb 2009 20:44:38 -0500
+Date: Thu, 19 Feb 2009 20:44:36 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: drzeus-mmc@drzeus.cx, lkml <linux-kernel@vger.kernel.org>,
-       maen@marvell.com
-Subject: Re: [PATCH v2] SDIO driver for Marvell SoCs
-In-reply-to: <20090219145808.796135e4.akpm@linux-foundation.org>
-Message-id: <alpine.LFD.2.00.0902192038480.5511@xanadu.home>
-References: <alpine.LFD.2.00.0902172338110.32550@xanadu.home>
- <20090219124418.dfc4dc9a.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0902191708330.5511@xanadu.home>
- <20090219145808.796135e4.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       peterz@infradead.org, fweisbec@gmail.com, torvalds@linux-foundation.org,
+       arjan@infradead.org, rusty@rustcorp.com.au,
+       mathieu.desnoyers@polymtl.ca, hpa@zytor.com, srostedt@redhat.com
+Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
+ conversions
+In-Reply-To: <20090219173210.73318ebc.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0902192041200.31658@gandalf.stny.rr.com>
+References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <20090219173210.73318ebc.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 On Thu, 19 Feb 2009, Andrew Morton wrote:
 
-> --- a/drivers/mmc/host/mvsdio.c~sdio-driver-for-marvell-socs-update
-> +++ a/drivers/mmc/host/mvsdio.c
-> @@ -783,9 +783,9 @@ out:
->  			gpio_free(host->gpio_write_protect);
->  		if (host->base)
->  			iounmap(host->base);
-> -		if (host->res)
-> -			release_resource(host->res);
->  	}
-> +	if (r)
-> +		release_resource(host->res);
->  	if (mmc)
->  		mmc_free_host(mmc);
->  
-> _
+> On Thu, 19 Feb 2009 20:13:20 -0500
+> Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> Nope, this will deref a null pointer on that error path and wouldn't
-> release the right thing anyway.
-
-Obviously.  I'm just too stupid sometimes.  A s/host->res/r/ in both 
-places would be better.
-
-> Something like this...
+> > +int ftrace_arch_modify_prepare(void)
+> > +{
+> > +	/* at boot up, we are still writable */
+> > +	if (system_state != SYSTEM_RUNNING)
+> > +		return 0;
+> > +
+> > +	set_kernel_text_rw();
+> > +	return 0;
+> > +}
+> > +
+> > +int ftrace_arch_modify_post_process(void)
+> > +{
+> > +	/* at boot up, we are still writable */
+> > +	if (system_state != SYSTEM_RUNNING)
+> > +		return 0;
+> > +
+> > +	set_kernel_text_ro();
+> > +	return 0;
+> > +}
 > 
-> --- a/drivers/mmc/host/mvsdio.c~sdio-driver-for-marvell-socs-update
-> +++ a/drivers/mmc/host/mvsdio.c
-> @@ -688,6 +688,7 @@ static int __init mvsd_probe(struct plat
->  
->  	mmc = mmc_alloc_host(sizeof(struct mvsd_host), &pdev->dev);
->  	if (!mmc) {
-> +		release_resource(r);
->  		ret = -ENOMEM;
->  		goto out;
->  	}
+> It would be prudent to avoid using system_state.  People can change the
+> point at which it transitions and can unexpectedly insert (or move)
+> code to sites where system_state has new values, etc.  It was a bad
+> idea.
 
-That's fine too.
+Good to know.
 
+> 
+> It would be clearer and more robust to create your own little flag for
+> this purpose and set to it true and false at the places where that is
+> appropriate for this application.  It's just one more byte...
 
-Nicolas
+I just did not want to set it to read-only before the main text decided to 
+do this. I could probably move those checks into the set_kernel_text_* 
+functions in init_32/64.c files. We should not convert until after the 
+DEBUG_RODATA did its first conversion. Yeah, that's a better place for it.
+
+I'll write up another patch.
+
+Thanks,
+
+-- Steve
+
