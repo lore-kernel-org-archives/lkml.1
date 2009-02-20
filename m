@@ -1,87 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZBTIHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbZBTILP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbZBTIHz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 03:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZBTIHo
+	id S1756328AbZBTILP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 03:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZBTIK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 03:07:44 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:22318 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751752AbZBTIHo (ORCPT
+	Fri, 20 Feb 2009 03:10:59 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:55950 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753242AbZBTIK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 03:07:44 -0500
-X-YMail-OSG: yT4_fJkVM1nBEgQ9.OV3nU0s6ld.bTrjbB2CaXVWEDIPC2PF8wINOAU5ErLOYfTxQpYSZ_poJ0qkkciH.Dky6ZQtgfoUMsSvkNFr3my9KopMw5ZJBZDo7OsFr4UEg8jthNrLq32X3fCQZKvs4Wg4wLiip2DwNVxqrXyAfBEXwPIkPMlBveWIlhIhWXX.qyauNFuqr_6pdYLwke614_wbRbMPIo2XBk54GMIIqAUFFraX80Zmfrk-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 7/7] [Target_Core_Mod/ConfigFS]: Add hw_block_size and
-	block_size configfs attributes
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, Alan Stern <stern@rowland.harvard.edu>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Hannes Reinecke <hare@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 20 Feb 2009 00:06:39 -0800
-Message-Id: <1235117199.12375.1051.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 20 Feb 2009 03:10:58 -0500
+Message-Id: <200902200810.n1K8AtRj063682@www262.sakura.ne.jp>
+Subject: [linux-next-20090219] \"struct pgprot\" incomplete type warning.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Date: Fri, 20 Feb 2009 17:10:53 +0900
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 20022009 #1641522, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 78b6d56c09bf1305e9ea532e734b885d0fa60b5d Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Thu, 19 Feb 2009 19:45:37 -0800
-Subject: [PATCH 7/7] [Target_Core_Mod/ConfigFS]: Add hw_block_size and block_size configfs attributes
-
-This patch adds the hw_block_size and block_size to /sys/kernel/config/target/core/$HBA/$DEV/attrib.
-It allows block_size to be changed for IBLOCK, FILEIO and RAMDISK Target_Core_Mod/ConfigFS
-storage objects to 4096, 2048, 1024 or 512 byte sector sizes, but currently requires that there be
-*NO* active exports of said storage object to a active $FABRIC_MOD in order to change block_size.
-
-By default, both hw_block_size and block_size are set to 512 bytes from IBLOCK, FILEIO and RAMDISK
-subsystem plugins.  Note that for Target_Core_Mod/pSCSI storage objects, block_size is not allowed
-to be changed (because we are doing passthrough into physical hardware registerd with Linux/SCSI)
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_configfs.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
-index 46324a6..bcbd2cf 100644
---- a/drivers/lio-core/target_core_configfs.c
-+++ b/drivers/lio-core/target_core_configfs.c
-@@ -469,6 +469,12 @@ SE_DEV_ATTR(status_thread, S_IRUGO | S_IWUSR);
- DEF_DEV_ATTRIB(status_thread_tur);
- SE_DEV_ATTR(status_thread_tur, S_IRUGO | S_IWUSR);
- 
-+DEF_DEV_ATTRIB_RO(hw_block_size);
-+SE_DEV_ATTR_RO(hw_block_size);
-+
-+DEF_DEV_ATTRIB(block_size);
-+SE_DEV_ATTR(block_size, S_IRUGO | S_IWUSR);
-+
- DEF_DEV_ATTRIB_RO(hw_max_sectors);
- SE_DEV_ATTR_RO(hw_max_sectors);
- 
-@@ -489,6 +495,8 @@ CONFIGFS_EATTR_OPS(target_core_dev_attrib, se_dev_attrib_s, da_group);
- static struct configfs_attribute *target_core_dev_attrib_attrs[] = {
- 	&target_core_dev_attrib_status_thread.attr,
- 	&target_core_dev_attrib_status_thread_tur.attr,
-+	&target_core_dev_attrib_hw_block_size.attr,
-+	&target_core_dev_attrib_block_size.attr,
- 	&target_core_dev_attrib_hw_max_sectors.attr,
- 	&target_core_dev_attrib_max_sectors.attr,
- 	&target_core_dev_attrib_hw_queue_depth.attr,
--- 
-1.5.4.1
-
-
-
+When compiling on Sarge (gcc (GCC) 3.3.5), below warning appears on every file.
+Though it is harmless, is it possible to make compiler silent?
+-----
+In file included from /usr/src/linux/kernel/git/sfr/linux-next.git/arch/x86/include/asm/page.h:8,
+                 from /usr/src/linux/kernel/git/sfr/linux-next.git/arch/x86/include/asm/thread_info.h:11,
+                 from include/linux/thread_info.h:55,
+                 from include/linux/preempt.h:9,
+                 from ......:..,
+                 from ......:..,
+/usr/src/linux/kernel/git/sfr/linux-next.git/arch/x86/include/asm/page_types.h:54: warning: parameter has incomplete type
+/usr/src/linux/kernel/git/sfr/linux-next.git/arch/x86/include/asm/page_types.h:56: warning: parameter has incomplete type
+-----
+Regards.
