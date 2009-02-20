@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbZBTTQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZBTTVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043AbZBTTQu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 14:16:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZBTTQm
+	id S1754678AbZBTTVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 14:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZBTTVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 14:16:42 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59119 "EHLO mx2.redhat.com"
+	Fri, 20 Feb 2009 14:21:43 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53163 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbZBTTQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 14:16:41 -0500
-Date: Fri, 20 Feb 2009 20:13:21 +0100
+	id S1752283AbZBTTVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 14:21:42 -0500
+Date: Fri, 20 Feb 2009 20:18:25 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jerome Marchand <jmarchan@redhat.com>,
-       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 2/2] ptrace_untrace: fix the SIGNAL_STOP_STOPPED
-	check
-Message-ID: <20090220191321.GA7564@redhat.com>
-References: <20090213105442.GA24328@redhat.com> <20090220034928.741F6FC2F7@magilla.sf.frob.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] forget_original_parent: do not abuse
+	child->ptrace_entry
+Message-ID: <20090220191825.GB7564@redhat.com>
+References: <20090211211218.GA16850@redhat.com> <20090220022823.9127AFC2F7@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090220034928.741F6FC2F7@magilla.sf.frob.com>
+In-Reply-To: <20090220022823.9127AFC2F7@magilla.sf.frob.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +31,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 02/19, Roland McGrath wrote:
 >
-> > This bug is ancient too. ptrace_untrace() must not resume the task
-> > if the group stop in progress, we should set TASK_STOPPED instead.
+> > - rename ptrace_dead to dead_childs.
 >
-> Right, the change looks correct.
+> s/dead_childs/dead_children/
+
+Yes, Andrew has already fixed this,
+
+> > +/*
+> > +* Any that need to be release_task'd are put on the @dead list.
+> > + */
 >
-> > Unfortunately, we still have problems here:
-> >
-> > 	- if the process/thread was traced, SIGNAL_STOP_STOPPED
-> > 	  does not necessary means this thread group is stopped.
-> >
-> > 	- ptrace breaks the bookkeeping of ->group_stop_count.
->
-> Neither of these should be true today as I understand the code.
+> Missing leading space on the second comment lien.
 
-Suppose we have
+ah. will send the trivial cleanup.
 
-	int main(void)
-	{
-		kill(getpid(), SIGSTOP);
+> Modulo those cosmetic things, ACK on this.
 
-		for (;;)
-			;
-	}
-
-If you strace this task nobody clears SIGNAL_STOP_STOPPED.
-
-As for bookkeeping of ->group_stop_count, I think ptrace_stop() is wrong
-in many ways. For example, it decrements ->group_stop_count but doesn't
-set SIGNAL_STOP_STOPPED if it becomes zero.
+Thanks.
 
 Oleg.
 
