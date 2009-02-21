@@ -1,94 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZBUXRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZBUXZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbZBUXRv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 18:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbZBUXRn
+	id S1755379AbZBUXZG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 18:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZBUXYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 18:17:43 -0500
-Received: from mga02.intel.com ([134.134.136.20]:20603 "EHLO mga02.intel.com"
+	Sat, 21 Feb 2009 18:24:54 -0500
+Received: from THUNK.ORG ([69.25.196.29]:49946 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754358AbZBUXRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 18:17:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,247,1233561600"; 
-   d="scan'208";a="388727368"
-Date: Sat, 21 Feb 2009 15:17:41 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Philippe Grenard <philippe.grenard@laposte.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       John Stoffel <john@stoffel.org>
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
-Message-ID: <20090221231741.GA6733@linux-os.sc.intel.com>
-References: <200902131944.56634.philippe.grenard@laposte.net> <200902202108.55332.philippe.grenard@laposte.net> <20090220215830.GB30665@elte.hu> <200902211121.46292.philippe.grenard@laposte.net>
-Mime-Version: 1.0
+	id S1754388AbZBUXYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 18:24:53 -0500
+Date: Sat, 21 Feb 2009 12:56:46 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Federico Cuello <fedux@lugmen.org.ar>,
+       Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug #12610] sync-Regression in 2.6.28.2?
+Message-ID: <20090221175646.GB3750@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Federico Cuello <fedux@lugmen.org.ar>,
+	Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
+	bugme-daemon@bugzilla.kernel.org
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.xTF.As0lJB@chimera>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902211121.46292.philippe.grenard@laposte.net>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <rjPbZ5GRJPO.A.xTF.As0lJB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 21, 2009 at 02:21:46AM -0800, Philippe Grenard wrote:
-> Hello Ingo, thanks for your reply,
-> 
-> I've tried to boot 2.6.29-rc5 with both "Max CPUID Value" Enabled and
-> Disabled, and tried for both case the "nofxsr" option without better result...
+On Sat, Feb 14, 2009 at 09:38:18PM +0100, Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12610
+> Subject		: sync-Regression in 2.6.28.2?
+> Submitter	: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+> Date		: 2009-01-27 9:35 (19 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123304977706620&w=4
 
-Philippe, Can you apply the appended patch and pass "noxsave" boot param
-and see if it helps fix your freeze issue. This should atleast take away
-the xsave equation from the picture.
+This fix for this has landed in mainline post 2.6.29-rc5, as commit
+2acf2c.  The deadlock is technically not a regression but it was made
+*much* more likely to show up because of commit 31a1266: ("mm:
+write_cache_pages cyclic fix, which show up in 2.6.28.1").  
 
-I haven't followed this thread closely, but do you have nmi watchdog and other
-debug options like CONFIG_DETECT_SOFTLOCKUP enabled? That might give more clues
-about the freeze.
+Commit 3a4c68 in mainline backs up the change made in 31a1266, so you
+probably won't see this much after 2.6.28.6 (when 3a4c68 was
+backported to 2.6.28.y), but we should get commit 2acf2c pushed to
+2.6.28.x and 2.6.27.y to completely solve the deadlock problem.
 
-thanks,
-suresh
----
-
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x86: Introduce noxsave boot parameter
-
-Introduce "noxsave" boot parameter which will disable the cpu's xsave/xrstor
-capabilities.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-Index: tip/Documentation/kernel-parameters.txt
-===================================================================
---- tip/Documentation/kernel-parameters.txt.orig
-+++ tip/Documentation/kernel-parameters.txt
-@@ -1493,6 +1493,10 @@ and is between 256 and 4096 characters. 
- 			register save and restore. The kernel will only save
- 			legacy floating-point registers on task switch.
- 
-+	noxsave		[BUGS=X86] Disables x86 extended register state save
-+			and restore using xsave. The kernel will fallback to
-+			enabling legacy floating-point and sse state.
-+
- 	noclflush	[BUGS=X86] Don't use the CLFLUSH instruction
- 
- 	nohlt		[BUGS=ARM,SH]
-Index: tip/arch/x86/kernel/cpu/common.c
-===================================================================
---- tip/arch/x86/kernel/cpu/common.c.orig
-+++ tip/arch/x86/kernel/cpu/common.c
-@@ -127,6 +127,13 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_p
- } };
- EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
- 
-+static int __init x86_xsave_setup(char *s)
-+{
-+	setup_clear_cpu_cap(X86_FEATURE_XSAVE);
-+	return 1;
-+}
-+__setup("noxsave", x86_xsave_setup);
-+
- #ifdef CONFIG_X86_32
- static int cachesize_override __cpuinitdata = -1;
- static int disable_x86_serial_nr __cpuinitdata = 1;
+						- Ted
