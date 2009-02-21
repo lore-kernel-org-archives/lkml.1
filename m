@@ -1,123 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbZBUBTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZBUBVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbZBUBTa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 20:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbZBUBTT
+	id S1756731AbZBUBVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 20:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbZBUBVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 20:19:19 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:64788 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757022AbZBUBTS (ORCPT
+	Fri, 20 Feb 2009 20:21:08 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:41842 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754073AbZBUBVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 20:19:18 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 2/2] KVM: fix sparse warnings: Should it be static?
-To: Avi Kivity <avi@redhat.com>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Sat, 21 Feb 2009 02:19:13 +0100
-Message-ID: <20090221011821.7022.50596.stgit@vmbox.hanneseder.net>
-In-Reply-To: <20090221011723.7022.97639.stgit@vmbox.hanneseder.net>
-References: <20090221011723.7022.97639.stgit@vmbox.hanneseder.net>
-User-Agent: StGit/0.14.3.348.gcb02
+	Fri, 20 Feb 2009 20:21:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=XIQdHIKgyQOLYFptWPwNnYAbUd47RcqAeUVIki8R4DZC/Ulm+8W0PPZNNx73j7DtOs
+         t/payZNAsiwdqZstNBBvl7EhLnwxY5nkU36CpOfB6B8Gp449Y8AYFVN8+ZUTwkPxdzgd
+         EZWcUQGX+C+7V09NUEywVBz0hx0bsa1+75uAY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
+References: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
+Date: Fri, 20 Feb 2009 19:21:05 -0600
+Message-ID: <524f69650902201721l1c7f0d34p4708980a90d7fc8f@mail.gmail.com>
+Subject: Re: [PATCH] fs/cifs: send SMB_COM_FLUSH in cifs_fsync
+From: Steve French <smfrench@gmail.com>
+To: Horst Reiterer <horst.reiterer@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
+Content-Type: multipart/mixed; boundary=000325574d8e5d476904636395c2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Make symbols static.
+--000325574d8e5d476904636395c2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Fix this sparse warnings:
-  arch/x86/kvm/mmu.c:992:5: warning: symbol 'mmu_pages_add' was not declared. Should it be static?
-  arch/x86/kvm/mmu.c:1124:5: warning: symbol 'mmu_pages_next' was not declared. Should it be static?
-  arch/x86/kvm/mmu.c:1144:6: warning: symbol 'mmu_pages_clear_parents' was not declared. Should it be static?
-  arch/x86/kvm/x86.c:2037:5: warning: symbol 'kvm_read_guest_virt' was not declared. Should it be static?
-  arch/x86/kvm/x86.c:2067:5: warning: symbol 'kvm_write_guest_virt' was not declared. Should it be static?
-  virt/kvm/irq_comm.c:220:5: warning: symbol 'setup_routing_entry' was not declared. Should it be static?
+On Fri, Feb 20, 2009 at 2:51 PM, Horst Reiterer
+<horst.reiterer@gmail.com> wrote:
+> Hi,
+>
+> In contrast to the now-obsolete smbfs, cifs does not send SMB_COM_FLUSH
+> in response to an explicit fsync(2) to guarantee that all volatile data
+> is written to stable storage on the server side, provided the server
+> honors the request (which, to my knowledge, is true for Windows and
+> Samba with 'strict sync' enabled).
+> This patch modifies the cifs_fsync implementation
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- arch/x86/kvm/mmu.c  |   11 ++++++-----
- arch/x86/kvm/x86.c  |    8 ++++----
- virt/kvm/irq_comm.c |    4 ++--
- 3 files changed, 12 insertions(+), 11 deletions(-)
+I modified your patch slightly to not lose the writeback rc in one
+case, and to change camel case pTcon to tcon and remove one
+unnecessary local variable.
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 4a21b0f..2a36f7f 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -989,8 +989,8 @@ struct kvm_mmu_pages {
- 	     idx < 512;					\
- 	     idx = find_next_bit(bitmap, 512, idx+1))
- 
--int mmu_pages_add(struct kvm_mmu_pages *pvec, struct kvm_mmu_page *sp,
--		   int idx)
-+static int mmu_pages_add(struct kvm_mmu_pages *pvec, struct kvm_mmu_page *sp,
-+			 int idx)
- {
- 	int i;
- 
-@@ -1121,8 +1121,9 @@ struct mmu_page_path {
- 			i < pvec.nr && ({ sp = pvec.page[i].sp; 1;});	\
- 			i = mmu_pages_next(&pvec, &parents, i))
- 
--int mmu_pages_next(struct kvm_mmu_pages *pvec, struct mmu_page_path *parents,
--		   int i)
-+static int mmu_pages_next(struct kvm_mmu_pages *pvec,
-+			  struct mmu_page_path *parents,
-+			  int i)
- {
- 	int n;
- 
-@@ -1141,7 +1142,7 @@ int mmu_pages_next(struct kvm_mmu_pages *pvec, struct mmu_page_path *parents,
- 	return n;
- }
- 
--void mmu_pages_clear_parents(struct mmu_page_path *parents)
-+static void mmu_pages_clear_parents(struct mmu_page_path *parents)
- {
- 	struct kvm_mmu_page *sp;
- 	unsigned int level = 0;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 05d7be8..69ca2d1 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2034,8 +2034,8 @@ static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,
- 	return dev;
- }
- 
--int kvm_read_guest_virt(gva_t addr, void *val, unsigned int bytes,
--			struct kvm_vcpu *vcpu)
-+static int kvm_read_guest_virt(gva_t addr, void *val, unsigned int bytes,
-+			       struct kvm_vcpu *vcpu)
- {
- 	void *data = val;
- 	int r = X86EMUL_CONTINUE;
-@@ -2064,8 +2064,8 @@ out:
- 	return r;
- }
- 
--int kvm_write_guest_virt(gva_t addr, void *val, unsigned int bytes,
--			 struct kvm_vcpu *vcpu)
-+static int kvm_write_guest_virt(gva_t addr, void *val, unsigned int bytes,
-+				struct kvm_vcpu *vcpu)
- {
- 	void *data = val;
- 	int r = X86EMUL_CONTINUE;
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index 6bc7439..c2de19b 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -217,8 +217,8 @@ void kvm_free_irq_routing(struct kvm *kvm)
- 	__kvm_free_irq_routing(&kvm->irq_routing);
- }
- 
--int setup_routing_entry(struct kvm_kernel_irq_routing_entry *e,
--			const struct kvm_irq_routing_entry *ue)
-+static int setup_routing_entry(struct kvm_kernel_irq_routing_entry *e,
-+			       const struct kvm_irq_routing_entry *ue)
- {
- 	int r = -EINVAL;
- 	int delta;
+See attached.   Thanks for the submission - looks fine otherwise.   If
+you have any performance numbers before and after (with e.g. dbench,
+iozone, bonnie etc. or perhaps something which calls fsync more often
+- that would be helpful in determining whether we need a mount option
+to optionally disable it - as the samba server does)
 
+
+-- 
+Thanks,
+
+Steve
+
+--000325574d8e5d476904636395c2
+Content-Type: text/x-diff; charset=US-ASCII; name="fsync.patch"
+Content-Disposition: attachment; filename="fsync.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_frfltqy20
+
+ZGlmZiAtLWdpdCBhL2ZzL2NpZnMvQ0hBTkdFUyBiL2ZzL2NpZnMvQ0hBTkdFUwppbmRleCA4NTEz
+ODhmLi5kNDNlMGZlIDEwMDY0NAotLS0gYS9mcy9jaWZzL0NIQU5HRVMKKysrIGIvZnMvY2lmcy9D
+SEFOR0VTCkBAIC02LDcgKzYsOSBAQCB0aGUgc2VydmVyIHRvIHRyZWF0IHN1YnNlcXVlbnQgY29u
+bmVjdGlvbnMsIGVzcGVjaWFsbHkgdGhvc2UgdGhhdAogYXJlIGF1dGhlbnRpY2F0ZWQgYXMgZ3Vl
+c3QsIGFzIHJlY29ubmVjdGlvbnMsIGludmFsaWRhdGluZyB0aGUgZWFybGllcgogdXNlcidzIHNt
+YiBzZXNzaW9uLiAgVGhpcyBmaXggYWxsb3dzIGNpZnMgdG8gbW91bnQgbXVsdGlwbGUgdGltZXMg
+dG8gdGhlCiBzYW1lIHNlcnZlciB3aXRoIGRpZmZlcmVudCB1c2VyaWRzIHdpdGhvdXQgcmlza2lu
+ZyBpbnZhbGlkYXRpbmcgZWFybGllcgotZXN0YWJsaXNoZWQgc2VjdXJpdHkgY29udGV4dHMuCitl
+c3RhYmxpc2hlZCBzZWN1cml0eSBjb250ZXh0cy4gIGZzeW5jIG5vdyBzZW5kcyBTTUIgRmx1c2gg
+b3BlcmF0aW9uCit0byBiZXR0ZXIgZW5zdXJlIHRoYXQgd2Ugd2FpdCBmb3Igc2VydmVyIHRvIHdy
+aXRlIGFsbCBvZiB0aGUgZGF0YSB0bworc2VydmVyIGRpc2sgKG5vdCBqdXN0IHdyaXRlIGl0IG92
+ZXIgdGhlIG5ldHdvcmspLgogCiBWZXJzaW9uIDEuNTYKIC0tLS0tLS0tLS0tLQpkaWZmIC0tZ2l0
+IGEvZnMvY2lmcy9jaWZzX2RlYnVnLmMgYi9mcy9jaWZzL2NpZnNfZGVidWcuYwppbmRleCA0OTBl
+MzRiLi44NzdlNGQ5IDEwMDY0NAotLS0gYS9mcy9jaWZzL2NpZnNfZGVidWcuYworKysgYi9mcy9j
+aWZzL2NpZnNfZGVidWcuYwpAQCAtMzQwLDYgKzM0MCw4IEBAIHN0YXRpYyBpbnQgY2lmc19zdGF0
+c19wcm9jX3Nob3coc3RydWN0IHNlcV9maWxlICptLCB2b2lkICp2KQogCQkJCXNlcV9wcmludGYo
+bSwgIlxuV3JpdGVzOiAlZCBCeXRlczogJWxsZCIsCiAJCQkJCWF0b21pY19yZWFkKCZ0Y29uLT5u
+dW1fd3JpdGVzKSwKIAkJCQkJKGxvbmcgbG9uZykodGNvbi0+Ynl0ZXNfd3JpdHRlbikpOworCQkJ
+CXNlcV9wcmludGYobSwgIlxuRmx1c2hlczogJWQiLAorCQkJCQlhdG9taWNfcmVhZCgmdGNvbi0+
+bnVtX2ZsdXNoZXMpKTsKIAkJCQlzZXFfcHJpbnRmKG0sICJcbkxvY2tzOiAlZCBIYXJkTGlua3M6
+ICVkICIKIAkJCQkJICAgICAgIlN5bWxpbmtzOiAlZCIsCiAJCQkJCWF0b21pY19yZWFkKCZ0Y29u
+LT5udW1fbG9ja3MpLApkaWZmIC0tZ2l0IGEvZnMvY2lmcy9jaWZzZ2xvYi5oIGIvZnMvY2lmcy9j
+aWZzZ2xvYi5oCmluZGV4IGUwMDRmNmQuLjQ0ZmY5NGQgMTAwNjQ0Ci0tLSBhL2ZzL2NpZnMvY2lm
+c2dsb2IuaAorKysgYi9mcy9jaWZzL2NpZnNnbG9iLmgKQEAgLTI1NCw2ICsyNTQsNyBAQCBzdHJ1
+Y3QgY2lmc1Rjb25JbmZvIHsKIAlhdG9taWNfdCBudW1fc21ic19zZW50OwogCWF0b21pY190IG51
+bV93cml0ZXM7CiAJYXRvbWljX3QgbnVtX3JlYWRzOworCWF0b21pY190IG51bV9mbHVzaGVzOwog
+CWF0b21pY190IG51bV9vcGxvY2tfYnJrczsKIAlhdG9taWNfdCBudW1fb3BlbnM7CiAJYXRvbWlj
+X3QgbnVtX2Nsb3NlczsKZGlmZiAtLWdpdCBhL2ZzL2NpZnMvY2lmc3BkdS5oIGIvZnMvY2lmcy9j
+aWZzcGR1LmgKaW5kZXggYjRlMmU5Zi4uZWRhNmU1MSAxMDA2NDQKLS0tIGEvZnMvY2lmcy9jaWZz
+cGR1LmgKKysrIGIvZnMvY2lmcy9jaWZzcGR1LmgKQEAgLTQzLDYgKzQzLDcgQEAKICNkZWZpbmUg
+U01CX0NPTV9DUkVBVEVfRElSRUNUT1JZICAgICAgMHgwMCAvKiB0cml2aWFsIHJlc3BvbnNlICov
+CiAjZGVmaW5lIFNNQl9DT01fREVMRVRFX0RJUkVDVE9SWSAgICAgIDB4MDEgLyogdHJpdmlhbCBy
+ZXNwb25zZSAqLwogI2RlZmluZSBTTUJfQ09NX0NMT1NFICAgICAgICAgICAgICAgICAweDA0IC8q
+IHRyaXYgcmVxL3JzcCwgdGltZXN0YW1wIGlnbm9yZWQgKi8KKyNkZWZpbmUgU01CX0NPTV9GTFVT
+SCAgICAgICAgICAgICAgICAgMHgwNSAvKiB0cml2IHJlcS9yc3AgKi8KICNkZWZpbmUgU01CX0NP
+TV9ERUxFVEUgICAgICAgICAgICAgICAgMHgwNiAvKiB0cml2aWFsIHJlc3BvbnNlICovCiAjZGVm
+aW5lIFNNQl9DT01fUkVOQU1FICAgICAgICAgICAgICAgIDB4MDcgLyogdHJpdmlhbCByZXNwb25z
+ZSAqLwogI2RlZmluZSBTTUJfQ09NX1FVRVJZX0lORk9STUFUSU9OICAgICAweDA4IC8qIGFrYSBn
+ZXRhdHRyICovCkBAIC03OTAsNiArNzkxLDEyIEBAIHR5cGVkZWYgc3RydWN0IHNtYl9jb21fY2xv
+c2VfcnNwIHsKIAlfX3UxNiBCeXRlQ291bnQ7CS8qIGJjdCA9IDAgKi8KIH0gX19hdHRyaWJ1dGVf
+XygocGFja2VkKSkgQ0xPU0VfUlNQOwogCit0eXBlZGVmIHN0cnVjdCBzbWJfY29tX2ZsdXNoX3Jl
+cSB7CisJc3RydWN0IHNtYl9oZHIgaGRyOwkvKiB3Y3QgPSAxICovCisJX191MTYgRmlsZUlEOwor
+CV9fdTE2IEJ5dGVDb3VudDsJLyogMCAqLworfSBfX2F0dHJpYnV0ZV9fKChwYWNrZWQpKSBGTFVT
+SF9SRVE7CisKIHR5cGVkZWYgc3RydWN0IHNtYl9jb21fZmluZGNsb3NlX3JlcSB7CiAJc3RydWN0
+IHNtYl9oZHIgaGRyOyAvKiB3Y3QgPSAxICovCiAJX191MTYgRmlsZUlEOwpkaWZmIC0tZ2l0IGEv
+ZnMvY2lmcy9jaWZzcHJvdG8uaCBiL2ZzL2NpZnMvY2lmc3Byb3RvLmgKaW5kZXggMDgzZGZjNS4u
+NTk2ZmM4NiAxMDA2NDQKLS0tIGEvZnMvY2lmcy9jaWZzcHJvdG8uaAorKysgYi9mcy9jaWZzL2Np
+ZnNwcm90by5oCkBAIC0yODEsNiArMjgxLDkgQEAgZXh0ZXJuIGludCBDSUZTUE9TSVhDcmVhdGUo
+Y29uc3QgaW50IHhpZCwgc3RydWN0IGNpZnNUY29uSW5mbyAqdGNvbiwKIGV4dGVybiBpbnQgQ0lG
+U1NNQkNsb3NlKGNvbnN0IGludCB4aWQsIHN0cnVjdCBjaWZzVGNvbkluZm8gKnRjb24sCiAJCQlj
+b25zdCBpbnQgc21iX2ZpbGVfaWQpOwogCitleHRlcm4gaW50IENJRlNTTUJGbHVzaChjb25zdCBp
+bnQgeGlkLCBzdHJ1Y3QgY2lmc1Rjb25JbmZvICp0Y29uLAorCQkJY29uc3QgaW50IHNtYl9maWxl
+X2lkKTsKKwogZXh0ZXJuIGludCBDSUZTU01CUmVhZChjb25zdCBpbnQgeGlkLCBzdHJ1Y3QgY2lm
+c1Rjb25JbmZvICp0Y29uLAogCQkJY29uc3QgaW50IG5ldGZpZCwgdW5zaWduZWQgaW50IGNvdW50
+LAogCQkJY29uc3QgX191NjQgbHNlZWssIHVuc2lnbmVkIGludCAqbmJ5dGVzLCBjaGFyICoqYnVm
+LApkaWZmIC0tZ2l0IGEvZnMvY2lmcy9jaWZzc21iLmMgYi9mcy9jaWZzL2NpZnNzbWIuYwppbmRl
+eCA5MzllMmY3Li40YzM0NGZlIDEwMDY0NAotLS0gYS9mcy9jaWZzL2NpZnNzbWIuYworKysgYi9m
+cy9jaWZzL2NpZnNzbWIuYwpAQCAtMTkzNCw2ICsxOTM0LDI3IEBAIENJRlNTTUJDbG9zZShjb25z
+dCBpbnQgeGlkLCBzdHJ1Y3QgY2lmc1Rjb25JbmZvICp0Y29uLCBpbnQgc21iX2ZpbGVfaWQpCiB9
+CiAKIGludAorQ0lGU1NNQkZsdXNoKGNvbnN0IGludCB4aWQsIHN0cnVjdCBjaWZzVGNvbkluZm8g
+KnRjb24sIGludCBzbWJfZmlsZV9pZCkKK3sKKwlpbnQgcmMgPSAwOworCUZMVVNIX1JFUSAqcFNN
+QiA9IE5VTEw7CisJY0ZZSSgxLCAoIkluIENJRlNTTUJGbHVzaCIpKTsKKworCXJjID0gc21hbGxf
+c21iX2luaXQoU01CX0NPTV9GTFVTSCwgMSwgdGNvbiwgKHZvaWQgKiopICZwU01CKTsKKwlpZiAo
+cmMpCisJCXJldHVybiByYzsKKworCXBTTUItPkZpbGVJRCA9IChfX3UxNikgc21iX2ZpbGVfaWQ7
+CisJcFNNQi0+Qnl0ZUNvdW50ID0gMDsKKwlyYyA9IFNlbmRSZWNlaXZlTm9Sc3AoeGlkLCB0Y29u
+LT5zZXMsIChzdHJ1Y3Qgc21iX2hkciAqKSBwU01CLCAwKTsKKwljaWZzX3N0YXRzX2luYygmdGNv
+bi0+bnVtX2ZsdXNoZXMpOworCWlmIChyYykKKwkJY0VSUk9SKDEsICgiU2VuZCBlcnJvciBpbiBG
+bHVzaCA9ICVkIiwgcmMpKTsKKworCXJldHVybiByYzsKK30KKworaW50CiBDSUZTU01CUmVuYW1l
+KGNvbnN0IGludCB4aWQsIHN0cnVjdCBjaWZzVGNvbkluZm8gKnRjb24sCiAJICAgICAgY29uc3Qg
+Y2hhciAqZnJvbU5hbWUsIGNvbnN0IGNoYXIgKnRvTmFtZSwKIAkgICAgICBjb25zdCBzdHJ1Y3Qg
+bmxzX3RhYmxlICpubHNfY29kZXBhZ2UsIGludCByZW1hcCkKZGlmZiAtLWdpdCBhL2ZzL2NpZnMv
+ZmlsZS5jIGIvZnMvY2lmcy9maWxlLmMKaW5kZXggMTJiYjY1Ni4uODNiNDc0MSAxMDA2NDQKLS0t
+IGEvZnMvY2lmcy9maWxlLmMKKysrIGIvZnMvY2lmcy9maWxlLmMKQEAgLTE1MjMsNiArMTUyMyw5
+IEBAIGludCBjaWZzX2ZzeW5jKHN0cnVjdCBmaWxlICpmaWxlLCBzdHJ1Y3QgZGVudHJ5ICpkZW50
+cnksIGludCBkYXRhc3luYykKIHsKIAlpbnQgeGlkOwogCWludCByYyA9IDA7CisJc3RydWN0IGNp
+ZnNUY29uSW5mbyAqdGNvbjsKKwlzdHJ1Y3QgY2lmc0ZpbGVJbmZvICpzbWJmaWxlID0KKwkJKHN0
+cnVjdCBjaWZzRmlsZUluZm8gKilmaWxlLT5wcml2YXRlX2RhdGE7CiAJc3RydWN0IGlub2RlICpp
+bm9kZSA9IGZpbGUtPmZfcGF0aC5kZW50cnktPmRfaW5vZGU7CiAKIAl4aWQgPSBHZXRYaWQoKTsK
+QEAgLTE1MzQsNyArMTUzNywxMSBAQCBpbnQgY2lmc19mc3luYyhzdHJ1Y3QgZmlsZSAqZmlsZSwg
+c3RydWN0IGRlbnRyeSAqZGVudHJ5LCBpbnQgZGF0YXN5bmMpCiAJaWYgKHJjID09IDApIHsKIAkJ
+cmMgPSBDSUZTX0koaW5vZGUpLT53cml0ZV9iZWhpbmRfcmM7CiAJCUNJRlNfSShpbm9kZSktPndy
+aXRlX2JlaGluZF9yYyA9IDA7CisJCXRjb24gPSBDSUZTX1NCKGlub2RlLT5pX3NiKS0+dGNvbjsK
+KwkJaWYgKCFyYyAmJiB0Y29uICYmIHNtYmZpbGUpCisJCQlyYyA9IENJRlNTTUJGbHVzaCh4aWQs
+IHRjb24sIHNtYmZpbGUtPm5ldGZpZCk7CiAJfQorCiAJRnJlZVhpZCh4aWQpOwogCXJldHVybiBy
+YzsKIH0K
+--000325574d8e5d476904636395c2--
