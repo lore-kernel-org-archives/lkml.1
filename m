@@ -1,50 +1,34 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbZBUDmc (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 20 Feb 2009 22:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZBUDmW
+	id S1753386AbZBULrg (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 21 Feb 2009 06:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZBULr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 22:42:22 -0500
-Received: from omr2.bezeqint.net ([192.115.104.10]:59847 "EHLO
-	omr2.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbZBUDmW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 22:42:22 -0500
-X-Mirapoint-IP-Reputation: reputation=good-1,
-	source=Fixed,
-	refid=n/a,
-	actions=tag
-From: Siemens Claims Officer <siemens@live.com>
-Subject: **Lucky Winner**
-Reply-To: siemens2@onlineclaimsdept.com
-X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+	Sat, 21 Feb 2009 06:47:27 -0500
+Received: from simmts7-srv.bellnexxia.net ([206.47.199.165]:51638 "EHLO
+	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751767AbZBULr0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 06:47:26 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ai7bAA90n0nOL8eh/2dsb2JhbACBSSWJHoIEEwEQuRCQVQY
+X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
+X-Originating-IP: [65.120.56.2]
+From: Siemens Award 2009 <william1@ns.sympatico.ca>
+Reply-To: siemens3@onlineclaimsdept.com
+To: <info@lotto.co.uk>
+Subject: ***Congratulation 2009 Winner***
+Date: Sat, 21 Feb 2009 6:47:25 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <20090221053941.FQU46147@mas26.bezeqint.net>
-Date: Sat, 21 Feb 2009 05:39:41 +0200 (IST)
-X-Junkmail-Status: score=36/45, host=mr11.bezeqint.net
-X-Junkmail-SD-Raw: score=suspect(1),
-	refid=str=0001.0A0B0205.499F77FF.0050,ss=2,fgs=0,
-	ip=192.115.104.156,
-	so=2008-09-22 23:22:13,
-	dmn=5.7.1/2008-09-02,
-	mode=single engine
-X-Junkmail-IWF: false
-To: undisclosed-recipients:;
+Message-Id: <20090221114725.ZPVW1679.simmts7-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755437AbZBUDmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753386AbZBULrg@vger.kernel.org>
 
-Your email ID has been awarded £750,000,00 GBP in the  
-Siemens Promo, Reply us with your info: 
-(siemens2@onlineclaimsdept.com)
+Your email ID has been Awarded £750,000,00 GBP in our 
+SIEMENS AWARD,Reply us with your info (siemens3@onlineclaimsdept.com)
 
-Name:....................
-Country:.................   
-Sex:.....................
-Age: .....................   
-Addres:...................
+Name:...Country:..Sex:......Age: ....
 
-Regards
-Mrs Sarah Wilson
