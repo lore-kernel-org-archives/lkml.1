@@ -1,247 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZBUJQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZBUJRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbZBUJQv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 04:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbZBUJQf
+	id S1755409AbZBUJRO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 04:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZBUJQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 04:16:35 -0500
-Received: from smtp7.tech.numericable.fr ([82.216.111.43]:45665 "EHLO
-	smtp7.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbZBUJQc (ORCPT
+	Sat, 21 Feb 2009 04:16:37 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:45530 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752791AbZBUJQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 04:16:32 -0500
-Message-ID: <499FC669.80302@numericable.fr>
-Date: Sat, 21 Feb 2009 10:16:25 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul.moore@hp.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM <linux-security-module@vger.kernel.org>
-Subject: [PATCH][SMACK][RFC] convert smack_netlbladdrs to standard list
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Feb 2009 04:16:34 -0500
+Date: Sat, 21 Feb 2009 10:18:26 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20090221091826.GA30055@uranus.ravnborg.org>
+References: <20090219171005.GA27922@elte.hu> <alpine.LFD.2.00.0902201809260.21686@localhost.localdomain> <20090221083212.GA1537@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090221083212.GA1537@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey, Paul,
+> 
+> After half an hour of head scratching (including two 
+> allyesconfig builds) i found these two gems commits that were 
+> merged in the last week or two:
+> 
+> | commit fa2144ba9a31d1d0dc9607508576c3850e0d95b1
+> | Author: Sam Ravnborg <sam@ravnborg.org>
+> | Date:   Fri Feb 15 13:53:11 2008 +0100
+> |
+> |     kbuild: explain why DEBUG_SECTION_MISMATCH is UNDEFINED
+> |    
+> |     We started to see patches enabling this - so explain why
+> |     it is disabled and the condition to enable it again.
+> |    
+> |     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> |
+> | diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> | index a370fe8..ab408aa 100644
+> | --- a/lib/Kconfig.debug
+> | +++ b/lib/Kconfig.debug
+> | @@ -82,6 +82,9 @@ config HEADERS_CHECK
+> |  config DEBUG_SECTION_MISMATCH
+> |         bool "Enable full Section mismatch analysis"
+> |         depends on UNDEFINED
+> | +       # This option is on purpose disabled for now.
+> | +       # It will be enabled when we are down to a resonable number
+> | +       # of section mismatch warnings (< 10 for an allyesconfig build)
+> 
+> | commit e5f95c8b7700a7bf1c2d24eedc677954d9aa0285
+> | Author: Sam Ravnborg <sam@ravnborg.org>
+> | Date:   Sat Feb 2 18:57:18 2008 +0100
+> |
+> |     kbuild: print only total number of section mismatces found
+> |    
+> |     We have too many section mismatches detected at the moment.
+> |     So silence modpost and prevent the option from being
+> |     set in a typical allyesconfig build.
+> |    
+> |     Tell the user how to see all the deteils in the summary
+> |     message from modpost.
+> |     
+> |     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> 
+> These commits are an utter joke.
 
-please find below my first (working) try to convert smack_netlbladdrs to standard list
-(patch on top of .29rc5 + my previous patch)
-I tested it and found no regression, no hangs etc...
+In 2008 when they was applied they were perfectly sensible.
+We had far too many secton mismatch warnings at that point
+in time and I btw spent quite some time fixing these.
 
-Please have a more detailed look at the seq_files changes, they were not so trivial to convert
-I heavily tested the sorted insert in userspace before ever thinking of doing it in the kernel, so this should be fine :)
+I reached zero warnings on allyesconfig/allmodconfig builds
+on x86 in my tree, but I recall that I had warnings left in
+diverse arm configs, and some other archs that I build.
 
-Small possible improvements, what do you think :
-- create a #define for_each_smk_netlbladdr(__smk)  list_for_each_entry(__smk, &smk_netlbladdr_list, list)
-- create a #define list2smk_netlbladdr(__l)  container_of(__l, struct smk_netlbladdr, list); (better name required!)
+After several flames about section mismatch fixes was pure
+patch noise and not worth the time to neiter fix the warnings
+nor report them I simply lost incentive to do any kind
+of follow-up on them.
+
+Before that the above patches was introduced because several people
+complained about the additional warnings that was generated and the fear
+for this that lkml would be spammed.
+
+I will be happy to merge a patch that makes the warnings become visible
+again and also to make them hard errors.
+But for now I cannot take the additional work it requires to follow
+all the section mismatch warnings that suddenly will pop up for
+the different architectures, which is why I hesitate to create
+said patch myself.
 
 
-have a nice week-end,
-Etienne
-
-Signed-off-by: <etienne.basset@numericable.fr>
----
-diff --git a/security/smack/smack.h b/security/smack/smack.h
-index b79582e..0b21ccd 100644
---- a/security/smack/smack.h
-+++ b/security/smack/smack.h
-@@ -18,7 +18,7 @@
- #include <linux/security.h>
- #include <linux/in.h>
- #include <net/netlabel.h>
--
-+#include <linux/list.h>
- /*
-  * Why 23? CIPSO is constrained to 30, so a 32 byte buffer is
-  * bigger than can be used, and 24 is the next lower multiple
-@@ -69,6 +69,7 @@ struct smack_rule {
-  */
- struct smk_list_entry {
- 	struct smk_list_entry	*smk_next;
-+	struct list_head	list;
- 	struct smack_rule	smk_rule;
- };
- 
-@@ -85,7 +86,7 @@ struct smack_cipso {
-  * An entry in the table identifying hosts.
-  */
- struct smk_netlbladdr {
--	struct smk_netlbladdr	*smk_next;
-+	struct list_head	list;
- 	struct sockaddr_in	smk_host;	/* network address */
- 	struct in_addr		smk_mask;	/* network mask */
- 	char			*smk_label;	/* label */
-@@ -113,6 +114,7 @@ struct smk_netlbladdr {
-  * the cipso direct mapping in used internally.
-  */
- struct smack_known {
-+	struct list_head	list;
- 	struct smack_known	*smk_next;
- 	char			smk_known[SMK_LABELLEN];
- 	u32			smk_secid;
-@@ -215,7 +217,9 @@ extern struct smack_known smack_known_star;
- extern struct smack_known smack_known_web;
- 
- extern struct smk_list_entry *smack_list;
--extern struct smk_netlbladdr *smack_netlbladdrs;
-+extern struct list_head smack_know_list;
-+extern struct list_head smack_rule_list;
-+extern struct list_head smk_netlbladdr_list;
- extern struct security_operations smack_ops;
- 
- /*
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index e7ded13..0546ad8 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -1509,8 +1509,7 @@ static char *smack_host_label(struct sockaddr_in *sip)
- 
- 	if (siap->s_addr == 0)
- 		return NULL;
--
--	for (snp = smack_netlbladdrs; snp != NULL; snp = snp->smk_next) {
-+	list_for_each_entry(snp, &smk_netlbladdr_list, list) {
- 		/*
- 		 * we break after finding the first match because
- 		 * the list is sorted from longest to shortest mask
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index 51f0efc..876ab91 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -80,7 +80,8 @@ char *smack_onlycap;
-  * Packets are sent there unlabeled, but only from tasks that
-  * can write to the specified label.
-  */
--struct smk_netlbladdr *smack_netlbladdrs;
-+
-+LIST_HEAD(smk_netlbladdr_list);
- 
- static int smk_cipso_doi_value = SMACK_CIPSO_DOI_DEFAULT;
- struct smk_list_entry *smack_list;
-@@ -637,18 +638,21 @@ static void *netlbladdr_seq_start(struct seq_file *s, loff_t *pos)
- {
- 	if (*pos == SEQ_READ_FINISHED)
- 		return NULL;
--
--	return smack_netlbladdrs;
-+	if (list_empty(&smk_netlbladdr_list))
-+		return NULL;
-+	return &smk_netlbladdr_list;
- }
- 
- static void *netlbladdr_seq_next(struct seq_file *s, void *v, loff_t *pos)
- {
--	struct smk_netlbladdr *skp = ((struct smk_netlbladdr *) v)->smk_next;
--
--	if (skp == NULL)
-+	struct list_head *list = v;
-+	
-+	if (list_is_last(list->next, &smk_netlbladdr_list)) {
- 		*pos = SEQ_READ_FINISHED;
-+		return NULL;
-+	}
- 
--	return skp;
-+	return list->next;
- }
- #define BEBITS	(sizeof(__be32) * 8)
- 
-@@ -657,7 +661,8 @@ static void *netlbladdr_seq_next(struct seq_file *s, void *v, loff_t *pos)
-  */
- static int netlbladdr_seq_show(struct seq_file *s, void *v)
- {
--	struct smk_netlbladdr *skp = (struct smk_netlbladdr *) v;
-+	struct list_head *list = v;
-+	struct smk_netlbladdr *skp = container_of(list->next, struct smk_netlbladdr, list);
- 	unsigned char *hp = (char *) &skp->smk_host.sin_addr.s_addr;
- 	int maskn;
- 	u32 temp_mask = be32_to_cpu(skp->smk_mask.s_addr);
-@@ -704,30 +709,32 @@ static int smk_open_netlbladdr(struct inode *inode, struct file *file)
-  */
- static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
- {
--	struct smk_netlbladdr *m;
-+	struct smk_netlbladdr *m, *m_next;
- 
--	if (smack_netlbladdrs == NULL) {
--		smack_netlbladdrs = new;
--		return;
--	}
-+        if (list_empty(&smk_netlbladdr_list)) {
-+                list_add(&new->list, &smk_netlbladdr_list);
-+                return;
-+        }
- 
- 	/* the comparison '>' is a bit hacky, but works */
--	if (new->smk_mask.s_addr > smack_netlbladdrs->smk_mask.s_addr) {
--		new->smk_next = smack_netlbladdrs;
--		smack_netlbladdrs = new;
--		return;
--	}
--	for (m = smack_netlbladdrs; m != NULL; m = m->smk_next) {
--		if (m->smk_next == NULL) {
--			m->smk_next = new;
--			return;
--		}
--		if (new->smk_mask.s_addr > m->smk_next->smk_mask.s_addr) {
--			new->smk_next = m->smk_next;
--			m->smk_next = new;
--			return;
--		}
--	}
-+	m = container_of(smk_netlbladdr_list.next, struct smk_netlbladdr, list);
-+
-+        if (new->smk_mask.s_addr > m->smk_mask.s_addr) {
-+                list_add(&new->list, &smk_netlbladdr_list);
-+                return;
-+        }
-+
-+	list_for_each_entry(m, &smk_netlbladdr_list, list) {
-+                if (list_is_last(&m->list, &smk_netlbladdr_list)) {
-+                        list_add(&new->list, &m->list);
-+                        return;
-+                }
-+                m_next = container_of(m->list.next, struct smk_netlbladdr, list);
-+                if (new->smk_mask.s_addr > m_next->smk_mask.s_addr) {
-+                        list_add(&new->list, &m->list);
-+                        return;
-+                }
-+        }
- }
- 
- 
-@@ -754,6 +761,7 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	struct netlbl_audit audit_info;
- 	struct in_addr mask;
- 	unsigned int m;
-+	int found;
- 	u32 mask_bits = (1<<31);
- 	__be32 nsa;
- 	u32 temp_mask;
-@@ -807,14 +815,18 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 
- 	nsa = newname.sin_addr.s_addr;
- 	/* try to find if the prefix is already in the list */
--	for (skp = smack_netlbladdrs; skp != NULL; skp = skp->smk_next)
-+	found = 0;
-+	list_for_each_entry(skp, &smk_netlbladdr_list, list) {
- 		if (skp->smk_host.sin_addr.s_addr == nsa &&
--		    skp->smk_mask.s_addr == mask.s_addr)
--			break;
-+		    skp->smk_mask.s_addr == mask.s_addr) {
-+			found = 1;
-+			break;	
-+		}
-+	}
- 
- 	smk_netlabel_audit_set(&audit_info);
- 
--	if (skp == NULL) {
-+	if (!found) {
- 		skp = kzalloc(sizeof(*skp), GFP_KERNEL);
- 		if (skp == NULL)
- 			rc = -ENOMEM;
-
+	Sam
