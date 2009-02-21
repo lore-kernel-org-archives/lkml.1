@@ -1,467 +1,534 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZBUDjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZBUDna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbZBUDjd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 22:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZBUDjY
+	id S1755746AbZBUDna (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 22:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZBUDnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 22:39:24 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:47447 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbZBUDjX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 22:39:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GvZ9UWgWMgdJ2Gese34t6HMjOp2iI8OaADGPBti7LF+N3brMhIf+FgztyVlvypoRc5
-         zR/RVW289iDbQTqRHPd9ceODoFIpm4N6Kesp5M2BCCczWmY5fuV13NZF1Ht8hvhKS5oW
-         NVor4C6pZj+HzcEvGfEopgXm2bHRrtSg6A4Zg=
-Date: Sat, 21 Feb 2009 04:39:17 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net, compudj@krystal.dyndns.org
-Subject: Re: [PATCH] new irq tracer
-Message-ID: <20090221033915.GB5771@nowhere>
-References: <20090218195328.GA3112@redhat.com> <1234991725.4799.1.camel@laptop> <20090218213545.GB3112@redhat.com> <1234993580.4799.11.camel@laptop> <20090218220201.GG24507@redhat.com> <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com>
+	Fri, 20 Feb 2009 22:43:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51963 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751142AbZBUDnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 22:43:20 -0500
+Message-ID: <499F7836.5090608@kernel.org>
+Date: Sat, 21 Feb 2009 12:42:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220195236.GB3104@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, mingo@elte.hu
+Subject: [PATCH tj-percpu] percpu: s/size/bytes/g in new percpu allocator
+ and interface
+References: <1234958676-27618-1-git-send-email-tj@kernel.org>	<1234958676-27618-10-git-send-email-tj@kernel.org>	<499E5BF9.1060806@kernel.org> <20090220003743.d787107b.akpm@linux-foundation.org> <499F73BD.4030105@kernel.org>
+In-Reply-To: <499F73BD.4030105@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 21 Feb 2009 03:42:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 02:52:36PM -0500, Jason Baron wrote:
-> On Wed, Feb 18, 2009 at 11:10:35PM +0100, Peter Zijlstra wrote:
-> > On Wed, 2009-02-18 at 17:02 -0500, Frank Ch. Eigler wrote:
-> > 
-> > > > I really am having a difficult time seeing the use in such narrow
-> > > > tracers.
-> > > 
-> > > Part of the problem may come from defining "tracers" as something
-> > > limited to ftrace engines.  Once such tracepoints are in the kernel,
-> > > more powerful analytical tools may be attached to them.
-> > 
-> > ftrace graph tracer is by far the most powerful thing I've seen, there's
-> > nothing limiting about ftrace.
-> > 
-> > What is limiting are these puny little tracers that have no real value.
-> > 
-> > A much better purpose for these tracepoints would be augmenting data in
-> > existing tracers like the graph/function/sched tracer.
-> > 
-> 
-> ok...using these two tracepoints i've augmented the graph tracer to add
-> a new column that prints the irq # and handler we're in, or -1
-> otherwise. its a new 'funcgraph-irq' in 'trace_options', sample output:
-> 
-> 
->  1) #-1:none        2.323 us    |                                  native_apic_mem_write();
->  1) #-1:none      + 21.891 us   |                                }
->  1) #-1:none                    |                                handle_IRQ_event() {
+Do s/size/bytes/g as per Andrew Morton's suggestion.
 
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+Okay, here's the patch.  I also merged it to #tj-percpu.  Having done
+the conversion, I'm not too thrilled tho.  size was consistently used
+to represent bytes and it's very customary especially if it's a memory
+allocator and I can't really see how s/size/bytes/g makes things
+better for percpu allocator.  Clear naming is good but not being able
+to use size in favor of bytes seems a bit extreme to me.  After all,
+it's size_t and sizeof() not bytes_t and bytesof().  That said, I have
+nothing against bytes either, so...
 
-My dream would be to see:
+Thanks.
 
-1)                             |                                handle_IRQ_event(29:ahci) {
+ include/linux/percpu.h |    8 +-
+ mm/percpu.c            |  154 ++++++++++++++++++++++++------------------------
+ 2 files changed, 81 insertions(+), 81 deletions(-)
 
-
-But it's not possible for now, not until we have the hashtable.
-Anyway, instead of having #-1:none, it would be better to have nothing
-in case of user context (or softirq).
-
-Or actually why not just an ftrace_printk when the probe is on?
-Since it immediately follows the call to handle_IRQ_event, we would have the
-following displayed:
-
-1)           |                                handle_IRQ_event() {
-1)           |                                  /* 29 : ahci */
-
-Because ftrace_printk send TRACE_PRINT entries which are displayed like this
-by the function graph tracer.
-It would be much more light than a whole column.
-
-
->  1) #29:ahci        1.938 us    |                                  irq_to_desc();
->  1) #29:ahci        2.626 us    |                                  runqueue_is_locked();
->  1) #29:ahci      + 21.173 us   |                                          }
-> 		.
-> 		.
-> 		.
->  1) #29:ahci      + 32.047 us   |                                        }
->  1) #29:ahci      + 43.746 us   |                                      }
->  1) #29:ahci      + 51.634 us   |                                    }
->  1) #29:ahci      + 61.954 us   |                                  }
->  1) #-1:none        1.014 us    |                                  runqueue_is_locked();
->  1) #-1:none                    |                                  __wake_up() {
->  1) #-1:none        0.920 us    |                                    _spin_lock_irqsave();
->  1) #-1:none        1.028 us    |                                    __wake_up_common();
-> 
-> 
-> This seems to work pretty well - although it does get confused by
-> certain preemption events which it can't handle...I think this can make
-> the logs more readable. I can probably get it working if ppl thinks its
-> valuable...or have better ways of implementing it. Code is below.
-> 
-> thanks,
-> 
-> -Jason
-> 
-> 
-> diff --git a/include/trace/irq.h b/include/trace/irq.h
-> new file mode 100644
-> index 0000000..ecec94a
-> --- /dev/null
-> +++ b/include/trace/irq.h
-> @@ -0,0 +1,25 @@
-> +#ifndef _TRACE_IRQ_H
-> +#define _TRACE_IRQ_H
-> +
-> +#include <linux/interrupt.h>
-> +#include <linux/tracepoint.h>
-> +
-> +enum {
-> +        IRQ_ENTRY = 0,
-> +        IRQ_EXIT = 1,
-> +};
-> +
-> +struct irq_trace {
-> +	int type;
-> +	int irq;
-> +	char irq_name[10];
-> +};
-> +
-> +DECLARE_TRACE(irq_entry,
-> +	TPPROTO(unsigned int id),
-> +	TPARGS(id));
-> +DECLARE_TRACE(irq_exit,
-> +	TPPROTO(unsigned int id, irqreturn_t retval),
-> +	TPARGS(id, retval));
-> +
-> +#endif /* _TRACE_IRQ_H */
-> diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-> index fdff380..34053b5 100644
-> --- a/kernel/irq/handle.c
-> +++ b/kernel/irq/handle.c
-> @@ -18,6 +18,7 @@
->  #include <linux/rculist.h>
->  #include <linux/hash.h>
->  #include <linux/bootmem.h>
-> +#include <trace/irq.h>
->  
->  #include "internals.h"
->  
-> @@ -338,6 +339,9 @@ irqreturn_t no_action(int cpl, void *dev_id)
->  	return IRQ_NONE;
->  }
->  
-> +DEFINE_TRACE(irq_entry);
-> +DEFINE_TRACE(irq_exit);
-> +
->  /**
->   * handle_IRQ_event - irq action chain handler
->   * @irq:	the interrupt number
-> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
->  		local_irq_enable_in_hardirq();
->  
->  	do {
-> +		trace_irq_entry(irq);
->  		ret = action->handler(irq, action->dev_id);
-> +		trace_irq_exit(irq, ret);
->  		if (ret == IRQ_HANDLED)
->  			status |= action->flags;
->  		retval |= ret;
-> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-> index 627090b..58b9f7e 100644
-> --- a/kernel/trace/Makefile
-> +++ b/kernel/trace/Makefile
-> @@ -38,5 +38,6 @@ obj-$(CONFIG_POWER_TRACER) += trace_power.o
->  obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
->  obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
->  obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
-> +obj-$(CONFIG_IRQ_TRACER) += trace_irq.o
->  
->  libftrace-y := ftrace.o
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index dbff020..6a34aaa 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -11,6 +11,7 @@
->  #include <trace/boot.h>
->  #include <trace/kmemtrace.h>
->  #include <trace/power.h>
-> +#include <trace/irq.h>
->  
->  enum trace_type {
->  	__TRACE_FIRST_TYPE = 0,
-> @@ -33,6 +34,7 @@ enum trace_type {
->  	TRACE_KMEM_ALLOC,
->  	TRACE_KMEM_FREE,
->  	TRACE_POWER,
-> +	TRACE_IRQ,
->  	TRACE_BLK,
->  
->  	__TRACE_LAST_TYPE,
-> @@ -173,6 +175,11 @@ struct trace_power {
->  	struct power_trace	state_data;
->  };
->  
-> +struct trace_irq {
-> +	struct trace_entry	ent;
-> +	struct irq_trace	irq_data;
-> +};
-> +
->  struct kmemtrace_alloc_entry {
->  	struct trace_entry	ent;
->  	enum kmemtrace_type_id type_id;
-> @@ -298,6 +305,7 @@ extern void __ftrace_bad_type(void);
->  			  TRACE_GRAPH_RET);		\
->  		IF_ASSIGN(var, ent, struct hw_branch_entry, TRACE_HW_BRANCHES);\
->   		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
-> +		IF_ASSIGN(var, ent, struct trace_irq, TRACE_IRQ);	\
->  		IF_ASSIGN(var, ent, struct kmemtrace_alloc_entry,	\
->  			  TRACE_KMEM_ALLOC);	\
->  		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
-> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-> index 519a0ca..4c4c777 100644
-> --- a/kernel/trace/trace_functions_graph.c
-> +++ b/kernel/trace/trace_functions_graph.c
-> @@ -10,10 +10,19 @@
->  #include <linux/uaccess.h>
->  #include <linux/ftrace.h>
->  #include <linux/fs.h>
-> +#include <trace/irq.h>
->  
->  #include "trace.h"
->  #include "trace_output.h"
->  
-> +
-> +struct per_cpu_irq_data {
-> +	int irq_num;
-> +	char action_str[10];
-> +};
-> +static struct per_cpu_irq_data cpu_irq_data[NR_CPUS];
-> +static struct trace_array *graph_trace_tr;
-> +
->  #define TRACE_GRAPH_INDENT	2
->  
->  /* Flag options */
-> @@ -23,6 +32,7 @@
->  #define TRACE_GRAPH_PRINT_PROC		0x8
->  #define TRACE_GRAPH_PRINT_DURATION	0x10
->  #define TRACE_GRAPH_PRINT_ABS_TIME	0X20
-> +#define TRACE_GRAPH_PRINT_IRQ		0X40
->  
->  static struct tracer_opt trace_opts[] = {
->  	/* Display overruns? (for self-debug purpose) */
-> @@ -37,6 +47,8 @@ static struct tracer_opt trace_opts[] = {
->  	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
->  	/* Display absolute time of an entry */
->  	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
-> +	/* Display irq number, -1 otherwise */
-> +	{ TRACER_OPT(funcgraph-irq, TRACE_GRAPH_PRINT_IRQ) },
->  	{ } /* Empty entry */
->  };
->  
-> @@ -52,10 +64,17 @@ static struct tracer_flags tracer_flags = {
->  
->  static int graph_trace_init(struct trace_array *tr)
->  {
-> +	int i;
->  	int ret = register_ftrace_graph(&trace_graph_return,
->  					&trace_graph_entry);
->  	if (ret)
->  		return ret;
-> +	graph_trace_tr = tr;
-> +	for (i=0;i<NR_CPUS;i++) {
-> +		cpu_irq_data[i].irq_num = -1;
-> +		sprintf(cpu_irq_data[i].action_str, "none");
-> +                cpu_irq_data[i].action_str[4] = '\0';
-> +	}
->  	tracing_start_cmdline_record();
->  
->  	return 0;
-> @@ -63,6 +82,7 @@ static int graph_trace_init(struct trace_array *tr)
->  
->  static void graph_trace_reset(struct trace_array *tr)
->  {
-> +	graph_trace_tr = tr;
->  	tracing_stop_cmdline_record();
->  	unregister_ftrace_graph();
->  }
-> @@ -110,6 +130,27 @@ print_graph_cpu(struct trace_seq *s, int cpu)
->  	return TRACE_TYPE_HANDLED;
->  }
->  
-> +#define TRACE_GRAPH_IRQ_LENGTH     14
-> +
-> +static enum print_line_t
-> +print_graph_irqnum(struct trace_seq *s, int cpu)
-> +{
-> +	char irq_str[TRACE_GRAPH_IRQ_LENGTH];
-> +	int len, ret;
-> +
-> +	len = snprintf(irq_str, TRACE_GRAPH_IRQ_LENGTH, "#%d:%s", cpu_irq_data[cpu].irq_num, cpu_irq_data[cpu].action_str);
-> +	ret = trace_seq_printf(s, "%s", irq_str);	
-> +	if (!ret)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +	while (len < TRACE_GRAPH_IRQ_LENGTH) {
-> +		ret = trace_seq_printf(s, " ");
-> +                if (!ret)
-> +			return TRACE_TYPE_PARTIAL_LINE;
-> +		len++;
-> +	}
-> +	return TRACE_TYPE_HANDLED;
-> +}
-> +
->  #define TRACE_GRAPH_PROCINFO_LENGTH	14
->  
->  static enum print_line_t
-> @@ -504,6 +545,13 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
->  			return TRACE_TYPE_PARTIAL_LINE;
->  	}
->  
-> +	/* irq */
-> +	if (tracer_flags.val & TRACE_GRAPH_PRINT_IRQ) {
-> +		ret = print_graph_irqnum(s, cpu);
-> +		if (ret == TRACE_TYPE_PARTIAL_LINE)
-> +			return TRACE_TYPE_PARTIAL_LINE;
-> +	}
-> +
->  	/* Proc */
->  	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
->  		ret = print_graph_proc(s, ent->pid);
-> @@ -551,6 +599,13 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
->  			return TRACE_TYPE_PARTIAL_LINE;
->  	}
->  
-> +	/* irq */
-> +	if (tracer_flags.val & TRACE_GRAPH_PRINT_IRQ) {
-> +		ret = print_graph_irqnum(s, cpu);
-> +		if (ret == TRACE_TYPE_PARTIAL_LINE)
-> +			return TRACE_TYPE_PARTIAL_LINE;
-> +	}
-> +
->  	/* Proc */
->  	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
->  		ret = print_graph_proc(s, ent->pid);
-> @@ -627,6 +682,13 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
->  			return TRACE_TYPE_PARTIAL_LINE;
->  	}
->  
-> +	/* irq */
-> +	if (tracer_flags.val & TRACE_GRAPH_PRINT_IRQ) {
-> +		ret = print_graph_irqnum(s, cpu);
-> +		if (ret == TRACE_TYPE_PARTIAL_LINE)
-> +			return TRACE_TYPE_PARTIAL_LINE;
-> +	}
-> +
->  	/* Proc */
->  	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
->  		ret = print_graph_proc(s, ent->pid);
-> @@ -699,6 +761,22 @@ print_graph_function(struct trace_iterator *iter)
->  		trace_assign_type(field, entry);
->  		return print_graph_comment(field, s, entry, iter);
->  	}
-> +	case TRACE_IRQ: {
-> +		struct trace_irq *field;
-> +		int cpu = iter->cpu;
-> +
-> +        	trace_assign_type(field, entry);
-> +		if (field->irq_data.type == IRQ_ENTRY) {
-> +			cpu_irq_data[cpu].irq_num = field->irq_data.irq;	
-> +			strncpy(cpu_irq_data[cpu].action_str,field->irq_data.irq_name, 9);
-> +			cpu_irq_data[cpu].action_str[9] = '\0';
-> +		} else {
-> +			cpu_irq_data[cpu].irq_num = -1;
-> +			sprintf(cpu_irq_data[cpu].action_str, "none");
-> +			cpu_irq_data[cpu].action_str[4] = '\0';
-> +		}
-> +		return TRACE_TYPE_HANDLED;
-> +	}
->  	default:
->  		return TRACE_TYPE_UNHANDLED;
->  	}
-> @@ -753,6 +831,67 @@ static void graph_trace_close(struct trace_iterator *iter)
->  	percpu_free(iter->private);
->  }
->  
-> +static void probe_irq_exit(unsigned int irq, irqreturn_t retval)
-> +{
-> +        struct ring_buffer_event *event;
-> +        struct trace_irq *entry;
-> +
-> +        event = trace_buffer_lock_reserve(graph_trace_tr, TRACE_IRQ,
-> +                                          sizeof(*entry), 0, 0);
-> +        if (!event)
-> +                return;
-> +        entry   = ring_buffer_event_data(event);
-> +        entry->irq_data.type = IRQ_EXIT;
-> +        trace_buffer_unlock_commit(graph_trace_tr, event, 0, 0);
-> +}
-> +
-> +static void probe_irq_entry(unsigned int id)
-> +{
-> +        struct ring_buffer_event *event;
-> +        struct trace_irq *entry;
-> +	struct irq_desc *desc;
-> +
-> +        event = trace_buffer_lock_reserve(graph_trace_tr, TRACE_IRQ,
-> +                                          sizeof(*entry), 0, 0);
-> +        if (!event)
-> +                return;
-> +        entry   = ring_buffer_event_data(event);
-> +        entry->irq_data.irq = id;
-> +        entry->irq_data.type = IRQ_ENTRY;
-> +	desc = irq_to_desc(id);
-> +	strncpy(entry->irq_data.irq_name, desc->action->name, 9);
-> +	entry->irq_data.irq_name[9] = '\0';
-> +        trace_buffer_unlock_commit(graph_trace_tr, event, 0, 0);
-> +}
-> +
-> +static int graph_trace_set_flag(u32 old_flags, u32 bit, int set)
-> +{
-> +	int ret = 0;
-> +
-> +        if (bit == TRACE_GRAPH_PRINT_IRQ) {
-> +		/* do nothing if already set */
-> +		//if (!!set == !!(func_flags.val & TRACE_GRAPH_PRINT_IRQ))
-> +                //        return 0;
-> +		if (set) {
-> +			ret = register_trace_irq_entry(probe_irq_entry);
-> +        		if (ret) {
-> +                		pr_info("irq trace: irq entry tracepoint failed to register\n");
-> +                		return ret;
-> +			}
-> +			ret = register_trace_irq_exit(probe_irq_exit);
-> +			if (ret) {
-> +				pr_info("irq trace: irq exit tracepoint failed to register\n");
-> +				unregister_trace_irq_entry(probe_irq_entry);
-> +				return ret;
-> +			}
-> +		} else {
-> +			unregister_trace_irq_entry(probe_irq_entry);	
-> +			unregister_trace_irq_exit(probe_irq_exit);
-> +		}
-> +	}
-> +	return ret;
-> +}
-> +
->  static struct tracer graph_trace __read_mostly = {
->  	.name	     	= "function_graph",
->  	.open		= graph_trace_open,
-> @@ -762,6 +901,7 @@ static struct tracer graph_trace __read_mostly = {
->  	.print_line	= print_graph_function,
->  	.print_header	= print_graph_headers,
->  	.flags		= &tracer_flags,
-> +	.set_flag       = graph_trace_set_flag,
->  #ifdef CONFIG_FTRACE_SELFTEST
->  	.selftest	= trace_selftest_startup_function_graph,
->  #endif
-> 
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index 1808099..7b61606 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -83,7 +83,7 @@ extern void *pcpu_base_addr;
+ typedef void (*pcpu_populate_pte_fn_t)(unsigned long addr);
+ 
+ extern size_t __init pcpu_setup_static(pcpu_populate_pte_fn_t populate_pte_fn,
+-				       struct page **pages, size_t cpu_size);
++				       struct page **pages, size_t cpu_bytes);
+ /*
+  * Use this to get to a cpu's version of the per-cpu object
+  * dynamically allocated. Non-atomic access to the current CPU's
+@@ -107,14 +107,14 @@ struct percpu_data {
+ 
+ #endif /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
+ 
+-extern void *__alloc_percpu(size_t size, size_t align);
++extern void *__alloc_percpu(size_t bytes, size_t align);
+ extern void free_percpu(void *__pdata);
+ 
+ #else /* CONFIG_SMP */
+ 
+ #define per_cpu_ptr(ptr, cpu) ({ (void)(cpu); (ptr); })
+ 
+-static inline void *__alloc_percpu(size_t size, size_t align)
++static inline void *__alloc_percpu(size_t bytes, size_t align)
+ {
+ 	/*
+ 	 * Can't easily make larger alignment work with kmalloc.  WARN
+@@ -122,7 +122,7 @@ static inline void *__alloc_percpu(size_t size, size_t align)
+ 	 * percpu sections on SMP for which this path isn't used.
+ 	 */
+ 	WARN_ON_ONCE(align > __alignof__(unsigned long long));
+-	return kzalloc(size, gfp);
++	return kzalloc(bytes, gfp);
+ }
+ 
+ static inline void free_percpu(void *p)
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 4617d97..8d6725a 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -20,15 +20,15 @@
+  * | u0 | u1 | u2 | u3 |        | u0 | u1 | u2 | u3 |      | u0 | u1 | u
+  *  -------------------  ......  -------------------  ....  ------------
+  *
+- * Allocation is done in offset-size areas of single unit space.  Ie,
++ * Allocation is done in offset-bytes areas of single unit space.  Ie,
+  * an area of 512 bytes at 6k in c1 occupies 512 bytes at 6k of c1:u0,
+  * c1:u1, c1:u2 and c1:u3.  Percpu access can be done by configuring
+- * percpu base registers UNIT_SIZE apart.
++ * percpu base registers pcpu_unit_bytes apart.
+  *
+  * There are usually many small percpu allocations many of them as
+  * small as 4 bytes.  The allocator organizes chunks into lists
+- * according to free size and tries to allocate from the fullest one.
+- * Each chunk keeps the maximum contiguous area size hint which is
++ * according to free bytes and tries to allocate from the fullest one.
++ * Each chunk keeps the maximum contiguous area bytes hint which is
+  * guaranteed to be eqaul to or larger than the maximum contiguous
+  * area in the chunk.  This helps the allocator not to iterate the
+  * chunk maps unnecessarily.
+@@ -67,15 +67,15 @@
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+ 
+-#define PCPU_MIN_UNIT_PAGES_SHIFT	4	/* also max alloc size */
++#define PCPU_MIN_UNIT_PAGES_SHIFT	4	/* also max alloc bytes */
+ #define PCPU_SLOT_BASE_SHIFT		5	/* 1-31 shares the same slot */
+ #define PCPU_DFL_MAP_ALLOC		16	/* start a map with 16 ents */
+ 
+ struct pcpu_chunk {
+ 	struct list_head	list;		/* linked to pcpu_slot lists */
+ 	struct rb_node		rb_node;	/* key is chunk->vm->addr */
+-	int			free_size;	/* free bytes in the chunk */
+-	int			contig_hint;	/* max contiguous size hint */
++	int			free_bytes;	/* free bytes in the chunk */
++	int			contig_hint;	/* max contiguous bytes hint */
+ 	struct vm_struct	*vm;		/* mapped vmalloc region */
+ 	int			map_used;	/* # of map entries used */
+ 	int			map_alloc;	/* # of map entries allocated */
+@@ -86,8 +86,8 @@ struct pcpu_chunk {
+ static int pcpu_unit_pages_shift;
+ static int pcpu_unit_pages;
+ static int pcpu_unit_shift;
+-static int pcpu_unit_size;
+-static int pcpu_chunk_size;
++static int pcpu_unit_bytes;
++static int pcpu_chunk_bytes;
+ static int pcpu_nr_slots;
+ static size_t pcpu_chunk_struct_size;
+ 
+@@ -96,7 +96,7 @@ void *pcpu_base_addr;
+ EXPORT_SYMBOL_GPL(pcpu_base_addr);
+ 
+ /* the size of kernel static area */
+-static int pcpu_static_size;
++static int pcpu_static_bytes;
+ 
+ /*
+  * One mutex to rule them all.
+@@ -117,18 +117,18 @@ static DEFINE_MUTEX(pcpu_mutex);
+ static struct list_head *pcpu_slot;		/* chunk list slots */
+ static struct rb_root pcpu_addr_root = RB_ROOT;	/* chunks by address */
+ 
+-static int pcpu_size_to_slot(int size)
++static int pcpu_bytes_to_slot(int bytes)
+ {
+-	int highbit = fls(size);
++	int highbit = fls(bytes);
+ 	return max(highbit - PCPU_SLOT_BASE_SHIFT + 2, 1);
+ }
+ 
+ static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
+ {
+-	if (chunk->free_size < sizeof(int) || chunk->contig_hint < sizeof(int))
++	if (chunk->free_bytes < sizeof(int) || chunk->contig_hint < sizeof(int))
+ 		return 0;
+ 
+-	return pcpu_size_to_slot(chunk->free_size);
++	return pcpu_bytes_to_slot(chunk->free_bytes);
+ }
+ 
+ static int pcpu_page_idx(unsigned int cpu, int page_idx)
+@@ -158,8 +158,8 @@ static bool pcpu_chunk_page_occupied(struct pcpu_chunk *chunk,
+ /**
+  * pcpu_realloc - versatile realloc
+  * @p: the current pointer (can be NULL for new allocations)
+- * @size: the current size (can be 0 for new allocations)
+- * @new_size: the wanted new size (can be 0 for free)
++ * @bytes: the current size (can be 0 for new allocations)
++ * @new_bytes: the wanted new size (can be 0 for free)
+  *
+  * More robust realloc which can be used to allocate, resize or free a
+  * memory area of arbitrary size.  If the needed size goes over
+@@ -168,22 +168,22 @@ static bool pcpu_chunk_page_occupied(struct pcpu_chunk *chunk,
+  * RETURNS:
+  * The new pointer on success, NULL on failure.
+  */
+-static void *pcpu_realloc(void *p, size_t size, size_t new_size)
++static void *pcpu_realloc(void *p, size_t bytes, size_t new_bytes)
+ {
+ 	void *new;
+ 
+-	if (new_size <= PAGE_SIZE)
+-		new = kmalloc(new_size, GFP_KERNEL);
++	if (new_bytes <= PAGE_SIZE)
++		new = kmalloc(new_bytes, GFP_KERNEL);
+ 	else
+-		new = vmalloc(new_size);
+-	if (new_size && !new)
++		new = vmalloc(new_bytes);
++	if (new_bytes && !new)
+ 		return NULL;
+ 
+-	memcpy(new, p, min(size, new_size));
+-	if (new_size > size)
+-		memset(new + size, 0, new_size - size);
++	memcpy(new, p, min(bytes, new_bytes));
++	if (new_bytes > bytes)
++		memset(new + bytes, 0, new_bytes - bytes);
+ 
+-	if (size <= PAGE_SIZE)
++	if (bytes <= PAGE_SIZE)
+ 		kfree(p);
+ 	else
+ 		vfree(p);
+@@ -346,17 +346,17 @@ static int pcpu_split_block(struct pcpu_chunk *chunk, int i, int head, int tail)
+ /**
+  * pcpu_alloc_area - allocate area from a pcpu_chunk
+  * @chunk: chunk of interest
+- * @size: wanted size
++ * @bytes: wanted size
+  * @align: wanted align
+  *
+- * Try to allocate @size bytes area aligned at @align from @chunk.
+- * Note that this function only allocates the offset.  It doesn't
+- * populate or map the area.
++ * Try to allocate @bytes area aligned at @align from @chunk.  Note
++ * that this function only allocates the offset.  It doesn't populate
++ * or map the area.
+  *
+  * RETURNS:
+  * Allocated offset in @chunk on success, -errno on failure.
+  */
+-static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
++static int pcpu_alloc_area(struct pcpu_chunk *chunk, int bytes, int align)
+ {
+ 	int oslot = pcpu_chunk_slot(chunk);
+ 	int max_contig = 0;
+@@ -373,9 +373,9 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
+ 			return -ENOMEM;
+ 
+ 		chunk->map_alloc = PCPU_DFL_MAP_ALLOC;
+-		chunk->map[chunk->map_used++] = -pcpu_static_size;
+-		if (chunk->free_size)
+-			chunk->map[chunk->map_used++] = chunk->free_size;
++		chunk->map[chunk->map_used++] = -pcpu_static_bytes;
++		if (chunk->free_bytes)
++			chunk->map[chunk->map_used++] = chunk->free_bytes;
+ 	}
+ 
+ 	for (i = 0, off = 0; i < chunk->map_used; off += abs(chunk->map[i++])) {
+@@ -388,7 +388,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
+ 
+ 		if (chunk->map[i] < 0)
+ 			continue;
+-		if (chunk->map[i] < head + size) {
++		if (chunk->map[i] < head + bytes) {
+ 			max_contig = max(chunk->map[i], max_contig);
+ 			continue;
+ 		}
+@@ -404,7 +404,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
+ 				chunk->map[i - 1] += head;
+ 			else {
+ 				chunk->map[i - 1] -= head;
+-				chunk->free_size -= head;
++				chunk->free_bytes -= head;
+ 			}
+ 			chunk->map[i] -= head;
+ 			off += head;
+@@ -412,7 +412,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
+ 		}
+ 
+ 		/* if tail is small, just keep it around */
+-		tail = chunk->map[i] - head - size;
++		tail = chunk->map[i] - head - bytes;
+ 		if (tail < sizeof(int))
+ 			tail = 0;
+ 
+@@ -436,7 +436,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
+ 			chunk->contig_hint = max(chunk->contig_hint,
+ 						 max_contig);
+ 
+-		chunk->free_size -= chunk->map[i];
++		chunk->free_bytes -= chunk->map[i];
+ 		chunk->map[i] = -chunk->map[i];
+ 
+ 		pcpu_chunk_relocate(chunk, oslot);
+@@ -477,7 +477,7 @@ static void pcpu_free_area(struct pcpu_chunk *chunk, int freeme)
+ 	BUG_ON(chunk->map[i] > 0);
+ 
+ 	chunk->map[i] = -chunk->map[i];
+-	chunk->free_size += chunk->map[i];
++	chunk->free_bytes += chunk->map[i];
+ 
+ 	/* merge with previous? */
+ 	if (i > 0 && chunk->map[i - 1] >= 0) {
+@@ -540,18 +540,18 @@ static void pcpu_unmap(struct pcpu_chunk *chunk, int page_start, int page_end,
+  * pcpu_depopulate_chunk - depopulate and unmap an area of a pcpu_chunk
+  * @chunk: chunk to depopulate
+  * @off: offset to the area to depopulate
+- * @size: size of the area to depopulate
++ * @bytes: size of the area to depopulate
+  * @flush: whether to flush cache and tlb or not
+  *
+  * For each cpu, depopulate and unmap pages [@page_start,@page_end)
+  * from @chunk.  If @flush is true, vcache is flushed before unmapping
+  * and tlb after.
+  */
+-static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, size_t off,
+-				  size_t size, bool flush)
++static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, int off, int bytes,
++				  bool flush)
+ {
+ 	int page_start = PFN_DOWN(off);
+-	int page_end = PFN_UP(off + size);
++	int page_end = PFN_UP(off + bytes);
+ 	int unmap_start = -1;
+ 	int uninitialized_var(unmap_end);
+ 	unsigned int cpu;
+@@ -617,16 +617,16 @@ static int pcpu_map(struct pcpu_chunk *chunk, int page_start, int page_end)
+  * pcpu_populate_chunk - populate and map an area of a pcpu_chunk
+  * @chunk: chunk of interest
+  * @off: offset to the area to populate
+- * @size: size of the area to populate
++ * @bytes: size of the area to populate
+  *
+  * For each cpu, populate and map pages [@page_start,@page_end) into
+  * @chunk.  The area is cleared on return.
+  */
+-static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
++static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int bytes)
+ {
+ 	const gfp_t alloc_mask = GFP_KERNEL | __GFP_HIGHMEM | __GFP_COLD;
+ 	int page_start = PFN_DOWN(off);
+-	int page_end = PFN_UP(off + size);
++	int page_end = PFN_UP(off + bytes);
+ 	int map_start = -1;
+ 	int map_end;
+ 	unsigned int cpu;
+@@ -660,12 +660,12 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
+ 
+ 	for_each_possible_cpu(cpu)
+ 		memset(chunk->vm->addr + (cpu << pcpu_unit_shift) + off, 0,
+-		       size);
++		       bytes);
+ 
+ 	return 0;
+ err:
+ 	/* likely under heavy memory pressure, give memory back */
+-	pcpu_depopulate_chunk(chunk, off, size, true);
++	pcpu_depopulate_chunk(chunk, off, bytes, true);
+ 	return -ENOMEM;
+ }
+ 
+@@ -690,53 +690,53 @@ static struct pcpu_chunk *alloc_pcpu_chunk(void)
+ 	chunk->map = pcpu_realloc(NULL, 0,
+ 				  PCPU_DFL_MAP_ALLOC * sizeof(chunk->map[0]));
+ 	chunk->map_alloc = PCPU_DFL_MAP_ALLOC;
+-	chunk->map[chunk->map_used++] = pcpu_unit_size;
++	chunk->map[chunk->map_used++] = pcpu_unit_bytes;
+ 
+-	chunk->vm = get_vm_area(pcpu_chunk_size, GFP_KERNEL);
++	chunk->vm = get_vm_area(pcpu_chunk_bytes, GFP_KERNEL);
+ 	if (!chunk->vm) {
+ 		free_pcpu_chunk(chunk);
+ 		return NULL;
+ 	}
+ 
+ 	INIT_LIST_HEAD(&chunk->list);
+-	chunk->free_size = pcpu_unit_size;
+-	chunk->contig_hint = pcpu_unit_size;
++	chunk->free_bytes = pcpu_unit_bytes;
++	chunk->contig_hint = pcpu_unit_bytes;
+ 
+ 	return chunk;
+ }
+ 
+ /**
+  * __alloc_percpu - allocate percpu area
+- * @size: size of area to allocate
++ * @bytes: size of area to allocate
+  * @align: alignment of area (max PAGE_SIZE)
+  *
+- * Allocate percpu area of @size bytes aligned at @align.  Might
+- * sleep.  Might trigger writeouts.
++ * Allocate percpu area of @bytes aligned at @align.  Might sleep.
++ * Might trigger writeouts.
+  *
+  * RETURNS:
+  * Percpu pointer to the allocated area on success, NULL on failure.
+  */
+-void *__alloc_percpu(size_t size, size_t align)
++void *__alloc_percpu(size_t bytes, size_t align)
+ {
+ 	void *ptr = NULL;
+ 	struct pcpu_chunk *chunk;
+ 	int slot, off;
+ 
+-	if (unlikely(!size || size > PAGE_SIZE << PCPU_MIN_UNIT_PAGES_SHIFT ||
++	if (unlikely(!bytes || bytes > PAGE_SIZE << PCPU_MIN_UNIT_PAGES_SHIFT ||
+ 		     align > PAGE_SIZE)) {
+ 		WARN(true, "illegal size (%zu) or align (%zu) for "
+-		     "percpu allocation\n", size, align);
++		     "percpu allocation\n", bytes, align);
+ 		return NULL;
+ 	}
+ 
+ 	mutex_lock(&pcpu_mutex);
+ 
+ 	/* allocate area */
+-	for (slot = pcpu_size_to_slot(size); slot < pcpu_nr_slots; slot++) {
++	for (slot = pcpu_bytes_to_slot(bytes); slot < pcpu_nr_slots; slot++) {
+ 		list_for_each_entry(chunk, &pcpu_slot[slot], list) {
+-			if (size > chunk->contig_hint)
++			if (bytes > chunk->contig_hint)
+ 				continue;
+-			off = pcpu_alloc_area(chunk, size, align);
++			off = pcpu_alloc_area(chunk, bytes, align);
+ 			if (off >= 0)
+ 				goto area_found;
+ 			if (off != -ENOSPC)
+@@ -751,13 +751,13 @@ void *__alloc_percpu(size_t size, size_t align)
+ 	pcpu_chunk_relocate(chunk, -1);
+ 	pcpu_chunk_addr_insert(chunk);
+ 
+-	off = pcpu_alloc_area(chunk, size, align);
++	off = pcpu_alloc_area(chunk, bytes, align);
+ 	if (off < 0)
+ 		goto out_unlock;
+ 
+ area_found:
+ 	/* populate, map and clear the area */
+-	if (pcpu_populate_chunk(chunk, off, size)) {
++	if (pcpu_populate_chunk(chunk, off, bytes)) {
+ 		pcpu_free_area(chunk, off);
+ 		goto out_unlock;
+ 	}
+@@ -771,7 +771,7 @@ EXPORT_SYMBOL_GPL(__alloc_percpu);
+ 
+ static void pcpu_kill_chunk(struct pcpu_chunk *chunk)
+ {
+-	pcpu_depopulate_chunk(chunk, 0, pcpu_unit_size, false);
++	pcpu_depopulate_chunk(chunk, 0, pcpu_unit_bytes, false);
+ 	list_del(&chunk->list);
+ 	rb_erase(&chunk->rb_node, &pcpu_addr_root);
+ 	free_pcpu_chunk(chunk);
+@@ -800,7 +800,7 @@ void free_percpu(void *ptr)
+ 	pcpu_free_area(chunk, off);
+ 
+ 	/* the chunk became fully free, kill one if there are other free ones */
+-	if (chunk->free_size == pcpu_unit_size) {
++	if (chunk->free_bytes == pcpu_unit_bytes) {
+ 		struct pcpu_chunk *pos;
+ 
+ 		list_for_each_entry(pos,
+@@ -818,7 +818,7 @@ EXPORT_SYMBOL_GPL(free_percpu);
+ /**
+  * pcpu_setup_static - initialize kernel static percpu area
+  * @populate_pte_fn: callback to allocate pagetable
+- * @pages: num_possible_cpus() * PFN_UP(cpu_size) pages
++ * @pages: num_possible_cpus() * PFN_UP(cpu_bytes) pages
+  *
+  * Initialize kernel static percpu area.  The caller should allocate
+  * all the necessary pages and pass them in @pages.
+@@ -827,27 +827,27 @@ EXPORT_SYMBOL_GPL(free_percpu);
+  * tables for the page is allocated.
+  *
+  * RETURNS:
+- * The determined pcpu_unit_size which can be used to initialize
++ * The determined pcpu_unit_bytes which can be used to initialize
+  * percpu access.
+  */
+ size_t __init pcpu_setup_static(pcpu_populate_pte_fn_t populate_pte_fn,
+-				struct page **pages, size_t cpu_size)
++				struct page **pages, size_t cpu_bytes)
+ {
+ 	static struct vm_struct static_vm;
+ 	struct pcpu_chunk *static_chunk;
+-	int nr_cpu_pages = DIV_ROUND_UP(cpu_size, PAGE_SIZE);
++	int nr_cpu_pages = DIV_ROUND_UP(cpu_bytes, PAGE_SIZE);
+ 	unsigned int cpu;
+ 	int err, i;
+ 
+ 	pcpu_unit_pages_shift = max_t(int, PCPU_MIN_UNIT_PAGES_SHIFT,
+-				      order_base_2(cpu_size) - PAGE_SHIFT);
++				      order_base_2(cpu_bytes) - PAGE_SHIFT);
+ 
+-	pcpu_static_size = cpu_size;
++	pcpu_static_bytes = cpu_bytes;
+ 	pcpu_unit_pages = 1 << pcpu_unit_pages_shift;
+ 	pcpu_unit_shift = PAGE_SHIFT + pcpu_unit_pages_shift;
+-	pcpu_unit_size = 1 << pcpu_unit_shift;
+-	pcpu_chunk_size = num_possible_cpus() * pcpu_unit_size;
+-	pcpu_nr_slots = pcpu_size_to_slot(pcpu_unit_size) + 1;
++	pcpu_unit_bytes = 1 << pcpu_unit_shift;
++	pcpu_chunk_bytes = num_possible_cpus() * pcpu_unit_bytes;
++	pcpu_nr_slots = pcpu_bytes_to_slot(pcpu_unit_bytes) + 1;
+ 	pcpu_chunk_struct_size = sizeof(struct pcpu_chunk)
+ 		+ (1 << pcpu_unit_pages_shift) * sizeof(struct page *);
+ 
+@@ -858,15 +858,15 @@ size_t __init pcpu_setup_static(pcpu_populate_pte_fn_t populate_pte_fn,
+ 
+ 	/* init and register vm area */
+ 	static_vm.flags = VM_ALLOC;
+-	static_vm.size = pcpu_chunk_size;
++	static_vm.size = pcpu_chunk_bytes;
+ 	vm_area_register_early(&static_vm);
+ 
+ 	/* init static_chunk */
+ 	static_chunk = alloc_bootmem(pcpu_chunk_struct_size);
+ 	INIT_LIST_HEAD(&static_chunk->list);
+ 	static_chunk->vm = &static_vm;
+-	static_chunk->free_size = pcpu_unit_size - pcpu_static_size;
+-	static_chunk->contig_hint = static_chunk->free_size;
++	static_chunk->free_bytes = pcpu_unit_bytes - pcpu_static_bytes;
++	static_chunk->contig_hint = static_chunk->free_bytes;
+ 
+ 	/* assign pages and map them */
+ 	for_each_possible_cpu(cpu) {
+@@ -886,5 +886,5 @@ size_t __init pcpu_setup_static(pcpu_populate_pte_fn_t populate_pte_fn,
+ 
+ 	/* we're done */
+ 	pcpu_base_addr = (void *)pcpu_chunk_addr(static_chunk, 0, 0);
+-	return pcpu_unit_size;
++	return pcpu_unit_bytes;
+ }
+-- 
+1.6.0.2
 
