@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZBUT2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZBUTd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbZBUT2T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 14:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZBUT2L
+	id S1755264AbZBUTd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 14:33:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZBUTdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 14:28:11 -0500
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:57938 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842AbZBUT2K (ORCPT
+	Sat, 21 Feb 2009 14:33:19 -0500
+Received: from mga06.intel.com ([134.134.136.21]:59845 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753783AbZBUTdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 14:28:10 -0500
-Date: Sat, 21 Feb 2009 20:28:07 +0100
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>, Dave Airlie <airlied@linux.ie>
-Subject: Re: [BISECTED] [drm:i915_initialize] *ERROR* can not ioremap
- virtual address for ring buffer
-Message-ID: <20090221202807.7ede148c@fastwebnet.it>
-In-Reply-To: <20090221181449.GA13180@silver.sucs.org>
-References: <20090221110011.030cb16d@fastwebnet.it>
-	<20090221121944.GA21090@silver.sucs.org>
-	<20090221134933.368c2709@fastwebnet.it>
-	<20090221135233.58fbae0b@fastwebnet.it>
-	<20090221181449.GA13180@silver.sucs.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 21 Feb 2009 14:33:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,246,1233561600"; 
+   d="scan'208";a="388706132"
+Message-ID: <49A056D5.5090909@linux.intel.com>
+Date: Sat, 21 Feb 2009 11:32:37 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and hibernation for
+ 2.6.29
+References: <200902140157.40869.rjw@sisk.pl> <alpine.LFD.2.00.0902202337040.19156@localhost.localdomain> <200902211038.42169.rjw@sisk.pl> <20090221182902.GB12472@suse.de>
+In-Reply-To: <20090221182902.GB12472@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Feb 2009 18:14:49 +0000
-Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-
-> > $ cat /proc/mtrr
-> > reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
-> > reg01: base=0x07e700000 ( 2023MB), size=    1MB, count=1: uncachable
-> > reg02: base=0x07e800000 ( 2024MB), size=    8MB, count=1: uncachable
-> > reg03: base=0x07f000000 ( 2032MB), size=   16MB, count=1: uncachable
-> > reg04: base=0x080000000 ( 2048MB), size=  256MB, count=2: write-combining
-> >                                                       ^^^  
+Greg KH wrote:
+> I was not planning to send them for .29, sorry I got confused.  I'll
+> drop them from my tree and Len can send them all to Linus now.
 > 
-> Regarding the increase in count - are you sure that wasn't happening due
-> to X (i.e. before X starts the count is 1 and after X has set things up
-> the count goes to 2)?
 
-Ah, yes, you are right  ;)
+they really really need to go into .29, they are a fix for a regression.
 
--- 
-	Paolo Ornati
-	Linux 2.6.29-rc5-00206-g402a917 on x86_64
+This patch exists for 6 weeks now as a fix for the regression.. why is it so
+hard to get it sent to Linus???
+
