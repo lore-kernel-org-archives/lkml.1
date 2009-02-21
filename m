@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZBUUHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZBUUV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbZBUUHh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 15:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZBUUH2
+	id S1754873AbZBUUV0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 15:21:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZBUUVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 15:07:28 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45135 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbZBUUH1 (ORCPT
+	Sat, 21 Feb 2009 15:21:17 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60664 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751968AbZBUUVQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 15:07:27 -0500
-Date: Sat, 21 Feb 2009 15:07:24 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       zippel@linux-m68k.org
-Subject: Re: [PATCH][RFC] check for select dependency errors on config load
-In-Reply-To: <499F9D25.8010300@oracle.com>
-Message-ID: <alpine.DEB.2.00.0902211504200.30069@gandalf.stny.rr.com>
-References: <499edf47.1818d00a.060b.2b8d@mx.google.com> <499EE162.4050008@oracle.com> <alpine.DEB.2.00.0902210008580.30069@gandalf.stny.rr.com> <20090220220810.6f4360f0.akpm@linux-foundation.org> <499F9D25.8010300@oracle.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 21 Feb 2009 15:21:16 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [RFD] Automatic suspend
+Date: Sat, 21 Feb 2009 21:20:35 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <200902192215.18365.rjw@sisk.pl> <200902211047.26787.rjw@sisk.pl> <d6200be20902210232m71700247k8914ca3735563881@mail.gmail.com>
+In-Reply-To: <d6200be20902210232m71700247k8914ca3735563881@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200902212120.37684.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 21 February 2009, Arve Hjønnevåg wrote:
+> On Sat, Feb 21, 2009 at 1:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Saturday 21 February 2009, Arve Hjønnevåg wrote:
+> >> On Fri, Feb 20, 2009 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Saturday 21 February 2009, Arve Hjønnevåg wrote:
+> >> >> On Fri, Feb 20, 2009 at 7:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
+> >> >> >> On Fri, Feb 20, 2009 at 2:49 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
+> >> >> >> >> On Thu, Feb 19, 2009 at 2:08 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+[--snip--]
+> >> > The idea is to have both /sys/power/state and /sys/power/sleep at the same
+> >> > time, where /sys/power/state will work just like it does right now.  Sure,
+> >> > there must be mutual exclusion between the two, but that's a matter of
+> >> > implementation IMO.
+> >>
+> >> If you want to only prevent suspend though one interface, you have to
+> >> also pass information to the driver about its suspend hook is being
+> >> called so it can conditionally return -EBUSY. The wakelock interface
+> >> requires less code in each driver.
+> >
+> > Well, I don't think so.  Moreover, it requires you to spread wakelocks all
+> > over the place if you don't use the timeouted ones which, let's face it, is
+> > hardly acceptable.
+> 
+> Your method does not reduce the number of places that has to be
+> modified. Any component where we add a wakelock, you have to add a
+> suspend handler to abort suspend when we would have held a wakelock.
 
-On Fri, 20 Feb 2009, Randy Dunlap wrote:
-> 
-> EMBEDDED is misnamed.  It means "those who think that they know enough
-> to use all of the power of kconfig."
-> Some people spell that EXPERT etc.
-> Or it means "let me shoot myself in the foot."
-> 
-> So HOTPLUG, INPUT, FW_LOADER, etc. should not be modified by Aunt Tillie,
-> but you and I can play with them.
-
-We really should go and rename it then :-/
-
-> 
-> 
-> for SERIO:
-> 
-> config SERIO
-> 	tristate "Serial I/O support" if EMBEDDED || !X86
-> 	default y
-> 
-> Experts can modify it.  !X86 can modify it.
-> It's usually needed on X86 for keyboard controllers etc.,
-> but if one sets EMBEDDED, you can muck up your config and not be
-> able to use the keyboard.
-> 
-> I don't know where the !S390 comes from, but it's not surprising.
-
-Anyway, to avoid having these spit out all the time, I'll see if I can 
-make it not warn if the dependency was on EMBEDDED/EXPERT. I'll try to 
-work on it when I have time.
-
-Note, the config I used was originally generated by randconfig.
+Well, maybe not, but it doesn't introduce entirely new API for device drivers.
+Instead, it extends the existing interfaces which I think is more appropriate.
 
 Thanks,
-
--- Steve
-
+Rafael
