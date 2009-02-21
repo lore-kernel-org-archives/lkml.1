@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbZBUOQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbZBUO5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753744AbZBUOQn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 09:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZBUOQd
+	id S1754131AbZBUO5c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 09:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZBUO5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 09:16:33 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:39838 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752986AbZBUOQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 09:16:32 -0500
-Date: Sat, 21 Feb 2009 15:16:21 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH] Fixes and enhancements for the MMC SPI driver - revised
-Message-ID: <20090221151621.34125c6a@mjolnir.ossman.eu>
-In-Reply-To: <200902091253.57594.wolfgang.mues@auerswald.de>
-References: <20090113015904.606e3548.akpm@linux-foundation.org>
-	<200901261418.19681.wolfgang.mues@auerswald.de>
-	<20090208204452.0ecdb18e@mjolnir.drzeus.cx>
-	<200902091253.57594.wolfgang.mues@auerswald.de>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.4; x86_64-redhat-linux-gnu)
+	Sat, 21 Feb 2009 09:57:24 -0500
+Received: from aa011msr.fastwebnet.it ([85.18.95.71]:55614 "EHLO
+	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752906AbZBUO5Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 09:57:24 -0500
+Date: Sat, 21 Feb 2009 15:57:06 +0100
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, Dave Airlie <airlied@linux.ie>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [BISECTED && PACTH AVAILABLE] [drm:i915_initialize] *ERROR* can
+ not ioremap virtual address for ring buffer
+Message-ID: <20090221155706.5f6d2184@fastwebnet.it>
+In-Reply-To: <20090221131209.GB13134@silver.sucs.org>
+References: <20090221110011.030cb16d@fastwebnet.it>
+ <20090221121944.GA21090@silver.sucs.org>
+ <20090221134933.368c2709@fastwebnet.it>
+ <20090221135233.58fbae0b@fastwebnet.it>
+ <20090221130521.GA13134@silver.sucs.org>
+ <20090221131209.GB13134@silver.sucs.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.drzeus.cx-14192-1235225789-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Sat, 21 Feb 2009 13:12:09 +0000
+Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 
---=_freyr.drzeus.cx-14192-1235225789-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> > Doh. Scratch that idea...  
+> 
+> Hmm does the patch mentioned on
+> http://marc.info/?l=linux-kernel&m=123455194230641&w=2 help the DRM
+> error message (and if so does the mtrr weirdness still happen)?
 
-On Mon, 9 Feb 2009 12:53:57 +0100
-Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
+With that patch the error is gone :)
 
->=20
-> Hmmm. Inside the core, this timeout value will be calculated as:
->=20
-> timeout =3D 250ms;
-> if (driver =3D=3D SPI)
->    timeout =3D 1s;
->=20
-> I agree that it is confusing to have the timeout value set on two places.
-> Do you prefer to have it set in the mmc core, different for SPI and non-S=
-PI?
->=20
+---------- patch here for reference ---------------
 
-Yes please. With a comment though.
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index 81f1cff..2d797ff 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -202,7 +202,7 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
+                dev_priv->ring.map.flags = 0;
+                dev_priv->ring.map.mtrr = 0;
 
-> > > -	if (host->mmc->use_spi_crc) {
-> > > +	/*
-> > > +	 * Omit the CRC check for CID and CSD reads. There are some SDHC
->=20
-> > Hmmm... I think this also better handled in the core. Reorder things in
-> > the init to not turn CRC checks on until after those registers have
-> > been read.
->=20
-> No! CRC checks are ONLY disabled for CID and CSD reads, NOT for the readi=
-ng of=20
-> data blocks. And I don't want to set use_spi_scc =3D=3D 0 because I don't=
- want to=20
-> disable the safety of CRC for data blocks.
->=20
+-               drm_core_ioremap(&dev_priv->ring.map, dev);
++               drm_core_ioremap_wc(&dev_priv->ring.map, dev);
 
-I said reorder, not remove. :)
+                if (dev_priv->ring.map.handle == NULL) {
+                        i915_dma_cleanup(dev);
+--------------------------------------------------
 
-I.e. move the call to mmc_spi_set_crc() to after the CID and CSD have
-been read. Again with a comment explaining the issue.
+$ cat /proc/mtrr
+reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
+reg01: base=0x07f000000 ( 2032MB), size=   16MB, count=1: uncachable
+reg02: base=0x07e800000 ( 2024MB), size=    8MB, count=1: uncachable
+reg03: base=0x07e700000 ( 2023MB), size=    1MB, count=1: uncachable
+reg04: base=0x080000000 ( 2048MB), size=  256MB, count=2: write-combining
+                                                      ^^^
 
-Rgds
---=20
-     -- Pierre Ossman
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Another "problem": every time I switch from X to a text console I get
+this:
 
---=_freyr.drzeus.cx-14192-1235225789-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+[  156.729311] [drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for disabled pipe 1
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.10 (GNU/Linux)
 
-iEYEARECAAYFAkmgDLoACgkQ7b8eESbyJLgDWwCg3bj5u225/9g9MHTVjKcMuGCV
-RIMAn2HDo4OM3dmO/6vDl3GIwUNr5k7a
-=qcSe
------END PGP SIGNATURE-----
+It seems harmless but I report it anyway.
 
---=_freyr.drzeus.cx-14192-1235225789-0001-2--
+
+-- 
+	Paolo Ornati
+	Linux 2.6.29-rc5-00276-g2ec77fc-dirty on x86_64
