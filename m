@@ -1,101 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZBUB6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZBUB7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbZBUB6m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 20:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZBUB5x
+	id S1757370AbZBUB7I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 20:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbZBUB6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 20:57:53 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:57166 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756673AbZBUB5v (ORCPT
+	Fri, 20 Feb 2009 20:58:53 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:46187 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754841AbZBUB6w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 20:57:51 -0500
-Date: Fri, 20 Feb 2009 17:57:48 -0800
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: akpm@linux-foundation.org
-Cc: wli@movementarian.org, mel@csn.ul.ie, linux-mm@kvack.org,
-       shai@scalex86.org, linux-kernel@vger.kernel.org
-Subject: [patch 2/2] mm: Reintroduce and deprecate rlimit based access for
-	SHM_HUGETLB 
-Message-ID: <20090221015748.GB32674@localdomain>
-References: <20090221015457.GA32674@localdomain>
+	Fri, 20 Feb 2009 20:58:52 -0500
+Date: Sat, 21 Feb 2009 01:58:47 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: davej@codemonkey.org.uk
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: [PATCH] cpufreq: Make cpufreq-nforce2 less obnoxious
+Message-ID: <20090221015847.GA12028@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090221015457.GA32674@localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow non root users with sufficient mlock rlimits to be able to allocate
-hugetlb backed shm for now.  Deprecate this though.  This is being
-deprecated because the mlock based rlimit checks for SHM_HUGETLB
-is not consistent with mmap based huge page allocations.
+Not owning an nforce2 is a sign of good taste, not an error.
 
-Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Wli <wli@movementarian.org>
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-Index: linux-2.6-tip/fs/hugetlbfs/inode.c
-===================================================================
---- linux-2.6-tip.orig/fs/hugetlbfs/inode.c	2009-02-10 13:30:05.000000000 -0800
-+++ linux-2.6-tip/fs/hugetlbfs/inode.c	2009-02-11 21:58:23.000000000 -0800
-@@ -948,6 +948,7 @@ static int can_do_hugetlb_shm(void)
- struct file *hugetlb_file_setup(const char *name, size_t size)
- {
- 	int error = -ENOMEM;
-+	int unlock_shm = 0;
- 	struct file *file;
- 	struct inode *inode;
- 	struct dentry *dentry, *root;
-@@ -957,8 +958,14 @@ struct file *hugetlb_file_setup(const ch
- 	if (!hugetlbfs_vfsmount)
- 		return ERR_PTR(-ENOENT);
+diff --git a/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c b/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
+index 965ea52..36090cc 100644
+--- a/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
++++ b/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
+@@ -420,7 +420,7 @@ static int __init nforce2_init(void)
  
--	if (!can_do_hugetlb_shm())
--		return ERR_PTR(-EPERM);
-+	if (!can_do_hugetlb_shm()) {
-+		if (user_shm_lock(size, user)) {
-+			unlock_shm = 1;
-+			WARN_ONCE(1,
-+			  "Using mlock ulimits for SHM_HUGETLB deprecated\n");
-+		} else
-+			return ERR_PTR(-EPERM);
-+	}
+ 	/* detect chipset */
+ 	if (nforce2_detect_chipset()) {
+-		printk(KERN_ERR "cpufreq: No nForce2 chipset.\n");
++		printk(KERN_INFO "cpufreq: No nForce2 chipset.\n");
+ 		return -ENODEV;
+ 	}
  
- 	root = hugetlbfs_vfsmount->mnt_root;
- 	quick_string.name = name;
-@@ -997,6 +1004,8 @@ out_inode:
- out_dentry:
- 	dput(dentry);
- out_shm_unlock:
-+	if (unlock_shm)
-+		user_shm_unlock(size, user);
- 	return ERR_PTR(error);
- }
- 
-Index: linux-2.6-tip/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6-tip.orig/Documentation/feature-removal-schedule.txt	2009-02-09 16:45:47.000000000 -0800
-+++ linux-2.6-tip/Documentation/feature-removal-schedule.txt	2009-02-11 21:35:28.000000000 -0800
-@@ -335,3 +335,14 @@ Why:	In 2.6.18 the Secmark concept was i
- 	Secmark, it is time to deprecate the older mechanism and start the
- 	process of removing the old code.
- Who:	Paul Moore <paul.moore@hp.com>
-+---------------------------
-+
-+What:	Ability for non root users to shm_get hugetlb pages based on mlock
-+	resource limits
-+When:	2.6.31
-+Why:	Non root users need to be part of /proc/sys/vm/hugetlb_shm_group or
-+	have CAP_IPC_LOCK to be able to allocate shm segments backed by
-+	huge pages.  The mlock based rlimit check to allow shm hugetlb is
-+	inconsistent with mmap based allocations.  Hence it is being
-+	deprecated.
-+Who:	Ravikiran Thirumalai <kiran@scalex86.org>
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
