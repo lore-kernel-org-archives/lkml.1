@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZBUFzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbZBUF7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZBUFzo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 00:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZBUFze
+	id S1753497AbZBUF7I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 00:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZBUF64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 00:55:34 -0500
-Received: from vms173009pub.verizon.net ([206.46.173.9]:45605 "EHLO
-	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbZBUFzd (ORCPT
+	Sat, 21 Feb 2009 00:58:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51474 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751389AbZBUF6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 00:55:33 -0500
-Date: Sat, 21 Feb 2009 00:55:15 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ed Swierk <eswierk@aristanetworks.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [RFC] [PATCH] PCI mmconfig without ACPI
-In-reply-to: <20090204181738.GA16174@elte.hu>
-Message-id: <alpine.LFD.2.00.0902210046030.19156@localhost.localdomain>
-References: <1233766786.16414.26.camel@localhost.localdomain>
- <20090204181738.GA16174@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 21 Feb 2009 00:58:55 -0500
+Date: Fri, 20 Feb 2009 21:58:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       zippel@linux-m68k.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH][RFC] check for select dependency errors on config load
+Message-Id: <20090220215800.1a009182.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0902210008580.30069@gandalf.stny.rr.com>
+References: <499edf47.1818d00a.060b.2b8d@mx.google.com>
+	<499EE162.4050008@oracle.com>
+	<alpine.DEB.2.00.0902210008580.30069@gandalf.stny.rr.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 21 Feb 2009 00:24:05 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> > +#ifdef CONFIG_PCI_MMCONFIG
-> > +
-> > +struct acpi_mcfg_allocation {
-> > +	u64 address;		/* Base address, processor-relative */
-> > +	u16 pci_segment;	/* PCI segment group number */
-> > +	u8 start_bus_number;	/* Starting PCI Bus number */
-> > +	u8 end_bus_number;	/* Final PCI Bus number */
-> > +	u32 reserved;
-> > +};
+> There's been a few problems with SELECT and dependencies lately.
+> I've been burnt by it a few times myself. So I look at the kconfig
+> code and added this patch. It can use a bit more work but it does what
+> I want.
 > 
-> Please rename this to "struct pci_mcfg_allocation" - there's nothing ACPI 
-> about it anymore - mmcfg is a PCI feature and ACPI is an enumeration method.
+> When the config is loaded, it checks all the symbols that are
+> selected by an active config and makes sure the visible dependencies are 
+> also activated. This should probably be moved to the writing of the 
+> config instead, but since I just wanted to see if my current config was 
+> OK, I did it on load. This is an RFC patch anyway, so fixes/comments are 
+> definitely welcome.
 > 
-> Also, while touching it, please also use the opportunity to align structure 
-> fields vertically:
+> Here's what I get with the attached config running on 2.6.29-rc5.
 > 
->  struct pci_mcfg_allocation {
-> 	u64	address;		/* Base address, processor-relative */
-> 	u16	pci_segment;		/* PCI segment group number */
-> 	u8	start_bus_number;	/* Starting PCI Bus number */
-> 	u8	end_bus_number;		/* Final PCI Bus number */
-> 	u32	__reserved;
->  };
-> 
-> The whole layout of this structure becomes easier to read and nicer to look 
-> at as well.
-> 
-> Another small detail: note how i renamed reserved to __reserved - that is a 
-> standard way to de-emphasise the signficance of a structure field.
-> 
-> The reserved field there is for future expansion and to pad the structure to 
-> 16 bytes - it doesnt really mean much and the underscores move it a bit out 
-> of the default line of sight.
-> 
-> With a 'reserved' field people end up wondering whether it's perhaps some 
-> _semantic_ 'reserved area' kind of thing (like for e820 maps, etc.) - so 
-> it's never bad to make that distinction explicit via the double underscores.
+> $ make menuconfig
+> scripts/kconfig/mconf arch/x86/Kconfig
+> .config:2561:warning: MICROCODE selects FW_LOADER which fails its dependencies!
+> .config:2561:warning: MICROCODE_INTEL selects FW_LOADER which fails its dependencies!
+> .config:2561:warning: PCMCIA_LOAD_CIS selects FW_LOADER which fails its dependencies!
+> .config:2561:warning: SCSI_SAS_LIBSAS selects SCSI_SAS_ATTRS which fails its dependencies!
+> .config:2561:warning: SCSI_AIC94XX selects FW_LOADER which fails its dependencies!
+> .config:2561:warning: KEYBOARD_ATKBD selects SERIO which fails its dependencies!
+> .config:2561:warning: KEYBOARD_ATKBD selects SERIO_LIBPS2 which fails its dependencies!
+> .config:2561:warning: KEYBOARD_ATKBD selects SERIO_I8042 which fails its dependencies!
+> .config:2561:warning: MOUSE_PS2 selects SERIO which fails its dependencies!
+> .config:2561:warning: MOUSE_PS2 selects SERIO_LIBPS2 which fails its dependencies!
+> .config:2561:warning: MOUSE_PS2 selects SERIO_I8042 which fails its dependencies!
+> .config:2561:warning: VT selects INPUT which fails its dependencies!
+> .config:2561:warning: DRM selects I2C_ALGOBIT which fails its dependencies!
+> .config:2561:warning: SND_EMU10K1 selects FW_LOADER which fails its dependencies!
 
-struct acpi_mcfg_allocation is the structure that maps onto the MCFG
-ACPI table as defined in the PCI firmware spec and provided by the ACPI 
-BIOS.
+Well damn, that looks like a major contribution to the general
+well-being.
 
-I'd like it to stay in actbl1.h -- as that is part of ACPICA, which
-tracks the standard tables.  (and I see you did this with your updated 
-patch, thanks.)
+Sam, could you please give this a scan and merge it into linux-next via
+your tree?
 
-FWIW, "reserved" here really does have a specific definition.
-On read-only tables, such as this one, reserved fields are defined
-to return 0 on reads for this version of the table, but may
-return non-zero on future revisions.
-
-thanks,
--Len
+I wonder how hard it would be to print out the reason why (for example)
+FW_LOADER failed its dependencies?
 
