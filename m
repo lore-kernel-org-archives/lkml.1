@@ -1,107 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZBUFZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZBUFzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754270AbZBUFZj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 00:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZBUFZb
+	id S1753239AbZBUFzo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 00:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZBUFze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 00:25:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59373 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbZBUFZb (ORCPT
+	Sat, 21 Feb 2009 00:55:34 -0500
+Received: from vms173009pub.verizon.net ([206.46.173.9]:45605 "EHLO
+	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZBUFzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 00:25:31 -0500
-Date: Sat, 21 Feb 2009 00:25:29 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rt/workqueue: assign the waiters higher priority to the
- workqueue thread
-In-Reply-To: <499f8c5c.1185300a.4d42.ffff9404@mx.google.com>
-Message-ID: <alpine.DEB.2.00.0902210025140.30069@gandalf.stny.rr.com>
-References: <499f8c5c.1185300a.4d42.ffff9404@mx.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 21 Feb 2009 00:55:33 -0500
+Date: Sat, 21 Feb 2009 00:55:15 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ed Swierk <eswierk@aristanetworks.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [RFC] [PATCH] PCI mmconfig without ACPI
+In-reply-to: <20090204181738.GA16174@elte.hu>
+Message-id: <alpine.LFD.2.00.0902210046030.19156@localhost.localdomain>
+References: <1233766786.16414.26.camel@localhost.localdomain>
+ <20090204181738.GA16174@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Thanks Frederic, I'll take a look at this on Monday
+> > +#ifdef CONFIG_PCI_MMCONFIG
+> > +
+> > +struct acpi_mcfg_allocation {
+> > +	u64 address;		/* Base address, processor-relative */
+> > +	u16 pci_segment;	/* PCI segment group number */
+> > +	u8 start_bus_number;	/* Starting PCI Bus number */
+> > +	u8 end_bus_number;	/* Final PCI Bus number */
+> > +	u32 reserved;
+> > +};
+> 
+> Please rename this to "struct pci_mcfg_allocation" - there's nothing ACPI 
+> about it anymore - mmcfg is a PCI feature and ACPI is an enumeration method.
+> 
+> Also, while touching it, please also use the opportunity to align structure 
+> fields vertically:
+> 
+>  struct pci_mcfg_allocation {
+> 	u64	address;		/* Base address, processor-relative */
+> 	u16	pci_segment;		/* PCI segment group number */
+> 	u8	start_bus_number;	/* Starting PCI Bus number */
+> 	u8	end_bus_number;		/* Final PCI Bus number */
+> 	u32	__reserved;
+>  };
+> 
+> The whole layout of this structure becomes easier to read and nicer to look 
+> at as well.
+> 
+> Another small detail: note how i renamed reserved to __reserved - that is a 
+> standard way to de-emphasise the signficance of a structure field.
+> 
+> The reserved field there is for future expansion and to pad the structure to 
+> 16 bytes - it doesnt really mean much and the underscores move it a bit out 
+> of the default line of sight.
+> 
+> With a 'reserved' field people end up wondering whether it's perhaps some 
+> _semantic_ 'reserved area' kind of thing (like for e820 maps, etc.) - so 
+> it's never bad to make that distinction explicit via the double underscores.
 
--- Steve
+struct acpi_mcfg_allocation is the structure that maps onto the MCFG
+ACPI table as defined in the PCI firmware spec and provided by the ACPI 
+BIOS.
 
+I'd like it to stay in actbl1.h -- as that is part of ACPICA, which
+tracks the standard tables.  (and I see you did this with your updated 
+patch, thanks.)
 
+FWIW, "reserved" here really does have a specific definition.
+On read-only tables, such as this one, reserved fields are defined
+to return 0 on reads for this version of the table, but may
+return non-zero on future revisions.
 
-On Sat, 21 Feb 2009, Frederic Weisbecker wrote:
+thanks,
+-Len
 
-> When a work is embedeed inside the worklist of a barrier, it must check
-> the priority of more waiters than usual:
-> 
-> - the propagated higher priority of the barrier ancestors (the barrier in
->   which our barrier parent is embedeed in)
-> 
-> - the priority of the task waiting for the completion of the barrier
->   we are embedeed in
-> 
-> - the higher priority work which follows our barrier ancestor
-> 
-> But once this check is done, we forget to assign the higher priority
-> found and simply assign the priority of the current work to the current
-> workqueue thread, thus omitting the PI from all waiters.
-> 
-> This patch fixes it and also adds some comments, the current code is rather
-> complex.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  kernel/workqueue.c |   19 ++++++++++++++++++-
->  1 files changed, 18 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-> index 90a54eb..e7ff441 100644
-> --- a/kernel/workqueue.c
-> +++ b/kernel/workqueue.c
-> @@ -325,17 +325,34 @@ again:
->  		 */
->  		struct lockdep_map lockdep_map = work->lockdep_map;
->  #endif
-> +		/*
-> +		 * Iteration over each "waiter" priority to see which one
-> +		 * we have to inherit.
-> +		 */
->  
-> +		/* Firstly: the current job */
->  		prio = work->entry.prio;
-> +
-> +		/* In a barrier's worklist, we must handle yet other waiters */
->  		if (unlikely(worklist != &cwq->worklist)) {
-> +			/*
-> +			 * If we are in a nested barrier, check the propagated
-> +			 * priority of the "grandfather" barrier waiting for us.
-> +			 */
->  			prio = min(prio, cwq->barrier->prev_prio);
-> +
-> +			/* Check the task waiting for the parent barrier */
->  			prio = min(prio, cwq->barrier->waiter_prio);
-> +
-> +			/* Check the higher priority work that follows the
-> +			 * ancestor barrier
-> +			 */
->  			prio = min(prio, plist_first(&cwq->worklist)->prio);
->  		}
->  		prio = max(prio, 0);
->  
->  		if (likely(cwq->thread->prio != prio))
-> -			rt_mutex_setprio(cwq->thread, work->entry.prio);
-> +			rt_mutex_setprio(cwq->thread, prio);
->  
->  		cwq->current_work = work;
->  		plist_del(&work->entry, worklist);
-> -- 
-> 1.6.1
-> 
-> 
-> 
-> 
