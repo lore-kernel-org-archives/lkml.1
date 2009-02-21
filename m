@@ -1,202 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZBUA3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZBUAbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbZBUA3T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 19:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZBUA3I
+	id S1755201AbZBUAbr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 19:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZBUAbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 19:29:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45034 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753317AbZBUA3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 19:29:05 -0500
-Date: Fri, 20 Feb 2009 16:27:11 -0800
-From: Jeff Layton <jlayton@redhat.com>
-To: Horst Reiterer <horst.reiterer@gmail.com>
-Cc: smfrench@gmail.com, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-cifs-client] [PATCH] fs/cifs: send SMB_COM_FLUSH in
- cifs_fsync
-Message-ID: <20090220162711.4e056ab8@tupile.poochiereds.net>
-In-Reply-To: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
-References: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Feb 2009 19:31:36 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:12241 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbZBUAbf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 19:31:35 -0500
+Message-ID: <499F4B61.3050508@hp.com>
+Date: Fri, 20 Feb 2009 19:31:29 -0500
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: Andrey Borzenkov <arvidjaar@mail.ru>,
+       Vladislav Yasevich <vladislav.yasevich@hp.com>,
+       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Valdis.Kletnieks@vt.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       bonding-devel@lists.sourceforge.net,
+       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?= =?ISO-8859-1?Q?=F3n=22?= 
+	<jamagallon@ono.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Vosburgh <fubar@us.ibm.com>
+Subject: [PATCH] bonding: move IPv6 support into a separate kernel module
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Feb 2009 21:51:46 +0100 (CET)
-Horst Reiterer <horst.reiterer@gmail.com> wrote:
+[Possible fix for bonding IPv6 regression reported by Andrey Borzenkov,
+tried to keep all Cc's]
 
-> Hi,
-> 
-> In contrast to the now-obsolete smbfs, cifs does not send SMB_COM_FLUSH
-> in response to an explicit fsync(2) to guarantee that all volatile data
-> is written to stable storage on the server side, provided the server
-> honors the request (which, to my knowledge, is true for Windows and
-> Samba with 'strict sync' enabled).
-> This patch modifies the cifs_fsync implementation to restore the
-> fsync-behavior of smbfs by triggering SMB_COM_FLUSH after sending
-> outstanding data on the client side to the server.
-> 
-> I inquired about this issue in the linux-cifs-client@lists.samba.org
-> mailing list:
-> 
-> On Tue, Feb 10, 2009 at 12:35 AM, Jeff Layton <jlayton@redhat.com> wrote:
-> > Horst Reiterer wrote:
-> > > Why was the explicit SMB_COM_FLUSH dropped in the new implementation?
-> >
-> > It's not that it was "removed" per-se, just never implemented. Patches
-> > to add that capability would certainly be welcome.
-> 
-> I tested the patch with 2.6.28.6 and 2.6.18 (backported) on x86_64.
-> Please review and apply.
-> 
-> Horst.
-> 
-> 
-> Signed-off-by: Horst Reiterer <horst.reiterer@gmail.com>
-> 
+This patch moves the IPv6 bonding code into a separate kernel module
+called bonding_ipv6 if either bonding or IPv6 are built as modules.
+If both are built into the kernel then this is as well.  Bonding_ipv6.ko
+registers an "send_unsol_na" function pointer for the unsolicited
+advertisement function to be called on a failover - the default action
+is to do nothing.  The notifier callbacks are now registered in this
+module and not in the base bonding module.
 
+Signed-off-by: Brian Haley <brian.haley@hp.com>
+---
+  Documentation/networking/bonding.txt |    3 ++
+  drivers/net/bonding/Makefile         |    5 ++-
+  drivers/net/bonding/bond_ipv6.c      |   13 +++++++-
+  drivers/net/bonding/bond_main.c      |   52
+++++++++++++++++++++++++++++++---
+  drivers/net/bonding/bonding.h        |    9 +++--
+  5 files changed, 69 insertions(+), 13 deletions(-)
 
-Thanks for doing this. Comments below...
+diff --git a/Documentation/networking/bonding.txt
+b/Documentation/networking/bonding.txt
+index 5ede747..c8b1c1f 100644
+--- a/Documentation/networking/bonding.txt
++++ b/Documentation/networking/bonding.txt
+@@ -603,6 +603,9 @@ num_unsol_na
+  	affects only the active-backup mode.  This option was added for
+  	bonding version 3.4.0.
 
-> diff -uprN linux-2.6.28.6/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
-> --- linux-2.6.28.6/fs/cifs/cifs_debug.c	2009-02-17 18:29:27.000000000 +0100
-> +++ b/fs/cifs/cifs_debug.c	2009-02-20 00:42:18.000000000 +0100
-> @@ -340,6 +340,8 @@ static int cifs_stats_proc_show(struct s
->  				seq_printf(m, "\nWrites: %d Bytes: %lld",
->  					atomic_read(&tcon->num_writes),
->  					(long long)(tcon->bytes_written));
-> +				seq_printf(m, "\nFlushes: %d",
-> +					atomic_read(&tcon->num_flushes));
->  				seq_printf(m, "\nLocks: %d HardLinks: %d "
->  					      "Symlinks: %d",
->  					atomic_read(&tcon->num_locks),
-> diff -uprN linux-2.6.28.6/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
-> --- linux-2.6.28.6/fs/cifs/cifsglob.h	2009-02-17 18:29:27.000000000 +0100
-> +++ b/fs/cifs/cifsglob.h	2009-02-20 00:42:18.000000000 +0100
-> @@ -246,6 +246,7 @@ struct cifsTconInfo {
->  	atomic_t num_smbs_sent;
->  	atomic_t num_writes;
->  	atomic_t num_reads;
-> +	atomic_t num_flushes;
->  	atomic_t num_oplock_brks;
->  	atomic_t num_opens;
->  	atomic_t num_closes;
-> diff -uprN linux-2.6.28.6/fs/cifs/cifspdu.h b/fs/cifs/cifspdu.h
-> --- linux-2.6.28.6/fs/cifs/cifspdu.h	2009-02-17 18:29:27.000000000 +0100
-> +++ b/fs/cifs/cifspdu.h	2009-02-20 00:42:18.000000000 +0100
-> @@ -43,6 +43,7 @@
->  #define SMB_COM_CREATE_DIRECTORY      0x00 /* trivial response */
->  #define SMB_COM_DELETE_DIRECTORY      0x01 /* trivial response */
->  #define SMB_COM_CLOSE                 0x04 /* triv req/rsp, timestamp ignored */
-> +#define SMB_COM_FLUSH                 0x05 /* triv req/rsp */
->  #define SMB_COM_DELETE                0x06 /* trivial response */
->  #define SMB_COM_RENAME                0x07 /* trivial response */
->  #define SMB_COM_QUERY_INFORMATION     0x08 /* aka getattr */
-> @@ -790,6 +791,12 @@ typedef struct smb_com_close_rsp {
->  	__u16 ByteCount;	/* bct = 0 */
->  } __attribute__((packed)) CLOSE_RSP;
-> 
-> +typedef struct smb_com_flush_req {
-> +	struct smb_hdr hdr;	/* wct = 1 */
-> +	__u16 FileID;
-> +	__u16 ByteCount;	/* 0 */
-> +} __attribute__((packed)) FLUSH_REQ;
-> +
->  typedef struct smb_com_findclose_req {
->  	struct smb_hdr hdr; /* wct = 1 */
->  	__u16 FileID;
-> diff -uprN linux-2.6.28.6/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
-> --- linux-2.6.28.6/fs/cifs/cifsproto.h	2009-02-17 18:29:27.000000000 +0100
-> +++ b/fs/cifs/cifsproto.h	2009-02-20 00:42:18.000000000 +0100
-> @@ -277,6 +277,9 @@ extern int CIFSPOSIXCreate(const int xid
->  extern int CIFSSMBClose(const int xid, struct cifsTconInfo *tcon,
->  			const int smb_file_id);
-> 
-> +extern int CIFSSMBFlush(const int xid, struct cifsTconInfo *tcon,
-> +			const int smb_file_id);
-> +
->  extern int CIFSSMBRead(const int xid, struct cifsTconInfo *tcon,
->  			const int netfid, unsigned int count,
->  			const __u64 lseek, unsigned int *nbytes, char **buf,
-> diff -uprN linux-2.6.28.6/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
-> --- linux-2.6.28.6/fs/cifs/cifssmb.c	2009-02-17 18:29:27.000000000 +0100
-> +++ b/fs/cifs/cifssmb.c	2009-02-20 00:42:18.000000000 +0100
-> @@ -1928,6 +1928,27 @@ CIFSSMBClose(const int xid, struct cifsT
->  }
-> 
->  int
-> +CIFSSMBFlush(const int xid, struct cifsTconInfo *tcon, int smb_file_id)
-> +{
-> +	int rc = 0;
-> +	FLUSH_REQ *pSMB = NULL;
-> +	cFYI(1, ("In CIFSSMBFlush"));
-> +
-> +	rc = small_smb_init(SMB_COM_FLUSH, 1, tcon, (void **) &pSMB);
-> +	if (rc)
-> +		return rc;
-> +
-> +	pSMB->FileID = (__u16) smb_file_id;
-> +	pSMB->ByteCount = 0;
-> +	rc = SendReceiveNoRsp(xid, tcon->ses, (struct smb_hdr *) pSMB, 0);
++	In order to get this functionality, you will need to load the
++	Bonding IPv6 module with 'modprobe bonding_ipv6'.
++
+  primary
 
-^^^
-Seems to me like we should wait for the response here. If there's an error from the flush, shouldn't we report that to the caller of fsync()?
+  	A string (eth0, eth2, etc) specifying which slave is the
+diff --git a/drivers/net/bonding/Makefile b/drivers/net/bonding/Makefile
+index 6f9c6fa..d4f6338 100644
+--- a/drivers/net/bonding/Makefile
++++ b/drivers/net/bonding/Makefile
+@@ -6,6 +6,7 @@ obj-$(CONFIG_BONDING) += bonding.o
 
-> +	cifs_stats_inc(&tcon->num_flushes);
-> +	if (rc)
-> +		cERROR(1, ("Send error in Flush = %d", rc));
-> +
-> +	return rc;
-> +}
-> +
-> +int
->  CIFSSMBRename(const int xid, struct cifsTconInfo *tcon,
->  	      const char *fromName, const char *toName,
->  	      const struct nls_table *nls_codepage, int remap)
-> diff -uprN linux-2.6.28.6/fs/cifs/file.c b/fs/cifs/file.c
-> --- linux-2.6.28.6/fs/cifs/file.c	2009-02-17 18:29:27.000000000 +0100
-> +++ b/fs/cifs/file.c	2009-02-20 00:42:18.000000000 +0100
-> @@ -1522,18 +1522,31 @@ int cifs_fsync(struct file *file, struct
->  {
->  	int xid;
->  	int rc = 0;
-> +	struct cifs_sb_info *cifs_sb;
-> +	struct cifsTconInfo *pTcon;
-> +	struct cifsFileInfo *pSMBFile =
-> +		(struct cifsFileInfo *)file->private_data;
->  	struct inode *inode = file->f_path.dentry->d_inode;
-> 
->  	xid = GetXid();
-> 
-> +	cifs_sb = CIFS_SB(inode->i_sb);
-> +	pTcon = cifs_sb->tcon;
-> +
->  	cFYI(1, ("Sync file - name: %s datasync: 0x%x",
->  		dentry->d_name.name, datasync));
-> 
-> -	rc = filemap_write_and_wait(inode->i_mapping);
-> -	if (rc == 0) {
-> -		rc = CIFS_I(inode)->write_behind_rc;
-> -		CIFS_I(inode)->write_behind_rc = 0;
-> -	}
-> +	if (pSMBFile) {
-> +		rc = filemap_write_and_wait(inode->i_mapping);
-> +		if (rc == 0) {
-> +			rc = CIFS_I(inode)->write_behind_rc;
-> +			CIFS_I(inode)->write_behind_rc = 0;
-> +			if (pTcon)
-> +				rc = CIFSSMBFlush(xid, pTcon, pSMBFile->netfid);
-> +		}
-> +	} else
-> +		rc = -EBADF;
-> +
->  	FreeXid(xid);
->  	return rc;
->  }
+  bonding-objs := bond_main.o bond_3ad.o bond_alb.o bond_sysfs.o
 
+-ipv6-$(subst m,y,$(CONFIG_IPV6)) += bond_ipv6.o
+-bonding-objs += $(ipv6-y)
++# build bonding_ipv6 as module whenever either IPv6 or Bonding is a module
++obj-$(subst y,$(CONFIG_BONDING),$(CONFIG_IPV6)) += bonding_ipv6.o
++bonding_ipv6-y := bond_ipv6.o
+
+diff --git a/drivers/net/bonding/bond_ipv6.c
+b/drivers/net/bonding/bond_ipv6.c
+index 0d73bf5..2f10514 100644
+--- a/drivers/net/bonding/bond_ipv6.c
++++ b/drivers/net/bonding/bond_ipv6.c
+@@ -20,6 +20,9 @@
+   *
+   */
+
++#include <linux/module.h>
++#include <linux/init.h>
++
+  #include <linux/types.h>
+  #include <linux/if_vlan.h>
+  #include <net/ipv6.h>
+@@ -204,13 +207,19 @@ static struct notifier_block
+bond_inet6addr_notifier = {
+  	.notifier_call = bond_inet6addr_event,
+  };
+
+-void bond_register_ipv6_notifier(void)
++static int __init bonding_ipv6_init(void)
+  {
++	bond_register_ipv6_na(bond_send_unsolicited_na);
+  	register_inet6addr_notifier(&bond_inet6addr_notifier);
++	return 0;
+  }
+
+-void bond_unregister_ipv6_notifier(void)
++static void __exit bonding_ipv6_exit(void)
+  {
+  	unregister_inet6addr_notifier(&bond_inet6addr_notifier);
++	bond_unregister_ipv6_na();
+  }
+
++module_init(bonding_ipv6_init)
++module_exit(bonding_ipv6_exit)
++MODULE_LICENSE("GPL");
+diff --git a/drivers/net/bonding/bond_main.c
+b/drivers/net/bonding/bond_main.c
+index 2c96b93..ff61add 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -149,6 +149,12 @@ static const char * const version =
+  	DRV_DESCRIPTION ": v" DRV_VERSION " (" DRV_RELDATE ")\n";
+
+  LIST_HEAD(bond_dev_list);
++EXPORT_SYMBOL(bond_dev_list);
++
++#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
++static DEFINE_SPINLOCK(bond_v6_na_lock);
++#endif
++static void (*bond_send_unsol_na)(struct bonding *bond);
+
+  #ifdef CONFIG_PROC_FS
+  static struct proc_dir_entry *bond_proc_dir = NULL;
+@@ -1201,6 +1207,8 @@ void bond_change_active_slave(struct bonding
+*bond, struct slave *new_active)
+  		}
+
+  		if (new_active) {
++			void (*send_unsol_na)(struct bonding *bond);
++
+  			bond_set_slave_active_flags(new_active);
+
+  			if (bond->params.fail_over_mac)
+@@ -1211,7 +1219,11 @@ void bond_change_active_slave(struct bonding
+*bond, struct slave *new_active)
+  			bond_send_gratuitous_arp(bond);
+
+  			bond->send_unsol_na = bond->params.num_unsol_na;
+-			bond_send_unsolicited_na(bond);
++			rcu_read_lock();
++			send_unsol_na = rcu_dereference(bond_send_unsol_na);
++			if (send_unsol_na)
++				send_unsol_na(bond);
++			rcu_read_unlock();
+
+  			write_unlock_bh(&bond->curr_slave_lock);
+  			read_unlock(&bond->lock);
+@@ -2464,8 +2476,14 @@ void bond_mii_monitor(struct work_struct *work)
+  	}
+
+  	if (bond->send_unsol_na) {
++		void (*send_unsol_na)(struct bonding *bond);
++
+  		read_lock(&bond->curr_slave_lock);
+-		bond_send_unsolicited_na(bond);
++		rcu_read_lock();
++		send_unsol_na = rcu_dereference(bond_send_unsol_na);
++		if (send_unsol_na)
++			send_unsol_na(bond);
++		rcu_read_unlock();
+  		read_unlock(&bond->curr_slave_lock);
+  	}
+
+@@ -3165,8 +3183,14 @@ void bond_activebackup_arp_mon(struct work_struct
+*work)
+  	}
+
+  	if (bond->send_unsol_na) {
++		void (*send_unsol_na)(struct bonding *bond);
++
+  		read_lock(&bond->curr_slave_lock);
+-		bond_send_unsolicited_na(bond);
++		rcu_read_lock();
++		send_unsol_na = rcu_dereference(bond_send_unsol_na);
++		if (send_unsol_na)
++			send_unsol_na(bond);
++		rcu_read_unlock();
+  		read_unlock(&bond->curr_slave_lock);
+  	}
+
+@@ -5203,6 +5227,26 @@ out_rtnl:
+  	return res;
+  }
+
++#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
++void bond_register_ipv6_na(void (*send_unsol_na) (struct bonding *bond))
++{
++	spin_lock_bh(&bond_v6_na_lock);
++	rcu_assign_pointer(bond_send_unsol_na, send_unsol_na);
++	spin_unlock_bh(&bond_v6_na_lock);
++	synchronize_rcu();
++}
++EXPORT_SYMBOL_GPL(bond_register_ipv6_na);
++
++void bond_unregister_ipv6_na(void)
++{
++	spin_lock_bh(&bond_v6_na_lock);
++	rcu_assign_pointer(bond_send_unsol_na, NULL);
++	spin_unlock_bh(&bond_v6_na_lock);
++	synchronize_rcu();
++}
++EXPORT_SYMBOL(bond_unregister_ipv6_na);
++#endif
++
+  static int __init bonding_init(void)
+  {
+  	int i;
+@@ -5234,7 +5278,6 @@ static int __init bonding_init(void)
+
+  	register_netdevice_notifier(&bond_netdev_notifier);
+  	register_inetaddr_notifier(&bond_inetaddr_notifier);
+-	bond_register_ipv6_notifier();
+
+  	goto out;
+  err:
+@@ -5257,7 +5300,6 @@ static void __exit bonding_exit(void)
+  {
+  	unregister_netdevice_notifier(&bond_netdev_notifier);
+  	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
+-	bond_unregister_ipv6_notifier();
+
+  	bond_destroy_sysfs();
+
+diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
+index ca849d2..9e5e092 100644
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -23,15 +23,13 @@
+  #include "bond_3ad.h"
+  #include "bond_alb.h"
+
+-#define DRV_VERSION	"3.5.0"
+-#define DRV_RELDATE	"November 4, 2008"
++#define DRV_VERSION	"3.6.0"
++#define DRV_RELDATE	"February 20, 2009"
+  #define DRV_NAME	"bonding"
+  #define DRV_DESCRIPTION	"Ethernet Channel Bonding Driver"
+
+  #define BOND_MAX_ARP_TARGETS	16
+
+-extern struct list_head bond_dev_list;
+-
+  #define IS_UP(dev)					   \
+  	      ((((dev)->flags & IFF_UP) == IFF_UP)	&& \
+  	       netif_running(dev)			&& \
+@@ -360,6 +358,9 @@ extern struct rw_semaphore bonding_rwsem;
+  void bond_send_unsolicited_na(struct bonding *bond);
+  void bond_register_ipv6_notifier(void);
+  void bond_unregister_ipv6_notifier(void);
++
++void bond_register_ipv6_na(void (*send_unsol_na) (struct bonding *bond));
++void bond_unregister_ipv6_na(void);
+  #else
+  static inline void bond_send_unsolicited_na(struct bonding *bond)
+  {
 -- 
-Jeff Layton <jlayton@redhat.com>
+1.5.4.3
+
+
+
