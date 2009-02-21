@@ -1,107 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZBUB2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZBUBlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbZBUB2o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 20:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbZBUB2f
+	id S1755623AbZBUBlP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 20:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZBUBk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 20:28:35 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:8827 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754397AbZBUB2f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 20:28:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lDj6+3f/imxraOImYWiTiT3QhM8cikdzXPHSSzBEFpMfGrtGxJYjVf9rL3bKXx5yzg
-         SLQfsNNTYICy7m4vjvwRxSUlzugoG3/80iVi8LOc9xErMgRyF+rQ+O84m2yjDEAV3l3U
-         AG+TTpa7CJ0mpmUHFofCTCe1BNNQ8f1luAt5s=
-MIME-Version: 1.0
-In-Reply-To: <20090220073345.501247f7@infradead.org>
-References: <1235139447-5829-1-git-send-email-tom.leiming@gmail.com>
-	 <20090220073345.501247f7@infradead.org>
-Date: Sat, 21 Feb 2009 09:28:34 +0800
-Message-ID: <d82e647a0902201728s5e57f02cs8f8c20567f914717@mail.gmail.com>
-Subject: Re: [PATCH] [PATCH/RESEND] driver core: remove polling for 
-	driver_probe_done(v4)
-From: Ming Lei <tom.leiming@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: kay.sievers@vrfy.org, greg@kroah.com, cornelia.huck@de.ibm.com,
+	Fri, 20 Feb 2009 20:40:58 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:38133 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754597AbZBUBk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 20:40:58 -0500
+Date: Fri, 20 Feb 2009 17:40:56 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
+Message-ID: <20090221014056.GU6960@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090220134121.GA19575@damson.getinternet.no> <20090220135000.GA9616@elte.hu> <20090220140157.GA12799@elte.hu> <19f34abd0902200651k7e86aebay5398ef5ac0578561@mail.gmail.com> <20090220154619.GC6960@linux.vnet.ibm.com> <19f34abd0902201551o65a3650egf29d81e8b6823d67@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0902201551o65a3650egf29d81e8b6823d67@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/20 Arjan van de Ven <arjan@infradead.org>:
-> On Fri, 20 Feb 2009 22:17:27 +0800
-> tom.leiming@gmail.com wrote:
->
->> From: Ming Lei <tom.leiming@gmail.com>
->>
->> This patch adds a function : driver_wait_probe_done,
->> which waits on condition of probing done to replace
->> polling for driver_probe_done in fs initialization.
->>
->> There is no better way to avoid polling for
->> driver_probe_done _and_ existence of the root device,
->> so we does not replace the driver_probe_done with
->> driver_wait_probe_done in such special case.
->>
->> Removing polling in fs initialization may lead to
->> a faster boot.
->>
->> This patch is against the latest linux-next tree.
->
-> you broke it i this revision though
->
->> -int wait_for_device_probe(void)
->> +void driver_wait_probe_done(void)
->>  {
->> -     /* wait for the known devices to complete their probing */
->> -     while (driver_probe_done() != 0)
->> -             msleep(100);
->> -     async_synchronize_full();
->> -     return 0;
->> +     pr_debug("%s: probe_count = %d\n", __func__,
->> +              atomic_read(&probe_count));
->> +     wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
->
->
-> You lost the async_synchronize_full()!
+On Sat, Feb 21, 2009 at 12:51:23AM +0100, Vegard Nossum wrote:
+> 2009/2/20 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> > On Fri, Feb 20, 2009 at 03:51:28PM +0100, Vegard Nossum wrote:
+> >>
+> >> I added some printks to __free_vmap_area() and rcu_free_va(), and it
+> >> shows that the kfree() is being called immediately (inside the list
+> >> traversal). So the call_rcu() is happening immediately (or almost
+> >> immediately).
+> >>
+> >> If I've understood correctly, the RCU processing can happen inside a
+> >> spinlock, as long as interrupts are enabled. (Won't the timer IRQ
+> >> trigger softirq processing, which triggers RCU callback processing,
+> >> for example?)
+> >>
+> >> And interrupts are enabled when this happens: EFLAGS: 00000292
+> >>
+> >> Please correct me if I am wrong!
+> >
+> > If you are using preemptable RCU, and if the read side accesses are not
+> > protected by rcu_read_lock(), this can happen.  At least for values of
+> > "immediately" in the millisecond range.
+> >
+> > If you were using classic or hierarchical RCU, the fact that the
+> > call_rcu() is within a spinlock (as opposed to mutex) critical section
+> > should prevent the grace period from ending.
+> >
+> > So, what flavor of RCU were you using?
+> 
+> $ grep RCU .config
+> # RCU Subsystem
+> # CONFIG_CLASSIC_RCU is not set
+> CONFIG_TREE_RCU=y
 
-I patch  patch-v2.6.29-rc5-next-20090220.gz against v2.6.29-rc5
-directly to build
-the linux-next tree(it is quicker for me),so I don't know why you add
-async_synchronize_full()
- in driver core and  seems it doesn't matter with driver core.
+OK, for this RCU implementation, disabling preemption should prevent
+grace periods from completing.
 
-Would you mind  that I resend a patch,which does
-async_synchronize_full()  after
-driver_wait_probe_done() in do_mounts.c or do_mounts_md.c ?
+Hmmm...
 
->
->
->> -     wait_for_device_probe();
->> +     driver_wait_probe_done();
->
-> I also don't understand why you rename the function..
-> wait_for_device_probe() is not a bad name ;)
-> Sounds like a gratuitous change to me.
+> # CONFIG_PREEMPT_RCU is not set
+> # CONFIG_RCU_TRACE is not set
+> CONFIG_RCU_FANOUT=32
+> # CONFIG_RCU_FANOUT_EXACT is not set
+> # CONFIG_TREE_RCU_TRACE is not set
+> # CONFIG_PREEMPT_RCU_TRACE is not set
+> # CONFIG_RCU_TORTURE_TEST is not set
+> # CONFIG_RCU_CPU_STALL_DETECTOR is not set
+> 
+> And at boot:
+> 
+> [    0.000000] Initializing CPU#0
+> [    0.000000] Experimental hierarchical RCU implementation.
+> [    0.000000] Experimental hierarchical RCU init done.
+> 
+> What I did for this list traversal was to put one print-out in front
+> of the traversal, one after the traversal, one inside (so it would be
+> called on each iteration), and one in the RCU callback. It looks
+> something like this:
+> 
+> [  449.670460] __purge_vmap_area_lazy() list:
+> [  449.671332] __free_vmap_area(c7806a40)
+> [  449.674736] __free_vmap_area(c7806a80)
+> [  449.675441] rcu_free_va(c7806a40)
 
-OK, I will use wait_for_device_probe().
+This is 4.1 milliseconds, so is quite plausible.  Is the code -really-
+disabling preemption for 4.1 milliseconds?
 
->
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+> [  449.677407] __free_vmap_area(c7806ac0)
+> [  449.680113] rcu_free_va(c7806a80)
 
+5.4 milliseconds...
 
+> [  449.682821] __free_vmap_area(c7806b00)
+> [  449.684264] rcu_free_va(c7806ac0)
 
--- 
-Lei Ming
+6.9 milliseconds...
+
+> [  449.686525] __free_vmap_area(c7806b40)
+> [  449.688205] rcu_free_va(c7806b00)
+
+5.4 milliseconds...
+
+> ...and goes on for a long time, until something triggers this:
+> 
+> [  449.902253] rcu_free_va(c7839d00)
+> [  449.903247] WARNING: kmemcheck: Caught 32-bit read from freed
+> memory (c7839d20)
+> 
+> ...and finally:
+> 
+> [  457.580253] __purge_vmap_area_lazy() end
+> [  457.581201] rcu_free_va(c78974c0)
+
+And I don't see the corresponding __free_vmap_area() for either of the
+above rcu_free_va() calls.  Would you be willing to forward the
+timestamp for the __free_vmap_area() for c7839d20?
+
+> So this is also what I meant by "immediately": The RCU callbacks are
+> getting called inside the loop, and they're almost always paired with
+> the list removal, or lagging one object behind.
+> 
+> My guess is that this code posts "too many callbacks", which would
+> "force the grace period" according to __call_rcu() in
+> kernel/rcutree.c. What do you think about this?
+
+If the code really suppresses preemption across the whole loop, then
+any attempt to force the grace period should fail.  Is it possible that
+preemption is momentarily enabled somewhere within the loop?  Or that
+we are seeing multiple passes through the loop rather than one big long
+pass through the loop?
+
+							Thanx, Paul
