@@ -1,87 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbZBUShb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZBUSyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbZBUShb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 13:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbZBUShY
+	id S1754882AbZBUSyZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 13:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbZBUSyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 13:37:24 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:56170 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752890AbZBUShW (ORCPT
+	Sat, 21 Feb 2009 13:54:14 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37125 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753166AbZBUSyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 13:37:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BkkBEChN6OhnoCvdG4YB1xvMpRXYKMO5ldKHhRc0c/ojAE8Sa58NGtkviQxW7BTyip
-         QDXtVf4L+Lph3zHAo8Tdd58cncltmQxyZWWXK+l8yZMu74mTLaZEkmoDY/0MFe9sfg1T
-         YPaXWPXGHd1RkPAAXc2gmqa5sp3rrqqrYYK50=
+	Sat, 21 Feb 2009 13:54:13 -0500
+Date: Sat, 21 Feb 2009 20:54:11 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com, rjw@sisk.pl,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
+In-Reply-To: <20090221132424.GA28861@gondor.apana.org.au>
+Message-ID: <Pine.LNX.4.64.0902212042420.20526@wrl-59.cs.helsinki.fi>
+References: <20090206054541.GA4954@gondor.apana.org.au>
+ <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com>
+ <20090209055848.GA3889@gondor.apana.org.au> <20090208.220357.261414983.davem@davemloft.net>
+ <20090209061151.GA3982@gondor.apana.org.au> <Pine.LNX.4.64.0902090853360.20576@wrl-59.cs.helsinki.fi>
+ <20090209072806.GB4380@gondor.apana.org.au> <Pine.LNX.4.64.0902091513190.31742@wrl-59.cs.helsinki.fi>
+ <20090221132424.GA28861@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <19f34abd0902211008k39afd449k604aaf34f693c9a6@mail.gmail.com>
-References: <20090220134121.GA19575@damson.getinternet.no>
-	 <20090220135000.GA9616@elte.hu> <20090220140157.GA12799@elte.hu>
-	 <19f34abd0902200651k7e86aebay5398ef5ac0578561@mail.gmail.com>
-	 <20090220154619.GC6960@linux.vnet.ibm.com>
-	 <19f34abd0902201551o65a3650egf29d81e8b6823d67@mail.gmail.com>
-	 <20090221014056.GU6960@linux.vnet.ibm.com>
-	 <19f34abd0902210130p62fba6d0n906b321949409578@mail.gmail.com>
-	 <20090221174703.GA6860@linux.vnet.ibm.com>
-	 <19f34abd0902211008k39afd449k604aaf34f693c9a6@mail.gmail.com>
-Date: Sat, 21 Feb 2009 19:37:20 +0100
-Message-ID: <19f34abd0902211037w2293af16t561444d11cc834b8@mail.gmail.com>
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; boundary="-696208474-756698155-1235241969=:20526"
+Content-ID: <Pine.LNX.4.64.0902212049440.20526@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/21 Vegard Nossum <vegard.nossum@gmail.com>:
-> Here's the disassembly (I hope it won't wrap):
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-756698155-1235241969=:20526
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0902212049441.20526@wrl-59.cs.helsinki.fi>
+
+On Sat, 21 Feb 2009, Herbert Xu wrote:
+
+> On Mon, Feb 09, 2009 at 03:28:09PM +0200, Ilpo Järvinen wrote:
+> >
+> > Yes, that should work too except the gcc catchable typo.
+> 
+> Thanks, so let's try again for net-next:
+> 
+> tcp: Always set urgent pointer if it's beyond snd_nxt
+> 
+> Our TCP stack does not set the urgent flag if the urgent pointer
+> does not fit in 16 bits, i.e., if it is more than 64K from the
+> sequence number of a packet.
+> 
+> This behaviour is different from the BSDs, and clearly contradicts
+> the purpose of urgent mode, which is to send the notification
+> (though not necessarily the associated data) as soon as possible.
+> Our current behaviour may in fact delay the urgent notification
+> indefinitely if the receiver window does not open up.
+> 
+> Simply matching BSD however may break legacy applications which
+> incorrectly rely on the out-of-band delivery of urgent data, and
+> conversely the in-band delivery of non-urgent data.
+> 
+> Alexey Kuznetsov suggested a safe solution of following BSD only
+> if the urgent pointer itself has not yet been transmitted.  This
+> way we guarantee that when the remote end sees the packet with
+> non-urgent data marked as urgent due to wrap-around we would have
+> advanced the urgent pointer beyond, either to the actual urgent
+> data or to an as-yet untransmitted packet.
+> 
+> The only potential downside is that applications on the remote
+> end may see multiple SIGURG notifications.  However, this would
+> occur anyway with other TCP stacks.  More importantly, the outcome
+> of such a duplicate notification is likely to be harmless since
+> the signal itself does not carry any information other than the
+> fact that we're in urgent mode.
+> 
+> Thanks to Ilpo Järvinen for fixing a critical bug in this and
+> Jeff Chua for reporting that bug.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 >
-> 0xc1073ec0 <rcu_check_callbacks+0>:     push   %ebp
-> 0xc1073ec1 <rcu_check_callbacks+1>:     test   %edx,%edx
-> 0xc1073ec3 <rcu_check_callbacks+3>:     mov    %esp,%ebp
-> 0xc1073ec5 <rcu_check_callbacks+5>:     push   %ebx
-> 0xc1073ec6 <rcu_check_callbacks+6>:     mov    %eax,%ebx
-> 0xc1073ec8 <rcu_check_callbacks+8>:     je     0xc1073f08
-> <rcu_check_callbacks+72>
-> 0xc1073eca <rcu_qsctr_inc+0>:   mov    $0xc1771320,%eax
-> 0xc1073ecf <rcu_qsctr_inc+5>:   add    -0x3e8fa900(,%ebx,4),%eax
-> 0xc1073ed6 <rcu_qsctr_inc+12>:  mov    (%eax),%edx
-> 0xc1073ed8 <rcu_qsctr_inc+14>:  movb   $0x1,0xc(%eax)
-> 0xc1073edc <rcu_qsctr_inc+18>:  mov    %edx,0x8(%eax)
-> 0xc1073edf <rcu_bh_qsctr_inc+0>:        mov    $0xc1771380,%eax
-> 0xc1073ee4 <rcu_bh_qsctr_inc+5>:        add    -0x3e8fa900(,%ebx,4),%eax
-> 0xc1073eeb <rcu_bh_qsctr_inc+12>:       mov    (%eax),%edx
-> 0xc1073eed <rcu_bh_qsctr_inc+14>:       movb   $0x1,0xc(%eax)
-> 0xc1073ef1 <rcu_bh_qsctr_inc+18>:       mov    %edx,0x8(%eax)
-> 0xc1073ef4 <rcu_check_callbacks+52>:    mov    $0x8,%eax
->
-> Seems to be rcu_qsctr_inc() that reloads %edx. If I'd guess, I'd say
-> x86's per_cpu macros. But it seems so strange that the corruption
-> would not manifest in other ways too.
->
+> diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
+> index dda42f0..f5263c8 100644
+> --- a/net/ipv4/tcp_output.c
+> +++ b/net/ipv4/tcp_output.c
+> @@ -663,10 +663,14 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
+>  	th->urg_ptr		= 0;
+>  
+>  	/* The urg_mode check is necessary during a below snd_una win probe */
+> -	if (unlikely(tcp_urg_mode(tp) &&
+> -		     between(tp->snd_up, tcb->seq + 1, tcb->seq + 0xFFFF))) {
+> -		th->urg_ptr		= htons(tp->snd_up - tcb->seq);
+> -		th->urg			= 1;
+> +	if (unlikely(tcp_urg_mode(tp) && before(tcb->seq, tp->snd_up))) {
+> +		if (before(tp->snd_up, tcb->seq + 0x10000)) {
+> +			th->urg_ptr = htons(tp->snd_up - tcb->seq);
+> +			th->urg = 1;
+> +		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
+> +			th->urg_ptr = 0xFFFF;
+> +			th->urg = 1;
+> +		}
+>  	}
+>  
+>  	tcp_options_write((__be32 *)(th + 1), tp, &opts, &md5_hash_location);
 
-Okay, I don't really think it's an error. The if (user) test happens
-at the very beginning and gcc decides to reuse %edx. GDB doesn't know
-this, so it thinks the parameter changed, but at this point the
-parameter simply won't be used anymore.
+I thought this through already at the last time... so I think it really 
+should work in all cases I could think of (including the below window 
+probes whose existance is not very obvious before they bite back :-)):
 
-So you're right: The value can't be trusted (after entry, anyway).
+Acked-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
+But I mostly agree with Linus that URG is legacy that would be good
+to just deprecate instead of trying to "fix" it.
 
-Vegard
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+ i.
+---696208474-756698155-1235241969=:20526--
