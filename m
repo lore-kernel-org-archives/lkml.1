@@ -1,51 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbZBUQjn (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 21 Feb 2009 11:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZBUQjd
+	id S1755754AbZBVBOZ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 21 Feb 2009 20:14:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZBVBOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 11:39:33 -0500
-Received: from omr1.bezeqint.net ([192.115.104.8]:38952 "EHLO
-	omr1.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbZBUQjc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 11:39:32 -0500
-X-Mirapoint-IP-Reputation: reputation=good-1,
-	source=Fixed,
-	refid=n/a,
-	actions=tag
-From: Microsoft News Centre <222@bezeqint.net>
-Subject: **Winning Notification**
-Reply-To: msw_claimsoffice40@yahoo.co.uk
-X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+	Sat, 21 Feb 2009 20:14:15 -0500
+Received: from [213.55.95.6] ([213.55.95.6]:51413 "EHLO chibo.aau.edu.et"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754563AbZBVBOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 20:14:14 -0500
+X-Greylist: delayed 4574 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Feb 2009 20:14:13 EST
+Date: Sun, 22 Feb 2009 01:15:58 +0300 (EAT)
+From: "Webmail Help Desk." <bcse@chem.aau.edu.et>
+Reply-To: "Webmail Help Desk." <ugradecentre@hotmail.com>
+Message-ID: <1593079.18851235254558167.JavaMail.root@buhe.aau.edu.et>
+Subject: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090221183313.FQV58121@mas26.bezeqint.net>
-Date: Sat, 21 Feb 2009 18:33:13 +0200 (IST)
-X-Junkmail: UCE(50)
-X-Junkmail-Status: score=50/50, host=m7.bezeqint.net
-X-Junkmail-SD-Raw: score=bulk(0),
-	refid=str=0001.0A0B0202.49A008B5.01F1,ss=3,sh,fgs=0,
-	ip=192.115.104.156,
-	so=2008-09-22 23:22:13,
-	dmn=5.7.1/2008-09-02,
-	mode=single engine
-X-Junkmail-IWF: false
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.90.20.25]
+X-Mailer: Zimbra 5.0.5_GA_2201.F7 (zclient/5.0.5_GA_2201.F7)
 To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754678AbZBUQjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755754AbZBVBOZ@vger.kernel.org>
 
-Your email ID has been awarded £1,000,000,00 GBP in our 
-MICROSOFT AWARD,Reply us with your info:
-(msw_claimsoffice40@yahoo.co.uk)    
- 
-Name:....................
-Country:.................   
-Sex:.....................
-Age: .....................   
-Addres:...................
+Dear Webmail User, 
 
-Regards
-Mrs.Marilyn Malingue
+This message was sent automatically by a program on Webmail which periodically checks the size of inboxes, where new messages are received. The program is run weekly to ensure no one's inbox grows too large. If your inbox becomes too large, you will be unable to receive new email. Just before this message was sent, you had 18 Megabytes (MB) or more of messages stored in your inbox on your Webmail. To help us re-set your SPACE on our database prior to maintain your INBOX, you must reply to this e-mail and enter your:
+
+Current User name: { }
+and Password: { } 
+
+You will continue to receive this warning message periodically if your inbox size continues to be between 18 and 20 MB. If your inbox size grows to 20 MB, then a program on Bates Webmail will move your oldest email to a folder in your home directory to ensure that you will continue to be able to receive incoming email. You will be notified by email that this has taken place. If your inbox grows to 25 MB, you will be unable to receive new email as it will be returned to the sender.
+After you read a message, it is best to REPLY and SAVE a copy. 
+
+Thank you for your cooperation. 
+Webmail Help Desk.
