@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbZBUJjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZBUJqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071AbZBUJjO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 04:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZBUJi6
+	id S1754128AbZBUJqk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 04:46:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZBUJqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 04:38:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59058 "EHLO ogre.sisk.pl"
+	Sat, 21 Feb 2009 04:46:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33463 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752967AbZBUJi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 04:38:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>, Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and hibernation for 2.6.29
-Date: Sat, 21 Feb 2009 10:38:40 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Ingo Molnar <mingo@elte.hu>, Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>
-References: <200902140157.40869.rjw@sisk.pl> <alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
+	id S1751547AbZBUJqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 04:46:31 -0500
+Date: Sat, 21 Feb 2009 10:46:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20090221094614.GA26948@elte.hu>
+References: <20090219171005.GA27922@elte.hu> <alpine.LFD.2.00.0902201809260.21686@localhost.localdomain> <20090221083212.GA1537@elte.hu> <20090221091826.GA30055@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902211038.42169.rjw@sisk.pl>
+In-Reply-To: <20090221091826.GA30055@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 February 2009, Len Brown wrote:
-> 
-> On Sat, 14 Feb 2009, Rafael J. Wysocki wrote:
-> 
-> > Hi Len,
-> > 
-> > The following are fixes related to suspend and hibernation I have collected
-> > over the last couple of weeks.  Some of them are in -mm.  I think they all are
-> > 2.6.29 material.
-> > 
-> > 1/9 and 2/9 fix hibernation regression caused by the async boot changes,
-> > I hope Greg will not object if they go through your tree.
-> > 
-> > 3/9 fixes a long-standing hibernation issue that cause the resume partition
-> > to become unuseable after two consecutive failing attempts to hibernate.
-> > 
-> > 4/9 fixes build of kprobes.c with CONFIG_PM unset.
-> 
-> looks like this one added power/ twice --
 
-That was on purpose.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> and looks like akpm sent a fixed version of this to linus already?
+> I will be happy to merge a patch that makes the warnings 
+> become visible again and also to make them hard errors.
+>
+> But for now I cannot take the additional work it requires to 
+> follow all the section mismatch warnings that suddenly will 
+> pop up for the different architectures, which is why I 
+> hesitate to create said patch myself.
 
-Yes, he did.
+Ok - i'm working on a patch that enables it on x86 and makes it 
+a hard failure, and brings the number of warnings down to a zero 
+baseline where we can base a sane future on. Other architectures 
+can then opt-in too when they see fit - or can leave it disabled 
+if it's too much work for them.
 
-> > 5/9 and 6/9 clean up memory freeing code used during hibernation.
-> > 
-> > 7/9 fixes a bug related to the use of PM notifiers during hibernation with
-> > the help of the user land interface.
-> > 
-> > 8/9 and 9/9 fix the handling of consoles during suspend/hibernation.
-> > 
-> > Please add these patches to the suspend branch and push to Linus for 2.6.29.
-> 
-> All except #4 are now on the suspend branch.
-
-1/9 and 2/9 are also in the Greg's tree, AFAICS.
-
-Greg, do you intend to push them to Linus?  In that case I think it's better if
-Len drops them.
-
-Rafael
+	Ingo
