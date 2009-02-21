@@ -1,100 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZBUKYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZBUKcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbZBUKYs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 05:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZBUKYi
+	id S1754187AbZBUKcs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 05:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZBUKcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 05:24:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53315 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbZBUKYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 05:24:36 -0500
-Message-ID: <499FD623.1010105@kernel.org>
-Date: Sat, 21 Feb 2009 02:23:31 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 21 Feb 2009 05:32:39 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:16552 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbZBUKci convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 05:32:38 -0500
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Robert Hancock <hancockrwd@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: enable MSI on 8132
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>	<alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>	<499B724A.2040408@kernel.org>	<alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>	<alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>	<499B774C.5010705@kernel.org>	<alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>	<499B9129.50104@kernel.org> <499CD466.1060900@gmail.com>	<m1fxi82pq0.fsf@fess.ebiederm.org>	<86802c440902210031j698403cev2147e72a61e17194@mail.gmail.com> <m1r61sf9oo.fsf@fess.ebiederm.org>
-In-Reply-To: <m1r61sf9oo.fsf@fess.ebiederm.org>
+In-Reply-To: <200902211047.26787.rjw@sisk.pl>
+References: <200902192215.18365.rjw@sisk.pl> <200902210057.27781.rjw@sisk.pl>
+	 <d6200be20902201708g45540f60ib024c3365c85aef4@mail.gmail.com>
+	 <200902211047.26787.rjw@sisk.pl>
+Date: Sat, 21 Feb 2009 02:32:36 -0800
+Message-ID: <d6200be20902210232m71700247k8914ca3735563881@mail.gmail.com>
+Subject: Re: [RFD] Automatic suspend
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
-> 
->> On Fri, Feb 20, 2009 at 11:50 PM, Eric W. Biederman
->> <ebiederm@xmission.com> wrote:
->>> Robert Hancock <hancockrwd@gmail.com> writes:
->>>> Is there a reason why we can't just enable the HT MSI mapping for any bridge
->>>> device that has that PCI capability and is underneath an HT bridge?
->>> The code should be under CONFIG_X86 because the rules for enabling HT MSI
->> mappings
->>> are different for other architectures.  But otherwise I can't think of a
->> reason.
+On Sat, Feb 21, 2009 at 1:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday 21 February 2009, Arve Hjønnevåg wrote:
+>> On Fri, Feb 20, 2009 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Saturday 21 February 2009, Arve Hjønnevåg wrote:
+>> >> On Fri, Feb 20, 2009 at 7:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
+>> >> >> On Fri, Feb 20, 2009 at 2:49 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
+>> >> >> >> On Thu, Feb 19, 2009 at 2:08 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> >> >> >> >> > It might have to be platform-specific.  The Android people seem to have a
+>> >> >> >> >> > pretty good idea of what criteria will work for them.
+>> >> >> >> >>
+>> >> >> >> >> I'd really like to know in what situations Androind is supposed to suspend
+>> >> >> >> >> automatically.
+>> >> >> >> >
+>> >> >> >> > It might be better to ask in what situations Android is _not_ supposed
+>> >> >> >> > to sleep automatically.  In other words, in what situations is a
+>> >> >> >> > wakelock acquired?  Since the whole system is only a phone, this
+>> >> >> >> > question should have a reasonably well-defined answer.
+>> >> >> >>
+>> >> >> >> On an android phone, any code that needs to run when the screen is off
+>> >> >> >> must hold a wakelock (directly or indirectly). In general if an
+>> >> >> >> application or the system is processing an event that may cause a user
+>> >> >> >> notification (new email, incoming phone call, alarm, etc.) it needs to
+>> >> >> >> prevent suspend. But, we also use wakelocks to upload stats or
+>> >> >> >> download system updates in the background, and for media player or
+>> >> >> >> (gps) data logging applications.
+>> >> >> >
+>> >> >> > All of this doesn't seem to require wakelocks acuired from kernel space.
+>> >> >> > What do you need those wakelocks for?
+>> >> >>
+>> >> >> Most events do not originate in user-space. Alarms start in our alarm
+>> >> >> driver which locks a wakelock when its timer interrupt occurs. This
+>> >> >> wakelock stays locked until the user-space alarm manager calls the
+>> >> >> driver to wait for the next alarm. I've described how input events are
+>> >> >> handled before. Without kernel wakelocks, if the user space power
+>> >> >> manager had already turned off the screen and decided to suspend right
+>> >> >> before a wakeup key is pressed, then that key could sit in the
+>> >> >> in-kernel input queue until another key is pressed. Even if the
+>> >> >> user-space thread read the key event before being frozen, it cannot
+>> >> >> abort the suspend operation that was already started.
+>> >> >
+>> >> > OK, so what about the following approach:
+>> >> >
+>> >> > * Keep the decision making logic (power manager etc.) in user space.  Reasons:
+>> >> >  - It may be arbitrarily complicated
+>> >> >  - It may include such things as s2ram quirks or hal quirks needed for some
+>> >> >    graphics adapters
+>> >>
+>> >> I don't using wakelocks in any different in this respect. When user
+>> >> space decides that it is ok for the kernel to suspend it should have
+>> >> performed all theses steps in both cases.
+>> >
+>> > If automatic suspend is to be started by the kernel, you have to make sure
+>> > that at least one wakelock is held until these steps are completed.  That may
+>> > be somewhat tricky in general.
 >>
->> move to arch/x86/pci/fixup.c?
+>> That is not tricky. If your code holds a wakelock, then at least one
+>> wakelock is held.
+>
+> I meant, if one task releases its wakelock and another one takes a wakelock,
+> you have to make sure there's no window between those events.  Of course,
+> you can have a single task holding a wakelock all the time and releasing it
+> when it makes sure everything is ready, but then it would act as a user space
+> power manager anyway.
+
+If you are turning on and off hardware in user space that cannot
+survive a kernel suspend while it is on, then you hold a wakelock when
+this hardware is on. It should not matter how many times the kernel
+enter and exit suspend while your hardware is off.
+
+>
+>> >> > * Have a per-process (per-task or per-thread group, but the former would be
+>> >> >  easier IMO) "I_do_not_want_automatic_suspend_to_occur" flag.
+>> >>
+>> >> A per-process (thread group) flag allows wakelocks to be implemented
+>> >> in a user space library. A per-thread flag does not. However, I don't
+>> >> see much benefit in tying this to a process instead of using a file
+>> >> descriptor.
+>> >
+>> > Using a flag would allow us to remove the window between checking the
+>> > wakelocks and freezing tasks (in principle a task may take a wakelock just
+>> > before it's frozen).
 >>
->> it seems some other arch do support HT ... powerpc, mips?
-> 
-> The difference is that there is a magic address on x86 that all MSI
-> cycles are sent to.  I think it is 0xfffe0000.  In an msi to HT
-> mapping capability it is necessary to program in the address to listen
-> for msi packets.  That is very much an arch dependent thing.
-> 
->>>> Essentially
->>>> the code for nv_msi_ht_cap_quirk could potentially be applied to all bridges
->> as
->>>> it is currently for NVIDIA and ALi bridges..
->>> Sounds like it would save a fair amount of grief.
->> it seems there is some difference.
->> 8132 is some kind of HT tunnel, and the bridge is acctually pci-x bridge.
+>> You can check if there are wakelocks held from the same spot as you
+>> check your flag.
+>
+> That would be _much_ more complicated and much less efficient (browsing a list
+> vs checking a flag).  And it would require additional locking if it's to be
+> done in a non-racy way.
+
+Browsing an empty list is not that inefficient. If you are concerned
+about the overhead of the extra spinlock, you could check if the list
+is empty before locking the spinlock.
+
+>
+>> >> > * Add a new callback, say ->acknowledge(), to the set of each driver's PM
+>> >> >  operations, that will be called to check if the driver has anything against
+>> >> >  automatic suspend (true - suspend can happen right now, false - suspend can't
+>> >> >  happen).
+>> >> >
+>> >> > * Introduce /sys/power/sleep that will work like /sys/power/state, but:
+>> >> >  - First, it will call ->acknowledge() for each driver (via bus types) to
+>> >> >    check if any of them wants to postpone the suspend (this will prevent tasks
+>> >> >    from being frozen unnecessarily if it is known in advance that the suspend
+>> >> >    should not happen at the moment).
+>> >> >  - Next, it will check the "I_do_not_want_automatic_suspend_to_occur" flag
+>> >> >    of each process and the suspend will be aborted if it is true for any of
+>> >> >    them (quite frankly, I think that should be integrated with the freezer,
+>> >> >    in particular the tasks that have TIF_FREEZE set shouldn't be able to set
+>> >> >    this flag and it should be checked in the freezer loop for every task with
+>> >> >    TIF_FREEZE unset).
+>> >> >  - Next, it will proceed with suspending just like /sys/power/state does (the
+>> >> >    drivers that missed the opportunity to abort the suspend by returning
+>> >> >    'false' from ->acknowledge() can still abort the suspend by failing their
+>> >> >    ->suspend() routines).
+>> >> >
+>> >> > Then, the decision making logic will be able to use /sys/power/sleep whenever
+>> >> > it wishes to and the kernel will be able to refuse to suspend if it's not
+>> >> > desirable at the moment.
+>> >> >
+>> >> > It seems to be flexible enough to me.
+>> >>
+>> >> This seems flexible enough to avoid race conditions, but it forces the
+>> >> user space power manager to poll when the kernel refuse suspend.
+>> >
+>> > And if the kernel is supposed to start automatic suspend, it has to monitor
+>> > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
+>> > kernel if it refuses to suspend.
 >>
->> mcp55 and ck804: is HT end device with several pcie bridges.
-> 
-> Not really they are all hypertransport to pci bridges (of some flavor).
-> But any hypertransport device is allowed to have a mapping capability.
-> In which case they can implement normal MSI interrupts instead of the
-> weird hypertransport ones.
-for mcp55
-00:00.0 is HT device
-00:0b.0 00:0c.0, 00:0d.0, 00:0e.0, 00:0f.0 are pcie bridge.
-current quirks will check 00:00.0 HT MSI is set, it will not set that in those bridges any more.
+>> What is better about polling in userspace?
+>
+> One kernel thread less, for example?
+>
+>> >> Also, like my original wakelock patches, it breaks sleep requests through
+>> >> /sys/power/state when there are input events queued.
+>> >
+>> > The idea is to have both /sys/power/state and /sys/power/sleep at the same
+>> > time, where /sys/power/state will work just like it does right now.  Sure,
+>> > there must be mutual exclusion between the two, but that's a matter of
+>> > implementation IMO.
+>>
+>> If you want to only prevent suspend though one interface, you have to
+>> also pass information to the driver about its suspend hook is being
+>> called so it can conditionally return -EBUSY. The wakelock interface
+>> requires less code in each driver.
+>
+> Well, I don't think so.  Moreover, it requires you to spread wakelocks all
+> over the place if you don't use the timeouted ones which, let's face it, is
+> hardly acceptable.
 
-> 
->> also 8131 has problem with HT MSI?
-> 
-> The 8131 does not implement the msi to hypertransport mapping
-> capability so it can not support MSI interrupts.
-it seems there is one quirks to disable MSI for 8131.
-/* Disable MSI on chipsets that are known to not support it */
-static void __devinit quirk_disable_msi(struct pci_dev *dev)
-{
-        if (dev->subordinate) {
-                dev_warn(&dev->dev, "MSI quirk detected; "
-                        "subordinate MSI disabled\n");
-                dev->subordinate->bus_flags |= PCI_BUS_FLAGS_NO_MSI;
-        }
-}
-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8131_BRIDGE, quirk_disable_msi);
+Your method does not reduce the number of places that has to be
+modified. Any component where we add a wakelock, you have to add a
+suspend handler to abort suspend when we would have held a wakelock.
 
-
-> 
-> 
-> In general on x86, if a device has a MSI to hypertransport mapping
-> capability then we can enable it and mark that devices and all
-> downstream devices as supporting MSI.
-
-looks some aggressive.
-
-YH
+-- 
+Arve Hjønnevåg
