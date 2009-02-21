@@ -1,111 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbZBURTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZBURUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbZBURTb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 12:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbZBURTU
+	id S1754996AbZBURUY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 12:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBURUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 12:19:20 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:55518 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753209AbZBURTS (ORCPT
+	Sat, 21 Feb 2009 12:20:10 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56036 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbZBURUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 12:19:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LHPWXJd/lGv5BIx6k+CeidDi34wHxTxGL37WcInUjv5A0BGLjpRwwQykNpAzvqKXHn
-         +ARSei6YWh3cOd2FMAZDNlyApp0hDgsnjfqOrDrJlw6RDyR9w/VJabOfA0wWEWkCUfzx
-         aV5eFuXtrYIrhVUZJGeWFoo3WpW7dBpF/5I24=
-Date: Sat, 21 Feb 2009 18:19:13 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Thomas Gleixner <tglx@tglx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>, ath5k-devel@venema.h4ckr.net,
-       linux-wireless@vger.kernel.org
-Subject: Re: [Announce] 2.6.29-rc4-rt2
-Message-ID: <20090221171912.GB6807@nowhere>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <1235235862.3350.4.camel@localhost.localdomain>
+	Sat, 21 Feb 2009 12:20:09 -0500
+Message-ID: <49A036CD.6040503@cs.helsinki.fi>
+Date: Sat, 21 Feb 2009 19:15:57 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235235862.3350.4.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] kmemcheck: add hooks for page- and sg-dma-mappings
+References: <1235223364-2097-1-git-send-email-vegard.nossum@gmail.com>	 <1235223364-2097-4-git-send-email-vegard.nossum@gmail.com>	 <49A02A61.6060909@cs.helsinki.fi> <19f34abd0902210913qe0539ebgf74c9b5e0b577786@mail.gmail.com>
+In-Reply-To: <19f34abd0902210913qe0539ebgf74c9b5e0b577786@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 21, 2009 at 06:04:22PM +0100, Thomas Meyer wrote:
-> Am Donnerstag, den 12.02.2009, 23:56 +0100 schrieb Thomas Gleixner:
-> > We are pleased to announce the first update to our new preempt-rt
-> > series. It fixes the reported bugs and some more.
-> > 
-> > Download locations:
-> > 
-> >    http://rt.et.redhat.com/download/
-> >    http://www.kernel.org/pub/linux/kernel/projects/rt/
-> >  
-> > Information on the RT patch can be found at:
-> > 
-> >   http://rt.wiki.kernel.org/index.php/Main_Page
-> > 
-> > to build the 2.6.29-rc4-rt2 tree, the following patches should be
-> > applied:
-> > 
-> >   http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2
-> >   http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc4-rt2.bz2
-> > 
-> > The broken out patches are also available at the same download
-> > locations.
-> > 
-> > Enjoy !
-> > 
-> >       Thomas, Ingo
-> > --
+Vegard Nossum wrote:
+>> What's with the new BUG_ON() calls here?
 > 
-> Hi,
-> 
-> I got this warning, that i never saw before with a non rt-preempt
-> kernel. But maybe it's just coincidence...
-> 
-> [22652.437889] ------------[ cut here ]------------
-> [22652.437898] WARNING: at net/mac80211/rx.c:2234 __ieee80211_rx+0x85/0x53e [mac80211]()
-> [22652.437904] Hardware name: MacBookPro1,1
-> [22652.437908] Modules linked in: ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables nf_conntrack_ftp ip6t_REJECT xt_tcpudp nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ath5k mac80211 cfg80211 video [last unloaded: scsi_wait_scan]
-> [22652.437952] Pid: 23, comm: sirq-tasklet/1 Tainted: G        W  2.6.29-rc4-rt2-tip #57
-> [22652.437958] Call Trace:
-> [22652.437970]  [<c0451e50>] warn_slowpath+0x8a/0xd3
-> [22652.437981]  [<c0665165>] ? plist_add+0x73/0x8e
-> [22652.437990]  [<c0447d8e>] ? enqueue_pushable_task+0x62/0x79
-> [22652.437999]  [<c04480f1>] ? enqueue_task_rt+0x203/0x247
-> [22652.438029]  [<f90e78bf>] __ieee80211_rx+0x85/0x53e [mac80211]
-> [22652.438039]  [<c09aafaa>] ? __spin_unlock_irq+0x1e/0x44
-> [22652.438057]  [<f92e14af>] ath5k_tasklet_rx+0x406/0x457 [ath5k]
-> [22652.438067]  [<c045787e>] __tasklet_action+0x8c/0x100
-> [22652.438075]  [<c04579d8>] tasklet_action+0x67/0x7f
-> [22652.438083]  [<c04575e3>] ksoftirqd+0x12d/0x223
-> [22652.438091]  [<c04574b6>] ? ksoftirqd+0x0/0x223
-> [22652.438099]  [<c0467022>] kthread+0x4a/0x82
-> [22652.438106]  [<c0466fd8>] ? kthread+0x0/0x82
-> [22652.438114]  [<c0420b67>] kernel_thread_helper+0x7/0x10
-> [22652.438120] ---[ end trace a7919e7f17c0a727 ]---
-> 
+> What new BUG_ON calls? Do you need glasses?
 
+Apparently I do!
 
-Hi,
-
-It's an known issue on ath5k (or 80211):
-http://patchwork.kernel.org/patch/1169/
-
-So not preempt-rt related. Perhaps it has been fixed in -rc5.
-
- 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+		Pekka
