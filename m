@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZBUQwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbZBURF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbZBUQwu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 11:52:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZBUQwl
+	id S1754069AbZBURF3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 12:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZBURFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 11:52:41 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1655 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751738AbZBUQwk (ORCPT
+	Sat, 21 Feb 2009 12:05:16 -0500
+Received: from www17.your-server.de ([213.133.104.17]:46004 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbZBURFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 11:52:40 -0500
-Date: Sat, 21 Feb 2009 11:52:38 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-In-Reply-To: <200902210040.50344.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0902211135170.7396-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 21 Feb 2009 12:05:15 -0500
+Subject: Re: [Announce] 2.6.29-rc4-rt2
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Thomas Gleixner <tglx@tglx.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 21 Feb 2009 18:04:22 +0100
+Message-Id: <1235235862.3350.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Feb 2009, Rafael J. Wysocki wrote:
-
-> > I think everything that uses a "trigger" logic from user space is not
-> > a good idea. This will necessary introduce a race between the decision
-> > and the execution during which circumstances can change.
+Am Donnerstag, den 12.02.2009, 23:56 +0100 schrieb Thomas Gleixner:
+> We are pleased to announce the first update to our new preempt-rt
+> series. It fixes the reported bugs and some more.
 > 
-> Well, in this particulare case if the circumstances change in the meantime,
-> the kernel will just refuse to suspend.  Also, even if the kernel starts
-> automatic suspend, it _still_ is possible that the conditions change in the
-> meantime (for example, one of the tasks may enter a state in which it wouldn't
-> like to the suspend to happen just after the operation is started and before
-> it's frozen).
+> Download locations:
 > 
-> > So it seems to me that an allow/disallow system from user space
-> > would be better.
+>    http://rt.et.redhat.com/download/
+>    http://www.kernel.org/pub/linux/kernel/projects/rt/
+>  
+> Information on the RT patch can be found at:
 > 
-> I don't really see the benefit, but I can easily see drawbacks (the handling
-> of graphics that requires user space quirks, for instance).
+>   http://rt.wiki.kernel.org/index.php/Main_Page
+> 
+> to build the 2.6.29-rc4-rt2 tree, the following patches should be
+> applied:
+> 
+>   http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2
+>   http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc4-rt2.bz2
+> 
+> The broken out patches are also available at the same download
+> locations.
+> 
+> Enjoy !
+> 
+>       Thomas, Ingo
+> --
 
-This discussion is circling around an important point: How should 
-auto-sleep be initiated?
+Hi,
 
-If userspace holds any wakelocks then the system mustn't auto-sleep.  
-So auto-sleep can be initiated when the last userspace wakelock is
-released.  That requires calling into the kernel anyway, so it isn't a
-problem.
+I got this warning, that i never saw before with a non rt-preempt
+kernel. But maybe it's just coincidence...
 
-But what about kernel wakelocks?  Again, the simplest approach is to 
-initiate an auto-sleep when the last one is released.  But now this 
-depends on how the implementation works.
+[22652.437889] ------------[ cut here ]------------
+[22652.437898] WARNING: at net/mac80211/rx.c:2234 __ieee80211_rx+0x85/0x53e [mac80211]()
+[22652.437904] Hardware name: MacBookPro1,1
+[22652.437908] Modules linked in: ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables nf_conntrack_ftp ip6t_REJECT xt_tcpudp nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ath5k mac80211 cfg80211 video [last unloaded: scsi_wait_scan]
+[22652.437952] Pid: 23, comm: sirq-tasklet/1 Tainted: G        W  2.6.29-rc4-rt2-tip #57
+[22652.437958] Call Trace:
+[22652.437970]  [<c0451e50>] warn_slowpath+0x8a/0xd3
+[22652.437981]  [<c0665165>] ? plist_add+0x73/0x8e
+[22652.437990]  [<c0447d8e>] ? enqueue_pushable_task+0x62/0x79
+[22652.437999]  [<c04480f1>] ? enqueue_task_rt+0x203/0x247
+[22652.438029]  [<f90e78bf>] __ieee80211_rx+0x85/0x53e [mac80211]
+[22652.438039]  [<c09aafaa>] ? __spin_unlock_irq+0x1e/0x44
+[22652.438057]  [<f92e14af>] ath5k_tasklet_rx+0x406/0x457 [ath5k]
+[22652.438067]  [<c045787e>] __tasklet_action+0x8c/0x100
+[22652.438075]  [<c04579d8>] tasklet_action+0x67/0x7f
+[22652.438083]  [<c04575e3>] ksoftirqd+0x12d/0x223
+[22652.438091]  [<c04574b6>] ? ksoftirqd+0x0/0x223
+[22652.438099]  [<c0467022>] kthread+0x4a/0x82
+[22652.438106]  [<c0466fd8>] ? kthread+0x0/0x82
+[22652.438114]  [<c0420b67>] kernel_thread_helper+0x7/0x10
+[22652.438120] ---[ end trace a7919e7f17c0a727 ]---
 
-In Rafael's scheme there isn't really such a thing as a kernel 
-wakelock.  Instead there are driver methods, so the only way to find 
-out whether auto-sleep is allowed is to poll every driver.  This is not 
-good for systems that want to auto-sleep as soon as possible.
-
-A variant on the scheme would use a new field in the dev_pm_info 
-structure.  I don't know if this is better or worse the a new method; 
-it seems likely that the new method would have to work by checking the 
-value of some field anyway.  In any case, it shares the drawback that 
-polling is required.
-
-If kernel wakelocks were implemented more like refcounts, then
-releasing the last one could immediately initiate an auto-sleep.  The 
-problem with refcounts is that you can't tell (for accounting or 
-debugging purposes) who owns the outstanding references.  However we 
-ought to be able to come up with something intermediate between a 
-full-blown wakelock and a simple refcount that would satisfy everybody.  
-
-For example, we could use _both_ a new field in dev_pm_info and a 
-refcount.  Or even a per-cpu refcount, to avoid cache-line contention 
-since drivers are likely to acquire and release these things quite 
-often.
-
-What about the overhead of having a permanent kernel thread that does
-nothing but handle auto-sleeps?  This might well be an acceptable
-tradeoff for many people.  Besides, you need something like it if a
-driver wants to release the last wakelock while in interrupt context.  
-Unless you fall back on polling -- and then you need a thread to do the
-polling.
-
-Alan Stern
 
