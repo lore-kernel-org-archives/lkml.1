@@ -1,123 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZBUSyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZBUS77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbZBUSyZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 13:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbZBUSyO
+	id S1755009AbZBUS77 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 13:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZBUS7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 13:54:14 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37125 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166AbZBUSyN (ORCPT
+	Sat, 21 Feb 2009 13:59:48 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:36355 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753598AbZBUS7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 13:54:13 -0500
-Date: Sat, 21 Feb 2009 20:54:11 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com, rjw@sisk.pl,
-       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-In-Reply-To: <20090221132424.GA28861@gondor.apana.org.au>
-Message-ID: <Pine.LNX.4.64.0902212042420.20526@wrl-59.cs.helsinki.fi>
-References: <20090206054541.GA4954@gondor.apana.org.au>
- <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com>
- <20090209055848.GA3889@gondor.apana.org.au> <20090208.220357.261414983.davem@davemloft.net>
- <20090209061151.GA3982@gondor.apana.org.au> <Pine.LNX.4.64.0902090853360.20576@wrl-59.cs.helsinki.fi>
- <20090209072806.GB4380@gondor.apana.org.au> <Pine.LNX.4.64.0902091513190.31742@wrl-59.cs.helsinki.fi>
- <20090221132424.GA28861@gondor.apana.org.au>
+	Sat, 21 Feb 2009 13:59:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=mRuZrbuiBYvECy/vQYA/QK5TBPMT1wdPCru6sd1aqRw0LR0oWKEBVaMrdR6BILXrNP
+         TgTeaGFPD1vAsPF4VBnndQooqcaS5ykAL1IMAxdPGTO3JlMtx/s6/ouhFEhiCC3FC/Cj
+         7PR7SlRiHqX9bJyhdg9sdcz3rB7F5nkdHygXs=
+Message-ID: <49A04F1E.7020006@gmail.com>
+Date: Sat, 21 Feb 2009 12:59:42 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-756698155-1235241969=:20526"
-Content-ID: <Pine.LNX.4.64.0902212049440.20526@wrl-59.cs.helsinki.fi>
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: enable MSI on 8132
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>	<alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>	<499B724A.2040408@kernel.org>	<alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>	<alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>	<499B774C.5010705@kernel.org>	<alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>	<499B9129.50104@kernel.org> <499CD466.1060900@gmail.com>	<m1fxi82pq0.fsf@fess.ebiederm.org>	<86802c440902210031j698403cev2147e72a61e17194@mail.gmail.com> <m1r61sf9oo.fsf@fess.ebiederm.org> <499FD623.1010105@kernel.org>
+In-Reply-To: <499FD623.1010105@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Yinghai Lu wrote:
+> Eric W. Biederman wrote:
+>> Yinghai Lu <yinghai@kernel.org> writes:
+>>
+>>> On Fri, Feb 20, 2009 at 11:50 PM, Eric W. Biederman
+>>> <ebiederm@xmission.com> wrote:
+>>>> Robert Hancock <hancockrwd@gmail.com> writes:
+>>>>> Is there a reason why we can't just enable the HT MSI mapping for any bridge
+>>>>> device that has that PCI capability and is underneath an HT bridge?
+>>>> The code should be under CONFIG_X86 because the rules for enabling HT MSI
+>>> mappings
+>>>> are different for other architectures.  But otherwise I can't think of a
+>>> reason.
+>>>
+>>> move to arch/x86/pci/fixup.c?
+>>>
+>>> it seems some other arch do support HT ... powerpc, mips?
+>> The difference is that there is a magic address on x86 that all MSI
+>> cycles are sent to.  I think it is 0xfffe0000.  In an msi to HT
+>> mapping capability it is necessary to program in the address to listen
+>> for msi packets.  That is very much an arch dependent thing.
+>>
+>>>>> Essentially
+>>>>> the code for nv_msi_ht_cap_quirk could potentially be applied to all bridges
+>>> as
+>>>>> it is currently for NVIDIA and ALi bridges..
+>>>> Sounds like it would save a fair amount of grief.
+>>> it seems there is some difference.
+>>> 8132 is some kind of HT tunnel, and the bridge is acctually pci-x bridge.
+>>>
+>>> mcp55 and ck804: is HT end device with several pcie bridges.
+>> Not really they are all hypertransport to pci bridges (of some flavor).
+>> But any hypertransport device is allowed to have a mapping capability.
+>> In which case they can implement normal MSI interrupts instead of the
+>> weird hypertransport ones.
+> for mcp55
+> 00:00.0 is HT device
+> 00:0b.0 00:0c.0, 00:0d.0, 00:0e.0, 00:0f.0 are pcie bridge.
+> current quirks will check 00:00.0 HT MSI is set, it will not set that in those bridges any more.
+> 
+>>> also 8131 has problem with HT MSI?
+>> The 8131 does not implement the msi to hypertransport mapping
+>> capability so it can not support MSI interrupts.
+> it seems there is one quirks to disable MSI for 8131.
+> /* Disable MSI on chipsets that are known to not support it */
+> static void __devinit quirk_disable_msi(struct pci_dev *dev)
+> {
+>         if (dev->subordinate) {
+>                 dev_warn(&dev->dev, "MSI quirk detected; "
+>                         "subordinate MSI disabled\n");
+>                 dev->subordinate->bus_flags |= PCI_BUS_FLAGS_NO_MSI;
+>         }
+> }
+> DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8131_BRIDGE, quirk_disable_msi);
+> 
+> 
+>>
+>> In general on x86, if a device has a MSI to hypertransport mapping
+>> capability then we can enable it and mark that devices and all
+>> downstream devices as supporting MSI.
+> 
+> looks some aggressive.
 
----696208474-756698155-1235241969=:20526
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0902212049441.20526@wrl-59.cs.helsinki.fi>
+Not really.. we don't really "mark devices as supporting MSI" right now, 
+we generally mark them as not supporting it in certain cases and by 
+default assume they do. So if a quirk doesn't hit on a particular 
+chipset, then we go ahead and enable it. If there's some reason it 
+doesn't work or we don't do something that's needed to make it work, and 
+the driver requests it, we'll use it and it just won't work properly. So 
+it's not really any more aggressive than what we have now..
 
-On Sat, 21 Feb 2009, Herbert Xu wrote:
+It seems like we have kind of a random mix of MSI quirks related to MSI 
+mappings:
 
-> On Mon, Feb 09, 2009 at 03:28:09PM +0200, Ilpo Järvinen wrote:
-> >
-> > Yes, that should work too except the gcc catchable typo.
-> 
-> Thanks, so let's try again for net-next:
-> 
-> tcp: Always set urgent pointer if it's beyond snd_nxt
-> 
-> Our TCP stack does not set the urgent flag if the urgent pointer
-> does not fit in 16 bits, i.e., if it is more than 64K from the
-> sequence number of a packet.
-> 
-> This behaviour is different from the BSDs, and clearly contradicts
-> the purpose of urgent mode, which is to send the notification
-> (though not necessarily the associated data) as soon as possible.
-> Our current behaviour may in fact delay the urgent notification
-> indefinitely if the receiver window does not open up.
-> 
-> Simply matching BSD however may break legacy applications which
-> incorrectly rely on the out-of-band delivery of urgent data, and
-> conversely the in-band delivery of non-urgent data.
-> 
-> Alexey Kuznetsov suggested a safe solution of following BSD only
-> if the urgent pointer itself has not yet been transmitted.  This
-> way we guarantee that when the remote end sees the packet with
-> non-urgent data marked as urgent due to wrap-around we would have
-> advanced the urgent pointer beyond, either to the actual urgent
-> data or to an as-yet untransmitted packet.
-> 
-> The only potential downside is that applications on the remote
-> end may see multiple SIGURG notifications.  However, this would
-> occur anyway with other TCP stacks.  More importantly, the outcome
-> of such a duplicate notification is likely to be harmless since
-> the signal itself does not carry any information other than the
-> fact that we're in urgent mode.
-> 
-> Thanks to Ilpo Järvinen for fixing a critical bug in this and
-> Jeff Chua for reporting that bug.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->
-> diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-> index dda42f0..f5263c8 100644
-> --- a/net/ipv4/tcp_output.c
-> +++ b/net/ipv4/tcp_output.c
-> @@ -663,10 +663,14 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
->  	th->urg_ptr		= 0;
->  
->  	/* The urg_mode check is necessary during a below snd_una win probe */
-> -	if (unlikely(tcp_urg_mode(tp) &&
-> -		     between(tp->snd_up, tcb->seq + 1, tcb->seq + 0xFFFF))) {
-> -		th->urg_ptr		= htons(tp->snd_up - tcb->seq);
-> -		th->urg			= 1;
-> +	if (unlikely(tcp_urg_mode(tp) && before(tcb->seq, tp->snd_up))) {
-> +		if (before(tp->snd_up, tcb->seq + 0x10000)) {
-> +			th->urg_ptr = htons(tp->snd_up - tcb->seq);
-> +			th->urg = 1;
-> +		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
-> +			th->urg_ptr = 0xFFFF;
-> +			th->urg = 1;
-> +		}
->  	}
->  
->  	tcp_options_write((__be32 *)(th + 1), tp, &opts, &md5_hash_location);
+Serverworks HT2000: check if PCIE bridge has MSI mapping enabled, if not 
+disable MSI on PCIE bridge subordinate bus
 
-I thought this through already at the last time... so I think it really 
-should work in all cases I could think of (including the below window 
-probes whose existance is not very obvious before they bite back :-)):
+NVIDIA CK804: check if HT MSI mapping enabled either on root bridge or 
+on the PCIE bridge device, if not, disable MSI on PCIE bridge 
+subordinate bus
 
-Acked-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+Serverworks HT1000 (and proposed AMD 8132): just switch on HT MSI 
+mapping on bridge device
 
-But I mostly agree with Linus that URG is legacy that would be good
-to just deprecate instead of trying to "fix" it.
+All NVIDIA and ALi (which does appear to overlap with the CK804 one): If 
+bus 0 device 0 function 0 is an HT slave, enable its MSI mapping, 
+otherwise disable it
 
+It seems like these could be combined into something like:
 
--- 
- i.
----696208474-756698155-1235241969=:20526--
+-For all buses, check if any device on the bus is an HT slave, if so, 
+enable its HT MSI mapping. If not, disable it. (Should we also disable 
+MSI on the bus if we disable it or there's no mapping capability? I 
+would guess we likely should..)
+
+-For all PCI bridges other than device 0 function 0 that have HT MSI 
+Mapping capability, check if our bus (or an upstream one?) has a device 
+marked as an HT slave with enabled MSI mapping. If so, then enable the 
+capability, if not then disable it and disable MSI on subordinate bus.
+
+Essentially it should make sure that the mappings are enabled all the 
+way up the chain, and if they can't be then we disable MSI. This could 
+be totally wrong though, I don't know HT that well, hopefully someone 
+else does :-)
+
+There's the issue that Eric pointed out about the MSI mapping address 
+possibly not being set up on some platforms. However, right now we'll 
+just blindly try and use MSI on such setups anyway, so I don't see it's 
+really worsening the situation.
+
+We would also still need the 8131 quirk, since presumably it doesn't 
+have HT MSI Mapping capability so we wouldn't know to disable MSI on it 
+from the above.
