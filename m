@@ -1,123 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZBUDBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZBUDDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbZBUDBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 22:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZBUDA5
+	id S1756664AbZBUDDU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 22:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZBUDDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 22:00:57 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:60076 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754985AbZBUDA4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 22:00:56 -0500
-Message-ID: <499F6E66.7050906@ct.jp.nec.com>
-Date: Fri, 20 Feb 2009 19:00:54 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: ia32_signal: introduce {get|set}_user_seg()
-References: <499F6DB6.3060500@ct.jp.nec.com>
-In-Reply-To: <499F6DB6.3060500@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Feb 2009 22:03:12 -0500
+Received: from LUNGE.MIT.EDU ([18.54.1.69]:41775 "EHLO lunge.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753985AbZBUDDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 22:03:11 -0500
+Date: Fri, 20 Feb 2009 22:03:03 -0500
+From: Andres Salomon <dilinger@queued.net>
+To: drzeus-sdhci@drzeus.cx
+Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org, cjb@laptop.org
+Subject: Re: OLPC XO-1 sdhci regression
+Message-ID: <20090220220303.63720634@ephemeral>
+In-Reply-To: <20090220124343.707b83b4@ephemeral>
+References: <20090220124343.707b83b4@ephemeral>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Fri, 20 Feb 2009 12:43:43 -0500
+Andres Salomon <dilinger@queued.net> wrote:
 
-Impact: cleanup
+> Hi Pierre,
+> 
+> With the current Linus git tree, the sdhci driver fails to find the
+> partition table on cards during bootup on OLPC XO-1 machines.  This
+> makes booting off of SD impossible.  The errors go something like
+> this:
+> 
+[...]
 
-Introduce {get|set}_user_seg() and loadsegment_xx() macros to make code clean.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+A quirk proposed by Anton fixes the issue.  The attached patch adds the
+quirk for the Marvell CAFE controller.
+
+
+
+Subject: [PATCH] SDHCI: Add NO_BUSY_IRQ quirk for Marvell CAFE host chip
+
+As described here: http://lkml.org/lkml/2009/2/20/265
+
+The CAFE chip is broken due to commit e809517f6fa5803a5a1cd56026f0e2190fc13d5c.
+Anton added a quirk here: http://lkml.org/lkml/2009/2/20/279 that fixes
+CAFE's problem.  This adds the quirk for CAFE.
+
+Obviously, this depends upon Anton's patch.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- arch/x86/ia32/ia32_signal.c |   38 ++++++++++++++++++--------------------
- 1 files changed, 18 insertions(+), 20 deletions(-)
+ drivers/mmc/host/sdhci-pci.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 8dd0903..588a7aa 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -188,6 +188,14 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
- /*
-  * Do a signal return; undo the signal stack.
-  */
-+#define loadsegment_gs(v)	load_gs_index(v)
-+#define loadsegment_fs(v)	loadsegment(fs, v)
-+#define loadsegment_ds(v)	loadsegment(ds, v)
-+#define loadsegment_es(v)	loadsegment(es, v)
-+
-+#define get_user_seg(seg)	({ unsigned int v; savesegment(seg, v); v; })
-+#define set_user_seg(seg, v)	loadsegment_##seg(v)
-+
- #define COPY(x)			{		\
- 	get_user_ex(regs->x, &sc->x);		\
- }
-@@ -203,19 +211,18 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
- } while (0)
+diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
+index 8cff5f5..406da9a 100644
+--- a/drivers/mmc/host/sdhci-pci.c
++++ b/drivers/mmc/host/sdhci-pci.c
+@@ -107,6 +107,7 @@ static const struct sdhci_pci_fixes sdhci_ene_714 = {
  
- #define RELOAD_SEG(seg)		{		\
--	unsigned int cur, pre;			\
--	get_user_ex(pre, &sc->seg);		\
--	savesegment(seg, cur);			\
-+	unsigned int pre = GET_SEG(seg);	\
-+	unsigned int cur = get_user_seg(seg);	\
- 	pre |= 3;				\
- 	if (pre != cur)				\
--		loadsegment(seg, pre);		\
-+		set_user_seg(seg, pre);		\
- }
+ static const struct sdhci_pci_fixes sdhci_cafe = {
+ 	.quirks		= SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER |
++			  SDHCI_QUIRK_NO_BUSY_IRQ |
+ 			  SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
+ };
  
- static int ia32_restore_sigcontext(struct pt_regs *regs,
- 				   struct sigcontext_ia32 __user *sc,
- 				   unsigned int *pax)
- {
--	unsigned int tmpflags, gs, oldgs, err = 0;
-+	unsigned int tmpflags, err = 0;
- 	void __user *buf;
- 	u32 tmp;
- 
-@@ -229,12 +236,7 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
- 		 * the handler, but does not clobber them at least in the
- 		 * normal case.
- 		 */
--		get_user_ex(gs, &sc->gs);
--		gs |= 3;
--		savesegment(gs, oldgs);
--		if (gs != oldgs)
--			load_gs_index(gs);
--
-+		RELOAD_SEG(gs);
- 		RELOAD_SEG(fs);
- 		RELOAD_SEG(ds);
- 		RELOAD_SEG(es);
-@@ -333,17 +335,13 @@ static int ia32_setup_sigcontext(struct sigcontext_ia32 __user *sc,
- 				 void __user *fpstate,
- 				 struct pt_regs *regs, unsigned int mask)
- {
--	int tmp, err = 0;
-+	int err = 0;
- 
- 	put_user_try {
--		savesegment(gs, tmp);
--		put_user_ex(tmp, (unsigned int __user *)&sc->gs);
--		savesegment(fs, tmp);
--		put_user_ex(tmp, (unsigned int __user *)&sc->fs);
--		savesegment(ds, tmp);
--		put_user_ex(tmp, (unsigned int __user *)&sc->ds);
--		savesegment(es, tmp);
--		put_user_ex(tmp, (unsigned int __user *)&sc->es);
-+		put_user_ex(get_user_seg(gs), (unsigned int __user *)&sc->gs);
-+		put_user_ex(get_user_seg(fs), (unsigned int __user *)&sc->fs);
-+		put_user_ex(get_user_seg(ds), (unsigned int __user *)&sc->ds);
-+		put_user_ex(get_user_seg(es), (unsigned int __user *)&sc->es);
- 
- 		put_user_ex(regs->di, &sc->di);
- 		put_user_ex(regs->si, &sc->si);
 -- 
-1.6.1.2
+1.5.6.5
+
+
 
