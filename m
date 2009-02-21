@@ -1,110 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbZBUI6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZBUJQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754941AbZBUI6Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 03:58:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZBUI6N
+	id S1754686AbZBUJQH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 04:16:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBUJPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 03:58:13 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:45832 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbZBUI6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 03:58:11 -0500
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-	<alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
-	<499B724A.2040408@kernel.org>
-	<alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-	<alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-	<499B774C.5010705@kernel.org>
-	<alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
-	<499B9129.50104@kernel.org> <499CD466.1060900@gmail.com>
-	<m1fxi82pq0.fsf@fess.ebiederm.org>
-	<86802c440902210031j698403cev2147e72a61e17194@mail.gmail.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 21 Feb 2009 00:58:31 -0800
-In-Reply-To: <86802c440902210031j698403cev2147e72a61e17194@mail.gmail.com> (Yinghai Lu's message of "Sat\, 21 Feb 2009 00\:31\:43 -0800")
-Message-ID: <m1r61sf9oo.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: yinghai@kernel.org, linux-pci@vger.kernel.org, DL-MPTFusionLinux@lsi.com, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, matthew@wil.cx, david@lang.hm, akpm@linux-foundation.org, jbarnes@virtuousgeek.org, hancockrwd@gmail.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Yinghai Lu <yinghai@kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0001]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pci: enable MSI on 8132
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Sat, 21 Feb 2009 04:15:49 -0500
+Received: from mga01.intel.com ([192.55.52.88]:22246 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752647AbZBUJPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 04:15:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,245,1233561600"; 
+   d="scan'208";a="432921347"
+Subject: Re: [PATCH NET-NEXT 0/10] hardware time stamping with new fields
+	in shinfo
+From: Patrick Ohly <patrick.ohly@intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: "johnstul@us.ibm.com" <johnstul@us.ibm.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Tantilov, Emil S" <emil.s.tantilov@intel.com>
+In-Reply-To: <1234770294.10885.24.camel@pohly-MOBL>
+References: <1234450670.5914.9.camel@ecld0pohly>
+	 <1234450981.5914.11.camel@ecld0pohly>
+	 <20090215.231626.160752710.davem@davemloft.net>
+	 <1234770294.10885.24.camel@pohly-MOBL>
+Content-Type: text/plain
+Date: Sat, 21 Feb 2009 10:15:40 +0100
+Message-Id: <1235207740.22598.26.camel@pohly-MOBL>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
+On Mon, 2009-02-16 at 07:44 +0000, Patrick Ohly wrote:
+> On Mon, 2009-02-16 at 09:16 +0200, David Miller wrote:
+> > That TX clone wrt. skb_orphan() issue will need a happier solution.
+> > 
+> > Can you describe that problem in detail?  Maybe someone can come
+> > up with a way to avoid that stuff.
+> 
+> Bouncing information about a sent packet back to the sender (in
+> skb_tstamp_tx()) requires access to the socket via which the packet was
+> sent (orig_skb->sk).
+> 
+> This information must be available after the packet was handed to
+> ops->ndo_start_xmit() in order to implement the TX time stamping
+> software fallback for devices which don't implement hardware time
+> stamping (not enabled and/or not implemented at all).
 
-> On Fri, Feb 20, 2009 at 11:50 PM, Eric W. Biederman
-> <ebiederm@xmission.com> wrote:
->> Robert Hancock <hancockrwd@gmail.com> writes:
->>>
->>> Is there a reason why we can't just enable the HT MSI mapping for any bridge
->>> device that has that PCI capability and is underneath an HT bridge?
->>
->> The code should be under CONFIG_X86 because the rules for enabling HT MSI
-> mappings
->> are different for other architectures.  But otherwise I can't think of a
-> reason.
->
-> move to arch/x86/pci/fixup.c?
->
-> it seems some other arch do support HT ... powerpc, mips?
+There's an even more fundamental problem: the TX software fallback in
+net_dev_hard_start_xmit() has to access the skb after ndo_start_xmit()
+has returned successfully.
 
-The difference is that there is a magic address on x86 that all MSI
-cycles are sent to.  I think it is 0xfffe0000.  In an msi to HT
-mapping capability it is necessary to program in the address to listen
-for msi packets.  That is very much an arch dependent thing.
+During stress tests LAD colleagues at Intel ran into kernel panics that
+pointed to net_dev_hard_start_xmit() as the culprit. Removing the
+current TX software fallback code solved this. My apologies for not
+realizing earlier that this code is violating skb ownership rules.
 
->>> Essentially
->>> the code for nv_msi_ht_cap_quirk could potentially be applied to all bridges
-> as
->>> it is currently for NVIDIA and ALi bridges..
->>
->> Sounds like it would save a fair amount of grief.
->
-> it seems there is some difference.
-> 8132 is some kind of HT tunnel, and the bridge is acctually pci-x bridge.
->
-> mcp55 and ck804: is HT end device with several pcie bridges.
+We propose to remove the faulty code and then solve it in a proper way
+later on. Hardware time stamping will work fine without it. I will
+forward the patch separately.
 
-Not really they are all hypertransport to pci bridges (of some flavor).
-But any hypertransport device is allowed to have a mapping capability.
-In which case they can implement normal MSI interrupts instead of the
-weird hypertransport ones.
+> I see several ways to solve this:
+>       * Always create another reference to skb->sk before
+>         ops->ndo_start_xmit() if TX time stamping is requested.
+>         Drawback: performance penalty for drivers which support TX time
+>         stamping or don't call skb_orphan().
+[...]
+>       * Extend the driver API + another reference. Let drivers which
+>         implement TX time stamping (and thus know when to avoid
+>         skb_orphan()) signal that. dev_hard_start_xmit() then can avoid
+>         the "additional sk reference" thing for these drivers. Drawback:
+>         requires analyzing and potentially flagging all drivers to have
+>         a real effect (as for bnx2).
 
-> also 8131 has problem with HT MSI?
+Something along these lines with an additional reference to the skb
+might work.
 
-The 8131 does not implement the msi to hypertransport mapping
-capability so it can not support MSI interrupts.
+-- 
+Best Regards, Patrick Ohly
 
+The content of this message is my personal opinion only and although
+I am an employee of Intel, the statements I make here in no way
+represent Intel's position on the issue, nor am I authorized to speak
+on behalf of Intel on this matter.
 
-In general on x86, if a device has a MSI to hypertransport mapping
-capability then we can enable it and mark that devices and all
-downstream devices as supporting MSI.
-
-Eric
 
