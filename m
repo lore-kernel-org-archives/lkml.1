@@ -1,197 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZBUKcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZBUKek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbZBUKcs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 05:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZBUKcj
+	id S1754676AbZBUKek (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 05:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZBUKec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 05:32:39 -0500
-Received: from el-out-1112.google.com ([209.85.162.178]:16552 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbZBUKci convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 05:32:38 -0500
-MIME-Version: 1.0
-In-Reply-To: <200902211047.26787.rjw@sisk.pl>
-References: <200902192215.18365.rjw@sisk.pl> <200902210057.27781.rjw@sisk.pl>
-	 <d6200be20902201708g45540f60ib024c3365c85aef4@mail.gmail.com>
-	 <200902211047.26787.rjw@sisk.pl>
-Date: Sat, 21 Feb 2009 02:32:36 -0800
-Message-ID: <d6200be20902210232m71700247k8914ca3735563881@mail.gmail.com>
-Subject: Re: [RFD] Automatic suspend
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 21 Feb 2009 05:34:32 -0500
+Received: from mga11.intel.com ([192.55.52.93]:19634 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750766AbZBUKeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 05:34:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,245,1233561600"; 
+   d="scan'208";a="667421610"
+Subject: Re: [patch 03/36] Fix Intel IOMMU write-buffer flushing
+From: David Woodhouse <david.woodhouse@intel.com>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: Greg KH <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <499DF274.8040702@mandriva.org>
+References: <20090218222447.432108614@mini.kroah.org>
+	 <20090218222901.GD10668@kroah.com> <499C9394.5030704@mandriva.org>
+	 <499DF274.8040702@mandriva.org>
+Organization: Intel Corporation
+Date: Sat, 21 Feb 2009 11:34:21 +0100
+Message-Id: <1235212461.3536.27.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 21, 2009 at 1:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday 21 February 2009, Arve Hjønnevåg wrote:
->> On Fri, Feb 20, 2009 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Saturday 21 February 2009, Arve Hjønnevåg wrote:
->> >> On Fri, Feb 20, 2009 at 7:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
->> >> >> On Fri, Feb 20, 2009 at 2:49 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
->> >> >> >> On Thu, Feb 19, 2009 at 2:08 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
->> >> >> >> >> > It might have to be platform-specific.  The Android people seem to have a
->> >> >> >> >> > pretty good idea of what criteria will work for them.
->> >> >> >> >>
->> >> >> >> >> I'd really like to know in what situations Androind is supposed to suspend
->> >> >> >> >> automatically.
->> >> >> >> >
->> >> >> >> > It might be better to ask in what situations Android is _not_ supposed
->> >> >> >> > to sleep automatically.  In other words, in what situations is a
->> >> >> >> > wakelock acquired?  Since the whole system is only a phone, this
->> >> >> >> > question should have a reasonably well-defined answer.
->> >> >> >>
->> >> >> >> On an android phone, any code that needs to run when the screen is off
->> >> >> >> must hold a wakelock (directly or indirectly). In general if an
->> >> >> >> application or the system is processing an event that may cause a user
->> >> >> >> notification (new email, incoming phone call, alarm, etc.) it needs to
->> >> >> >> prevent suspend. But, we also use wakelocks to upload stats or
->> >> >> >> download system updates in the background, and for media player or
->> >> >> >> (gps) data logging applications.
->> >> >> >
->> >> >> > All of this doesn't seem to require wakelocks acuired from kernel space.
->> >> >> > What do you need those wakelocks for?
->> >> >>
->> >> >> Most events do not originate in user-space. Alarms start in our alarm
->> >> >> driver which locks a wakelock when its timer interrupt occurs. This
->> >> >> wakelock stays locked until the user-space alarm manager calls the
->> >> >> driver to wait for the next alarm. I've described how input events are
->> >> >> handled before. Without kernel wakelocks, if the user space power
->> >> >> manager had already turned off the screen and decided to suspend right
->> >> >> before a wakeup key is pressed, then that key could sit in the
->> >> >> in-kernel input queue until another key is pressed. Even if the
->> >> >> user-space thread read the key event before being frozen, it cannot
->> >> >> abort the suspend operation that was already started.
->> >> >
->> >> > OK, so what about the following approach:
->> >> >
->> >> > * Keep the decision making logic (power manager etc.) in user space.  Reasons:
->> >> >  - It may be arbitrarily complicated
->> >> >  - It may include such things as s2ram quirks or hal quirks needed for some
->> >> >    graphics adapters
->> >>
->> >> I don't using wakelocks in any different in this respect. When user
->> >> space decides that it is ok for the kernel to suspend it should have
->> >> performed all theses steps in both cases.
->> >
->> > If automatic suspend is to be started by the kernel, you have to make sure
->> > that at least one wakelock is held until these steps are completed.  That may
->> > be somewhat tricky in general.
->>
->> That is not tricky. If your code holds a wakelock, then at least one
->> wakelock is held.
->
-> I meant, if one task releases its wakelock and another one takes a wakelock,
-> you have to make sure there's no window between those events.  Of course,
-> you can have a single task holding a wakelock all the time and releasing it
-> when it makes sure everything is ready, but then it would act as a user space
-> power manager anyway.
+On Thu, 2009-02-19 at 23:59 +0000, Thomas Backlund wrote:
+>  
+> That's what my patch fixes, by simply moving
+> 
+> static int rwbf_quirk = 0;
+> 
+> to the beginning of the file...
 
-If you are turning on and off hardware in user space that cannot
-survive a kernel suspend while it is on, then you hold a wakelock when
-this hardware is on. It should not matter how many times the kernel
-enter and exit suspend while your hardware is off.
+s/ = 0//
 
->
->> >> > * Have a per-process (per-task or per-thread group, but the former would be
->> >> >  easier IMO) "I_do_not_want_automatic_suspend_to_occur" flag.
->> >>
->> >> A per-process (thread group) flag allows wakelocks to be implemented
->> >> in a user space library. A per-thread flag does not. However, I don't
->> >> see much benefit in tying this to a process instead of using a file
->> >> descriptor.
->> >
->> > Using a flag would allow us to remove the window between checking the
->> > wakelocks and freezing tasks (in principle a task may take a wakelock just
->> > before it's frozen).
->>
->> You can check if there are wakelocks held from the same spot as you
->> check your flag.
->
-> That would be _much_ more complicated and much less efficient (browsing a list
-> vs checking a flag).  And it would require additional locking if it's to be
-> done in a non-racy way.
-
-Browsing an empty list is not that inefficient. If you are concerned
-about the overhead of the extra spinlock, you could check if the list
-is empty before locking the spinlock.
-
->
->> >> > * Add a new callback, say ->acknowledge(), to the set of each driver's PM
->> >> >  operations, that will be called to check if the driver has anything against
->> >> >  automatic suspend (true - suspend can happen right now, false - suspend can't
->> >> >  happen).
->> >> >
->> >> > * Introduce /sys/power/sleep that will work like /sys/power/state, but:
->> >> >  - First, it will call ->acknowledge() for each driver (via bus types) to
->> >> >    check if any of them wants to postpone the suspend (this will prevent tasks
->> >> >    from being frozen unnecessarily if it is known in advance that the suspend
->> >> >    should not happen at the moment).
->> >> >  - Next, it will check the "I_do_not_want_automatic_suspend_to_occur" flag
->> >> >    of each process and the suspend will be aborted if it is true for any of
->> >> >    them (quite frankly, I think that should be integrated with the freezer,
->> >> >    in particular the tasks that have TIF_FREEZE set shouldn't be able to set
->> >> >    this flag and it should be checked in the freezer loop for every task with
->> >> >    TIF_FREEZE unset).
->> >> >  - Next, it will proceed with suspending just like /sys/power/state does (the
->> >> >    drivers that missed the opportunity to abort the suspend by returning
->> >> >    'false' from ->acknowledge() can still abort the suspend by failing their
->> >> >    ->suspend() routines).
->> >> >
->> >> > Then, the decision making logic will be able to use /sys/power/sleep whenever
->> >> > it wishes to and the kernel will be able to refuse to suspend if it's not
->> >> > desirable at the moment.
->> >> >
->> >> > It seems to be flexible enough to me.
->> >>
->> >> This seems flexible enough to avoid race conditions, but it forces the
->> >> user space power manager to poll when the kernel refuse suspend.
->> >
->> > And if the kernel is supposed to start automatic suspend, it has to monitor
->> > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
->> > kernel if it refuses to suspend.
->>
->> What is better about polling in userspace?
->
-> One kernel thread less, for example?
->
->> >> Also, like my original wakelock patches, it breaks sleep requests through
->> >> /sys/power/state when there are input events queued.
->> >
->> > The idea is to have both /sys/power/state and /sys/power/sleep at the same
->> > time, where /sys/power/state will work just like it does right now.  Sure,
->> > there must be mutual exclusion between the two, but that's a matter of
->> > implementation IMO.
->>
->> If you want to only prevent suspend though one interface, you have to
->> also pass information to the driver about its suspend hook is being
->> called so it can conditionally return -EBUSY. The wakelock interface
->> requires less code in each driver.
->
-> Well, I don't think so.  Moreover, it requires you to spread wakelocks all
-> over the place if you don't use the timeouted ones which, let's face it, is
-> hardly acceptable.
-
-Your method does not reduce the number of places that has to be
-modified. Any component where we add a wakelock, you have to add a
-suspend handler to abort suspend when we would have held a wakelock.
+It was originally hard-coded to something other than zero, and I
+neglected to remove the initialiser when I changed it to zero after
+working out the correct PCI ID to trigger on.
 
 -- 
-Arve Hjønnevåg
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+---------------------------------------------------------------------
+Intel Corporation (UK) Limited
+Registered No. 1134945 (England)
+Registered Office: Pipers Way, Swindon SN3 1RJ
+VAT No: 860 2173 47
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
