@@ -1,119 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbZBUGUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZBUGne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbZBUGUN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 01:20:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbZBUGUA
+	id S1753486AbZBUGne (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 01:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbZBUGnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 01:20:00 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:61628 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969AbZBUGT7 (ORCPT
+	Sat, 21 Feb 2009 01:43:24 -0500
+Received: from hosted02.westnet.com.au ([203.10.1.213]:56996 "EHLO
+	hosted02.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbZBUGnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 01:19:59 -0500
-Message-ID: <499F9D25.8010300@oracle.com>
-Date: Fri, 20 Feb 2009 22:20:21 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 21 Feb 2009 01:43:22 -0500
+From: Mike Lampard <mike@mtgambier.net>
+Reply-To: mike@mtgambier.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: long-term regression with some usb mass storage devices
+Date: Sat, 21 Feb 2009 17:13:15 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.28.3-desktop-1mnb; KDE/4.2.0; x86_64; ; )
+Cc: USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0902201153430.4145-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0902201153430.4145-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       zippel@linux-m68k.org
-Subject: Re: [PATCH][RFC] check for select dependency errors on config load
-References: <499edf47.1818d00a.060b.2b8d@mx.google.com>	<499EE162.4050008@oracle.com>	<alpine.DEB.2.00.0902210008580.30069@gandalf.stny.rr.com> <20090220220810.6f4360f0.akpm@linux-foundation.org>
-In-Reply-To: <20090220220810.6f4360f0.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A0B020A.499F9CED.009E:SCFSTAT928724,ss=1,fgs=0
+Message-Id: <200902211713.16201.mike@mtgambier.net>
+X-PMX-Branch: TNG-Outgoing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 21 Feb 2009 00:24:05 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
->> There's been a few problems with SELECT and dependencies lately.
->> I've been burnt by it a few times myself. So I look at the kconfig
->> code and added this patch. It can use a bit more work but it does what
->> I want.
->>
->> When the config is loaded, it checks all the symbols that are
->> selected by an active config and makes sure the visible dependencies are 
->> also activated. This should probably be moved to the writing of the 
->> config instead, but since I just wanted to see if my current config was 
->> OK, I did it on load. This is an RFC patch anyway, so fixes/comments are 
->> definitely welcome.
->>
->> Here's what I get with the attached config running on 2.6.29-rc5.
->>
->> $ make menuconfig
->> scripts/kconfig/mconf arch/x86/Kconfig
->> .config:2561:warning: MICROCODE selects FW_LOADER which fails its dependencies!
->> .config:2561:warning: MICROCODE_INTEL selects FW_LOADER which fails its dependencies!
->> .config:2561:warning: PCMCIA_LOAD_CIS selects FW_LOADER which fails its dependencies!
->> .config:2561:warning: SCSI_SAS_LIBSAS selects SCSI_SAS_ATTRS which fails its dependencies!
->> .config:2561:warning: SCSI_AIC94XX selects FW_LOADER which fails its dependencies!
->> .config:2561:warning: KEYBOARD_ATKBD selects SERIO which fails its dependencies!
->> .config:2561:warning: KEYBOARD_ATKBD selects SERIO_LIBPS2 which fails its dependencies!
->> .config:2561:warning: KEYBOARD_ATKBD selects SERIO_I8042 which fails its dependencies!
->> .config:2561:warning: MOUSE_PS2 selects SERIO which fails its dependencies!
->> .config:2561:warning: MOUSE_PS2 selects SERIO_LIBPS2 which fails its dependencies!
->> .config:2561:warning: MOUSE_PS2 selects SERIO_I8042 which fails its dependencies!
->> .config:2561:warning: VT selects INPUT which fails its dependencies!
->> .config:2561:warning: DRM selects I2C_ALGOBIT which fails its dependencies!
->> .config:2561:warning: SND_EMU10K1 selects FW_LOADER which fails its dependencies!
->>
->> <exit out>
->>
-> 
-> OK, this is fairly easy to use.
-> 
-> You get
-> 
-> .config:1181:warning: PCMCIA_LOAD_CIS selects FW_LOADER which fails its dependencies!
-> 
-> So you then go into `make menuconfig' and type /^fw_loader$ to display
-> FW_LOADER's dependencies.
-> 
-> 	Depends on: HOTPLUG && EMBEDDED
-> 
-> then do `egrep "HOTPLUG|EMBEDDED" .config'
-> 
-> And we discover weird things.  Why does FW_LOADER depend on EMBEDDED?
-> 
-> And why the heck does INPUT depend on EMBEDDED?!??!
-> 
-> And what's up with CONFIG_SERIO?
-> 
-> 	Depends on: !S390 && (EMBEDDED || !X86)
-> 
-> hm.
+On Sat, 21 Feb 2009 05:45:36 am Alan Stern wrote:
+> On Sat, 21 Feb 2009, Mike Lampard wrote:
+> > > If this affected your device then the device must not report residues
+> > > correctly.  If you provide the device's entry in /proc/bus/usb/devices,
+> > > I'll write a patch adding a blacklist entry for it.
+> >
+> > Many thanks.
+> >
+> > > It would help if you could also provide a usbmon trace showing what
+> > > happens when you plug the drive in.  Instructions are in the kernel
+> > > source file Documentation/usb/usbmon.txt.
+> >
+> > /proc/bus/usb/devices:
+> > T:  Bus=01 Lev=01 Prnt=01 Port=06 Cnt=01 Dev#=  3 Spd=480 MxCh= 0
+> > D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+> > P:  Vendor=05e3 ProdID=0701 Rev= 0.02
+> > S:  Manufacturer=Genesyslogic
+> > S:  Product=USB Mass Storage Device
+> > C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr= 96mA
+> > I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
+> > E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+> > E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=125us
+>
+> Ah, more fun from our friends at Genesys Logic.  :-(
+>
+> > I'll email the usbmod log directly, to save spamming the list with a
+> > 100kb attachment.
+>
+> This seems to be the critical part:
+>
+> ffff88002ad42300 1207042173 S Bo:1:009:2 -115 31 = 55534243 08000000
+> 80000000 80000a5a 002a0000 00000080 00000000 000000 ffff88002ad42300
+> 1207042287 C Bo:1:009:2 0 31 >
+> ffff88001dc5e780 1207042452 S Bi:1:009:1 -115 128 <
+> ffff88001dc5e780 1207046917 C Bi:1:009:1 -121 72 = 00467000 00000000
+> 2a3e3f17 f1632923 1b900100 07d01b90 00001089 10890001 ffff88002ad42300
+> 1207048482 S Bi:1:009:1 -115 13 <
+> ffff88002ad42300 1207048917 C Bi:1:009:1 -32 0
+> ffff88002ad42300 1207049111 S Co:1:009:0 s 02 01 0000 0081 0000 0
+> ffff88002ad42300 1207050037 C Co:1:009:0 0 0
+> ffff88002ad42300 1207050269 S Bi:1:009:1 -115 13 <
+> ffff88002ad42300 1207050910 C Bi:1:009:1 0 13 = 55534253 08000000 80000000
+> 00
+>
+> This shows the computer sending a MODE SENSE command for page 0x2a (the
+> MultiMedia Capabilities and Mechanical Status page), asking for 128
+> bytes of information.  The drive sent back 72 bytes followed by a
+> residue of 128, indicating that none of the data was valid.
+>
+> Presumably the data really was valid and the residue should have been
+> 56.  On the other hand, we have never had any other reports of invalid
+> residues from a Genesys Logic controller.  Maybe the error actually
+> came from the attached Pioneer drive instead of the controller; there's
+> no way to tell unless you attach a different kind of drive to the
+> controller.
 
-EMBEDDED is misnamed.  It means "those who think that they know enough
-to use all of the power of kconfig."
-Some people spell that EXPERT etc.
-Or it means "let me shoot myself in the foot."
+I've now tested two other DVD writers in this adapter without the patch - one 
+LG and the other a much newer Pioneer.  Both exhibit the identical symptoms.
 
-So HOTPLUG, INPUT, FW_LOADER, etc. should not be modified by Aunt Tillie,
-but you and I can play with them.
+> Anyway, this patch may fix the problem.  Let me know what happens with
+> it.  I'm a little hesitant to add it to the kernel, because of the
+> significant probability that the Genesys Logic controller itself is
+> okay.
 
+The patch worked flawlessly with all devices I tested it on.  I also tested a 
+HDD in the cradle to ensure there were no obvious regressions in that regard, 
+it too worked as it should.
 
-for SERIO:
+> Starting with 2.6.29 you'll be able to add special flags like this at
+> runtime without the need for any patches, by means of a module
+> parameter for usb-storage.
 
-config SERIO
-	tristate "Serial I/O support" if EMBEDDED || !X86
-	default y
+If you do decide to commit the change to the kernel, any chance you could mark 
+it for the stable releases?
 
-Experts can modify it.  !X86 can modify it.
-It's usually needed on X86 for keyboard controllers etc.,
-but if one sets EMBEDDED, you can muck up your config and not be
-able to use the keyboard.
+Cheers
+Mike
 
-I don't know where the !S390 comes from, but it's not surprising.
-
--- 
-~Randy
