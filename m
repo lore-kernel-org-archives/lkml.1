@@ -1,102 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZBUNZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZBUNg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZBUNZA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 08:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbZBUNYt
+	id S1754017AbZBUNg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 08:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZBUNgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 08:24:49 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:41225 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751651AbZBUNYs (ORCPT
+	Sat, 21 Feb 2009 08:36:16 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:32738 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbZBUNgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 08:24:48 -0500
-Date: Sat, 21 Feb 2009 21:24:24 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com, rjw@sisk.pl,
-       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-Message-ID: <20090221132424.GA28861@gondor.apana.org.au>
-References: <20090206054541.GA4954@gondor.apana.org.au> <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com> <20090209055848.GA3889@gondor.apana.org.au> <20090208.220357.261414983.davem@davemloft.net> <20090209061151.GA3982@gondor.apana.org.au> <Pine.LNX.4.64.0902090853360.20576@wrl-59.cs.helsinki.fi> <20090209072806.GB4380@gondor.apana.org.au> <Pine.LNX.4.64.0902091513190.31742@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0902091513190.31742@wrl-59.cs.helsinki.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 21 Feb 2009 08:36:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=GTT4/vAinOmzpsSgqG8rEKNWR7ES/RXtGCW7A0Hk6CIAaBLFN13BQWliZddJb4SqLg
+         5S6iMKC0gbTQImnk6D6igS9Whi+UQ5nVgsmaBfigjm0Mit27jac64Dh/xmG/n0Tn+8iM
+         sgvlmi1OWLkkgvMB+aWqXOxjbiIvTSmIETPfY=
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: 
+Date: Sat, 21 Feb 2009 14:36:00 +0100
+Message-Id: <1235223364-2097-1-git-send-email-vegard.nossum@gmail.com>
+X-Mailer: git-send-email 1.6.2.rc0.61.g5cd12
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 03:28:09PM +0200, Ilpo Järvinen wrote:
->
-> Yes, that should work too except the gcc catchable typo.
+Hi,
 
-Thanks, so let's try again for net-next:
+Here comes a kmemcheck update. I found out how to solve the P4 REP problem
+cleanly, and by adding the right hooks in the DMA API, we were able to get
+page-allocator support with no additional false positives.
 
-tcp: Always set urgent pointer if it's beyond snd_nxt
+ arch/x86/include/asm/dma-mapping.h |    6 ++
+ arch/x86/include/asm/thread_info.h |    4 +-
+ arch/x86/kernel/cpu/intel.c        |   23 +++++++
+ arch/x86/mm/kmemcheck/kmemcheck.c  |  119 +-----------------------------------
+ arch/x86/mm/kmemcheck/opcode.c     |   13 +----
+ arch/x86/mm/kmemcheck/opcode.h     |    3 +-
+ arch/x86/mm/kmemcheck/shadow.c     |    8 +++
+ include/linux/gfp.h                |    5 ++
+ include/linux/kmemcheck.h          |   33 +++++++++--
+ mm/kmemcheck.c                     |   45 ++++++++++----
+ mm/page_alloc.c                    |    8 +++
+ mm/slab.c                          |   15 +++--
+ mm/slub.c                          |   23 ++++++--
+ 13 files changed, 143 insertions(+), 162 deletions(-)
 
-Our TCP stack does not set the urgent flag if the urgent pointer
-does not fit in 16 bits, i.e., if it is more than 64K from the
-sequence number of a packet.
+(Ingo: Don't apply to -tip, I'll send a pull request later.)
 
-This behaviour is different from the BSDs, and clearly contradicts
-the purpose of urgent mode, which is to send the notification
-(though not necessarily the associated data) as soon as possible.
-Our current behaviour may in fact delay the urgent notification
-indefinitely if the receiver window does not open up.
 
-Simply matching BSD however may break legacy applications which
-incorrectly rely on the out-of-band delivery of urgent data, and
-conversely the in-band delivery of non-urgent data.
-
-Alexey Kuznetsov suggested a safe solution of following BSD only
-if the urgent pointer itself has not yet been transmitted.  This
-way we guarantee that when the remote end sees the packet with
-non-urgent data marked as urgent due to wrap-around we would have
-advanced the urgent pointer beyond, either to the actual urgent
-data or to an as-yet untransmitted packet.
-
-The only potential downside is that applications on the remote
-end may see multiple SIGURG notifications.  However, this would
-occur anyway with other TCP stacks.  More importantly, the outcome
-of such a duplicate notification is likely to be harmless since
-the signal itself does not carry any information other than the
-fact that we're in urgent mode.
-
-Thanks to Ilpo Järvinen for fixing a critical bug in this and
-Jeff Chua for reporting that bug.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-index dda42f0..f5263c8 100644
---- a/net/ipv4/tcp_output.c
-+++ b/net/ipv4/tcp_output.c
-@@ -663,10 +663,14 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
- 	th->urg_ptr		= 0;
- 
- 	/* The urg_mode check is necessary during a below snd_una win probe */
--	if (unlikely(tcp_urg_mode(tp) &&
--		     between(tp->snd_up, tcb->seq + 1, tcb->seq + 0xFFFF))) {
--		th->urg_ptr		= htons(tp->snd_up - tcb->seq);
--		th->urg			= 1;
-+	if (unlikely(tcp_urg_mode(tp) && before(tcb->seq, tp->snd_up))) {
-+		if (before(tp->snd_up, tcb->seq + 0x10000)) {
-+			th->urg_ptr = htons(tp->snd_up - tcb->seq);
-+			th->urg = 1;
-+		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
-+			th->urg_ptr = 0xFFFF;
-+			th->urg = 1;
-+		}
- 	}
- 
- 	tcp_options_write((__be32 *)(th + 1), tp, &opts, &md5_hash_location);
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Vegard
