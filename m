@@ -1,153 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZBUS77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZBUTG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbZBUS77 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 13:59:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZBUS7s
+	id S1754983AbZBUTG6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 14:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbZBUTGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 13:59:48 -0500
-Received: from mail-gx0-f174.google.com ([209.85.217.174]:36355 "EHLO
+	Sat, 21 Feb 2009 14:06:50 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:58517 "EHLO
 	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598AbZBUS7q (ORCPT
+	with ESMTP id S1753527AbZBUTGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 13:59:46 -0500
+	Sat, 21 Feb 2009 14:06:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mRuZrbuiBYvECy/vQYA/QK5TBPMT1wdPCru6sd1aqRw0LR0oWKEBVaMrdR6BILXrNP
-         TgTeaGFPD1vAsPF4VBnndQooqcaS5ykAL1IMAxdPGTO3JlMtx/s6/ouhFEhiCC3FC/Cj
-         7PR7SlRiHqX9bJyhdg9sdcz3rB7F5nkdHygXs=
-Message-ID: <49A04F1E.7020006@gmail.com>
-Date: Sat, 21 Feb 2009 12:59:42 -0600
+        b=K4EuMZR6jTBnFYumCoWcxAhCezFIIgpCxJ87XJzqCStkMtkZn2Ym5oOdbc5a02H4wU
+         ZITE4L+7Br76Ek//YXpeoOaae9wDBBCEu69CG5b0ZzCyzpJR0L2+zhVpx545PCb81fDc
+         jmCwQGHcid36ab/qc6IFiOjcw22XxL37n9LLo=
+Message-ID: <49A050BF.4080904@gmail.com>
+Date: Sat, 21 Feb 2009 13:06:39 -0600
 From: Robert Hancock <hancockrwd@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: enable MSI on 8132
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>	<alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>	<499B724A.2040408@kernel.org>	<alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>	<alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>	<499B774C.5010705@kernel.org>	<alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>	<499B9129.50104@kernel.org> <499CD466.1060900@gmail.com>	<m1fxi82pq0.fsf@fess.ebiederm.org>	<86802c440902210031j698403cev2147e72a61e17194@mail.gmail.com> <m1r61sf9oo.fsf@fess.ebiederm.org> <499FD623.1010105@kernel.org>
-In-Reply-To: <499FD623.1010105@kernel.org>
+To: "Mr. Berkley Shands" <bshands@exegy.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
+Subject: Re: AMD 8132 parity issue causes interrupt storms
+References: <499F1729.9010700@exegy.com> <499F4E56.4050305@gmail.com> <499F6468.3080907@exegy.com>
+In-Reply-To: <499F6468.3080907@exegy.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Eric W. Biederman wrote:
->> Yinghai Lu <yinghai@kernel.org> writes:
->>
->>> On Fri, Feb 20, 2009 at 11:50 PM, Eric W. Biederman
->>> <ebiederm@xmission.com> wrote:
->>>> Robert Hancock <hancockrwd@gmail.com> writes:
->>>>> Is there a reason why we can't just enable the HT MSI mapping for any bridge
->>>>> device that has that PCI capability and is underneath an HT bridge?
->>>> The code should be under CONFIG_X86 because the rules for enabling HT MSI
->>> mappings
->>>> are different for other architectures.  But otherwise I can't think of a
->>> reason.
+Mr. Berkley Shands wrote:
+> I am certainly not doing that :-)
+> Some supermicro H8QME-2 motherboards (about 40%) show up with that enabled.
+> Something generates a parity error, and the machine is instantly on its 
+> knees until it gets power cycled.
+> 
+> My thought was to look and report that parity was being enabled (bios bug?)
+
+That would be a BIOS bug then, if it sets the parity interrupts enabled 
+by default. If the OS installs a driver to handle those interrupts, the 
+driver can enable them, otherwise they should stay off.
+
+We could probably create a PCI quirk for this chip that would disable 
+the parity interrupts on bootup if it found them enabled.. CCing linux-pci.
+
+> 
+> I can fix it in a number of ways with setpci. It has taken a year to 
+> find the cause of my troubles.
+> And a $15K scope, ...
+> 
+> Berkley
+> 
+> 
+> Robert Hancock wrote:
+>> Mr. Berkley Shands wrote:
+>>> It seems that the 8132 should be blacklisted :-)
 >>>
->>> move to arch/x86/pci/fixup.c?
+>>> INT-A will be asserted forever if any channel sees a parity error.
+>>> This can be blocked by several means;
 >>>
->>> it seems some other arch do support HT ... powerpc, mips?
->> The difference is that there is a magic address on x86 that all MSI
->> cycles are sent to.  I think it is 0xfffe0000.  In an msi to HT
->> mapping capability it is necessary to program in the address to listen
->> for msi packets.  That is very much an arch dependent thing.
->>
->>>>> Essentially
->>>>> the code for nv_msi_ht_cap_quirk could potentially be applied to all bridges
->>> as
->>>>> it is currently for NVIDIA and ALi bridges..
->>>> Sounds like it would save a fair amount of grief.
->>> it seems there is some difference.
->>> 8132 is some kind of HT tunnel, and the bridge is acctually pci-x bridge.
+>>> 1) setpci -s <bus address of 8132> 5.b=05   /* disable interrupts 
+>>> from the bridge */
+>>> This is the I don't see you method.
 >>>
->>> mcp55 and ck804: is HT end device with several pcie bridges.
->> Not really they are all hypertransport to pci bridges (of some flavor).
->> But any hypertransport device is allowed to have a mapping capability.
->> In which case they can implement normal MSI interrupts instead of the
->> weird hypertransport ones.
-> for mcp55
-> 00:00.0 is HT device
-> 00:0b.0 00:0c.0, 00:0d.0, 00:0e.0, 00:0f.0 are pcie bridge.
-> current quirks will check 00:00.0 HT MSI is set, it will not set that in those bridges any more.
-> 
->>> also 8131 has problem with HT MSI?
->> The 8131 does not implement the msi to hypertransport mapping
->> capability so it can not support MSI interrupts.
-> it seems there is one quirks to disable MSI for 8131.
-> /* Disable MSI on chipsets that are known to not support it */
-> static void __devinit quirk_disable_msi(struct pci_dev *dev)
-> {
->         if (dev->subordinate) {
->                 dev_warn(&dev->dev, "MSI quirk detected; "
->                         "subordinate MSI disabled\n");
->                 dev->subordinate->bus_flags |= PCI_BUS_FLAGS_NO_MSI;
->         }
-> }
-> DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8131_BRIDGE, quirk_disable_msi);
-> 
-> 
+>>> Shouldn't the interrupt handler (is there one?) trap and clear this?
+>>> Shouldn't the kernel at least report this error and reset those bits?
 >>
->> In general on x86, if a device has a MSI to hypertransport mapping
->> capability then we can enable it and mark that devices and all
->> downstream devices as supporting MSI.
+>> What's enabling this interrupt generation? Interrupting on parity 
+>> errors is not part of the PCI spec. Unless there's some driver that's 
+>> set up to handle these interrupts, whoever's enabling them shouldn't be..
+>>
+>>>
+>>> All,
+>>>
+>>> OK, here's what I know so far.  The interrupt storm is coming from 
+>>> the parity error detector in the 8132.  The parity error is reported 
+>>> in two locations using sticky bits:
+>>>
+>>> 0x1c bits 31 and 24
+>>>   Here there seems to be some differentiation between which party 
+>>> detected the parity error.  The 8132 spec is pretty vague here (see 
+>>> page 75) but it looks like the 8132 is detecting a parity error from 
+>>> the HBA not the other way around.
+>>> 0x80 bit 0
+>>>   Here it just states that someone asserted the PERR_L signal, no 
+>>> distinction on who did it.
+>>>
+>>> All these bits are write-one-to-clear.  If 0x80 bit 0 is cleared, the 
+>>> storm stops.  Clearly the OS does not know how to handle these 
+>>> conditions and the error flag is left on while the interrupt is 
+>>> continuously handled.
+>>>
+>>> One way to handle this is to set 0x48 bit 19 to 0.  This prevents the 
+>>> 8132 from interrupting when 0x80 bit 0 is set.
+>>>
+>>> A much better way to handle this is to have the interrupt handler 
+>>> actually check the error bits on the 8132 when it is called.  This 
+>>> would slow down the interrupt handler, but actually give us a much 
+>>> better visibility into this problem (when, where and how often this 
+>>> happens).  The irritating thing here is that this is chipset 
+>>> dependent.  The interrupt handler would have to know what PCI-X 
+>>> chipset it was talking through to know how to handle this (way to go 
+>>> AMD).
+>>>
+>>> The really odd thing is that the parity error is reported through 
+>>> INTB on the 8132.  The spec claims that fatal errors (the category 
+>>> they put PERR in) go to INTB while hot plug conditions trigger INTA.  
+>>> Masking off fatal errors in the IOAPIC turns off the storm too.  I 
+>>> have no idea why this is showing up on INTA.
+>>>
+>>> Berkley
+>>>
+>>
+>>
 > 
-> looks some aggressive.
+> 
+> -- 
+> 
+> // E. F. Berkley Shands, MSc//
+> 
+> ** Exegy Inc.**
+> 
+> 349 Marshall Road, Suite 100
+> 
+> St. Louis , MO  63119
+> 
+> Direct:  (314) 218-3600 X450
+> 
+> Cell:  (314) 303-2546
+> 
+> Office:  (314) 218-3600
+> 
+> Fax:  (314) 218-3601
+> 
+>  
+> 
+> The Usual Disclaimer follows...
+> 
+>  
+> 
 
-Not really.. we don't really "mark devices as supporting MSI" right now, 
-we generally mark them as not supporting it in certain cases and by 
-default assume they do. So if a quirk doesn't hit on a particular 
-chipset, then we go ahead and enable it. If there's some reason it 
-doesn't work or we don't do something that's needed to make it work, and 
-the driver requests it, we'll use it and it just won't work properly. So 
-it's not really any more aggressive than what we have now..
-
-It seems like we have kind of a random mix of MSI quirks related to MSI 
-mappings:
-
-Serverworks HT2000: check if PCIE bridge has MSI mapping enabled, if not 
-disable MSI on PCIE bridge subordinate bus
-
-NVIDIA CK804: check if HT MSI mapping enabled either on root bridge or 
-on the PCIE bridge device, if not, disable MSI on PCIE bridge 
-subordinate bus
-
-Serverworks HT1000 (and proposed AMD 8132): just switch on HT MSI 
-mapping on bridge device
-
-All NVIDIA and ALi (which does appear to overlap with the CK804 one): If 
-bus 0 device 0 function 0 is an HT slave, enable its MSI mapping, 
-otherwise disable it
-
-It seems like these could be combined into something like:
-
--For all buses, check if any device on the bus is an HT slave, if so, 
-enable its HT MSI mapping. If not, disable it. (Should we also disable 
-MSI on the bus if we disable it or there's no mapping capability? I 
-would guess we likely should..)
-
--For all PCI bridges other than device 0 function 0 that have HT MSI 
-Mapping capability, check if our bus (or an upstream one?) has a device 
-marked as an HT slave with enabled MSI mapping. If so, then enable the 
-capability, if not then disable it and disable MSI on subordinate bus.
-
-Essentially it should make sure that the mappings are enabled all the 
-way up the chain, and if they can't be then we disable MSI. This could 
-be totally wrong though, I don't know HT that well, hopefully someone 
-else does :-)
-
-There's the issue that Eric pointed out about the MSI mapping address 
-possibly not being set up on some platforms. However, right now we'll 
-just blindly try and use MSI on such setups anyway, so I don't see it's 
-really worsening the situation.
-
-We would also still need the 8131 quirk, since presumably it doesn't 
-have HT MSI Mapping capability so we wouldn't know to disable MSI on it 
-from the above.
