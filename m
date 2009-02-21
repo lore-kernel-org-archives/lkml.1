@@ -1,279 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZBUAbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZBUAoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbZBUAbr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 19:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZBUAbg
+	id S1754892AbZBUAoV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 19:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZBUAoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 19:31:36 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:12241 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753317AbZBUAbf (ORCPT
+	Fri, 20 Feb 2009 19:44:12 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:33589 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbZBUAoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 19:31:35 -0500
-Message-ID: <499F4B61.3050508@hp.com>
-Date: Fri, 20 Feb 2009 19:31:29 -0500
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
+	Fri, 20 Feb 2009 19:44:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=Q0wXI6H+Eq8HQdJBN6xIJ0p6pAK+UE1TgiWwkosLdNZt6XFur2/SU8umqnxFb+O1Se
+         gBxO57uGDUS0sOCpV0etY+qxaGDmipXboJpRrCwc+PN6jR1lPxZbtAHybEgGh/g3M5yD
+         n+uFan7ankMN3wgV5SEIruSrgDdqW/moqScbY=
+Message-ID: <499F4E56.4050305@gmail.com>
+Date: Fri, 20 Feb 2009 18:44:06 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Andrey Borzenkov <arvidjaar@mail.ru>,
-       Vladislav Yasevich <vladislav.yasevich@hp.com>,
-       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       Valdis.Kletnieks@vt.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       bonding-devel@lists.sourceforge.net,
-       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?= =?ISO-8859-1?Q?=F3n=22?= 
-	<jamagallon@ono.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jay Vosburgh <fubar@us.ibm.com>
-Subject: [PATCH] bonding: move IPv6 support into a separate kernel module
+Newsgroups: gmane.linux.kernel
+To: "Mr. Berkley Shands" <bshands@exegy.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: AMD 8132 parity issue causes interrupt storms
+References: <499F1729.9010700@exegy.com>
+In-Reply-To: <499F1729.9010700@exegy.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Possible fix for bonding IPv6 regression reported by Andrey Borzenkov,
-tried to keep all Cc's]
+Mr. Berkley Shands wrote:
+> It seems that the 8132 should be blacklisted :-)
+> 
+> INT-A will be asserted forever if any channel sees a parity error.
+> This can be blocked by several means;
+> 
+> 1) setpci -s <bus address of 8132> 5.b=05   /* disable interrupts from 
+> the bridge */
+> This is the I don't see you method.
+> 
+> Shouldn't the interrupt handler (is there one?) trap and clear this?
+> Shouldn't the kernel at least report this error and reset those bits?
 
-This patch moves the IPv6 bonding code into a separate kernel module
-called bonding_ipv6 if either bonding or IPv6 are built as modules.
-If both are built into the kernel then this is as well.  Bonding_ipv6.ko
-registers an "send_unsol_na" function pointer for the unsolicited
-advertisement function to be called on a failover - the default action
-is to do nothing.  The notifier callbacks are now registered in this
-module and not in the base bonding module.
+What's enabling this interrupt generation? Interrupting on parity errors 
+is not part of the PCI spec. Unless there's some driver that's set up to 
+handle these interrupts, whoever's enabling them shouldn't be..
 
-Signed-off-by: Brian Haley <brian.haley@hp.com>
----
-  Documentation/networking/bonding.txt |    3 ++
-  drivers/net/bonding/Makefile         |    5 ++-
-  drivers/net/bonding/bond_ipv6.c      |   13 +++++++-
-  drivers/net/bonding/bond_main.c      |   52
-++++++++++++++++++++++++++++++---
-  drivers/net/bonding/bonding.h        |    9 +++--
-  5 files changed, 69 insertions(+), 13 deletions(-)
-
-diff --git a/Documentation/networking/bonding.txt
-b/Documentation/networking/bonding.txt
-index 5ede747..c8b1c1f 100644
---- a/Documentation/networking/bonding.txt
-+++ b/Documentation/networking/bonding.txt
-@@ -603,6 +603,9 @@ num_unsol_na
-  	affects only the active-backup mode.  This option was added for
-  	bonding version 3.4.0.
-
-+	In order to get this functionality, you will need to load the
-+	Bonding IPv6 module with 'modprobe bonding_ipv6'.
-+
-  primary
-
-  	A string (eth0, eth2, etc) specifying which slave is the
-diff --git a/drivers/net/bonding/Makefile b/drivers/net/bonding/Makefile
-index 6f9c6fa..d4f6338 100644
---- a/drivers/net/bonding/Makefile
-+++ b/drivers/net/bonding/Makefile
-@@ -6,6 +6,7 @@ obj-$(CONFIG_BONDING) += bonding.o
-
-  bonding-objs := bond_main.o bond_3ad.o bond_alb.o bond_sysfs.o
-
--ipv6-$(subst m,y,$(CONFIG_IPV6)) += bond_ipv6.o
--bonding-objs += $(ipv6-y)
-+# build bonding_ipv6 as module whenever either IPv6 or Bonding is a module
-+obj-$(subst y,$(CONFIG_BONDING),$(CONFIG_IPV6)) += bonding_ipv6.o
-+bonding_ipv6-y := bond_ipv6.o
-
-diff --git a/drivers/net/bonding/bond_ipv6.c
-b/drivers/net/bonding/bond_ipv6.c
-index 0d73bf5..2f10514 100644
---- a/drivers/net/bonding/bond_ipv6.c
-+++ b/drivers/net/bonding/bond_ipv6.c
-@@ -20,6 +20,9 @@
-   *
-   */
-
-+#include <linux/module.h>
-+#include <linux/init.h>
-+
-  #include <linux/types.h>
-  #include <linux/if_vlan.h>
-  #include <net/ipv6.h>
-@@ -204,13 +207,19 @@ static struct notifier_block
-bond_inet6addr_notifier = {
-  	.notifier_call = bond_inet6addr_event,
-  };
-
--void bond_register_ipv6_notifier(void)
-+static int __init bonding_ipv6_init(void)
-  {
-+	bond_register_ipv6_na(bond_send_unsolicited_na);
-  	register_inet6addr_notifier(&bond_inet6addr_notifier);
-+	return 0;
-  }
-
--void bond_unregister_ipv6_notifier(void)
-+static void __exit bonding_ipv6_exit(void)
-  {
-  	unregister_inet6addr_notifier(&bond_inet6addr_notifier);
-+	bond_unregister_ipv6_na();
-  }
-
-+module_init(bonding_ipv6_init)
-+module_exit(bonding_ipv6_exit)
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/net/bonding/bond_main.c
-b/drivers/net/bonding/bond_main.c
-index 2c96b93..ff61add 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -149,6 +149,12 @@ static const char * const version =
-  	DRV_DESCRIPTION ": v" DRV_VERSION " (" DRV_RELDATE ")\n";
-
-  LIST_HEAD(bond_dev_list);
-+EXPORT_SYMBOL(bond_dev_list);
-+
-+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+static DEFINE_SPINLOCK(bond_v6_na_lock);
-+#endif
-+static void (*bond_send_unsol_na)(struct bonding *bond);
-
-  #ifdef CONFIG_PROC_FS
-  static struct proc_dir_entry *bond_proc_dir = NULL;
-@@ -1201,6 +1207,8 @@ void bond_change_active_slave(struct bonding
-*bond, struct slave *new_active)
-  		}
-
-  		if (new_active) {
-+			void (*send_unsol_na)(struct bonding *bond);
-+
-  			bond_set_slave_active_flags(new_active);
-
-  			if (bond->params.fail_over_mac)
-@@ -1211,7 +1219,11 @@ void bond_change_active_slave(struct bonding
-*bond, struct slave *new_active)
-  			bond_send_gratuitous_arp(bond);
-
-  			bond->send_unsol_na = bond->params.num_unsol_na;
--			bond_send_unsolicited_na(bond);
-+			rcu_read_lock();
-+			send_unsol_na = rcu_dereference(bond_send_unsol_na);
-+			if (send_unsol_na)
-+				send_unsol_na(bond);
-+			rcu_read_unlock();
-
-  			write_unlock_bh(&bond->curr_slave_lock);
-  			read_unlock(&bond->lock);
-@@ -2464,8 +2476,14 @@ void bond_mii_monitor(struct work_struct *work)
-  	}
-
-  	if (bond->send_unsol_na) {
-+		void (*send_unsol_na)(struct bonding *bond);
-+
-  		read_lock(&bond->curr_slave_lock);
--		bond_send_unsolicited_na(bond);
-+		rcu_read_lock();
-+		send_unsol_na = rcu_dereference(bond_send_unsol_na);
-+		if (send_unsol_na)
-+			send_unsol_na(bond);
-+		rcu_read_unlock();
-  		read_unlock(&bond->curr_slave_lock);
-  	}
-
-@@ -3165,8 +3183,14 @@ void bond_activebackup_arp_mon(struct work_struct
-*work)
-  	}
-
-  	if (bond->send_unsol_na) {
-+		void (*send_unsol_na)(struct bonding *bond);
-+
-  		read_lock(&bond->curr_slave_lock);
--		bond_send_unsolicited_na(bond);
-+		rcu_read_lock();
-+		send_unsol_na = rcu_dereference(bond_send_unsol_na);
-+		if (send_unsol_na)
-+			send_unsol_na(bond);
-+		rcu_read_unlock();
-  		read_unlock(&bond->curr_slave_lock);
-  	}
-
-@@ -5203,6 +5227,26 @@ out_rtnl:
-  	return res;
-  }
-
-+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+void bond_register_ipv6_na(void (*send_unsol_na) (struct bonding *bond))
-+{
-+	spin_lock_bh(&bond_v6_na_lock);
-+	rcu_assign_pointer(bond_send_unsol_na, send_unsol_na);
-+	spin_unlock_bh(&bond_v6_na_lock);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL_GPL(bond_register_ipv6_na);
-+
-+void bond_unregister_ipv6_na(void)
-+{
-+	spin_lock_bh(&bond_v6_na_lock);
-+	rcu_assign_pointer(bond_send_unsol_na, NULL);
-+	spin_unlock_bh(&bond_v6_na_lock);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL(bond_unregister_ipv6_na);
-+#endif
-+
-  static int __init bonding_init(void)
-  {
-  	int i;
-@@ -5234,7 +5278,6 @@ static int __init bonding_init(void)
-
-  	register_netdevice_notifier(&bond_netdev_notifier);
-  	register_inetaddr_notifier(&bond_inetaddr_notifier);
--	bond_register_ipv6_notifier();
-
-  	goto out;
-  err:
-@@ -5257,7 +5300,6 @@ static void __exit bonding_exit(void)
-  {
-  	unregister_netdevice_notifier(&bond_netdev_notifier);
-  	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
--	bond_unregister_ipv6_notifier();
-
-  	bond_destroy_sysfs();
-
-diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
-index ca849d2..9e5e092 100644
---- a/drivers/net/bonding/bonding.h
-+++ b/drivers/net/bonding/bonding.h
-@@ -23,15 +23,13 @@
-  #include "bond_3ad.h"
-  #include "bond_alb.h"
-
--#define DRV_VERSION	"3.5.0"
--#define DRV_RELDATE	"November 4, 2008"
-+#define DRV_VERSION	"3.6.0"
-+#define DRV_RELDATE	"February 20, 2009"
-  #define DRV_NAME	"bonding"
-  #define DRV_DESCRIPTION	"Ethernet Channel Bonding Driver"
-
-  #define BOND_MAX_ARP_TARGETS	16
-
--extern struct list_head bond_dev_list;
--
-  #define IS_UP(dev)					   \
-  	      ((((dev)->flags & IFF_UP) == IFF_UP)	&& \
-  	       netif_running(dev)			&& \
-@@ -360,6 +358,9 @@ extern struct rw_semaphore bonding_rwsem;
-  void bond_send_unsolicited_na(struct bonding *bond);
-  void bond_register_ipv6_notifier(void);
-  void bond_unregister_ipv6_notifier(void);
-+
-+void bond_register_ipv6_na(void (*send_unsol_na) (struct bonding *bond));
-+void bond_unregister_ipv6_na(void);
-  #else
-  static inline void bond_send_unsolicited_na(struct bonding *bond)
-  {
--- 
-1.5.4.3
-
-
+> 
+> All,
+> 
+> OK, here's what I know so far.  The interrupt storm is coming from the 
+> parity error detector in the 8132.  The parity error is reported in two 
+> locations using sticky bits:
+> 
+> 0x1c bits 31 and 24
+>   Here there seems to be some differentiation between which party 
+> detected the parity error.  The 8132 spec is pretty vague here (see page 
+> 75) but it looks like the 8132 is detecting a parity error from the HBA 
+> not the other way around.
+> 0x80 bit 0
+>   Here it just states that someone asserted the PERR_L signal, no 
+> distinction on who did it.
+> 
+> All these bits are write-one-to-clear.  If 0x80 bit 0 is cleared, the 
+> storm stops.  Clearly the OS does not know how to handle these 
+> conditions and the error flag is left on while the interrupt is 
+> continuously handled.
+> 
+> One way to handle this is to set 0x48 bit 19 to 0.  This prevents the 
+> 8132 from interrupting when 0x80 bit 0 is set.
+> 
+> A much better way to handle this is to have the interrupt handler 
+> actually check the error bits on the 8132 when it is called.  This would 
+> slow down the interrupt handler, but actually give us a much better 
+> visibility into this problem (when, where and how often this happens).  
+> The irritating thing here is that this is chipset dependent.  The 
+> interrupt handler would have to know what PCI-X chipset it was talking 
+> through to know how to handle this (way to go AMD).
+> 
+> The really odd thing is that the parity error is reported through INTB 
+> on the 8132.  The spec claims that fatal errors (the category they put 
+> PERR in) go to INTB while hot plug conditions trigger INTA.  Masking off 
+> fatal errors in the IOAPIC turns off the storm too.  I have no idea why 
+> this is showing up on INTA.
+> 
+> Berkley
+> 
 
