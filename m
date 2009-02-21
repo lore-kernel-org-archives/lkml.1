@@ -1,105 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbZBUCkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZBUC6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbZBUCkF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 21:40:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZBUCjy
+	id S1755441AbZBUC6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 21:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZBUC6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 21:39:54 -0500
-Received: from SpacedOut.fries.net ([67.64.210.234]:45897 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbZBUCjx (ORCPT
+	Fri, 20 Feb 2009 21:58:05 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:58772 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbZBUC6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 21:39:53 -0500
-Date: Fri, 20 Feb 2009 20:39:43 -0600
-From: David Fries <david@fries.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: TSC marked unstable on suspend and resume
-Message-ID: <20090221023943.GA4894@spacedout.fries.net>
+	Fri, 20 Feb 2009 21:58:04 -0500
+Message-ID: <499F6DB6.3060500@ct.jp.nec.com>
+Date: Fri, 20 Feb 2009 18:57:58 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 20 Feb 2009 20:39:46 -0600 (CST)
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] x86: ia32_signal: remove unused debug code
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting TSC marked as unsable on hibernate to disk with
-2.6.29-rc3.  The last kernel I ran 2.6.24.4 ran 300+ days without a
-problem and does not loose TSC on hibernate.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-I'm hibernating with `echo disk > /sys/power/state`.
-These look like the relavant messages,
+Impact: cleanup
 
-CPU 0 irqstacks, hard=c0379000 soft=c0378000
-PID hash table entries: 1024 (order: 10, 4096 bytes)
-Fast TSC calibration using PIT
-Detected 300.705 MHz processor.
-Calibrating delay loop (skipped), value calculated using timer frequency.. 601.41 BogoMIPS (lpj=300705)
-hibernate to disk,
-Restarting tasks ... done.
-Clocksource tsc unstable (delta = 499883531 ns)
+DEBUG_SIG will not be used.
 
-another reboot,
-Restarting tasks ... done.
-Clocksource tsc unstable (delta = 499883531 ns)
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/ia32/ia32_signal.c |   18 ------------------
+ 1 files changed, 0 insertions(+), 18 deletions(-)
 
-another reboot,
-Freezing user space processes ... (elapsed 0.07 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-PM: Shrinking memory...  ^H-<4>Clocksource tsc unstable (delta = 78961880 ns)
-^H\^H|^H/^Hdone (34745 pages freed)
-
-
-
-I didn't spot the problem until I raw the HP48 calculator emulator x48
-and it was running like a dog, but the same binary ran fine on my
-other systems.  It was looping on gettimeofday intending to delay 2us,
-but was getting 1ms when TSC wasn't available.
-
-On Thu, Feb 05, 2009 at 10:02:39PM +0100, Ingo Molnar wrote:
-> What does this tool output:
-> 
->  http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
-
-time-warp-test is getting the number of CPUs wrong here, trivial
-patch included.
-
-./time-warp-test  
-2 CPUs, running 2 parallel test-tasks.
-
-grep processor /proc/cpuinfo
-processor       : 0
-model name      : AMD-K6(tm) 3D processor
-
-
---- time-warp-test.c.orig	2009-02-19 20:52:40.000000000 -0600
-+++ time-warp-test.c	2009-02-19 21:32:58.000000000 -0600
-@@ -295,7 +295,7 @@ int main(int argc, char **argv)
- 	unsigned long *shared;
- 	unsigned long cpus, tasks;
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index dd77ac0..adc63f8 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -33,8 +33,6 @@
+ #include <asm/sigframe.h>
+ #include <asm/sys_ia32.h>
  
--	cpus = system("exit `grep processor /proc/cpuinfo  | wc -l`");
-+	cpus = system("exit `grep ^processor /proc/cpuinfo  | wc -l`");
- 	cpus = WEXITSTATUS(cpus);
+-#define DEBUG_SIG 0
+-
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
  
- 	if (argc > 2) {
-
-
-
-
-With any optimizations, -O or -O1 or -O2 I don't get any status
-output, with -O0 I get,
-
-./time-warp-test 
-1 CPUs, running 1 parallel test-tasks.
-checking for time-warps via:
-- read time stamp counter (RDTSC) instruction (cycle resolution)
-
- | TSC: 0.82us, fail:0 /
-
-
+ #define FIX_EFLAGS	(X86_EFLAGS_AC | X86_EFLAGS_OF | \
+@@ -220,12 +218,6 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+-#if DEBUG_SIG
+-	printk(KERN_DEBUG "SIG restore_sigcontext: "
+-	       "sc=%p err(%x) eip(%x) cs(%x) flg(%x)\n",
+-	       sc, sc->err, sc->ip, sc->cs, sc->flags);
+-#endif
+-
+ 	get_user_try {
+ 		/*
+ 		 * Reload fs and gs if they have changed in the signal
+@@ -488,11 +480,6 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	regs->cs = __USER32_CS;
+ 	regs->ss = __USER32_DS;
+ 
+-#if DEBUG_SIG
+-	printk(KERN_DEBUG "SIG deliver (%s:%d): sp=%p pc=%lx ra=%u\n",
+-	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
+-#endif
+-
+ 	return 0;
+ }
+ 
+@@ -574,10 +561,5 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	regs->cs = __USER32_CS;
+ 	regs->ss = __USER32_DS;
+ 
+-#if DEBUG_SIG
+-	printk(KERN_DEBUG "SIG deliver (%s:%d): sp=%p pc=%lx ra=%u\n",
+-	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
+-#endif
+-
+ 	return 0;
+ }
 -- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
+1.6.1.2
+
