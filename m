@@ -1,121 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZBURIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbZBURNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbZBURIo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 12:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbZBURIc
+	id S1754468AbZBURNz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 12:13:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBURNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 12:08:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49687 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754426AbZBURIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 12:08:30 -0500
-Date: Sat, 21 Feb 2009 18:08:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [git pull] x86 fixes
-Message-ID: <20090221170813.GA32308@elte.hu>
+	Sat, 21 Feb 2009 12:13:47 -0500
+Received: from mail-fx0-f167.google.com ([209.85.220.167]:38193 "EHLO
+	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752481AbZBURNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 12:13:45 -0500
+X-Greylist: delayed 94934 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Feb 2009 12:13:44 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Cqy7duRjWpIe7jj4sehQVXcqQbA3nbKrA6etAGuPhEkESX2GPcoDJFAykH8P3g7M2X
+         7RBQvJYj6JvAOLDRCSvun+9+XKLZLJfB08svqZhBFbVK1pKg18BBYrBRG5lLPhljSi1y
+         ZAeOtE38lPE2z87OjN043oZaYICOoJ4vjXw6w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49A02A61.6060909@cs.helsinki.fi>
+References: <1235223364-2097-1-git-send-email-vegard.nossum@gmail.com>
+	 <1235223364-2097-4-git-send-email-vegard.nossum@gmail.com>
+	 <49A02A61.6060909@cs.helsinki.fi>
+Date: Sat, 21 Feb 2009 18:13:42 +0100
+Message-ID: <19f34abd0902210913qe0539ebgf74c9b5e0b577786@mail.gmail.com>
+Subject: Re: [PATCH] kmemcheck: add hooks for page- and sg-dma-mappings
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+2009/2/21 Pekka Enberg <penberg@cs.helsinki.fi>:
+> Vegard Nossum wrote:
+>>
+>> This is needed for page allocator support to prevent false positives
+>> when accessing pages which are dma-mapped.
+>>
+>> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+>> ---
+>>  arch/x86/include/asm/dma-mapping.h |    6 ++++++
+>>  1 files changed, 6 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/x86/include/asm/dma-mapping.h
+>> b/arch/x86/include/asm/dma-mapping.h
+>> index 830bb0e..713a002 100644
+>> --- a/arch/x86/include/asm/dma-mapping.h
+>> +++ b/arch/x86/include/asm/dma-mapping.h
+>> @@ -117,7 +117,12 @@ dma_map_sg(struct device *hwdev, struct scatterlist
+>> *sg,
+>>  {
+>>        struct dma_mapping_ops *ops = get_dma_ops(hwdev);
+>>  +       struct scatterlist *s;
+>> +       int i;
+>> +
+>>        BUG_ON(!valid_dma_direction(direction));
+>> +       for_each_sg(sg, s, nents, i)
+>> +               kmemcheck_mark_initialized(sg_virt(s), s->length);
+>>        return ops->map_sg(hwdev, sg, nents, direction);
+>>  }
+>>  @@ -215,6 +220,7 @@ static inline dma_addr_t dma_map_page(struct device
+>> *dev, struct page *page,
+>>        struct dma_mapping_ops *ops = get_dma_ops(dev);
+>>          BUG_ON(!valid_dma_direction(direction));
+>> +       kmemcheck_mark_initialized(page_address(page) + offset, size);
+>>        return ops->map_single(dev, page_to_phys(page) + offset,
+>>                               size, direction);
+>>  }
+>
+> What's with the new BUG_ON() calls here?
+>
 
-Please pull the latest x86-fixes-for-linus git tree from:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-H. Peter Anvin (1):
-      x86, mce: remove incorrect __cpuinit for mce_cpu_features()
-
-Zachary Amsden (1):
-      MAINTAINERS: paravirt-ops maintainers update
+What new BUG_ON calls? Do you need glasses?
 
 
- MAINTAINERS                               |    4 ++--
- arch/x86/kernel/cpu/mcheck/mce_64.c       |    2 +-
- arch/x86/kernel/cpu/mcheck/mce_amd_64.c   |    2 +-
- arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    4 ++--
- 4 files changed, 6 insertions(+), 6 deletions(-)
+Vegard
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 06e0391..59fd2d1 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3334,8 +3334,8 @@ P:	Jeremy Fitzhardinge
- M:	jeremy@xensource.com
- P:	Chris Wright
- M:	chrisw@sous-sol.org
--P:	Zachary Amsden
--M:	zach@vmware.com
-+P:	Alok Kataria
-+M:	akataria@vmware.com
- P:	Rusty Russell
- M:	rusty@rustcorp.com.au
- L:	virtualization@lists.osdl.org
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index 25cf624..fe79985 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -490,7 +490,7 @@ static void __cpuinit mce_cpu_quirks(struct cpuinfo_x86 *c)
- 
- }
- 
--static void __cpuinit mce_cpu_features(struct cpuinfo_x86 *c)
-+static void mce_cpu_features(struct cpuinfo_x86 *c)
- {
- 	switch (c->x86_vendor) {
- 	case X86_VENDOR_INTEL:
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-index 8ae8c4f..f2ee0ae 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-@@ -121,7 +121,7 @@ static long threshold_restart_bank(void *_tr)
- }
- 
- /* cpu init entry point, called from mce.c with preempt off */
--void __cpuinit mce_amd_feature_init(struct cpuinfo_x86 *c)
-+void mce_amd_feature_init(struct cpuinfo_x86 *c)
- {
- 	unsigned int bank, block;
- 	unsigned int cpu = smp_processor_id();
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-index 4b48f25..f44c366 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-@@ -30,7 +30,7 @@ asmlinkage void smp_thermal_interrupt(void)
- 	irq_exit();
- }
- 
--static void __cpuinit intel_init_thermal(struct cpuinfo_x86 *c)
-+static void intel_init_thermal(struct cpuinfo_x86 *c)
- {
- 	u32 l, h;
- 	int tm2 = 0;
-@@ -84,7 +84,7 @@ static void __cpuinit intel_init_thermal(struct cpuinfo_x86 *c)
- 	return;
- }
- 
--void __cpuinit mce_intel_feature_init(struct cpuinfo_x86 *c)
-+void mce_intel_feature_init(struct cpuinfo_x86 *c)
- {
- 	intel_init_thermal(c);
- }
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
