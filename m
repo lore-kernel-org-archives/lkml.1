@@ -1,101 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbZBTX7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZBUA3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbZBTX7F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 18:59:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbZBTX6v
+	id S1754823AbZBUA3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 19:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZBUA3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 18:58:51 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:54661 "EHLO e9.ny.us.ibm.com"
+	Fri, 20 Feb 2009 19:29:08 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45034 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbZBTX6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 18:58:50 -0500
-Message-ID: <499F43B6.5020007@linux.vnet.ibm.com>
-Date: Fri, 20 Feb 2009 15:58:46 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] Performance Counters for Linux, v6
-References: <20090121185021.GA8852@elte.hu> <499DD4BE.2000704@linux.vnet.ibm.com> <20090220081040.GA11490@elte.hu> <499F30F4.509@linux.vnet.ibm.com> <1235170078.4736.42.camel@laptop>
-In-Reply-To: <1235170078.4736.42.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753317AbZBUA3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 19:29:05 -0500
+Date: Fri, 20 Feb 2009 16:27:11 -0800
+From: Jeff Layton <jlayton@redhat.com>
+To: Horst Reiterer <horst.reiterer@gmail.com>
+Cc: smfrench@gmail.com, linux-cifs-client@lists.samba.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-cifs-client] [PATCH] fs/cifs: send SMB_COM_FLUSH in
+ cifs_fsync
+Message-ID: <20090220162711.4e056ab8@tupile.poochiereds.net>
+In-Reply-To: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
+References: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Feb 2009 21:51:46 +0100 (CET)
+Horst Reiterer <horst.reiterer@gmail.com> wrote:
 
-
-Peter Zijlstra wrote:
-> On Fri, 2009-02-20 at 14:38 -0800, Corey Ashford wrote:
->> There may be other non-event-related changes that will not be handled 
->> quite as well in this way.  In the original email I hinted at that we 
->> may want an option for mmap'd sample buffers at some point, and so I'm 
->> not clear how you'd provide an ABI to request mmap'd buffers (you would 
->> probably need to be able to request the size and get back a pointer to 
->> the mmap'd buffer).  Would this be done through a special 
->> sys_perf_counter_open call?  Or through a subsequent ioctl call on the 
->> group leader after an open (which requires the counters to be initially 
->> disabled), etc.
+> Hi,
 > 
-> What's stopping a regular mmap() call using the fd obtained from
-> sys_perf_counter_open() ?
+> In contrast to the now-obsolete smbfs, cifs does not send SMB_COM_FLUSH
+> in response to an explicit fsync(2) to guarantee that all volatile data
+> is written to stable storage on the server side, provided the server
+> honors the request (which, to my knowledge, is true for Windows and
+> Samba with 'strict sync' enabled).
+> This patch modifies the cifs_fsync implementation to restore the
+> fsync-behavior of smbfs by triggering SMB_COM_FLUSH after sending
+> outstanding data on the client side to the server.
+> 
+> I inquired about this issue in the linux-cifs-client@lists.samba.org
+> mailing list:
+> 
+> On Tue, Feb 10, 2009 at 12:35 AM, Jeff Layton <jlayton@redhat.com> wrote:
+> > Horst Reiterer wrote:
+> > > Why was the explicit SMB_COM_FLUSH dropped in the new implementation?
+> >
+> > It's not that it was "removed" per-se, just never implemented. Patches
+> > to add that capability would certainly be welcome.
+> 
+> I tested the patch with 2.6.28.6 and 2.6.18 (backported) on x86_64.
+> Please review and apply.
+> 
+> Horst.
+> 
+> 
+> Signed-off-by: Horst Reiterer <horst.reiterer@gmail.com>
+> 
 
-Thinking about this some more, I'm not sure it is the right model to be 
-able to read a stream of records up from kernel space.
 
-Let's say I want to read 1MB of records up at once, and then a bit later 
-read another 1MB, and so on, all while the program is still running and 
-counters are counting.  Is there a way to use mmap this way?  I think I 
-would have to call mmap for each 1MB segment (if my buffer is 1MB). 
-Also how do I indicate to the kernel that I've "consumed" each 1MB chunk 
-and that the kernel buffers for it can be reused?  It's easy to 
-understand how to do that with just a read() call, but with mmap'd 
-memory, I don't know.
+Thanks for doing this. Comments below...
 
-Another thing that concerns me is this statement in the mmap() man page: 
-"If the size of the mapped file changes after the call to mmap() as a 
-result of some other operation on the mapped file, the effect of 
-references to portions of the mapped region that correspond to added or 
-removed portions of the file is unspecified."  Would PCL guarantee the 
-correct contents of memory, despite this caveat?
+> diff -uprN linux-2.6.28.6/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
+> --- linux-2.6.28.6/fs/cifs/cifs_debug.c	2009-02-17 18:29:27.000000000 +0100
+> +++ b/fs/cifs/cifs_debug.c	2009-02-20 00:42:18.000000000 +0100
+> @@ -340,6 +340,8 @@ static int cifs_stats_proc_show(struct s
+>  				seq_printf(m, "\nWrites: %d Bytes: %lld",
+>  					atomic_read(&tcon->num_writes),
+>  					(long long)(tcon->bytes_written));
+> +				seq_printf(m, "\nFlushes: %d",
+> +					atomic_read(&tcon->num_flushes));
+>  				seq_printf(m, "\nLocks: %d HardLinks: %d "
+>  					      "Symlinks: %d",
+>  					atomic_read(&tcon->num_locks),
+> diff -uprN linux-2.6.28.6/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+> --- linux-2.6.28.6/fs/cifs/cifsglob.h	2009-02-17 18:29:27.000000000 +0100
+> +++ b/fs/cifs/cifsglob.h	2009-02-20 00:42:18.000000000 +0100
+> @@ -246,6 +246,7 @@ struct cifsTconInfo {
+>  	atomic_t num_smbs_sent;
+>  	atomic_t num_writes;
+>  	atomic_t num_reads;
+> +	atomic_t num_flushes;
+>  	atomic_t num_oplock_brks;
+>  	atomic_t num_opens;
+>  	atomic_t num_closes;
+> diff -uprN linux-2.6.28.6/fs/cifs/cifspdu.h b/fs/cifs/cifspdu.h
+> --- linux-2.6.28.6/fs/cifs/cifspdu.h	2009-02-17 18:29:27.000000000 +0100
+> +++ b/fs/cifs/cifspdu.h	2009-02-20 00:42:18.000000000 +0100
+> @@ -43,6 +43,7 @@
+>  #define SMB_COM_CREATE_DIRECTORY      0x00 /* trivial response */
+>  #define SMB_COM_DELETE_DIRECTORY      0x01 /* trivial response */
+>  #define SMB_COM_CLOSE                 0x04 /* triv req/rsp, timestamp ignored */
+> +#define SMB_COM_FLUSH                 0x05 /* triv req/rsp */
+>  #define SMB_COM_DELETE                0x06 /* trivial response */
+>  #define SMB_COM_RENAME                0x07 /* trivial response */
+>  #define SMB_COM_QUERY_INFORMATION     0x08 /* aka getattr */
+> @@ -790,6 +791,12 @@ typedef struct smb_com_close_rsp {
+>  	__u16 ByteCount;	/* bct = 0 */
+>  } __attribute__((packed)) CLOSE_RSP;
+> 
+> +typedef struct smb_com_flush_req {
+> +	struct smb_hdr hdr;	/* wct = 1 */
+> +	__u16 FileID;
+> +	__u16 ByteCount;	/* 0 */
+> +} __attribute__((packed)) FLUSH_REQ;
+> +
+>  typedef struct smb_com_findclose_req {
+>  	struct smb_hdr hdr; /* wct = 1 */
+>  	__u16 FileID;
+> diff -uprN linux-2.6.28.6/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
+> --- linux-2.6.28.6/fs/cifs/cifsproto.h	2009-02-17 18:29:27.000000000 +0100
+> +++ b/fs/cifs/cifsproto.h	2009-02-20 00:42:18.000000000 +0100
+> @@ -277,6 +277,9 @@ extern int CIFSPOSIXCreate(const int xid
+>  extern int CIFSSMBClose(const int xid, struct cifsTconInfo *tcon,
+>  			const int smb_file_id);
+> 
+> +extern int CIFSSMBFlush(const int xid, struct cifsTconInfo *tcon,
+> +			const int smb_file_id);
+> +
+>  extern int CIFSSMBRead(const int xid, struct cifsTconInfo *tcon,
+>  			const int netfid, unsigned int count,
+>  			const __u64 lseek, unsigned int *nbytes, char **buf,
+> diff -uprN linux-2.6.28.6/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+> --- linux-2.6.28.6/fs/cifs/cifssmb.c	2009-02-17 18:29:27.000000000 +0100
+> +++ b/fs/cifs/cifssmb.c	2009-02-20 00:42:18.000000000 +0100
+> @@ -1928,6 +1928,27 @@ CIFSSMBClose(const int xid, struct cifsT
+>  }
+> 
+>  int
+> +CIFSSMBFlush(const int xid, struct cifsTconInfo *tcon, int smb_file_id)
+> +{
+> +	int rc = 0;
+> +	FLUSH_REQ *pSMB = NULL;
+> +	cFYI(1, ("In CIFSSMBFlush"));
+> +
+> +	rc = small_smb_init(SMB_COM_FLUSH, 1, tcon, (void **) &pSMB);
+> +	if (rc)
+> +		return rc;
+> +
+> +	pSMB->FileID = (__u16) smb_file_id;
+> +	pSMB->ByteCount = 0;
+> +	rc = SendReceiveNoRsp(xid, tcon->ses, (struct smb_hdr *) pSMB, 0);
 
-If you wait till after you've stopped the counters to read up the 
-records, I can see where mmap would work fine.  But if you are trying to 
-unload the data from the kernel's space efficiently, over the long 
-execution time of the thread or process being analyzed, I don't see how 
-mmap can be used in this way on PCL's file descriptors.
+^^^
+Seems to me like we should wait for the response here. If there's an error from the flush, shouldn't we report that to the caller of fsync()?
 
-In perfmon, the model is different, because the mmap'd memory for the 
-buffer is not streamed; it's just a block of memory full of records. 
-Once one buffer fills up, user space is alerted and the kernel
-inhibits adding new entries (in single-buffering mode), while user space 
-accesses the filled buffer.  So the mmap call has to be done only once. 
-  Double-buffering (or more) can be achieved by splitting the buffer 
-into multiple pieces and filling them up separately and alerting user 
-space when each are full.
+> +	cifs_stats_inc(&tcon->num_flushes);
+> +	if (rc)
+> +		cERROR(1, ("Send error in Flush = %d", rc));
+> +
+> +	return rc;
+> +}
+> +
+> +int
+>  CIFSSMBRename(const int xid, struct cifsTconInfo *tcon,
+>  	      const char *fromName, const char *toName,
+>  	      const struct nls_table *nls_codepage, int remap)
+> diff -uprN linux-2.6.28.6/fs/cifs/file.c b/fs/cifs/file.c
+> --- linux-2.6.28.6/fs/cifs/file.c	2009-02-17 18:29:27.000000000 +0100
+> +++ b/fs/cifs/file.c	2009-02-20 00:42:18.000000000 +0100
+> @@ -1522,18 +1522,31 @@ int cifs_fsync(struct file *file, struct
+>  {
+>  	int xid;
+>  	int rc = 0;
+> +	struct cifs_sb_info *cifs_sb;
+> +	struct cifsTconInfo *pTcon;
+> +	struct cifsFileInfo *pSMBFile =
+> +		(struct cifsFileInfo *)file->private_data;
+>  	struct inode *inode = file->f_path.dentry->d_inode;
+> 
+>  	xid = GetXid();
+> 
+> +	cifs_sb = CIFS_SB(inode->i_sb);
+> +	pTcon = cifs_sb->tcon;
+> +
+>  	cFYI(1, ("Sync file - name: %s datasync: 0x%x",
+>  		dentry->d_name.name, datasync));
+> 
+> -	rc = filemap_write_and_wait(inode->i_mapping);
+> -	if (rc == 0) {
+> -		rc = CIFS_I(inode)->write_behind_rc;
+> -		CIFS_I(inode)->write_behind_rc = 0;
+> -	}
+> +	if (pSMBFile) {
+> +		rc = filemap_write_and_wait(inode->i_mapping);
+> +		if (rc == 0) {
+> +			rc = CIFS_I(inode)->write_behind_rc;
+> +			CIFS_I(inode)->write_behind_rc = 0;
+> +			if (pTcon)
+> +				rc = CIFSSMBFlush(xid, pTcon, pSMBFile->netfid);
+> +		}
+> +	} else
+> +		rc = -EBADF;
+> +
+>  	FreeXid(xid);
+>  	return rc;
+>  }
 
-Quite possibly I'm missing something obvious, but PCL may need an mmap 
-behavior better suited for efficiently reading data up dynamically over 
-the long run of the program being analyzed.
-
-Regards,
-
-- Corey
-
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
-
+-- 
+Jeff Layton <jlayton@redhat.com>
