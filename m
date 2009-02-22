@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbZBVSzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbZBVTQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbZBVSzO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 13:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZBVSzA
+	id S1753043AbZBVTQT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 14:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZBVTQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 13:55:00 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:34597 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbZBVSy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 13:54:59 -0500
-Date: Sun, 22 Feb 2009 10:54:55 -0800
-From: Josh Hunt <josh@scalex86.org>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       kiran@scalex86.org, mingo@elte.hu
-Subject: [PATCH] Fix mkspec to cleanup RPM_BUILD_ROOT
-Message-ID: <20090222185455.GB17685@localhost.localdomain>
+	Sun, 22 Feb 2009 14:16:11 -0500
+Received: from mx1.suse.de ([195.135.220.2]:34986 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752071AbZBVTQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 14:16:10 -0500
+From: Danny Kukawka <dkukawka@suse.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] 8250_pnp.c: add another serial Wacom tablet
+Date: Sun, 22 Feb 2009 20:16:06 +0100
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+Message-Id: <200902222016.06946.dkukawka@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The contents of the %clean section in mkspec is currently commented
-out leaving RPM_BUILD_ROOT and its contents on the build machine.
-This patch removes it once the rpm build process is complete.
+From: Danny Kukawka <dkukawka@suse.de>
+Subject: 8250_pnp.c: add another Wacom tablet
 
-Signed-off-by: Josh Hunt <josh@scalex86.org>
----
+Add another serial Wacom tablet with pnp_id: WACF009.
 
-Index: linux-2.6/scripts/package/mkspec
-===================================================================
---- linux-2.6.orig/scripts/package/mkspec       2009-02-20
-15:51:22.000000000 -0800
-+++ linux-2.6/scripts/package/mkspec    2009-02-20 16:06:32.000000000
--0800
-@@ -96,7 +96,7 @@ echo "%endif"
- 
- echo ""
- echo "%clean"
--echo '#echo -rf $RPM_BUILD_ROOT'
-+echo 'rm -rf $RPM_BUILD_ROOT'
- echo ""
- echo "%files"
- echo '%defattr (-, root, root)'
+Signed-off-by: Danny Kukawka <dkukawka@suse.de>
+--
+ 8250_pnp.c |    1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/serial/8250_pnp.c b/drivers/serial/8250_pnp.c
+index bbcfc26..6db9f13 100644
+--- a/drivers/serial/8250_pnp.c
++++ b/drivers/serial/8250_pnp.c
+@@ -333,6 +333,7 @@ static const struct pnp_device_id pnp_dev_table[] = {
+ 	{       "WACF006",              0       },
+ 	{       "WACF007",              0       },
+ 	{       "WACF008",              0       },
++	{       "WACF009",              0       },
+ 	/* Compaq touchscreen */
+ 	{       "FPI2002",              0 },
+ 	/* Fujitsu Stylistic touchscreens */
+
+-- 
+Danny Kukawka
+dkukawka@suse.de
+R&D Team Mobile Devices
+SUSE LINUX a Novell Business
+Maxfeldstr. 5, D-90409 Nuernberg, Germany
+SUSE LINUX Products GmbH, Nuernberg; GF: Markus Rex, HRB 16746 (AG Nuernberg)
