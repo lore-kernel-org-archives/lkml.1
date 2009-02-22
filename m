@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZBVN6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbZBVODd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbZBVN6o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 08:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZBVN6f
+	id S1754885AbZBVODd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 09:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZBVODZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 08:58:35 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:13414 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbZBVN6e (ORCPT
+	Sun, 22 Feb 2009 09:03:25 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58068 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752069AbZBVODY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 08:58:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LIEhBChp2kuVcu1w6kii7H8OXova/H09TvKqEfiEDJ5C/lL2myLHj36/EYDFUg4U1a
-         hBWWuUB0ecyb5F7ltG/bM1JCPZk6MLN63km3Sdw4v1papySoLElB3dHVUgEQSBB5qzhG
-         KrX2nhjJLxUA8HA5jpsRXwnjxaytWXTLZSoTM=
-Date: Sun, 22 Feb 2009 21:58:18 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [Bug #12208] uml is very slow on 2.6.28 host
-Message-ID: <20090222135818.GA12782@hack.private>
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.Y3B.t50lJB@chimera>
+	Sun, 22 Feb 2009 09:03:24 -0500
+Date: Sun, 22 Feb 2009 15:03:11 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arve Hj?nnev?g <arve@android.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090222140311.GF1387@ucw.cz>
+References: <200902191356.53584.rjw@sisk.pl> <Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ROx6X68CGJG.A.Y3B.t50lJB@chimera>
+In-Reply-To: <Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 09:50:19PM +0100, Rafael J. Wysocki wrote:
->This message has been generated automatically as a part of a report
->of regressions introduced between 2.6.27 and 2.6.28.
->
->The following bug entry is on the current list of known regressions
->introduced between 2.6.27 and 2.6.28.  Please verify if it still should
->be listed and let me know (either way).
->
->
->Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
->Subject		: uml is very slow on 2.6.28 host
->Submitter	: Miklos Szeredi <miklos@szeredi.hu>
->Date		: 2008-12-12 9:35 (65 days old)
->References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
+Hi!
 
-Hello, Miklos!
+> > Again, the decision to trigger automatic suspend has to be based on some
+> > well defined criteria and the (in)activity of devices seems to be one of them.
+> 
+> I don't know what criteria the system monitor would use.  It might have 
+> to be platform-specific.  The Android people seem to have a pretty good 
+> idea of what criteria will work for them.
+> 
+> Inactivity of devices isn't always a good criterion.  There might be a
+> background task which wakes up every few seconds to do something as
+> long as the system is awake, thereby keeping some device always active.  
+> The activity from this background task shouldn't prevent an auto-sleep.
 
-I can't reproduce this on host 2.6.28.7 with uml guest of current git.
-Have you tried 2.6.28.7? Does it have the same problem?
+Then we'd need a interface to mark such background task... and what is
+reasonable use for such task, anyway? Either its job is neccessary, or
+it should not waste power.
 
-Thanks.
-
-
+IOW maybe it is easier to eliminate such stuff?
+								Pavel
 -- 
-"Against stupidity, the gods themselves, contend in vain."
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
