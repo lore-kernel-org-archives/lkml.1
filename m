@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZBVDmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZBVEEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbZBVDmp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 22:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBVDmf
+	id S1755612AbZBVEEE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 23:04:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZBVEDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 22:42:35 -0500
-Received: from colo.lackof.org ([198.49.126.79]:42529 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZBVDme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 22:42:34 -0500
-Date: Sat, 21 Feb 2009 20:42:19 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Robert Hancock <hancockrwd@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: enable MSI on 8132
-Message-ID: <20090222034219.GH2567@colo.lackof.org>
-References: <499B724A.2040408@kernel.org> <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm> <499B774C.5010705@kernel.org> <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm> <499B9129.50104@kernel.org> <499CD466.1060900@gmail.com> <m1fxi82pq0.fsf@fess.ebiederm.org> <86802c440902210031j698403cev2147e72a61e17194@mail.gmail.com> <m1r61sf9oo.fsf@fess.ebiederm.org>
+	Sat, 21 Feb 2009 23:03:54 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:58191 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752660AbZBVEDx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 23:03:53 -0500
+Date: Sun, 22 Feb 2009 12:03:45 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Alexander Clouter <alex@digriz.org.uk>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCHv3 REPOST] hw_random: add timeriomem-rng driver
+Message-ID: <20090222040345.GA753@gondor.apana.org.au>
+References: <20090217135130.GN32719@woodchuck> <20090217141324.GP32719@woodchuck>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1r61sf9oo.fsf@fess.ebiederm.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20090217141324.GP32719@woodchuck>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 21, 2009 at 12:58:31AM -0800, Eric W. Biederman wrote:
-...
-> The difference is that there is a magic address on x86 that all MSI
-> cycles are sent to.  I think it is 0xfffe0000.
+On Tue, Feb 17, 2009 at 02:13:24PM +0000, Alexander Clouter wrote:
+> Some hardware platforms, the TS-7800[1] is one for example, can
+> supply the kernel with an entropy source, albeit a slow one for
+> TS-7800 users, by just reading a particular IO address.  This
+> source must not be read above a certain rate otherwise the quality
+> suffers.
 
-arch/x86/include/asm/msidef.h:#define MSI_ADDR_BASE_LO          0xfee00000
-
-Intel spells out the details in:
-    http://www.intel.com/products/processor/manuals/index.htm
-
-"Volume 3A: System Programming Guide, Part 1"
-See chapter "9.4 LOCAL APIC"
-
->  In an msi to HT
-> mapping capability it is necessary to program in the address to listen
-> for msi packets.  That is very much an arch dependent thing.
-
-Indeed. parisc and (AFAIK) alpha have the same ability but use completely
-different address ranges depending on the chipset as well.
-
-thanks,
-grant
+Applied to cryptodev.  Thanks a lot!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
