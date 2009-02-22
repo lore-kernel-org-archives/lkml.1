@@ -1,280 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZBVWdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbZBVWhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbZBVWdX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZBVWdP
+	id S1755803AbZBVWhT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZBVWhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:33:15 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36922 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbZBVWdO (ORCPT
+	Sun, 22 Feb 2009 17:37:05 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:60675 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753126AbZBVWhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:33:14 -0500
-Date: Sun, 22 Feb 2009 23:35:47 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: gerald.schaefer@de.ibm.com, ncunningham@crca.org.au,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>,
-       linux-pm@lists.osdl.org, Matt@smtp1.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Dave@smtp1.linux-foundation.org, Mel Gorman <mel@skynet.ie>,
-       Andy@smtp1.linux-foundation.org, Whitcroft <apw@shadowen.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] add mutex and hibernation notifier to memory
-	hotplug.
-Message-ID: <20090222223547.GH26999@elf.ucw.cz>
-References: <20081106153444.33af7019.kamezawa.hiroyu@jp.fujitsu.com>
+	Sun, 22 Feb 2009 17:37:03 -0500
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200902221837.49396.rjw@sisk.pl>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 22 Feb 2009 14:37:20 -0800
+In-Reply-To: <200902221837.49396.rjw@sisk.pl> (Rafael J. Wysocki's message of "Sun\, 22 Feb 2009 18\:37\:48 +0100")
+Message-ID: <m1skm6cd3z.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106153444.33af7019.kamezawa.hiroyu@jp.fujitsu.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: rjw@sisk.pl, tglx@linutronix.de, jbarnes@virtuousgeek.org, lenb@kernel.org, linux-pm@lists.linux-foundation.org, jeremy@goop.org, benh@kernel.crashing.org, mingo@elte.hu, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Rafael J. Wysocki" <rjw@sisk.pl>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [RFC][PATCH 0/2] Rework disabling of interrupts during suspend-resume
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Sorry, I can't test this now but I post this while discussion is hot.
-> 
-> I'll test this with CONFIG_PM_DEBUG's hibernation test mode if I can.
-> (But may take a long time..) 
-> 
-> Any feedback is welcome.
+> Moreover, the real purpose of these changes is to be able to execute the
+> "late" suspend and "early" resume device callbacks with timer interrupts
+> enabled, so that they can use mutexes etc.  However, x86 currently doesn't set
+> the IRQF_TIMER flag and I need to make it do so before going further in this
+> direction and changing the PCI PM framework to take advantage of the $subject
+> changes, for example.  So, I need to know how to modify x86 timer code so that
+> the IRQF_TIMER flag is set by it.
 
-I lost the track here... but this may still be required... ? And given
-that there will be both mem hotplug and swsusp in SLE11...
-								Pavel
+How does this sync with the ACPI requirement that the it's late suspend MUST
+happen with irqs disabled?
 
-> Thanks,
-> -Kame
-> ==
-> Now, MEMORY_HOTPLUG and HIBERNATION is mutually exclusive in Kconfig.
-> That's because
-> 	- memory hotplug changes pgdat/zone/memmap range.
-> 	- hibernation countes # of memory based on pgdate/zone/memmap.
-> 
-> This patch adds mutex for disallowing them to run simultaneously.
-> 
-> IIUC, add_memory() is called from following places.
->     - probe interface
->     - acpi handler
-> It seems both can sleep. (acpi handler uses sleepable memory allocator etc...)
-> online/offline handlers can sleep.
-> hibernation notifier can sleep, too.
-> 
-> This also makes all memory hotplug event not to happen at the same time.
-> (memory hotplug is not busy code.)
-> 
-> Anyway, the most difficult thing is how to test this.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
->  mm/Kconfig          |    5 ----
->  mm/memory_hotplug.c |   60 +++++++++++++++++++++++++++++++++++++++++++++-------
->  2 files changed, 53 insertions(+), 12 deletions(-)
-> 
-> Index: linux-2.6.27.4/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-2.6.27.4.orig/mm/memory_hotplug.c
-> +++ linux-2.6.27.4/mm/memory_hotplug.c
-> @@ -31,6 +31,8 @@
->  
->  #include "internal.h"
->  
-> +DEFINE_MUTEX(memhp_mutex);
-> +
->  /* add this memory to iomem resource */
->  static struct resource *register_memory_resource(u64 start, u64 size)
->  {
-> @@ -381,6 +383,7 @@ int online_pages(unsigned long pfn, unsi
->  	int ret;
->  	struct memory_notify arg;
->  
-> +	mutex_lock(&memhp_mutex);
->  	arg.start_pfn = pfn;
->  	arg.nr_pages = nr_pages;
->  	arg.status_change_nid = -1;
-> @@ -392,6 +395,7 @@ int online_pages(unsigned long pfn, unsi
->  	ret = memory_notify(MEM_GOING_ONLINE, &arg);
->  	ret = notifier_to_errno(ret);
->  	if (ret) {
-> +		mutex_unlock(&memhp_mutex);
->  		memory_notify(MEM_CANCEL_ONLINE, &arg);
->  		return ret;
->  	}
-> @@ -415,6 +419,7 @@ int online_pages(unsigned long pfn, unsi
->  		printk(KERN_DEBUG "online_pages %lx at %lx failed\n",
->  			nr_pages, pfn);
->  		memory_notify(MEM_CANCEL_ONLINE, &arg);
-> +		mutex_unlock(&memhp_mutex);
->  		return ret;
->  	}
->  
-> @@ -436,7 +441,7 @@ int online_pages(unsigned long pfn, unsi
->  
->  	if (onlined_pages)
->  		memory_notify(MEM_ONLINE, &arg);
-> -
-> +	mutex_unlock(&memhp_mutex);
->  	return 0;
->  }
->  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-> @@ -477,14 +482,18 @@ int add_memory(int nid, u64 start, u64 s
->  	struct resource *res;
->  	int ret;
->  
-> +	mutex_lock(&memhp_mutex);
->  	res = register_memory_resource(start, size);
-> -	if (!res)
-> +	if (!res) {
-> +		mutex_unlock(&memhp_mutex);
->  		return -EEXIST;
-> -
-> +	}
->  	if (!node_online(nid)) {
->  		pgdat = hotadd_new_pgdat(nid, start);
-> -		if (!pgdat)
-> +		if (!pgdat) {
-> +			mutex_unlock(&memhp_mutex);
->  			return -ENOMEM;
-> +		}
->  		new_pgdat = 1;
->  	}
->  
-> @@ -508,7 +517,7 @@ int add_memory(int nid, u64 start, u64 s
->  		 */
->  		BUG_ON(ret);
->  	}
-> -
-> +	mutex_unlock(&memhp_mutex);
->  	return ret;
->  error:
->  	/* rollback pgdat allocation and others */
-> @@ -517,10 +526,12 @@ error:
->  	if (res)
->  		release_memory_resource(res);
->  
-> +	mutex_unlock(&memhp_mutex);
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(add_memory);
->  
-> +
->  #ifdef CONFIG_MEMORY_HOTREMOVE
->  /*
->   * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
-> @@ -750,20 +761,23 @@ int offline_pages(unsigned long start_pf
->  		return -EINVAL;
->  	if (!IS_ALIGNED(end_pfn, pageblock_nr_pages))
->  		return -EINVAL;
-> +
->  	/* This makes hotplug much easier...and readable.
->  	   we assume this for now. .*/
->  	if (!test_pages_in_a_zone(start_pfn, end_pfn))
->  		return -EINVAL;
->  
-> +	mutex_lock(&memhp_mutex);
->  	zone = page_zone(pfn_to_page(start_pfn));
->  	node = zone_to_nid(zone);
->  	nr_pages = end_pfn - start_pfn;
->  
->  	/* set above range as isolated */
->  	ret = start_isolate_page_range(start_pfn, end_pfn);
-> -	if (ret)
-> +	if (ret) {
-> +		mutex_unlock(&memhp_mutex);
->  		return ret;
-> -
-> +	}
->  	arg.start_pfn = start_pfn;
->  	arg.nr_pages = nr_pages;
->  	arg.status_change_nid = -1;
-> @@ -838,6 +852,7 @@ repeat:
->  	writeback_set_ratelimit();
->  
->  	memory_notify(MEM_OFFLINE, &arg);
-> +	mutex_unlock(&memhp_mutex);
->  	return 0;
->  
->  failed_removal:
-> @@ -846,7 +861,7 @@ failed_removal:
->  	memory_notify(MEM_CANCEL_OFFLINE, &arg);
->  	/* pushback to free area */
->  	undo_isolate_page_range(start_pfn, end_pfn);
-> -
-> +	mutex_unlock(&memhp_mutex);
->  	return ret;
->  }
->  #else
-> @@ -856,3 +871,43 @@ int remove_memory(u64 start, u64 size)
->  }
->  EXPORT_SYMBOL_GPL(remove_memory);
->  #endif /* CONFIG_MEMORY_HOTREMOVE */
-> +
-> +
-> +#ifdef CONFIG_HIBERNATION
-> +
-> +int memhp_hibenation_callback(struct notifier_block *self,
-> +			      unsigned long action,
-> +			      void *arg)
-> +{
-> +	switch(action) {
-> +	case PM_HIBERNATION_PREPARE:
-> +		mutex_lock(&memhp_mutex);
-> +		break;
-> +	case PM_POST_HIBERNATION:
-> +		mutex_unlock(&memhp_mutex);
-> +		break;
-> +	case PM_RESTORE_PREPARE:
-> +		mutex_lock(&memhp_mutex);
-> +		break;
-> +	case PM_POST_RESTORE:
-> +		mutex_unlock(&memhp_mutex);
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +	return NOTIFY_OK;
-> +}
-> +static struct notifier_block memhp_notifier {
-> +	.notifier_call = memhp_hibernation_callback,
-> +};
-> +
-> +static int __init memhp_hibernation_notifier_init(void)
-> +{
-> +	register_pm_notifier(&memhp_notifier);
-> +	return 0;
-> +}
-> +__initcall(&memhp_hibernation_notifier_init);
-> +
-> +#endif
-> +
-> +
-> Index: linux-2.6.27.4/mm/Kconfig
-> ===================================================================
-> --- linux-2.6.27.4.orig/mm/Kconfig
-> +++ linux-2.6.27.4/mm/Kconfig
-> @@ -128,12 +128,9 @@ config SPARSEMEM_VMEMMAP
->  config MEMORY_HOTPLUG
->  	bool "Allow for memory hot-add"
->  	depends on SPARSEMEM || X86_64_ACPI_NUMA
-> -	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
-> +	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
->  	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
->  
-> -comment "Memory hotplug is currently incompatible with Software Suspend"
-> -	depends on SPARSEMEM && HOTPLUG && HIBERNATION
-> -
->  config MEMORY_HOTPLUG_SPARSE
->  	def_bool y
->  	depends on SPARSEMEM && MEMORY_HOTPLUG
-> 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Eric
