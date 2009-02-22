@@ -1,78 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZBVGvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZBVHKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZBVGvg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 01:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZBVGv3
+	id S1754060AbZBVHKg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 02:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZBVHK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 01:51:29 -0500
-Received: from sh.osrg.net ([192.16.179.4]:39146 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751942AbZBVGv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 01:51:28 -0500
-Date: Sun, 22 Feb 2009 15:50:46 +0900
-To: joerg.roedel@amd.com
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 15/16] dma-debug: x86 architecture bindings
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1232376423-11067-16-git-send-email-joerg.roedel@amd.com>
-References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
-	<1232376423-11067-16-git-send-email-joerg.roedel@amd.com>
+	Sun, 22 Feb 2009 02:10:27 -0500
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:36709 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175AbZBVHK1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 02:10:27 -0500
+Date: Sun, 22 Feb 2009 08:15:17 +0100
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Risto Suominen <risto.suominen@gmail.com>, adaplas@pol.net,
+       Andrew Morton <akpm@linux-foundation.org>, geert@linux-m68k.org,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
+Message-Id: <20090222081517.567a29bd.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	<Pine.LNX.4.64.0901240951110.13803@anakin>
+	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
+	<Pine.LNX.4.64.0901241425310.13803@anakin>
+	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
+	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
+	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+	<20090211142409.b88c577e.akpm@linux-foundation.org>
+	<46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
+	<20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090222155050W.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sun, 22 Feb 2009 15:50:47 +0900 (JST)
+X-EMID: 5ce2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Jan 2009 15:47:02 +0100
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Fri, 13 Feb 2009 21:06:35 +0100
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-> Impact: make use of DMA-API debugging code in x86
+> On Thu, 12 Feb 2009 23:12:26 +0200
+> Risto Suominen <risto.suominen@gmail.com> wrote:
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/Kconfig                   |    1 +
->  arch/x86/include/asm/dma-mapping.h |   45 +++++++++++++++++++++++++++++++----
->  arch/x86/kernel/pci-dma.c          |    6 ++++
->  3 files changed, 46 insertions(+), 6 deletions(-)
+> > 2009/2/12 Andrew Morton <akpm@linux-foundation.org>:
+> > >> ---
+> > >> The testing is done on kernel version 2.6.18.
+> > >
+> > > That's a truly ancient kernel.  Is the patch needed on current kernels?
+> > > Does it work correctly in current kernels?
+> > >
+> > It does not on 2.6.24. The patch works.
+> > 
+> 
+> I have tested two cards with the hardware cursor: 
+> Permedia 2 (pm2fb) and Voodoo-3 (tdfxfb).
+> 
+> Both cards use the hardware cursor and both does
+> not produce the bug you have described.
+> I have used the Xorg version 7.2 included in the
+> Slackware 12 and a current git version of the kernel
+> (updated two days ago).
+> 
+> I do not have the ATI Mach64 card to test it.
+> I will test my cards with the kernel 2.6.24.
+> 
+> Either, this bug is related only to the atyfb driver
+> or it was solved in the current kernel.
+> I looked into the atyfb driver code and I did not
+>  see anything suspicious there.
+> 
 
-(snip)
+I have done more testing.
 
->  static inline int
-> @@ -79,9 +86,13 @@ dma_map_sg(struct device *hwdev, struct scatterlist *sg,
->  	   int nents, enum dma_data_direction dir)
->  {
->  	struct dma_map_ops *ops = get_dma_ops(hwdev);
-> +	int ents;
->  
->  	BUG_ON(!valid_dma_direction(dir));
-> -	return ops->map_sg(hwdev, sg, nents, dir, NULL);
-> +	ents = ops->map_sg(hwdev, sg, nents, dir, NULL);
-> +	debug_dma_map_sg(hwdev, sg, ents, dir);
+The pm2fb and tdfxfb work ok with Xorg 7.2 (xserver 1.3.0)
+and kernel 2.6.24 (the same cards as above used).
 
-The way to handle dma_map_sg and dma_unmap_sg looks wrong.
+I have build Xfbdev (kdrive) server for the same version of
+Xorg (xserver 1.3.0). The Xfbdev works ok (no cursor left)
+with both the pm2fb and tdfxfb.
 
-ents could be smaller than nents here with IOMMU implementations that
-merge several sg entries into one.
+I start wondering what is your version of Xfbdev and how
+did you build it. I have build the Xfbdev with the following 
+options:
+
+./configure --enable-kdrive \
+--disable-xvmc --disable-glx \
+--disable-dri --disable-xinerama \
+--enable-static --disable-xnest \
+--disable-xvfb --disable-dmx \
+--disable-xprint --disable-xsdl \
+--disable-xorgcfg --disable-xorg
+
+Either, my Xfbdev version is too new to reproduce the bug
+(and then the problem is the Xfbdev regression) or the 
+problem shows only with special build option.
+
+Could you provide me with information how to build the
+Xfbdev to reproduce the problem?
+What is your platform (maybe it is not x86) and kernel
+configuration?
+
+Kind regards,
+Krzysztof
 
 
-> +	return ents;
->  }
->  
->  static inline void
-> @@ -91,6 +102,7 @@ dma_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nents,
->  	struct dma_map_ops *ops = get_dma_ops(hwdev);
->  
->  	BUG_ON(!valid_dma_direction(dir));
-> +	debug_dma_unmap_sg(hwdev, sg, nents, dir);
+----------------------------------------------------------------------
+Zostan mistrzem parkowania w Bombaju!
+Zagraj >> http://link.interia.pl/f204e 
 
-Here the nents is the same one you passed into dma_map_sg call. It is
-not the value returned from dma_map_sg (see DMA-mapping.txt).
-
-So we call check_unmap for entries that we didn't call add_dma_entry
-for on dma_map_sg. These entries are not initialized so we could get any
-kinds of warnings from check_unmap.
