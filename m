@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbZBVLnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZBVL7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbZBVLnX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 06:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZBVLnO
+	id S1755241AbZBVL7S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 06:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZBVL7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 06:43:14 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51181 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753551AbZBVLnO (ORCPT
+	Sun, 22 Feb 2009 06:59:04 -0500
+Received: from mga06.intel.com ([134.134.136.21]:62850 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753471AbZBVL7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 06:43:14 -0500
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
-In-Reply-To: <20090220172241.GF24538@elte.hu>
-References: <499edf47.1818d00a.060b.2b8d@mx.google.com>
-	 <499EE162.4050008@oracle.com>  <20090220172241.GF24538@elte.hu>
-Content-Type: text/plain
-Date: Sun, 22 Feb 2009 12:43:00 +0100
-Message-Id: <1235302980.4632.8.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
+	Sun, 22 Feb 2009 06:59:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,249,1233561600"; 
+   d="scan'208";a="388803044"
+Message-ID: <49A13E16.5030401@linux.intel.com>
+Date: Sun, 22 Feb 2009 12:59:18 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: hpa@zytor.com, mingo@redhat.com, torvalds@linux-foundation.org,
+       ak@linux.intel.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86, mce: remove incorrect __cpuinit for mce_cpu_features()
+References: <tip-cc3ca22063784076bd240fda87217387a8f2ae92@kernel.org>
+In-Reply-To: <tip-cc3ca22063784076bd240fda87217387a8f2ae92@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-20 at 18:22 +0100, Ingo Molnar wrote:
-> Eventually we should eliminate markers, their uses can either be 
-> converted to new-style tracepoints, or to ftrace_printk().
+H. Peter Anvin wrote:
+> Author:     H. Peter Anvin <hpa@zytor.com>
+> AuthorDate: Fri, 20 Feb 2009 23:35:51 -0800
+> Commit:     H. Peter Anvin <hpa@zytor.com>
+> CommitDate: Fri, 20 Feb 2009 23:40:40 -0800
+> 
+> x86, mce: remove incorrect __cpuinit for mce_cpu_features()
+> 
+> Impact: Bug fix on UP
 
-I would like to never merge an ftrace_printk() user... just as I'd like
-to get rid of every marker.
+Thanks!
 
-Then again, some people appear happy to commit their printk debug spree
-too :/
+> Remove the offending __cpuinit annotations for mce_cpu_features() and
+> its successor functions.
+> 
+> Cc: Andi Kleen <ak@linux.intel.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
+Acked-by: Andi Kleen <ak@linux.intel.com>
+
+
+-Andi
