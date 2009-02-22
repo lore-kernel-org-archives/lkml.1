@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZBVRy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZBVRz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbZBVRy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 12:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZBVRyT
+	id S1753601AbZBVRz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 12:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZBVRzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 12:54:19 -0500
-Received: from smtp109.prem.mail.sp1.yahoo.com ([98.136.44.54]:39341 "HELO
-	smtp109.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751344AbZBVRyS (ORCPT
+	Sun, 22 Feb 2009 12:55:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44942 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344AbZBVRzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 12:54:18 -0500
-X-YMail-OSG: TMldMz8VM1njaWsN5tcJG5GBq6RdyXTsEtWKb7WDqnDP0cXUWzAsB6Jj90Ay4Uazcst4mIxr6qnIiV.gcFx1GoHyYBFbI6fzRcIEwfLzgNbYKqRo8ckbsxnV7R9vrUPrkE9GokrPnA8QMNILTWkagl3e3.z69577pCsJN7uDjQiOu57EZCW.mlTf6.70wAaJIIiBGfuNNyQrNzhlH8aviGsDmpaCsNisLpbanMZWpUE.nU3wAcb9XFKD.l4-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <49A19138.5040603@schaufler-ca.com>
-Date: Sun, 22 Feb 2009 09:54:00 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 22 Feb 2009 12:55:15 -0500
+To: "Kevin O'Connor" <kevin@koconnor.net>
+Cc: Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
+       coreboot@coreboot.org
+Subject: Re: MPTable can not be high-memory on Linux
+From: Andi Kleen <andi@firstfloor.org>
+References: <499DB40C.1060205@coresystems.de>
+	<499DB480.1000909@coresystems.de> <499DB6D8.5040706@coresystems.de>
+	<499DBDA0.2010606@coresystems.de> <499DCE79.8020809@coresystems.de>
+	<20090222152530.GA30576@morn.localdomain>
+Date: Sun, 22 Feb 2009 18:53:41 +0100
+In-Reply-To: <20090222152530.GA30576@morn.localdomain> (Kevin O'Connor's message of "Sun, 22 Feb 2009 10:25:31 -0500")
+Message-ID: <87tz6muzmi.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: etienne <etienne.basset@numericable.fr>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH][SMACK] convert smack rule list to linux list
-References: <49A13E15.6020509@numericable.fr> <200902222040.CAB86425.VMOQHFFFtOSLOJ@I-love.SAKURA.ne.jp> <49A14FBE.7020206@numericable.fr> <20090222153104.GF6860@linux.vnet.ibm.com>
-In-Reply-To: <20090222153104.GF6860@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Sun, Feb 22, 2009 at 02:14:38PM +0100, etienne wrote:
->   
->> Tetsuo Handa wrote:
->>     
->>> etienne wrote:
->>>       
->>>> diff --git a/security/smack/smack_access.c b/security/smack/smack_access.c
->>>> index 2e0b83e..3dc312d 100644
->>>> --- a/security/smack/smack_access.c
->>>> +++ b/security/smack/smack_access.c
->>>> @@ -87,7 +87,6 @@ static u32 smack_next_secid = 10;
->>>>  int smk_access(char *subject_label, char *object_label, int request)
->>>>  {
->>>>  	u32 may = MAY_NOT;
->>>> -	struct smk_list_entry *sp;
->>>>  	struct smack_rule *srp;
->>>>  
->>>>  	/*
->>>> @@ -139,8 +138,8 @@ int smk_access(char *subject_label, char *object_label, int request)
->>>>  	 * access (e.g. read is included in readwrite) it's
->>>>  	 * good.
->>>>  	 */
->>>> -	for (sp = smack_list; sp != NULL; sp = sp->smk_next) {
->>>> -		srp = &sp->smk_rule;
->>>> +
->>>> +	list_for_each_entry(srp, &smack_rule_list, list) {
->>>>  
->>>>  		if (srp->smk_subject == subject_label ||
->>>>  		    strcmp(srp->smk_subject, subject_label) == 0) {
->>>>         
->>> Use of standard doubly linked list requires a lock, doesn't it?
->>> What lock protects smack_rule_list?
->>>
->>>       
->> you're right; 
->>
->> what's the best way, using a rcu variant for "list_for_each, container_of ...etc" ?
->> (concurrent list insertion are already protected with a mutex, so rcu must the good idea for the read side) 
->>     
+Kevin O'Connor <kevin@koconnor.net> writes:
 >
-> You want list_for_each_entry_rcu() above.  You will need list_add_rcu()
-> when adding elements to the list.
+> It looks like the problem is that the MPTable is located in the last
+> 64K of memory (instead of the first few megabytes).  There is a
+> comment about this in arch/x86/kernel/mpparse.c:
 >
-> Again, if these elements are ever removed, you will need rcu_read_lock()
-> and rcu_read_unlock() surrounding their use.  Otherwise, an element can
-> be freed out from under a reader who is still referencing it.
+>    /*
+>     * We cannot access to MPC table to compute
+>     * table size yet, as only few megabytes from
+>     * the bottom is mapped now.
+>     * PC-9800's MPC table places on the very last
+>     * of physical memory; so that simply reserving
+>     * PAGE_SIZE from mpg->mpf_physptr yields BUG()
+>     * in reserve_bootmem.
+>     */
 >
-> 							Thanx, Paul
->   
+> However, that comment is in an #ifdef specific to 32bit kernels.
+> (Though, it's not clear to me how that code would help as it sets size
+> to be a negative number.)
+>
+> The easiest way to fix this is to change SeaBIOS to copy the whole
+> mptable to the first megabyte.  Also, we need to fix your SMBIOS so
+> that ACPI is used instead of the mptable.
 
-You'll also need to be very careful that the locking is safe to use
-in the networking hooks, in particular smack_socket_sock_rcv_skb. The
-amount of care required to get the locking correct is a major factor
-in the current list implementation.
+The kernel should just use early_ioremap to access it I guess.
 
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
