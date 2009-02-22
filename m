@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZBVOUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbZBVOVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbZBVOUn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 09:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZBVOUd
+	id S1756125AbZBVOVb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 09:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZBVOVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 09:20:33 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:28949 "EHLO
+	Sun, 22 Feb 2009 09:21:22 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:23714 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbZBVOUc (ORCPT
+	with ESMTP id S1752069AbZBVOVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 09:20:32 -0500
+	Sun, 22 Feb 2009 09:21:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
          :mime-version:content-type:content-transfer-encoding;
-        b=buA6n5HajK1KaEYyStAgUACS0n0Q3cQvDrJR+LxtBeo8lEy7ceRAH8uDV9C4Wnp3Gw
-         8zSPQXMK/ROBHkmo/CxZ9U+JPvsN3N+ejomB3FCuwPFr0Eq39hnBDh1ybVP84PShuHa8
-         eE7Bwf5RwgRQ50haOHKDJKykY2yPxCqU+67jw=
-Date: Sun, 22 Feb 2009 23:20:26 +0900
+        b=fP6SZvyYMC2LRUjuDfSgkb1mjUIIc7JnFO1znw17a0TJi2h9VZcF+Jx/MyCvMNdSrH
+         rMlxQyUd1BaBCdYB0clNvjvNzAa1WTUQdCPyj8wjlW2OxDiNg2uGrDvqB1uGf2Tsy0D6
+         1rA/4R7Fe2TrXSTedjohu3ht7+yxYnI0fBZS8=
+Date: Sun, 22 Feb 2009 23:21:14 +0900
 From: Hitoshi Mitake <h.mitake@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>, lethal@linux-sh.org
+To: Sam Ravnborg <sam@ravnborg.org>, davem@davemloft.net
 Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Geert Uytterhoeven <geert@linux-m68k.org>,
        "Luck, Tony" <tony.luck@intel.com>,
@@ -29,7 +29,7 @@ Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
        linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 Subject: Re: [PATCH 1/1] edac x38: new MC driver module
-Message-Id: <20090222232026.9f47d55e.h.mitake@gmail.com>
+Message-Id: <20090222232114.803fe032.h.mitake@gmail.com>
 In-Reply-To: <20090221130937.GA31562@uranus.ravnborg.org>
 References: <20081129180144.GA15533@uranus.ravnborg.org>
 	<20081130171604.dc3c8715.h.mitake@gmail.com>
@@ -82,20 +82,21 @@ to each architecture's Kconfig file which have readq() and writeq().
 Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
 
 ---
- arch/sh/Kconfig |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+ arch/sparc/Kconfig |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index ebabe51..7b1f664 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -699,3 +699,21 @@ source "security/Kconfig"
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index c3ea215..eb5efa3 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -527,3 +527,23 @@ source "security/Kconfig"
  source "crypto/Kconfig"
  
  source "lib/Kconfig"
 +
 +config HAVE_READQ
 +	def_bool y
++	depends on SPARC64
 +	help
 +	  This is a sign to represent that this architecture provides
 +	  readq() function. readq() is a function to read 8 bytes from
@@ -105,6 +106,7 @@ index ebabe51..7b1f664 100644
 +
 +config HAVE_WRITEQ
 +	def_bool y
++	depends on SPARC64
 +	help
 +	  This is a sign to represent that this architecture provides
 +	  writeq() function. writeq() is a function to read 8 bytes from
