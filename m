@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZBVRCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZBVRFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZBVRCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 12:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZBVRCG
+	id S1755940AbZBVRFO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 12:05:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZBVRFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 12:02:06 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:46746 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753439AbZBVRCF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 12:02:05 -0500
-Date: Sun, 22 Feb 2009 17:02:01 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>, Bob Copeland <me@bob>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090222170201.GA27360@silver.sucs.org>
-References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere>
-Mime-Version: 1.0
+	Sun, 22 Feb 2009 12:05:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41975 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754027AbZBVRE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 12:04:59 -0500
+Date: Sun, 22 Feb 2009 18:04:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Mark Hounschell <markh@compro.net>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: Re: [PATCH 0/3] x86: dish of assorted hpet patches
+Message-ID: <20090222170440.GA8343@elte.hu>
+References: <20090220230729.GK4834@alberich.amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090222144742.GA6078@nowhere>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090220230729.GK4834@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 03:47:44PM +0100, Frederic Weisbecker wrote:
-> On Sun, Feb 22, 2009 at 12:20:36PM +0000, Sitsofe Wheeler wrote:
-> > On Sun, Feb 22, 2009 at 01:01:21PM +0100, Jiri Slaby wrote:
-> > > The unsupported jumbo message might be a clue. When we jump to the next: 
-> > > label, the buffer is at the end of the list in software, while in 
-> > > hardware it isn't. In theory, we might hit the bug with rx buffers 
-> > > exhaustion, because the test (bf_last == bf) doesn't work as expected then.
-> > 
-> > This seems to be happening somewhat regularly now - I've got a small
-> > collections of the warnings (I'll include them below in case they are
-> > any help):
-> > 
-> > [ 7435.711659] ath5k phy0: unsupported jumbo
-> > [ 8125.567136] ath5k phy0: noise floor calibration timeout (2417MHz)
-> > [ 9596.212322] ath5k phy0: unsupported jumbo
-> > [10697.497598] ath5k phy0: unsupported jumbo
-> > [11207.740975] =============================================================================
-> > [11207.740986] BUG kmalloc-4096: Poison overwritten
-> > [11207.740991] -----------------------------------------------------------------------------
-> > [11207.740994] 
-> > [11207.740999] INFO: 0xd7060010-0xd7060053. First byte 0x80 instead of 0x6b
-> > [11207.741014] INFO: Allocated in dev_alloc_skb+0x21/0x40 age=4990 cpu=0 pid=0
-> > [11207.741023] INFO: Freed in skb_release_data+0x5e/0x90 age=893 cpu=0 pid=508
-> > [11207.741030] INFO: Slab 0xc133dd80 objects=7 used=5 fp=0xd7060000 flags=0x400020c3
-> > [11207.741036] INFO: Object 0xd7060000 @offset=0 fp=0xd70640c0
 
-> Looks like it happens with ath5k driver.
-> Well, I have an atheros card, so I'm testing it.
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-Good luck! I've just switched to a different location (with faster wifi
-and more single network access points ) and I've been totally unable to
-reproduce this warning.
+> - to print HPET registers during setup,
+> - to fix a real issue with HZ_1000 kernels on an SB400 system
+>  (and to potentially fix a similar issue with SB600).
+> 
+> Tested on ICH7 and on AMD SB400, AMD SB600.
 
-If there's some debug output that I produce that will help you let me
-know...
+applied to tip:timers/hpet, thanks Andreas!
 
--- 
-Sitsofe | http://sucs.org/~sits/
+Btw, maybe the HZ_1000 bugfix could be the fix for a weirdness 
+i'm seeing very rarely on one of my testsystems:
+
+[    8.850706] bus: 'pci': driver_probe_device: matched device 0000:04:00.0 with driver e1000e
+[    8.850706] bus: 'pci': really_probe: probing driver e1000e with device 0000:04:00.0
+[  177.308165] e1000e 0000:04:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[  177.668182] e1000e 0000:04:00.0: setting latency timer to 64
+
+there's almost 3 minutes between those lines printed, although 
+it should have taken milliseconds!
+
+	Ingo
