@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZBVWPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZBVWRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249AbZBVWPP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZBVWPB
+	id S1754900AbZBVWRJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZBVWQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:15:01 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:57250 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbZBVWPB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:15:01 -0500
-Date: Sun, 22 Feb 2009 23:16:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kernel building procedure changed?
-Message-ID: <20090222221653.GA30498@uranus.ravnborg.org>
-References: <20090222220747.GB7279@localhost>
-Mime-Version: 1.0
+	Sun, 22 Feb 2009 17:16:55 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37341 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752171AbZBVWQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 17:16:55 -0500
+Date: Sun, 22 Feb 2009 23:16:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH] tracing/ftrace: add missing wake-up on some callsites
+Message-ID: <20090222221646.GC21459@elte.hu>
+References: <49a1cc8f.2283420a.54d2.ffff8461@mx.google.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090222220747.GB7279@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <49a1cc8f.2283420a.54d2.ffff8461@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 01:07:48AM +0300, Cyrill Gorcunov wrote:
-> Hi all,
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Impact: fix unwaken pipe
 > 
-> I found a bit strange thing happens now --
-> plain
+> Now that we use a common wakeup infrastructure, we must append a wakeup
+> on few callsites which lack it or tasks reading trace_pipe will not be
+> awaken when events come on few tracers.
 > 
-> 	make arch/x86/kernel/head64.o
-> 
-> doesn't work anymore. Instead of compiling
-> _just_ this file I've got the following:
-> 
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 > ---
-> cyrill@lenovo linux-2.6.git $ make arch/x86/kernel/head64.o
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-x86
->   CALL    scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   AS      arch/x86/kernel/head_64.o
->   VDSOSYM arch/x86/vdso/vdso-syms.lds
->   VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
->   VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
->   VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
->   VDSOSYM arch/x86/vdso/vdso32-syms.lds
->   LD      arch/x86/vdso/built-in.o
->   CC      fs/hpfs/dnode.o
-> make[2]: *** [fs/hpfs/dnode.o] Interrupt
-> make[1]: *** [fs/hpfs] Interrupt
-> make: *** [fs] Interrupt
-> ---
-> 
-> I've done make allyesconfig previously.
-> I don't understand what I'm doing wrong... :(
+>  kernel/trace/trace.c             |    2 ++
+>  kernel/trace/trace_branch.c      |    2 ++
+>  kernel/trace/trace_hw_branches.c |    2 ++
+>  3 files changed, 6 insertions(+), 0 deletions(-)
 
-I should work...
-Do you have CONFIG_64BIT set in your config?
-Does it behave strange also for files in kernel/?
-Can you postthe output of a "make V=1 arch/x86/kernel/head64.o"
+Applied to tip:tracing/ftrace, thanks Frederic!
 
-I cannot try to reproduce locally as my current setup does not
-support 64 bit x86 builds.
-Does anyone else see the same?
-
-	Sam
+	Ingo
