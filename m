@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZBUXdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZBVAA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbZBUXdS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 18:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbZBUXdE
+	id S1755409AbZBVAA7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 19:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbZBVAAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 18:33:04 -0500
-Received: from mga01.intel.com ([192.55.52.88]:23831 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754482AbZBUXdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 18:33:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,247,1233561600"; 
-   d="scan'208";a="667492821"
-Date: Sat, 21 Feb 2009 15:33:01 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: enable x2apic early at the first point
-Message-ID: <20090221233300.GB6733@linux-os.sc.intel.com>
-References: <499DD40F.40102@kernel.org> <20090220095127.GK24555@elte.hu> <20090220095530.GA15186@elte.hu> <1235255001.14523.76.camel@vayu> <49A083A2.30303@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A083A2.30303@kernel.org>
-User-Agent: Mutt/1.4.1i
+	Sat, 21 Feb 2009 19:00:50 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:49361 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754374AbZBVAAt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 19:00:49 -0500
+From: Hannes Eder <hannes@hanneseder.net>
+Subject: [PATCH 00/16] fix sparse warnings: Using plain integer as NULL pointer
+To: trivial@kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Sun, 22 Feb 2009 01:00:43 +0100
+Message-ID: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>
+User-Agent: StGit/0.14.3.348.gcb02
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 21, 2009 at 02:43:46PM -0800, Yinghai Lu wrote:
-> for x2apic preenabled system,
-> when nox2apic is used, cpu_has_x2apic will be cleared, apic will be xapic phys_flat or flat.
-> is that expected?
-> 
-> should
-> 1. ignore nox2apic
-> 2. or try to disable x2apic?
+The following series fix the sparse warning 'Using plain integer as
+NULL pointer' all over the kernel tree.  This series is based on
+linux-next/next-20090220.
 
-This scenario might be useful for debug purposes? But it might
-not be simple/straight fwd in OS to implement this, as we need to do two things.
+---
 
-1. Go back to xapic mode using the state transition diagram in SDM.
+Hannes Eder (16):
+      ALSA: msnd: fix sparse warning: Using plain integer as NULL pointer
+      ipv6: fix sparse warning: Using plain integer as NULL pointer
+      memcg: fix sparse warning: Using plain integer as NULL pointer
+      kprobes: fix sparse warnings: Using plain integer as NULL pointer
+      reiserfs: fix sparse warning: Using plain integer as NULL pointer
+      fs/super.c: fix sparse warning: Using plain integer as NULL pointer
+      viafb: fix sparse warning: Using plain integer as NULL pointer
+      usb host: fix sparse warning: Using plain integer as NULL pointer
+      [SCSI] FlashPoint: fix sparse warnings: Using plain integer as NULL pointer
+      panasonic-laptop: fix sparse warning: Using plain integer as NULL pointer
+      MTD: tests: fix sparse warnings: Using plain integer as NULL pointer
+      dvb: fix sparse warnings: Using plain integer as NULL pointer
+      ide: fix sparse warnings: Using plain integer as NULL pointer
+      drm: radeon: fix sparse warnings: Using plain integer as NULL pointer
+      x86, numa_32.c: fix sparse warning: Using plain integer as NULL pointer
+      kexec/i386: fix sparse warnings: Using plain integer as NULL pointer
 
-2. And also, we need to disable the interrupt-remapping setup by the bios,
-so that chipset and cpu's are in same mode.
 
-If BIOS has enabled x2apic, it is for a reason (mostly platform
-has more logical cpus and hence need x2apic to brinup all the AP's etc).
-And typically other than very high end platforms, I don't expect bios
-to turn on x2apic.
-
-thanks,
-suresh
+ arch/x86/kernel/machine_kexec_32.c      |    2 +-
+ arch/x86/kernel/traps.c                 |    2 +-
+ arch/x86/mm/numa_32.c                   |    2 +-
+ drivers/gpu/drm/radeon/radeon_cp.c      |    2 +-
+ drivers/gpu/drm/radeon/radeon_state.c   |    2 +-
+ drivers/ide/ide-disk_proc.c             |    2 +-
+ drivers/ide/ide-floppy_proc.c           |    2 +-
+ drivers/ide/ide-proc.c                  |    2 +-
+ drivers/ide/ide-tape.c                  |    2 +-
+ drivers/media/dvb/frontends/drx397xD.c  |    2 +-
+ drivers/mtd/tests/mtd_oobtest.c         |   24 ++++++++++++------------
+ drivers/mtd/tests/mtd_readtest.c        |    2 +-
+ drivers/platform/x86/panasonic-laptop.c |    2 +-
+ drivers/scsi/FlashPoint.c               |    7 +++----
+ drivers/usb/host/oxu210hp-hcd.c         |    2 +-
+ drivers/video/via/hw.c                  |    2 +-
+ fs/reiserfs/inode.c                     |    2 +-
+ fs/super.c                              |    2 +-
+ kernel/test_kprobes.c                   |    6 +++---
+ mm/memcontrol.c                         |    2 +-
+ net/ipv6/xfrm6_state.c                  |    2 +-
+ sound/isa/msnd/msnd_pinnacle.c          |    2 +-
+ 22 files changed, 37 insertions(+), 38 deletions(-)
