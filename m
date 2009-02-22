@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbZBVJf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbZBVJmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbZBVJf0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 04:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZBVJfQ
+	id S1754150AbZBVJmT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 04:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZBVJmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 04:35:16 -0500
-Received: from fe01x03-cgp.akado.ru ([77.232.31.164]:53288 "EHLO akado.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752928AbZBVJfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 04:35:14 -0500
-X-Greylist: delayed 3604 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Feb 2009 04:35:14 EST
-Date: Sun, 22 Feb 2009 11:35:04 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@linmac.oyster.ru
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: Lock-up on PPC64
-In-Reply-To: <Pine.LNX.4.64.0901070105510.4695@linmac.oyster.ru>
-Message-ID: <Pine.LNX.4.64.0902221126220.3111@linmac.oyster.ru>
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
- <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
- <20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
- <1230165163.7292.32.camel@pasglop> <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
- <1231158516.8367.3.camel@localhost> <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
- <1231243373.14860.24.camel@pasglop> <Pine.LNX.4.64.0901062032550.2972@linmac.oyster.ru>
- <1231276643.14860.30.camel@pasglop> <Pine.LNX.4.64.0901070105510.4695@linmac.oyster.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Feb 2009 04:42:09 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:36290 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752855AbZBVJmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 04:42:08 -0500
+Date: Sun, 22 Feb 2009 10:42:05 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jean Delvare <khali@linux-fr.org>, Wolfram Sang <w.sang@pengutronix.de>,
+       Juergen Beisert <j.beisert@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ben Dooks <ben-linux-arm@fluff.org>, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: PCF8583 not detected on RiscPC
+Message-ID: <20090222104205.4539d3ef@i1501.lan.towertech.it>
+In-Reply-To: <20090222082829.GG16596@n2100.arm.linux.org.uk>
+References: <20090221194814.GA24385@n2100.arm.linux.org.uk>
+	<20090221204147.GA25408@n2100.arm.linux.org.uk>
+	<20090222011936.35b21d6b@i1501.lan.towertech.it>
+	<20090222082829.GG16596@n2100.arm.linux.org.uk>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Jan 2009, malc wrote:
+On Sun, 22 Feb 2009 08:28:29 +0000
+Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-> On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
+ 
+> So, really, I'm not listening to NACKs from anyone for this.  The only
+> thing I'll listen to is something _constructive_ to make it work again.
+> I'm sure Andrew Morton will back me up on this.
+
+ You never listened to anyone, as far as I can remember. The constructive
+ part was where I said I'd be happy to give help.
+
+
+> Now, we can either totally reorganize i2c-acorn, but that won't be
+> acceptable for 2.6.29-rc.
+
+  i2c-acorn is just fine as is, while you might want to change
+ it to a platform driver at a later time.
+
+
+> The problem is that this *is* a regression, and therefore must be fixed
+> in 2.6.29-rc.  As I see it, the only sane way to do that is to revert
+> the conversion until a proper fix can be done.
 > 
-> > 
-> > > As you wish :) I've written some ad-hoc stuff in the failing path which
-> > > manually triggers sysrq and then sends the klogctl output via network
-> > > and here it is:
-> > 
-> > Allright, something's unclear to me. What do you mean by the system goes
-> > down then ? The kernel appears to be working at least to a certain
-> > extent if you manage to trigger a sysrq from userspace... And from what
-> > I see, it looks that all processes are somewhere in schedule.
-> > 
-> > So what is precisely your symptom here ?
+> So, please provide constructive suggestions on how to add boardinfo to
+> this in a sane way, or we revert PCF8583 back to something which works.
 
-After writing valgrind tool that was simulating Cell XER.SO syscall
-(mis)behaviour (pre ab598b6680f1e74c267d1547ee352f3e1e530f89 that is)
-and banging my had against the wall for a while trying to figure out
-which of the failing syscalls was responsible, i've tried to be simple
-and after only ~30 minutes came up with this, rather short, piece of
-code that knocks pre XER.SO patched kernels out cold:
+  That's very simple, even if acorn is a bit unstructured. You just
+ need to choice a place under arch/arm that you like
+ (arch/arm/plat-acorn/ ? ) and place a bit of code called
+ by an appropriate initcall. 
 
-gcc -o xer -x assembler /dev/stdin -nostdlib <<eof
-.globl _start
-_start:
-         addis 0,0,0x8000
-         mtxer 0
-         addi 0,0,1
-         sc
-eof
+  There you write something like that, changing
+ the values to match your rtc name and i2c address:
+
+static struct i2c_board_info __initdata nslu2_i2c_board_info [] = {
+        {
+                I2C_BOARD_INFO("x1205", 0x6f),
+        },
+};
+ 
+...
+
+   i2c_register_board_info(0, nslu2_i2c_board_info,
+                                ARRAY_SIZE(nslu2_i2c_board_info));
+
+ 
+ Unless I missed something that should be all you need.
+    
 
 -- 
-mailto:av1474@comtv.ru
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
