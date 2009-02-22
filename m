@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbZBVPPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZBVPRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbZBVPPa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 10:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZBVPPO
+	id S1755876AbZBVPRw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 10:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbZBVPRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 10:15:14 -0500
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:35277 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752793AbZBVPPM (ORCPT
+	Sun, 22 Feb 2009 10:17:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:28096 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752793AbZBVPRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 10:15:12 -0500
-X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-02.arcor-online.net B6FB53FE713
-From: Prakash Punnoor <prakash@punnoor.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] pci: enable MSI on 8132
-Date: Sun, 22 Feb 2009 16:17:20 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5; KDE/4.2.0; x86_64; ; )
-Cc: Robert Hancock <hancockrwd@gmail.com>, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com,
-       linux-pci@vger.kernel.org
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200902221308.55053.prakash@punnoor.de> <m1iqn2ein5.fsf@fess.ebiederm.org>
-In-Reply-To: <m1iqn2ein5.fsf@fess.ebiederm.org>
+	Sun, 22 Feb 2009 10:17:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=Pd2RlPxbC4K2p1pAHcWoInTe6zA1WCTIiqLGOqqf1dkhBBp+YeIvVvXwhE+fBkU03d
+         mdCAsM2D+NForkyKMh5OG9dmAM7U/i1iMwXWAbjuWeZ4COtRJZJsxZbUD2JocjB1nYiX
+         4MgXp51b0+YQZCw/FEoDxpQ3lPi1Q0ueDTQ2A=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Sun, 22 Feb 2009 17:17:41 +0200
+Message-ID: <dfb262380902220717y7e778695yeee67a7ce87ca314@mail.gmail.com>
+Subject: is oprofile alive ? (and some more questions about it)
+From: Ramagudi Naziir <naziirr@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902221617.21621.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sonntag 22 Februar 2009 13:54:54 Eric W. Biederman wrote:
-> Prakesh could you try this patch instead?
->
-> I think the problem is simply that the MCP55 ht mapping capability
-> requires an address to be programed into it and it wasn't in your
-> case.
->
-> It should not hurt to enable one msi ht mapping capability too many.
+hello all,
 
-I tried it, but unfortunately doesn't help. I run into the same issue.
+i've noticed that the last oprofile release was at July 2008
+(http://oprofile.sourceforge.net/news/)
 
->
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index baad093..f7a0370 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -2017,10 +2017,19 @@ static void __devinit ht_enable_msi_mapping(struct
-> pci_dev *dev) while (pos && ttl--) {
->  		u8 flags;
->
-> -		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
-> -					 &flags) == 0) {
-> +		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS, &flags))
-> +			return;
-> +
-> +		if (!(flags & HT_MSI_FLAGS_ENABLE)) {
->  			dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
->
-> +			if (!(flags & HT_MSI_FLAGS_FIXED)) {
-> +				pci_write_config_dword(dev, pos + HT_MSI_ADDR_LO,
-> +					(HT_MSI_FIXED_ADDR & HT_MSI_FIXED_ADDR));
-> +				pci_write_config_dword(dev, pos + HT_MSI_ADDR_HI,
-> +					(HT_MSI_FIXED_ADDR >> 32));
-> +			}
-> +
->  			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
->  					      flags | HT_MSI_FLAGS_ENABLE);
->  		}
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+is oprofile still alive ?
 
+If yes, where can I read about its up-to-date status (there is nothing
+in Documentation/ about it..) ?
+
+I've seen several comparisons between systemtap to lttng to dtrace but
+never has oprofile been mentioned.
+
+can anyone please help me understand how does oprofile differ from
+those projects ?
+
+thank you everyone in advance
+naziir
