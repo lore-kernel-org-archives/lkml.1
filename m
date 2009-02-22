@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbZBVXRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZBVXSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbZBVXRy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 18:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbZBVXQ0
+	id S1756201AbZBVXSU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 18:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbZBVXQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 18:16:26 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:39460 "EHLO gir.skynet.ie"
+	Sun, 22 Feb 2009 18:16:27 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:39466 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756035AbZBVXQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 18:16:22 -0500
+	id S1756061AbZBVXQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 18:16:23 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -19,9 +19,9 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: [PATCH 04/20] Convert gfp_zone() to use a table of precalculated values
-Date: Sun, 22 Feb 2009 23:17:13 +0000
-Message-Id: <1235344649-18265-5-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 05/20] Check only once if the zonelist is suitable for the allocation
+Date: Sun, 22 Feb 2009 23:17:14 +0000
+Message-Id: <1235344649-18265-6-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
 References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
@@ -29,155 +29,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every page allocation uses gfp_zone() to calcuate what the highest zone
-allowed by a combination of GFP flags is. This is a large number of branches
-to have in a fast path. This patch replaces the branches with a lookup
-table that is calculated at boot-time and stored in the read-mostly section
-so it can be shared. This requires __GFP_MOVABLE to be redefined but it's
-debatable as to whether it should be considered a zone modifier or not.
+It is possible with __GFP_THISNODE that no zones are suitable. This
+patch makes sure the check is only made once.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- include/linux/gfp.h |   28 +++++++++++-----------------
- init/main.c         |    1 +
- mm/page_alloc.c     |   36 +++++++++++++++++++++++++++++++++++-
- 3 files changed, 47 insertions(+), 18 deletions(-)
+ mm/page_alloc.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 59eb093..581f8a9 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -16,6 +16,10 @@ struct vm_area_struct;
-  * Do not put any conditional on these. If necessary modify the definitions
-  * without the underscores and use the consistently. The definitions here may
-  * be used in bit comparisons.
-+ *
-+ * Note that __GFP_MOVABLE uses the next available bit but it is not
-+ * a zone modifier. It uses the fourth bit so that the calculation of
-+ * gfp_zone() can use a table rather than a series of comparisons
-  */
- #define __GFP_DMA	((__force gfp_t)0x01u)
- #define __GFP_HIGHMEM	((__force gfp_t)0x02u)
-@@ -50,7 +54,7 @@ struct vm_area_struct;
- #define __GFP_HARDWALL   ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
- #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
- #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
--#define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-+#define __GFP_MOVABLE	((__force gfp_t)0x08u)  /* Page is movable */
- 
- #define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
-@@ -77,6 +81,9 @@ struct vm_area_struct;
- #define GFP_THISNODE	((__force gfp_t)0)
- #endif
- 
-+/* This is a mask of all modifiers affecting gfp_zonemask() */
-+#define GFP_ZONEMASK (__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32 | __GFP_MOVABLE)
-+
- /* This mask makes up all the page movable related flags */
- #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
- 
-@@ -112,24 +119,11 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
- 		((gfp_flags & __GFP_RECLAIMABLE) != 0);
- }
- 
-+extern int gfp_zone_table[GFP_ZONEMASK];
-+void init_gfp_zone_table(void);
- static inline enum zone_type gfp_zone(gfp_t flags)
- {
--#ifdef CONFIG_ZONE_DMA
--	if (flags & __GFP_DMA)
--		return ZONE_DMA;
--#endif
--#ifdef CONFIG_ZONE_DMA32
--	if (flags & __GFP_DMA32)
--		return ZONE_DMA32;
--#endif
--	if ((flags & (__GFP_HIGHMEM | __GFP_MOVABLE)) ==
--			(__GFP_HIGHMEM | __GFP_MOVABLE))
--		return ZONE_MOVABLE;
--#ifdef CONFIG_HIGHMEM
--	if (flags & __GFP_HIGHMEM)
--		return ZONE_HIGHMEM;
--#endif
--	return ZONE_NORMAL;
-+	return gfp_zone_table[flags & GFP_ZONEMASK];
- }
- 
- /*
-diff --git a/init/main.c b/init/main.c
-index 8442094..08a5663 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -573,6 +573,7 @@ asmlinkage void __init start_kernel(void)
- 	 * fragile until we cpu_idle() for the first time.
- 	 */
- 	preempt_disable();
-+	init_gfp_zone_table();
- 	build_all_zonelists();
- 	page_alloc_init();
- 	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index c3842f8..7cc4932 100644
+index 7cc4932..99fd538 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -70,6 +70,7 @@ EXPORT_SYMBOL(node_states);
- unsigned long totalram_pages __read_mostly;
- unsigned long totalreserve_pages __read_mostly;
- unsigned long highest_memmap_pfn __read_mostly;
-+int gfp_zone_table[GFP_ZONEMASK] __read_mostly;
- int percpu_pagelist_fraction;
+@@ -1487,9 +1487,8 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 	if (should_fail_alloc_page(gfp_mask, order))
+ 		return NULL;
  
- #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
-@@ -4373,7 +4374,7 @@ static void setup_per_zone_inactive_ratio(void)
-  * 8192MB:	11584k
-  * 16384MB:	16384k
-  */
--static int __init init_per_zone_pages_min(void)
-+static int init_per_zone_pages_min(void)
- {
- 	unsigned long lowmem_kbytes;
+-restart:
+-	z = zonelist->_zonerefs;  /* the list of zones suitable for gfp_mask */
+-
++	/* the list of zones suitable for gfp_mask */
++	z = zonelist->_zonerefs;
+ 	if (unlikely(!z->zone)) {
+ 		/*
+ 		 * Happens if we have an empty zonelist as a result of
+@@ -1498,6 +1497,7 @@ restart:
+ 		return NULL;
+ 	}
  
-@@ -4391,6 +4392,39 @@ static int __init init_per_zone_pages_min(void)
- }
- module_init(init_per_zone_pages_min)
- 
-+static inline int __init gfp_flags_to_zone(gfp_t flags)
-+{
-+#ifdef CONFIG_ZONE_DMA
-+	if (flags & __GFP_DMA)
-+		return ZONE_DMA;
-+#endif
-+#ifdef CONFIG_ZONE_DMA32
-+	if (flags & __GFP_DMA32)
-+		return ZONE_DMA32;
-+#endif
-+	if ((flags & (__GFP_HIGHMEM | __GFP_MOVABLE)) ==
-+			(__GFP_HIGHMEM | __GFP_MOVABLE))
-+		return ZONE_MOVABLE;
-+#ifdef CONFIG_HIGHMEM
-+	if (flags & __GFP_HIGHMEM)
-+		return ZONE_HIGHMEM;
-+#endif
-+	return ZONE_NORMAL;
-+}
-+
-+/*
-+ * For each possible combination of zone modifier flags, we calculate
-+ * what zone it should be using. This consumes a cache line in most
-+ * cases but avoids a number of branches in the allocator fast path
-+ */
-+void __init init_gfp_zone_table(void)
-+{
-+	gfp_t gfp_flags;
-+
-+	for (gfp_flags = 0; gfp_flags < GFP_ZONEMASK; gfp_flags++)
-+		gfp_zone_table[gfp_flags] = gfp_flags_to_zone(gfp_flags);
-+}
-+
- /*
-  * min_free_kbytes_sysctl_handler - just a wrapper around proc_dointvec() so 
-  *	that we can call two helper functions whenever min_free_kbytes
++restart:
+ 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
+ 			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
+ 	if (page)
 -- 
 1.5.6.5
 
