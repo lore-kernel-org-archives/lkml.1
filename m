@@ -1,75 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZBVMBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZBVMDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbZBVMBh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 07:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZBVMB1
+	id S1755412AbZBVMDP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 07:03:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZBVMDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 07:01:27 -0500
-Received: from mail-fx0-f167.google.com ([209.85.220.167]:54621 "EHLO
-	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbZBVMB0 (ORCPT
+	Sun, 22 Feb 2009 07:03:00 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59578 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbZBVMC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 07:01:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=fNUMIUxYdR55eiLK1AUyEUNJkJXYimgsXR6ESBZIoLSYdDG7HuWCzSChegkLeacb1c
-         KIyRXay1TaILDVb/bbs/DoThs0pJaGGyijG2qFxgt1eorgVO4S6o1bZJKstkGp2E6ufI
-         viDkWLjJUV7J9E3Jw+fT2HOwxQHFXxKaEyeFk=
-Message-ID: <49A13E91.1090601@gmail.com>
-Date: Sun, 22 Feb 2009 13:01:21 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090218 SUSE/3.0b2-1.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ath5k-devel@venema.h4ckr.net, Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>, Bob Copeland <me@bob>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-References: <20090222111807.GB5538@silver.sucs.org>
-In-Reply-To: <20090222111807.GB5538@silver.sucs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Sun, 22 Feb 2009 07:02:59 -0500
+Date: Sun, 22 Feb 2009 12:01:47 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Juergen Beisert <j.beisert@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ben Dooks <ben-linux-arm@fluff.org>, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: PCF8583 not detected on RiscPC
+Message-ID: <20090222120147.GE28025@n2100.arm.linux.org.uk>
+References: <20090221194814.GA24385@n2100.arm.linux.org.uk> <20090221204147.GA25408@n2100.arm.linux.org.uk> <20090222011936.35b21d6b@i1501.lan.towertech.it> <20090222082829.GG16596@n2100.arm.linux.org.uk> <20090222105205.4e8165da@hyperion.delvare> <20090222102217.GB28025@n2100.arm.linux.org.uk> <20090222114000.137cc754@hyperion.delvare>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090222114000.137cc754@hyperion.delvare>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22.2.2009 12:18, Sitsofe Wheeler wrote:
-> While testing a linux-tip from yesterday, a
-> BUG kmalloc-4096: Poison overwritten
-> warning appeared inside dmesg. I'm not aware of what I was doing other
-> that browsing a few web pages and using ssh in the lead up to it. Output
-> is attached below:
->
-> [ 3666.410818] ath5k phy0: unsupported jumbo
-> [ 4432.305651] ath5k phy0: unsupported jumbo
-> [ 4466.022644] totem[4664]: segfault at 5bf7b980 ip b5b39cbb sp b0d5f130 error 6 in libpulse.so.0.4.1[b5afb000+4d000]
-> [ 4617.353923] totem[5189]: segfault at 4c7a2ee0 ip b59bfdca sp b1c12ec0 error 6 in libpulse.so.0.4.1[b5981000+4d000]
-> [ 7412.846146] =============================================================================
-> [ 7412.846159] BUG kmalloc-4096: Poison overwritten
-> [ 7412.846163] -----------------------------------------------------------------------------
-> [ 7412.846166]
-> [ 7412.846172] INFO: 0xf6438010-0xf6438053. First byte 0x80 instead of 0x6b
-> [ 7412.846188] INFO: Allocated in dev_alloc_skb+0x21/0x40 age=629 cpu=0 pid=0
-> [ 7412.846197] INFO: Freed in skb_release_data+0x5e/0x90 age=21 cpu=0 pid=0
-> [ 7412.846204] INFO: Slab 0xc17a27e0 objects=7 used=5 fp=0xf6438000 flags=0x400020c3
-> [ 7412.846210] INFO: Object 0xf6438000 @offset=0 fp=0xf643a060
-> [ 7412.846212]
-> [ 7412.846216]   Object 0xf6438000:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [ 7412.846245]   Object 0xf6438010:  80 00 00 00 ff ff ff ff ff ff 00 30 ab 1a 32 3f ....ÿÿÿÿÿÿ.0«.2?
+On Sun, Feb 22, 2009 at 11:40:00AM +0100, Jean Delvare wrote:
+> On Sun, 22 Feb 2009 10:22:17 +0000, Russell King - ARM Linux wrote:
+> > On Sun, Feb 22, 2009 at 10:52:05AM +0100, Jean Delvare wrote:
+> > > Russell,
+> > > 
+> > > On Sun, 22 Feb 2009 08:28:29 +0000, Russell King - ARM Linux wrote:
+> > > > So, really, I'm not listening to NACKs from anyone for this.  The only
+> > > > thing I'll listen to is something _constructive_ to make it work again.
+> > > > I'm sure Andrew Morton will back me up on this.
+> > > 
+> > > ... and now you say we should fix it in the day and then threaten us?
+> > > Come on.
+> > 
+> > I'm serious.  It's a regression, it needs fixing.
+> > 
+> > > > The problem is that this *is* a regression, and therefore must be fixed
+> > > > in 2.6.29-rc.  As I see it, the only sane way to do that is to revert
+> > > > the conversion until a proper fix can be done.
+> > > 
+> > > You can't claim it is a regression that must be fixed in 2.6.29,
+> > > because it is already broken in 2.6.28, and even 2.6.27, and nobody
+> > > complained.
+> > 
+> > Sorry, our definitions of what's a regression are different, and you are
+> > wrong.  As I've already said to you, it worked in 2.6.25-rc and it worked
+> > last time I tested which was a 2.6.27-rc kernel.
+> 
+> Maybe I'm wrong but at least I am polite.
+> 
+> And I pretty much doubt it worked with a 2.6.27-rc kernel, given that
+> the patch which broke it went into 2.6.27-rc1. So you are just as wrong
+> as I am.
+> 
+> > If every single kernel has to be tested on every single machine to find
+> > "regressions" in your terminology, that's all I'd be doing.  Get real.
+> > It's not practical to do that.
+> > 
+> > So, yes, I'm going to continue claiming that this is a regression and
+> > needs to be fixed.
+> > 
+> > > > So, please provide constructive suggestions on how to add boardinfo to
+> > > > this in a sane way, or we revert PCF8583 back to something which works.
+> > > 
+> > > Alessandro nicely proposed to solve your problem the right way if you
+> > > provided the required technical information, which, as far as I can
+> > > see, you didn't. I asked for hardware details and you didn't provide
+> > > them either.
+> > 
+> > I'm sorry, what hardware details are you wanting that I didn't give.
+> > I've said it's the PCF8583 driver.  I've said that the bus driver is
+> > i2c-acorn.c, even giving its location in the kernel tree.
+> > 
+> > It's a bit banged I2C bus.  It's on the main board.  It's connected to
+> > expansion cards.  It uses 5V signalling with pull up resistors.
+> > 
+> > I don't think I've missed anything out.
+> > 
+> > > So let me ask more precise questions, and hopefully we will get
+> > > somewhere.
+> > > 
+> > > 1* How many different system types is i2c-acorn used on?
+> > 
+> > It used to be used on four, two of which have been long since removed,
+> > and one was removed in the last merge window.  So it's now only used on
+> > one platform.
+> > 
+> > > 2* Do all these systems have a PCF8583 RTC chip?
+> > 
+> > Yes.
+> > 
+> > > 3* At which address does the PCF8583 chip live on these systems? I
+> > >    guess 0x50.
+> > 
+> > Looking back in the history of the driver, yes, it's 0x50.
+> > 
+> > > 4* Is there any acorn-specific piece of code which is run when the
+> > >    Linux kernel boots?
+> > 
+> > For the riscpc, arch/arm/mach-rpc
+> > 
+> > > Depending on the answer to these questions, I can think of 3 different
+> > > nice ways to fix the regression. Reverting
+> > > 02bb584f3b1cfc8188522a4d2c8881b65073a4f1 is not one of them,
+> > 
+> > Well, I've tried it, and unfortunately it doesn't work.  The result is
+> > that with the board_info in place, the i2c-acorn bus seems to no longer
+> > be registered as bus 0, but becomes bus 1.
+> 
+> The following patch should fix it:
+> 
+> ---
+>  drivers/i2c/busses/i2c-acorn.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> --- linux-2.6.29-rc5.orig/drivers/i2c/busses/i2c-acorn.c	2009-02-21 14:33:57.000000000 +0100
+> +++ linux-2.6.29-rc5/drivers/i2c/busses/i2c-acorn.c	2009-02-22 11:33:10.000000000 +0100
+> @@ -83,6 +83,7 @@ static struct i2c_algo_bit_data ioc_data
+>  };
+>  
+>  static struct i2c_adapter ioc_ops = {
+> +	.nr			= 0,
+>  	.algo_data		= &ioc_data,
+>  };
+>  
+> @@ -90,7 +91,7 @@ static int __init i2c_ioc_init(void)
+>  {
+>  	force_ones = FORCE_ONES | SCL | SDA;
+>  
+> -	return i2c_bit_add_bus(&ioc_ops);
+> +	return i2c_bit_add_numbered_bus(&ioc_ops);
+>  }
+>  
+>  module_init(i2c_ioc_init);
+> 
 
-Hmm, beacon written after the memory was freed.
+Thanks, that does fix it.  Here's the addition of the boardinfo.  I don't
+have any issue with combining this with your patch above.  Please apply
+for the current -rc series.
 
-> [ 7412.846273]   Object 0xf6438020:  00 30 ab 1a 32 3f e0 24 59 62 25 b5 01 00 00 00 .0«.2?à$Yb%µ....
-> [ 7412.846301]   Object 0xf6438030:  64 00 31 00 00 08 57 69 72 65 6c 65 73 73 01 04 d.1...Wireless..
-> [ 7412.846329]   Object 0xf6438040:  82 84 8b 96 03 01 06 05 04 01 02 00 00 55 fa af .............Uú¯
-> [ 7412.846357]   Object 0xf6438050:  5d 55 fa 5d 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b ]Uú]kkkkkkkkkkkk
-> [ 7412.846385]   Object 0xf6438060:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+Subject: [ARM] Add i2c_board_info for RiscPC PCF8583
 
-...
+Add the necessary i2c_board_info structure to fix the lack of PCF8583
+RTC on RiscPC.
 
-The unsupported jumbo message might be a clue. When we jump to the next: 
-label, the buffer is at the end of the list in software, while in 
-hardware it isn't. In theory, we might hit the bug with rx buffers 
-exhaustion, because the test (bf_last == bf) doesn't work as expected then.
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+
+---
+ arch/arm/mach-rpc/riscpc.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm/mach-rpc/riscpc.c b/arch/arm/mach-rpc/riscpc.c
+index e88d417..c7fc01e 100644
+--- a/arch/arm/mach-rpc/riscpc.c
++++ b/arch/arm/mach-rpc/riscpc.c
+@@ -19,6 +19,7 @@
+ #include <linux/serial_8250.h>
+ #include <linux/ata_platform.h>
+ #include <linux/io.h>
++#include <linux/i2c.h>
+ 
+ #include <asm/elf.h>
+ #include <asm/mach-types.h>
+@@ -201,8 +202,13 @@ static struct platform_device *devs[] __initdata = {
+ 	&pata_device,
+ };
+ 
++static struct i2c_board_info i2c_rtc = {
++	I2C_BOARD_INFO("pcf8583", 0x50)
++};
++
+ static int __init rpc_init(void)
+ {
++	i2c_register_board_info(0, &i2c_rtc, 1);
+ 	return platform_add_devices(devs, ARRAY_SIZE(devs));
+ }
+ 
+
