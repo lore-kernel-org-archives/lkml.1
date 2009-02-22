@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZBVROS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZBVRQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbZBVROS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 12:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZBVROG
+	id S1756177AbZBVRQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 12:16:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZBVRQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 12:14:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40425 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752407AbZBVROD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 12:14:03 -0500
-Date: Sun, 22 Feb 2009 18:13:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-Message-ID: <20090222171344.GC6570@elte.hu>
-References: <499edf47.1818d00a.060b.2b8d@mx.google.com> <499EE162.4050008@oracle.com> <20090220172241.GF24538@elte.hu> <20090220173107.GH5732@nowhere> <20090220174811.GL24538@elte.hu> <y0mtz6nqwe9.fsf@ton.toronto.redhat.com>
+	Sun, 22 Feb 2009 12:16:18 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:41366 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752996AbZBVRQR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 12:16:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PYeCBdzTYDPHtjZ4Mmm55hzzrRL1f5f7+uRD4D7456l2Z/5Nf4mq+dWwoZgbD7D7GP
+         ka17JETag6a4d4BOiHwcEbrP5NWM7ok1y1gzkw3irBukP+WknWNTzQRTNxDHFsAjytpx
+         sZyeq5lYGL3zcqPGjSggSCjKMhzXeVrHj7DV8=
+Date: Sun, 22 Feb 2009 18:10:33 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>, Bob Copeland <me@bob>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090222171032.GD6003@nowhere>
+References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <y0mtz6nqwe9.fsf@ton.toronto.redhat.com>
+In-Reply-To: <20090222170201.GA27360@silver.sucs.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frank Ch. Eigler <fche@redhat.com> wrote:
-
-> Ingo Molnar <mingo@elte.hu> writes:
+On Sun, Feb 22, 2009 at 05:02:01PM +0000, Sitsofe Wheeler wrote:
+> On Sun, Feb 22, 2009 at 03:47:44PM +0100, Frederic Weisbecker wrote:
+> > On Sun, Feb 22, 2009 at 12:20:36PM +0000, Sitsofe Wheeler wrote:
+> > > On Sun, Feb 22, 2009 at 01:01:21PM +0100, Jiri Slaby wrote:
+> > > > The unsupported jumbo message might be a clue. When we jump to the next: 
+> > > > label, the buffer is at the end of the list in software, while in 
+> > > > hardware it isn't. In theory, we might hit the bug with rx buffers 
+> > > > exhaustion, because the test (bf_last == bf) doesn't work as expected then.
+> > > 
+> > > This seems to be happening somewhat regularly now - I've got a small
+> > > collections of the warnings (I'll include them below in case they are
+> > > any help):
+> > > 
+> > > [ 7435.711659] ath5k phy0: unsupported jumbo
+> > > [ 8125.567136] ath5k phy0: noise floor calibration timeout (2417MHz)
+> > > [ 9596.212322] ath5k phy0: unsupported jumbo
+> > > [10697.497598] ath5k phy0: unsupported jumbo
+> > > [11207.740975] =============================================================================
+> > > [11207.740986] BUG kmalloc-4096: Poison overwritten
+> > > [11207.740991] -----------------------------------------------------------------------------
+> > > [11207.740994] 
+> > > [11207.740999] INFO: 0xd7060010-0xd7060053. First byte 0x80 instead of 0x6b
+> > > [11207.741014] INFO: Allocated in dev_alloc_skb+0x21/0x40 age=4990 cpu=0 pid=0
+> > > [11207.741023] INFO: Freed in skb_release_data+0x5e/0x90 age=893 cpu=0 pid=508
+> > > [11207.741030] INFO: Slab 0xc133dd80 objects=7 used=5 fp=0xd7060000 flags=0x400020c3
+> > > [11207.741036] INFO: Object 0xd7060000 @offset=0 fp=0xd70640c0
 > 
-> > [...]
-> > there's i think the KVM usecase where markers are used 
-> > essentially a printk()-alike flexible tracing facility.
-> >
-> > [...]
-> > ./vmx.c:	KVMTRACE_3D(MSR_READ, vcpu, ecx, (u32)data, (u32)(data >> 32),
-> > ./vmx.c:	KVMTRACE_3D(MSR_WRITE, vcpu, ecx, (u32)data, (u32)(data >> 32),
-> > ./vmx.c:	KVMTRACE_0D(PEND_INTR, vcpu, handler);
-> >
-> > I think this could easily be converted to a wrapper around 
-> > ftrace_printk() plus a "kvmtrace" ftrace plugin [...]
+> > Looks like it happens with ath5k driver.
+> > Well, I have an atheros card, so I'm testing it.
 > 
-> It would be even easier converted to the markers API directly,
-> without the KVMTRACE* macro intermediary:
-> 
-> before:
->         KVMTRACE_3D(MSR_READ, &svm->vcpu, ecx, (u32)data,
->                     (u32)(data >> 32), handler);
-> after:
-> 	trace_mark(kvmtrace, "MSR_READ: %p, %08lx, %016Lx\n",
->                              &svm->vcpu, ecx, data);
-> 
-> All this already "just works".
+> Good luck! I've just switched to a different location (with faster wifi
+> and more single network access points ) and I've been totally unable to
+> reproduce this warning.
 
-except that we are removing markers.
+I have some troubles with kmemcheck, so I give up for now.
+Well, by reading the kmemcheck documentation, it tells that there can be some false
+positives so...
 
-	Ingo
+ 
+> If there's some debug output that I produce that will help you let me
+> know...
+
+
+Since we are not sure this is a real bug, I'm not sure it would be interesting.
+
+Well, I will see that later.
+Thanks.
+
+
+> -- 
+> Sitsofe | http://sucs.org/~sits/
+
+
+
