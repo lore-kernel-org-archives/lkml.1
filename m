@@ -1,160 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbZBVQa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbZBVQoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbZBVQa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 11:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZBVQaQ
+	id S1755373AbZBVQoj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 11:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZBVQo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 11:30:16 -0500
-Received: from smtp5.tech.numericable.fr ([82.216.111.41]:55765 "EHLO
-	smtp5.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbZBVQaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 11:30:15 -0500
-Message-ID: <49A17D90.1080905@numericable.fr>
-Date: Sun, 22 Feb 2009 17:30:08 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sun, 22 Feb 2009 11:44:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60768 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752407AbZBVQo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 11:44:27 -0500
+Date: Sun, 22 Feb 2009 17:44:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] kmemcheck updates for -tip
+Message-ID: <20090222164419.GA28442@elte.hu>
+References: <20090222135739.GA28619@damson.getinternet.no>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][SMACK] convert smack rule list to linux list
-References: <fa.JI7eCUCI0gjfyTdUdhIf4ZvZn1Q@ifi.uio.no> <fa.VIgNcVDTCE/wNXrAutvWzCWynf0@ifi.uio.no> <fa.JLh+cst3ii911Hjql2Um0CktNnM@ifi.uio.no> <fa.C6JdJ3BhdOO3tiGIAv+XuVpBjBk@ifi.uio.no>
-In-Reply-To: <fa.C6JdJ3BhdOO3tiGIAv+XuVpBjBk@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090222135739.GA28619@damson.getinternet.no>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Sun, Feb 22, 2009 at 10:13:49PM +0900, Tetsuo Handa wrote:
->> Paul, would you review this locking?
->>
->>> static DEFINE_MUTEX(smack_known_lock);
->>>
->>> /**
->>>  * smk_import_entry - import a label, return the list entry
->>>  * @string: a text string that might be a Smack label
->>>  * @len: the maximum size, or zero if it is NULL terminated.
->>>  *
->>>  * Returns a pointer to the entry in the label list that
->>>  * matches the passed string, adding it if necessary.
->>>  */
->>> struct smack_known *smk_import_entry(const char *string, int len)
->>> {
->>> 	struct smack_known *skp;
->>> 	char smack[SMK_LABELLEN];
->>> 	int found;
->>> 	int i;
->>>
->>> 	if (len <= 0 || len > SMK_MAXLEN)
->>> 		len = SMK_MAXLEN;
->>>
->>> 	for (i = 0, found = 0; i < SMK_LABELLEN; i++) {
->>> 		if (found)
->>> 			smack[i] = '\0';
->>> 		else if (i >= len || string[i] > '~' || string[i] <= ' ' ||
->>> 			 string[i] == '/') {
->>> 			smack[i] = '\0';
->>> 			found = 1;
->>> 		} else
->>> 			smack[i] = string[i];
->>> 	}
->>>
->>> 	if (smack[0] == '\0')
->>> 		return NULL;
->>>
->>> 	mutex_lock(&smack_known_lock);
->>>
->>> 	for (skp = smack_known; skp != NULL; skp = skp->smk_next)
->>> 		if (strncmp(skp->smk_known, smack, SMK_MAXLEN) == 0)
->>> 			break;
->>>
->>> 	if (skp == NULL) {
->>> 		skp = kzalloc(sizeof(struct smack_known), GFP_KERNEL);
->>> 		if (skp != NULL) {
->>> 			skp->smk_next = smack_known;
->>> 			strncpy(skp->smk_known, smack, SMK_MAXLEN);
->>> 			skp->smk_secid = smack_next_secid++;
->>> 			skp->smk_cipso = NULL;
->>> 			spin_lock_init(&skp->smk_cipsolock);
->>> 			/*
->>> 			 * Make sure that the entry is actually
->>> 			 * filled before putting it on the list.
->>> 			 */
->>> 			smp_mb();
->>> 			smack_known = skp;
-> 
-> If the read side is not acquiring smack_known_lock, then the above
-> assignment to smack_known needs to be:
-> 
-> 			rcu_assign_pointer(smack_known, skp);
-> 
-> Otherwise, both CPU and compiler are within their rights to reorder
-> the assignment to smack_known ahead of the initialization code.
-> 
-> Alternatively, if you make this list use a standard struct list_head,
-> you could just use list_add_rcu().
->
-that's what i was going to do ;)
 
- 
->>> 		}
->>> 	}
->>>
->>> 	mutex_unlock(&smack_known_lock);
->>>
->>> 	return skp;
->>> }
->>>
->>> /**
->>>  * smack_from_secid - find the Smack label associated with a secid
->>>  * @secid: an integer that might be associated with a Smack label
->>>  *
->>>  * Returns a pointer to the appropraite Smack label if there is one,
->>>  * otherwise a pointer to the invalid Smack label.
->>>  */
->>> char *smack_from_secid(const u32 secid)
->>> {
->>> 	struct smack_known *skp;
->>>
->>> 	for (skp = smack_known; skp != NULL; skp = skp->smk_next)
->>> 		if (skp->smk_secid == secid)
->>> 			return skp->smk_known;
->>>
->>> 	/*
->>> 	 * If we got this far someone asked for the translation
->>> 	 * of a secid that is not on the list.
->>> 	 */
->>> 	return smack_known_invalid.smk_known;
->>> }
->> I think this is a case called "dependency ordering".
->> This function needs rcu_dereference(), doesn't it?
-> 
-> Indeed!  The "for" loop needs to be:
-> 
-> 	for (skp = rcu_dereference(smack_known); skp != NULL; skp = rcu_dereference(skp->smk_next))
-> 
-> Alternatively, if you switch to struct list_head, you could use
-> list_for_each_entry_rcu().
-> 
-> There also need to be rcu_read_lock() and rcu_read_unlock() in here
-> somewhere.  Where they must be depends on how (or whether) you are
-> ever removing any elements.  If the string referenced by smk_known
-> gets freed up, then the caller will need to surround the call to
-> smack_from_secid() and the use of the return value with rcu_read_lock()
-> and rcu_read_unlock().  Otherwise, only the smack_known structures are
-> ever freed up, then just the "for" loop above needs to be so protected.
-> 
-> If these structure are never freed, then please add a comment.
-> 
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-for the time being there are not freed; but if think it's safer to add the 
-"rcu_read_lock()/rcu_read_unlock()" anyway (in case someone want to implement a del in the future)
-I don't think they are any downside?
+> Hi,
+> 
+> Here are the latest kmemcheck developments. Changes are basically:
+> 
+> 1. Bitfield annotations.
+> 2. Fix REP handling on P4s.
+> 3. Page allocator hooks.
+> 
+> At boot, I get two false positives, in copy_mount_options() and
+> __dequeue_signal(). I've also seen two spontaneous floods of warnings from
+> somewhere in aio code, but I couldn't pinpoint exactly why things went
+> wrong. I guess it will need a bit more research.
+> 
+> 
+> Vegard
+> 
+> 
+> The following changes since commit 2215d76c949375d38b33f32580908accfffbb461:
+>   Ingo Molnar (1):
+>         Merge branch 'x86/core' into kmemcheck
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git for-tip
+> 
+> Vegard Nossum (12):
+>       kmemcheck: bitfield API
+>       net: use kmemcheck bitfields API for skbuff
+>       net: annotate bitfields in struct inet_sock
+>       ieee1394: annotate bitfield
+>       ieee1394/csr1212: fix false positive kmemcheck report
+>       kmemcheck: annotate inet_timewait_sock bitfields
+>       kmemcheck: disable fast string operations on P4 CPUs
+>       kmemcheck: rip out REP instruction emulation
+>       kmemcheck: add hooks for page- and sg-dma-mappings
+>       kmemcheck: don't track allocated page tables
+>       kmemcheck: add hooks for the page allocator
+>       kmemcheck: depend on !SLUB_DEBUG_ON
+> 
+>  arch/x86/Kconfig.debug             |    2 +-
+>  arch/x86/include/asm/dma-mapping.h |    6 ++
+>  arch/x86/include/asm/thread_info.h |    4 +-
+>  arch/x86/kernel/cpu/intel.c        |   23 +++++++
+>  arch/x86/mm/kmemcheck/kmemcheck.c  |  121 +-----------------------------------
+>  arch/x86/mm/kmemcheck/opcode.c     |   13 +----
+>  arch/x86/mm/kmemcheck/opcode.h     |    3 +-
+>  arch/x86/mm/kmemcheck/shadow.c     |    8 +++
+>  arch/x86/mm/pgtable.c              |   12 ++--
+>  drivers/ieee1394/csr1212.c         |    2 +
+>  drivers/ieee1394/nodemgr.c         |    7 ++-
+>  include/linux/gfp.h                |    5 ++
+>  include/linux/kmemcheck.h          |   72 ++++++++++++++++++++--
+>  include/linux/skbuff.h             |   33 ++++++----
+>  include/net/inet_sock.h            |   26 +++++---
+>  include/net/inet_timewait_sock.h   |   11 ++-
+>  mm/kmemcheck.c                     |   45 ++++++++++----
+>  mm/page_alloc.c                    |    8 +++
+>  mm/slab.c                          |   15 +++--
+>  mm/slub.c                          |   23 +++++--
+>  net/core/skbuff.c                  |    8 +++
+>  net/ipv4/inet_timewait_sock.c      |    3 +
+>  22 files changed, 252 insertions(+), 198 deletions(-)
 
-thanks for the explanations!
+Pulled into tip:kmemcheck and started testing it, thanks Vegard!
 
-
-
+	Ingo
