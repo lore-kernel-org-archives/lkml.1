@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbZBVMUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbZBVMUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbZBVMUb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 07:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbZBVMTg
+	id S1754394AbZBVMUy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 07:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbZBVMTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 07:19:36 -0500
-Received: from cathcart.site5.com ([74.54.107.137]:43144 "EHLO
+	Sun, 22 Feb 2009 07:19:39 -0500
+Received: from cathcart.site5.com ([74.54.107.137]:43152 "EHLO
 	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754470AbZBVMTf (ORCPT
+	with ESMTP id S1754702AbZBVMTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 07:19:35 -0500
+	Sun, 22 Feb 2009 07:19:38 -0500
 From: Mike Rapoport <mike@compulab.co.il>
 To: dbrownell@users.sourceforge.net
 Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        dcbw@redhat.com, andrey@cozybit.com,
        Mike Rapoport <mike@compulab.co.il>
-Subject: [PATCH RESEND 1/3] SPI: add dma_alignment field to spi_master
-Date: Sun, 22 Feb 2009 14:19:16 +0200
-Message-Id: <b9186e380ae53df7b4ce65a552b39d34879f3dd6.1234167048.git.mike@compulab.co.il>
+Subject: [PATCH RESEND 3/3] spi_imx: set spi_master.dma_alignment = 4
+Date: Sun, 22 Feb 2009 14:19:18 +0200
+Message-Id: <fbb789f954d4dc939100f6d3e823f4dc4d8c2205.1234167048.git.mike@compulab.co.il>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <cover.1234167048.git.mike@compulab.co.il>
 References: <cover.1234167048.git.mike@compulab.co.il>
@@ -33,41 +33,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some SPI controllers have restrictions on DMAable buffers alignemt.
-Currently if the buffer supplied by protocol driver is not properly
-aligned, the controller silently performs transfer in PIO mode.
-Addition of dma_alignment field to spi_master allows protocol drivers to
-perform proper alignment.
-
 Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 ---
- include/linux/spi/spi.h |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/spi/spi_imx.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
-index 68bb1c5..2cc43fa 100644
---- a/include/linux/spi/spi.h
-+++ b/include/linux/spi/spi.h
-@@ -204,6 +204,7 @@ static inline void spi_unregister_driver(struct spi_driver *sdrv)
-  *	SPI slaves, and are numbered from zero to num_chipselects.
-  *	each slave has a chipselect signal, but it's common that not
-  *	every chipselect is connected to a slave.
-+ * @dma_alignment: SPI controller constraint on DMA buffers alignment.
-  * @setup: updates the device mode and clocking records used by a
-  *	device's SPI controller; protocol code may call this.  This
-  *	must fail if an unrecognized or unsupported mode is requested.
-@@ -239,6 +240,11 @@ struct spi_master {
- 	 */
- 	u16			num_chipselect;
+diff --git a/drivers/spi/spi_imx.c b/drivers/spi/spi_imx.c
+index 269a55e..b36b5a1 100644
+--- a/drivers/spi/spi_imx.c
++++ b/drivers/spi/spi_imx.c
+@@ -186,6 +186,7 @@
+ #define QUEUE_STOPPED			(1)
  
-+	/* some SPI controllers pose alignment requirements on DMAable
-+	 * buffers; let protocol drivers know about these requirements.
-+	 */
-+	u16			dma_alignment;
-+
- 	/* setup mode and clock, etc (spi driver may call many times) */
- 	int			(*setup)(struct spi_device *spi);
+ #define IS_DMA_ALIGNED(x) 		(((u32)(x) & 0x03) == 0)
++#define DMA_ALIGNMENT			4
+ /*-------------------------------------------------------------------------*/
  
+ 
+@@ -1481,6 +1482,7 @@ static int __init spi_imx_probe(struct platform_device *pdev)
+ 
+ 	master->bus_num = pdev->id;
+ 	master->num_chipselect = platform_info->num_chipselect;
++	master->dma_alignment = DMA_ALIGNMENT;
+ 	master->cleanup = cleanup;
+ 	master->setup = setup;
+ 	master->transfer = transfer;
 -- 
 1.5.6.4
 
