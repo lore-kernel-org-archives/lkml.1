@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZBVBtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZBVCrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZBVBtw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 20:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZBVBtn
+	id S1755636AbZBVCrc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 21:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbZBVCrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 20:49:43 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:47968 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbZBVBtm (ORCPT
+	Sat, 21 Feb 2009 21:47:24 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:63141 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbZBVCrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 20:49:42 -0500
-Subject: Re: next-20090220: XFS, IMA: BUG: sleeping function called from
-	invalid  context at mm/slub.c:1613
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: a.beregalov@gmail.com, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, xfs@oss.sgi.com, jmorris@namei.org,
-       david safford <safford@watson.ibm.com>
-In-Reply-To: <20090220142807.a28734a8.akpm@linux-foundation.org>
-References: <a4423d670902200300n1d1bfdeeg6daca4b32989c9d3@mail.gmail.com>
-	 <20090220122242.b36a778f.akpm@linux-foundation.org>
-	 <1235168219.3019.4.camel@localhost.localdomain>
-	 <20090220142807.a28734a8.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 21 Feb 2009 20:49:37 -0500
-Message-Id: <1235267377.3441.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Feb 2009 21:47:23 -0500
+Date: Sat, 21 Feb 2009 21:47:11 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and hibernation for 2.6.29
+In-reply-to: <alpine.LFD.2.00.0902211417401.3111@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0902212145050.5009@localhost.localdomain>
+References: <200902140157.40869.rjw@sisk.pl>
+ <alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
+ <200902211038.42169.rjw@sisk.pl> <20090221182902.GB12472@suse.de>
+ <49A056D5.5090909@linux.intel.com> <20090221194807.GA13114@suse.de>
+ <alpine.LFD.2.00.0902211417401.3111@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-20 at 14:28 -0800, Andrew Morton wrote: 
-> On Fri, 20 Feb 2009 17:16:59 -0500
-> Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
-> 
-> > integrity: ima iint radix_tree_lookup locking fix
-> > 
-> > Based on Andrew Morton's comments:
-> > - add missing locks around radix_tree_lookup in ima_iint_insert()
-> > 
-> > Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> > 
-> > Index: security-testing-2.6/security/integrity/ima/ima_iint.c
-> > ===================================================================
-> > --- security-testing-2.6.orig/security/integrity/ima/ima_iint.c
-> > +++ security-testing-2.6/security/integrity/ima/ima_iint.c
-> > @@ -73,8 +73,10 @@ out:
-> >  	if (rc < 0) {
-> >  		kmem_cache_free(iint_cache, iint);
-> >  		if (rc == -EEXIST) {
-> > +			spin_lock(&ima_iint_lock);
-> >  			iint = radix_tree_lookup(&ima_iint_store,
-> >  						 (unsigned long)inode);
-> > +			spin_unlock(&ima_iint_lock);
-> >  		} else
-> >  			iint = NULL;
-> >  	}
-> 
-> Can the -EEXIST ever actually happen?
 
-> On the inode_init_always() path (at least), I don't think that any
-> other thread of control can have access to this inode*, so there is no
-> way in which a race can result in someone else adding this inode
-> first?
+> I took them all, and added both of you to the cc, so if/when things break 
+> and get bisected to this series, both of you should be cc'd on the 
+> discussion.
 
-True, but for those inodes which were allocated before IMA was enabled
-and are being allocated in ima_iint_find_insert_get(), it could be an
-issue.
+Okay, I'll delete them from my suspend branch.
 
-> Also, idle question: why does the radix tree exist at all?  Would it
-> have been possible to just add a `struct ima_iint_cache *' field to the
-> inode instead?
-
-Up until November the iint was defined directly in the inode. This
-changed based on Christoph Hellwig's posting
-http://lkml.org/lkml/2008/10/14/170 where he said, "bloating the inode
-for this is not an option".
-
-Mimi Zohar
+thanks,
+-Len
 
