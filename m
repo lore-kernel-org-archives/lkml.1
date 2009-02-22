@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZBVDjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZBVDmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZBVDjd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 22:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBVDjY
+	id S1755936AbZBVDmp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 22:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBVDmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 22:39:24 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47177 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655AbZBVDjX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 22:39:23 -0500
-Date: Sun, 22 Feb 2009 12:38:22 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH] new irq tracer
-Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net, fweisbec@gmail.com, compudj@krystal.dyndns.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20090220195236.GB3104@redhat.com>
-References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com>
-Message-Id: <20090222123543.359C.A69D9226@jp.fujitsu.com>
+	Sat, 21 Feb 2009 22:42:35 -0500
+Received: from colo.lackof.org ([198.49.126.79]:42529 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752106AbZBVDme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Feb 2009 22:42:34 -0500
+Date: Sat, 21 Feb 2009 20:42:19 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Robert Hancock <hancockrwd@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: enable MSI on 8132
+Message-ID: <20090222034219.GH2567@colo.lackof.org>
+References: <499B724A.2040408@kernel.org> <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm> <499B774C.5010705@kernel.org> <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm> <499B9129.50104@kernel.org> <499CD466.1060900@gmail.com> <m1fxi82pq0.fsf@fess.ebiederm.org> <86802c440902210031j698403cev2147e72a61e17194@mail.gmail.com> <m1r61sf9oo.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1r61sf9oo.fsf@fess.ebiederm.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  /**
->   * handle_IRQ_event - irq action chain handler
->   * @irq:	the interrupt number
-> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
->  		local_irq_enable_in_hardirq();
->  
->  	do {
-> +		trace_irq_entry(irq);
->  		ret = action->handler(irq, action->dev_id);
-> +		trace_irq_exit(irq, ret);
->  		if (ret == IRQ_HANDLED)
->  			status |= action->flags;
->  		retval |= ret;
+On Sat, Feb 21, 2009 at 12:58:31AM -0800, Eric W. Biederman wrote:
+...
+> The difference is that there is a magic address on x86 that all MSI
+> cycles are sent to.  I think it is 0xfffe0000.
 
-Nobdy want unnecessary redundant tracepoint.
-Please discuss with mathieu, and merge his tracepoint.
+arch/x86/include/asm/msidef.h:#define MSI_ADDR_BASE_LO          0xfee00000
 
+Intel spells out the details in:
+    http://www.intel.com/products/processor/manuals/index.htm
 
+"Volume 3A: System Programming Guide, Part 1"
+See chapter "9.4 LOCAL APIC"
 
+>  In an msi to HT
+> mapping capability it is necessary to program in the address to listen
+> for msi packets.  That is very much an arch dependent thing.
+
+Indeed. parisc and (AFAIK) alpha have the same ability but use completely
+different address ranges depending on the chipset as well.
+
+thanks,
+grant
