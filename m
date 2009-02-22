@@ -1,98 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZBVJ0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZBVJ1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbZBVJ0d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 04:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZBVJ0Y
+	id S1754558AbZBVJ1n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 04:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZBVJ1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 04:26:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56280 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbZBVJ0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 04:26:23 -0500
-Date: Sun, 22 Feb 2009 10:26:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: hpa@zytor.com, mingo@redhat.com, torvalds@linux-foundation.org,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [tip:x86/mm] x86, mm: fault.c, simplify kmmio_fault()
-Message-ID: <20090222092608.GD6964@elte.hu>
-References: <tip-b814d41f0987c7648d7ed07471258101c95c026b@kernel.org> <20090221013845.718d507a@daedalus.pq.iki.fi>
+	Sun, 22 Feb 2009 04:27:32 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:17480 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750973AbZBVJ1b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 04:27:31 -0500
+Message-ID: <49A11A24.9080709@panasas.com>
+Date: Sun, 22 Feb 2009 11:25:56 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090221013845.718d507a@daedalus.pq.iki.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.29-rc5
+References: <1235170927.9025.42.camel@localhost.localdomain> <49A11860.3000406@panasas.com>
+In-Reply-To: <49A11860.3000406@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Feb 2009 09:26:11.0773 (UTC) FILETIME=[99E36ED0:01C994CF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pekka Paalanen <pq@iki.fi> wrote:
-
-> On Fri, 20 Feb 2009 22:40:09 GMT
-> Ingo Molnar <mingo@elte.hu> wrote:
+Boaz Harrosh wrote:
+Boaz Harrosh wrote:
+> James Bottomley wrote:
+>> This is a bunch of assorted bug fixes (with several in the qlogic
+>> drivers).
+>>
+>> The patch is available at
+>>
+>> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+>>
+>> The short changelog is:
+>>
+>> Andrew Vasquez (3):
+>>       qla2xxx: Update version number to 8.03.00-k3.
+>>       qla2xxx: Mask out 'reserved' bits while processing FLT regions.
+>>       qla2xxx: Properly acknowledge IDC notification messages.
+>>
+>> Anirban Chakraborty (2):
+>>       qla2xxx: Correct slab-error overwrite during vport creation and deletion.
+>>       qla2xxx: Remove interrupt request bit check in the response processing pat
+>>
+>> Brian King (3):
+>>       ibmvfc: Increase cancel timeout
+>>       ibmvfc: Fix rport relogin
+>>       ibmvfc: Fix command timeout errors
+>>
+>> James Smart (1):
+>>       scsi_scan: add missing interim SDEV_DEL state if slave_alloc fails
+>>
+>> Julia Lawall (1):
+>>       lpfc: introduce missing kfree
+>>
+>> Martin Peschke (1):
+>>       sg: fix device number in blktrace data
+>>
+>> Mike Christie (1):
+>>       libiscsi: Fix scsi command timeout oops in iscsi_eh_timed_out
+>>
+>> Robert Jennings (1):
+>>       ibmvscsi: Correct DMA mapping leak
+>>
+>> Shyam_Iyer@Dell.com (1):
+>>       qla2xxx: fix Kernel Panic with Qlogic 2472 Card.
+>>
+>>
+>> And the diffstat
+>>
+> <snip>
 > 
-> > Author:     Ingo Molnar <mingo@elte.hu>
-> > AuthorDate: Fri, 20 Feb 2009 22:32:10 +0100
-> > Commit:     Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Sat, 21 Feb 2009 00:09:42 +0100
-> > 
-> > x86, mm: fault.c, simplify kmmio_fault()
-> > 
-> > Impact: cleanup
-> > 
-> > Remove an #ifdef from kmmio_fault() - we can do this by
-> > providing default implementations for is_kmmio_active()
-> > and kmmio_handler(). The compiler optimizes it all away
-> > in the !CONFIG_MMIOTRACE case.
-> > 
-> > Also, while at it, clean up mmiotrace.h a bit:
-> > 
-> >  - standard header guards
-> >  - standard vertical spaces for structure definitions
-> > 
-> > No code changed (both with mmiotrace on and off in the config):
-> > 
-> >    text	   data	    bss	    dec	    hex	filename
-> >    2947	     12	     12	   2971	    b9b	fault.o.before
-> >    2947	     12	     12	   2971	    b9b	fault.o.after
-> > 
-> > Cc: Pekka Paalanen <pq@iki.fi>
-> > Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
+> James Hello.
 > 
-> Acked-by: Pekka Paalanen <pq@iki.fi>
-> except for one minor detail below.
+> Please, you must include a BUG fix patch I sent to the osd_uld, that was found
+> by users, with use of old osd-targets. (It was sitting in next for a while now)
+> It's an obvious BUG, no point of sending it the @stable way later.
 > 
-> > 
-> > ---
-> >  arch/x86/mm/fault.c       |    5 ++-
-> >  include/linux/mmiotrace.h |   78 +++++++++++++++++++++++++++------------------
-> >  2 files changed, 50 insertions(+), 33 deletions(-)
-> > 
-> > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-> > index 3e36614..fe99af4 100644
-> > --- a/arch/x86/mm/fault.c
-> > +++ b/arch/x86/mm/fault.c
-> > @@ -55,13 +55,14 @@ enum x86_pf_error_code {
-> >  	PF_INSTR	=		1 << 4,
-> >  };
-> >  
-> > +/*
-> > + * (returns 0 if mmiotrace is disabled)
+> http://www.spinics.net/lists/linux-scsi/msg33243.html
 > 
-> Returns 0 if the fault was not handled in mmiotrace.
+> Do you need that I resend it?
+> 
+> Thanks in advance
+> Boaz
+> 
 
-ok, i've updated the comment. I did not mean the comment to be 
-an exclusive statement, but in hindsight it's indeed ambiguous.
+> James Bottomley wrote:
+>> This is a bunch of assorted bug fixes (with several in the qlogic
+>> drivers).
+>>
+>> The patch is available at
+>>
+>> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+>>
+>> The short changelog is:
+>>
+>> Andrew Vasquez (3):
+>>       qla2xxx: Update version number to 8.03.00-k3.
+>>       qla2xxx: Mask out 'reserved' bits while processing FLT regions.
+>>       qla2xxx: Properly acknowledge IDC notification messages.
+>>
+>> Anirban Chakraborty (2):
+>>       qla2xxx: Correct slab-error overwrite during vport creation and deletion.
+>>       qla2xxx: Remove interrupt request bit check in the response processing pat
+>>
+>> Brian King (3):
+>>       ibmvfc: Increase cancel timeout
+>>       ibmvfc: Fix rport relogin
+>>       ibmvfc: Fix command timeout errors
+>>
+>> James Smart (1):
+>>       scsi_scan: add missing interim SDEV_DEL state if slave_alloc fails
+>>
+>> Julia Lawall (1):
+>>       lpfc: introduce missing kfree
+>>
+>> Martin Peschke (1):
+>>       sg: fix device number in blktrace data
+>>
+>> Mike Christie (1):
+>>       libiscsi: Fix scsi command timeout oops in iscsi_eh_timed_out
+>>
+>> Robert Jennings (1):
+>>       ibmvscsi: Correct DMA mapping leak
+>>
+>> Shyam_Iyer@Dell.com (1):
+>>       qla2xxx: fix Kernel Panic with Qlogic 2472 Card.
+>>
+>>
+>> And the diffstat
+>>
+> <snip>
+> 
+> James Hello.
+> 
+> Please, you must include a BUG fix patch I sent to the osd_uld, that was found
+> by users, with use of old osd-targets. (It was sitting in next for a while now)
+> It's an obvious BUG, no point of sending it the @stable way later.
+> 
+> http://www.spinics.net/lists/linux-scsi/msg33243.html
+> 
+> Do you need that I resend it?
+> 
+> Thanks in advance
+> Boaz
+> 
 
-	Ingo
+Please, completely ignore. Need my morning coffee. Don't know what happened
+to me, I did not smoke anything Friday night.
+
+Sorry for the noise
+Boaz
+
+
+ 
