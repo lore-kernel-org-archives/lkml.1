@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZBVWxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZBVW6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbZBVWxU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbZBVWxJ
+	id S1755502AbZBVW6q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbZBVW6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:53:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63803 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753172AbZBVWxJ (ORCPT
+	Sun, 22 Feb 2009 17:58:38 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:35902 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbZBVW6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:53:09 -0500
-Date: Sun, 22 Feb 2009 17:53:04 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
- conversions
-In-Reply-To: <87y6vyuzsn.fsf@basil.nowhere.org>
-Message-ID: <alpine.DEB.2.00.0902221741040.18221@gandalf.stny.rr.com>
-References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <87y6vyuzsn.fsf@basil.nowhere.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Feb 2009 17:58:38 -0500
+Date: Mon, 23 Feb 2009 00:00:31 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kernel building procedure changed?
+Message-ID: <20090222230031.GB30619@uranus.ravnborg.org>
+References: <20090222220747.GB7279@localhost> <20090222221653.GA30498@uranus.ravnborg.org> <49A1D167.8050801@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A1D167.8050801@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
-On Sun, 22 Feb 2009, Andi Kleen wrote:
-
-> Steven Rostedt <rostedt@goodmis.org> writes:
+On Sun, Feb 22, 2009 at 11:27:51PM +0100, Jiri Slaby wrote:
+> On 22.2.2009 23:16, Sam Ravnborg wrote:
+> >On Mon, Feb 23, 2009 at 01:07:48AM +0300, Cyrill Gorcunov wrote:
+> >>Hi all,
+> >>
+> >>I found a bit strange thing happens now --
+> >>plain
+> >>
+> >>	make arch/x86/kernel/head64.o
+> >>
+> >>doesn't work anymore. Instead of compiling
+> >>_just_ this file I've got the following:
+> >>
+> >>---
+> >>cyrill@lenovo linux-2.6.git $ make arch/x86/kernel/head64.o
+> >>   CHK     include/linux/version.h
+> >>   CHK     include/linux/utsrelease.h
+> >>   SYMLINK include/asm ->  include/asm-x86
+> >>   CALL    scripts/checksyscalls.sh
+> >>   CHK     include/linux/compile.h
+> >>   AS      arch/x86/kernel/head_64.o
+> >>   VDSOSYM arch/x86/vdso/vdso-syms.lds
+> >>   VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
+> >>   VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
+> >>   VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
+> >>   VDSOSYM arch/x86/vdso/vdso32-syms.lds
+> >>   LD      arch/x86/vdso/built-in.o
+> >>   CC      fs/hpfs/dnode.o
+> >>make[2]: *** [fs/hpfs/dnode.o] Interrupt
+> >>make[1]: *** [fs/hpfs] Interrupt
+> >>make: *** [fs] Interrupt
+> >>---
+> >>
+> >>I've done make allyesconfig previously.
+> >>I don't understand what I'm doing wrong... :(
+> >
+> >I should work...
 > 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> >
-> > Impact: keep kernel text read only
-> >
-> > Because dynamic ftrace converts the calls to mcount into and out of
-> > nops at run time, we needed to always keep the kernel text writable.
-> >
-> > But this defeats the point of CONFIG_DEBUG_RODATA. This patch converts
-> > the kernel code to writable before ftrace modifies the text, and converts
-> > it back to read only afterward.
-> >
-> > The conversion is done via stop_machine and no IPIs may be executed
-> > at that time. The kernel text is set to write just before calling
-> > stop_machine and set to read only again right afterward.
-> 
-> The very old text poke code I had for this just used a dynamic
-> mapping elsewhere instead to modify the code. That's much less
-> intrusive than changing the complete mappings. Any reason you can't use 
-> that too?
-> 
+> It is matter of days, new mmotm doesn't work either, older did.
 
-We are changing over 19000 locations in the kernel. This touches almost 
-all kernel text pages anyway. You want to map a page in and out for over 
-19000 locations?
+Does it happen with -next?
+Does it happen with mainline?
+I need to know what tree to look at - and I do not have mmotm handy.
 
--- Steve
-
+	Sam
