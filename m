@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZBVDaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZBVDjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZBVDaE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 22:30:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZBVD3y
+	id S1755814AbZBVDjd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 22:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBVDjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 22:29:54 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58425 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752660AbZBVD3x (ORCPT
+	Sat, 21 Feb 2009 22:39:24 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47177 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbZBVDjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 22:29:53 -0500
-Message-ID: <49A0C693.6000407@zytor.com>
-Date: Sat, 21 Feb 2009 19:29:23 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 21 Feb 2009 22:39:23 -0500
+Date: Sun, 22 Feb 2009 12:38:22 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] new irq tracer
+Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       acme@ghostprotocols.net, fweisbec@gmail.com, compudj@krystal.dyndns.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+In-Reply-To: <20090220195236.GB3104@redhat.com>
+References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com>
+Message-Id: <20090222123543.359C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Philippe Grenard <philippe.grenard@laposte.net>
-CC: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       John Stoffel <john@stoffel.org>
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
-References: <200902131944.56634.philippe.grenard@laposte.net> <200902202108.55332.philippe.grenard@laposte.net> <20090220215830.GB30665@elte.hu> <200902211121.46292.philippe.grenard@laposte.net>
-In-Reply-To: <200902211121.46292.philippe.grenard@laposte.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philippe Grenard wrote:
-> On Friday 20 February 2009 22:58:30 Ingo Molnar wrote:
->> * Philippe Grenard <philippe.grenard@laposte.net> wrote:
->>> dc1e35c6e95e8923cf1d3510438b63c600fee1e2 is first bad commit
->>> commit dc1e35c6e95e8923cf1d3510438b63c600fee1e2
->>> Author: Suresh Siddha <suresh.b.siddha@intel.com>
->>> Date:   Tue Jul 29 10:29:19 2008 -0700
->>>
->>>     x86, xsave: enable xsave/xrstor on cpus with xsave support
->> [...]
->>
->>> A bit of googling gave me this :
->>> http://lkml.org/lkml/2009/1/19/161
->>> which exactly corresponds to my problem with 2.6.28 !
->>>
->>> A "solution" proposed was to try to check the bios setting
->>> "cpuid value limit" and disable it if enabled. This did help
->>> me to boot 2.6.28 or previously failing kernel compiled during
->>> git-bisect, but gave me the "random freeze" any way....
->> Note that the workaround for that BIOS bug is already in the
->> latest upstream kernel, i.e. in 2.6.29-rc5.
->>
->> Could you please try -rc5, whether it works out of box?
->>
->> If you still see freezes, could you try the "nofxsr" boot
->> option? That will turn off the new FPU code both in the hw and
->> in the kernel.
->>
->> 	Ingo
-> 
-> Hello Ingo, thanks for your reply,
-> 
-> I've tried to boot 2.6.29-rc5 with both "Max CPUID Value" Enabled and 
-> Disabled, and tried for both case the "nofxsr" option without better result...
-> 
-> As I said before, I use the default dsdt table : can this be a problem too ?
+>  /**
+>   * handle_IRQ_event - irq action chain handler
+>   * @irq:	the interrupt number
+> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+>  		local_irq_enable_in_hardirq();
+>  
+>  	do {
+> +		trace_irq_entry(irq);
+>  		ret = action->handler(irq, action->dev_id);
+> +		trace_irq_exit(irq, ret);
+>  		if (ret == IRQ_HANDLED)
+>  			status |= action->flags;
+>  		retval |= ret;
 
-OK, this is a completely different problem then.  Any way you could do a
-"git bisect" to track down the exact place where this broke?
+Nobdy want unnecessary redundant tracepoint.
+Please discuss with mathieu, and merge his tracepoint.
 
-	-hpa
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
 
