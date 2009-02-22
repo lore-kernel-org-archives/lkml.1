@@ -1,86 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZBVMyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbZBVNEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZBVMyx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 07:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZBVMym
+	id S1754488AbZBVNEN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 08:04:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZBVND6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 07:54:42 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:52491 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbZBVMyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 07:54:41 -0500
-To: Prakash Punnoor <prakash@punnoor.de>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com,
-       linux-pci@vger.kernel.org
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-	<499FD623.1010105@kernel.org> <49A04F1E.7020006@gmail.com>
-	<200902221308.55053.prakash@punnoor.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 22 Feb 2009 04:54:54 -0800
-In-Reply-To: <200902221308.55053.prakash@punnoor.de> (Prakash Punnoor's message of "Sun\, 22 Feb 2009 13\:08\:54 +0100")
-Message-ID: <m1iqn2ein5.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: prakash@punnoor.de, linux-pci@vger.kernel.org, DL-MPTFusionLinux@lsi.com, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, matthew@wil.cx, david@lang.hm, akpm@linux-foundation.org, jbarnes@virtuousgeek.org, yinghai@kernel.org, hancockrwd@gmail.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Prakash Punnoor <prakash@punnoor.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0013]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pci: enable MSI on 8132
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Sun, 22 Feb 2009 08:03:58 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:42654 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751189AbZBVND5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 08:03:57 -0500
+Date: Sun, 22 Feb 2009 14:03:52 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jean Delvare <khali@linux-fr.org>, Wolfram Sang <w.sang@pengutronix.de>,
+       Juergen Beisert <j.beisert@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ben Dooks <ben-linux-arm@fluff.org>, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: PCF8583 not detected on RiscPC
+Message-ID: <20090222140352.5cd02fd6@i1501.lan.towertech.it>
+In-Reply-To: <20090222112654.GC28025@n2100.arm.linux.org.uk>
+References: <20090221194814.GA24385@n2100.arm.linux.org.uk>
+	<20090221204147.GA25408@n2100.arm.linux.org.uk>
+	<20090222011936.35b21d6b@i1501.lan.towertech.it>
+	<20090222082829.GG16596@n2100.arm.linux.org.uk>
+	<20090222104205.4539d3ef@i1501.lan.towertech.it>
+	<20090222095150.GA28025@n2100.arm.linux.org.uk>
+	<20090222113544.4501f06a@i1501.lan.towertech.it>
+	<20090222112654.GC28025@n2100.arm.linux.org.uk>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 22 Feb 2009 11:26:54 +0000
+Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-Prakesh could you try this patch instead?
 
-I think the problem is simply that the MCP55 ht mapping capability
-requires an address to be programed into it and it wasn't in your
-case.
+> I refer you to bb71f99f8daefb4a2c2441298bc127aaff9af947 and the
+> discussion resulting from that commit, and changed in your commit
+> 09a21e56dc3767ce444e21c1383d587b261af13c.
 
-It should not hurt to enable one msi ht mapping capability too many.
+ As I said, the driver was born without the additional
+ depend. 
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index baad093..f7a0370 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -2017,10 +2017,19 @@ static void __devinit ht_enable_msi_mapping(struct pci_dev *dev)
- 	while (pos && ttl--) {
- 		u8 flags;
+ http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9c0c570576d02000063e28faadcce8c07396755d
+
+ You then added it in
+
+ http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bb71f99f8daefb4a2c2441298bc127aaff9af947
  
--		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
--					 &flags) == 0) {
-+		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS, &flags))
-+			return;
-+
-+		if (!(flags & HT_MSI_FLAGS_ENABLE)) {
- 			dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
+ crating an arch specific driver from a driver that
+ was mostly generic. I wasn't in Cc and I didn't noticed at that time.
+
+  If you had it sent to me I would have told you that it
+ was plain wrong. 
+
+ When I did the Kconfig cleanup I noticed an additional
+ dependency and removed it. This was not done because I don't
+ like acorn, the arm stuff (to which I have too contributed)
+ or anyone else.
+
+
+> >  I don't know who converted the acorn platform to
+> >  use it and I can't care less. Who did should have checked the driver 
+> >  for compatibility with his own platform before migrating from the driver under
+> >  drivers/char/ .
+> 
+> Which bit of "it used to work" did you miss?  At the time of converesion,
+> it was checked and after some initial trivial bug fixing and it was
+> working, and continued to work up until this recent breakage.
+
+ I was discussing about the non-platform-specific nature of the driver.
+
+ The breakage happened because the whole i2c stack has been revamped.
+ It has been discussed for a long time and we have spent much effort
+ to ensure that everything was correct. However we can all fail.
+ I have checked all the files in the arch directory searching for
+ i2c users. acorn was not there and I missed it.
+
+ That said, the kernel is evolving continuously and once you reported
+ the problem Jean and I actively worked to fix it.
+
+ I'm not stating that we had not a problem or that the there wasn't
+ a breakage. Only that the fault is not in the driver itself but
+ on how the platform uses it. And that's why I refuse a revert-everything
+ approach.
+
+ If a better communication approach had been established in the past
+ this probably wouldn't have happened.
+
+
+> >  As far as I can see with git log, you applied changes to the driver
+> >  multiple times, without having me in Cc nor G. Liakhovetski (who did
+> >  the port).
+> 
+> I don't add CC entries to commits, so you can't make that assumption.
+
+ Please check your archive, but I'm pretty sure I would have noticed
+ an email with a subject. I don't see it in my archives nor in the 
+ mailing list.
+
+ [ARM] rtc-pcf8583: Final fixes for this RTC on RiscPC
+
+ If you did sent it to me or to the list and I hadn't noticed, I beg your pardon.
+
+> However, I did talk to Guennadi around the time of those changes about
+> some of the issues therein, in particular adding back the I2C address of
+> the PCF8583.
+
+ So you and Guennadi knew but not everyone else.
  
-+			if (!(flags & HT_MSI_FLAGS_FIXED)) {
-+				pci_write_config_dword(dev, pos + HT_MSI_ADDR_LO,
-+					(HT_MSI_FIXED_ADDR & HT_MSI_FIXED_ADDR));
-+				pci_write_config_dword(dev, pos + HT_MSI_ADDR_HI,
-+					(HT_MSI_FIXED_ADDR >> 32));
-+			}
-+
- 			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
- 					      flags | HT_MSI_FLAGS_ENABLE);
- 		}
+> Most of those other changes were trivial bug fixes, and I do apologise
+> for not copying you with those.
+
+ I accept the apologies but you don't need to copy me for those, we
+ have trivial@ for those, which usually Ccs me. And there's Andrew who
+ kindly gives a look at everything.
+
+ But when things are important I do appreciate to see it at the proper time.
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
