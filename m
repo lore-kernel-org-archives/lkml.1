@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZBVRBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZBVRCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbZBVRBe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 12:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZBVRBZ
+	id S1755889AbZBVRCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 12:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZBVRCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 12:01:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34417 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754059AbZBVRBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 12:01:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: jacques <ocean4200@gmail.com>
-Subject: Re: no sound with DIGITAL INPUT
-Date: Sun, 22 Feb 2009 18:00:56 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>
-References: <49A175E4.6070608@gmail.com>
-In-Reply-To: <49A175E4.6070608@gmail.com>
-MIME-Version: 1.0
+	Sun, 22 Feb 2009 12:02:06 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:46746 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753439AbZBVRCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 12:02:05 -0500
+Date: Sun, 22 Feb 2009 17:02:01 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>, Bob Copeland <me@bob>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090222170201.GA27360@silver.sucs.org>
+References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200902221800.57032.rjw@sisk.pl>
+In-Reply-To: <20090222144742.GA6078@nowhere>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CCing Takashi)
+On Sun, Feb 22, 2009 at 03:47:44PM +0100, Frederic Weisbecker wrote:
+> On Sun, Feb 22, 2009 at 12:20:36PM +0000, Sitsofe Wheeler wrote:
+> > On Sun, Feb 22, 2009 at 01:01:21PM +0100, Jiri Slaby wrote:
+> > > The unsupported jumbo message might be a clue. When we jump to the next: 
+> > > label, the buffer is at the end of the list in software, while in 
+> > > hardware it isn't. In theory, we might hit the bug with rx buffers 
+> > > exhaustion, because the test (bf_last == bf) doesn't work as expected then.
+> > 
+> > This seems to be happening somewhat regularly now - I've got a small
+> > collections of the warnings (I'll include them below in case they are
+> > any help):
+> > 
+> > [ 7435.711659] ath5k phy0: unsupported jumbo
+> > [ 8125.567136] ath5k phy0: noise floor calibration timeout (2417MHz)
+> > [ 9596.212322] ath5k phy0: unsupported jumbo
+> > [10697.497598] ath5k phy0: unsupported jumbo
+> > [11207.740975] =============================================================================
+> > [11207.740986] BUG kmalloc-4096: Poison overwritten
+> > [11207.740991] -----------------------------------------------------------------------------
+> > [11207.740994] 
+> > [11207.740999] INFO: 0xd7060010-0xd7060053. First byte 0x80 instead of 0x6b
+> > [11207.741014] INFO: Allocated in dev_alloc_skb+0x21/0x40 age=4990 cpu=0 pid=0
+> > [11207.741023] INFO: Freed in skb_release_data+0x5e/0x90 age=893 cpu=0 pid=508
+> > [11207.741030] INFO: Slab 0xc133dd80 objects=7 used=5 fp=0xd7060000 flags=0x400020c3
+> > [11207.741036] INFO: Object 0xd7060000 @offset=0 fp=0xd70640c0
 
-On Sunday 22 February 2009, jacques wrote:
-> Hello,
-> 
-> I have a giga-byte GA-EG43-S2H with an integrated REALTEK ALC888 sound 
-> card. I'm unable to use the digital INPUT while recording or using pipe 
-> (arecord -M -D iec958 -f dat | aplay -D iec958 -f dat). Also, the 
-> giga-byte GA-EG41-S2H has the same problem (uses the same sound 
-> chipset). The giga-byte GA-EP45-UD3R is working perfectly but it uses a 
-> different sound chip (ALC889A). I tried a lot of things like changing 
-> snd-hda-intel model (auto, 6stack-dig, 3stack-dig, etc). I upgraded the 
-> ALSA sound driver to the latest version (1.0.19) and also used the 
-> snapshot. My distribution is Ubuntu 8.10 (server edition) 64 bits. I 
-> also installed the desktop version of it without success. I tested the 
-> digital input on Windows operating system and it works perfectly. Now, 
-> I'm not sure if I'm missing something with the configuration or it is a 
-> problem with the ALSA driver or the kernel module itself.
-> 
-> Look at the outputs from alsa-info script (computer outputs for details):
-> http://www.alsa-project.org/db/?f=068933737fa64bc43928b06d2f4b4559986e6439
-> 
-> Thank you for helping me to solve this problem.
+> Looks like it happens with ath5k driver.
+> Well, I have an atheros card, so I'm testing it.
+
+Good luck! I've just switched to a different location (with faster wifi
+and more single network access points ) and I've been totally unable to
+reproduce this warning.
+
+If there's some debug output that I produce that will help you let me
+know...
+
+-- 
+Sitsofe | http://sucs.org/~sits/
