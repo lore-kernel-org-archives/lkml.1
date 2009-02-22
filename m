@@ -1,101 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZBVKf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZBVKjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbZBVKf5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 05:35:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZBVKfs
+	id S1754630AbZBVKjg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 05:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZBVKj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 05:35:48 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:59435 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753338AbZBVKfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 05:35:47 -0500
-Date: Sun, 22 Feb 2009 11:35:44 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jean Delvare <khali@linux-fr.org>, Wolfram Sang <w.sang@pengutronix.de>,
-       Juergen Beisert <j.beisert@pengutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ben Dooks <ben-linux-arm@fluff.org>, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: PCF8583 not detected on RiscPC
-Message-ID: <20090222113544.4501f06a@i1501.lan.towertech.it>
-In-Reply-To: <20090222095150.GA28025@n2100.arm.linux.org.uk>
-References: <20090221194814.GA24385@n2100.arm.linux.org.uk>
-	<20090221204147.GA25408@n2100.arm.linux.org.uk>
-	<20090222011936.35b21d6b@i1501.lan.towertech.it>
-	<20090222082829.GG16596@n2100.arm.linux.org.uk>
-	<20090222104205.4539d3ef@i1501.lan.towertech.it>
-	<20090222095150.GA28025@n2100.arm.linux.org.uk>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
+	Sun, 22 Feb 2009 05:39:27 -0500
+Received: from bowden.ucwb.org.au ([203.122.237.119]:47833 "EHLO
+	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbZBVKj0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 05:39:26 -0500
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected) [bug
+	12465]
+From: Kevin Shanahan <kmshanah@ucwb.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, bugme-daemon@bugzilla.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090215100454.GA30314@elte.hu>
+References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera>
+	 <ROx6X68CGJG.A.54H.w40lJB@chimera>
+	 <1234691284.4967.23.camel@kulgan.wumi.org.au>
+	 <20090215100454.GA30314@elte.hu>
+Content-Type: text/plain
+Organization: UnitingCare Wesley Bowden
+Date: Sun, 22 Feb 2009 21:09:14 +1030
+Message-Id: <1235299155.5021.6.camel@kulgan.wumi.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Feb 2009 09:51:50 +0000
-Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-
-> >   That's very simple, even if acorn is a bit unstructured. You just
-> >  need to choice a place under arch/arm that you like
-> >  (arch/arm/plat-acorn/ ? ) and place a bit of code called
-> >  by an appropriate initcall. 
+On Sun, 2009-02-15 at 11:04 +0100, Ingo Molnar wrote:
+> qemu-sy-4237 has been scheduled away, and the system appeared to have done
+> nothing in the meantime. That's not something that really looks like a
+> scheduler regression - there is nothing the scheduler can do if KVM
+> decides to block a task.
 > 
-> Thanks.
+> It would be nice to enhance this single-CPU trace some more - to more
+> surgically see what is going on. Firstly, absolute timestamps would be
+> nice:
 > 
-> If it is as simple as you are suggesting, why wasn't it done _before_
-> breaking the RTC support?
-
- I guess because who did the modification didn't know
- it was used on acorn and nor did I.
-
- 
-> After all, you know damned well that PCF8583 is used on ARM and you
-> know the config symbol for the platform, especially as you pointedly
-> remove the dependencies on CONFIG_ARCH_RPC from the driver inspite of
- 
- ????
-
-
-> it being full of platform specifics (location of year byte in CMOS
-> and the checksum algorithm and checksum location.)
+>   echo funcgraph-abstime  > trace_options
+>   echo funcgraph-proc     > trace_options
 > 
-> The only reason I can think is pure and simple spite.
+> as it's a bit hard to see the global timescale of events.
 
- what??? The driver has been introduced in 9c0c570576d02000063e28faadcce8c07396755d
- without any platform specific ifdef or depend in Kconfig and I never saw it before that
- commit. 
+I was going to try and grab the trace with absolute timestamps tonight,
+but that option doesn't seem to be available in Linus' current kernel.
 
- If any change was ever proposed to make it platform specific (so that it would
- have worked only on a single platform) at any later time I'm pretty sure I
- wouldn't have acked it.
+flexo:/sys/kernel/debug/tracing# echo 0 > tracing_enabled
+flexo:/sys/kernel/debug/tracing# echo function_graph > current_tracer
+flexo:/sys/kernel/debug/tracing# echo funcgraph-proc > trace_options
+flexo:/sys/kernel/debug/tracing# echo funcgraph-abstime  > trace_options
+-su: echo: write error: Invalid argument
+flexo:/sys/kernel/debug/tracing# cat trace_options 
+print-parent nosym-offset nosym-addr noverbose noraw nohex nobin noblock
+nostacktrace nosched-tree ftrace_printk noftrace_preempt nobranch
+annotate nouserstacktrace nosym-userobj noprintk-msg-only
+nofuncgraph-overrun funcgraph-cpu funcgraph-overhead funcgraph-proc 
+flexo:/sys/kernel/debug/tracing# uname -a
+Linux flexo 2.6.29-rc5-00299-gadfafef #6 SMP Sun Feb 22 20:09:37 CST
+2009 x86_64 GNU/Linux
 
- It was described as:
+What am I missing?
 
- "A port of the driver for the pcf8583 i2c rtc controller to the generic RTC
- framework by Alessandro Zummo. Based on
- drivers/acorn/char/{pcf8583.[hc],i2c.c}. Hopefully, acorn can be converted
- too to use this driver in the future."
+Cheers,
+Kevin.
 
- and you were on the Cc list. I don't know who converted the acorn platform to
- use it and I can't care less. Who did should have checked the driver 
- for compatibility with his own platform before migrating from the driver under
- drivers/char/ .
-
- As far as I can see with git log, you applied changes to the driver
- multiple times, without having me in Cc nor G. Liakhovetski (who did the port).
-
- So, before accusing people, do you homework with a simple
- git log drivers/rtc/rtc-pcf8583.c 
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
 
