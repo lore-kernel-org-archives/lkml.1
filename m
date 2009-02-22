@@ -1,106 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZBVPZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZBVP3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbZBVPZn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 10:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZBVPZe
+	id S1756027AbZBVP3J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 10:29:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZBVP2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 10:25:34 -0500
-Received: from imta-38.everyone.net ([216.200.145.38]:49196 "EHLO
-	omta0105.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753116AbZBVPZd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 10:25:33 -0500
-X-Eon-Dm: dm0205
-X-Eon-Sig: AQHOS7NJoW5rbAkywQIAAAAD,2a5d6b9016d547befe776c4ef9f509d5
-Date: Sun, 22 Feb 2009 10:25:31 -0500
-From: "Kevin O'Connor" <kevin@koconnor.net>
-To: Stefan Reinauer <stepan@coresystems.de>
-Cc: linux-kernel@vger.kernel.org, coreboot@coreboot.org
-Subject: MPTable can not be high-memory on Linux
-Message-ID: <20090222152530.GA30576@morn.localdomain>
-References: <499DB40C.1060205@coresystems.de> <499DB480.1000909@coresystems.de> <499DB6D8.5040706@coresystems.de> <499DBDA0.2010606@coresystems.de> <499DCE79.8020809@coresystems.de>
+	Sun, 22 Feb 2009 10:28:55 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:58190 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753324AbZBVP2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 10:28:54 -0500
+Date: Sun, 22 Feb 2009 07:28:56 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][SMACK] convert smack rule list to linux list
+Message-ID: <20090222152856.GE6860@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49A13E15.6020509@numericable.fr> <200902222040.CAB86425.VMOQHFFFtOSLOJ@I-love.SAKURA.ne.jp> <200902222213.DAE48955.FFSLFtJOVQOHMO@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <499DCE79.8020809@coresystems.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200902222213.DAE48955.FFSLFtJOVQOHMO@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stefan,
-
-I'm CC'ing lkml and coreboot mailing lists.
-
-On Thu, Feb 19, 2009 at 10:26:17PM +0100, Stefan Reinauer wrote:
-> OK, I played some more, and I finally found out it's earlyprintk and not
-> early_printk. Plus there is bootmem_debug:
+On Sun, Feb 22, 2009 at 10:13:49PM +0900, Tetsuo Handa wrote:
+> Paul, would you review this locking?
 > 
-> Initializing cgroup subsys cpuset
-> Initializing cgroup subsys cpu
-> Linux version 2.6.27.7-9-default (geeko@buildhost) (gcc version 4.3.2
-> [gcc-4_3-branch re0
-> PAT WC disabled due to known CPU erratum.
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000000 - 0000000000001000 (reserved)
->  BIOS-e820: 0000000000001000 - 0000000000090000 (usable)
->  BIOS-e820: 0000000000090000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 000000003f7f0000 (usable)
->  BIOS-e820: 000000003f7f0000 - 0000000040000000 (reserved)
->  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
-[...]
-> ACPI: no DMI BIOS year, acpi=force is required to enable ACPI
-> ACPI: Disabling ACPI support
-[...]
-> found SMP MP-table at [c00f9fc0] 000f9fc0
-> bootmem::mark_bootmem_node nid=0 start=f9 end=fb reserve=1 flags=0
-> bootmem::__reserve nid=0 start=f9 end=fb flags=0
-> bootmem::__reserve silent double reserve of PFN f9
-> bootmem::__reserve silent double reserve of PFN fa
-> BUG: Int 6: CR2 00000000
->      EDI c00f9fd0  ESI 3f7f5410  EBP 0003f7f5  ESP c0535f20
->      EBX c056c00c  EDX 00000006  ECX 00000001  EAX c056c03c
->      err 00000000  EIP c054f8f0   CS 00000060  flg 00010046
-> Stack: 00000000 00000000 00000001 00038000 0003f7f5 f880abf0 3f7f5410
-> c00f9fd0
->        00000001 c054f91d 00000000 c054571a c0413e7e c00f9fc0 000f9fc0
-> 00000001
->        3f7bf64d 00000000 3e2c5000 c054578a 00000000 c053f3b6 3f7bf64d
-> 00000000
+> > static DEFINE_MUTEX(smack_known_lock);
+> > 
+> > /**
+> >  * smk_import_entry - import a label, return the list entry
+> >  * @string: a text string that might be a Smack label
+> >  * @len: the maximum size, or zero if it is NULL terminated.
+> >  *
+> >  * Returns a pointer to the entry in the label list that
+> >  * matches the passed string, adding it if necessary.
+> >  */
+> > struct smack_known *smk_import_entry(const char *string, int len)
+> > {
+> > 	struct smack_known *skp;
+> > 	char smack[SMK_LABELLEN];
+> > 	int found;
+> > 	int i;
+> > 
+> > 	if (len <= 0 || len > SMK_MAXLEN)
+> > 		len = SMK_MAXLEN;
+> > 
+> > 	for (i = 0, found = 0; i < SMK_LABELLEN; i++) {
+> > 		if (found)
+> > 			smack[i] = '\0';
+> > 		else if (i >= len || string[i] > '~' || string[i] <= ' ' ||
+> > 			 string[i] == '/') {
+> > 			smack[i] = '\0';
+> > 			found = 1;
+> > 		} else
+> > 			smack[i] = string[i];
+> > 	}
+> > 
+> > 	if (smack[0] == '\0')
+> > 		return NULL;
+> > 
+> > 	mutex_lock(&smack_known_lock);
+> > 
+> > 	for (skp = smack_known; skp != NULL; skp = skp->smk_next)
+> > 		if (strncmp(skp->smk_known, smack, SMK_MAXLEN) == 0)
+> > 			break;
+> > 
+> > 	if (skp == NULL) {
+> > 		skp = kzalloc(sizeof(struct smack_known), GFP_KERNEL);
+> > 		if (skp != NULL) {
+> > 			skp->smk_next = smack_known;
+> > 			strncpy(skp->smk_known, smack, SMK_MAXLEN);
+> > 			skp->smk_secid = smack_next_secid++;
+> > 			skp->smk_cipso = NULL;
+> > 			spin_lock_init(&skp->smk_cipsolock);
+> > 			/*
+> > 			 * Make sure that the entry is actually
+> > 			 * filled before putting it on the list.
+> > 			 */
+> > 			smp_mb();
+> > 			smack_known = skp;
+
+If the read side is not acquiring smack_known_lock, then the above
+assignment to smack_known needs to be:
+
+			rcu_assign_pointer(smack_known, skp);
+
+Otherwise, both CPU and compiler are within their rights to reorder
+the assignment to smack_known ahead of the initialization code.
+
+Alternatively, if you make this list use a standard struct list_head,
+you could just use list_add_rcu().
+
+> > 		}
+> > 	}
+> > 
+> > 	mutex_unlock(&smack_known_lock);
+> > 
+> > 	return skp;
+> > }
+> > 
+> > /**
+> >  * smack_from_secid - find the Smack label associated with a secid
+> >  * @secid: an integer that might be associated with a Smack label
+> >  *
+> >  * Returns a pointer to the appropraite Smack label if there is one,
+> >  * otherwise a pointer to the invalid Smack label.
+> >  */
+> > char *smack_from_secid(const u32 secid)
+> > {
+> > 	struct smack_known *skp;
+> > 
+> > 	for (skp = smack_known; skp != NULL; skp = skp->smk_next)
+> > 		if (skp->smk_secid == secid)
+> > 			return skp->smk_known;
+> > 
+> > 	/*
+> > 	 * If we got this far someone asked for the translation
+> > 	 * of a secid that is not on the list.
+> > 	 */
+> > 	return smack_known_invalid.smk_known;
+> > }
 > 
-> So it dies because of the way it tries to reserve the MP-table.
-> 
-> Here's the stack trace.
-> 
->  [<c054f8f0>] mark_bootmem+0x9b/0xab
->  [<c054f91d>] reserve_bootmem+0x1d/0x1f
->  [<c054571a>] smp_scan_config+0xd9/0xfa
->  [<c054578a>] __find_smp_config+0x4f/0x6e
->  [<c053f3b6>] setup_arch+0x576/0x639
->  [<c054ebc4>] cgroup_init_subsys+0x29/0xc9
->  [<c053a6ac>] start_kernel+0x6b/0x31f
->  =======================
+> I think this is a case called "dependency ordering".
+> This function needs rcu_dereference(), doesn't it?
 
-It looks like the problem is that the MPTable is located in the last
-64K of memory (instead of the first few megabytes).  There is a
-comment about this in arch/x86/kernel/mpparse.c:
+Indeed!  The "for" loop needs to be:
 
-   /*
-    * We cannot access to MPC table to compute
-    * table size yet, as only few megabytes from
-    * the bottom is mapped now.
-    * PC-9800's MPC table places on the very last
-    * of physical memory; so that simply reserving
-    * PAGE_SIZE from mpg->mpf_physptr yields BUG()
-    * in reserve_bootmem.
-    */
+	for (skp = rcu_dereference(smack_known); skp != NULL; skp = rcu_dereference(skp->smk_next))
 
-However, that comment is in an #ifdef specific to 32bit kernels.
-(Though, it's not clear to me how that code would help as it sets size
-to be a negative number.)
+Alternatively, if you switch to struct list_head, you could use
+list_for_each_entry_rcu().
 
-The easiest way to fix this is to change SeaBIOS to copy the whole
-mptable to the first megabyte.  Also, we need to fix your SMBIOS so
-that ACPI is used instead of the mptable.
+There also need to be rcu_read_lock() and rcu_read_unlock() in here
+somewhere.  Where they must be depends on how (or whether) you are
+ever removing any elements.  If the string referenced by smk_known
+gets freed up, then the caller will need to surround the call to
+smack_from_secid() and the use of the return value with rcu_read_lock()
+and rcu_read_unlock().  Otherwise, only the smack_known structures are
+ever freed up, then just the "for" loop above needs to be so protected.
 
--Kevin
+If these structure are never freed, then please add a comment.
+
+							Thanx, Paul
