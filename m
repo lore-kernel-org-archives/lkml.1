@@ -1,111 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZBVRHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZBVRI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbZBVRHU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 12:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbZBVRHE
+	id S1756230AbZBVRI3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 12:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZBVRIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 12:07:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34437 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754185AbZBVRHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 12:07:03 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Kevin O'Connor" <kevin@koconnor.net>
-Subject: Re: MPTable can not be high-memory on Linux
-Date: Sun, 22 Feb 2009 18:06:54 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
-       coreboot@coreboot.org, Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Yinghai Lu <yinghai@kernel.org>
-References: <499DB40C.1060205@coresystems.de> <499DCE79.8020809@coresystems.de> <20090222152530.GA30576@morn.localdomain>
-In-Reply-To: <20090222152530.GA30576@morn.localdomain>
+	Sun, 22 Feb 2009 12:08:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54850 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753439AbZBVRIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 12:08:19 -0500
+To: David Miller <davem@davemloft.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: x86's nmi_hz wrt. oprofile's nmi_timer_int.c
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090129.155852.161923905.davem@davemloft.net>
+Date: Sun, 22 Feb 2009 18:06:45 +0100
+In-Reply-To: <20090129.155852.161923905.davem@davemloft.net> (David Miller's message of "Thu, 29 Jan 2009 15:58:52 -0800 (PST)")
+Message-ID: <873ae6wgd6.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902221806.55429.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 February 2009, Kevin O'Connor wrote:
-> Hi Stefan,
-> 
-> I'm CC'ing lkml and coreboot mailing lists.
+David Miller <davem@davemloft.net> writes:
 
-(added more CCs)
+Really old mail, but I was very behind. I didn't see an 
+correct answer, so let's answer it.
 
-> On Thu, Feb 19, 2009 at 10:26:17PM +0100, Stefan Reinauer wrote:
-> > OK, I played some more, and I finally found out it's earlyprintk and not
-> > early_printk. Plus there is bootmem_debug:
-> > 
-> > Initializing cgroup subsys cpuset
-> > Initializing cgroup subsys cpu
-> > Linux version 2.6.27.7-9-default (geeko@buildhost) (gcc version 4.3.2
-> > [gcc-4_3-branch re0
-> > PAT WC disabled due to known CPU erratum.
-> > BIOS-provided physical RAM map:
-> >  BIOS-e820: 0000000000000000 - 0000000000001000 (reserved)
-> >  BIOS-e820: 0000000000001000 - 0000000000090000 (usable)
-> >  BIOS-e820: 0000000000090000 - 0000000000100000 (reserved)
-> >  BIOS-e820: 0000000000100000 - 000000003f7f0000 (usable)
-> >  BIOS-e820: 000000003f7f0000 - 0000000040000000 (reserved)
-> >  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
-> [...]
-> > ACPI: no DMI BIOS year, acpi=force is required to enable ACPI
-> > ACPI: Disabling ACPI support
-> [...]
-> > found SMP MP-table at [c00f9fc0] 000f9fc0
-> > bootmem::mark_bootmem_node nid=0 start=f9 end=fb reserve=1 flags=0
-> > bootmem::__reserve nid=0 start=f9 end=fb flags=0
-> > bootmem::__reserve silent double reserve of PFN f9
-> > bootmem::__reserve silent double reserve of PFN fa
-> > BUG: Int 6: CR2 00000000
-> >      EDI c00f9fd0  ESI 3f7f5410  EBP 0003f7f5  ESP c0535f20
-> >      EBX c056c00c  EDX 00000006  ECX 00000001  EAX c056c03c
-> >      err 00000000  EIP c054f8f0   CS 00000060  flg 00010046
-> > Stack: 00000000 00000000 00000001 00038000 0003f7f5 f880abf0 3f7f5410
-> > c00f9fd0
-> >        00000001 c054f91d 00000000 c054571a c0413e7e c00f9fc0 000f9fc0
-> > 00000001
-> >        3f7bf64d 00000000 3e2c5000 c054578a 00000000 c053f3b6 3f7bf64d
-> > 00000000
-> > 
-> > So it dies because of the way it tries to reserve the MP-table.
-> > 
-> > Here's the stack trace.
-> > 
-> >  [<c054f8f0>] mark_bootmem+0x9b/0xab
-> >  [<c054f91d>] reserve_bootmem+0x1d/0x1f
-> >  [<c054571a>] smp_scan_config+0xd9/0xfa
-> >  [<c054578a>] __find_smp_config+0x4f/0x6e
-> >  [<c053f3b6>] setup_arch+0x576/0x639
-> >  [<c054ebc4>] cgroup_init_subsys+0x29/0xc9
-> >  [<c053a6ac>] start_kernel+0x6b/0x31f
-> >  =======================
-> 
-> It looks like the problem is that the MPTable is located in the last
-> 64K of memory (instead of the first few megabytes).  There is a
-> comment about this in arch/x86/kernel/mpparse.c:
-> 
->    /*
->     * We cannot access to MPC table to compute
->     * table size yet, as only few megabytes from
->     * the bottom is mapped now.
->     * PC-9800's MPC table places on the very last
->     * of physical memory; so that simply reserving
->     * PAGE_SIZE from mpg->mpf_physptr yields BUG()
->     * in reserve_bootmem.
->     */
-> 
-> However, that comment is in an #ifdef specific to 32bit kernels.
-> (Though, it's not clear to me how that code would help as it sets size
-> to be a negative number.)
-> 
-> The easiest way to fix this is to change SeaBIOS to copy the whole
-> mptable to the first megabyte.  Also, we need to fix your SMBIOS so
-> that ACPI is used instead of the mptable.
-> 
-> -Kevin
+> While working on an NMI watchdog implementation on sparc64
+> I noticed what seems to be a peculiar behavior of the NMI
+> timer int oprofile support on x86.
+>
+> When the NMI watchdog tests itself at boot timer we start
+> with nmi_hz equal to HZ.
+>
+> After the NMI watchdog self-test passes, nmi_hz is reduced
+> down to '1'.
+>
+> The NMI timer int oprofile support simply uses DIE_NMI notifiers for
+> it's implementation.  But I don't see anything in the code of
+> arch/x86/oprofile/nmi_timer_int.c nor the NMI watchdog infrastructure
+> which will re-adjust nmi_hz back to HZ or something similar.
+>
+> Am I missing something?
+
+oprofile generates its own NMIs, it does not rely on 
+the ones from the nmi watchdog.
+
+In timer mode it does not use nmis or die notifiers, but relies on the 
+regular non nmi timer interrupt.
+
+Does that answer your question?
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
