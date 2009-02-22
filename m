@@ -1,148 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZBVP3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZBVPbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZBVP3J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 10:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZBVP2z
+	id S1756015AbZBVPbT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 10:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZBVPbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 10:28:55 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58190 "EHLO e2.ny.us.ibm.com"
+	Sun, 22 Feb 2009 10:31:01 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:34789 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbZBVP2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 10:28:54 -0500
-Date: Sun, 22 Feb 2009 07:28:56 -0800
+	id S1753687AbZBVPbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 10:31:01 -0500
+Date: Sun, 22 Feb 2009 07:31:04 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+To: etienne <etienne.basset@numericable.fr>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, casey@schaufler-ca.com,
+       paul.moore@hp.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH][SMACK] convert smack rule list to linux list
-Message-ID: <20090222152856.GE6860@linux.vnet.ibm.com>
+Message-ID: <20090222153104.GF6860@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <49A13E15.6020509@numericable.fr> <200902222040.CAB86425.VMOQHFFFtOSLOJ@I-love.SAKURA.ne.jp> <200902222213.DAE48955.FFSLFtJOVQOHMO@I-love.SAKURA.ne.jp>
+References: <49A13E15.6020509@numericable.fr> <200902222040.CAB86425.VMOQHFFFtOSLOJ@I-love.SAKURA.ne.jp> <49A14FBE.7020206@numericable.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902222213.DAE48955.FFSLFtJOVQOHMO@I-love.SAKURA.ne.jp>
+In-Reply-To: <49A14FBE.7020206@numericable.fr>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 10:13:49PM +0900, Tetsuo Handa wrote:
-> Paul, would you review this locking?
+On Sun, Feb 22, 2009 at 02:14:38PM +0100, etienne wrote:
+> Tetsuo Handa wrote:
+> > etienne wrote:
+> >> diff --git a/security/smack/smack_access.c b/security/smack/smack_access.c
+> >> index 2e0b83e..3dc312d 100644
+> >> --- a/security/smack/smack_access.c
+> >> +++ b/security/smack/smack_access.c
+> >> @@ -87,7 +87,6 @@ static u32 smack_next_secid = 10;
+> >>  int smk_access(char *subject_label, char *object_label, int request)
+> >>  {
+> >>  	u32 may = MAY_NOT;
+> >> -	struct smk_list_entry *sp;
+> >>  	struct smack_rule *srp;
+> >>  
+> >>  	/*
+> >> @@ -139,8 +138,8 @@ int smk_access(char *subject_label, char *object_label, int request)
+> >>  	 * access (e.g. read is included in readwrite) it's
+> >>  	 * good.
+> >>  	 */
+> >> -	for (sp = smack_list; sp != NULL; sp = sp->smk_next) {
+> >> -		srp = &sp->smk_rule;
+> >> +
+> >> +	list_for_each_entry(srp, &smack_rule_list, list) {
+> >>  
+> >>  		if (srp->smk_subject == subject_label ||
+> >>  		    strcmp(srp->smk_subject, subject_label) == 0) {
+> > 
+> > Use of standard doubly linked list requires a lock, doesn't it?
+> > What lock protects smack_rule_list?
+> > 
+> you're right; 
 > 
-> > static DEFINE_MUTEX(smack_known_lock);
-> > 
-> > /**
-> >  * smk_import_entry - import a label, return the list entry
-> >  * @string: a text string that might be a Smack label
-> >  * @len: the maximum size, or zero if it is NULL terminated.
-> >  *
-> >  * Returns a pointer to the entry in the label list that
-> >  * matches the passed string, adding it if necessary.
-> >  */
-> > struct smack_known *smk_import_entry(const char *string, int len)
-> > {
-> > 	struct smack_known *skp;
-> > 	char smack[SMK_LABELLEN];
-> > 	int found;
-> > 	int i;
-> > 
-> > 	if (len <= 0 || len > SMK_MAXLEN)
-> > 		len = SMK_MAXLEN;
-> > 
-> > 	for (i = 0, found = 0; i < SMK_LABELLEN; i++) {
-> > 		if (found)
-> > 			smack[i] = '\0';
-> > 		else if (i >= len || string[i] > '~' || string[i] <= ' ' ||
-> > 			 string[i] == '/') {
-> > 			smack[i] = '\0';
-> > 			found = 1;
-> > 		} else
-> > 			smack[i] = string[i];
-> > 	}
-> > 
-> > 	if (smack[0] == '\0')
-> > 		return NULL;
-> > 
-> > 	mutex_lock(&smack_known_lock);
-> > 
-> > 	for (skp = smack_known; skp != NULL; skp = skp->smk_next)
-> > 		if (strncmp(skp->smk_known, smack, SMK_MAXLEN) == 0)
-> > 			break;
-> > 
-> > 	if (skp == NULL) {
-> > 		skp = kzalloc(sizeof(struct smack_known), GFP_KERNEL);
-> > 		if (skp != NULL) {
-> > 			skp->smk_next = smack_known;
-> > 			strncpy(skp->smk_known, smack, SMK_MAXLEN);
-> > 			skp->smk_secid = smack_next_secid++;
-> > 			skp->smk_cipso = NULL;
-> > 			spin_lock_init(&skp->smk_cipsolock);
-> > 			/*
-> > 			 * Make sure that the entry is actually
-> > 			 * filled before putting it on the list.
-> > 			 */
-> > 			smp_mb();
-> > 			smack_known = skp;
+> what's the best way, using a rcu variant for "list_for_each, container_of ...etc" ?
+> (concurrent list insertion are already protected with a mutex, so rcu must the good idea for the read side) 
 
-If the read side is not acquiring smack_known_lock, then the above
-assignment to smack_known needs to be:
+You want list_for_each_entry_rcu() above.  You will need list_add_rcu()
+when adding elements to the list.
 
-			rcu_assign_pointer(smack_known, skp);
-
-Otherwise, both CPU and compiler are within their rights to reorder
-the assignment to smack_known ahead of the initialization code.
-
-Alternatively, if you make this list use a standard struct list_head,
-you could just use list_add_rcu().
-
-> > 		}
-> > 	}
-> > 
-> > 	mutex_unlock(&smack_known_lock);
-> > 
-> > 	return skp;
-> > }
-> > 
-> > /**
-> >  * smack_from_secid - find the Smack label associated with a secid
-> >  * @secid: an integer that might be associated with a Smack label
-> >  *
-> >  * Returns a pointer to the appropraite Smack label if there is one,
-> >  * otherwise a pointer to the invalid Smack label.
-> >  */
-> > char *smack_from_secid(const u32 secid)
-> > {
-> > 	struct smack_known *skp;
-> > 
-> > 	for (skp = smack_known; skp != NULL; skp = skp->smk_next)
-> > 		if (skp->smk_secid == secid)
-> > 			return skp->smk_known;
-> > 
-> > 	/*
-> > 	 * If we got this far someone asked for the translation
-> > 	 * of a secid that is not on the list.
-> > 	 */
-> > 	return smack_known_invalid.smk_known;
-> > }
-> 
-> I think this is a case called "dependency ordering".
-> This function needs rcu_dereference(), doesn't it?
-
-Indeed!  The "for" loop needs to be:
-
-	for (skp = rcu_dereference(smack_known); skp != NULL; skp = rcu_dereference(skp->smk_next))
-
-Alternatively, if you switch to struct list_head, you could use
-list_for_each_entry_rcu().
-
-There also need to be rcu_read_lock() and rcu_read_unlock() in here
-somewhere.  Where they must be depends on how (or whether) you are
-ever removing any elements.  If the string referenced by smk_known
-gets freed up, then the caller will need to surround the call to
-smack_from_secid() and the use of the return value with rcu_read_lock()
-and rcu_read_unlock().  Otherwise, only the smack_known structures are
-ever freed up, then just the "for" loop above needs to be so protected.
-
-If these structure are never freed, then please add a comment.
+Again, if these elements are ever removed, you will need rcu_read_lock()
+and rcu_read_unlock() surrounding their use.  Otherwise, an element can
+be freed out from under a reader who is still referencing it.
 
 							Thanx, Paul
