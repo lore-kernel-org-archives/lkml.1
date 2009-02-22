@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbZBVX1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbZBVXho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597AbZBVX1V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 18:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbZBVX1J
+	id S1755617AbZBVXho (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 18:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbZBVXhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 18:27:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35378 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754191AbZBVX1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 18:27:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH] add mutex and hibernation notifier to memory hotplug.
-Date: Mon, 23 Feb 2009 00:26:33 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       gerald.schaefer@de.ibm.com, ncunningham@crca.org.au,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>,
-       linux-pm@lists.osdl.org, Matt@smtp1.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Dave@smtp1.linux-foundation.org, Mel Gorman <mel@skynet.ie>,
-       Andy@smtp1.linux-foundation.org, Whitcroft <apw@shadowen.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20081106153444.33af7019.kamezawa.hiroyu@jp.fujitsu.com> <20090222223547.GH26999@elf.ucw.cz>
-In-Reply-To: <20090222223547.GH26999@elf.ucw.cz>
+	Sun, 22 Feb 2009 18:37:34 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:43907 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbZBVXhd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 18:37:33 -0500
+Date: Sun, 22 Feb 2009 16:37:31 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, r-woodruff2@ti.com,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
+In-Reply-To: <20090214112325.GA17965@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.2.00.0902221635530.16648@utopia.booyaka.com>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk> <20090209141156.GB16626@n2100.arm.linux.org.uk>
+ <alpine.DEB.2.00.0902122345160.14667@utopia.booyaka.com> <20090214112325.GA17965@n2100.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902230026.35284.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 February 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > Sorry, I can't test this now but I post this while discussion is hot.
-> > 
-> > I'll test this with CONFIG_PM_DEBUG's hibernation test mode if I can.
-> > (But may take a long time..) 
-> > 
-> > Any feedback is welcome.
-> 
-> I lost the track here... but this may still be required... ? And given
-> that there will be both mem hotplug and swsusp in SLE11...
+Hello Russell,
 
-I think the patch would be helpful, but I've lost it somethow.  I'll try to dig
-it out in my e-mail archives.
+On Sat, 14 Feb 2009, Russell King - ARM Linux wrote:
 
-Thanks,
-Rafael
+> However, looking a little deeper, there's more issues in the reparenting
+> area.  I don't think this code has been tested at all...  In
+> _omap2_clksel_get_src_field, there is this:
+> 
+> 	for (clkr = clks->rates; clkr->div; clkr++) {
+> 		if (clkr->flags & (cpu_mask | DEFAULT_RATE))
+> 			break; /* Found the default rate for this platform */
+> 	}
+> 
+> which is bogus - it will find the first entry which is _either_ marked
+> as a default rate _or_ is supported by the SoC.  This means (for
+> instance) that:
+> 
+> static const struct clksel_rate core_l3_core_rates[] = {
+>         { .div = 1, .val = 1, .flags = RATE_IN_24XX },
+>         { .div = 2, .val = 2, .flags = RATE_IN_242X },
+>         { .div = 4, .val = 4, .flags = RATE_IN_24XX | DEFAULT_RATE },
+> 
+> will give us divisor 1 rather than presumably the one we want, that being
+> divisor 4.  I think the test above should be:
+> 
+> 	for (clkr = clks->rates; clkr->div; clkr++) {
+> 		if (clkr->flags & cpu_mask &&
+> 		    clkr->flags & DEFAULT_RATE)
+> 			break; /* Found the default rate for this platform */
+> 	}
+> 
+> so we find an entry which is supported _and_ is the default for the SoC.
+
+Agreed.
+
+> There's also a second issue - the comments before omap2_divisor_to_clksel()
+> indicate that this function returns 0xffffffff on error.  Unfortunately,
+> this is not so, it actually returns zero on error.  Moreover, we test
+> the result of the function against ~0, so we'll never deal with the error
+> case.  This really should be fixed so that we return the right value for
+> the error case.  (Further comments on this in a follow up.)
+
+Agreed here also.
+
+> So, below is a patch which fixes both of these issues.
+
+Looks good, thanks Russell.
+
+Acked-by: Paul Walmsley <paul@pwsan.com>
+
+
+- Paul
