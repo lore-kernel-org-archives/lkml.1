@@ -1,93 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZBVJVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbZBVJX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbZBVJVH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 04:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZBVJUy
+	id S1754237AbZBVJX2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 04:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbZBVJXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 04:20:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:62205 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbZBVJUw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 04:20:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=M+mXd/tLUWcYNWEBp7iem3TMKM91eV4O/RB5ARKz+6uqHTGe8iRBWp/w43fU4vU/5q
-         fFhd9KjpetxlEKPiBfIUV7Jv8NhYEnpUY0SMg1OHendQiWBk6ncQaj89d49V12aeMFWC
-         Xnbpg7sehYhllwasRF+ds8/ccUTR/LQGZtiqI=
-Date: Sun, 22 Feb 2009 12:27:22 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: David Howells <dhowells@redhat.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, serue@us.ibm.com, mingo@elte.hu,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: Broken "User namespaces: Only put the userns when we unhash
-	the uid"
-Message-ID: <20090222092722.GA12347@x200.localdomain>
-References: <20090222001257.GA15755@x200.localdomain> <6395.1235263079@redhat.com>
+	Sun, 22 Feb 2009 04:23:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47784 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751771AbZBVJXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 04:23:14 -0500
+Date: Sun, 22 Feb 2009 10:22:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>
+Cc: Ed Swierk <eswierk@aristanetworks.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [RFC] [PATCH] PCI mmconfig without ACPI
+Message-ID: <20090222092256.GC6964@elte.hu>
+References: <1233766786.16414.26.camel@localhost.localdomain> <20090204181738.GA16174@elte.hu> <alpine.LFD.2.00.0902210046030.19156@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6395.1235263079@redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0902210046030.19156@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 12:37:59AM +0000, David Howells wrote:
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
+
+* Len Brown <lenb@kernel.org> wrote:
+
 > 
-> > The following commit breaks clone(CLONE_NEWUSER)
-> > with an oops.
+> > > +#ifdef CONFIG_PCI_MMCONFIG
+> > > +
+> > > +struct acpi_mcfg_allocation {
+> > > +	u64 address;		/* Base address, processor-relative */
+> > > +	u16 pci_segment;	/* PCI segment group number */
+> > > +	u8 start_bus_number;	/* Starting PCI Bus number */
+> > > +	u8 end_bus_number;	/* Final PCI Bus number */
+> > > +	u32 reserved;
+> > > +};
+> > 
+> > Please rename this to "struct pci_mcfg_allocation" - there's nothing ACPI 
+> > about it anymore - mmcfg is a PCI feature and ACPI is an enumeration method.
+> > 
+> > Also, while touching it, please also use the opportunity to align structure 
+> > fields vertically:
+> > 
+> >  struct pci_mcfg_allocation {
+> > 	u64	address;		/* Base address, processor-relative */
+> > 	u16	pci_segment;		/* PCI segment group number */
+> > 	u8	start_bus_number;	/* Starting PCI Bus number */
+> > 	u8	end_bus_number;		/* Final PCI Bus number */
+> > 	u32	__reserved;
+> >  };
+> > 
+> > The whole layout of this structure becomes easier to read and nicer to look 
+> > at as well.
+> > 
+> > Another small detail: note how i renamed reserved to __reserved - that is a 
+> > standard way to de-emphasise the signficance of a structure field.
+> > 
+> > The reserved field there is for future expansion and to pad the structure to 
+> > 16 bytes - it doesnt really mean much and the underscores move it a bit out 
+> > of the default line of sight.
+> > 
+> > With a 'reserved' field people end up wondering whether it's perhaps some 
+> > _semantic_ 'reserved area' kind of thing (like for e820 maps, etc.) - so 
+> > it's never bad to make that distinction explicit via the double underscores.
 > 
-> Can you give the actual text of the oops, please?
+> struct acpi_mcfg_allocation is the structure that maps onto the MCFG
+> ACPI table as defined in the PCI firmware spec and provided by the ACPI 
+> BIOS.
+> 
+> I'd like it to stay in actbl1.h -- as that is part of ACPICA, which
+> tracks the standard tables.  (and I see you did this with your updated 
+> patch, thanks.)
+> 
+> FWIW, "reserved" here really does have a specific definition. 
+> On read-only tables, such as this one, reserved fields are 
+> defined to return 0 on reads for this version of the table, 
+> but may return non-zero on future revisions.
 
-One needs UP kernel for this. The box is really dead afterwards.
+of course - i did not want to suggest anything else.
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.29-rc5-2ec77fc93ca8731368fbe8e71f805c0569d4bcee #4
----------------------------------------------
-swapper/0 is trying to acquire lock:
- (uidhash_lock){.+..}, at: [<c02182c8>] _atomic_dec_and_lock+0x18/0x40
+Anything that the hardware accesses/provides is special and 
+reserved in that sense.
 
-but task is already holding lock:
- (uidhash_lock){.+..}, at: [<c02182c8>] _atomic_dec_and_lock+0x18/0x40
+My suggestion to rename to __reserved was to document this fact 
+better and to make sure there's no higher-level 'reserved' 
+concept controlled here.
 
-other info that might help us debug this:
-1 lock held by swapper/0:
- #0:  (uidhash_lock){.+..}, at: [<c02182c8>] _atomic_dec_and_lock+0x18/0x40
-
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.29-rc5-2ec77fc93ca8731368fbe8e71f805c0569d4bcee #4
-Call Trace:
- [<c013ecd5>] validate_chain+0xac5/0x1130
- [<c013e5e0>] ? validate_chain+0x3d0/0x1130
- [<c013e5e0>] ? validate_chain+0x3d0/0x1130
- [<c013f5b6>] __lock_acquire+0x276/0xa10
- [<c013f5b6>] ? __lock_acquire+0x276/0xa10
- [<c013fdac>] lock_acquire+0x5c/0x80
- [<c02182c8>] ? _atomic_dec_and_lock+0x18/0x40
- [<c03bc0ac>] _spin_lock+0x3c/0x50
- [<c02182c8>] ? _atomic_dec_and_lock+0x18/0x40
- [<c02182c8>] _atomic_dec_and_lock+0x18/0x40
- [<c0125887>] free_uid+0x27/0xc0
- [<c01459f0>] ? free_user_ns+0x0/0x20
- [<c0145a01>] free_user_ns+0x11/0x20
- [<c021a4cb>] kref_put+0x2b/0x80
- [<c02182c8>] ? _atomic_dec_and_lock+0x18/0x40
- [<c01258c0>] free_uid+0x60/0xc0
- [<c013492f>] put_cred_rcu+0x2f/0x60
- [<c03bc709>] ? _spin_unlock_irqrestore+0x39/0x70
- [<c0148982>] __rcu_process_callbacks+0xd2/0x230
- [<c0148af2>] rcu_process_callbacks+0x12/0x30
- [<c012058a>] __do_softirq+0x7a/0x130
- [<c0120695>] do_softirq+0x55/0x60
- [<c012098b>] irq_exit+0x7b/0x80
- [<c0104f0e>] do_IRQ+0x3e/0x80
- [<c013da7c>] ? trace_hardirqs_on_caller+0xfc/0x190
- [<c01037ec>] common_interrupt+0x2c/0x34
- [<c01087df>] ? mwait_idle+0x3f/0x60
- [<c0101bc5>] cpu_idle+0x45/0x80
- [<c03af9f1>] rest_init+0x61/0x70
+	Ingo
