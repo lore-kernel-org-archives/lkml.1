@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZBVUkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZBVUrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbZBVUkd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 15:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZBVUkZ
+	id S1754019AbZBVUrW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 15:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZBVUrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 15:40:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49096 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752441AbZBVUkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 15:40:24 -0500
-Date: Sun, 22 Feb 2009 21:39:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 1/1] LinuxPPS core support.
-Message-ID: <20090222203933.GA18914@elte.hu>
-References: <1234274752-29847-1-git-send-email-giometti@linux.it> <1234274752-29847-2-git-send-email-giometti@linux.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234274752-29847-2-git-send-email-giometti@linux.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 22 Feb 2009 15:47:11 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:50421 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbZBVUrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 15:47:10 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] ACPI: bus.c, remove doubled status checking
+Date: Sun, 22 Feb 2009 21:46:55 +0100
+Message-Id: <1235335615-910-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There was a misplaced status test (two consequent tests without
+a statement in between) in acpi_bus_init for ages. Remove it,
+since the function which should be checked (acpi_os_initialize1)
+has BUG_ONs on failure paths.
 
-* Rodolfo Giometti <giometti@linux.it> wrote:
+On platforms with BUG_ON not being "noreturn", we panics elsewhere
+since the function ever returns 0 anyway.
 
-> This patch adds the kernel side of the PPS support currently 
-> named "LinuxPPS".
-> 
-> PPS means "pulse per second" and a PPS source is just a device 
-> which provides a high precision signal each second so that an 
-> application can use it to adjust system clock time.
-> 
-> Common use is the combination of the NTPD as userland program 
-> with a GPS receiver as PPS source to obtain a wallclock-time 
-> with sub-millisecond synchronisation to UTC.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Len Brown <lenb@kernel.org>
+---
+ drivers/acpi/bus.c |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
 
-Hm. I was looking at this stuff with the prospect of adding it 
-to the timer tree, but i'm really struggling with a few 
-fundamental questions.
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 765fd1c..bee64b7 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -758,8 +758,7 @@ static int __init acpi_bus_init(void)
+ 	acpi_status status = AE_OK;
+ 	extern acpi_status acpi_os_initialize1(void);
+ 
+-
+-	status = acpi_os_initialize1();
++	acpi_os_initialize1();
+ 
+ 	status =
+ 	    acpi_enable_subsystem(ACPI_NO_HARDWARE_INIT | ACPI_NO_ACPI_ENABLE);
+@@ -769,12 +768,6 @@ static int __init acpi_bus_init(void)
+ 		goto error1;
+ 	}
+ 
+-	if (ACPI_FAILURE(status)) {
+-		printk(KERN_ERR PREFIX
+-		       "Unable to initialize ACPI OS objects\n");
+-		goto error1;
+-	}
+-
+ 	/*
+ 	 * ACPI 2.0 requires the EC driver to be loaded and work before
+ 	 * the EC device is found in the namespace (i.e. before acpi_initialize_objects()
+-- 
+1.6.1.3
 
-The most basic one is: why do we need this?
-
-The main purpose of your current patchset seems to be to deliver 
-interrupt timestamps to user-space, where it will in essence be 
-used to feed new adjtimex adjustments via ntpd.
-
-I.e. the whole thing comes around in a circle in the end, but 
-via user-space, where jitter will only increase.
-
-Why not cut out the jittery middle man and add some intelligent 
-API to register PPS interrupt sources straight with the NTP 
-code, and let those IRQ timestamps be fed _directly_ into our 
-time adjustment code?
-
-	Ingo
