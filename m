@@ -1,93 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZBVWGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZBVWH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbZBVWGj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbZBVWGb
+	id S1755022AbZBVWH2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZBVWHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:06:31 -0500
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:23110 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbZBVWGa (ORCPT
+	Sun, 22 Feb 2009 17:07:15 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:36122 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752994AbZBVWHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:06:30 -0500
-Date: Sun, 22 Feb 2009 23:05:48 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: linux-kernel@vger.kernel.org
-cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Paul Jackson <pj@sgi.com>, Simon Derr <simon.derr@bull.net>,
-       Paul Menage <menage@google.com>, Jesper Juhl <jj@chaosbits.net>
-Subject: [PATCH] Remove some pointless conditionals before kfree() in
- kernel/cgroup.c
-Message-ID: <alpine.LNX.2.00.0902222254350.1236@swampdragon.chaosbits.net>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Feb 2009 17:07:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:cc:date:subject;
+        b=MpXeWmDkqOsUfo2lvSv2uxrTM6dR09mhBgEWrBQswj1ETnC213g0+UIyogDvF0xyYK
+         leqJ+hCSnRWQlgcsVpmy9QvquhLp6NRnfz0BlaOmUSxtFT3Ve/OorwKR1zypYo4Vs5Ei
+         Kdsaupdwn3pMD3ol8OYUwOuI3UDxEI8dtPXhs=
+Message-ID: <49a1cc8f.2283420a.54d2.ffff8461@mx.google.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Date: Sun, 22 Feb 2009 22:56:08 +0100
+Subject: [PATCH] tracing/ftrace: add missing wake-up on some callsites
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Impact: fix unwaken pipe
 
-Here's a small patch for kernel/cgroup.c
+Now that we use a common wakeup infrastructure, we must append a wakeup
+on few callsites which lack it or tasks reading trace_pipe will not be
+awaken when events come on few tracers.
 
-Removes a few pointless tests of pointer == 0 before kfree() in 
-kernel/cgroup.c.
-If the pointer we hand to kfree() is 0, then kfree() is a noop, so there 
-is no need to test.
-
-Reduces object file size a bit : 
-
-Before:
-$ size kernel/cgroup.o
-   text    data     bss     dec     hex filename
-  21593    7804    4924   34321    8611 kernel/cgroup.o
-After:
-$ size kernel/cgroup.o
-   text    data     bss     dec     hex filename
-  21537    7744    4924   34205    859d kernel/cgroup.o
-
-and source file size shrinks a bit too - always nice.
-
-
-Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
+ kernel/trace/trace.c             |    2 ++
+ kernel/trace/trace_branch.c      |    2 ++
+ kernel/trace/trace_hw_branches.c |    2 ++
+ 3 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 9edb5c4..1c0a9b5 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -865,8 +865,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
- 	if (opts.release_agent)
- 		strcpy(root->release_agent_path, opts.release_agent);
-  out_unlock:
--	if (opts.release_agent)
--		kfree(opts.release_agent);
-+	kfree(opts.release_agent);
- 	mutex_unlock(&cgroup_mutex);
- 	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
- 	return ret;
-@@ -969,15 +968,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 	/* First find the desired set of subsystems */
- 	ret = parse_cgroupfs_options(data, &opts);
- 	if (ret) {
--		if (opts.release_agent)
--			kfree(opts.release_agent);
-+		kfree(opts.release_agent);
- 		return ret;
- 	}
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index e1f3b99..7f450b6 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3055,6 +3055,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+  out:
+ 	preempt_enable_notrace();
  
- 	root = kzalloc(sizeof(*root), GFP_KERNEL);
- 	if (!root) {
--		if (opts.release_agent)
--			kfree(opts.release_agent);
-+		kfree(opts.release_agent);
- 		return -ENOMEM;
- 	}
++	trace_wake_up();
++
+ 	return len;
+ }
+ EXPORT_SYMBOL_GPL(trace_vprintk);
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index c2e68d4..8c8f8c0 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -78,6 +78,8 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+  out:
+ 	atomic_dec(&tr->data[cpu]->disabled);
+ 	local_irq_restore(flags);
++
++	trace_wake_up();
+ }
  
-
-
+ static inline
+diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
+index 3561aac..ddd87fd 100644
+--- a/kernel/trace/trace_hw_branches.c
++++ b/kernel/trace/trace_hw_branches.c
+@@ -202,6 +202,8 @@ void trace_hw_branch(u64 from, u64 to)
+  out:
+ 	atomic_dec(&tr->data[cpu]->disabled);
+ 	local_irq_restore(irq1);
++
++	trace_wake_up();
+ }
+ 
+ static void trace_bts_at(const struct bts_trace *trace, void *at)
 -- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+1.6.1
+
 
