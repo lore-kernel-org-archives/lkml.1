@@ -1,87 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZBVWH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbZBVWHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbZBVWH2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZBVWHP
+	id S1753409AbZBVWHv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbZBVWHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:07:15 -0500
+	Sun, 22 Feb 2009 17:07:40 -0500
 Received: from mail-bw0-f161.google.com ([209.85.218.161]:36122 "EHLO
 	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752994AbZBVWHO (ORCPT
+	with ESMTP id S1753087AbZBVWHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:07:14 -0500
+	Sun, 22 Feb 2009 17:07:39 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:date:subject;
-        b=MpXeWmDkqOsUfo2lvSv2uxrTM6dR09mhBgEWrBQswj1ETnC213g0+UIyogDvF0xyYK
-         leqJ+hCSnRWQlgcsVpmy9QvquhLp6NRnfz0BlaOmUSxtFT3Ve/OorwKR1zypYo4Vs5Ei
-         Kdsaupdwn3pMD3ol8OYUwOuI3UDxEI8dtPXhs=
-Message-ID: <49a1cc8f.2283420a.54d2.ffff8461@mx.google.com>
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Date: Sun, 22 Feb 2009 22:56:08 +0100
-Subject: [PATCH] tracing/ftrace: add missing wake-up on some callsites
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Xt+m9E2Z7jz3Rpyd8KHJGdyRqLKWLS7+adJrlF4IMZtnO+KRtVwbvm/mm2Klxuxoa2
+         s8x1j8Di42OtWro0094TVHzp8AHpVFFoyzWxn/Ctn+7iBa8C6qGegww0DYmqREYHvVSV
+         uTeEP0s/xZkTJeCqtjBoUWUlyNVQCz47rTjrw=
+Date: Mon, 23 Feb 2009 01:07:48 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: kernel building procedure changed?
+Message-ID: <20090222220747.GB7279@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix unwaken pipe
+Hi all,
 
-Now that we use a common wakeup infrastructure, we must append a wakeup
-on few callsites which lack it or tasks reading trace_pipe will not be
-awaken when events come on few tracers.
+I found a bit strange thing happens now --
+plain
 
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+	make arch/x86/kernel/head64.o
+
+doesn't work anymore. Instead of compiling
+_just_ this file I've got the following:
+
 ---
- kernel/trace/trace.c             |    2 ++
- kernel/trace/trace_branch.c      |    2 ++
- kernel/trace/trace_hw_branches.c |    2 ++
- 3 files changed, 6 insertions(+), 0 deletions(-)
+cyrill@lenovo linux-2.6.git $ make arch/x86/kernel/head64.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  AS      arch/x86/kernel/head_64.o
+  VDSOSYM arch/x86/vdso/vdso-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-syms.lds
+  LD      arch/x86/vdso/built-in.o
+  CC      fs/hpfs/dnode.o
+make[2]: *** [fs/hpfs/dnode.o] Interrupt
+make[1]: *** [fs/hpfs] Interrupt
+make: *** [fs] Interrupt
+---
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index e1f3b99..7f450b6 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3055,6 +3055,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
-  out:
- 	preempt_enable_notrace();
- 
-+	trace_wake_up();
-+
- 	return len;
- }
- EXPORT_SYMBOL_GPL(trace_vprintk);
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index c2e68d4..8c8f8c0 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -78,6 +78,8 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
-  out:
- 	atomic_dec(&tr->data[cpu]->disabled);
- 	local_irq_restore(flags);
-+
-+	trace_wake_up();
- }
- 
- static inline
-diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
-index 3561aac..ddd87fd 100644
---- a/kernel/trace/trace_hw_branches.c
-+++ b/kernel/trace/trace_hw_branches.c
-@@ -202,6 +202,8 @@ void trace_hw_branch(u64 from, u64 to)
-  out:
- 	atomic_dec(&tr->data[cpu]->disabled);
- 	local_irq_restore(irq1);
-+
-+	trace_wake_up();
- }
- 
- static void trace_bts_at(const struct bts_trace *trace, void *at)
--- 
-1.6.1
+I've done make allyesconfig previously.
+I don't understand what I'm doing wrong... :(
+Really need help. The commit is:
 
+---
+commit c8f0da62a813f3ea8ceab574438afb90d428de36
+Merge: b95dcd2... 8f5bd50...
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Sun Feb 22 20:08:44 2009 +0100
 
+    manual merge of kmemcheck
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+
+As I understand hpfs completely unrelated to
+head64.o, right?
+
+Sam, Ingo, what I'm doing wrong? Please help :)
+
+	- Cyrill -
