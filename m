@@ -1,49 +1,4668 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZBVXYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757107AbZBVX0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758909AbZBVXYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 18:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbZBVXU6
+	id S1757107AbZBVX0P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 18:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZBVXZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 18:20:58 -0500
-Received: from mail-fx0-f167.google.com ([209.85.220.167]:52231 "EHLO
-	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757435AbZBVXUz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 18:20:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=hcv8oCe7aX9AUaPP1ZEZo7Ry0/VPjzgip4lhe1NmSLeoKYJsJE7McecrkNpv1vmgiA
-         cz7HyoWxwdYnTKjPuohD3A1RM84/m4BGuCxwag89E3bkys9d+vZp6qV9zx/K83T/QIMz
-         ah5fsWspxCwIA2bb6FlkWn0XfXoKe2lupylBE=
-Message-ID: <49A1DDD2.7040706@gmail.com>
-Date: Mon, 23 Feb 2009 00:20:50 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090218 SUSE/3.0b2-1.1 Thunderbird/3.0b2
+	Sun, 22 Feb 2009 18:25:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43100 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754533AbZBVXZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 18:25:50 -0500
+Date: Mon, 23 Feb 2009 00:25:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: unify genapic code, unify subarchitectures, remove old
+	subarchitecture code
+Message-ID: <20090222232523.GA31237@elte.hu>
+References: <1234102566.4244.7.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com>
-In-Reply-To: <49A1CA01.9030501@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234102566.4244.7.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22.2.2009 22:56, Jiri Slaby wrote:
-> Well, maybe we should try to reproduce with jumbo packets sent to the
-> ath5k receiver, since I think it (1) is not very much test-covered code
-> (2) appears to be related.
 
-According to the spec I have for older chip, there is not `done' flag 
-set for descriptors which have `more' flag set. We handle this wrongly. 
-Am I looking correctly, Nick, Luis, Bob?
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-I still don't see what could have caused this though.
+> > I ported the NUMAQ / Summit / bigsmp and ES7000 
+> > subarchitectures to the new setup. They build and boot on 
+> > regular hardware but are otherwise untested. The x86/Voyager 
+> > subarch is not fully ported yet (i cleaned up its Kconfig 
+> > impact) and hence disabled it for the time being. It ought 
+> > to be relatively straightforward to port it to the new code.
+> 
+> OK, so I analysed the voyager requirements.
+> 
+> The first simple one is that safe_smp_processor_id() and 
+> hard_smp_processor_id() need to be abstracted, probably 
+> through smp_ops. This one is probably trivial since 99% of the 
+> price of doing this has already been paid in the smp ops.
+> 
+> The other big problem is mm/tlb.c.  This directly uses genapic 
+> with 8 vectors which is impossible for voyager: the QIC only 
+> has 8 separate IPI vectors for everything.  The two 
+> alternatives which spring to mind are either to rebase 
+> mm/tlb.c on top of smp_call_function.  This would add a small 
+> amount to the critical path, but would also allow vector 
+> scaling beyond the current 8 IPI vectors to a per processor 
+> number (i.e. might scale better beyond 8 cores).  Or to keep 
+> voyager separate and move pieces of paravirt ops (or rather a 
+> separated piece of pv_ops) into smp_ops to effect the 
+> separation.  Instinct says to try the former first.
+
+Ping - it's been two weeks now and i havent gotten any patches 
+from you and Voyager is still broken in the latest x86 
+development tree.
+
+So we've queued up the patch below for now which removes the 
+Voyager subarch code. Let us know if you have any patches to 
+look at.
+
+Thanks,
+
+	Ingo
+
+-------------->
+>From 965c7ecaf2e2b083d711a01ab33735a4bdeee1a4 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 22 Feb 2009 23:19:12 +0100
+Subject: [PATCH] x86: remove the Voyager 32-bit subarch
+
+Impact: remove unused/broken code
+
+The Voyager subarch last built successfully on the v2.6.26 kernel
+and has been stale since then and does not build on the v2.6.27,
+v2.6.28 and v2.6.29-rc5 kernels.
+
+No actual users beyond the maintainer reported this breakage.
+Patches were sent and most of the fixes were accepted but the
+discussion around how to do a few remaining issues cleanly
+fizzled out with no resolution and the code remained broken.
+
+In the v2.6.30 x86 tree development cycle 32-bit subarch support
+has been reworked and removed - and the Voyager code, beyond the
+build problems already known, needs serious and significant
+changes and probably a rewrite to support it.
+
+CONFIG_X86_VOYAGER has been marked BROKEN then. The maintainer has
+been notified but no patches have been sent so far to fix it.
+
+While all other subarchs have been converted to the new scheme,
+voyager is still broken. We'd prefer to receive patches which
+clean up the current situation in a constructive way, but even in
+case of removal there is no obstacle to add that support back
+after the issues have been sorted out in a mutually acceptable
+fashion.
+
+So remove this inactive code for now.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig                               |   14 -
+ arch/x86/boot/Makefile                         |    1 -
+ arch/x86/boot/a20.c                            |    6 -
+ arch/x86/boot/boot.h                           |    3 -
+ arch/x86/boot/main.c                           |    5 -
+ arch/x86/boot/voyager.c                        |   40 -
+ arch/x86/configs/i386_defconfig                |    1 -
+ arch/x86/configs/x86_64_defconfig              |    1 -
+ arch/x86/include/asm/mach-voyager/do_timer.h   |   17 -
+ arch/x86/include/asm/mach-voyager/entry_arch.h |   26 -
+ arch/x86/include/asm/mach-voyager/setup_arch.h |   12 -
+ arch/x86/include/asm/vic.h                     |   61 -
+ arch/x86/include/asm/voyager.h                 |  571 --------
+ arch/x86/lguest/Kconfig                        |    1 -
+ arch/x86/mach-voyager/Makefile                 |    8 -
+ arch/x86/mach-voyager/setup.c                  |  119 --
+ arch/x86/mach-voyager/voyager_basic.c          |  317 -----
+ arch/x86/mach-voyager/voyager_cat.c            | 1197 ----------------
+ arch/x86/mach-voyager/voyager_smp.c            | 1805 ------------------------
+ arch/x86/mach-voyager/voyager_thread.c         |  128 --
+ arch/x86/xen/Kconfig                           |    2 +-
+ drivers/lguest/Kconfig                         |    2 +-
+ 22 files changed, 2 insertions(+), 4335 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 35efba5..5e2919c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -302,7 +302,6 @@ config X86_EXTENDED_PLATFORM
+ 		SGI 320/540 (Visual Workstation)
+ 		Summit/EXA (IBM x440)
+ 		Unisys ES7000 IA32 series
+-		Voyager (NCR)
+ 
+ 	  If you have one of these systems, or if you want to build a
+ 	  generic distribution kernel, say Y here - otherwise say N.
+@@ -423,19 +422,6 @@ config X86_ES7000
+ 	  Support for Unisys ES7000 systems.  Say 'Y' here if this kernel is
+ 	  supposed to run on an IA32-based Unisys ES7000 system.
+ 
+-config X86_VOYAGER
+-	bool "Voyager (NCR)"
+-	depends on SMP && !PCI && BROKEN
+-	depends on X86_32_NON_STANDARD
+-	---help---
+-	  Voyager is an MCA-based 32-way capable SMP architecture proprietary
+-	  to NCR Corp.  Machine classes 345x/35xx/4100/51xx are Voyager-based.
+-
+-	  *** WARNING ***
+-
+-	  If you do not specifically know you have a Voyager based machine,
+-	  say N here, otherwise the kernel you build will not be bootable.
+-
+ config SCHED_OMIT_FRAME_POINTER
+ 	def_bool y
+ 	prompt "Single-depth WCHAN output"
+diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
+index cd48c72..c70eff6 100644
+--- a/arch/x86/boot/Makefile
++++ b/arch/x86/boot/Makefile
+@@ -32,7 +32,6 @@ setup-y		+= a20.o cmdline.o copy.o cpu.o cpucheck.o edd.o
+ setup-y		+= header.o main.o mca.o memory.o pm.o pmjump.o
+ setup-y		+= printf.o string.o tty.o video.o video-mode.o version.o
+ setup-$(CONFIG_X86_APM_BOOT) += apm.o
+-setup-$(CONFIG_X86_VOYAGER) += voyager.o
+ 
+ # The link order of the video-*.o modules can matter.  In particular,
+ # video-vga.o *must* be listed first, followed by video-vesa.o.
+diff --git a/arch/x86/boot/a20.c b/arch/x86/boot/a20.c
+index fba8e9c..7c19ce8 100644
+--- a/arch/x86/boot/a20.c
++++ b/arch/x86/boot/a20.c
+@@ -126,11 +126,6 @@ static void enable_a20_fast(void)
+ 
+ int enable_a20(void)
+ {
+-#ifdef CONFIG_X86_VOYAGER
+-	/* On Voyager, a20_test() is unsafe? */
+-	enable_a20_kbc();
+-	return 0;
+-#else
+        int loops = A20_ENABLE_LOOPS;
+        int kbc_err;
+ 
+@@ -164,5 +159,4 @@ int enable_a20(void)
+        }
+        
+        return -1;
+-#endif
+ }
+diff --git a/arch/x86/boot/boot.h b/arch/x86/boot/boot.h
+index cc0ef13..7b2692e 100644
+--- a/arch/x86/boot/boot.h
++++ b/arch/x86/boot/boot.h
+@@ -302,9 +302,6 @@ void probe_cards(int unsafe);
+ /* video-vesa.c */
+ void vesa_store_edid(void);
+ 
+-/* voyager.c */
+-int query_voyager(void);
+-
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* BOOT_BOOT_H */
+diff --git a/arch/x86/boot/main.c b/arch/x86/boot/main.c
+index 197421d..58f0415 100644
+--- a/arch/x86/boot/main.c
++++ b/arch/x86/boot/main.c
+@@ -149,11 +149,6 @@ void main(void)
+ 	/* Query MCA information */
+ 	query_mca();
+ 
+-	/* Voyager */
+-#ifdef CONFIG_X86_VOYAGER
+-	query_voyager();
+-#endif
+-
+ 	/* Query Intel SpeedStep (IST) information */
+ 	query_ist();
+ 
+diff --git a/arch/x86/boot/voyager.c b/arch/x86/boot/voyager.c
+deleted file mode 100644
+index 433909d..0000000
+--- a/arch/x86/boot/voyager.c
++++ /dev/null
+@@ -1,40 +0,0 @@
+-/* -*- linux-c -*- ------------------------------------------------------- *
+- *
+- *   Copyright (C) 1991, 1992 Linus Torvalds
+- *   Copyright 2007 rPath, Inc. - All Rights Reserved
+- *
+- *   This file is part of the Linux kernel, and is made available under
+- *   the terms of the GNU General Public License version 2.
+- *
+- * ----------------------------------------------------------------------- */
+-
+-/*
+- * Get the Voyager config information
+- */
+-
+-#include "boot.h"
+-
+-int query_voyager(void)
+-{
+-	u8 err;
+-	u16 es, di;
+-	/* Abuse the apm_bios_info area for this */
+-	u8 *data_ptr = (u8 *)&boot_params.apm_bios_info;
+-
+-	data_ptr[0] = 0xff;	/* Flag on config not found(?) */
+-
+-	asm("pushw %%es ; "
+-	    "int $0x15 ; "
+-	    "setc %0 ; "
+-	    "movw %%es, %1 ; "
+-	    "popw %%es"
+-	    : "=q" (err), "=r" (es), "=D" (di)
+-	    : "a" (0xffc0));
+-
+-	if (err)
+-		return -1;	/* Not Voyager */
+-
+-	set_fs(es);
+-	copy_from_fs(data_ptr, di, 7);	/* Table is 7 bytes apparently */
+-	return 0;
+-}
+diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
+index 096dd53..5c023f6 100644
+--- a/arch/x86/configs/i386_defconfig
++++ b/arch/x86/configs/i386_defconfig
+@@ -197,7 +197,6 @@ CONFIG_SPARSE_IRQ=y
+ CONFIG_X86_FIND_SMP_CONFIG=y
+ CONFIG_X86_MPPARSE=y
+ # CONFIG_X86_ELAN is not set
+-# CONFIG_X86_VOYAGER is not set
+ # CONFIG_X86_GENERICARCH is not set
+ # CONFIG_X86_VSMP is not set
+ # CONFIG_X86_RDC321X is not set
+diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
+index 2efb5d5..4157cc4 100644
+--- a/arch/x86/configs/x86_64_defconfig
++++ b/arch/x86/configs/x86_64_defconfig
+@@ -199,7 +199,6 @@ CONFIG_SPARSE_IRQ=y
+ CONFIG_X86_FIND_SMP_CONFIG=y
+ CONFIG_X86_MPPARSE=y
+ # CONFIG_X86_ELAN is not set
+-# CONFIG_X86_VOYAGER is not set
+ # CONFIG_X86_GENERICARCH is not set
+ # CONFIG_X86_VSMP is not set
+ CONFIG_SCHED_OMIT_FRAME_POINTER=y
+diff --git a/arch/x86/include/asm/mach-voyager/do_timer.h b/arch/x86/include/asm/mach-voyager/do_timer.h
+deleted file mode 100644
+index 9e5a459..0000000
+--- a/arch/x86/include/asm/mach-voyager/do_timer.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/* defines for inline arch setup functions */
+-#include <linux/clockchips.h>
+-
+-#include <asm/voyager.h>
+-#include <asm/i8253.h>
+-
+-/**
+- * do_timer_interrupt_hook - hook into timer tick
+- *
+- * Call the pit clock event handler. see asm/i8253.h
+- **/
+-static inline void do_timer_interrupt_hook(void)
+-{
+-	global_clock_event->event_handler(global_clock_event);
+-	voyager_timer_interrupt();
+-}
+-
+diff --git a/arch/x86/include/asm/mach-voyager/entry_arch.h b/arch/x86/include/asm/mach-voyager/entry_arch.h
+deleted file mode 100644
+index ae52624..0000000
+--- a/arch/x86/include/asm/mach-voyager/entry_arch.h
++++ /dev/null
+@@ -1,26 +0,0 @@
+-/* -*- mode: c; c-basic-offset: 8 -*- */
+-
+-/* Copyright (C) 2002
+- *
+- * Author: James.Bottomley@HansenPartnership.com
+- *
+- * linux/arch/i386/voyager/entry_arch.h
+- *
+- * This file builds the VIC and QIC CPI gates
+- */
+-
+-/* initialise the voyager interrupt gates 
+- *
+- * This uses the macros in irq.h to set up assembly jump gates.  The
+- * calls are then redirected to the same routine with smp_ prefixed */
+-BUILD_INTERRUPT(vic_sys_interrupt, VIC_SYS_INT)
+-BUILD_INTERRUPT(vic_cmn_interrupt, VIC_CMN_INT)
+-BUILD_INTERRUPT(vic_cpi_interrupt, VIC_CPI_LEVEL0);
+-
+-/* do all the QIC interrupts */
+-BUILD_INTERRUPT(qic_timer_interrupt, QIC_TIMER_CPI);
+-BUILD_INTERRUPT(qic_invalidate_interrupt, QIC_INVALIDATE_CPI);
+-BUILD_INTERRUPT(qic_reschedule_interrupt, QIC_RESCHEDULE_CPI);
+-BUILD_INTERRUPT(qic_enable_irq_interrupt, QIC_ENABLE_IRQ_CPI);
+-BUILD_INTERRUPT(qic_call_function_interrupt, QIC_CALL_FUNCTION_CPI);
+-BUILD_INTERRUPT(qic_call_function_single_interrupt, QIC_CALL_FUNCTION_SINGLE_CPI);
+diff --git a/arch/x86/include/asm/mach-voyager/setup_arch.h b/arch/x86/include/asm/mach-voyager/setup_arch.h
+deleted file mode 100644
+index 71729ca..0000000
+--- a/arch/x86/include/asm/mach-voyager/setup_arch.h
++++ /dev/null
+@@ -1,12 +0,0 @@
+-#include <asm/voyager.h>
+-#include <asm/setup.h>
+-#define VOYAGER_BIOS_INFO ((struct voyager_bios_info *) \
+-			(&boot_params.apm_bios_info))
+-
+-/* Hook to call BIOS initialisation function */
+-
+-/* for voyager, pass the voyager BIOS/SUS info area to the detection
+- * routines */
+-
+-#define ARCH_SETUP	voyager_detect(VOYAGER_BIOS_INFO);
+-
+diff --git a/arch/x86/include/asm/vic.h b/arch/x86/include/asm/vic.h
+deleted file mode 100644
+index 53100f3..0000000
+--- a/arch/x86/include/asm/vic.h
++++ /dev/null
+@@ -1,61 +0,0 @@
+-/* Copyright (C) 1999,2001
+- *
+- * Author: J.E.J.Bottomley@HansenPartnership.com
+- *
+- * Standard include definitions for the NCR Voyager Interrupt Controller */
+-
+-/* The eight CPI vectors.  To activate a CPI, you write a bit mask
+- * corresponding to the processor set to be interrupted into the
+- * relevant register.  That set of CPUs will then be interrupted with
+- * the CPI */
+-static const int VIC_CPI_Registers[] =
+-	{0xFC00, 0xFC01, 0xFC08, 0xFC09,
+-	 0xFC10, 0xFC11, 0xFC18, 0xFC19 };
+-
+-#define VIC_PROC_WHO_AM_I		0xfc29
+-#	define	QUAD_IDENTIFIER		0xC0
+-#	define  EIGHT_SLOT_IDENTIFIER	0xE0
+-#define QIC_EXTENDED_PROCESSOR_SELECT	0xFC72
+-#define VIC_CPI_BASE_REGISTER		0xFC41
+-#define VIC_PROCESSOR_ID		0xFC21
+-#	define VIC_CPU_MASQUERADE_ENABLE 0x8
+-
+-#define VIC_CLAIM_REGISTER_0		0xFC38
+-#define VIC_CLAIM_REGISTER_1		0xFC39
+-#define VIC_REDIRECT_REGISTER_0		0xFC60
+-#define VIC_REDIRECT_REGISTER_1		0xFC61
+-#define VIC_PRIORITY_REGISTER		0xFC20
+-
+-#define VIC_PRIMARY_MC_BASE		0xFC48
+-#define VIC_SECONDARY_MC_BASE		0xFC49
+-
+-#define QIC_PROCESSOR_ID		0xFC71
+-#	define	QIC_CPUID_ENABLE	0x08
+-
+-#define QIC_VIC_CPI_BASE_REGISTER	0xFC79
+-#define QIC_CPI_BASE_REGISTER		0xFC7A
+-
+-#define QIC_MASK_REGISTER0		0xFC80
+-/* NOTE: these are masked high, enabled low */
+-#	define QIC_PERF_TIMER		0x01
+-#	define QIC_LPE			0x02
+-#	define QIC_SYS_INT		0x04
+-#	define QIC_CMN_INT		0x08
+-/* at the moment, just enable CMN_INT, disable SYS_INT */
+-#	define QIC_DEFAULT_MASK0	(~(QIC_CMN_INT /* | VIC_SYS_INT */))
+-#define QIC_MASK_REGISTER1		0xFC81
+-#	define QIC_BOOT_CPI_MASK	0xFE
+-/* Enable CPI's 1-6 inclusive */
+-#	define QIC_CPI_ENABLE		0x81
+-
+-#define QIC_INTERRUPT_CLEAR0		0xFC8A
+-#define QIC_INTERRUPT_CLEAR1		0xFC8B
+-
+-/* this is where we place the CPI vectors */
+-#define VIC_DEFAULT_CPI_BASE		0xC0
+-/* this is where we place the QIC CPI vectors */
+-#define QIC_DEFAULT_CPI_BASE		0xD0
+-
+-#define VIC_BOOT_INTERRUPT_MASK		0xfe
+-
+-extern void smp_vic_timer_interrupt(void);
+diff --git a/arch/x86/include/asm/voyager.h b/arch/x86/include/asm/voyager.h
+deleted file mode 100644
+index c1635d4..0000000
+--- a/arch/x86/include/asm/voyager.h
++++ /dev/null
+@@ -1,571 +0,0 @@
+-/* Copyright (C) 1999,2001
+- *
+- * Author: J.E.J.Bottomley@HansenPartnership.com
+- *
+- * Standard include definitions for the NCR Voyager system */
+-
+-#undef	VOYAGER_DEBUG
+-#undef	VOYAGER_CAT_DEBUG
+-
+-#ifdef VOYAGER_DEBUG
+-#define VDEBUG(x)	printk x
+-#else
+-#define VDEBUG(x)
+-#endif
+-
+-/* There are three levels of voyager machine: 3,4 and 5. The rule is
+- * if it's less than 3435 it's a Level 3 except for a 3360 which is
+- * a level 4.  A 3435 or above is a Level 5 */
+-#define VOYAGER_LEVEL5_AND_ABOVE	0x3435
+-#define VOYAGER_LEVEL4			0x3360
+-
+-/* The L4 DINO ASIC */
+-#define VOYAGER_DINO			0x43
+-
+-/* voyager ports in standard I/O space */
+-#define VOYAGER_MC_SETUP	0x96
+-
+-
+-#define	VOYAGER_CAT_CONFIG_PORT			0x97
+-#	define VOYAGER_CAT_DESELECT		0xff
+-#define VOYAGER_SSPB_RELOCATION_PORT		0x98
+-
+-/* Valid CAT controller commands */
+-/* start instruction register cycle */
+-#define VOYAGER_CAT_IRCYC			0x01
+-/* start data register cycle */
+-#define VOYAGER_CAT_DRCYC			0x02
+-/* move to execute state */
+-#define VOYAGER_CAT_RUN				0x0F
+-/* end operation */
+-#define VOYAGER_CAT_END				0x80
+-/* hold in idle state */
+-#define VOYAGER_CAT_HOLD			0x90
+-/* single step an "intest" vector */
+-#define VOYAGER_CAT_STEP			0xE0
+-/* return cat controller to CLEMSON mode */
+-#define VOYAGER_CAT_CLEMSON			0xFF
+-
+-/* the default cat command header */
+-#define VOYAGER_CAT_HEADER			0x7F
+-
+-/* the range of possible CAT module ids in the system */
+-#define VOYAGER_MIN_MODULE			0x10
+-#define VOYAGER_MAX_MODULE			0x1f
+-
+-/* The voyager registers per asic */
+-#define VOYAGER_ASIC_ID_REG			0x00
+-#define VOYAGER_ASIC_TYPE_REG			0x01
+-/* the sub address registers can be made auto incrementing on reads */
+-#define VOYAGER_AUTO_INC_REG			0x02
+-#	define VOYAGER_AUTO_INC			0x04
+-#	define VOYAGER_NO_AUTO_INC		0xfb
+-#define VOYAGER_SUBADDRDATA			0x03
+-#define VOYAGER_SCANPATH			0x05
+-#	define VOYAGER_CONNECT_ASIC		0x01
+-#	define VOYAGER_DISCONNECT_ASIC		0xfe
+-#define VOYAGER_SUBADDRLO			0x06
+-#define VOYAGER_SUBADDRHI			0x07
+-#define VOYAGER_SUBMODSELECT			0x08
+-#define VOYAGER_SUBMODPRESENT			0x09
+-
+-#define VOYAGER_SUBADDR_LO			0xff
+-#define VOYAGER_SUBADDR_HI			0xffff
+-
+-/* the maximum size of a scan path -- used to form instructions */
+-#define VOYAGER_MAX_SCAN_PATH			0x100
+-/* the biggest possible register size (in bytes) */
+-#define VOYAGER_MAX_REG_SIZE			4
+-
+-/* Total number of possible modules (including submodules) */
+-#define VOYAGER_MAX_MODULES			16
+-/* Largest number of asics per module */
+-#define VOYAGER_MAX_ASICS_PER_MODULE		7
+-
+-/* the CAT asic of each module is always the first one */
+-#define VOYAGER_CAT_ID				0
+-#define VOYAGER_PSI				0x1a
+-
+-/* voyager instruction operations and registers */
+-#define VOYAGER_READ_CONFIG			0x1
+-#define VOYAGER_WRITE_CONFIG			0x2
+-#define VOYAGER_BYPASS				0xff
+-
+-typedef struct voyager_asic {
+-	__u8	asic_addr;	/* ASIC address; Level 4 */
+-	__u8	asic_type;      /* ASIC type */
+-	__u8	asic_id;	/* ASIC id */
+-	__u8	jtag_id[4];	/* JTAG id */
+-	__u8	asic_location;	/* Location within scan path; start w/ 0 */
+-	__u8	bit_location;	/* Location within bit stream; start w/ 0 */
+-	__u8	ireg_length;	/* Instruction register length */
+-	__u16	subaddr;	/* Amount of sub address space */
+-	struct voyager_asic *next;	/* Next asic in linked list */
+-} voyager_asic_t;
+-
+-typedef struct voyager_module {
+-	__u8	module_addr;		/* Module address */
+-	__u8	scan_path_connected;	/* Scan path connected */
+-	__u16   ee_size;		/* Size of the EEPROM */
+-	__u16   num_asics;		/* Number of Asics */
+-	__u16   inst_bits;		/* Instruction bits in the scan path */
+-	__u16   largest_reg;		/* Largest register in the scan path */
+-	__u16   smallest_reg;		/* Smallest register in the scan path */
+-	voyager_asic_t   *asic;		/* First ASIC in scan path (CAT_I) */
+-	struct   voyager_module *submodule;	/* Submodule pointer */
+-	struct   voyager_module *next;		/* Next module in linked list */
+-} voyager_module_t;
+-
+-typedef struct voyager_eeprom_hdr {
+-	 __u8  module_id[4];
+-	 __u8  version_id;
+-	 __u8  config_id;
+-	 __u16 boundry_id;	/* boundary scan id */
+-	 __u16 ee_size;		/* size of EEPROM */
+-	 __u8  assembly[11];	/* assembly # */
+-	 __u8  assembly_rev;	/* assembly rev */
+-	 __u8  tracer[4];	/* tracer number */
+-	 __u16 assembly_cksum;	/* asm checksum */
+-	 __u16 power_consump;	/* pwr requirements */
+-	 __u16 num_asics;	/* number of asics */
+-	 __u16 bist_time;	/* min. bist time */
+-	 __u16 err_log_offset;	/* error log offset */
+-	 __u16 scan_path_offset;/* scan path offset */
+-	 __u16 cct_offset;
+-	 __u16 log_length;	/* length of err log */
+-	 __u16 xsum_end;	/* offset to end of
+-				   checksum */
+-	 __u8  reserved[4];
+-	 __u8  sflag;		/* starting sentinal */
+-	 __u8  part_number[13];	/* prom part number */
+-	 __u8  version[10];	/* version number */
+-	 __u8  signature[8];
+-	 __u16 eeprom_chksum;
+-	 __u32  data_stamp_offset;
+-	 __u8  eflag ;		 /* ending sentinal */
+-} __attribute__((packed)) voyager_eprom_hdr_t;
+-
+-
+-
+-#define VOYAGER_EPROM_SIZE_OFFSET				\
+-	((__u16)(&(((voyager_eprom_hdr_t *)0)->ee_size)))
+-#define VOYAGER_XSUM_END_OFFSET		0x2a
+-
+-/* the following three definitions are for internal table layouts
+- * in the module EPROMs.  We really only care about the IDs and
+- * offsets */
+-typedef struct voyager_sp_table {
+-	__u8 asic_id;
+-	__u8 bypass_flag;
+-	__u16 asic_data_offset;
+-	__u16 config_data_offset;
+-} __attribute__((packed)) voyager_sp_table_t;
+-
+-typedef struct voyager_jtag_table {
+-	__u8 icode[4];
+-	__u8 runbist[4];
+-	__u8 intest[4];
+-	__u8 samp_preld[4];
+-	__u8 ireg_len;
+-} __attribute__((packed)) voyager_jtt_t;
+-
+-typedef struct voyager_asic_data_table {
+-	__u8 jtag_id[4];
+-	__u16 length_bsr;
+-	__u16 length_bist_reg;
+-	__u32 bist_clk;
+-	__u16 subaddr_bits;
+-	__u16 seed_bits;
+-	__u16 sig_bits;
+-	__u16 jtag_offset;
+-} __attribute__((packed)) voyager_at_t;
+-
+-/* Voyager Interrupt Controller (VIC) registers */
+-
+-/* Base to add to Cross Processor Interrupts (CPIs) when triggering
+- * the CPU IRQ line */
+-/* register defines for the WCBICs (one per processor) */
+-#define VOYAGER_WCBIC0	0x41		/* bus A node P1 processor 0 */
+-#define VOYAGER_WCBIC1	0x49		/* bus A node P1 processor 1 */
+-#define VOYAGER_WCBIC2	0x51		/* bus A node P2 processor 0 */
+-#define VOYAGER_WCBIC3	0x59		/* bus A node P2 processor 1 */
+-#define VOYAGER_WCBIC4	0x61		/* bus B node P1 processor 0 */
+-#define VOYAGER_WCBIC5	0x69		/* bus B node P1 processor 1 */
+-#define VOYAGER_WCBIC6	0x71		/* bus B node P2 processor 0 */
+-#define VOYAGER_WCBIC7	0x79		/* bus B node P2 processor 1 */
+-
+-
+-/* top of memory registers */
+-#define VOYAGER_WCBIC_TOM_L	0x4
+-#define VOYAGER_WCBIC_TOM_H	0x5
+-
+-/* register defines for Voyager Memory Contol (VMC)
+- * these are present on L4 machines only */
+-#define	VOYAGER_VMC1		0x81
+-#define VOYAGER_VMC2		0x91
+-#define VOYAGER_VMC3		0xa1
+-#define VOYAGER_VMC4		0xb1
+-
+-/* VMC Ports */
+-#define VOYAGER_VMC_MEMORY_SETUP	0x9
+-#	define VMC_Interleaving		0x01
+-#	define VMC_4Way			0x02
+-#	define VMC_EvenCacheLines	0x04
+-#	define VMC_HighLine		0x08
+-#	define VMC_Start0_Enable	0x20
+-#	define VMC_Start1_Enable	0x40
+-#	define VMC_Vremap		0x80
+-#define VOYAGER_VMC_BANK_DENSITY	0xa
+-#	define	VMC_BANK_EMPTY		0
+-#	define	VMC_BANK_4MB		1
+-#	define	VMC_BANK_16MB		2
+-#	define	VMC_BANK_64MB		3
+-#	define	VMC_BANK0_MASK		0x03
+-#	define	VMC_BANK1_MASK		0x0C
+-#	define	VMC_BANK2_MASK		0x30
+-#	define	VMC_BANK3_MASK		0xC0
+-
+-/* Magellan Memory Controller (MMC) defines - present on L5 */
+-#define VOYAGER_MMC_ASIC_ID		1
+-/* the two memory modules corresponding to memory cards in the system */
+-#define VOYAGER_MMC_MEMORY0_MODULE	0x14
+-#define VOYAGER_MMC_MEMORY1_MODULE	0x15
+-/* the Magellan Memory Address (MMA) defines */
+-#define VOYAGER_MMA_ASIC_ID		2
+-
+-/* Submodule number for the Quad Baseboard */
+-#define VOYAGER_QUAD_BASEBOARD		1
+-
+-/* ASIC defines for the Quad Baseboard */
+-#define VOYAGER_QUAD_QDATA0		1
+-#define VOYAGER_QUAD_QDATA1		2
+-#define VOYAGER_QUAD_QABC		3
+-
+-/* Useful areas in extended CMOS */
+-#define VOYAGER_PROCESSOR_PRESENT_MASK	0x88a
+-#define VOYAGER_MEMORY_CLICKMAP		0xa23
+-#define VOYAGER_DUMP_LOCATION		0xb1a
+-
+-/* SUS In Control bit - used to tell SUS that we don't need to be
+- * babysat anymore */
+-#define VOYAGER_SUS_IN_CONTROL_PORT	0x3ff
+-#	define VOYAGER_IN_CONTROL_FLAG	0x80
+-
+-/* Voyager PSI defines */
+-#define VOYAGER_PSI_STATUS_REG		0x08
+-#	define PSI_DC_FAIL		0x01
+-#	define PSI_MON			0x02
+-#	define PSI_FAULT		0x04
+-#	define PSI_ALARM		0x08
+-#	define PSI_CURRENT		0x10
+-#	define PSI_DVM			0x20
+-#	define PSI_PSCFAULT		0x40
+-#	define PSI_STAT_CHG		0x80
+-
+-#define VOYAGER_PSI_SUPPLY_REG		0x8000
+-	/* read */
+-#	define PSI_FAIL_DC		0x01
+-#	define PSI_FAIL_AC		0x02
+-#	define PSI_MON_INT		0x04
+-#	define PSI_SWITCH_OFF		0x08
+-#	define PSI_HX_OFF		0x10
+-#	define PSI_SECURITY		0x20
+-#	define PSI_CMOS_BATT_LOW	0x40
+-#	define PSI_CMOS_BATT_FAIL	0x80
+-	/* write */
+-#	define PSI_CLR_SWITCH_OFF	0x13
+-#	define PSI_CLR_HX_OFF		0x14
+-#	define PSI_CLR_CMOS_BATT_FAIL	0x17
+-
+-#define VOYAGER_PSI_MASK		0x8001
+-#	define PSI_MASK_MASK		0x10
+-
+-#define VOYAGER_PSI_AC_FAIL_REG		0x8004
+-#define	AC_FAIL_STAT_CHANGE		0x80
+-
+-#define VOYAGER_PSI_GENERAL_REG		0x8007
+-	/* read */
+-#	define PSI_SWITCH_ON		0x01
+-#	define PSI_SWITCH_ENABLED	0x02
+-#	define PSI_ALARM_ENABLED	0x08
+-#	define PSI_SECURE_ENABLED	0x10
+-#	define PSI_COLD_RESET		0x20
+-#	define PSI_COLD_START		0x80
+-	/* write */
+-#	define PSI_POWER_DOWN		0x10
+-#	define PSI_SWITCH_DISABLE	0x01
+-#	define PSI_SWITCH_ENABLE	0x11
+-#	define PSI_CLEAR		0x12
+-#	define PSI_ALARM_DISABLE	0x03
+-#	define PSI_ALARM_ENABLE		0x13
+-#	define PSI_CLEAR_COLD_RESET	0x05
+-#	define PSI_SET_COLD_RESET	0x15
+-#	define PSI_CLEAR_COLD_START	0x07
+-#	define PSI_SET_COLD_START	0x17
+-
+-
+-
+-struct voyager_bios_info {
+-	__u8	len;
+-	__u8	major;
+-	__u8	minor;
+-	__u8	debug;
+-	__u8	num_classes;
+-	__u8	class_1;
+-	__u8	class_2;
+-};
+-
+-/* The following structures and definitions are for the Kernel/SUS
+- * interface these are needed to find out how SUS initialised any Quad
+- * boards in the system */
+-
+-#define	NUMBER_OF_MC_BUSSES	2
+-#define SLOTS_PER_MC_BUS	8
+-#define MAX_CPUS                16      /* 16 way CPU system */
+-#define MAX_PROCESSOR_BOARDS	4	/* 4 processor slot system */
+-#define MAX_CACHE_LEVELS	4	/* # of cache levels supported */
+-#define MAX_SHARED_CPUS		4	/* # of CPUs that can share a LARC */
+-#define NUMBER_OF_POS_REGS	8
+-
+-typedef struct {
+-	__u8	MC_Slot;
+-	__u8	POS_Values[NUMBER_OF_POS_REGS];
+-} __attribute__((packed)) MC_SlotInformation_t;
+-
+-struct QuadDescription {
+-	__u8  Type;	/* for type 0 (DYADIC or MONADIC) all fields
+-			 * will be zero except for slot */
+-	__u8 StructureVersion;
+-	__u32 CPI_BaseAddress;
+-	__u32  LARC_BankSize;
+-	__u32 LocalMemoryStateBits;
+-	__u8  Slot; /* Processor slots 1 - 4 */
+-} __attribute__((packed));
+-
+-struct ProcBoardInfo {
+-	__u8 Type;
+-	__u8 StructureVersion;
+-	__u8 NumberOfBoards;
+-	struct QuadDescription QuadData[MAX_PROCESSOR_BOARDS];
+-} __attribute__((packed));
+-
+-struct CacheDescription {
+-	__u8 Level;
+-	__u32 TotalSize;
+-	__u16 LineSize;
+-	__u8  Associativity;
+-	__u8  CacheType;
+-	__u8  WriteType;
+-	__u8  Number_CPUs_SharedBy;
+-	__u8  Shared_CPUs_Hardware_IDs[MAX_SHARED_CPUS];
+-
+-} __attribute__((packed));
+-
+-struct CPU_Description {
+-	__u8 CPU_HardwareId;
+-	char *FRU_String;
+-	__u8 NumberOfCacheLevels;
+-	struct CacheDescription CacheLevelData[MAX_CACHE_LEVELS];
+-} __attribute__((packed));
+-
+-struct CPU_Info {
+-	__u8 Type;
+-	__u8 StructureVersion;
+-	__u8 NumberOf_CPUs;
+-	struct CPU_Description CPU_Data[MAX_CPUS];
+-} __attribute__((packed));
+-
+-
+-/*
+- * This structure will be used by SUS and the OS.
+- * The assumption about this structure is that no blank space is
+- * packed in it by our friend the compiler.
+- */
+-typedef struct {
+-	__u8	Mailbox_SUS;		/* Written to by SUS to give
+-					   commands/response to the OS */
+-	__u8	Mailbox_OS;		/* Written to by the OS to give
+-					   commands/response to SUS */
+-	__u8	SUS_MailboxVersion;	/* Tells the OS which iteration of the
+-					   interface SUS supports */
+-	__u8	OS_MailboxVersion;	/* Tells SUS which iteration of the
+-					   interface the OS supports */
+-	__u32	OS_Flags;		/* Flags set by the OS as info for
+-					   SUS */
+-	__u32	SUS_Flags;		/* Flags set by SUS as info
+-					   for the OS */
+-	__u32	WatchDogPeriod;		/* Watchdog period (in seconds) which
+-					   the DP uses to see if the OS
+-					   is dead */
+-	__u32	WatchDogCount;		/* Updated by the OS on every tic. */
+-	__u32	MemoryFor_SUS_ErrorLog;	/* Flat 32 bit address which tells SUS
+-					   where to stuff the SUS error log
+-					   on a dump */
+-	MC_SlotInformation_t MC_SlotInfo[NUMBER_OF_MC_BUSSES*SLOTS_PER_MC_BUS];
+-					/* Storage for MCA POS data */
+-	/* All new SECOND_PASS_INTERFACE fields added from this point */
+-	struct ProcBoardInfo    *BoardData;
+-	struct CPU_Info         *CPU_Data;
+-	/* All new fields must be added from this point */
+-} Voyager_KernelSUS_Mbox_t;
+-
+-/* structure for finding the right memory address to send a QIC CPI to */
+-struct voyager_qic_cpi {
+-	/* Each cache line (32 bytes) can trigger a cpi.  The cpi
+-	 * read/write may occur anywhere in the cache line---pick the
+-	 * middle to be safe */
+-	struct  {
+-		__u32 pad1[3];
+-		__u32 cpi;
+-		__u32 pad2[4];
+-	} qic_cpi[8];
+-};
+-
+-struct voyager_status {
+-	__u32	power_fail:1;
+-	__u32	switch_off:1;
+-	__u32	request_from_kernel:1;
+-};
+-
+-struct voyager_psi_regs {
+-	__u8 cat_id;
+-	__u8 cat_dev;
+-	__u8 cat_control;
+-	__u8 subaddr;
+-	__u8 dummy4;
+-	__u8 checkbit;
+-	__u8 subaddr_low;
+-	__u8 subaddr_high;
+-	__u8 intstatus;
+-	__u8 stat1;
+-	__u8 stat3;
+-	__u8 fault;
+-	__u8 tms;
+-	__u8 gen;
+-	__u8 sysconf;
+-	__u8 dummy15;
+-};
+-
+-struct voyager_psi_subregs {
+-	__u8 supply;
+-	__u8 mask;
+-	__u8 present;
+-	__u8 DCfail;
+-	__u8 ACfail;
+-	__u8 fail;
+-	__u8 UPSfail;
+-	__u8 genstatus;
+-};
+-
+-struct voyager_psi {
+-	struct voyager_psi_regs regs;
+-	struct voyager_psi_subregs subregs;
+-};
+-
+-struct voyager_SUS {
+-#define	VOYAGER_DUMP_BUTTON_NMI		0x1
+-#define VOYAGER_SUS_VALID		0x2
+-#define VOYAGER_SYSINT_COMPLETE		0x3
+-	__u8	SUS_mbox;
+-#define VOYAGER_NO_COMMAND		0x0
+-#define VOYAGER_IGNORE_DUMP		0x1
+-#define VOYAGER_DO_DUMP			0x2
+-#define VOYAGER_SYSINT_HANDSHAKE	0x3
+-#define VOYAGER_DO_MEM_DUMP		0x4
+-#define VOYAGER_SYSINT_WAS_RECOVERED	0x5
+-	__u8	kernel_mbox;
+-#define	VOYAGER_MAILBOX_VERSION		0x10
+-	__u8	SUS_version;
+-	__u8	kernel_version;
+-#define VOYAGER_OS_HAS_SYSINT		0x1
+-#define VOYAGER_OS_IN_PROGRESS		0x2
+-#define VOYAGER_UPDATING_WDPERIOD	0x4
+-	__u32	kernel_flags;
+-#define VOYAGER_SUS_BOOTING		0x1
+-#define VOYAGER_SUS_IN_PROGRESS		0x2
+-	__u32	SUS_flags;
+-	__u32	watchdog_period;
+-	__u32	watchdog_count;
+-	__u32	SUS_errorlog;
+-	/* lots of system configuration stuff under here */
+-};
+-
+-/* Variables exported by voyager_smp */
+-extern __u32 voyager_extended_vic_processors;
+-extern __u32 voyager_allowed_boot_processors;
+-extern __u32 voyager_quad_processors;
+-extern struct voyager_qic_cpi *voyager_quad_cpi_addr[NR_CPUS];
+-extern struct voyager_SUS *voyager_SUS;
+-
+-/* variables exported always */
+-extern struct task_struct *voyager_thread;
+-extern int voyager_level;
+-extern struct voyager_status voyager_status;
+-
+-/* functions exported by the voyager and voyager_smp modules */
+-extern int voyager_cat_readb(__u8 module, __u8 asic, int reg);
+-extern void voyager_cat_init(void);
+-extern void voyager_detect(struct voyager_bios_info *);
+-extern void voyager_trap_init(void);
+-extern void voyager_setup_irqs(void);
+-extern int voyager_memory_detect(int region, __u32 *addr, __u32 *length);
+-extern void voyager_smp_intr_init(void);
+-extern __u8 voyager_extended_cmos_read(__u16 cmos_address);
+-extern void voyager_smp_dump(void);
+-extern void voyager_timer_interrupt(void);
+-extern void smp_local_timer_interrupt(void);
+-extern void voyager_power_off(void);
+-extern void smp_voyager_power_off(void *dummy);
+-extern void voyager_restart(void);
+-extern void voyager_cat_power_off(void);
+-extern void voyager_cat_do_common_interrupt(void);
+-extern void voyager_handle_nmi(void);
+-extern void voyager_smp_intr_init(void);
+-/* Commands for the following are */
+-#define	VOYAGER_PSI_READ	0
+-#define VOYAGER_PSI_WRITE	1
+-#define VOYAGER_PSI_SUBREAD	2
+-#define VOYAGER_PSI_SUBWRITE	3
+-extern void voyager_cat_psi(__u8, __u16, __u8 *);
+-
+-/* These define the CPIs we use in linux */
+-#define VIC_CPI_LEVEL0			0
+-#define VIC_CPI_LEVEL1			1
+-/* now the fake CPIs */
+-#define VIC_TIMER_CPI			2
+-#define VIC_INVALIDATE_CPI		3
+-#define VIC_RESCHEDULE_CPI		4
+-#define VIC_ENABLE_IRQ_CPI		5
+-#define VIC_CALL_FUNCTION_CPI		6
+-#define VIC_CALL_FUNCTION_SINGLE_CPI	7
+-
+-/* Now the QIC CPIs:  Since we don't need the two initial levels,
+- * these are 2 less than the VIC CPIs */
+-#define QIC_CPI_OFFSET			1
+-#define QIC_TIMER_CPI			(VIC_TIMER_CPI - QIC_CPI_OFFSET)
+-#define QIC_INVALIDATE_CPI		(VIC_INVALIDATE_CPI - QIC_CPI_OFFSET)
+-#define QIC_RESCHEDULE_CPI		(VIC_RESCHEDULE_CPI - QIC_CPI_OFFSET)
+-#define QIC_ENABLE_IRQ_CPI		(VIC_ENABLE_IRQ_CPI - QIC_CPI_OFFSET)
+-#define QIC_CALL_FUNCTION_CPI		(VIC_CALL_FUNCTION_CPI - QIC_CPI_OFFSET)
+-#define QIC_CALL_FUNCTION_SINGLE_CPI	(VIC_CALL_FUNCTION_SINGLE_CPI - QIC_CPI_OFFSET)
+-
+-#define VIC_START_FAKE_CPI		VIC_TIMER_CPI
+-#define VIC_END_FAKE_CPI		VIC_CALL_FUNCTION_SINGLE_CPI
+-
+-/* this is the SYS_INT CPI. */
+-#define VIC_SYS_INT			8
+-#define VIC_CMN_INT			15
+-
+-/* This is the boot CPI for alternate processors.  It gets overwritten
+- * by the above once the system has activated all available processors */
+-#define VIC_CPU_BOOT_CPI		VIC_CPI_LEVEL0
+-#define VIC_CPU_BOOT_ERRATA_CPI		(VIC_CPI_LEVEL0 + 8)
+-
+-extern asmlinkage void vic_cpi_interrupt(void);
+-extern asmlinkage void vic_sys_interrupt(void);
+-extern asmlinkage void vic_cmn_interrupt(void);
+-extern asmlinkage void qic_timer_interrupt(void);
+-extern asmlinkage void qic_invalidate_interrupt(void);
+-extern asmlinkage void qic_reschedule_interrupt(void);
+-extern asmlinkage void qic_enable_irq_interrupt(void);
+-extern asmlinkage void qic_call_function_interrupt(void);
+diff --git a/arch/x86/lguest/Kconfig b/arch/x86/lguest/Kconfig
+index c70e12b..8dab8f7 100644
+--- a/arch/x86/lguest/Kconfig
++++ b/arch/x86/lguest/Kconfig
+@@ -3,7 +3,6 @@ config LGUEST_GUEST
+ 	select PARAVIRT
+ 	depends on X86_32
+ 	depends on !X86_PAE
+-	depends on !X86_VOYAGER
+ 	select VIRTIO
+ 	select VIRTIO_RING
+ 	select VIRTIO_CONSOLE
+diff --git a/arch/x86/mach-voyager/Makefile b/arch/x86/mach-voyager/Makefile
+deleted file mode 100644
+index 15c250b..0000000
+--- a/arch/x86/mach-voyager/Makefile
++++ /dev/null
+@@ -1,8 +0,0 @@
+-#
+-# Makefile for the linux kernel.
+-#
+-
+-EXTRA_CFLAGS	:= -Iarch/x86/kernel
+-obj-y			:= setup.o voyager_basic.o voyager_thread.o
+-
+-obj-$(CONFIG_SMP)	+= voyager_smp.o voyager_cat.o
+diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
+deleted file mode 100644
+index 88c3c55..0000000
+--- a/arch/x86/mach-voyager/setup.c
++++ /dev/null
+@@ -1,119 +0,0 @@
+-/*
+- *	Machine specific setup for generic
+- */
+-
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <asm/arch_hooks.h>
+-#include <asm/voyager.h>
+-#include <asm/e820.h>
+-#include <asm/io.h>
+-#include <asm/setup.h>
+-#include <asm/cpu.h>
+-
+-void __init pre_intr_init_hook(void)
+-{
+-	init_ISA_irqs();
+-}
+-
+-/*
+- * IRQ2 is cascade interrupt to second interrupt controller
+- */
+-static struct irqaction irq2 = {
+-	.handler = no_action,
+-	.mask = CPU_MASK_NONE,
+-	.name = "cascade",
+-};
+-
+-void __init intr_init_hook(void)
+-{
+-#ifdef CONFIG_SMP
+-	voyager_smp_intr_init();
+-#endif
+-
+-	setup_irq(2, &irq2);
+-}
+-
+-static void voyager_disable_tsc(void)
+-{
+-	/* Voyagers run their CPUs from independent clocks, so disable
+-	 * the TSC code because we can't sync them */
+-	setup_clear_cpu_cap(X86_FEATURE_TSC);
+-}
+-
+-void __init pre_setup_arch_hook(void)
+-{
+-	voyager_disable_tsc();
+-}
+-
+-void __init pre_time_init_hook(void)
+-{
+-	voyager_disable_tsc();
+-}
+-
+-void __init trap_init_hook(void)
+-{
+-}
+-
+-static struct irqaction irq0 = {
+-	.handler = timer_interrupt,
+-	.flags = IRQF_DISABLED | IRQF_NOBALANCING | IRQF_IRQPOLL | IRQF_TIMER,
+-	.mask = CPU_MASK_NONE,
+-	.name = "timer"
+-};
+-
+-void __init time_init_hook(void)
+-{
+-	irq0.mask = cpumask_of_cpu(safe_smp_processor_id());
+-	setup_irq(0, &irq0);
+-}
+-
+-/* Hook for machine specific memory setup. */
+-
+-char *__init machine_specific_memory_setup(void)
+-{
+-	char *who;
+-	int new_nr;
+-
+-	who = "NOT VOYAGER";
+-
+-	if (voyager_level == 5) {
+-		__u32 addr, length;
+-		int i;
+-
+-		who = "Voyager-SUS";
+-
+-		e820.nr_map = 0;
+-		for (i = 0; voyager_memory_detect(i, &addr, &length); i++) {
+-			e820_add_region(addr, length, E820_RAM);
+-		}
+-		return who;
+-	} else if (voyager_level == 4) {
+-		__u32 tom;
+-		__u16 catbase = inb(VOYAGER_SSPB_RELOCATION_PORT) << 8;
+-		/* select the DINO config space */
+-		outb(VOYAGER_DINO, VOYAGER_CAT_CONFIG_PORT);
+-		/* Read DINO top of memory register */
+-		tom = ((inb(catbase + 0x4) & 0xf0) << 16)
+-		    + ((inb(catbase + 0x5) & 0x7f) << 24);
+-
+-		if (inb(catbase) != VOYAGER_DINO) {
+-			printk(KERN_ERR
+-			       "Voyager: Failed to get DINO for L4, setting tom to EXT_MEM_K\n");
+-			tom = (boot_params.screen_info.ext_mem_k) << 10;
+-		}
+-		who = "Voyager-TOM";
+-		e820_add_region(0, 0x9f000, E820_RAM);
+-		/* map from 1M to top of memory */
+-		e820_add_region(1 * 1024 * 1024, tom - 1 * 1024 * 1024,
+-				  E820_RAM);
+-		/* FIXME: Should check the ASICs to see if I need to
+-		 * take out the 8M window.  Just do it at the moment
+-		 * */
+-		e820_add_region(8 * 1024 * 1024, 8 * 1024 * 1024,
+-				  E820_RESERVED);
+-		return who;
+-	}
+-
+-	return default_machine_specific_memory_setup();
+-}
+diff --git a/arch/x86/mach-voyager/voyager_basic.c b/arch/x86/mach-voyager/voyager_basic.c
+deleted file mode 100644
+index 46d6f80..0000000
+--- a/arch/x86/mach-voyager/voyager_basic.c
++++ /dev/null
+@@ -1,317 +0,0 @@
+-/* Copyright (C) 1999,2001 
+- *
+- * Author: J.E.J.Bottomley@HansenPartnership.com
+- *
+- * This file contains all the voyager specific routines for getting
+- * initialisation of the architecture to function.  For additional
+- * features see:
+- *
+- *	voyager_cat.c - Voyager CAT bus interface
+- *	voyager_smp.c - Voyager SMP hal (emulates linux smp.c)
+- */
+-
+-#include <linux/module.h>
+-#include <linux/types.h>
+-#include <linux/sched.h>
+-#include <linux/ptrace.h>
+-#include <linux/ioport.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/reboot.h>
+-#include <linux/sysrq.h>
+-#include <linux/smp.h>
+-#include <linux/nodemask.h>
+-#include <asm/io.h>
+-#include <asm/voyager.h>
+-#include <asm/vic.h>
+-#include <linux/pm.h>
+-#include <asm/tlbflush.h>
+-#include <asm/arch_hooks.h>
+-#include <asm/i8253.h>
+-
+-/*
+- * Power off function, if any
+- */
+-void (*pm_power_off) (void);
+-EXPORT_SYMBOL(pm_power_off);
+-
+-int voyager_level = 0;
+-
+-struct voyager_SUS *voyager_SUS = NULL;
+-
+-#ifdef CONFIG_SMP
+-static void voyager_dump(int dummy1, struct tty_struct *dummy3)
+-{
+-	/* get here via a sysrq */
+-	voyager_smp_dump();
+-}
+-
+-static struct sysrq_key_op sysrq_voyager_dump_op = {
+-	.handler = voyager_dump,
+-	.help_msg = "Voyager",
+-	.action_msg = "Dump Voyager Status",
+-};
+-#endif
+-
+-void voyager_detect(struct voyager_bios_info *bios)
+-{
+-	if (bios->len != 0xff) {
+-		int class = (bios->class_1 << 8)
+-		    | (bios->class_2 & 0xff);
+-
+-		printk("Voyager System detected.\n"
+-		       "        Class %x, Revision %d.%d\n",
+-		       class, bios->major, bios->minor);
+-		if (class == VOYAGER_LEVEL4)
+-			voyager_level = 4;
+-		else if (class < VOYAGER_LEVEL5_AND_ABOVE)
+-			voyager_level = 3;
+-		else
+-			voyager_level = 5;
+-		printk("        Architecture Level %d\n", voyager_level);
+-		if (voyager_level < 4)
+-			printk
+-			    ("\n**WARNING**: Voyager HAL only supports Levels 4 and 5 Architectures at the moment\n\n");
+-		/* install the power off handler */
+-		pm_power_off = voyager_power_off;
+-#ifdef CONFIG_SMP
+-		register_sysrq_key('v', &sysrq_voyager_dump_op);
+-#endif
+-	} else {
+-		printk("\n\n**WARNING**: No Voyager Subsystem Found\n");
+-	}
+-}
+-
+-void voyager_system_interrupt(int cpl, void *dev_id)
+-{
+-	printk("Voyager: detected system interrupt\n");
+-}
+-
+-/* Routine to read information from the extended CMOS area */
+-__u8 voyager_extended_cmos_read(__u16 addr)
+-{
+-	outb(addr & 0xff, 0x74);
+-	outb((addr >> 8) & 0xff, 0x75);
+-	return inb(0x76);
+-}
+-
+-/* internal definitions for the SUS Click Map of memory */
+-
+-#define CLICK_ENTRIES	16
+-#define CLICK_SIZE	4096	/* click to byte conversion for Length */
+-
+-typedef struct ClickMap {
+-	struct Entry {
+-		__u32 Address;
+-		__u32 Length;
+-	} Entry[CLICK_ENTRIES];
+-} ClickMap_t;
+-
+-/* This routine is pretty much an awful hack to read the bios clickmap by
+- * mapping it into page 0.  There are usually three regions in the map:
+- * 	Base Memory
+- * 	Extended Memory
+- *	zero length marker for end of map
+- *
+- * Returns are 0 for failure and 1 for success on extracting region.
+- */
+-int __init voyager_memory_detect(int region, __u32 * start, __u32 * length)
+-{
+-	int i;
+-	int retval = 0;
+-	__u8 cmos[4];
+-	ClickMap_t *map;
+-	unsigned long map_addr;
+-	unsigned long old;
+-
+-	if (region >= CLICK_ENTRIES) {
+-		printk("Voyager: Illegal ClickMap region %d\n", region);
+-		return 0;
+-	}
+-
+-	for (i = 0; i < sizeof(cmos); i++)
+-		cmos[i] =
+-		    voyager_extended_cmos_read(VOYAGER_MEMORY_CLICKMAP + i);
+-
+-	map_addr = *(unsigned long *)cmos;
+-
+-	/* steal page 0 for this */
+-	old = pg0[0];
+-	pg0[0] = ((map_addr & PAGE_MASK) | _PAGE_RW | _PAGE_PRESENT);
+-	local_flush_tlb();
+-	/* now clear everything out but page 0 */
+-	map = (ClickMap_t *) (map_addr & (~PAGE_MASK));
+-
+-	/* zero length is the end of the clickmap */
+-	if (map->Entry[region].Length != 0) {
+-		*length = map->Entry[region].Length * CLICK_SIZE;
+-		*start = map->Entry[region].Address;
+-		retval = 1;
+-	}
+-
+-	/* replace the mapping */
+-	pg0[0] = old;
+-	local_flush_tlb();
+-	return retval;
+-}
+-
+-/* voyager specific handling code for timer interrupts.  Used to hand
+- * off the timer tick to the SMP code, since the VIC doesn't have an
+- * internal timer (The QIC does, but that's another story). */
+-void voyager_timer_interrupt(void)
+-{
+-	if ((jiffies & 0x3ff) == 0) {
+-
+-		/* There seems to be something flaky in either
+-		 * hardware or software that is resetting the timer 0
+-		 * count to something much higher than it should be
+-		 * This seems to occur in the boot sequence, just
+-		 * before root is mounted.  Therefore, every 10
+-		 * seconds or so, we sanity check the timer zero count
+-		 * and kick it back to where it should be.
+-		 *
+-		 * FIXME: This is the most awful hack yet seen.  I
+-		 * should work out exactly what is interfering with
+-		 * the timer count settings early in the boot sequence
+-		 * and swiftly introduce it to something sharp and
+-		 * pointy.  */
+-		__u16 val;
+-
+-		spin_lock(&i8253_lock);
+-
+-		outb_p(0x00, 0x43);
+-		val = inb_p(0x40);
+-		val |= inb(0x40) << 8;
+-		spin_unlock(&i8253_lock);
+-
+-		if (val > LATCH) {
+-			printk
+-			    ("\nVOYAGER: countdown timer value too high (%d), resetting\n\n",
+-			     val);
+-			spin_lock(&i8253_lock);
+-			outb(0x34, 0x43);
+-			outb_p(LATCH & 0xff, 0x40);	/* LSB */
+-			outb(LATCH >> 8, 0x40);	/* MSB */
+-			spin_unlock(&i8253_lock);
+-		}
+-	}
+-#ifdef CONFIG_SMP
+-	smp_vic_timer_interrupt();
+-#endif
+-}
+-
+-void voyager_power_off(void)
+-{
+-	printk("VOYAGER Power Off\n");
+-
+-	if (voyager_level == 5) {
+-		voyager_cat_power_off();
+-	} else if (voyager_level == 4) {
+-		/* This doesn't apparently work on most L4 machines,
+-		 * but the specs say to do this to get automatic power
+-		 * off.  Unfortunately, if it doesn't power off the
+-		 * machine, it ends up doing a cold restart, which
+-		 * isn't really intended, so comment out the code */
+-#if 0
+-		int port;
+-
+-		/* enable the voyager Configuration Space */
+-		outb((inb(VOYAGER_MC_SETUP) & 0xf0) | 0x8, VOYAGER_MC_SETUP);
+-		/* the port for the power off flag is an offset from the
+-		   floating base */
+-		port = (inb(VOYAGER_SSPB_RELOCATION_PORT) << 8) + 0x21;
+-		/* set the power off flag */
+-		outb(inb(port) | 0x1, port);
+-#endif
+-	}
+-	/* and wait for it to happen */
+-	local_irq_disable();
+-	for (;;)
+-		halt();
+-}
+-
+-/* copied from process.c */
+-static inline void kb_wait(void)
+-{
+-	int i;
+-
+-	for (i = 0; i < 0x10000; i++)
+-		if ((inb_p(0x64) & 0x02) == 0)
+-			break;
+-}
+-
+-void machine_shutdown(void)
+-{
+-	/* Architecture specific shutdown needed before a kexec */
+-}
+-
+-void machine_restart(char *cmd)
+-{
+-	printk("Voyager Warm Restart\n");
+-	kb_wait();
+-
+-	if (voyager_level == 5) {
+-		/* write magic values to the RTC to inform system that
+-		 * shutdown is beginning */
+-		outb(0x8f, 0x70);
+-		outb(0x5, 0x71);
+-
+-		udelay(50);
+-		outb(0xfe, 0x64);	/* pull reset low */
+-	} else if (voyager_level == 4) {
+-		__u16 catbase = inb(VOYAGER_SSPB_RELOCATION_PORT) << 8;
+-		__u8 basebd = inb(VOYAGER_MC_SETUP);
+-
+-		outb(basebd | 0x08, VOYAGER_MC_SETUP);
+-		outb(0x02, catbase + 0x21);
+-	}
+-	local_irq_disable();
+-	for (;;)
+-		halt();
+-}
+-
+-void machine_emergency_restart(void)
+-{
+-	/*for now, just hook this to a warm restart */
+-	machine_restart(NULL);
+-}
+-
+-void mca_nmi_hook(void)
+-{
+-	__u8 dumpval __maybe_unused = inb(0xf823);
+-	__u8 swnmi __maybe_unused = inb(0xf813);
+-
+-	/* FIXME: assume dump switch pressed */
+-	/* check to see if the dump switch was pressed */
+-	VDEBUG(("VOYAGER: dumpval = 0x%x, swnmi = 0x%x\n", dumpval, swnmi));
+-	/* clear swnmi */
+-	outb(0xff, 0xf813);
+-	/* tell SUS to ignore dump */
+-	if (voyager_level == 5 && voyager_SUS != NULL) {
+-		if (voyager_SUS->SUS_mbox == VOYAGER_DUMP_BUTTON_NMI) {
+-			voyager_SUS->kernel_mbox = VOYAGER_NO_COMMAND;
+-			voyager_SUS->kernel_flags |= VOYAGER_OS_IN_PROGRESS;
+-			udelay(1000);
+-			voyager_SUS->kernel_mbox = VOYAGER_IGNORE_DUMP;
+-			voyager_SUS->kernel_flags &= ~VOYAGER_OS_IN_PROGRESS;
+-		}
+-	}
+-	printk(KERN_ERR
+-	       "VOYAGER: Dump switch pressed, printing CPU%d tracebacks\n",
+-	       smp_processor_id());
+-	show_stack(NULL, NULL);
+-	show_state();
+-}
+-
+-void machine_halt(void)
+-{
+-	/* treat a halt like a power off */
+-	machine_power_off();
+-}
+-
+-void machine_power_off(void)
+-{
+-	if (pm_power_off)
+-		pm_power_off();
+-}
+diff --git a/arch/x86/mach-voyager/voyager_cat.c b/arch/x86/mach-voyager/voyager_cat.c
+deleted file mode 100644
+index 2ad598c..0000000
+--- a/arch/x86/mach-voyager/voyager_cat.c
++++ /dev/null
+@@ -1,1197 +0,0 @@
+-/* -*- mode: c; c-basic-offset: 8 -*- */
+-
+-/* Copyright (C) 1999,2001
+- *
+- * Author: J.E.J.Bottomley@HansenPartnership.com
+- *
+- * This file contains all the logic for manipulating the CAT bus
+- * in a level 5 machine.
+- *
+- * The CAT bus is a serial configuration and test bus.  Its primary
+- * uses are to probe the initial configuration of the system and to
+- * diagnose error conditions when a system interrupt occurs.  The low
+- * level interface is fairly primitive, so most of this file consists
+- * of bit shift manipulations to send and receive packets on the
+- * serial bus */
+-
+-#include <linux/types.h>
+-#include <linux/completion.h>
+-#include <linux/sched.h>
+-#include <asm/voyager.h>
+-#include <asm/vic.h>
+-#include <linux/ioport.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/delay.h>
+-#include <asm/io.h>
+-
+-#ifdef VOYAGER_CAT_DEBUG
+-#define CDEBUG(x)	printk x
+-#else
+-#define CDEBUG(x)
+-#endif
+-
+-/* the CAT command port */
+-#define CAT_CMD		(sspb + 0xe)
+-/* the CAT data port */
+-#define CAT_DATA	(sspb + 0xd)
+-
+-/* the internal cat functions */
+-static void cat_pack(__u8 * msg, __u16 start_bit, __u8 * data, __u16 num_bits);
+-static void cat_unpack(__u8 * msg, __u16 start_bit, __u8 * data,
+-		       __u16 num_bits);
+-static void cat_build_header(__u8 * header, const __u16 len,
+-			     const __u16 smallest_reg_bits,
+-			     const __u16 longest_reg_bits);
+-static int cat_sendinst(voyager_module_t * modp, voyager_asic_t * asicp,
+-			__u8 reg, __u8 op);
+-static int cat_getdata(voyager_module_t * modp, voyager_asic_t * asicp,
+-		       __u8 reg, __u8 * value);
+-static int cat_shiftout(__u8 * data, __u16 data_bytes, __u16 header_bytes,
+-			__u8 pad_bits);
+-static int cat_write(voyager_module_t * modp, voyager_asic_t * asicp, __u8 reg,
+-		     __u8 value);
+-static int cat_read(voyager_module_t * modp, voyager_asic_t * asicp, __u8 reg,
+-		    __u8 * value);
+-static int cat_subread(voyager_module_t * modp, voyager_asic_t * asicp,
+-		       __u16 offset, __u16 len, void *buf);
+-static int cat_senddata(voyager_module_t * modp, voyager_asic_t * asicp,
+-			__u8 reg, __u8 value);
+-static int cat_disconnect(voyager_module_t * modp, voyager_asic_t * asicp);
+-static int cat_connect(voyager_module_t * modp, voyager_asic_t * asicp);
+-
+-static inline const char *cat_module_name(int module_id)
+-{
+-	switch (module_id) {
+-	case 0x10:
+-		return "Processor Slot 0";
+-	case 0x11:
+-		return "Processor Slot 1";
+-	case 0x12:
+-		return "Processor Slot 2";
+-	case 0x13:
+-		return "Processor Slot 4";
+-	case 0x14:
+-		return "Memory Slot 0";
+-	case 0x15:
+-		return "Memory Slot 1";
+-	case 0x18:
+-		return "Primary Microchannel";
+-	case 0x19:
+-		return "Secondary Microchannel";
+-	case 0x1a:
+-		return "Power Supply Interface";
+-	case 0x1c:
+-		return "Processor Slot 5";
+-	case 0x1d:
+-		return "Processor Slot 6";
+-	case 0x1e:
+-		return "Processor Slot 7";
+-	case 0x1f:
+-		return "Processor Slot 8";
+-	default:
+-		return "Unknown Module";
+-	}
+-}
+-
+-static int sspb = 0;		/* stores the super port location */
+-int voyager_8slot = 0;		/* set to true if a 51xx monster */
+-
+-voyager_module_t *voyager_cat_list;
+-
+-/* the I/O port assignments for the VIC and QIC */
+-static struct resource vic_res = {
+-	.name = "Voyager Interrupt Controller",
+-	.start = 0xFC00,
+-	.end = 0xFC6F
+-};
+-static struct resource qic_res = {
+-	.name = "Quad Interrupt Controller",
+-	.start = 0xFC70,
+-	.end = 0xFCFF
+-};
+-
+-/* This function is used to pack a data bit stream inside a message.
+- * It writes num_bits of the data buffer in msg starting at start_bit.
+- * Note: This function assumes that any unused bit in the data stream
+- * is set to zero so that the ors will work correctly */
+-static void
+-cat_pack(__u8 * msg, const __u16 start_bit, __u8 * data, const __u16 num_bits)
+-{
+-	/* compute initial shift needed */
+-	const __u16 offset = start_bit % BITS_PER_BYTE;
+-	__u16 len = num_bits / BITS_PER_BYTE;
+-	__u16 byte = start_bit / BITS_PER_BYTE;
+-	__u16 residue = (num_bits % BITS_PER_BYTE) + offset;
+-	int i;
+-
+-	/* adjust if we have more than a byte of residue */
+-	if (residue >= BITS_PER_BYTE) {
+-		residue -= BITS_PER_BYTE;
+-		len++;
+-	}
+-
+-	/* clear out the bits.  We assume here that if len==0 then
+-	 * residue >= offset.  This is always true for the catbus
+-	 * operations */
+-	msg[byte] &= 0xff << (BITS_PER_BYTE - offset);
+-	msg[byte++] |= data[0] >> offset;
+-	if (len == 0)
+-		return;
+-	for (i = 1; i < len; i++)
+-		msg[byte++] = (data[i - 1] << (BITS_PER_BYTE - offset))
+-		    | (data[i] >> offset);
+-	if (residue != 0) {
+-		__u8 mask = 0xff >> residue;
+-		__u8 last_byte = data[i - 1] << (BITS_PER_BYTE - offset)
+-		    | (data[i] >> offset);
+-
+-		last_byte &= ~mask;
+-		msg[byte] &= mask;
+-		msg[byte] |= last_byte;
+-	}
+-	return;
+-}
+-
+-/* unpack the data again (same arguments as cat_pack()). data buffer
+- * must be zero populated.
+- *
+- * Function: given a message string move to start_bit and copy num_bits into
+- * data (starting at bit 0 in data).
+- */
+-static void
+-cat_unpack(__u8 * msg, const __u16 start_bit, __u8 * data, const __u16 num_bits)
+-{
+-	/* compute initial shift needed */
+-	const __u16 offset = start_bit % BITS_PER_BYTE;
+-	__u16 len = num_bits / BITS_PER_BYTE;
+-	const __u8 last_bits = num_bits % BITS_PER_BYTE;
+-	__u16 byte = start_bit / BITS_PER_BYTE;
+-	int i;
+-
+-	if (last_bits != 0)
+-		len++;
+-
+-	/* special case: want < 8 bits from msg and we can get it from
+-	 * a single byte of the msg */
+-	if (len == 0 && BITS_PER_BYTE - offset >= num_bits) {
+-		data[0] = msg[byte] << offset;
+-		data[0] &= 0xff >> (BITS_PER_BYTE - num_bits);
+-		return;
+-	}
+-	for (i = 0; i < len; i++) {
+-		/* this annoying if has to be done just in case a read of
+-		 * msg one beyond the array causes a panic */
+-		if (offset != 0) {
+-			data[i] = msg[byte++] << offset;
+-			data[i] |= msg[byte] >> (BITS_PER_BYTE - offset);
+-		} else {
+-			data[i] = msg[byte++];
+-		}
+-	}
+-	/* do we need to truncate the final byte */
+-	if (last_bits != 0) {
+-		data[i - 1] &= 0xff << (BITS_PER_BYTE - last_bits);
+-	}
+-	return;
+-}
+-
+-static void
+-cat_build_header(__u8 * header, const __u16 len, const __u16 smallest_reg_bits,
+-		 const __u16 longest_reg_bits)
+-{
+-	int i;
+-	__u16 start_bit = (smallest_reg_bits - 1) % BITS_PER_BYTE;
+-	__u8 *last_byte = &header[len - 1];
+-
+-	if (start_bit == 0)
+-		start_bit = 1;	/* must have at least one bit in the hdr */
+-
+-	for (i = 0; i < len; i++)
+-		header[i] = 0;
+-
+-	for (i = start_bit; i > 0; i--)
+-		*last_byte = ((*last_byte) << 1) + 1;
+-
+-}
+-
+-static int
+-cat_sendinst(voyager_module_t * modp, voyager_asic_t * asicp, __u8 reg, __u8 op)
+-{
+-	__u8 parity, inst, inst_buf[4] = { 0 };
+-	__u8 iseq[VOYAGER_MAX_SCAN_PATH], hseq[VOYAGER_MAX_REG_SIZE];
+-	__u16 ibytes, hbytes, padbits;
+-	int i;
+-
+-	/* 
+-	 * Parity is the parity of the register number + 1 (READ_REGISTER
+-	 * and WRITE_REGISTER always add '1' to the number of bits == 1)
+-	 */
+-	parity = (__u8) (1 + (reg & 0x01) +
+-			 ((__u8) (reg & 0x02) >> 1) +
+-			 ((__u8) (reg & 0x04) >> 2) +
+-			 ((__u8) (reg & 0x08) >> 3)) % 2;
+-
+-	inst = ((parity << 7) | (reg << 2) | op);
+-
+-	outb(VOYAGER_CAT_IRCYC, CAT_CMD);
+-	if (!modp->scan_path_connected) {
+-		if (asicp->asic_id != VOYAGER_CAT_ID) {
+-			printk
+-			    ("**WARNING***: cat_sendinst has disconnected scan path not to CAT asic\n");
+-			return 1;
+-		}
+-		outb(VOYAGER_CAT_HEADER, CAT_DATA);
+-		outb(inst, CAT_DATA);
+-		if (inb(CAT_DATA) != VOYAGER_CAT_HEADER) {
+-			CDEBUG(("VOYAGER CAT: cat_sendinst failed to get CAT_HEADER\n"));
+-			return 1;
+-		}
+-		return 0;
+-	}
+-	ibytes = modp->inst_bits / BITS_PER_BYTE;
+-	if ((padbits = modp->inst_bits % BITS_PER_BYTE) != 0) {
+-		padbits = BITS_PER_BYTE - padbits;
+-		ibytes++;
+-	}
+-	hbytes = modp->largest_reg / BITS_PER_BYTE;
+-	if (modp->largest_reg % BITS_PER_BYTE)
+-		hbytes++;
+-	CDEBUG(("cat_sendinst: ibytes=%d, hbytes=%d\n", ibytes, hbytes));
+-	/* initialise the instruction sequence to 0xff */
+-	for (i = 0; i < ibytes + hbytes; i++)
+-		iseq[i] = 0xff;
+-	cat_build_header(hseq, hbytes, modp->smallest_reg, modp->largest_reg);
+-	cat_pack(iseq, modp->inst_bits, hseq, hbytes * BITS_PER_BYTE);
+-	inst_buf[0] = inst;
+-	inst_buf[1] = 0xFF >> (modp->largest_reg % BITS_PER_BYTE);
+-	cat_pack(iseq, asicp->bit_location, inst_buf, asicp->ireg_length);
+-#ifdef VOYAGER_CAT_DEBUG
+-	printk("ins = 0x%x, iseq: ", inst);
+-	for (i = 0; i < ibytes + hbytes; i++)
+-		printk("0x%x ", iseq[i]);
+-	printk("\n");
+-#endif
+-	if (cat_shiftout(iseq, ibytes, hbytes, padbits)) {
+-		CDEBUG(("VOYAGER CAT: cat_sendinst: cat_shiftout failed\n"));
+-		return 1;
+-	}
+-	CDEBUG(("CAT SHIFTOUT DONE\n"));
+-	return 0;
+-}
+-
+-static int
+-cat_getdata(voyager_module_t * modp, voyager_asic_t * asicp, __u8 reg,
+-	    __u8 * value)
+-{
+-	if (!modp->scan_path_connected) {
+-		if (asicp->asic_id != VOYAGER_CAT_ID) {
+-			CDEBUG(("VOYAGER CAT: ERROR: cat_getdata to CAT asic with scan path connected\n"));
+-			return 1;
+-		}
+-		if (reg > VOYAGER_SUBADDRHI)
+-			outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		outb(VOYAGER_CAT_DRCYC, CAT_CMD);
+-		outb(VOYAGER_CAT_HEADER, CAT_DATA);
+-		*value = inb(CAT_DATA);
+-		outb(0xAA, CAT_DATA);
+-		if (inb(CAT_DATA) != VOYAGER_CAT_HEADER) {
+-			CDEBUG(("cat_getdata: failed to get VOYAGER_CAT_HEADER\n"));
+-			return 1;
+-		}
+-		return 0;
+-	} else {
+-		__u16 sbits = modp->num_asics - 1 + asicp->ireg_length;
+-		__u16 sbytes = sbits / BITS_PER_BYTE;
+-		__u16 tbytes;
+-		__u8 string[VOYAGER_MAX_SCAN_PATH],
+-		    trailer[VOYAGER_MAX_REG_SIZE];
+-		__u8 padbits;
+-		int i;
+-
+-		outb(VOYAGER_CAT_DRCYC, CAT_CMD);
+-
+-		if ((padbits = sbits % BITS_PER_BYTE) != 0) {
+-			padbits = BITS_PER_BYTE - padbits;
+-			sbytes++;
+-		}
+-		tbytes = asicp->ireg_length / BITS_PER_BYTE;
+-		if (asicp->ireg_length % BITS_PER_BYTE)
+-			tbytes++;
+-		CDEBUG(("cat_getdata: tbytes = %d, sbytes = %d, padbits = %d\n",
+-			tbytes, sbytes, padbits));
+-		cat_build_header(trailer, tbytes, 1, asicp->ireg_length);
+-
+-		for (i = tbytes - 1; i >= 0; i--) {
+-			outb(trailer[i], CAT_DATA);
+-			string[sbytes + i] = inb(CAT_DATA);
+-		}
+-
+-		for (i = sbytes - 1; i >= 0; i--) {
+-			outb(0xaa, CAT_DATA);
+-			string[i] = inb(CAT_DATA);
+-		}
+-		*value = 0;
+-		cat_unpack(string,
+-			   padbits + (tbytes * BITS_PER_BYTE) +
+-			   asicp->asic_location, value, asicp->ireg_length);
+-#ifdef VOYAGER_CAT_DEBUG
+-		printk("value=0x%x, string: ", *value);
+-		for (i = 0; i < tbytes + sbytes; i++)
+-			printk("0x%x ", string[i]);
+-		printk("\n");
+-#endif
+-
+-		/* sanity check the rest of the return */
+-		for (i = 0; i < tbytes; i++) {
+-			__u8 input = 0;
+-
+-			cat_unpack(string, padbits + (i * BITS_PER_BYTE),
+-				   &input, BITS_PER_BYTE);
+-			if (trailer[i] != input) {
+-				CDEBUG(("cat_getdata: failed to sanity check rest of ret(%d) 0x%x != 0x%x\n", i, input, trailer[i]));
+-				return 1;
+-			}
+-		}
+-		CDEBUG(("cat_getdata DONE\n"));
+-		return 0;
+-	}
+-}
+-
+-static int
+-cat_shiftout(__u8 * data, __u16 data_bytes, __u16 header_bytes, __u8 pad_bits)
+-{
+-	int i;
+-
+-	for (i = data_bytes + header_bytes - 1; i >= header_bytes; i--)
+-		outb(data[i], CAT_DATA);
+-
+-	for (i = header_bytes - 1; i >= 0; i--) {
+-		__u8 header = 0;
+-		__u8 input;
+-
+-		outb(data[i], CAT_DATA);
+-		input = inb(CAT_DATA);
+-		CDEBUG(("cat_shiftout: returned 0x%x\n", input));
+-		cat_unpack(data, ((data_bytes + i) * BITS_PER_BYTE) - pad_bits,
+-			   &header, BITS_PER_BYTE);
+-		if (input != header) {
+-			CDEBUG(("VOYAGER CAT: cat_shiftout failed to return header 0x%x != 0x%x\n", input, header));
+-			return 1;
+-		}
+-	}
+-	return 0;
+-}
+-
+-static int
+-cat_senddata(voyager_module_t * modp, voyager_asic_t * asicp,
+-	     __u8 reg, __u8 value)
+-{
+-	outb(VOYAGER_CAT_DRCYC, CAT_CMD);
+-	if (!modp->scan_path_connected) {
+-		if (asicp->asic_id != VOYAGER_CAT_ID) {
+-			CDEBUG(("VOYAGER CAT: ERROR: scan path disconnected when asic != CAT\n"));
+-			return 1;
+-		}
+-		outb(VOYAGER_CAT_HEADER, CAT_DATA);
+-		outb(value, CAT_DATA);
+-		if (inb(CAT_DATA) != VOYAGER_CAT_HEADER) {
+-			CDEBUG(("cat_senddata: failed to get correct header response to sent data\n"));
+-			return 1;
+-		}
+-		if (reg > VOYAGER_SUBADDRHI) {
+-			outb(VOYAGER_CAT_RUN, CAT_CMD);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		}
+-
+-		return 0;
+-	} else {
+-		__u16 hbytes = asicp->ireg_length / BITS_PER_BYTE;
+-		__u16 dbytes =
+-		    (modp->num_asics - 1 + asicp->ireg_length) / BITS_PER_BYTE;
+-		__u8 padbits, dseq[VOYAGER_MAX_SCAN_PATH],
+-		    hseq[VOYAGER_MAX_REG_SIZE];
+-		int i;
+-
+-		if ((padbits = (modp->num_asics - 1
+-				+ asicp->ireg_length) % BITS_PER_BYTE) != 0) {
+-			padbits = BITS_PER_BYTE - padbits;
+-			dbytes++;
+-		}
+-		if (asicp->ireg_length % BITS_PER_BYTE)
+-			hbytes++;
+-
+-		cat_build_header(hseq, hbytes, 1, asicp->ireg_length);
+-
+-		for (i = 0; i < dbytes + hbytes; i++)
+-			dseq[i] = 0xff;
+-		CDEBUG(("cat_senddata: dbytes=%d, hbytes=%d, padbits=%d\n",
+-			dbytes, hbytes, padbits));
+-		cat_pack(dseq, modp->num_asics - 1 + asicp->ireg_length,
+-			 hseq, hbytes * BITS_PER_BYTE);
+-		cat_pack(dseq, asicp->asic_location, &value,
+-			 asicp->ireg_length);
+-#ifdef VOYAGER_CAT_DEBUG
+-		printk("dseq ");
+-		for (i = 0; i < hbytes + dbytes; i++) {
+-			printk("0x%x ", dseq[i]);
+-		}
+-		printk("\n");
+-#endif
+-		return cat_shiftout(dseq, dbytes, hbytes, padbits);
+-	}
+-}
+-
+-static int
+-cat_write(voyager_module_t * modp, voyager_asic_t * asicp, __u8 reg, __u8 value)
+-{
+-	if (cat_sendinst(modp, asicp, reg, VOYAGER_WRITE_CONFIG))
+-		return 1;
+-	return cat_senddata(modp, asicp, reg, value);
+-}
+-
+-static int
+-cat_read(voyager_module_t * modp, voyager_asic_t * asicp, __u8 reg,
+-	 __u8 * value)
+-{
+-	if (cat_sendinst(modp, asicp, reg, VOYAGER_READ_CONFIG))
+-		return 1;
+-	return cat_getdata(modp, asicp, reg, value);
+-}
+-
+-static int
+-cat_subaddrsetup(voyager_module_t * modp, voyager_asic_t * asicp, __u16 offset,
+-		 __u16 len)
+-{
+-	__u8 val;
+-
+-	if (len > 1) {
+-		/* set auto increment */
+-		__u8 newval;
+-
+-		if (cat_read(modp, asicp, VOYAGER_AUTO_INC_REG, &val)) {
+-			CDEBUG(("cat_subaddrsetup: read of VOYAGER_AUTO_INC_REG failed\n"));
+-			return 1;
+-		}
+-		CDEBUG(("cat_subaddrsetup: VOYAGER_AUTO_INC_REG = 0x%x\n",
+-			val));
+-		newval = val | VOYAGER_AUTO_INC;
+-		if (newval != val) {
+-			if (cat_write(modp, asicp, VOYAGER_AUTO_INC_REG, val)) {
+-				CDEBUG(("cat_subaddrsetup: write to VOYAGER_AUTO_INC_REG failed\n"));
+-				return 1;
+-			}
+-		}
+-	}
+-	if (cat_write(modp, asicp, VOYAGER_SUBADDRLO, (__u8) (offset & 0xff))) {
+-		CDEBUG(("cat_subaddrsetup: write to SUBADDRLO failed\n"));
+-		return 1;
+-	}
+-	if (asicp->subaddr > VOYAGER_SUBADDR_LO) {
+-		if (cat_write
+-		    (modp, asicp, VOYAGER_SUBADDRHI, (__u8) (offset >> 8))) {
+-			CDEBUG(("cat_subaddrsetup: write to SUBADDRHI failed\n"));
+-			return 1;
+-		}
+-		cat_read(modp, asicp, VOYAGER_SUBADDRHI, &val);
+-		CDEBUG(("cat_subaddrsetup: offset = %d, hi = %d\n", offset,
+-			val));
+-	}
+-	cat_read(modp, asicp, VOYAGER_SUBADDRLO, &val);
+-	CDEBUG(("cat_subaddrsetup: offset = %d, lo = %d\n", offset, val));
+-	return 0;
+-}
+-
+-static int
+-cat_subwrite(voyager_module_t * modp, voyager_asic_t * asicp, __u16 offset,
+-	     __u16 len, void *buf)
+-{
+-	int i, retval;
+-
+-	/* FIXME: need special actions for VOYAGER_CAT_ID here */
+-	if (asicp->asic_id == VOYAGER_CAT_ID) {
+-		CDEBUG(("cat_subwrite: ATTEMPT TO WRITE TO CAT ASIC\n"));
+-		/* FIXME -- This is supposed to be handled better
+-		 * There is a problem writing to the cat asic in the
+-		 * PSI.  The 30us delay seems to work, though */
+-		udelay(30);
+-	}
+-
+-	if ((retval = cat_subaddrsetup(modp, asicp, offset, len)) != 0) {
+-		printk("cat_subwrite: cat_subaddrsetup FAILED\n");
+-		return retval;
+-	}
+-
+-	if (cat_sendinst
+-	    (modp, asicp, VOYAGER_SUBADDRDATA, VOYAGER_WRITE_CONFIG)) {
+-		printk("cat_subwrite: cat_sendinst FAILED\n");
+-		return 1;
+-	}
+-	for (i = 0; i < len; i++) {
+-		if (cat_senddata(modp, asicp, 0xFF, ((__u8 *) buf)[i])) {
+-			printk
+-			    ("cat_subwrite: cat_sendata element at %d FAILED\n",
+-			     i);
+-			return 1;
+-		}
+-	}
+-	return 0;
+-}
+-static int
+-cat_subread(voyager_module_t * modp, voyager_asic_t * asicp, __u16 offset,
+-	    __u16 len, void *buf)
+-{
+-	int i, retval;
+-
+-	if ((retval = cat_subaddrsetup(modp, asicp, offset, len)) != 0) {
+-		CDEBUG(("cat_subread: cat_subaddrsetup FAILED\n"));
+-		return retval;
+-	}
+-
+-	if (cat_sendinst(modp, asicp, VOYAGER_SUBADDRDATA, VOYAGER_READ_CONFIG)) {
+-		CDEBUG(("cat_subread: cat_sendinst failed\n"));
+-		return 1;
+-	}
+-	for (i = 0; i < len; i++) {
+-		if (cat_getdata(modp, asicp, 0xFF, &((__u8 *) buf)[i])) {
+-			CDEBUG(("cat_subread: cat_getdata element %d failed\n",
+-				i));
+-			return 1;
+-		}
+-	}
+-	return 0;
+-}
+-
+-/* buffer for storing EPROM data read in during initialisation */
+-static __initdata __u8 eprom_buf[0xFFFF];
+-static voyager_module_t *voyager_initial_module;
+-
+-/* Initialise the cat bus components.  We assume this is called by the
+- * boot cpu *after* all memory initialisation has been done (so we can
+- * use kmalloc) but before smp initialisation, so we can probe the SMP
+- * configuration and pick up necessary information.  */
+-void __init voyager_cat_init(void)
+-{
+-	voyager_module_t **modpp = &voyager_initial_module;
+-	voyager_asic_t **asicpp;
+-	voyager_asic_t *qabc_asic = NULL;
+-	int i, j;
+-	unsigned long qic_addr = 0;
+-	__u8 qabc_data[0x20];
+-	__u8 num_submodules, val;
+-	voyager_eprom_hdr_t *eprom_hdr = (voyager_eprom_hdr_t *) & eprom_buf[0];
+-
+-	__u8 cmos[4];
+-	unsigned long addr;
+-
+-	/* initiallise the SUS mailbox */
+-	for (i = 0; i < sizeof(cmos); i++)
+-		cmos[i] = voyager_extended_cmos_read(VOYAGER_DUMP_LOCATION + i);
+-	addr = *(unsigned long *)cmos;
+-	if ((addr & 0xff000000) != 0xff000000) {
+-		printk(KERN_ERR
+-		       "Voyager failed to get SUS mailbox (addr = 0x%lx\n",
+-		       addr);
+-	} else {
+-		static struct resource res;
+-
+-		res.name = "voyager SUS";
+-		res.start = addr;
+-		res.end = addr + 0x3ff;
+-
+-		request_resource(&iomem_resource, &res);
+-		voyager_SUS = (struct voyager_SUS *)
+-		    ioremap(addr, 0x400);
+-		printk(KERN_NOTICE "Voyager SUS mailbox version 0x%x\n",
+-		       voyager_SUS->SUS_version);
+-		voyager_SUS->kernel_version = VOYAGER_MAILBOX_VERSION;
+-		voyager_SUS->kernel_flags = VOYAGER_OS_HAS_SYSINT;
+-	}
+-
+-	/* clear the processor counts */
+-	voyager_extended_vic_processors = 0;
+-	voyager_quad_processors = 0;
+-
+-	printk("VOYAGER: beginning CAT bus probe\n");
+-	/* set up the SuperSet Port Block which tells us where the
+-	 * CAT communication port is */
+-	sspb = inb(VOYAGER_SSPB_RELOCATION_PORT) * 0x100;
+-	VDEBUG(("VOYAGER DEBUG: sspb = 0x%x\n", sspb));
+-
+-	/* now find out if were 8 slot or normal */
+-	if ((inb(VIC_PROC_WHO_AM_I) & EIGHT_SLOT_IDENTIFIER)
+-	    == EIGHT_SLOT_IDENTIFIER) {
+-		voyager_8slot = 1;
+-		printk(KERN_NOTICE
+-		       "Voyager: Eight slot 51xx configuration detected\n");
+-	}
+-
+-	for (i = VOYAGER_MIN_MODULE; i <= VOYAGER_MAX_MODULE; i++) {
+-		__u8 input;
+-		int asic;
+-		__u16 eprom_size;
+-		__u16 sp_offset;
+-
+-		outb(VOYAGER_CAT_DESELECT, VOYAGER_CAT_CONFIG_PORT);
+-		outb(i, VOYAGER_CAT_CONFIG_PORT);
+-
+-		/* check the presence of the module */
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		outb(VOYAGER_CAT_IRCYC, CAT_CMD);
+-		outb(VOYAGER_CAT_HEADER, CAT_DATA);
+-		/* stream series of alternating 1's and 0's to stimulate
+-		 * response */
+-		outb(0xAA, CAT_DATA);
+-		input = inb(CAT_DATA);
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-		if (input != VOYAGER_CAT_HEADER) {
+-			continue;
+-		}
+-		CDEBUG(("VOYAGER DEBUG: found module id 0x%x, %s\n", i,
+-			cat_module_name(i)));
+-		*modpp = kmalloc(sizeof(voyager_module_t), GFP_KERNEL);	/*&voyager_module_storage[cat_count++]; */
+-		if (*modpp == NULL) {
+-			printk("**WARNING** kmalloc failure in cat_init\n");
+-			continue;
+-		}
+-		memset(*modpp, 0, sizeof(voyager_module_t));
+-		/* need temporary asic for cat_subread.  It will be
+-		 * filled in correctly later */
+-		(*modpp)->asic = kmalloc(sizeof(voyager_asic_t), GFP_KERNEL);	/*&voyager_asic_storage[asic_count]; */
+-		if ((*modpp)->asic == NULL) {
+-			printk("**WARNING** kmalloc failure in cat_init\n");
+-			continue;
+-		}
+-		memset((*modpp)->asic, 0, sizeof(voyager_asic_t));
+-		(*modpp)->asic->asic_id = VOYAGER_CAT_ID;
+-		(*modpp)->asic->subaddr = VOYAGER_SUBADDR_HI;
+-		(*modpp)->module_addr = i;
+-		(*modpp)->scan_path_connected = 0;
+-		if (i == VOYAGER_PSI) {
+-			/* Exception leg for modules with no EEPROM */
+-			printk("Module \"%s\"\n", cat_module_name(i));
+-			continue;
+-		}
+-
+-		CDEBUG(("cat_init: Reading eeprom for module 0x%x at offset %d\n", i, VOYAGER_XSUM_END_OFFSET));
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		cat_disconnect(*modpp, (*modpp)->asic);
+-		if (cat_subread(*modpp, (*modpp)->asic,
+-				VOYAGER_XSUM_END_OFFSET, sizeof(eprom_size),
+-				&eprom_size)) {
+-			printk
+-			    ("**WARNING**: Voyager couldn't read EPROM size for module 0x%x\n",
+-			     i);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			continue;
+-		}
+-		if (eprom_size > sizeof(eprom_buf)) {
+-			printk
+-			    ("**WARNING**: Voyager insufficient size to read EPROM data, module 0x%x.  Need %d\n",
+-			     i, eprom_size);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			continue;
+-		}
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		CDEBUG(("cat_init: module 0x%x, eeprom_size %d\n", i,
+-			eprom_size));
+-		if (cat_subread
+-		    (*modpp, (*modpp)->asic, 0, eprom_size, eprom_buf)) {
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			continue;
+-		}
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-		printk("Module \"%s\", version 0x%x, tracer 0x%x, asics %d\n",
+-		       cat_module_name(i), eprom_hdr->version_id,
+-		       *((__u32 *) eprom_hdr->tracer), eprom_hdr->num_asics);
+-		(*modpp)->ee_size = eprom_hdr->ee_size;
+-		(*modpp)->num_asics = eprom_hdr->num_asics;
+-		asicpp = &((*modpp)->asic);
+-		sp_offset = eprom_hdr->scan_path_offset;
+-		/* All we really care about are the Quad cards.  We
+-		 * identify them because they are in a processor slot
+-		 * and have only four asics */
+-		if ((i < 0x10 || (i >= 0x14 && i < 0x1c) || i > 0x1f)) {
+-			modpp = &((*modpp)->next);
+-			continue;
+-		}
+-		/* Now we know it's in a processor slot, does it have
+-		 * a quad baseboard submodule */
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		cat_read(*modpp, (*modpp)->asic, VOYAGER_SUBMODPRESENT,
+-			 &num_submodules);
+-		/* lowest two bits, active low */
+-		num_submodules = ~(0xfc | num_submodules);
+-		CDEBUG(("VOYAGER CAT: %d submodules present\n",
+-			num_submodules));
+-		if (num_submodules == 0) {
+-			/* fill in the dyadic extended processors */
+-			__u8 cpu = i & 0x07;
+-
+-			printk("Module \"%s\": Dyadic Processor Card\n",
+-			       cat_module_name(i));
+-			voyager_extended_vic_processors |= (1 << cpu);
+-			cpu += 4;
+-			voyager_extended_vic_processors |= (1 << cpu);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			continue;
+-		}
+-
+-		/* now we want to read the asics on the first submodule,
+-		 * which should be the quad base board */
+-
+-		cat_read(*modpp, (*modpp)->asic, VOYAGER_SUBMODSELECT, &val);
+-		CDEBUG(("cat_init: SUBMODSELECT value = 0x%x\n", val));
+-		val = (val & 0x7c) | VOYAGER_QUAD_BASEBOARD;
+-		cat_write(*modpp, (*modpp)->asic, VOYAGER_SUBMODSELECT, val);
+-
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-
+-		CDEBUG(("cat_init: Reading eeprom for module 0x%x at offset %d\n", i, VOYAGER_XSUM_END_OFFSET));
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		cat_disconnect(*modpp, (*modpp)->asic);
+-		if (cat_subread(*modpp, (*modpp)->asic,
+-				VOYAGER_XSUM_END_OFFSET, sizeof(eprom_size),
+-				&eprom_size)) {
+-			printk
+-			    ("**WARNING**: Voyager couldn't read EPROM size for module 0x%x\n",
+-			     i);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			continue;
+-		}
+-		if (eprom_size > sizeof(eprom_buf)) {
+-			printk
+-			    ("**WARNING**: Voyager insufficient size to read EPROM data, module 0x%x.  Need %d\n",
+-			     i, eprom_size);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			continue;
+-		}
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		CDEBUG(("cat_init: module 0x%x, eeprom_size %d\n", i,
+-			eprom_size));
+-		if (cat_subread
+-		    (*modpp, (*modpp)->asic, 0, eprom_size, eprom_buf)) {
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			continue;
+-		}
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-		/* Now do everything for the QBB submodule 1 */
+-		(*modpp)->ee_size = eprom_hdr->ee_size;
+-		(*modpp)->num_asics = eprom_hdr->num_asics;
+-		asicpp = &((*modpp)->asic);
+-		sp_offset = eprom_hdr->scan_path_offset;
+-		/* get rid of the dummy CAT asic and read the real one */
+-		kfree((*modpp)->asic);
+-		for (asic = 0; asic < (*modpp)->num_asics; asic++) {
+-			int j;
+-			voyager_asic_t *asicp = *asicpp = kzalloc(sizeof(voyager_asic_t), GFP_KERNEL);	/*&voyager_asic_storage[asic_count++]; */
+-			voyager_sp_table_t *sp_table;
+-			voyager_at_t *asic_table;
+-			voyager_jtt_t *jtag_table;
+-
+-			if (asicp == NULL) {
+-				printk
+-				    ("**WARNING** kmalloc failure in cat_init\n");
+-				continue;
+-			}
+-			asicpp = &(asicp->next);
+-			asicp->asic_location = asic;
+-			sp_table =
+-			    (voyager_sp_table_t *) (eprom_buf + sp_offset);
+-			asicp->asic_id = sp_table->asic_id;
+-			asic_table =
+-			    (voyager_at_t *) (eprom_buf +
+-					      sp_table->asic_data_offset);
+-			for (j = 0; j < 4; j++)
+-				asicp->jtag_id[j] = asic_table->jtag_id[j];
+-			jtag_table =
+-			    (voyager_jtt_t *) (eprom_buf +
+-					       asic_table->jtag_offset);
+-			asicp->ireg_length = jtag_table->ireg_len;
+-			asicp->bit_location = (*modpp)->inst_bits;
+-			(*modpp)->inst_bits += asicp->ireg_length;
+-			if (asicp->ireg_length > (*modpp)->largest_reg)
+-				(*modpp)->largest_reg = asicp->ireg_length;
+-			if (asicp->ireg_length < (*modpp)->smallest_reg ||
+-			    (*modpp)->smallest_reg == 0)
+-				(*modpp)->smallest_reg = asicp->ireg_length;
+-			CDEBUG(("asic 0x%x, ireg_length=%d, bit_location=%d\n",
+-				asicp->asic_id, asicp->ireg_length,
+-				asicp->bit_location));
+-			if (asicp->asic_id == VOYAGER_QUAD_QABC) {
+-				CDEBUG(("VOYAGER CAT: QABC ASIC found\n"));
+-				qabc_asic = asicp;
+-			}
+-			sp_offset += sizeof(voyager_sp_table_t);
+-		}
+-		CDEBUG(("Module inst_bits = %d, largest_reg = %d, smallest_reg=%d\n", (*modpp)->inst_bits, (*modpp)->largest_reg, (*modpp)->smallest_reg));
+-		/* OK, now we have the QUAD ASICs set up, use them.
+-		 * we need to:
+-		 *
+-		 * 1. Find the Memory area for the Quad CPIs.
+-		 * 2. Find the Extended VIC processor
+-		 * 3. Configure a second extended VIC processor (This
+-		 *    cannot be done for the 51xx.
+-		 * */
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		cat_connect(*modpp, (*modpp)->asic);
+-		CDEBUG(("CAT CONNECTED!!\n"));
+-		cat_subread(*modpp, qabc_asic, 0, sizeof(qabc_data), qabc_data);
+-		qic_addr = qabc_data[5] << 8;
+-		qic_addr = (qic_addr | qabc_data[6]) << 8;
+-		qic_addr = (qic_addr | qabc_data[7]) << 8;
+-		printk
+-		    ("Module \"%s\": Quad Processor Card; CPI 0x%lx, SET=0x%x\n",
+-		     cat_module_name(i), qic_addr, qabc_data[8]);
+-#if 0				/* plumbing fails---FIXME */
+-		if ((qabc_data[8] & 0xf0) == 0) {
+-			/* FIXME: 32 way 8 CPU slot monster cannot be
+-			 * plumbed this way---need to check for it */
+-
+-			printk("Plumbing second Extended Quad Processor\n");
+-			/* second VIC line hardwired to Quad CPU 1 */
+-			qabc_data[8] |= 0x20;
+-			cat_subwrite(*modpp, qabc_asic, 8, 1, &qabc_data[8]);
+-#ifdef VOYAGER_CAT_DEBUG
+-			/* verify plumbing */
+-			cat_subread(*modpp, qabc_asic, 8, 1, &qabc_data[8]);
+-			if ((qabc_data[8] & 0xf0) == 0) {
+-				CDEBUG(("PLUMBING FAILED: 0x%x\n",
+-					qabc_data[8]));
+-			}
+-#endif
+-		}
+-#endif
+-
+-		{
+-			struct resource *res =
+-			    kzalloc(sizeof(struct resource), GFP_KERNEL);
+-			res->name = kmalloc(128, GFP_KERNEL);
+-			sprintf((char *)res->name, "Voyager %s Quad CPI",
+-				cat_module_name(i));
+-			res->start = qic_addr;
+-			res->end = qic_addr + 0x3ff;
+-			request_resource(&iomem_resource, res);
+-		}
+-
+-		qic_addr = (unsigned long)ioremap_cache(qic_addr, 0x400);
+-
+-		for (j = 0; j < 4; j++) {
+-			__u8 cpu;
+-
+-			if (voyager_8slot) {
+-				/* 8 slot has a different mapping,
+-				 * each slot has only one vic line, so
+-				 * 1 cpu in each slot must be < 8 */
+-				cpu = (i & 0x07) + j * 8;
+-			} else {
+-				cpu = (i & 0x03) + j * 4;
+-			}
+-			if ((qabc_data[8] & (1 << j))) {
+-				voyager_extended_vic_processors |= (1 << cpu);
+-			}
+-			if (qabc_data[8] & (1 << (j + 4))) {
+-				/* Second SET register plumbed: Quad
+-				 * card has two VIC connected CPUs.
+-				 * Secondary cannot be booted as a VIC
+-				 * CPU */
+-				voyager_extended_vic_processors |= (1 << cpu);
+-				voyager_allowed_boot_processors &=
+-				    (~(1 << cpu));
+-			}
+-
+-			voyager_quad_processors |= (1 << cpu);
+-			voyager_quad_cpi_addr[cpu] = (struct voyager_qic_cpi *)
+-			    (qic_addr + (j << 8));
+-			CDEBUG(("CPU%d: CPI address 0x%lx\n", cpu,
+-				(unsigned long)voyager_quad_cpi_addr[cpu]));
+-		}
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-
+-		*asicpp = NULL;
+-		modpp = &((*modpp)->next);
+-	}
+-	*modpp = NULL;
+-	printk
+-	    ("CAT Bus Initialisation finished: extended procs 0x%x, quad procs 0x%x, allowed vic boot = 0x%x\n",
+-	     voyager_extended_vic_processors, voyager_quad_processors,
+-	     voyager_allowed_boot_processors);
+-	request_resource(&ioport_resource, &vic_res);
+-	if (voyager_quad_processors)
+-		request_resource(&ioport_resource, &qic_res);
+-	/* set up the front power switch */
+-}
+-
+-int voyager_cat_readb(__u8 module, __u8 asic, int reg)
+-{
+-	return 0;
+-}
+-
+-static int cat_disconnect(voyager_module_t * modp, voyager_asic_t * asicp)
+-{
+-	__u8 val;
+-	int err = 0;
+-
+-	if (!modp->scan_path_connected)
+-		return 0;
+-	if (asicp->asic_id != VOYAGER_CAT_ID) {
+-		CDEBUG(("cat_disconnect: ASIC is not CAT\n"));
+-		return 1;
+-	}
+-	err = cat_read(modp, asicp, VOYAGER_SCANPATH, &val);
+-	if (err) {
+-		CDEBUG(("cat_disconnect: failed to read SCANPATH\n"));
+-		return err;
+-	}
+-	val &= VOYAGER_DISCONNECT_ASIC;
+-	err = cat_write(modp, asicp, VOYAGER_SCANPATH, val);
+-	if (err) {
+-		CDEBUG(("cat_disconnect: failed to write SCANPATH\n"));
+-		return err;
+-	}
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	modp->scan_path_connected = 0;
+-
+-	return 0;
+-}
+-
+-static int cat_connect(voyager_module_t * modp, voyager_asic_t * asicp)
+-{
+-	__u8 val;
+-	int err = 0;
+-
+-	if (modp->scan_path_connected)
+-		return 0;
+-	if (asicp->asic_id != VOYAGER_CAT_ID) {
+-		CDEBUG(("cat_connect: ASIC is not CAT\n"));
+-		return 1;
+-	}
+-
+-	err = cat_read(modp, asicp, VOYAGER_SCANPATH, &val);
+-	if (err) {
+-		CDEBUG(("cat_connect: failed to read SCANPATH\n"));
+-		return err;
+-	}
+-	val |= VOYAGER_CONNECT_ASIC;
+-	err = cat_write(modp, asicp, VOYAGER_SCANPATH, val);
+-	if (err) {
+-		CDEBUG(("cat_connect: failed to write SCANPATH\n"));
+-		return err;
+-	}
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	modp->scan_path_connected = 1;
+-
+-	return 0;
+-}
+-
+-void voyager_cat_power_off(void)
+-{
+-	/* Power the machine off by writing to the PSI over the CAT
+-	 * bus */
+-	__u8 data;
+-	voyager_module_t psi = { 0 };
+-	voyager_asic_t psi_asic = { 0 };
+-
+-	psi.asic = &psi_asic;
+-	psi.asic->asic_id = VOYAGER_CAT_ID;
+-	psi.asic->subaddr = VOYAGER_SUBADDR_HI;
+-	psi.module_addr = VOYAGER_PSI;
+-	psi.scan_path_connected = 0;
+-
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	/* Connect the PSI to the CAT Bus */
+-	outb(VOYAGER_CAT_DESELECT, VOYAGER_CAT_CONFIG_PORT);
+-	outb(VOYAGER_PSI, VOYAGER_CAT_CONFIG_PORT);
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	cat_disconnect(&psi, &psi_asic);
+-	/* Read the status */
+-	cat_subread(&psi, &psi_asic, VOYAGER_PSI_GENERAL_REG, 1, &data);
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	CDEBUG(("PSI STATUS 0x%x\n", data));
+-	/* These two writes are power off prep and perform */
+-	data = PSI_CLEAR;
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	cat_subwrite(&psi, &psi_asic, VOYAGER_PSI_GENERAL_REG, 1, &data);
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	data = PSI_POWER_DOWN;
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	cat_subwrite(&psi, &psi_asic, VOYAGER_PSI_GENERAL_REG, 1, &data);
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-}
+-
+-struct voyager_status voyager_status = { 0 };
+-
+-void voyager_cat_psi(__u8 cmd, __u16 reg, __u8 * data)
+-{
+-	voyager_module_t psi = { 0 };
+-	voyager_asic_t psi_asic = { 0 };
+-
+-	psi.asic = &psi_asic;
+-	psi.asic->asic_id = VOYAGER_CAT_ID;
+-	psi.asic->subaddr = VOYAGER_SUBADDR_HI;
+-	psi.module_addr = VOYAGER_PSI;
+-	psi.scan_path_connected = 0;
+-
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	/* Connect the PSI to the CAT Bus */
+-	outb(VOYAGER_CAT_DESELECT, VOYAGER_CAT_CONFIG_PORT);
+-	outb(VOYAGER_PSI, VOYAGER_CAT_CONFIG_PORT);
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	cat_disconnect(&psi, &psi_asic);
+-	switch (cmd) {
+-	case VOYAGER_PSI_READ:
+-		cat_read(&psi, &psi_asic, reg, data);
+-		break;
+-	case VOYAGER_PSI_WRITE:
+-		cat_write(&psi, &psi_asic, reg, *data);
+-		break;
+-	case VOYAGER_PSI_SUBREAD:
+-		cat_subread(&psi, &psi_asic, reg, 1, data);
+-		break;
+-	case VOYAGER_PSI_SUBWRITE:
+-		cat_subwrite(&psi, &psi_asic, reg, 1, data);
+-		break;
+-	default:
+-		printk(KERN_ERR "Voyager PSI, unrecognised command %d\n", cmd);
+-		break;
+-	}
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-}
+-
+-void voyager_cat_do_common_interrupt(void)
+-{
+-	/* This is caused either by a memory parity error or something
+-	 * in the PSI */
+-	__u8 data;
+-	voyager_module_t psi = { 0 };
+-	voyager_asic_t psi_asic = { 0 };
+-	struct voyager_psi psi_reg;
+-	int i;
+-      re_read:
+-	psi.asic = &psi_asic;
+-	psi.asic->asic_id = VOYAGER_CAT_ID;
+-	psi.asic->subaddr = VOYAGER_SUBADDR_HI;
+-	psi.module_addr = VOYAGER_PSI;
+-	psi.scan_path_connected = 0;
+-
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	/* Connect the PSI to the CAT Bus */
+-	outb(VOYAGER_CAT_DESELECT, VOYAGER_CAT_CONFIG_PORT);
+-	outb(VOYAGER_PSI, VOYAGER_CAT_CONFIG_PORT);
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	cat_disconnect(&psi, &psi_asic);
+-	/* Read the status.  NOTE: Need to read *all* the PSI regs here
+-	 * otherwise the cmn int will be reasserted */
+-	for (i = 0; i < sizeof(psi_reg.regs); i++) {
+-		cat_read(&psi, &psi_asic, i, &((__u8 *) & psi_reg.regs)[i]);
+-	}
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-	if ((psi_reg.regs.checkbit & 0x02) == 0) {
+-		psi_reg.regs.checkbit |= 0x02;
+-		cat_write(&psi, &psi_asic, 5, psi_reg.regs.checkbit);
+-		printk("VOYAGER RE-READ PSI\n");
+-		goto re_read;
+-	}
+-	outb(VOYAGER_CAT_RUN, CAT_CMD);
+-	for (i = 0; i < sizeof(psi_reg.subregs); i++) {
+-		/* This looks strange, but the PSI doesn't do auto increment
+-		 * correctly */
+-		cat_subread(&psi, &psi_asic, VOYAGER_PSI_SUPPLY_REG + i,
+-			    1, &((__u8 *) & psi_reg.subregs)[i]);
+-	}
+-	outb(VOYAGER_CAT_END, CAT_CMD);
+-#ifdef VOYAGER_CAT_DEBUG
+-	printk("VOYAGER PSI: ");
+-	for (i = 0; i < sizeof(psi_reg.regs); i++)
+-		printk("%02x ", ((__u8 *) & psi_reg.regs)[i]);
+-	printk("\n           ");
+-	for (i = 0; i < sizeof(psi_reg.subregs); i++)
+-		printk("%02x ", ((__u8 *) & psi_reg.subregs)[i]);
+-	printk("\n");
+-#endif
+-	if (psi_reg.regs.intstatus & PSI_MON) {
+-		/* switch off or power fail */
+-
+-		if (psi_reg.subregs.supply & PSI_SWITCH_OFF) {
+-			if (voyager_status.switch_off) {
+-				printk(KERN_ERR
+-				       "Voyager front panel switch turned off again---Immediate power off!\n");
+-				voyager_cat_power_off();
+-				/* not reached */
+-			} else {
+-				printk(KERN_ERR
+-				       "Voyager front panel switch turned off\n");
+-				voyager_status.switch_off = 1;
+-				voyager_status.request_from_kernel = 1;
+-				wake_up_process(voyager_thread);
+-			}
+-			/* Tell the hardware we're taking care of the
+-			 * shutdown, otherwise it will power the box off
+-			 * within 3 seconds of the switch being pressed and,
+-			 * which is much more important to us, continue to 
+-			 * assert the common interrupt */
+-			data = PSI_CLR_SWITCH_OFF;
+-			outb(VOYAGER_CAT_RUN, CAT_CMD);
+-			cat_subwrite(&psi, &psi_asic, VOYAGER_PSI_SUPPLY_REG,
+-				     1, &data);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-		} else {
+-
+-			VDEBUG(("Voyager ac fail reg 0x%x\n",
+-				psi_reg.subregs.ACfail));
+-			if ((psi_reg.subregs.ACfail & AC_FAIL_STAT_CHANGE) == 0) {
+-				/* No further update */
+-				return;
+-			}
+-#if 0
+-			/* Don't bother trying to find out who failed.
+-			 * FIXME: This probably makes the code incorrect on
+-			 * anything other than a 345x */
+-			for (i = 0; i < 5; i++) {
+-				if (psi_reg.subregs.ACfail & (1 << i)) {
+-					break;
+-				}
+-			}
+-			printk(KERN_NOTICE "AC FAIL IN SUPPLY %d\n", i);
+-#endif
+-			/* DON'T do this: it shuts down the AC PSI 
+-			   outb(VOYAGER_CAT_RUN, CAT_CMD);
+-			   data = PSI_MASK_MASK | i;
+-			   cat_subwrite(&psi, &psi_asic, VOYAGER_PSI_MASK,
+-			   1, &data);
+-			   outb(VOYAGER_CAT_END, CAT_CMD);
+-			 */
+-			printk(KERN_ERR "Voyager AC power failure\n");
+-			outb(VOYAGER_CAT_RUN, CAT_CMD);
+-			data = PSI_COLD_START;
+-			cat_subwrite(&psi, &psi_asic, VOYAGER_PSI_GENERAL_REG,
+-				     1, &data);
+-			outb(VOYAGER_CAT_END, CAT_CMD);
+-			voyager_status.power_fail = 1;
+-			voyager_status.request_from_kernel = 1;
+-			wake_up_process(voyager_thread);
+-		}
+-
+-	} else if (psi_reg.regs.intstatus & PSI_FAULT) {
+-		/* Major fault! */
+-		printk(KERN_ERR
+-		       "Voyager PSI Detected major fault, immediate power off!\n");
+-		voyager_cat_power_off();
+-		/* not reached */
+-	} else if (psi_reg.regs.intstatus & (PSI_DC_FAIL | PSI_ALARM
+-					     | PSI_CURRENT | PSI_DVM
+-					     | PSI_PSCFAULT | PSI_STAT_CHG)) {
+-		/* other psi fault */
+-
+-		printk(KERN_WARNING "Voyager PSI status 0x%x\n", data);
+-		/* clear the PSI fault */
+-		outb(VOYAGER_CAT_RUN, CAT_CMD);
+-		cat_write(&psi, &psi_asic, VOYAGER_PSI_STATUS_REG, 0);
+-		outb(VOYAGER_CAT_END, CAT_CMD);
+-	}
+-}
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+deleted file mode 100644
+index 98e3c2b..0000000
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ /dev/null
+@@ -1,1805 +0,0 @@
+-/* -*- mode: c; c-basic-offset: 8 -*- */
+-
+-/* Copyright (C) 1999,2001
+- *
+- * Author: J.E.J.Bottomley@HansenPartnership.com
+- *
+- * This file provides all the same external entries as smp.c but uses
+- * the voyager hal to provide the functionality
+- */
+-#include <linux/cpu.h>
+-#include <linux/module.h>
+-#include <linux/mm.h>
+-#include <linux/kernel_stat.h>
+-#include <linux/delay.h>
+-#include <linux/mc146818rtc.h>
+-#include <linux/cache.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/bootmem.h>
+-#include <linux/completion.h>
+-#include <asm/desc.h>
+-#include <asm/voyager.h>
+-#include <asm/vic.h>
+-#include <asm/mtrr.h>
+-#include <asm/pgalloc.h>
+-#include <asm/tlbflush.h>
+-#include <asm/arch_hooks.h>
+-#include <asm/trampoline.h>
+-
+-/* TLB state -- visible externally, indexed physically */
+-DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate) = { &init_mm, 0 };
+-
+-/* CPU IRQ affinity -- set to all ones initially */
+-static unsigned long cpu_irq_affinity[NR_CPUS] __cacheline_aligned =
+-	{[0 ... NR_CPUS-1]  = ~0UL };
+-
+-/* per CPU data structure (for /proc/cpuinfo et al), visible externally
+- * indexed physically */
+-DEFINE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
+-EXPORT_PER_CPU_SYMBOL(cpu_info);
+-
+-/* physical ID of the CPU used to boot the system */
+-unsigned char boot_cpu_id;
+-
+-/* The memory line addresses for the Quad CPIs */
+-struct voyager_qic_cpi *voyager_quad_cpi_addr[NR_CPUS] __cacheline_aligned;
+-
+-/* The masks for the Extended VIC processors, filled in by cat_init */
+-__u32 voyager_extended_vic_processors = 0;
+-
+-/* Masks for the extended Quad processors which cannot be VIC booted */
+-__u32 voyager_allowed_boot_processors = 0;
+-
+-/* The mask for the Quad Processors (both extended and non-extended) */
+-__u32 voyager_quad_processors = 0;
+-
+-/* Total count of live CPUs, used in process.c to display
+- * the CPU information and in irq.c for the per CPU irq
+- * activity count.  Finally exported by i386_ksyms.c */
+-static int voyager_extended_cpus = 1;
+-
+-/* Used for the invalidate map that's also checked in the spinlock */
+-static volatile unsigned long smp_invalidate_needed;
+-
+-/* Bitmask of CPUs present in the system - exported by i386_syms.c, used
+- * by scheduler but indexed physically */
+-cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
+-
+-/* The internal functions */
+-static void send_CPI(__u32 cpuset, __u8 cpi);
+-static void ack_CPI(__u8 cpi);
+-static int ack_QIC_CPI(__u8 cpi);
+-static void ack_special_QIC_CPI(__u8 cpi);
+-static void ack_VIC_CPI(__u8 cpi);
+-static void send_CPI_allbutself(__u8 cpi);
+-static void mask_vic_irq(unsigned int irq);
+-static void unmask_vic_irq(unsigned int irq);
+-static unsigned int startup_vic_irq(unsigned int irq);
+-static void enable_local_vic_irq(unsigned int irq);
+-static void disable_local_vic_irq(unsigned int irq);
+-static void before_handle_vic_irq(unsigned int irq);
+-static void after_handle_vic_irq(unsigned int irq);
+-static void set_vic_irq_affinity(unsigned int irq, const struct cpumask *mask);
+-static void ack_vic_irq(unsigned int irq);
+-static void vic_enable_cpi(void);
+-static void do_boot_cpu(__u8 cpuid);
+-static void do_quad_bootstrap(void);
+-static void initialize_secondary(void);
+-
+-int hard_smp_processor_id(void);
+-int safe_smp_processor_id(void);
+-
+-/* Inline functions */
+-static inline void send_one_QIC_CPI(__u8 cpu, __u8 cpi)
+-{
+-	voyager_quad_cpi_addr[cpu]->qic_cpi[cpi].cpi =
+-	    (smp_processor_id() << 16) + cpi;
+-}
+-
+-static inline void send_QIC_CPI(__u32 cpuset, __u8 cpi)
+-{
+-	int cpu;
+-
+-	for_each_online_cpu(cpu) {
+-		if (cpuset & (1 << cpu)) {
+-#ifdef VOYAGER_DEBUG
+-			if (!cpu_online(cpu))
+-				VDEBUG(("CPU%d sending cpi %d to CPU%d not in "
+-					"cpu_online_map\n",
+-					hard_smp_processor_id(), cpi, cpu));
+-#endif
+-			send_one_QIC_CPI(cpu, cpi - QIC_CPI_OFFSET);
+-		}
+-	}
+-}
+-
+-static inline void wrapper_smp_local_timer_interrupt(void)
+-{
+-	irq_enter();
+-	smp_local_timer_interrupt();
+-	irq_exit();
+-}
+-
+-static inline void send_one_CPI(__u8 cpu, __u8 cpi)
+-{
+-	if (voyager_quad_processors & (1 << cpu))
+-		send_one_QIC_CPI(cpu, cpi - QIC_CPI_OFFSET);
+-	else
+-		send_CPI(1 << cpu, cpi);
+-}
+-
+-static inline void send_CPI_allbutself(__u8 cpi)
+-{
+-	__u8 cpu = smp_processor_id();
+-	__u32 mask = cpus_addr(cpu_online_map)[0] & ~(1 << cpu);
+-	send_CPI(mask, cpi);
+-}
+-
+-static inline int is_cpu_quad(void)
+-{
+-	__u8 cpumask = inb(VIC_PROC_WHO_AM_I);
+-	return ((cpumask & QUAD_IDENTIFIER) == QUAD_IDENTIFIER);
+-}
+-
+-static inline int is_cpu_extended(void)
+-{
+-	__u8 cpu = hard_smp_processor_id();
+-
+-	return (voyager_extended_vic_processors & (1 << cpu));
+-}
+-
+-static inline int is_cpu_vic_boot(void)
+-{
+-	__u8 cpu = hard_smp_processor_id();
+-
+-	return (voyager_extended_vic_processors
+-		& voyager_allowed_boot_processors & (1 << cpu));
+-}
+-
+-static inline void ack_CPI(__u8 cpi)
+-{
+-	switch (cpi) {
+-	case VIC_CPU_BOOT_CPI:
+-		if (is_cpu_quad() && !is_cpu_vic_boot())
+-			ack_QIC_CPI(cpi);
+-		else
+-			ack_VIC_CPI(cpi);
+-		break;
+-	case VIC_SYS_INT:
+-	case VIC_CMN_INT:
+-		/* These are slightly strange.  Even on the Quad card,
+-		 * They are vectored as VIC CPIs */
+-		if (is_cpu_quad())
+-			ack_special_QIC_CPI(cpi);
+-		else
+-			ack_VIC_CPI(cpi);
+-		break;
+-	default:
+-		printk("VOYAGER ERROR: CPI%d is in common CPI code\n", cpi);
+-		break;
+-	}
+-}
+-
+-/* local variables */
+-
+-/* The VIC IRQ descriptors -- these look almost identical to the
+- * 8259 IRQs except that masks and things must be kept per processor
+- */
+-static struct irq_chip vic_chip = {
+-	.name = "VIC",
+-	.startup = startup_vic_irq,
+-	.mask = mask_vic_irq,
+-	.unmask = unmask_vic_irq,
+-	.set_affinity = set_vic_irq_affinity,
+-};
+-
+-/* used to count up as CPUs are brought on line (starts at 0) */
+-static int cpucount = 0;
+-
+-/* The per cpu profile stuff - used in smp_local_timer_interrupt */
+-static DEFINE_PER_CPU(int, prof_multiplier) = 1;
+-static DEFINE_PER_CPU(int, prof_old_multiplier) = 1;
+-static DEFINE_PER_CPU(int, prof_counter) = 1;
+-
+-/* the map used to check if a CPU has booted */
+-static __u32 cpu_booted_map;
+-
+-/* the synchronize flag used to hold all secondary CPUs spinning in
+- * a tight loop until the boot sequence is ready for them */
+-static cpumask_t smp_commenced_mask = CPU_MASK_NONE;
+-
+-/* This is for the new dynamic CPU boot code */
+-
+-/* The per processor IRQ masks (these are usually kept in sync) */
+-static __u16 vic_irq_mask[NR_CPUS] __cacheline_aligned;
+-
+-/* the list of IRQs to be enabled by the VIC_ENABLE_IRQ_CPI */
+-static __u16 vic_irq_enable_mask[NR_CPUS] __cacheline_aligned = { 0 };
+-
+-/* Lock for enable/disable of VIC interrupts */
+-static __cacheline_aligned DEFINE_SPINLOCK(vic_irq_lock);
+-
+-/* The boot processor is correctly set up in PC mode when it
+- * comes up, but the secondaries need their master/slave 8259
+- * pairs initializing correctly */
+-
+-/* Interrupt counters (per cpu) and total - used to try to
+- * even up the interrupt handling routines */
+-static long vic_intr_total = 0;
+-static long vic_intr_count[NR_CPUS] __cacheline_aligned = { 0 };
+-static unsigned long vic_tick[NR_CPUS] __cacheline_aligned = { 0 };
+-
+-/* Since we can only use CPI0, we fake all the other CPIs */
+-static unsigned long vic_cpi_mailbox[NR_CPUS] __cacheline_aligned;
+-
+-/* debugging routine to read the isr of the cpu's pic */
+-static inline __u16 vic_read_isr(void)
+-{
+-	__u16 isr;
+-
+-	outb(0x0b, 0xa0);
+-	isr = inb(0xa0) << 8;
+-	outb(0x0b, 0x20);
+-	isr |= inb(0x20);
+-
+-	return isr;
+-}
+-
+-static __init void qic_setup(void)
+-{
+-	if (!is_cpu_quad()) {
+-		/* not a quad, no setup */
+-		return;
+-	}
+-	outb(QIC_DEFAULT_MASK0, QIC_MASK_REGISTER0);
+-	outb(QIC_CPI_ENABLE, QIC_MASK_REGISTER1);
+-
+-	if (is_cpu_extended()) {
+-		/* the QIC duplicate of the VIC base register */
+-		outb(VIC_DEFAULT_CPI_BASE, QIC_VIC_CPI_BASE_REGISTER);
+-		outb(QIC_DEFAULT_CPI_BASE, QIC_CPI_BASE_REGISTER);
+-
+-		/* FIXME: should set up the QIC timer and memory parity
+-		 * error vectors here */
+-	}
+-}
+-
+-static __init void vic_setup_pic(void)
+-{
+-	outb(1, VIC_REDIRECT_REGISTER_1);
+-	/* clear the claim registers for dynamic routing */
+-	outb(0, VIC_CLAIM_REGISTER_0);
+-	outb(0, VIC_CLAIM_REGISTER_1);
+-
+-	outb(0, VIC_PRIORITY_REGISTER);
+-	/* Set the Primary and Secondary Microchannel vector
+-	 * bases to be the same as the ordinary interrupts
+-	 *
+-	 * FIXME: This would be more efficient using separate
+-	 * vectors. */
+-	outb(FIRST_EXTERNAL_VECTOR, VIC_PRIMARY_MC_BASE);
+-	outb(FIRST_EXTERNAL_VECTOR, VIC_SECONDARY_MC_BASE);
+-	/* Now initiallise the master PIC belonging to this CPU by
+-	 * sending the four ICWs */
+-
+-	/* ICW1: level triggered, ICW4 needed */
+-	outb(0x19, 0x20);
+-
+-	/* ICW2: vector base */
+-	outb(FIRST_EXTERNAL_VECTOR, 0x21);
+-
+-	/* ICW3: slave at line 2 */
+-	outb(0x04, 0x21);
+-
+-	/* ICW4: 8086 mode */
+-	outb(0x01, 0x21);
+-
+-	/* now the same for the slave PIC */
+-
+-	/* ICW1: level trigger, ICW4 needed */
+-	outb(0x19, 0xA0);
+-
+-	/* ICW2: slave vector base */
+-	outb(FIRST_EXTERNAL_VECTOR + 8, 0xA1);
+-
+-	/* ICW3: slave ID */
+-	outb(0x02, 0xA1);
+-
+-	/* ICW4: 8086 mode */
+-	outb(0x01, 0xA1);
+-}
+-
+-static void do_quad_bootstrap(void)
+-{
+-	if (is_cpu_quad() && is_cpu_vic_boot()) {
+-		int i;
+-		unsigned long flags;
+-		__u8 cpuid = hard_smp_processor_id();
+-
+-		local_irq_save(flags);
+-
+-		for (i = 0; i < 4; i++) {
+-			/* FIXME: this would be >>3 &0x7 on the 32 way */
+-			if (((cpuid >> 2) & 0x03) == i)
+-				/* don't lower our own mask! */
+-				continue;
+-
+-			/* masquerade as local Quad CPU */
+-			outb(QIC_CPUID_ENABLE | i, QIC_PROCESSOR_ID);
+-			/* enable the startup CPI */
+-			outb(QIC_BOOT_CPI_MASK, QIC_MASK_REGISTER1);
+-			/* restore cpu id */
+-			outb(0, QIC_PROCESSOR_ID);
+-		}
+-		local_irq_restore(flags);
+-	}
+-}
+-
+-void prefill_possible_map(void)
+-{
+-	/* This is empty on voyager because we need a much
+-	 * earlier detection which is done in find_smp_config */
+-}
+-
+-/* Set up all the basic stuff: read the SMP config and make all the
+- * SMP information reflect only the boot cpu.  All others will be
+- * brought on-line later. */
+-void __init find_smp_config(void)
+-{
+-	int i;
+-
+-	boot_cpu_id = hard_smp_processor_id();
+-
+-	printk("VOYAGER SMP: Boot cpu is %d\n", boot_cpu_id);
+-
+-	/* initialize the CPU structures (moved from smp_boot_cpus) */
+-	for (i = 0; i < nr_cpu_ids; i++)
+-		cpu_irq_affinity[i] = ~0;
+-	cpu_online_map = cpumask_of_cpu(boot_cpu_id);
+-
+-	/* The boot CPU must be extended */
+-	voyager_extended_vic_processors = 1 << boot_cpu_id;
+-	/* initially, all of the first 8 CPUs can boot */
+-	voyager_allowed_boot_processors = 0xff;
+-	/* set up everything for just this CPU, we can alter
+-	 * this as we start the other CPUs later */
+-	/* now get the CPU disposition from the extended CMOS */
+-	cpus_addr(phys_cpu_present_map)[0] =
+-	    voyager_extended_cmos_read(VOYAGER_PROCESSOR_PRESENT_MASK);
+-	cpus_addr(phys_cpu_present_map)[0] |=
+-	    voyager_extended_cmos_read(VOYAGER_PROCESSOR_PRESENT_MASK + 1) << 8;
+-	cpus_addr(phys_cpu_present_map)[0] |=
+-	    voyager_extended_cmos_read(VOYAGER_PROCESSOR_PRESENT_MASK +
+-				       2) << 16;
+-	cpus_addr(phys_cpu_present_map)[0] |=
+-	    voyager_extended_cmos_read(VOYAGER_PROCESSOR_PRESENT_MASK +
+-				       3) << 24;
+-	init_cpu_possible(&phys_cpu_present_map);
+-	printk("VOYAGER SMP: phys_cpu_present_map = 0x%lx\n",
+-	       cpus_addr(phys_cpu_present_map)[0]);
+-	/* Here we set up the VIC to enable SMP */
+-	/* enable the CPIs by writing the base vector to their register */
+-	outb(VIC_DEFAULT_CPI_BASE, VIC_CPI_BASE_REGISTER);
+-	outb(1, VIC_REDIRECT_REGISTER_1);
+-	/* set the claim registers for static routing --- Boot CPU gets
+-	 * all interrupts untill all other CPUs started */
+-	outb(0xff, VIC_CLAIM_REGISTER_0);
+-	outb(0xff, VIC_CLAIM_REGISTER_1);
+-	/* Set the Primary and Secondary Microchannel vector
+-	 * bases to be the same as the ordinary interrupts
+-	 *
+-	 * FIXME: This would be more efficient using separate
+-	 * vectors. */
+-	outb(FIRST_EXTERNAL_VECTOR, VIC_PRIMARY_MC_BASE);
+-	outb(FIRST_EXTERNAL_VECTOR, VIC_SECONDARY_MC_BASE);
+-
+-	/* Finally tell the firmware that we're driving */
+-	outb(inb(VOYAGER_SUS_IN_CONTROL_PORT) | VOYAGER_IN_CONTROL_FLAG,
+-	     VOYAGER_SUS_IN_CONTROL_PORT);
+-
+-	current_thread_info()->cpu = boot_cpu_id;
+-	percpu_write(cpu_number, boot_cpu_id);
+-}
+-
+-/*
+- *	The bootstrap kernel entry code has set these up. Save them
+- *	for a given CPU, id is physical */
+-void __init smp_store_cpu_info(int id)
+-{
+-	struct cpuinfo_x86 *c = &cpu_data(id);
+-
+-	*c = boot_cpu_data;
+-	c->cpu_index = id;
+-
+-	identify_secondary_cpu(c);
+-}
+-
+-/* Routine initially called when a non-boot CPU is brought online */
+-static void __init start_secondary(void *unused)
+-{
+-	__u8 cpuid = hard_smp_processor_id();
+-
+-	cpu_init();
+-
+-	/* OK, we're in the routine */
+-	ack_CPI(VIC_CPU_BOOT_CPI);
+-
+-	/* setup the 8259 master slave pair belonging to this CPU ---
+-	 * we won't actually receive any until the boot CPU
+-	 * relinquishes it's static routing mask */
+-	vic_setup_pic();
+-
+-	qic_setup();
+-
+-	if (is_cpu_quad() && !is_cpu_vic_boot()) {
+-		/* clear the boot CPI */
+-		__u8 dummy;
+-
+-		dummy =
+-		    voyager_quad_cpi_addr[cpuid]->qic_cpi[VIC_CPU_BOOT_CPI].cpi;
+-		printk("read dummy %d\n", dummy);
+-	}
+-
+-	/* lower the mask to receive CPIs */
+-	vic_enable_cpi();
+-
+-	VDEBUG(("VOYAGER SMP: CPU%d, stack at about %p\n", cpuid, &cpuid));
+-
+-	notify_cpu_starting(cpuid);
+-
+-	/* enable interrupts */
+-	local_irq_enable();
+-
+-	/* get our bogomips */
+-	calibrate_delay();
+-
+-	/* save our processor parameters */
+-	smp_store_cpu_info(cpuid);
+-
+-	/* if we're a quad, we may need to bootstrap other CPUs */
+-	do_quad_bootstrap();
+-
+-	/* FIXME: this is rather a poor hack to prevent the CPU
+-	 * activating softirqs while it's supposed to be waiting for
+-	 * permission to proceed.  Without this, the new per CPU stuff
+-	 * in the softirqs will fail */
+-	local_irq_disable();
+-	cpu_set(cpuid, cpu_callin_map);
+-
+-	/* signal that we're done */
+-	cpu_booted_map = 1;
+-
+-	while (!cpu_isset(cpuid, smp_commenced_mask))
+-		rep_nop();
+-	local_irq_enable();
+-
+-	local_flush_tlb();
+-
+-	cpu_set(cpuid, cpu_online_map);
+-	wmb();
+-	cpu_idle();
+-}
+-
+-/* Routine to kick start the given CPU and wait for it to report ready
+- * (or timeout in startup).  When this routine returns, the requested
+- * CPU is either fully running and configured or known to be dead.
+- *
+- * We call this routine sequentially 1 CPU at a time, so no need for
+- * locking */
+-
+-static void __init do_boot_cpu(__u8 cpu)
+-{
+-	struct task_struct *idle;
+-	int timeout;
+-	unsigned long flags;
+-	int quad_boot = (1 << cpu) & voyager_quad_processors
+-	    & ~(voyager_extended_vic_processors
+-		& voyager_allowed_boot_processors);
+-
+-	/* This is the format of the CPI IDT gate (in real mode) which
+-	 * we're hijacking to boot the CPU */
+-	union IDTFormat {
+-		struct seg {
+-			__u16 Offset;
+-			__u16 Segment;
+-		} idt;
+-		__u32 val;
+-	} hijack_source;
+-
+-	__u32 *hijack_vector;
+-	__u32 start_phys_address = setup_trampoline();
+-
+-	/* There's a clever trick to this: The linux trampoline is
+-	 * compiled to begin at absolute location zero, so make the
+-	 * address zero but have the data segment selector compensate
+-	 * for the actual address */
+-	hijack_source.idt.Offset = start_phys_address & 0x000F;
+-	hijack_source.idt.Segment = (start_phys_address >> 4) & 0xFFFF;
+-
+-	cpucount++;
+-	alternatives_smp_switch(1);
+-
+-	idle = fork_idle(cpu);
+-	if (IS_ERR(idle))
+-		panic("failed fork for CPU%d", cpu);
+-	idle->thread.ip = (unsigned long)start_secondary;
+-	/* init_tasks (in sched.c) is indexed logically */
+-	stack_start.sp = (void *)idle->thread.sp;
+-
+-	per_cpu(current_task, cpu) = idle;
+-	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
+-	irq_ctx_init(cpu);
+-
+-	/* Note: Don't modify initial ss override */
+-	VDEBUG(("VOYAGER SMP: Booting CPU%d at 0x%lx[%x:%x], stack %p\n", cpu,
+-		(unsigned long)hijack_source.val, hijack_source.idt.Segment,
+-		hijack_source.idt.Offset, stack_start.sp));
+-
+-	/* init lowmem identity mapping */
+-	clone_pgd_range(swapper_pg_dir, swapper_pg_dir + KERNEL_PGD_BOUNDARY,
+-			min_t(unsigned long, KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY));
+-	flush_tlb_all();
+-
+-	if (quad_boot) {
+-		printk("CPU %d: non extended Quad boot\n", cpu);
+-		hijack_vector =
+-		    (__u32 *)
+-		    phys_to_virt((VIC_CPU_BOOT_CPI + QIC_DEFAULT_CPI_BASE) * 4);
+-		*hijack_vector = hijack_source.val;
+-	} else {
+-		printk("CPU%d: extended VIC boot\n", cpu);
+-		hijack_vector =
+-		    (__u32 *)
+-		    phys_to_virt((VIC_CPU_BOOT_CPI + VIC_DEFAULT_CPI_BASE) * 4);
+-		*hijack_vector = hijack_source.val;
+-		/* VIC errata, may also receive interrupt at this address */
+-		hijack_vector =
+-		    (__u32 *)
+-		    phys_to_virt((VIC_CPU_BOOT_ERRATA_CPI +
+-				  VIC_DEFAULT_CPI_BASE) * 4);
+-		*hijack_vector = hijack_source.val;
+-	}
+-	/* All non-boot CPUs start with interrupts fully masked.  Need
+-	 * to lower the mask of the CPI we're about to send.  We do
+-	 * this in the VIC by masquerading as the processor we're
+-	 * about to boot and lowering its interrupt mask */
+-	local_irq_save(flags);
+-	if (quad_boot) {
+-		send_one_QIC_CPI(cpu, VIC_CPU_BOOT_CPI);
+-	} else {
+-		outb(VIC_CPU_MASQUERADE_ENABLE | cpu, VIC_PROCESSOR_ID);
+-		/* here we're altering registers belonging to `cpu' */
+-
+-		outb(VIC_BOOT_INTERRUPT_MASK, 0x21);
+-		/* now go back to our original identity */
+-		outb(boot_cpu_id, VIC_PROCESSOR_ID);
+-
+-		/* and boot the CPU */
+-
+-		send_CPI((1 << cpu), VIC_CPU_BOOT_CPI);
+-	}
+-	cpu_booted_map = 0;
+-	local_irq_restore(flags);
+-
+-	/* now wait for it to become ready (or timeout) */
+-	for (timeout = 0; timeout < 50000; timeout++) {
+-		if (cpu_booted_map)
+-			break;
+-		udelay(100);
+-	}
+-	/* reset the page table */
+-	zap_low_mappings();
+-
+-	if (cpu_booted_map) {
+-		VDEBUG(("CPU%d: Booted successfully, back in CPU %d\n",
+-			cpu, smp_processor_id()));
+-
+-		printk("CPU%d: ", cpu);
+-		print_cpu_info(&cpu_data(cpu));
+-		wmb();
+-		cpu_set(cpu, cpu_callout_map);
+-		cpu_set(cpu, cpu_present_map);
+-	} else {
+-		printk("CPU%d FAILED TO BOOT: ", cpu);
+-		if (*
+-		    ((volatile unsigned char *)phys_to_virt(start_phys_address))
+-		    == 0xA5)
+-			printk("Stuck.\n");
+-		else
+-			printk("Not responding.\n");
+-
+-		cpucount--;
+-	}
+-}
+-
+-void __init smp_boot_cpus(void)
+-{
+-	int i;
+-
+-	/* CAT BUS initialisation must be done after the memory */
+-	/* FIXME: The L4 has a catbus too, it just needs to be
+-	 * accessed in a totally different way */
+-	if (voyager_level == 5) {
+-		voyager_cat_init();
+-
+-		/* now that the cat has probed the Voyager System Bus, sanity
+-		 * check the cpu map */
+-		if (((voyager_quad_processors | voyager_extended_vic_processors)
+-		     & cpus_addr(phys_cpu_present_map)[0]) !=
+-		    cpus_addr(phys_cpu_present_map)[0]) {
+-			/* should panic */
+-			printk("\n\n***WARNING*** "
+-			       "Sanity check of CPU present map FAILED\n");
+-		}
+-	} else if (voyager_level == 4)
+-		voyager_extended_vic_processors =
+-		    cpus_addr(phys_cpu_present_map)[0];
+-
+-	/* this sets up the idle task to run on the current cpu */
+-	voyager_extended_cpus = 1;
+-	/* Remove the global_irq_holder setting, it triggers a BUG() on
+-	 * schedule at the moment */
+-	//global_irq_holder = boot_cpu_id;
+-
+-	/* FIXME: Need to do something about this but currently only works
+-	 * on CPUs with a tsc which none of mine have.
+-	 smp_tune_scheduling();
+-	 */
+-	smp_store_cpu_info(boot_cpu_id);
+-	/* setup the jump vector */
+-	initial_code = (unsigned long)initialize_secondary;
+-	printk("CPU%d: ", boot_cpu_id);
+-	print_cpu_info(&cpu_data(boot_cpu_id));
+-
+-	if (is_cpu_quad()) {
+-		/* booting on a Quad CPU */
+-		printk("VOYAGER SMP: Boot CPU is Quad\n");
+-		qic_setup();
+-		do_quad_bootstrap();
+-	}
+-
+-	/* enable our own CPIs */
+-	vic_enable_cpi();
+-
+-	cpu_set(boot_cpu_id, cpu_online_map);
+-	cpu_set(boot_cpu_id, cpu_callout_map);
+-
+-	/* loop over all the extended VIC CPUs and boot them.  The
+-	 * Quad CPUs must be bootstrapped by their extended VIC cpu */
+-	for (i = 0; i < nr_cpu_ids; i++) {
+-		if (i == boot_cpu_id || !cpu_isset(i, phys_cpu_present_map))
+-			continue;
+-		do_boot_cpu(i);
+-		/* This udelay seems to be needed for the Quad boots
+-		 * don't remove unless you know what you're doing */
+-		udelay(1000);
+-	}
+-	/* we could compute the total bogomips here, but why bother?,
+-	 * Code added from smpboot.c */
+-	{
+-		unsigned long bogosum = 0;
+-
+-		for_each_online_cpu(i)
+-			bogosum += cpu_data(i).loops_per_jiffy;
+-		printk(KERN_INFO "Total of %d processors activated "
+-		       "(%lu.%02lu BogoMIPS).\n",
+-		       cpucount + 1, bogosum / (500000 / HZ),
+-		       (bogosum / (5000 / HZ)) % 100);
+-	}
+-	voyager_extended_cpus = hweight32(voyager_extended_vic_processors);
+-	printk("VOYAGER: Extended (interrupt handling CPUs): "
+-	       "%d, non-extended: %d\n", voyager_extended_cpus,
+-	       num_booting_cpus() - voyager_extended_cpus);
+-	/* that's it, switch to symmetric mode */
+-	outb(0, VIC_PRIORITY_REGISTER);
+-	outb(0, VIC_CLAIM_REGISTER_0);
+-	outb(0, VIC_CLAIM_REGISTER_1);
+-
+-	VDEBUG(("VOYAGER SMP: Booted with %d CPUs\n", num_booting_cpus()));
+-}
+-
+-/* Reload the secondary CPUs task structure (this function does not
+- * return ) */
+-static void __init initialize_secondary(void)
+-{
+-#if 0
+-	// AC kernels only
+-	set_current(hard_get_current());
+-#endif
+-
+-	/*
+-	 * We don't actually need to load the full TSS,
+-	 * basically just the stack pointer and the eip.
+-	 */
+-
+-	asm volatile ("movl %0,%%esp\n\t"
+-		      "jmp *%1"::"r" (current->thread.sp),
+-		      "r"(current->thread.ip));
+-}
+-
+-/* handle a Voyager SYS_INT -- If we don't, the base board will
+- * panic the system.
+- *
+- * System interrupts occur because some problem was detected on the
+- * various busses.  To find out what you have to probe all the
+- * hardware via the CAT bus.  FIXME: At the moment we do nothing. */
+-void smp_vic_sys_interrupt(struct pt_regs *regs)
+-{
+-	ack_CPI(VIC_SYS_INT);
+-	printk("Voyager SYSTEM INTERRUPT\n");
+-}
+-
+-/* Handle a voyager CMN_INT; These interrupts occur either because of
+- * a system status change or because a single bit memory error
+- * occurred.  FIXME: At the moment, ignore all this. */
+-void smp_vic_cmn_interrupt(struct pt_regs *regs)
+-{
+-	static __u8 in_cmn_int = 0;
+-	static DEFINE_SPINLOCK(cmn_int_lock);
+-
+-	/* common ints are broadcast, so make sure we only do this once */
+-	_raw_spin_lock(&cmn_int_lock);
+-	if (in_cmn_int)
+-		goto unlock_end;
+-
+-	in_cmn_int++;
+-	_raw_spin_unlock(&cmn_int_lock);
+-
+-	VDEBUG(("Voyager COMMON INTERRUPT\n"));
+-
+-	if (voyager_level == 5)
+-		voyager_cat_do_common_interrupt();
+-
+-	_raw_spin_lock(&cmn_int_lock);
+-	in_cmn_int = 0;
+-      unlock_end:
+-	_raw_spin_unlock(&cmn_int_lock);
+-	ack_CPI(VIC_CMN_INT);
+-}
+-
+-/*
+- * Reschedule call back. Nothing to do, all the work is done
+- * automatically when we return from the interrupt.  */
+-static void smp_reschedule_interrupt(void)
+-{
+-	/* do nothing */
+-}
+-
+-static struct mm_struct *flush_mm;
+-static unsigned long flush_va;
+-static DEFINE_SPINLOCK(tlbstate_lock);
+-
+-/*
+- * We cannot call mmdrop() because we are in interrupt context,
+- * instead update mm->cpu_vm_mask.
+- *
+- * We need to reload %cr3 since the page tables may be going
+- * away from under us..
+- */
+-static inline void voyager_leave_mm(unsigned long cpu)
+-{
+-	if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_OK)
+-		BUG();
+-	cpu_clear(cpu, per_cpu(cpu_tlbstate, cpu).active_mm->cpu_vm_mask);
+-	load_cr3(swapper_pg_dir);
+-}
+-
+-/*
+- * Invalidate call-back
+- */
+-static void smp_invalidate_interrupt(void)
+-{
+-	__u8 cpu = smp_processor_id();
+-
+-	if (!test_bit(cpu, &smp_invalidate_needed))
+-		return;
+-	/* This will flood messages.  Don't uncomment unless you see
+-	 * Problems with cross cpu invalidation
+-	 VDEBUG(("VOYAGER SMP: CPU%d received INVALIDATE_CPI\n",
+-	 smp_processor_id()));
+-	 */
+-
+-	if (flush_mm == per_cpu(cpu_tlbstate, cpu).active_mm) {
+-		if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_OK) {
+-			if (flush_va == TLB_FLUSH_ALL)
+-				local_flush_tlb();
+-			else
+-				__flush_tlb_one(flush_va);
+-		} else
+-			voyager_leave_mm(cpu);
+-	}
+-	smp_mb__before_clear_bit();
+-	clear_bit(cpu, &smp_invalidate_needed);
+-	smp_mb__after_clear_bit();
+-}
+-
+-/* All the new flush operations for 2.4 */
+-
+-/* This routine is called with a physical cpu mask */
+-static void
+-voyager_flush_tlb_others(unsigned long cpumask, struct mm_struct *mm,
+-			 unsigned long va)
+-{
+-	int stuck = 50000;
+-
+-	if (!cpumask)
+-		BUG();
+-	if ((cpumask & cpus_addr(cpu_online_map)[0]) != cpumask)
+-		BUG();
+-	if (cpumask & (1 << smp_processor_id()))
+-		BUG();
+-	if (!mm)
+-		BUG();
+-
+-	spin_lock(&tlbstate_lock);
+-
+-	flush_mm = mm;
+-	flush_va = va;
+-	atomic_set_mask(cpumask, &smp_invalidate_needed);
+-	/*
+-	 * We have to send the CPI only to
+-	 * CPUs affected.
+-	 */
+-	send_CPI(cpumask, VIC_INVALIDATE_CPI);
+-
+-	while (smp_invalidate_needed) {
+-		mb();
+-		if (--stuck == 0) {
+-			printk("***WARNING*** Stuck doing invalidate CPI "
+-			       "(CPU%d)\n", smp_processor_id());
+-			break;
+-		}
+-	}
+-
+-	/* Uncomment only to debug invalidation problems
+-	   VDEBUG(("VOYAGER SMP: Completed invalidate CPI (CPU%d)\n", cpu));
+-	 */
+-
+-	flush_mm = NULL;
+-	flush_va = 0;
+-	spin_unlock(&tlbstate_lock);
+-}
+-
+-void flush_tlb_current_task(void)
+-{
+-	struct mm_struct *mm = current->mm;
+-	unsigned long cpu_mask;
+-
+-	preempt_disable();
+-
+-	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
+-	local_flush_tlb();
+-	if (cpu_mask)
+-		voyager_flush_tlb_others(cpu_mask, mm, TLB_FLUSH_ALL);
+-
+-	preempt_enable();
+-}
+-
+-void flush_tlb_mm(struct mm_struct *mm)
+-{
+-	unsigned long cpu_mask;
+-
+-	preempt_disable();
+-
+-	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
+-
+-	if (current->active_mm == mm) {
+-		if (current->mm)
+-			local_flush_tlb();
+-		else
+-			voyager_leave_mm(smp_processor_id());
+-	}
+-	if (cpu_mask)
+-		voyager_flush_tlb_others(cpu_mask, mm, TLB_FLUSH_ALL);
+-
+-	preempt_enable();
+-}
+-
+-void flush_tlb_page(struct vm_area_struct *vma, unsigned long va)
+-{
+-	struct mm_struct *mm = vma->vm_mm;
+-	unsigned long cpu_mask;
+-
+-	preempt_disable();
+-
+-	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
+-	if (current->active_mm == mm) {
+-		if (current->mm)
+-			__flush_tlb_one(va);
+-		else
+-			voyager_leave_mm(smp_processor_id());
+-	}
+-
+-	if (cpu_mask)
+-		voyager_flush_tlb_others(cpu_mask, mm, va);
+-
+-	preempt_enable();
+-}
+-
+-EXPORT_SYMBOL(flush_tlb_page);
+-
+-/* enable the requested IRQs */
+-static void smp_enable_irq_interrupt(void)
+-{
+-	__u8 irq;
+-	__u8 cpu = get_cpu();
+-
+-	VDEBUG(("VOYAGER SMP: CPU%d enabling irq mask 0x%x\n", cpu,
+-		vic_irq_enable_mask[cpu]));
+-
+-	spin_lock(&vic_irq_lock);
+-	for (irq = 0; irq < 16; irq++) {
+-		if (vic_irq_enable_mask[cpu] & (1 << irq))
+-			enable_local_vic_irq(irq);
+-	}
+-	vic_irq_enable_mask[cpu] = 0;
+-	spin_unlock(&vic_irq_lock);
+-
+-	put_cpu_no_resched();
+-}
+-
+-/*
+- *	CPU halt call-back
+- */
+-static void smp_stop_cpu_function(void *dummy)
+-{
+-	VDEBUG(("VOYAGER SMP: CPU%d is STOPPING\n", smp_processor_id()));
+-	cpu_clear(smp_processor_id(), cpu_online_map);
+-	local_irq_disable();
+-	for (;;)
+-		halt();
+-}
+-
+-/* execute a thread on a new CPU.  The function to be called must be
+- * previously set up.  This is used to schedule a function for
+- * execution on all CPUs - set up the function then broadcast a
+- * function_interrupt CPI to come here on each CPU */
+-static void smp_call_function_interrupt(void)
+-{
+-	irq_enter();
+-	generic_smp_call_function_interrupt();
+-	__get_cpu_var(irq_stat).irq_call_count++;
+-	irq_exit();
+-}
+-
+-static void smp_call_function_single_interrupt(void)
+-{
+-	irq_enter();
+-	generic_smp_call_function_single_interrupt();
+-	__get_cpu_var(irq_stat).irq_call_count++;
+-	irq_exit();
+-}
+-
+-/* Sorry about the name.  In an APIC based system, the APICs
+- * themselves are programmed to send a timer interrupt.  This is used
+- * by linux to reschedule the processor.  Voyager doesn't have this,
+- * so we use the system clock to interrupt one processor, which in
+- * turn, broadcasts a timer CPI to all the others --- we receive that
+- * CPI here.  We don't use this actually for counting so losing
+- * ticks doesn't matter
+- *
+- * FIXME: For those CPUs which actually have a local APIC, we could
+- * try to use it to trigger this interrupt instead of having to
+- * broadcast the timer tick.  Unfortunately, all my pentium DYADs have
+- * no local APIC, so I can't do this
+- *
+- * This function is currently a placeholder and is unused in the code */
+-void smp_apic_timer_interrupt(struct pt_regs *regs)
+-{
+-	struct pt_regs *old_regs = set_irq_regs(regs);
+-	wrapper_smp_local_timer_interrupt();
+-	set_irq_regs(old_regs);
+-}
+-
+-/* All of the QUAD interrupt GATES */
+-void smp_qic_timer_interrupt(struct pt_regs *regs)
+-{
+-	struct pt_regs *old_regs = set_irq_regs(regs);
+-	ack_QIC_CPI(QIC_TIMER_CPI);
+-	wrapper_smp_local_timer_interrupt();
+-	set_irq_regs(old_regs);
+-}
+-
+-void smp_qic_invalidate_interrupt(struct pt_regs *regs)
+-{
+-	ack_QIC_CPI(QIC_INVALIDATE_CPI);
+-	smp_invalidate_interrupt();
+-}
+-
+-void smp_qic_reschedule_interrupt(struct pt_regs *regs)
+-{
+-	ack_QIC_CPI(QIC_RESCHEDULE_CPI);
+-	smp_reschedule_interrupt();
+-}
+-
+-void smp_qic_enable_irq_interrupt(struct pt_regs *regs)
+-{
+-	ack_QIC_CPI(QIC_ENABLE_IRQ_CPI);
+-	smp_enable_irq_interrupt();
+-}
+-
+-void smp_qic_call_function_interrupt(struct pt_regs *regs)
+-{
+-	ack_QIC_CPI(QIC_CALL_FUNCTION_CPI);
+-	smp_call_function_interrupt();
+-}
+-
+-void smp_qic_call_function_single_interrupt(struct pt_regs *regs)
+-{
+-	ack_QIC_CPI(QIC_CALL_FUNCTION_SINGLE_CPI);
+-	smp_call_function_single_interrupt();
+-}
+-
+-void smp_vic_cpi_interrupt(struct pt_regs *regs)
+-{
+-	struct pt_regs *old_regs = set_irq_regs(regs);
+-	__u8 cpu = smp_processor_id();
+-
+-	if (is_cpu_quad())
+-		ack_QIC_CPI(VIC_CPI_LEVEL0);
+-	else
+-		ack_VIC_CPI(VIC_CPI_LEVEL0);
+-
+-	if (test_and_clear_bit(VIC_TIMER_CPI, &vic_cpi_mailbox[cpu]))
+-		wrapper_smp_local_timer_interrupt();
+-	if (test_and_clear_bit(VIC_INVALIDATE_CPI, &vic_cpi_mailbox[cpu]))
+-		smp_invalidate_interrupt();
+-	if (test_and_clear_bit(VIC_RESCHEDULE_CPI, &vic_cpi_mailbox[cpu]))
+-		smp_reschedule_interrupt();
+-	if (test_and_clear_bit(VIC_ENABLE_IRQ_CPI, &vic_cpi_mailbox[cpu]))
+-		smp_enable_irq_interrupt();
+-	if (test_and_clear_bit(VIC_CALL_FUNCTION_CPI, &vic_cpi_mailbox[cpu]))
+-		smp_call_function_interrupt();
+-	if (test_and_clear_bit(VIC_CALL_FUNCTION_SINGLE_CPI, &vic_cpi_mailbox[cpu]))
+-		smp_call_function_single_interrupt();
+-	set_irq_regs(old_regs);
+-}
+-
+-static void do_flush_tlb_all(void *info)
+-{
+-	unsigned long cpu = smp_processor_id();
+-
+-	__flush_tlb_all();
+-	if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_LAZY)
+-		voyager_leave_mm(cpu);
+-}
+-
+-/* flush the TLB of every active CPU in the system */
+-void flush_tlb_all(void)
+-{
+-	on_each_cpu(do_flush_tlb_all, 0, 1);
+-}
+-
+-/* send a reschedule CPI to one CPU by physical CPU number*/
+-static void voyager_smp_send_reschedule(int cpu)
+-{
+-	send_one_CPI(cpu, VIC_RESCHEDULE_CPI);
+-}
+-
+-int hard_smp_processor_id(void)
+-{
+-	__u8 i;
+-	__u8 cpumask = inb(VIC_PROC_WHO_AM_I);
+-	if ((cpumask & QUAD_IDENTIFIER) == QUAD_IDENTIFIER)
+-		return cpumask & 0x1F;
+-
+-	for (i = 0; i < 8; i++) {
+-		if (cpumask & (1 << i))
+-			return i;
+-	}
+-	printk("** WARNING ** Illegal cpuid returned by VIC: %d", cpumask);
+-	return 0;
+-}
+-
+-int safe_smp_processor_id(void)
+-{
+-	return hard_smp_processor_id();
+-}
+-
+-/* broadcast a halt to all other CPUs */
+-static void voyager_smp_send_stop(void)
+-{
+-	smp_call_function(smp_stop_cpu_function, NULL, 1);
+-}
+-
+-/* this function is triggered in time.c when a clock tick fires
+- * we need to re-broadcast the tick to all CPUs */
+-void smp_vic_timer_interrupt(void)
+-{
+-	send_CPI_allbutself(VIC_TIMER_CPI);
+-	smp_local_timer_interrupt();
+-}
+-
+-/* local (per CPU) timer interrupt.  It does both profiling and
+- * process statistics/rescheduling.
+- *
+- * We do profiling in every local tick, statistics/rescheduling
+- * happen only every 'profiling multiplier' ticks. The default
+- * multiplier is 1 and it can be changed by writing the new multiplier
+- * value into /proc/profile.
+- */
+-void smp_local_timer_interrupt(void)
+-{
+-	int cpu = smp_processor_id();
+-	long weight;
+-
+-	profile_tick(CPU_PROFILING);
+-	if (--per_cpu(prof_counter, cpu) <= 0) {
+-		/*
+-		 * The multiplier may have changed since the last time we got
+-		 * to this point as a result of the user writing to
+-		 * /proc/profile. In this case we need to adjust the APIC
+-		 * timer accordingly.
+-		 *
+-		 * Interrupts are already masked off at this point.
+-		 */
+-		per_cpu(prof_counter, cpu) = per_cpu(prof_multiplier, cpu);
+-		if (per_cpu(prof_counter, cpu) !=
+-		    per_cpu(prof_old_multiplier, cpu)) {
+-			/* FIXME: need to update the vic timer tick here */
+-			per_cpu(prof_old_multiplier, cpu) =
+-			    per_cpu(prof_counter, cpu);
+-		}
+-
+-		update_process_times(user_mode_vm(get_irq_regs()));
+-	}
+-
+-	if (((1 << cpu) & voyager_extended_vic_processors) == 0)
+-		/* only extended VIC processors participate in
+-		 * interrupt distribution */
+-		return;
+-
+-	/*
+-	 * We take the 'long' return path, and there every subsystem
+-	 * grabs the appropriate locks (kernel lock/ irq lock).
+-	 *
+-	 * we might want to decouple profiling from the 'long path',
+-	 * and do the profiling totally in assembly.
+-	 *
+-	 * Currently this isn't too much of an issue (performance wise),
+-	 * we can take more than 100K local irqs per second on a 100 MHz P5.
+-	 */
+-
+-	if ((++vic_tick[cpu] & 0x7) != 0)
+-		return;
+-	/* get here every 16 ticks (about every 1/6 of a second) */
+-
+-	/* Change our priority to give someone else a chance at getting
+-	 * the IRQ. The algorithm goes like this:
+-	 *
+-	 * In the VIC, the dynamically routed interrupt is always
+-	 * handled by the lowest priority eligible (i.e. receiving
+-	 * interrupts) CPU.  If >1 eligible CPUs are equal lowest, the
+-	 * lowest processor number gets it.
+-	 *
+-	 * The priority of a CPU is controlled by a special per-CPU
+-	 * VIC priority register which is 3 bits wide 0 being lowest
+-	 * and 7 highest priority..
+-	 *
+-	 * Therefore we subtract the average number of interrupts from
+-	 * the number we've fielded.  If this number is negative, we
+-	 * lower the activity count and if it is positive, we raise
+-	 * it.
+-	 *
+-	 * I'm afraid this still leads to odd looking interrupt counts:
+-	 * the totals are all roughly equal, but the individual ones
+-	 * look rather skewed.
+-	 *
+-	 * FIXME: This algorithm is total crap when mixed with SMP
+-	 * affinity code since we now try to even up the interrupt
+-	 * counts when an affinity binding is keeping them on a
+-	 * particular CPU*/
+-	weight = (vic_intr_count[cpu] * voyager_extended_cpus
+-		  - vic_intr_total) >> 4;
+-	weight += 4;
+-	if (weight > 7)
+-		weight = 7;
+-	if (weight < 0)
+-		weight = 0;
+-
+-	outb((__u8) weight, VIC_PRIORITY_REGISTER);
+-
+-#ifdef VOYAGER_DEBUG
+-	if ((vic_tick[cpu] & 0xFFF) == 0) {
+-		/* print this message roughly every 25 secs */
+-		printk("VOYAGER SMP: vic_tick[%d] = %lu, weight = %ld\n",
+-		       cpu, vic_tick[cpu], weight);
+-	}
+-#endif
+-}
+-
+-/* setup the profiling timer */
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	int i;
+-
+-	if ((!multiplier))
+-		return -EINVAL;
+-
+-	/*
+-	 * Set the new multiplier for each CPU. CPUs don't start using the
+-	 * new values until the next timer interrupt in which they do process
+-	 * accounting.
+-	 */
+-	for (i = 0; i < nr_cpu_ids; ++i)
+-		per_cpu(prof_multiplier, i) = multiplier;
+-
+-	return 0;
+-}
+-
+-/* This is a bit of a mess, but forced on us by the genirq changes
+- * there's no genirq handler that really does what voyager wants
+- * so hack it up with the simple IRQ handler */
+-static void handle_vic_irq(unsigned int irq, struct irq_desc *desc)
+-{
+-	before_handle_vic_irq(irq);
+-	handle_simple_irq(irq, desc);
+-	after_handle_vic_irq(irq);
+-}
+-
+-/*  The CPIs are handled in the per cpu 8259s, so they must be
+- *  enabled to be received: FIX: enabling the CPIs in the early
+- *  boot sequence interferes with bug checking; enable them later
+- *  on in smp_init */
+-#define VIC_SET_GATE(cpi, vector) \
+-	set_intr_gate((cpi) + VIC_DEFAULT_CPI_BASE, (vector))
+-#define QIC_SET_GATE(cpi, vector) \
+-	set_intr_gate((cpi) + QIC_DEFAULT_CPI_BASE, (vector))
+-
+-void __init voyager_smp_intr_init(void)
+-{
+-	int i;
+-
+-	/* initialize the per cpu irq mask to all disabled */
+-	for (i = 0; i < nr_cpu_ids; i++)
+-		vic_irq_mask[i] = 0xFFFF;
+-
+-	VIC_SET_GATE(VIC_CPI_LEVEL0, vic_cpi_interrupt);
+-
+-	VIC_SET_GATE(VIC_SYS_INT, vic_sys_interrupt);
+-	VIC_SET_GATE(VIC_CMN_INT, vic_cmn_interrupt);
+-
+-	QIC_SET_GATE(QIC_TIMER_CPI, qic_timer_interrupt);
+-	QIC_SET_GATE(QIC_INVALIDATE_CPI, qic_invalidate_interrupt);
+-	QIC_SET_GATE(QIC_RESCHEDULE_CPI, qic_reschedule_interrupt);
+-	QIC_SET_GATE(QIC_ENABLE_IRQ_CPI, qic_enable_irq_interrupt);
+-	QIC_SET_GATE(QIC_CALL_FUNCTION_CPI, qic_call_function_interrupt);
+-
+-	/* now put the VIC descriptor into the first 48 IRQs
+-	 *
+-	 * This is for later: first 16 correspond to PC IRQs; next 16
+-	 * are Primary MC IRQs and final 16 are Secondary MC IRQs */
+-	for (i = 0; i < 48; i++)
+-		set_irq_chip_and_handler(i, &vic_chip, handle_vic_irq);
+-}
+-
+-/* send a CPI at level cpi to a set of cpus in cpuset (set 1 bit per
+- * processor to receive CPI */
+-static void send_CPI(__u32 cpuset, __u8 cpi)
+-{
+-	int cpu;
+-	__u32 quad_cpuset = (cpuset & voyager_quad_processors);
+-
+-	if (cpi < VIC_START_FAKE_CPI) {
+-		/* fake CPI are only used for booting, so send to the
+-		 * extended quads as well---Quads must be VIC booted */
+-		outb((__u8) (cpuset), VIC_CPI_Registers[cpi]);
+-		return;
+-	}
+-	if (quad_cpuset)
+-		send_QIC_CPI(quad_cpuset, cpi);
+-	cpuset &= ~quad_cpuset;
+-	cpuset &= 0xff;		/* only first 8 CPUs vaild for VIC CPI */
+-	if (cpuset == 0)
+-		return;
+-	for_each_online_cpu(cpu) {
+-		if (cpuset & (1 << cpu))
+-			set_bit(cpi, &vic_cpi_mailbox[cpu]);
+-	}
+-	if (cpuset)
+-		outb((__u8) cpuset, VIC_CPI_Registers[VIC_CPI_LEVEL0]);
+-}
+-
+-/* Acknowledge receipt of CPI in the QIC, clear in QIC hardware and
+- * set the cache line to shared by reading it.
+- *
+- * DON'T make this inline otherwise the cache line read will be
+- * optimised away
+- * */
+-static int ack_QIC_CPI(__u8 cpi)
+-{
+-	__u8 cpu = hard_smp_processor_id();
+-
+-	cpi &= 7;
+-
+-	outb(1 << cpi, QIC_INTERRUPT_CLEAR1);
+-	return voyager_quad_cpi_addr[cpu]->qic_cpi[cpi].cpi;
+-}
+-
+-static void ack_special_QIC_CPI(__u8 cpi)
+-{
+-	switch (cpi) {
+-	case VIC_CMN_INT:
+-		outb(QIC_CMN_INT, QIC_INTERRUPT_CLEAR0);
+-		break;
+-	case VIC_SYS_INT:
+-		outb(QIC_SYS_INT, QIC_INTERRUPT_CLEAR0);
+-		break;
+-	}
+-	/* also clear at the VIC, just in case (nop for non-extended proc) */
+-	ack_VIC_CPI(cpi);
+-}
+-
+-/* Acknowledge receipt of CPI in the VIC (essentially an EOI) */
+-static void ack_VIC_CPI(__u8 cpi)
+-{
+-#ifdef VOYAGER_DEBUG
+-	unsigned long flags;
+-	__u16 isr;
+-	__u8 cpu = smp_processor_id();
+-
+-	local_irq_save(flags);
+-	isr = vic_read_isr();
+-	if ((isr & (1 << (cpi & 7))) == 0) {
+-		printk("VOYAGER SMP: CPU%d lost CPI%d\n", cpu, cpi);
+-	}
+-#endif
+-	/* send specific EOI; the two system interrupts have
+-	 * bit 4 set for a separate vector but behave as the
+-	 * corresponding 3 bit intr */
+-	outb_p(0x60 | (cpi & 7), 0x20);
+-
+-#ifdef VOYAGER_DEBUG
+-	if ((vic_read_isr() & (1 << (cpi & 7))) != 0) {
+-		printk("VOYAGER SMP: CPU%d still asserting CPI%d\n", cpu, cpi);
+-	}
+-	local_irq_restore(flags);
+-#endif
+-}
+-
+-/* cribbed with thanks from irq.c */
+-#define __byte(x,y)	(((unsigned char *)&(y))[x])
+-#define cached_21(cpu)	(__byte(0,vic_irq_mask[cpu]))
+-#define cached_A1(cpu)	(__byte(1,vic_irq_mask[cpu]))
+-
+-static unsigned int startup_vic_irq(unsigned int irq)
+-{
+-	unmask_vic_irq(irq);
+-
+-	return 0;
+-}
+-
+-/* The enable and disable routines.  This is where we run into
+- * conflicting architectural philosophy.  Fundamentally, the voyager
+- * architecture does not expect to have to disable interrupts globally
+- * (the IRQ controllers belong to each CPU).  The processor masquerade
+- * which is used to start the system shouldn't be used in a running OS
+- * since it will cause great confusion if two separate CPUs drive to
+- * the same IRQ controller (I know, I've tried it).
+- *
+- * The solution is a variant on the NCR lazy SPL design:
+- *
+- * 1) To disable an interrupt, do nothing (other than set the
+- *    IRQ_DISABLED flag).  This dares the interrupt actually to arrive.
+- *
+- * 2) If the interrupt dares to come in, raise the local mask against
+- *    it (this will result in all the CPU masks being raised
+- *    eventually).
+- *
+- * 3) To enable the interrupt, lower the mask on the local CPU and
+- *    broadcast an Interrupt enable CPI which causes all other CPUs to
+- *    adjust their masks accordingly.  */
+-
+-static void unmask_vic_irq(unsigned int irq)
+-{
+-	/* linux doesn't to processor-irq affinity, so enable on
+-	 * all CPUs we know about */
+-	int cpu = smp_processor_id(), real_cpu;
+-	__u16 mask = (1 << irq);
+-	__u32 processorList = 0;
+-	unsigned long flags;
+-
+-	VDEBUG(("VOYAGER: unmask_vic_irq(%d) CPU%d affinity 0x%lx\n",
+-		irq, cpu, cpu_irq_affinity[cpu]));
+-	spin_lock_irqsave(&vic_irq_lock, flags);
+-	for_each_online_cpu(real_cpu) {
+-		if (!(voyager_extended_vic_processors & (1 << real_cpu)))
+-			continue;
+-		if (!(cpu_irq_affinity[real_cpu] & mask)) {
+-			/* irq has no affinity for this CPU, ignore */
+-			continue;
+-		}
+-		if (real_cpu == cpu) {
+-			enable_local_vic_irq(irq);
+-		} else if (vic_irq_mask[real_cpu] & mask) {
+-			vic_irq_enable_mask[real_cpu] |= mask;
+-			processorList |= (1 << real_cpu);
+-		}
+-	}
+-	spin_unlock_irqrestore(&vic_irq_lock, flags);
+-	if (processorList)
+-		send_CPI(processorList, VIC_ENABLE_IRQ_CPI);
+-}
+-
+-static void mask_vic_irq(unsigned int irq)
+-{
+-	/* lazy disable, do nothing */
+-}
+-
+-static void enable_local_vic_irq(unsigned int irq)
+-{
+-	__u8 cpu = smp_processor_id();
+-	__u16 mask = ~(1 << irq);
+-	__u16 old_mask = vic_irq_mask[cpu];
+-
+-	vic_irq_mask[cpu] &= mask;
+-	if (vic_irq_mask[cpu] == old_mask)
+-		return;
+-
+-	VDEBUG(("VOYAGER DEBUG: Enabling irq %d in hardware on CPU %d\n",
+-		irq, cpu));
+-
+-	if (irq & 8) {
+-		outb_p(cached_A1(cpu), 0xA1);
+-		(void)inb_p(0xA1);
+-	} else {
+-		outb_p(cached_21(cpu), 0x21);
+-		(void)inb_p(0x21);
+-	}
+-}
+-
+-static void disable_local_vic_irq(unsigned int irq)
+-{
+-	__u8 cpu = smp_processor_id();
+-	__u16 mask = (1 << irq);
+-	__u16 old_mask = vic_irq_mask[cpu];
+-
+-	if (irq == 7)
+-		return;
+-
+-	vic_irq_mask[cpu] |= mask;
+-	if (old_mask == vic_irq_mask[cpu])
+-		return;
+-
+-	VDEBUG(("VOYAGER DEBUG: Disabling irq %d in hardware on CPU %d\n",
+-		irq, cpu));
+-
+-	if (irq & 8) {
+-		outb_p(cached_A1(cpu), 0xA1);
+-		(void)inb_p(0xA1);
+-	} else {
+-		outb_p(cached_21(cpu), 0x21);
+-		(void)inb_p(0x21);
+-	}
+-}
+-
+-/* The VIC is level triggered, so the ack can only be issued after the
+- * interrupt completes.  However, we do Voyager lazy interrupt
+- * handling here: It is an extremely expensive operation to mask an
+- * interrupt in the vic, so we merely set a flag (IRQ_DISABLED).  If
+- * this interrupt actually comes in, then we mask and ack here to push
+- * the interrupt off to another CPU */
+-static void before_handle_vic_irq(unsigned int irq)
+-{
+-	irq_desc_t *desc = irq_to_desc(irq);
+-	__u8 cpu = smp_processor_id();
+-
+-	_raw_spin_lock(&vic_irq_lock);
+-	vic_intr_total++;
+-	vic_intr_count[cpu]++;
+-
+-	if (!(cpu_irq_affinity[cpu] & (1 << irq))) {
+-		/* The irq is not in our affinity mask, push it off
+-		 * onto another CPU */
+-		VDEBUG(("VOYAGER DEBUG: affinity triggered disable of irq %d "
+-			"on cpu %d\n", irq, cpu));
+-		disable_local_vic_irq(irq);
+-		/* set IRQ_INPROGRESS to prevent the handler in irq.c from
+-		 * actually calling the interrupt routine */
+-		desc->status |= IRQ_REPLAY | IRQ_INPROGRESS;
+-	} else if (desc->status & IRQ_DISABLED) {
+-		/* Damn, the interrupt actually arrived, do the lazy
+-		 * disable thing. The interrupt routine in irq.c will
+-		 * not handle a IRQ_DISABLED interrupt, so nothing more
+-		 * need be done here */
+-		VDEBUG(("VOYAGER DEBUG: lazy disable of irq %d on CPU %d\n",
+-			irq, cpu));
+-		disable_local_vic_irq(irq);
+-		desc->status |= IRQ_REPLAY;
+-	} else {
+-		desc->status &= ~IRQ_REPLAY;
+-	}
+-
+-	_raw_spin_unlock(&vic_irq_lock);
+-}
+-
+-/* Finish the VIC interrupt: basically mask */
+-static void after_handle_vic_irq(unsigned int irq)
+-{
+-	irq_desc_t *desc = irq_to_desc(irq);
+-
+-	_raw_spin_lock(&vic_irq_lock);
+-	{
+-		unsigned int status = desc->status & ~IRQ_INPROGRESS;
+-#ifdef VOYAGER_DEBUG
+-		__u16 isr;
+-#endif
+-
+-		desc->status = status;
+-		if ((status & IRQ_DISABLED))
+-			disable_local_vic_irq(irq);
+-#ifdef VOYAGER_DEBUG
+-		/* DEBUG: before we ack, check what's in progress */
+-		isr = vic_read_isr();
+-		if ((isr & (1 << irq) && !(status & IRQ_REPLAY)) == 0) {
+-			int i;
+-			__u8 cpu = smp_processor_id();
+-			__u8 real_cpu;
+-			int mask;	/* Um... initialize me??? --RR */
+-
+-			printk("VOYAGER SMP: CPU%d lost interrupt %d\n",
+-			       cpu, irq);
+-			for_each_possible_cpu(real_cpu, mask) {
+-
+-				outb(VIC_CPU_MASQUERADE_ENABLE | real_cpu,
+-				     VIC_PROCESSOR_ID);
+-				isr = vic_read_isr();
+-				if (isr & (1 << irq)) {
+-					printk
+-					    ("VOYAGER SMP: CPU%d ack irq %d\n",
+-					     real_cpu, irq);
+-					ack_vic_irq(irq);
+-				}
+-				outb(cpu, VIC_PROCESSOR_ID);
+-			}
+-		}
+-#endif /* VOYAGER_DEBUG */
+-		/* as soon as we ack, the interrupt is eligible for
+-		 * receipt by another CPU so everything must be in
+-		 * order here  */
+-		ack_vic_irq(irq);
+-		if (status & IRQ_REPLAY) {
+-			/* replay is set if we disable the interrupt
+-			 * in the before_handle_vic_irq() routine, so
+-			 * clear the in progress bit here to allow the
+-			 * next CPU to handle this correctly */
+-			desc->status &= ~(IRQ_REPLAY | IRQ_INPROGRESS);
+-		}
+-#ifdef VOYAGER_DEBUG
+-		isr = vic_read_isr();
+-		if ((isr & (1 << irq)) != 0)
+-			printk("VOYAGER SMP: after_handle_vic_irq() after "
+-			       "ack irq=%d, isr=0x%x\n", irq, isr);
+-#endif /* VOYAGER_DEBUG */
+-	}
+-	_raw_spin_unlock(&vic_irq_lock);
+-
+-	/* All code after this point is out of the main path - the IRQ
+-	 * may be intercepted by another CPU if reasserted */
+-}
+-
+-/* Linux processor - interrupt affinity manipulations.
+- *
+- * For each processor, we maintain a 32 bit irq affinity mask.
+- * Initially it is set to all 1's so every processor accepts every
+- * interrupt.  In this call, we change the processor's affinity mask:
+- *
+- * Change from enable to disable:
+- *
+- * If the interrupt ever comes in to the processor, we will disable it
+- * and ack it to push it off to another CPU, so just accept the mask here.
+- *
+- * Change from disable to enable:
+- *
+- * change the mask and then do an interrupt enable CPI to re-enable on
+- * the selected processors */
+-
+-void set_vic_irq_affinity(unsigned int irq, const struct cpumask *mask)
+-{
+-	/* Only extended processors handle interrupts */
+-	unsigned long real_mask;
+-	unsigned long irq_mask = 1 << irq;
+-	int cpu;
+-
+-	real_mask = cpus_addr(*mask)[0] & voyager_extended_vic_processors;
+-
+-	if (cpus_addr(*mask)[0] == 0)
+-		/* can't have no CPUs to accept the interrupt -- extremely
+-		 * bad things will happen */
+-		return;
+-
+-	if (irq == 0)
+-		/* can't change the affinity of the timer IRQ.  This
+-		 * is due to the constraint in the voyager
+-		 * architecture that the CPI also comes in on and IRQ
+-		 * line and we have chosen IRQ0 for this.  If you
+-		 * raise the mask on this interrupt, the processor
+-		 * will no-longer be able to accept VIC CPIs */
+-		return;
+-
+-	if (irq >= 32)
+-		/* You can only have 32 interrupts in a voyager system
+-		 * (and 32 only if you have a secondary microchannel
+-		 * bus) */
+-		return;
+-
+-	for_each_online_cpu(cpu) {
+-		unsigned long cpu_mask = 1 << cpu;
+-
+-		if (cpu_mask & real_mask) {
+-			/* enable the interrupt for this cpu */
+-			cpu_irq_affinity[cpu] |= irq_mask;
+-		} else {
+-			/* disable the interrupt for this cpu */
+-			cpu_irq_affinity[cpu] &= ~irq_mask;
+-		}
+-	}
+-	/* this is magic, we now have the correct affinity maps, so
+-	 * enable the interrupt.  This will send an enable CPI to
+-	 * those CPUs who need to enable it in their local masks,
+-	 * causing them to correct for the new affinity . If the
+-	 * interrupt is currently globally disabled, it will simply be
+-	 * disabled again as it comes in (voyager lazy disable).  If
+-	 * the affinity map is tightened to disable the interrupt on a
+-	 * cpu, it will be pushed off when it comes in */
+-	unmask_vic_irq(irq);
+-}
+-
+-static void ack_vic_irq(unsigned int irq)
+-{
+-	if (irq & 8) {
+-		outb(0x62, 0x20);	/* Specific EOI to cascade */
+-		outb(0x60 | (irq & 7), 0xA0);
+-	} else {
+-		outb(0x60 | (irq & 7), 0x20);
+-	}
+-}
+-
+-/* enable the CPIs.  In the VIC, the CPIs are delivered by the 8259
+- * but are not vectored by it.  This means that the 8259 mask must be
+- * lowered to receive them */
+-static __init void vic_enable_cpi(void)
+-{
+-	__u8 cpu = smp_processor_id();
+-
+-	/* just take a copy of the current mask (nop for boot cpu) */
+-	vic_irq_mask[cpu] = vic_irq_mask[boot_cpu_id];
+-
+-	enable_local_vic_irq(VIC_CPI_LEVEL0);
+-	enable_local_vic_irq(VIC_CPI_LEVEL1);
+-	/* for sys int and cmn int */
+-	enable_local_vic_irq(7);
+-
+-	if (is_cpu_quad()) {
+-		outb(QIC_DEFAULT_MASK0, QIC_MASK_REGISTER0);
+-		outb(QIC_CPI_ENABLE, QIC_MASK_REGISTER1);
+-		VDEBUG(("VOYAGER SMP: QIC ENABLE CPI: CPU%d: MASK 0x%x\n",
+-			cpu, QIC_CPI_ENABLE));
+-	}
+-
+-	VDEBUG(("VOYAGER SMP: ENABLE CPI: CPU%d: MASK 0x%x\n",
+-		cpu, vic_irq_mask[cpu]));
+-}
+-
+-void voyager_smp_dump()
+-{
+-	int old_cpu = smp_processor_id(), cpu;
+-
+-	/* dump the interrupt masks of each processor */
+-	for_each_online_cpu(cpu) {
+-		__u16 imr, isr, irr;
+-		unsigned long flags;
+-
+-		local_irq_save(flags);
+-		outb(VIC_CPU_MASQUERADE_ENABLE | cpu, VIC_PROCESSOR_ID);
+-		imr = (inb(0xa1) << 8) | inb(0x21);
+-		outb(0x0a, 0xa0);
+-		irr = inb(0xa0) << 8;
+-		outb(0x0a, 0x20);
+-		irr |= inb(0x20);
+-		outb(0x0b, 0xa0);
+-		isr = inb(0xa0) << 8;
+-		outb(0x0b, 0x20);
+-		isr |= inb(0x20);
+-		outb(old_cpu, VIC_PROCESSOR_ID);
+-		local_irq_restore(flags);
+-		printk("\tCPU%d: mask=0x%x, IMR=0x%x, IRR=0x%x, ISR=0x%x\n",
+-		       cpu, vic_irq_mask[cpu], imr, irr, isr);
+-#if 0
+-		/* These lines are put in to try to unstick an un ack'd irq */
+-		if (isr != 0) {
+-			int irq;
+-			for (irq = 0; irq < 16; irq++) {
+-				if (isr & (1 << irq)) {
+-					printk("\tCPU%d: ack irq %d\n",
+-					       cpu, irq);
+-					local_irq_save(flags);
+-					outb(VIC_CPU_MASQUERADE_ENABLE | cpu,
+-					     VIC_PROCESSOR_ID);
+-					ack_vic_irq(irq);
+-					outb(old_cpu, VIC_PROCESSOR_ID);
+-					local_irq_restore(flags);
+-				}
+-			}
+-		}
+-#endif
+-	}
+-}
+-
+-void smp_voyager_power_off(void *dummy)
+-{
+-	if (smp_processor_id() == boot_cpu_id)
+-		voyager_power_off();
+-	else
+-		smp_stop_cpu_function(NULL);
+-}
+-
+-static void __init voyager_smp_prepare_cpus(unsigned int max_cpus)
+-{
+-	/* FIXME: ignore max_cpus for now */
+-	smp_boot_cpus();
+-}
+-
+-static void __cpuinit voyager_smp_prepare_boot_cpu(void)
+-{
+-	int cpu = smp_processor_id();
+-	switch_to_new_gdt(cpu);
+-
+-	cpu_set(cpu, cpu_online_map);
+-	cpu_set(cpu, cpu_callout_map);
+-	cpu_set(cpu, cpu_possible_map);
+-	cpu_set(cpu, cpu_present_map);
+-
+-}
+-
+-static int __cpuinit voyager_cpu_up(unsigned int cpu)
+-{
+-	/* This only works at boot for x86.  See "rewrite" above. */
+-	if (cpu_isset(cpu, smp_commenced_mask))
+-		return -ENOSYS;
+-
+-	/* In case one didn't come up */
+-	if (!cpu_isset(cpu, cpu_callin_map))
+-		return -EIO;
+-	/* Unleash the CPU! */
+-	cpu_set(cpu, smp_commenced_mask);
+-	while (!cpu_online(cpu))
+-		mb();
+-	return 0;
+-}
+-
+-static void __init voyager_smp_cpus_done(unsigned int max_cpus)
+-{
+-	zap_low_mappings();
+-}
+-
+-void __init smp_setup_processor_id(void)
+-{
+-	current_thread_info()->cpu = hard_smp_processor_id();
+-}
+-
+-static void voyager_send_call_func(const struct cpumask *callmask)
+-{
+-	__u32 mask = cpus_addr(*callmask)[0] & ~(1 << smp_processor_id());
+-	send_CPI(mask, VIC_CALL_FUNCTION_CPI);
+-}
+-
+-static void voyager_send_call_func_single(int cpu)
+-{
+-	send_CPI(1 << cpu, VIC_CALL_FUNCTION_SINGLE_CPI);
+-}
+-
+-struct smp_ops smp_ops = {
+-	.smp_prepare_boot_cpu = voyager_smp_prepare_boot_cpu,
+-	.smp_prepare_cpus = voyager_smp_prepare_cpus,
+-	.cpu_up = voyager_cpu_up,
+-	.smp_cpus_done = voyager_smp_cpus_done,
+-
+-	.smp_send_stop = voyager_smp_send_stop,
+-	.smp_send_reschedule = voyager_smp_send_reschedule,
+-
+-	.send_call_func_ipi = voyager_send_call_func,
+-	.send_call_func_single_ipi = voyager_send_call_func_single,
+-};
+diff --git a/arch/x86/mach-voyager/voyager_thread.c b/arch/x86/mach-voyager/voyager_thread.c
+deleted file mode 100644
+index 15464a2..0000000
+--- a/arch/x86/mach-voyager/voyager_thread.c
++++ /dev/null
+@@ -1,128 +0,0 @@
+-/* -*- mode: c; c-basic-offset: 8 -*- */
+-
+-/* Copyright (C) 2001
+- *
+- * Author: J.E.J.Bottomley@HansenPartnership.com
+- *
+- * This module provides the machine status monitor thread for the
+- * voyager architecture.  This allows us to monitor the machine
+- * environment (temp, voltage, fan function) and the front panel and
+- * internal UPS.  If a fault is detected, this thread takes corrective
+- * action (usually just informing init)
+- * */
+-
+-#include <linux/module.h>
+-#include <linux/mm.h>
+-#include <linux/kernel_stat.h>
+-#include <linux/delay.h>
+-#include <linux/mc146818rtc.h>
+-#include <linux/init.h>
+-#include <linux/bootmem.h>
+-#include <linux/kmod.h>
+-#include <linux/completion.h>
+-#include <linux/sched.h>
+-#include <linux/kthread.h>
+-#include <asm/desc.h>
+-#include <asm/voyager.h>
+-#include <asm/vic.h>
+-#include <asm/mtrr.h>
+-#include <asm/msr.h>
+-
+-struct task_struct *voyager_thread;
+-static __u8 set_timeout;
+-
+-static int execute(const char *string)
+-{
+-	int ret;
+-
+-	char *envp[] = {
+-		"HOME=/",
+-		"TERM=linux",
+-		"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
+-		NULL,
+-	};
+-	char *argv[] = {
+-		"/bin/bash",
+-		"-c",
+-		(char *)string,
+-		NULL,
+-	};
+-
+-	if ((ret =
+-	     call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC)) != 0) {
+-		printk(KERN_ERR "Voyager failed to run \"%s\": %i\n", string,
+-		       ret);
+-	}
+-	return ret;
+-}
+-
+-static void check_from_kernel(void)
+-{
+-	if (voyager_status.switch_off) {
+-
+-		/* FIXME: This should be configurable via proc */
+-		execute("umask 600; echo 0 > /etc/initrunlvl; kill -HUP 1");
+-	} else if (voyager_status.power_fail) {
+-		VDEBUG(("Voyager daemon detected AC power failure\n"));
+-
+-		/* FIXME: This should be configureable via proc */
+-		execute("umask 600; echo F > /etc/powerstatus; kill -PWR 1");
+-		set_timeout = 1;
+-	}
+-}
+-
+-static void check_continuing_condition(void)
+-{
+-	if (voyager_status.power_fail) {
+-		__u8 data;
+-		voyager_cat_psi(VOYAGER_PSI_SUBREAD,
+-				VOYAGER_PSI_AC_FAIL_REG, &data);
+-		if ((data & 0x1f) == 0) {
+-			/* all power restored */
+-			printk(KERN_NOTICE
+-			       "VOYAGER AC power restored, cancelling shutdown\n");
+-			/* FIXME: should be user configureable */
+-			execute
+-			    ("umask 600; echo O > /etc/powerstatus; kill -PWR 1");
+-			set_timeout = 0;
+-		}
+-	}
+-}
+-
+-static int thread(void *unused)
+-{
+-	printk(KERN_NOTICE "Voyager starting monitor thread\n");
+-
+-	for (;;) {
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule_timeout(set_timeout ? HZ : MAX_SCHEDULE_TIMEOUT);
+-
+-		VDEBUG(("Voyager Daemon awoken\n"));
+-		if (voyager_status.request_from_kernel == 0) {
+-			/* probably awoken from timeout */
+-			check_continuing_condition();
+-		} else {
+-			check_from_kernel();
+-			voyager_status.request_from_kernel = 0;
+-		}
+-	}
+-}
+-
+-static int __init voyager_thread_start(void)
+-{
+-	voyager_thread = kthread_run(thread, NULL, "kvoyagerd");
+-	if (IS_ERR(voyager_thread)) {
+-		printk(KERN_ERR
+-		       "Voyager: Failed to create system monitor thread.\n");
+-		return PTR_ERR(voyager_thread);
+-	}
+-	return 0;
+-}
+-
+-static void __exit voyager_thread_stop(void)
+-{
+-	kthread_stop(voyager_thread);
+-}
+-
+-module_init(voyager_thread_start);
+-module_exit(voyager_thread_stop);
+diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
+index 87b9ab1..b83e119 100644
+--- a/arch/x86/xen/Kconfig
++++ b/arch/x86/xen/Kconfig
+@@ -6,7 +6,7 @@ config XEN
+ 	bool "Xen guest support"
+ 	select PARAVIRT
+ 	select PARAVIRT_CLOCK
+-	depends on X86_64 || (X86_32 && X86_PAE && !(X86_VISWS || X86_VOYAGER))
++	depends on X86_64 || (X86_32 && X86_PAE && !X86_VISWS)
+ 	depends on X86_CMPXCHG && X86_TSC
+ 	help
+ 	  This is the Linux Xen port.  Enabling this will allow the
+diff --git a/drivers/lguest/Kconfig b/drivers/lguest/Kconfig
+index 76f2b36..a3d3cba 100644
+--- a/drivers/lguest/Kconfig
++++ b/drivers/lguest/Kconfig
+@@ -1,6 +1,6 @@
+ config LGUEST
+ 	tristate "Linux hypervisor example code"
+-	depends on X86_32 && EXPERIMENTAL && !X86_PAE && FUTEX && !X86_VOYAGER
++	depends on X86_32 && EXPERIMENTAL && !X86_PAE && FUTEX
+ 	select HVC_DRIVER
+ 	---help---
+ 	  This is a very simple module which allows you to run
