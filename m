@@ -1,84 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbZBVWHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbZBVWIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbZBVWHv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbZBVWHk
+	id S1753134AbZBVWIW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZBVWIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:07:40 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:36122 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753087AbZBVWHj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:07:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Xt+m9E2Z7jz3Rpyd8KHJGdyRqLKWLS7+adJrlF4IMZtnO+KRtVwbvm/mm2Klxuxoa2
-         s8x1j8Di42OtWro0094TVHzp8AHpVFFoyzWxn/Ctn+7iBa8C6qGegww0DYmqREYHvVSV
-         uTeEP0s/xZkTJeCqtjBoUWUlyNVQCz47rTjrw=
-Date: Mon, 23 Feb 2009 01:07:48 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: kernel building procedure changed?
-Message-ID: <20090222220747.GB7279@localhost>
+	Sun, 22 Feb 2009 17:08:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38551 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753017AbZBVWIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 17:08:01 -0500
+Message-ID: <49A1CC8F.4040202@kernel.org>
+Date: Sun, 22 Feb 2009 14:07:11 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Prakash Punnoor <prakash@punnoor.de>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: enable MSI on 8132
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200902221308.55053.prakash@punnoor.de> <m1iqn2ein5.fsf@fess.ebiederm.org> <200902221617.21621.prakash@punnoor.de> <49A1C790.1030303@kernel.org>
+In-Reply-To: <49A1C790.1030303@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Yinghai Lu wrote:
+> your system have one HT chain c51->mcp51
+> 
+> BIOS enabled HT-MSI on c51, and hda ...
+> it seems pci quirks should not be used enable HT MSI on mcp51 again...
+> 
+another explanation:
 
-I found a bit strange thing happens now --
-plain
+00:09.0 RAM memory: nVidia Corporation MCP51 Host Bridge (rev a2)
+Subsystem: ASUSTeK Computer Inc. Device 81c0
+Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+Latency: 0
+Capabilities: [44] HyperTransport: Slave or Primary Interface
+Command: BaseUnitID=9 UnitCnt=15 MastHost- DefDir- DUL-
+Link Control 0: CFlE+ CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0 IsocEn- LSEn+ ExtCTL- 64b-
+Link Config 0: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut- LWI=8bit DwFcInEn- LWO=8bit DwFcOutEn-
+Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+ TXO+ <CRCErr=0 IsocEn- LSEn- ExtCTL- 64b-
+Link Config 1: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut- LWI=8bit DwFcInEn- LWO=8bit DwFcOutEn-
+Revision ID: 1.03
+Link Frequency 0: 800MHz
+Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
+Link Frequency Capability 0: 200MHz+ 300MHz+ 400MHz+ 500MHz+ 600MHz+ 800MHz+ 1.0GHz+ 1.2GHz- 1.4GHz- 1.6GHz- Vend-
+Feature Capability: IsocFC+ LDTSTOP+ CRCTM- ECTLT- 64bA- UIDRD-
+Link Frequency 1: 200MHz
+Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
+Link Frequency Capability 1: 200MHz- 300MHz- 400MHz- 500MHz- 600MHz- 800MHz- 1.0GHz- 1.2GHz- 1.4GHz- 1.6GHz- Vend-
+Error Handling: PFlE+ OFlE+ PFE- OFE- EOCFE- RFE- CRCFE- SERRFE- CF- RE- PNFE- ONFE- EOCNFE- RNFE- CRCNFE- SERRNFE-
+Prefetchable memory behind bridge Upper: 00-00
+Bus Number: 00
+Capabilities: [e0] HyperTransport: MSI Mapping Enable- Fixed-
+Mapping Address Base: 00000000fee00000
 
-	make arch/x86/kernel/head64.o
+00:10.1 Audio device: nVidia Corporation MCP51 High Definition Audio (rev a2)
+Subsystem: ASUSTeK Computer Inc. Device 81cb
+Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+Latency: 0 (500ns min, 1250ns max)
+Interrupt: pin B routed to IRQ 24
+Region 0: Memory at fe024000 (32-bit, non-prefetchable) [size=16K]
+Capabilities: [44] Power Management version 2
+Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
+Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+Capabilities: [50] MSI: Mask+ 64bit+ Count=1/1 Enable+
+Address: 00000000fee0300c Data: 4169
+Masking: 00000000 Pending: 00000000
+Capabilities: [6c] HyperTransport: MSI Mapping Enable+ Fixed+
+Kernel driver in use: HDA Intel 
 
-doesn't work anymore. Instead of compiling
-_just_ this file I've got the following:
 
----
-cyrill@lenovo linux-2.6.git $ make arch/x86/kernel/head64.o
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  AS      arch/x86/kernel/head_64.o
-  VDSOSYM arch/x86/vdso/vdso-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-syms.lds
-  LD      arch/x86/vdso/built-in.o
-  CC      fs/hpfs/dnode.o
-make[2]: *** [fs/hpfs/dnode.o] Interrupt
-make[1]: *** [fs/hpfs] Interrupt
-make: *** [fs] Interrupt
----
+nv_msi_ht_cap_quirk need some rework
 
-I've done make allyesconfig previously.
-I don't understand what I'm doing wrong... :(
-Really need help. The commit is:
+static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
+{
+        struct pci_dev *host_bridge;
+        int pos, ttl = 48;
 
----
-commit c8f0da62a813f3ea8ceab574438afb90d428de36
-Merge: b95dcd2... 8f5bd50...
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Sun Feb 22 20:08:44 2009 +0100
+        /*
+         * HT MSI mapping should be disabled on devices that are below
+         * a non-Hypertransport host bridge. Locate the host bridge...
+         */
+        host_bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
+        if (host_bridge == NULL) {
+                dev_warn(&dev->dev,
+                         "nv_msi_ht_cap_quirk didn't locate host bridge\n");
+                return;
+        }
 
-    manual merge of kmemcheck
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
+        pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE);
+        if (pos != 0) {
+                /* Host bridge is to HT */
+                ht_enable_msi_mapping(dev);
+                return;
+        }
 
-As I understand hpfs completely unrelated to
-head64.o, right?
 
-Sam, Ingo, what I'm doing wrong? Please help :)
+in c51-mcp51 case, for 00:10.1, host bridge should be 00:09.0 (mcp51) instead of 00:00.0 (c51)
+and ht msi for 00:10.1 is already enabled, dev 00:09.0 should not be enabled HT msi again.
 
-	- Cyrill -
+YH
