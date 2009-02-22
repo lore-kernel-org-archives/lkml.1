@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZBVOS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZBVOTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbZBVOS1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 09:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZBVOSS
+	id S1755940AbZBVOTw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 09:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZBVOTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 09:18:18 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:28792 "EHLO
+	Sun, 22 Feb 2009 09:19:43 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:23577 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbZBVOSR (ORCPT
+	with ESMTP id S1752365AbZBVOTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 09:18:17 -0500
+	Sun, 22 Feb 2009 09:19:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
          :mime-version:content-type:content-transfer-encoding;
-        b=JGqFNpKT01k1/lsjKcy0H054a7EQ0TcFMksK9Xov8XW6i4HxZjlmHhrALGv0Cbe2cC
-         pvMzrqG+gjrbSEl5mZkW+PuBIa0Gqe/PdnX0yqoVhJJEwI5dwmVFCH12eVXljbH9hVQ2
-         OHWUM7RMbsvoAZuT8MWECoIdj3cbNm1DaSxSo=
-Date: Sun, 22 Feb 2009 23:18:11 +0900
+        b=fLY66QhUmmtxnI3h7TIR36G2zuyJlI5nKr71x8qgqzLAarSZLr+gRieQA9Vzqvx49Z
+         xs9RE6a7gDorUCdiFuD8mFevzw1DEgiwUzBdhFpg/xUqD8OK9OHhwPJzwloMdJ1PhNGt
+         xvru0WAIIV8+xky0Y2a0g8XzCW6+TAUWkyDPM=
+Date: Sun, 22 Feb 2009 23:19:34 +0900
 From: Hitoshi Mitake <h.mitake@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>, ralf@linux-mips.org
+To: Sam Ravnborg <sam@ravnborg.org>, benh@kernel.crashing.org
 Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Geert Uytterhoeven <geert@linux-m68k.org>,
        "Luck, Tony" <tony.luck@intel.com>,
@@ -29,7 +29,7 @@ Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
        linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 Subject: Re: [PATCH 1/1] edac x38: new MC driver module
-Message-Id: <20090222231811.7174bf05.h.mitake@gmail.com>
+Message-Id: <20090222231934.e972ed50.h.mitake@gmail.com>
 In-Reply-To: <20090221130937.GA31562@uranus.ravnborg.org>
 References: <20081129180144.GA15533@uranus.ravnborg.org>
 	<20081130171604.dc3c8715.h.mitake@gmail.com>
@@ -76,23 +76,23 @@ Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
 > 	Sam
 
-Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
-
 description of the patch: Adding HAVE_READQ, HAVE_WRITEQ and their help texts
 to each architecture's Kconfig file which have readq() and writeq().
 
+Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
+
 ---
- arch/mips/Kconfig |   18 ++++++++++++++++++
+ arch/powerpc/Kconfig |   18 ++++++++++++++++++
  1 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 600eef3..44aeeff 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -2132,3 +2132,21 @@ source "security/Kconfig"
- source "crypto/Kconfig"
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 74cc312..a517a8f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -900,3 +900,21 @@ config PPC_LIB_RHEAP
+ 	bool
  
- source "lib/Kconfig"
+ source "arch/powerpc/kvm/Kconfig"
 +
 +config HAVE_READQ
 +	def_bool y
