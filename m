@@ -1,78 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbZBVOQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZBVOQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755066AbZBVOQA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 09:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbZBVOPu
+	id S1755891AbZBVOQY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 09:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZBVOP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 09:15:50 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46242 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbZBVOPt (ORCPT
+	Sun, 22 Feb 2009 09:15:56 -0500
+Received: from ti-out-0910.google.com ([209.85.142.184]:22438 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbZBVOPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 09:15:49 -0500
-Date: Sun, 22 Feb 2009 15:15:33 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Jan Kara <jack@suse.cz>,
-       Fernando Luis V?zquez Cao <fernando@oss.ntt.co.jp>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, fernando@kic.ac.jp,
-       Ric Wheeler <rwheeler@redhat.com>
-Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
-Message-ID: <20090222141532.GC1586@ucw.cz>
-References: <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp> <20090119120349.GA10193@duck.suse.cz> <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp> <20090128095518.GA16554@duck.suse.cz> <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp> <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp> <499458C1.90105@redhat.com> <20090212212304.GA7935@duck.suse.cz> <499494E2.3060006@redhat.com> <20090213022336.GH6922@mini-me.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090213022336.GH6922@mini-me.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 22 Feb 2009 09:15:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=VBBGDE1PYBGctC01fu36BYN+/ys5c3R128hp39g2oN3mO2FHFWdda6tD6UptjK8jCL
+         d0WKFvbXCJ9hclt/vwPE4AQLmMECQ2jtc5g4sT3fnOPQ5GJijqcLInpHLz/j0DtwKV79
+         3uwUPxpYT870yBalCK3cPInICHfH8OFlUS1IU=
+Date: Sun, 22 Feb 2009 23:15:46 +0900
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>, rth@twiddle.net
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-Id: <20090222231546.5d84eafc.h.mitake@gmail.com>
+In-Reply-To: <20090221130937.GA31562@uranus.ravnborg.org>
+References: <20081129180144.GA15533@uranus.ravnborg.org>
+	<20081130171604.dc3c8715.h.mitake@gmail.com>
+	<20081130083700.GA31644@elte.hu>
+	<20081130092407.GA10802@elte.hu>
+	<20081201002056.d9f9204c.h.mitake@gmail.com>
+	<20081130161504.GA25627@elte.hu>
+	<a6b9f31a0812010551h28c0841fxa2a26af4645df64@mail.gmail.com>
+	<20081201135922.GA30068@elte.hu>
+	<a6b9f31a0812011558o373edbd3r9690efe539d43ca0@mail.gmail.com>
+	<20090221191101.62945118.h.mitake@gmail.com>
+	<20090221130937.GA31562@uranus.ravnborg.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-02-12 21:23:36, Theodore Tso wrote:
-> On Thu, Feb 12, 2009 at 03:30:10PM -0600, Eric Sandeen wrote:
-> > >   Yes, but OTOH we should give sysadmin a possibility to enable / disable
-> > > it on just some partitions. I don't see a reasonable use for that but people
-> > > tend to do strange things ;) and here isn't probably a strong reason to not
-> > > allow them.
-> > > 
-> >
-> > But nobody has asked for that, have they?  So why offer it up a this point?
+On Sat, 21 Feb 2009 14:09:37 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> > Hi,
 > > 
-> > They could use LD_PRELOAD to make fsync a no-op if they really don't
-> > care for it, I guess... though that's not easily per-fs either.
+> > Very sorry for long distance between my previous post and this...
+> > 
+> > I wrote a patch to add HAVE_READQ and HAVE_WRITEQ to each architecture's Kconfig file
+> > which have readq() and writeq().
+> > 
+> > But there is problem.
+> > I wrote helps for HAVE_READQ and HAVE_WRITEQ in Kconfig file
+> > accodring to the advice by Russell King ( http://marc.info/?l=linux-kernel&m=122701161824218&w=2 ),
+> > but these helps are invisible when I doing menuconfig.
+> > (when type '/' and search readq string, HAVE_READQ found, but
+> > help string is not printed...)
+> > 
+> > Do you have some nice technique that make these helps visible easily?
 > 
-> Actually, Bart Samwel at FOSDEM talked to me and asked for something
-> similar --- what we came up which meant his request while still being
-> standards-compliant was a per-process personality flag which had three
-> options:
-> 
->      *)  Always honor fsync() calls (the default)
->      *)  Never honor fsync() calls
->      *)  Only honor fsync() calls if a global "honor fsync" flag
->            (which would be manipulated by the laptop mode scripts)
-> 	   is set.
-> 
-> The flag would be reset to the default across a setuid exec, but would
-> otherwise be inherited across fork()'s.  It might be possible to
-> set/get the flag via a /proc interface.
-> 
-> The basic idea is that laptop systems where the system administrator
-> wants longer battery life (and trusts the battery not to suddenly give
-> out) more than they care about fsync() guarantees can set up a pam
-> library which sets the flag for at login time so that all of the
-> user's processes can be set up not to honor fsync() calls; however,
-> all of the system daemons would still function normally.   
 
-Sounds like posix violation to
-me... '/sys/fsync_does_not_really_sync'?
+Thank you for your replying, Russell and Sam.
 
-Perhaps it is better done at glibc level? Environment variables
-already mostly have semantics you want.....
+> The options are not visible in menuconfig and therefore the is not
+> much point in displaying help for them thre when you search for the symbol.
+> But the help contained in the KConfig file is fully justified as it is
+> now documented why/when to select these options.
+> 
+> 	Sam
 
-									Pavel
+Hmm, so I try to send my patches to each maintainers of architectures.
+
+description of the patch: Adding HAVE_READQ, HAVE_WRITEQ and their help texts
+to each architecture's Kconfig file which have readq() and writeq().
+
+Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
+
+---
+ arch/alpha/Kconfig |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
+
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 9fb8aae..ecca919 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -672,3 +672,20 @@ source "crypto/Kconfig"
+ 
+ source "lib/Kconfig"
+ 
++config HAVE_READQ
++	def_bool y
++	help
++	  This is a sign to represent that this architecture provides
++	  readq() function. readq() is a function to read 8 bytes from
++	  I/O space. Each drivers use readq() must depend on this symbol.
++	  Because lots of little private readq() implementations
++	  all over the tree is sucks.
++
++config HAVE_WRITEQ
++	def_bool y
++	help
++	  This is a sign to represent that this architecture provides
++	  writeq() function. writeq() is a function to read 8 bytes from
++	  I/O space. Each drivers use writeq() must depend on this symbol.
++	  Because lots of little private writeq() implementations
++	  all over the tree is sucks.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.1.2
+
