@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbZBVAEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZBVAFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbZBVAEs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 19:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbZBVAEj
+	id S1755970AbZBVAFb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 19:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZBVAFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 19:04:39 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:41139 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754420AbZBVAEi (ORCPT
+	Sat, 21 Feb 2009 19:05:20 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:58704 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754659AbZBVAFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 19:04:38 -0500
+	Sat, 21 Feb 2009 19:05:18 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 09/16] usb host: fix sparse warning: Using plain integer as
+Subject: [PATCH 12/16] reiserfs: fix sparse warning: Using plain integer as
 	NULL pointer
 To: trivial@kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Sun, 22 Feb 2009 01:04:33 +0100
-Message-ID: <20090222000257.17557.27546.stgit@vmbox.hanneseder.net>
+Date: Sun, 22 Feb 2009 01:05:13 +0100
+Message-ID: <20090222000511.17557.96434.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>
 References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.348.gcb02
@@ -28,24 +28,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix this sparse warning:
-  drivers/usb/host/oxu210hp-hcd.c:2687:42: warning: Using plain integer as NULL pointer
+  fs/reiserfs/inode.c:2555:19: warning: Using plain integer as NULL pointer
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/usb/host/oxu210hp-hcd.c |    2 +-
+ fs/reiserfs/inode.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/host/oxu210hp-hcd.c b/drivers/usb/host/oxu210hp-hcd.c
-index 2947c69..5ac489e 100644
---- a/drivers/usb/host/oxu210hp-hcd.c
-+++ b/drivers/usb/host/oxu210hp-hcd.c
-@@ -2684,7 +2684,7 @@ static int oxu_reset(struct usb_hcd *hcd)
- 	oxu->urb_len = 0;
+diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
+index 823227a..e69d63a 100644
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -2552,7 +2552,7 @@ static int reiserfs_write_begin(struct file *file,
+ 	int old_ref = 0;
  
- 	/* FIMXE */
--	hcd->self.controller->dma_mask = 0UL;
-+	hcd->self.controller->dma_mask = NULL;
- 
- 	if (oxu->is_otg) {
- 		oxu->caps = hcd->regs + OXU_OTG_CAP_OFFSET;
+  	inode = mapping->host;
+-	*fsdata = 0;
++	*fsdata = NULL;
+  	if (flags & AOP_FLAG_CONT_EXPAND &&
+  	    (pos & (inode->i_sb->s_blocksize - 1)) == 0) {
+  		pos ++;
 
