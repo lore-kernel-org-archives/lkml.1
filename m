@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZBVJbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbZBVJf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbZBVJbh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 04:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZBVJb3
+	id S1754745AbZBVJf0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 04:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZBVJfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 04:31:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35759 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbZBVJb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 04:31:28 -0500
-Date: Sun, 22 Feb 2009 10:31:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: hpa@zytor.com, mingo@redhat.com, torvalds@linux-foundation.org,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/mm] x86, mm, kprobes: fault.c, simplify
-	notify_page_fault()
-Message-ID: <20090222093109.GE6964@elte.hu>
-References: <tip-b18018126f422f5b706fd750373425e10e84b486@kernel.org> <499F383B.6060700@redhat.com>
+	Sun, 22 Feb 2009 04:35:16 -0500
+Received: from fe01x03-cgp.akado.ru ([77.232.31.164]:53288 "EHLO akado.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752928AbZBVJfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 04:35:14 -0500
+X-Greylist: delayed 3604 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Feb 2009 04:35:14 EST
+Date: Sun, 22 Feb 2009 11:35:04 +0300 (MSK)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: Lock-up on PPC64
+In-Reply-To: <Pine.LNX.4.64.0901070105510.4695@linmac.oyster.ru>
+Message-ID: <Pine.LNX.4.64.0902221126220.3111@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
+ <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
+ <20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
+ <1230165163.7292.32.camel@pasglop> <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+ <1231158516.8367.3.camel@localhost> <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
+ <1231243373.14860.24.camel@pasglop> <Pine.LNX.4.64.0901062032550.2972@linmac.oyster.ru>
+ <1231276643.14860.30.camel@pasglop> <Pine.LNX.4.64.0901070105510.4695@linmac.oyster.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499F383B.6060700@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 7 Jan 2009, malc wrote:
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> Ingo Molnar wrote:
-> > Author:     Ingo Molnar <mingo@elte.hu>
-> > AuthorDate: Fri, 20 Feb 2009 22:42:57 +0100
-> > Commit:     Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Sat, 21 Feb 2009 00:09:42 +0100
-> > 
-> > x86, mm, kprobes: fault.c, simplify notify_page_fault()
-> > 
-> > Impact: cleanup
-> > 
-> > Remove an #ifdef from notify_page_fault(). The function still
-> > compiles to nothing in the !CONFIG_KPROBES case.
-> > 
-> > Introduce kprobes_built_in() and kprobe_fault_handler() helpers
-> > to allow this - they returns 0 if !CONFIG_KPROBES.
-> > 
-> > No code changed:
-> > 
-> >    text	   data	    bss	    dec	    hex	filename
-> >    4618	     32	     24	   4674	   1242	fault.o.before
-> >    4618	     32	     24	   4674	   1242	fault.o.after
+> On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
 > 
-> It seems good for me. Thank you for cleanup!
-> 
-> Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+> > 
+> > > As you wish :) I've written some ad-hoc stuff in the failing path which
+> > > manually triggers sysrq and then sends the klogctl output via network
+> > > and here it is:
+> > 
+> > Allright, something's unclear to me. What do you mean by the system goes
+> > down then ? The kernel appears to be working at least to a certain
+> > extent if you manage to trigger a sysrq from userspace... And from what
+> > I see, it looks that all processes are somewhere in schedule.
+> > 
+> > So what is precisely your symptom here ?
 
-another very small thing, while we are discussing kprobes:
+After writing valgrind tool that was simulating Cell XER.SO syscall
+(mis)behaviour (pre ab598b6680f1e74c267d1547ee352f3e1e530f89 that is)
+and banging my had against the wall for a while trying to figure out
+which of the failing syscalls was responsible, i've tried to be simple
+and after only ~30 minutes came up with this, rather short, piece of
+code that knocks pre XER.SO patched kernels out cold:
 
-I always found that the __kprobes annotation is very confusingly 
-euphemistic: what those annotations really mean is not 
-'kprobes', but 'no kprobes'.
+gcc -o xer -x assembler /dev/stdin -nostdlib <<eof
+.globl _start
+_start:
+         addis 0,0,0x8000
+         mtxer 0
+         addi 0,0,1
+         sc
+eof
 
-So how about renaming __kprobes to __nokprobes, similar to how 
-we have the notrace attribute?
-
-We have about 350 __kprobes annotations in the kernel, so 
-renaming it now would not be practical - but any objections 
-against me sending Linus a rename patch somewhere late in the 
-next merge window that just does this rename?
-
-[ likewise, i'll rename notrace to __notrace to make it visually 
-  less intrusive to the return value type. There's a lot less 
-  such annotations in the kernel. ]
-
-	Ingo
+-- 
+mailto:av1474@comtv.ru
