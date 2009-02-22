@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZBVDZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZBVDaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbZBVDZS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Feb 2009 22:25:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZBVDZE
+	id S1755754AbZBVDaE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Feb 2009 22:30:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZBVD3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Feb 2009 22:25:04 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47087 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483AbZBVDZC (ORCPT
+	Sat, 21 Feb 2009 22:29:54 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58425 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752660AbZBVD3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Feb 2009 22:25:02 -0500
-Date: Sun, 22 Feb 2009 12:23:55 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-Cc: kosaki.motohiro@jp.fujitsu.com, Randy Dunlap <randy.dunlap@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20090220172241.GF24538@elte.hu>
-References: <499EE162.4050008@oracle.com> <20090220172241.GF24538@elte.hu>
-Message-Id: <20090222121821.3599.A69D9226@jp.fujitsu.com>
+	Sat, 21 Feb 2009 22:29:53 -0500
+Message-ID: <49A0C693.6000407@zytor.com>
+Date: Sat, 21 Feb 2009 19:29:23 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Philippe Grenard <philippe.grenard@laposte.net>
+CC: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       John Stoffel <john@stoffel.org>
+Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
+References: <200902131944.56634.philippe.grenard@laposte.net> <200902202108.55332.philippe.grenard@laposte.net> <20090220215830.GB30665@elte.hu> <200902211121.46292.philippe.grenard@laposte.net>
+In-Reply-To: <200902211121.46292.philippe.grenard@laposte.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-(cc to Frank and Mathieu)
-
-> > >  config MARKERS
-> > >  	bool "Activate markers"
-> > > -	depends on TRACEPOINTS
-> > > +	select TRACEPOINTS
-> > >  	help
-> > >  	  Place an empty function call at each marker site. Can be
-> > >  	  dynamically changed for a probe function.
-> > 
-> > but using "select" instead of "depends on" just causes the 
-> > kind of problem that you described, whereas using "depends on" 
-> > does follow dependency chains.
+Philippe Grenard wrote:
+> On Friday 20 February 2009 22:58:30 Ingo Molnar wrote:
+>> * Philippe Grenard <philippe.grenard@laposte.net> wrote:
+>>> dc1e35c6e95e8923cf1d3510438b63c600fee1e2 is first bad commit
+>>> commit dc1e35c6e95e8923cf1d3510438b63c600fee1e2
+>>> Author: Suresh Siddha <suresh.b.siddha@intel.com>
+>>> Date:   Tue Jul 29 10:29:19 2008 -0700
+>>>
+>>>     x86, xsave: enable xsave/xrstor on cpus with xsave support
+>> [...]
+>>
+>>> A bit of googling gave me this :
+>>> http://lkml.org/lkml/2009/1/19/161
+>>> which exactly corresponds to my problem with 2.6.28 !
+>>>
+>>> A "solution" proposed was to try to check the bios setting
+>>> "cpuid value limit" and disable it if enabled. This did help
+>>> me to boot 2.6.28 or previously failing kernel compiled during
+>>> git-bisect, but gave me the "random freeze" any way....
+>> Note that the workaround for that BIOS bug is already in the
+>> latest upstream kernel, i.e. in 2.6.29-rc5.
+>>
+>> Could you please try -rc5, whether it works out of box?
+>>
+>> If you still see freezes, could you try the "nofxsr" boot
+>> option? That will turn off the new FPU code both in the hw and
+>> in the kernel.
+>>
+>> 	Ingo
 > 
-> Well, as long as the secondary selects are 'expanded' along the 
-> line of dependencies, it should still be fine. With an 
-> increasing number of dependencies it quickly becomes ugly 
-> though. This might be one of the cases where it works.
+> Hello Ingo, thanks for your reply,
 > 
-> Eventually we should eliminate markers, their uses can either be 
-> converted to new-style tracepoints, or to ftrace_printk().
+> I've tried to boot 2.6.29-rc5 with both "Max CPUID Value" Enabled and 
+> Disabled, and tried for both case the "nofxsr" option without better result...
+> 
+> As I said before, I use the default dsdt table : can this be a problem too ?
 
-IIRC, this suggestion still don't get agreement of all tracing feature stakeholder.
-We need to definitely discuss more lot and deep.
-so I wonder why don't we create linux-tracing new mailing list.
+OK, this is a completely different problem then.  Any way you could do a
+"git bisect" to track down the exact place where this broke?
 
-tracer feature perfectly have new ML creation condition
-  - very active development
-  - many stakeholder and developer
-  - use many common parts (eg, marker, kprobe, unified buffer)
+	-hpa
 
-
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
