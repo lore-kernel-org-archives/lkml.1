@@ -1,384 +1,861 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZBVWVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZBVWWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbZBVWVe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZBVWVY
+	id S1755804AbZBVWWo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZBVWWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:21:24 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:35432 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753017AbZBVWVX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:21:23 -0500
-Date: Sun, 22 Feb 2009 22:21:19 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090222222119.GA20224@silver.sucs.org>
-References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com>
+	Sun, 22 Feb 2009 17:22:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55546 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752778AbZBVWWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 17:22:31 -0500
+Date: Sun, 22 Feb 2009 17:22:27 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: utrace-devel@redhat.com, linux-kernel@vger.kernel.org,
+       systemtap@sources.redhat.com
+Subject: utrace-based ftrace "process" engine, v2
+Message-ID: <20090222222227.GB31207@redhat.com>
+References: <20090127195425.GF32568@redhat.com> <20090209072218.214FBFC35D@magilla.sf.frob.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A1CA01.9030501@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090209072218.214FBFC35D@magilla.sf.frob.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 10:56:17PM +0100, Jiri Slaby wrote:
-> Could you append lspci -vvnnxxx of your adapter? Better along with 
-> ath_info[1] output.
+Hi -
 
-lspci -vvnnxxx
-00:00.0 Host bridge [0600]: Intel Corporation Mobile 915GM/PM/GMS/910GML Express Processor to DRAM Controller [8086:2590] (rev 04)
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d9]
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
-	Latency: 0
-	Capabilities: <access denied>
-00: 86 80 90 25 06 00 90 20 04 00 00 06 00 00 00 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 d9 82
-30: 00 00 00 00 e0 00 00 00 00 00 00 00 00 00 00 00
+This is v2 of the prototype utrace-ftrace interface.  This code is
+based on Roland McGrath's utrace API, which provides programmatic
+hooks to the in-tree tracehook layer.  This new patch interfaces many
+of those events to ftrace, as configured by a small number of debugfs
+controls.  Here's the /debugfs/tracing/process_trace_README:
 
-00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile 915GM/GMS/910GML Express Graphics Controller [8086:2592] (rev 04) (prog-if 00 [VGA controller])
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d9]
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 16
-	Region 0: Memory at f7f00000 (32-bit, non-prefetchable) [size=512K]
-	Region 1: I/O ports at ec00 [size=8]
-	Region 2: Memory at d0000000 (32-bit, prefetchable) [size=256M]
-	Region 3: Memory at f7ec0000 (32-bit, non-prefetchable) [size=256K]
-	Capabilities: <access denied>
-00: 86 80 92 25 07 00 90 00 04 00 00 03 00 00 80 00
-10: 00 00 f0 f7 01 ec 00 00 08 00 00 d0 00 00 ec f7
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 d9 82
-30: 00 00 00 00 d0 00 00 00 00 00 00 00 05 01 00 00
+process event tracer mini-HOWTO
 
-00:02.1 Display controller [0380]: Intel Corporation Mobile 915GM/GMS/910GML Express Graphics Controller [8086:2792] (rev 04)
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d9]
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Region 0: Memory at f7f80000 (32-bit, non-prefetchable) [size=512K]
-	Capabilities: <access denied>
-00: 86 80 92 27 07 00 90 00 04 00 80 03 00 00 80 00
-10: 00 00 f8 f7 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 d9 82
-30: 00 00 00 00 d0 00 00 00 00 00 00 00 00 00 00 00
+1. Select process hierarchy to monitor.  Other processes will be
+   completely unaffected.  Leave at 0 for system-wide tracing.
+#  echo NNN > process_follow_pid
 
-00:1b.0 Audio device [0403]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) High Definition Audio Controller [8086:2668] (rev 04)
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:8337]
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Interrupt: pin A routed to IRQ 16
-	Region 0: Memory at f7eb8000 (64-bit, non-prefetchable) [size=16K]
-	Capabilities: <access denied>
-00: 86 80 68 26 06 00 10 00 04 00 03 04 04 00 00 00
-10: 04 80 eb f7 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 37 83
-30: 00 00 00 00 50 00 00 00 00 00 00 00 05 01 00 00
+2. Determine which process event traces are potentially desired.
+   syscall and signal tracing slow down monitored processes.
+#  echo 0 > process_trace_{syscalls,signals,lifecycle}
 
-00:1c.0 PCI bridge [0604]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 1 [8086:2660] (rev 04) (prog-if 00 [Normal decode])
-	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
-	Capabilities: <access denied>
-00: 86 80 60 26 04 05 10 00 04 00 04 06 04 00 81 00
-10: 00 00 00 00 00 00 00 00 00 04 04 00 f0 00 00 20
-20: f0 ff 00 00 f1 ff 01 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 40 00 00 00 00 00 00 00 05 01 06 00
+3. Add any final uid- or taskcomm-based filtering.  Non-matching
+   processes will skip trace messages, but will still be slowed.
+#  echo NNN > process_trace_uid_filter # -1: unrestricted 
+#  echo ls > process_trace_taskcomm_filter # empty: unrestricted
 
-00:1c.1 PCI bridge [0604]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 2 [8086:2662] (rev 04) (prog-if 00 [Normal decode])
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Bus: primary=00, secondary=03, subordinate=03, sec-latency=0
-	Memory behind bridge: fbf00000-fbffffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
-	Capabilities: <access denied>
-00: 86 80 62 26 06 05 10 00 04 00 04 06 04 00 81 00
-10: 00 00 00 00 00 00 00 00 00 03 03 00 f0 00 00 20
-20: f0 fb f0 fb f1 ff 01 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 40 00 00 00 00 00 00 00 0b 02 06 00
+4. Start tracing.
+#  echo process > current_tracer
 
-00:1c.2 PCI bridge [0604]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 3 [8086:2664] (rev 04) (prog-if 00 [Normal decode])
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Bus: primary=00, secondary=01, subordinate=02, sec-latency=0
-	Memory behind bridge: f8000000-fbefffff
-	Prefetchable memory behind bridge: 00000000f0000000-00000000f6ffffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
-	Capabilities: <access denied>
-00: 86 80 64 26 06 05 10 00 04 00 04 06 04 00 81 00
-10: 00 00 00 00 00 00 00 00 00 01 02 00 f0 00 00 20
-20: 00 f8 e0 fb 01 f0 f1 f6 00 00 00 00 00 00 00 00
-30: 00 00 00 00 40 00 00 00 00 00 00 00 0a 03 06 00
+5. Examine trace.
+#  cat trace
 
-00:1d.0 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #1 [8086:2658] (rev 04) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 23
-	Region 4: I/O ports at e400 [size=32]
-00: 86 80 58 26 05 00 80 02 04 00 03 0c 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 01 e4 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 00 00 00 00 00 00 00 00 03 01 00 00
+6. Stop tracing.
+#  echo nop > current_tracer
 
-00:1d.1 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #2 [8086:2659] (rev 04) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin B routed to IRQ 19
-	Region 4: I/O ports at e480 [size=32]
-00: 86 80 59 26 05 00 80 02 04 00 03 0c 00 00 00 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 81 e4 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 00 00 00 00 00 00 00 00 07 02 00 00
 
-00:1d.2 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #3 [8086:265a] (rev 04) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin C routed to IRQ 18
-	Region 4: I/O ports at e800 [size=32]
-00: 86 80 5a 26 05 00 80 02 04 00 03 0c 00 00 00 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 01 e8 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 00 00 00 00 00 00 00 00 0a 03 00 00
+Signed-off-By: Frank Ch. Eigler <fche@redhat.com>
+---
 
-00:1d.3 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #4 [8086:265b] (rev 04) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin D routed to IRQ 16
-	Region 4: I/O ports at e880 [size=32]
-00: 86 80 5b 26 05 00 80 02 04 00 03 0c 00 00 00 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 81 e8 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 00 00 00 00 00 00 00 00 05 04 00 00
+ include/linux/processtrace.h |   41 +++
+ kernel/trace/Kconfig         |    9 +
+ kernel/trace/Makefile        |    1 +
+ kernel/trace/trace.h         |   30 ++-
+ kernel/trace/trace_process.c |  591 ++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 661 insertions(+), 11 deletions(-)
 
-00:1d.7 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB2 EHCI Controller [8086:265c] (rev 04) (prog-if 20 [EHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 23
-	Region 0: Memory at f7eb7c00 (32-bit, non-prefetchable) [size=1K]
-	Capabilities: <access denied>
-00: 86 80 5c 26 06 00 90 02 04 20 03 0c 00 00 00 00
-10: 00 7c eb f7 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 50 00 00 00 00 00 00 00 03 01 00 00
-
-00:1e.0 PCI bridge [0604]: Intel Corporation 82801 Mobile PCI Bridge [8086:2448] (rev d4) (prog-if 01 [Subtractive decode])
-	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Bus: primary=00, secondary=05, subordinate=05, sec-latency=32
-	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
-	Capabilities: <access denied>
-00: 86 80 48 24 04 01 10 00 d4 01 04 06 00 00 01 00
-10: 00 00 00 00 00 00 00 00 00 05 05 20 f0 00 80 22
-20: f0 ff 00 00 f1 ff 01 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 50 00 00 00 00 00 00 00 ff 00 06 00
-
-00:1f.0 ISA bridge [0601]: Intel Corporation 82801FBM (ICH6M) LPC Interface Bridge [8086:2641] (rev 04)
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-00: 86 80 41 26 07 00 00 02 04 00 01 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:1f.2 IDE interface [0101]: Intel Corporation 82801FBM (ICH6M) SATA Controller [8086:2653] (rev 04) (prog-if 80 [Master])
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin B routed to IRQ 19
-	Region 0: I/O ports at 01f0 [size=8]
-	Region 1: I/O ports at 03f4 [size=1]
-	Region 2: I/O ports at 0170 [size=8]
-	Region 3: I/O ports at 0374 [size=1]
-	Region 4: I/O ports at ffa0 [size=16]
-	Capabilities: <access denied>
-00: 86 80 53 26 05 00 b0 02 04 80 01 01 00 00 00 00
-10: 01 00 00 00 01 00 00 00 01 00 00 00 01 00 00 00
-20: a1 ff 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 70 00 00 00 00 00 00 00 00 02 00 00
-
-00:1f.3 SMBus [0c05]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) SMBus Controller [8086:266a] (rev 04)
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:82d8]
-	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Interrupt: pin B routed to IRQ 0
-	Region 4: I/O ports at 0400 [size=32]
-00: 86 80 6a 26 01 00 80 02 04 00 05 0c 00 00 00 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 01 04 00 00 00 00 00 00 00 00 00 00 43 10 d8 82
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00
-
-01:00.0 Ethernet controller [0200]: Atheros Communications Inc. AR242x 802.11abg Wireless PCI Express Adapter [168c:001c] (rev 01)
-	Subsystem: Unknown device [1a3b:1026]
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Interrupt: pin A routed to IRQ 18
-	Region 0: Memory at fbef0000 (64-bit, non-prefetchable) [size=64K]
-	Capabilities: <access denied>
-00: 8c 16 1c 00 07 00 10 00 01 00 00 02 04 00 00 00
-10: 04 00 ef fb 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 01 50 00 00 3b 1a 26 10
-30: 00 00 00 00 40 00 00 00 00 00 00 00 0a 01 00 00
-
-03:00.0 Ethernet controller [0200]: Attansic Technology Corp. L2 100 Mbit Ethernet Adapter [1969:2048] (rev a0)
-	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:8233]
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Interrupt: pin A routed to IRQ 27
-	Region 0: Memory at fbfc0000 (64-bit, non-prefetchable) [size=256K]
-	Expansion ROM at fbfa0000 [disabled] [size=128K]
-	Capabilities: <access denied>
-00: 69 19 48 20 06 04 10 00 a0 00 00 02 04 00 00 00
-10: 04 00 fc fb 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 33 82
-30: 00 00 fa fb 40 00 00 00 00 00 00 00 0b 01 00 00
-
-(I'm currently not on the problem network)
-./ath_info fbef0000
-sleep_ctl reg 00000000   reset_ctl reg 00000000
- -==Device Information==-
-MAC Revision: 2425  (0xe2)
-Warning: Invalid EEPROM Magic number!
-Device type:  3
-
-/============== EEPROM Information =============\
-| EEPROM Version:   5.3 | EEPROM Size:   4 kbit |
-| EEMAP:              2 | Reg. Domain:     0x60 |
-|================= Capabilities ================|
-| 802.11a Support:  no  | Turbo-A disabled: yes |
-| 802.11b Support:  no  | Turbo-G disabled: yes |
-| 802.11g Support:  yes | 2GHz XR disabled: yes |
-| RFKill  Support:  yes | 5GHz XR disabled: yes |
-| 32kHz   Crystal:  no  |                       |
-\===============================================/
-
-/=========================================================\
-|          Calibration data common for all modes          |
-|=========================================================|
-|          CCK/OFDM gain delta:             1             |
-|          CCK/OFDM power delta:            5             |
-|          Scaled CCK delta:                5             |
-|          2GHz Antenna gain:               1             |
-|          5GHz Antenna gain:               4             |
-|          Turbo 2W maximum dBm:           38             |
-|          Target power start:          0x16e             |
-|          EAR Start:                   0x1b8             |
-\=========================================================/
-
-/=========================================================\
-|          Calibration data for 802.11g operation         |
-|=========================================================|
-| I power:              0x00 | Q power:              0x13 |
-| Use fixed bias:       0x01 | Max turbo power:      0x26 |
-| Max XR power:         0x20 | Switch Settling Time: 0x28 |
-| Tx/Rx attenuation:    0x19 | TX end to XLNA On:    0x00 |
-| TX end to XPA Off:    0x00 | TX end to XPA On:     0x0e |
-| 62db Threshold:       0x1c | XLNA gain:            0x00 |
-| XPD:                  0x01 | XPD gain:             0x0a |
-| I gain:               0x00 | Tx/Rx margin:         0x01 |
-| False detect backoff: 0x00 | Noise Floor Threshold:  -1 |
-| ADC desired size:      -38 | PGA desired size:      -80 |
-|=========================================================|
-| Antenna control   0:  0x00 | Antenna control   1:  0x01 |
-| Antenna control   2:  0x22 | Antenna control   3:  0x22 |
-| Antenna control   4:  0x00 | Antenna control   5:  0x00 |
-| Antenna control   6:  0x02 | Antenna control   7:  0x21 |
-| Antenna control   8:  0x21 | Antenna control   9:  0x00 |
-| Antenna control  10:  0x00 | Antenna control  11:  0x02 |
-|=========================================================|
-| Octave Band 0:           3 | db 0:                    3 |
-| Octave Band 1:           4 | db 1:                    4 |
-| Octave Band 2:           0 | db 2:                    0 |
-| Octave Band 3:           0 | db 3:                    0 |
-\=========================================================/
-/==================== Turbo mode infos ===================\
-| Switch Settling time: 0x28 | Tx/Rx margin:         0x01 |
-| Tx/Rx attenuation:    0x19 | ADC desired size:      -32 |
-| PGA desired size:      -80 |                            |
-\=========================================================/
-/============== Per rate power calibration ===========\
-| Freq | 6-24Mbit/s | 36Mbit/s |  48Mbit/s | 54Mbit/s |
-|======|============|==========|===========|==========|
-| 2412 |    16.00   |  15.00   |   14.00   |  13.00   |
-|======|============|==========|===========|==========|
-| 2437 |    16.00   |  15.00   |   14.00   |  13.00   |
-|======|============|==========|===========|==========|
-| 2472 |    16.00   |  15.00   |   14.00   |  13.00   |
-\=====================================================/
-/====================== Per channel power calibration ===================\
-| Freq |  pwr_i  |    pwr_0    |    pwr_1    |    pwr_2    |    pwr_3    |
-|      | pddac_i |   pddac_0   |   pddac_1   |   pddac_2   |   pddac_3   |
-|======|=========|=============|=============|=============|=============|
-| 2412 |         |             |             |             |             |
-|------|---------|-------------|-------------|-------------|-------------|
-|      |     0   |     4.00    |     8.50    |    12.50    |     0.00    |
-|      |    10   |       15    |       47    |       83    |        0    |
-|------|---------|-------------|-------------|-------------|-------------|
-|      |    10   |    13.00    |    16.00    |    18.00    |    20.50    |
-|      |    12   |       23    |       38    |       52    |       67    |
-|======|=========|=============|=============|=============|=============|
-| 2472 |         |             |             |             |             |
-|------|---------|-------------|-------------|-------------|-------------|
-|      |     0   |     4.00    |     8.50    |    13.00    |     0.00    |
-|      |    10   |       15    |       25    |       61    |        0    |
-|------|---------|-------------|-------------|-------------|-------------|
-|      |    10   |    13.00    |    16.00    |    19.00    |    20.50    |
-|      |     9   |       18    |       33    |       45    |       46    |
-|======|=========|=============|=============|=============|=============|
-| 2484 |         |             |             |             |             |
-|------|---------|-------------|-------------|-------------|-------------|
-|      |     0   |     4.00    |     8.50    |    13.00    |     0.00    |
-|      |    10   |       15    |       20    |       55    |        0    |
-|------|---------|-------------|-------------|-------------|-------------|
-|      |    10   |    12.50    |    16.00    |    19.00    |    20.00    |
-|      |     9   |       16    |       31    |       40    |        0    |
-\========================================================================/
-
-GPIO registers: CR 0x00000000, DO 0x00000000, DI 0x00000003
-STA_ID0: 00:15:af:b6:12:07
-STA_ID1: 0x10000712, AP: 0, IBSS: 0, KeyCache Disable: 0
-TIMER0: 0x00000528, TBTT:  1320, TU: 0x109d0528
-TIMER1: 0x000000e2, DMAb:    28, TU: 0x109d001c (-1292)
-TIMER2: 0x000c00d0, SWBA: 32794, TU: 0x10c1801a (+2390770)
-TIMER3: 0x000000e2, ATIM:   226, TU: 0x109d00e2 (-1094)
-TSF: 0x0000004273c1c15f, TSFTU: 61552, TU: 0x109cf070
-BEACON: 0x00108000
-LAST_TSTP: 0x73c16196
-
--- 
-Sitsofe | http://sucs.org/~sits/
+diff --git a/include/linux/processtrace.h b/include/linux/processtrace.h
+new file mode 100644
+index 0000000..f2b7d94
+--- /dev/null
++++ b/include/linux/processtrace.h
+@@ -0,0 +1,41 @@
++#ifndef PROCESSTRACE_H
++#define PROCESSTRACE_H
++
++#include <linux/types.h>
++#include <linux/list.h>
++
++struct process_trace_entry {
++	unsigned char opcode;	/* one of _UTRACE_EVENT_* */
++	char comm[TASK_COMM_LEN]; /* XXX: should be in/via trace_entry */
++	union {
++		struct {
++			pid_t child;
++			unsigned long flags;
++		} trace_clone;
++		struct {
++			long code;
++		} trace_exit;
++		struct {
++		} trace_exec;
++		struct {
++			int si_signo;
++			int si_errno;
++			int si_code;
++		} trace_signal;
++		struct {
++			long callno;
++			unsigned long args[6];
++		} trace_syscall_entry;
++		struct {
++			long rc;
++			long error;
++		} trace_syscall_exit;
++	};
++};
++
++/* in kernel/trace/trace_process.c */
++
++extern void enable_process_trace(void);
++extern void disable_process_trace(void);
++
++#endif /* PROCESSTRACE_H */
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index e2a4ff6..3ff727e 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -149,6 +149,15 @@ config CONTEXT_SWITCH_TRACER
+ 	  This tracer gets called from the context switch and records
+ 	  all switching of tasks.
+ 
++config PROCESS_TRACER
++	bool "Trace process events via utrace"
++	depends on DEBUG_KERNEL
++	select TRACING
++	select UTRACE
++	help
++	  This tracer provides trace records from process events
++	  accessible to utrace: lifecycle, system calls, and signals.
++
+ config BOOT_TRACER
+ 	bool "Trace boot initcalls"
+ 	depends on DEBUG_KERNEL
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index 349d5a9..a774db2 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -33,5 +33,6 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER) += trace_functions_graph.o
+ obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_branch.o
+ obj-$(CONFIG_HW_BRANCH_TRACER) += trace_hw_branches.o
+ obj-$(CONFIG_POWER_TRACER) += trace_power.o
++obj-$(CONFIG_PROCESS_TRACER) += trace_process.o
+ 
+ libftrace-y := ftrace.o
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 4d3d381..b4ebccb 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -7,6 +7,7 @@
+ #include <linux/clocksource.h>
+ #include <linux/ring_buffer.h>
+ #include <linux/mmiotrace.h>
++#include <linux/processtrace.h>
+ #include <linux/ftrace.h>
+ #include <trace/boot.h>
+ 
+@@ -30,6 +31,7 @@ enum trace_type {
+ 	TRACE_USER_STACK,
+ 	TRACE_HW_BRANCHES,
+ 	TRACE_POWER,
++	TRACE_PROCESS,
+ 
+ 	__TRACE_LAST_TYPE
+ };
+@@ -38,7 +40,7 @@ enum trace_type {
+  * The trace entry - the most basic unit of tracing. This is what
+  * is printed in the end as a single line in the trace output, such as:
+  *
+- *     bash-15816 [01]   235.197585: idle_cpu <- irq_enter
++ *     bash-15816 [01]	 235.197585: idle_cpu <- irq_enter
+  */
+ struct trace_entry {
+ 	unsigned char		type;
+@@ -153,7 +155,7 @@ struct trace_boot_ret {
+ #define TRACE_FILE_SIZE 20
+ struct trace_branch {
+ 	struct trace_entry	ent;
+-	unsigned	        line;
++	unsigned		line;
+ 	char			func[TRACE_FUNC_SIZE+1];
+ 	char			file[TRACE_FILE_SIZE+1];
+ 	char			correct;
+@@ -170,11 +172,16 @@ struct trace_power {
+ 	struct power_trace	state_data;
+ };
+ 
++struct trace_process {
++	struct trace_entry		ent;
++	struct process_trace_entry	event;
++};
++
+ /*
+  * trace_flag_type is an enumeration that holds different
+  * states when a trace occurs. These are:
+  *  IRQS_OFF		- interrupts were disabled
+- *  IRQS_NOSUPPORT 	- arch does not support irqs_disabled_flags
++ *  IRQS_NOSUPPORT	- arch does not support irqs_disabled_flags
+  *  NEED_RESCED		- reschedule is requested
+  *  HARDIRQ		- inside an interrupt handler
+  *  SOFTIRQ		- inside a softirq handler
+@@ -279,7 +286,8 @@ extern void __ftrace_bad_type(void);
+ 		IF_ASSIGN(var, ent, struct ftrace_graph_ret_entry,	\
+ 			  TRACE_GRAPH_RET);		\
+ 		IF_ASSIGN(var, ent, struct hw_branch_entry, TRACE_HW_BRANCHES);\
+- 		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
++		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
++		IF_ASSIGN(var, ent, struct trace_process, TRACE_PROCESS); \
+ 		__ftrace_bad_type();					\
+ 	} while (0)
+ 
+@@ -297,8 +305,8 @@ enum print_line_t {
+  * flags value in struct tracer_flags.
+  */
+ struct tracer_opt {
+-	const char 	*name; /* Will appear on the trace_options file */
+-	u32 		bit; /* Mask assigned in val field in tracer_flags */
++	const char	*name; /* Will appear on the trace_options file */
++	u32		bit; /* Mask assigned in val field in tracer_flags */
+ };
+ 
+ /*
+@@ -307,7 +315,7 @@ struct tracer_opt {
+  */
+ struct tracer_flags {
+ 	u32			val;
+-	struct tracer_opt 	*opts;
++	struct tracer_opt	*opts;
+ };
+ 
+ /* Makes more easy to define a tracer opt */
+@@ -339,7 +347,7 @@ struct tracer {
+ 	int			(*set_flag)(u32 old_flags, u32 bit, int set);
+ 	struct tracer		*next;
+ 	int			print_max;
+-	struct tracer_flags 	*flags;
++	struct tracer_flags	*flags;
+ };
+ 
+ struct trace_seq {
+@@ -561,7 +569,7 @@ static inline int ftrace_trace_task(struct task_struct *task)
+  * positions into trace_flags that controls the output.
+  *
+  * NOTE: These bits must match the trace_options array in
+- *       trace.c.
++ *	 trace.c.
+  */
+ enum trace_iterator_flags {
+ 	TRACE_ITER_PRINT_PARENT		= 0x01,
+@@ -578,8 +586,8 @@ enum trace_iterator_flags {
+ 	TRACE_ITER_PREEMPTONLY		= 0x800,
+ 	TRACE_ITER_BRANCH		= 0x1000,
+ 	TRACE_ITER_ANNOTATE		= 0x2000,
+-	TRACE_ITER_USERSTACKTRACE       = 0x4000,
+-	TRACE_ITER_SYM_USEROBJ          = 0x8000,
++	TRACE_ITER_USERSTACKTRACE	= 0x4000,
++	TRACE_ITER_SYM_USEROBJ		= 0x8000,
+ 	TRACE_ITER_PRINTK_MSGONLY	= 0x10000
+ };
+ 
+diff --git a/kernel/trace/trace_process.c b/kernel/trace/trace_process.c
+new file mode 100644
+index 0000000..038ff36
+--- /dev/null
++++ b/kernel/trace/trace_process.c
+@@ -0,0 +1,591 @@
++/*
++ * utrace-based process event tracing
++ * Copyright (C) 2009 Red Hat Inc.
++ * By Frank Ch. Eigler <fche@redhat.com>
++ *
++ * Based on mmio ftrace engine by Pekka Paalanen
++ * and utrace-syscall-tracing prototype by Ananth Mavinakayanahalli
++ */
++
++/* #define DEBUG 1 */
++
++#include <linux/kernel.h>
++#include <linux/utrace.h>
++#include <linux/uaccess.h>
++#include <linux/debugfs.h>
++#include <asm/syscall.h>
++
++#include "trace.h"
++
++/* A process must match these filters in order to be traced. */
++static char trace_taskcomm_filter[TASK_COMM_LEN]; /* \0: unrestricted */
++static u32 trace_taskuid_filter = -1; /* -1: unrestricted */
++static u32 trace_lifecycle_p = 1;
++static u32 trace_syscalls_p = 1;
++static u32 trace_signals_p = 1;
++
++/* A process must be a direct child of given pid in order to be
++   followed. */
++static u32 process_follow_pid; /* 0: unrestricted/systemwide */
++
++/* XXX: lock the above? */
++
++
++/* trace data collection */
++
++static struct trace_array *process_trace_array;
++
++static void process_reset_data(struct trace_array *tr)
++{
++	pr_debug("in %s\n", __func__);
++	tracing_reset_online_cpus(tr);
++}
++
++static int process_trace_init(struct trace_array *tr)
++{
++	pr_debug("in %s\n", __func__);
++	process_trace_array = tr;
++	process_reset_data(tr);
++	enable_process_trace();
++	return 0;
++}
++
++static void process_trace_reset(struct trace_array *tr)
++{
++	pr_debug("in %s\n", __func__);
++	disable_process_trace();
++	process_reset_data(tr);
++	process_trace_array = NULL;
++}
++
++static void process_trace_start(struct trace_array *tr)
++{
++	pr_debug("in %s\n", __func__);
++	process_reset_data(tr);
++}
++
++static void __trace_processtrace(struct trace_array *tr,
++				struct trace_array_cpu *data,
++				struct process_trace_entry *ent)
++{
++	struct ring_buffer_event *event;
++	struct trace_process *entry;
++	unsigned long irq_flags;
++
++	event	= ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
++					   &irq_flags);
++	if (!event)
++		return;
++	entry	= ring_buffer_event_data(event);
++	tracing_generic_entry_update(&entry->ent, 0, preempt_count());
++	entry->ent.cpu			= raw_smp_processor_id();
++	entry->ent.type			= TRACE_PROCESS;
++	strlcpy(ent->comm, current->comm, TASK_COMM_LEN);
++	entry->event			= *ent;
++	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
++
++	trace_wake_up();
++}
++
++void process_trace(struct process_trace_entry *ent)
++{
++	struct trace_array *tr = process_trace_array;
++	struct trace_array_cpu *data;
++
++	preempt_disable();
++	data = tr->data[smp_processor_id()];
++	__trace_processtrace(tr, data, ent);
++	preempt_enable();
++}
++
++
++/* trace data rendering */
++
++static void process_pipe_open(struct trace_iterator *iter)
++{
++	struct trace_seq *s = &iter->seq;
++	pr_debug("in %s\n", __func__);
++	trace_seq_printf(s, "VERSION 200901\n");
++}
++
++static void process_close(struct trace_iterator *iter)
++{
++	iter->private = NULL;
++}
++
++static ssize_t process_read(struct trace_iterator *iter, struct file *filp,
++				char __user *ubuf, size_t cnt, loff_t *ppos)
++{
++	ssize_t ret;
++	struct trace_seq *s = &iter->seq;
++	ret = trace_seq_to_user(s, ubuf, cnt);
++	return (ret == -EBUSY) ? 0 : ret;
++}
++
++static enum print_line_t process_print(struct trace_iterator *iter)
++{
++	struct trace_entry *entry = iter->ent;
++	struct trace_process *field;
++	struct trace_seq *s	= &iter->seq;
++	unsigned long long t	= ns2usecs(iter->ts);
++	unsigned long usec_rem	= do_div(t, 1000000ULL);
++	unsigned secs		= (unsigned long)t;
++	int ret = 1;
++
++	trace_assign_type(field, entry);
++
++	/* XXX: If print_lat_fmt() were not static, we wouldn't have
++	   to duplicate this. */
++	trace_seq_printf(s, "%16s %5d %3d %9lu.%06ld ",
++			 field->event.comm,
++			 entry->pid, entry->cpu,
++			 secs,
++			 usec_rem);
++
++	switch (field->event.opcode) {
++	case _UTRACE_EVENT_CLONE:
++		ret = trace_seq_printf(s, "fork %d flags 0x%lx\n",
++				       field->event.trace_clone.child,
++				       field->event.trace_clone.flags);
++		break;
++	case _UTRACE_EVENT_EXEC:
++		ret = trace_seq_printf(s, "exec\n");
++		break;
++	case _UTRACE_EVENT_EXIT:
++		ret = trace_seq_printf(s, "exit %ld\n",
++				       field->event.trace_exit.code);
++		break;
++	case _UTRACE_EVENT_SIGNAL:
++		ret = trace_seq_printf(s, "signal %d errno %d code 0x%x\n",
++				       field->event.trace_signal.si_signo,
++				       field->event.trace_signal.si_errno,
++				       field->event.trace_signal.si_code);
++		break;
++	case _UTRACE_EVENT_SYSCALL_ENTRY:
++		ret = trace_seq_printf(s, "syscall %ld [0x%lx 0x%lx 0x%lx 0x%lx 0x%lx]\n",
++				       field->event.trace_syscall_entry.callno,
++				       field->event.trace_syscall_entry.args[0],
++				       field->event.trace_syscall_entry.args[1],
++				       field->event.trace_syscall_entry.args[2],
++				       field->event.trace_syscall_entry.args[3],
++				       field->event.trace_syscall_entry.args[4],
++				       field->event.trace_syscall_entry.args[5]);
++		break;
++	case _UTRACE_EVENT_SYSCALL_EXIT:
++		ret = trace_seq_printf(s, "syscall rc %ld error %ld\n",
++				       field->event.trace_syscall_exit.rc,
++				       field->event.trace_syscall_exit.error);
++		break;
++	default:
++		ret = trace_seq_printf(s, "process code %d?\n",
++				       field->event.opcode);
++		break;
++	}
++	if (ret)
++		return TRACE_TYPE_HANDLED;
++	return TRACE_TYPE_HANDLED;
++}
++
++
++static enum print_line_t process_print_line(struct trace_iterator *iter)
++{
++	switch (iter->ent->type) {
++	case TRACE_PROCESS:
++		return process_print(iter);
++	default:
++		return TRACE_TYPE_HANDLED; /* ignore unknown entries */
++	}
++}
++
++static struct tracer process_tracer = {
++	.name		= "process",
++	.init		= process_trace_init,
++	.reset		= process_trace_reset,
++	.start		= process_trace_start,
++	.pipe_open	= process_pipe_open,
++	.close		= process_close,
++	.read		= process_read,
++	.print_line	= process_print_line,
++};
++
++
++
++/* utrace backend */
++
++/* Should tracing apply to given task?	Compare against filter
++   values. */
++static int trace_test(struct task_struct *tsk)
++{
++	if (trace_taskcomm_filter[0]
++	    && strncmp(trace_taskcomm_filter, tsk->comm, TASK_COMM_LEN))
++		return 0;
++
++	if (trace_taskuid_filter != (u32)-1
++	    && trace_taskuid_filter != task_uid(tsk))
++		return 0;
++
++	return 1;
++}
++
++
++static const struct utrace_engine_ops process_trace_ops;
++
++static void process_trace_tryattach(struct task_struct *tsk)
++{
++	struct utrace_attached_engine *engine;
++
++	pr_debug("in %s\n", __func__);
++	engine = utrace_attach_task(tsk,
++				    UTRACE_ATTACH_CREATE |
++				    UTRACE_ATTACH_EXCLUSIVE,
++				    &process_trace_ops, NULL);
++	if (IS_ERR(engine) || (engine == NULL)) {
++		pr_warning("utrace_attach_task %d (rc %p)\n",
++			   tsk->pid, engine);
++	} else {
++		int rc;
++
++		/* We always hook cost-free events. */
++		unsigned long events =
++			UTRACE_EVENT(CLONE) |
++			UTRACE_EVENT(EXEC) |
++			UTRACE_EVENT(EXIT);
++
++		/* Penalizing events are individually controlled, so that
++		   utrace doesn't even take the monitored threads off their
++		   fast paths, nor bother call our callbacks. */
++		if (trace_syscalls_p)
++			events |= UTRACE_EVENT_SYSCALL;
++		if (trace_signals_p)
++			events |= UTRACE_EVENT_SIGNAL_ALL;
++
++		rc = utrace_set_events(tsk, engine, events);
++		if (rc == -EINPROGRESS)
++			rc = utrace_barrier(tsk, engine);
++		if (rc)
++			pr_warning("utrace_set_events/barrier rc %d\n", rc);
++
++		utrace_engine_put(engine);
++		pr_debug("attached in %s to %s(%d)\n", __func__,
++			 tsk->comm, tsk->pid);
++	}
++}
++
++
++u32 process_trace_report_clone(enum utrace_resume_action action,
++			       struct utrace_attached_engine *engine,
++			       struct task_struct *parent,
++			       unsigned long clone_flags,
++			       struct task_struct *child)
++{
++	if (trace_lifecycle_p && trace_test(parent)) {
++		struct process_trace_entry ent;
++		ent.opcode = _UTRACE_EVENT_CLONE;
++		ent.trace_clone.child = child->pid;
++		ent.trace_clone.flags = clone_flags;
++		process_trace(&ent);
++	}
++
++	process_trace_tryattach(child);
++
++	return UTRACE_RESUME;
++}
++
++
++u32 process_trace_report_syscall_entry(u32 action,
++				       struct utrace_attached_engine *engine,
++				       struct task_struct *task,
++				       struct pt_regs *regs)
++{
++	if (trace_syscalls_p && trace_test(task)) {
++		struct process_trace_entry ent;
++		ent.opcode = _UTRACE_EVENT_SYSCALL_ENTRY;
++		ent.trace_syscall_entry.callno = syscall_get_nr(task, regs);
++		syscall_get_arguments(task, regs, 0, 6,
++				      ent.trace_syscall_entry.args);
++		process_trace(&ent);
++	}
++
++	return UTRACE_RESUME;
++}
++
++
++u32 process_trace_report_syscall_exit(enum utrace_resume_action action,
++				   struct utrace_attached_engine *engine,
++				   struct task_struct *task,
++				   struct pt_regs *regs)
++{
++	if (trace_syscalls_p && trace_test(task)) {
++		struct process_trace_entry ent;
++		ent.opcode = _UTRACE_EVENT_SYSCALL_EXIT;
++		ent.trace_syscall_exit.rc = syscall_get_return_value(task, regs);
++		ent.trace_syscall_exit.error = syscall_get_error(task, regs);
++		process_trace(&ent);
++	}
++
++	return UTRACE_RESUME;
++}
++
++
++u32 process_trace_report_exec(enum utrace_resume_action action,
++			      struct utrace_attached_engine *engine,
++			      struct task_struct *task,
++			      const struct linux_binfmt *fmt,
++			      const struct linux_binprm *bprm,
++			      struct pt_regs *regs)
++{
++	if (trace_lifecycle_p && trace_test(task)) {
++		struct process_trace_entry ent;
++		ent.opcode = _UTRACE_EVENT_EXEC;
++		process_trace(&ent);
++	}
++
++	/* We're already attached; no need for a new tryattach. */
++
++	return UTRACE_RESUME;
++}
++
++
++u32 process_trace_report_signal(u32 action,
++				struct utrace_attached_engine *engine,
++				struct task_struct *task,
++				struct pt_regs *regs,
++				siginfo_t *info,
++				const struct k_sigaction *orig_ka,
++				struct k_sigaction *return_ka)
++{
++	if (trace_signals_p && trace_test(task)) {
++		struct process_trace_entry ent;
++		ent.opcode = _UTRACE_EVENT_SIGNAL;
++		ent.trace_signal.si_signo = info->si_signo;
++		ent.trace_signal.si_errno = info->si_errno;
++		ent.trace_signal.si_code = info->si_code;
++		process_trace(&ent);
++	}
++
++	/* We're already attached, so no need for a new tryattach. */
++
++	return UTRACE_RESUME | utrace_signal_action(action);
++}
++
++
++u32 process_trace_report_exit(enum utrace_resume_action action,
++			      struct utrace_attached_engine *engine,
++			      struct task_struct *task,
++			      long orig_code, long *code)
++{
++	if (trace_lifecycle_p && trace_test(task)) {
++		struct process_trace_entry ent;
++		ent.opcode = _UTRACE_EVENT_EXIT;
++		ent.trace_exit.code = orig_code;
++		process_trace(&ent);
++	}
++
++	/* There is no need to explicitly attach or detach here. */
++
++	return UTRACE_RESUME;
++}
++
++
++void enable_process_trace()
++{
++	struct task_struct *grp, *tsk;
++
++	pr_debug("in %s\n", __func__);
++	rcu_read_lock();
++	do_each_thread(grp, tsk) {
++		/* Skip over kernel threads. */
++		if (tsk->flags & PF_KTHREAD)
++			continue;
++
++		if (process_follow_pid) {
++			if (tsk->tgid == process_follow_pid ||
++			    tsk->parent->tgid == process_follow_pid)
++				process_trace_tryattach(tsk);
++		} else {
++			process_trace_tryattach(tsk);
++		}
++	} while_each_thread(grp, tsk);
++	rcu_read_unlock();
++}
++
++void disable_process_trace()
++{
++	struct utrace_attached_engine *engine;
++	struct task_struct *grp, *tsk;
++	int rc;
++
++	pr_debug("in %s\n", __func__);
++	rcu_read_lock();
++	do_each_thread(grp, tsk) {
++		/* Find matching engine, if any.  Returns -ENOENT for
++		   unattached threads. */
++		engine = utrace_attach_task(tsk, UTRACE_ATTACH_MATCH_OPS,
++					    &process_trace_ops, 0);
++		if (IS_ERR(engine)) {
++			if (PTR_ERR(engine) != -ENOENT)
++				pr_warning("utrace_attach_task %d (rc %ld)\n",
++					   tsk->pid, -PTR_ERR(engine));
++		} else if (engine == NULL) {
++			pr_warning("utrace_attach_task %d (null engine)\n",
++				   tsk->pid);
++		} else {
++			/* Found one of our own engines.  Detach.  */
++			rc = utrace_control(tsk, engine, UTRACE_DETACH);
++			switch (rc) {
++			case 0:		    /* success */
++				break;
++			case -ESRCH:	    /* REAP callback already begun */
++			case -EALREADY:	    /* DEATH callback already begun */
++				break;
++			default:
++				rc = -rc;
++				pr_warning("utrace_detach %d (rc %d)\n",
++					   tsk->pid, rc);
++				break;
++			}
++			utrace_engine_put(engine);
++			pr_debug("detached in %s from %s(%d)\n", __func__,
++				 tsk->comm, tsk->pid);
++		}
++	} while_each_thread(grp, tsk);
++	rcu_read_unlock();
++}
++
++
++static const struct utrace_engine_ops process_trace_ops = {
++	.report_clone = process_trace_report_clone,
++	.report_exec = process_trace_report_exec,
++	.report_exit = process_trace_report_exit,
++	.report_signal = process_trace_report_signal,
++	.report_syscall_entry = process_trace_report_syscall_entry,
++	.report_syscall_exit = process_trace_report_syscall_exit,
++};
++
++
++
++/* control interfaces */
++
++
++static ssize_t
++trace_taskcomm_filter_read(struct file *filp, char __user *ubuf,
++			   size_t cnt, loff_t *ppos)
++{
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       trace_taskcomm_filter, TASK_COMM_LEN);
++}
++
++
++static ssize_t
++trace_taskcomm_filter_write(struct file *filp, const char __user *ubuf,
++			    size_t cnt, loff_t *fpos)
++{
++	char *end;
++
++	if (cnt > TASK_COMM_LEN)
++		cnt = TASK_COMM_LEN;
++
++	if (copy_from_user(trace_taskcomm_filter, ubuf, cnt))
++		return -EFAULT;
++
++	/* Cut from the first nil or newline. */
++	trace_taskcomm_filter[cnt] = '\0';
++	end = strchr(trace_taskcomm_filter, '\n');
++	if (end)
++		*end = '\0';
++
++	*fpos += cnt;
++	return cnt;
++}
++
++
++static const struct file_operations trace_taskcomm_filter_fops = {
++	.open		= tracing_open_generic,
++	.read		= trace_taskcomm_filter_read,
++	.write		= trace_taskcomm_filter_write,
++};
++
++
++
++static char README_text[] =
++	"process event tracer mini-HOWTO\n"
++	"\n"
++	"1. Select process hierarchy to monitor.  Other processes will be\n"
++	"   completely unaffected.  Leave at 0 for system-wide tracing.\n"
++	"#  echo NNN > process_follow_pid\n"
++	"\n"
++	"2. Determine which process event traces are potentially desired.\n"
++	"   syscall and signal tracing slow down monitored processes.\n"
++	"#  echo 0 > process_trace_{syscalls,signals,lifecycle}\n"
++	"\n"
++	"3. Add any final uid- or taskcomm-based filtering.  Non-matching\n"
++	"   processes will skip trace messages, but will still be slowed.\n"
++	"#  echo NNN > process_trace_uid_filter # -1: unrestricted \n"
++	"#  echo ls > process_trace_taskcomm_filter # empty: unrestricted\n"
++	"\n"
++	"4. Start tracing.\n"
++	"#  echo process > current_tracer\n"
++	"\n"
++	"5. Examine trace.\n"
++	"#  cat trace\n"
++	"\n"
++	"6. Stop tracing.\n"
++	"#  echo nop > current_tracer\n"
++	;
++
++static struct debugfs_blob_wrapper README_blob = {
++	.data = README_text,
++	.size = sizeof(README_text),
++};
++
++
++static __init int init_process_trace(void)
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++
++	d_tracer = tracing_init_dentry();
++
++	entry = debugfs_create_blob("process_trace_README", 0444, d_tracer,
++				    &README_blob);
++	if (!entry)
++		pr_warning("Could not create debugfs 'process_trace_README' entry\n");
++
++	/* Control for scoping process following. */
++	entry = debugfs_create_u32("process_follow_pid", 0644, d_tracer,
++				   &process_follow_pid);
++	if (!entry)
++		pr_warning("Could not create debugfs 'process_follow_pid' entry\n");
++
++	/* Process-level filters */
++	entry = debugfs_create_file("process_trace_taskcomm_filter", 0644,
++				    d_tracer, NULL, &trace_taskcomm_filter_fops);
++	/* XXX: it'd be nice to have a read/write debugfs_create_blob. */
++	if (!entry)
++		pr_warning("Could not create debugfs 'process_trace_taskcomm_filter' entry\n");
++
++	entry = debugfs_create_u32("process_trace_uid_filter", 0644, d_tracer,
++				   &trace_taskuid_filter);
++	if (!entry)
++		pr_warning("Could not create debugfs 'process_trace_uid_filter' entry\n");
++
++	/* Event-level filters. */
++	entry = debugfs_create_u32("process_trace_lifecycle", 0644, d_tracer,
++				   &trace_lifecycle_p);
++	if (!entry)
++		pr_warning("Could not create debugfs 'process_trace_lifecycle' entry\n");
++
++	entry = debugfs_create_u32("process_trace_syscalls", 0644, d_tracer,
++				   &trace_syscalls_p);
++	if (!entry)
++		pr_warning("Could not create debugfs 'process_trace_syscalls' entry\n");
++
++	entry = debugfs_create_u32("process_trace_signals", 0644, d_tracer,
++				   &trace_signals_p);
++	if (!entry)
++		pr_warning("Could not create debugfs 'process_trace_signals' entry\n");
++
++	return register_tracer(&process_tracer);
++}
++
++device_initcall(init_process_trace);
