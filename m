@@ -1,60 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZBVRGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZBVRHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbZBVRGn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 12:06:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbZBVRGf
+	id S1756503AbZBVRHU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 12:07:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbZBVRHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 12:06:35 -0500
-Received: from mail-bw0-f167.google.com ([209.85.218.167]:41438 "EHLO
-	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754185AbZBVRGe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 12:06:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xKbciO9AyRFWK8IlCf9jC2pxP+VL4ClZrsaim4lu6oBfFeCfJFnX525L4YpUW8IC+j
-         elNGzckeaQ/023YmymMpRZrANGoEQkZv20DF8umdVgx6nBLy8SqLPMtK5k7lIW+QtJW5
-         5CdAA+JJzzBoMCCP/olbbzpeVeYv74IcwUkYk=
+	Sun, 22 Feb 2009 12:07:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34437 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754185AbZBVRHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 12:07:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Kevin O'Connor" <kevin@koconnor.net>
+Subject: Re: MPTable can not be high-memory on Linux
+Date: Sun, 22 Feb 2009 18:06:54 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
+       coreboot@coreboot.org, Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Yinghai Lu <yinghai@kernel.org>
+References: <499DB40C.1060205@coresystems.de> <499DCE79.8020809@coresystems.de> <20090222152530.GA30576@morn.localdomain>
+In-Reply-To: <20090222152530.GA30576@morn.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20090222170044.GC6003@nowhere>
-References: <20090222135739.GA28619@damson.getinternet.no>
-	 <20090222164419.GA28442@elte.hu> <20090222170044.GC6003@nowhere>
-Date: Sun, 22 Feb 2009 18:06:32 +0100
-Message-ID: <19f34abd0902220906l73751821u3051cda3542b0518@mail.gmail.com>
-Subject: Re: [GIT PULL] kmemcheck updates for -tip
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902221806.55429.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/22 Frederic Weisbecker <fweisbec@gmail.com>:
-> BTW, I just tested kmemcheck (without these fixes pulled) and encountered some
-> troubles with the function graph tracer which hangs during the self tests.
-> As well as a message from hrtimer which tells its interrupt is too slow.
->
-> Well, I'm pulling latest -tip and will see.
+On Sunday 22 February 2009, Kevin O'Connor wrote:
+> Hi Stefan,
+> 
+> I'm CC'ing lkml and coreboot mailing lists.
 
-Hm, yes. kmemcheck doesn't work well with ftrace -- you'd have to
-disable tracing (i.e. removing the -pg option to gcc) for at least the
-x86 page fault handler and the kmemcheck code. I had a patch to fix
-this a while ago, but it's not very nice to exclude page faults from
-ftrace.
+(added more CCs)
 
-I should make it depend on !FTRACE for now to prevent more
-head-scratching from others. Thanks for testing!
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+> On Thu, Feb 19, 2009 at 10:26:17PM +0100, Stefan Reinauer wrote:
+> > OK, I played some more, and I finally found out it's earlyprintk and not
+> > early_printk. Plus there is bootmem_debug:
+> > 
+> > Initializing cgroup subsys cpuset
+> > Initializing cgroup subsys cpu
+> > Linux version 2.6.27.7-9-default (geeko@buildhost) (gcc version 4.3.2
+> > [gcc-4_3-branch re0
+> > PAT WC disabled due to known CPU erratum.
+> > BIOS-provided physical RAM map:
+> >  BIOS-e820: 0000000000000000 - 0000000000001000 (reserved)
+> >  BIOS-e820: 0000000000001000 - 0000000000090000 (usable)
+> >  BIOS-e820: 0000000000090000 - 0000000000100000 (reserved)
+> >  BIOS-e820: 0000000000100000 - 000000003f7f0000 (usable)
+> >  BIOS-e820: 000000003f7f0000 - 0000000040000000 (reserved)
+> >  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
+> [...]
+> > ACPI: no DMI BIOS year, acpi=force is required to enable ACPI
+> > ACPI: Disabling ACPI support
+> [...]
+> > found SMP MP-table at [c00f9fc0] 000f9fc0
+> > bootmem::mark_bootmem_node nid=0 start=f9 end=fb reserve=1 flags=0
+> > bootmem::__reserve nid=0 start=f9 end=fb flags=0
+> > bootmem::__reserve silent double reserve of PFN f9
+> > bootmem::__reserve silent double reserve of PFN fa
+> > BUG: Int 6: CR2 00000000
+> >      EDI c00f9fd0  ESI 3f7f5410  EBP 0003f7f5  ESP c0535f20
+> >      EBX c056c00c  EDX 00000006  ECX 00000001  EAX c056c03c
+> >      err 00000000  EIP c054f8f0   CS 00000060  flg 00010046
+> > Stack: 00000000 00000000 00000001 00038000 0003f7f5 f880abf0 3f7f5410
+> > c00f9fd0
+> >        00000001 c054f91d 00000000 c054571a c0413e7e c00f9fc0 000f9fc0
+> > 00000001
+> >        3f7bf64d 00000000 3e2c5000 c054578a 00000000 c053f3b6 3f7bf64d
+> > 00000000
+> > 
+> > So it dies because of the way it tries to reserve the MP-table.
+> > 
+> > Here's the stack trace.
+> > 
+> >  [<c054f8f0>] mark_bootmem+0x9b/0xab
+> >  [<c054f91d>] reserve_bootmem+0x1d/0x1f
+> >  [<c054571a>] smp_scan_config+0xd9/0xfa
+> >  [<c054578a>] __find_smp_config+0x4f/0x6e
+> >  [<c053f3b6>] setup_arch+0x576/0x639
+> >  [<c054ebc4>] cgroup_init_subsys+0x29/0xc9
+> >  [<c053a6ac>] start_kernel+0x6b/0x31f
+> >  =======================
+> 
+> It looks like the problem is that the MPTable is located in the last
+> 64K of memory (instead of the first few megabytes).  There is a
+> comment about this in arch/x86/kernel/mpparse.c:
+> 
+>    /*
+>     * We cannot access to MPC table to compute
+>     * table size yet, as only few megabytes from
+>     * the bottom is mapped now.
+>     * PC-9800's MPC table places on the very last
+>     * of physical memory; so that simply reserving
+>     * PAGE_SIZE from mpg->mpf_physptr yields BUG()
+>     * in reserve_bootmem.
+>     */
+> 
+> However, that comment is in an #ifdef specific to 32bit kernels.
+> (Though, it's not clear to me how that code would help as it sets size
+> to be a negative number.)
+> 
+> The easiest way to fix this is to change SeaBIOS to copy the whole
+> mptable to the first megabyte.  Also, we need to fix your SMBIOS so
+> that ACPI is used instead of the mptable.
+> 
+> -Kevin
