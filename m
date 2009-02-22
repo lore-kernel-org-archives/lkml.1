@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbZBVWhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZBVWk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755803AbZBVWhT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 17:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZBVWhF
+	id S1755609AbZBVWk6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 17:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZBVWku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:37:05 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:60675 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbZBVWhD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:37:03 -0500
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Sun, 22 Feb 2009 17:40:50 -0500
+Received: from smtp5.welho.com ([213.243.153.39]:51596 "EHLO smtp5.welho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753073AbZBVWkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 17:40:49 -0500
+Date: Mon, 23 Feb 2009 00:42:42 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        pm list <linux-pm@lists.linux-foundation.org>,
        Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Thomas Gleixner <tglx@linutronix.de>
-References: <200902221837.49396.rjw@sisk.pl>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 22 Feb 2009 14:37:20 -0800
-In-Reply-To: <200902221837.49396.rjw@sisk.pl> (Rafael J. Wysocki's message of "Sun\, 22 Feb 2009 18\:37\:48 +0100")
-Message-ID: <m1skm6cd3z.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+Subject: Re: [RFC][PATCH 1/2] PM: Split up sysdev_[suspend|resume] from
+	device_power_[down|up]
+Message-ID: <20090222224242.GD4485@localhost.pp.htv.fi>
+References: <200902221837.49396.rjw@sisk.pl> <200902221838.51548.rjw@sisk.pl> <20090222205654.GC4485@localhost.pp.htv.fi> <alpine.LFD.2.00.0902221306090.3111@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: rjw@sisk.pl, tglx@linutronix.de, jbarnes@virtuousgeek.org, lenb@kernel.org, linux-pm@lists.linux-foundation.org, jeremy@goop.org, benh@kernel.crashing.org, mingo@elte.hu, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Rafael J. Wysocki" <rjw@sisk.pl>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC][PATCH 0/2] Rework disabling of interrupts during suspend-resume
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902221306090.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Sun, Feb 22, 2009 at 01:07:28PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Sun, 22 Feb 2009, Adrian Bunk wrote:
+> > ...
+> >   MODPOST 2586 modules
+> > ERROR: "sysdev_resume" [arch/x86/kernel/apm.ko] undefined!
+> > ERROR: "sysdev_suspend" [arch/x86/kernel/apm.ko] undefined!
+> > make[2]: *** [__modpost] Error 1
+> 
+> Ahh. device_power_[down|up] were EXPORT_SYMBOL_GPL, so now that we've 
+> split them, so must sysdev_[suspend|resume] be.
+> 
+> Does this fix it?
 
-> Moreover, the real purpose of these changes is to be able to execute the
-> "late" suspend and "early" resume device callbacks with timer interrupts
-> enabled, so that they can use mutexes etc.  However, x86 currently doesn't set
-> the IRQF_TIMER flag and I need to make it do so before going further in this
-> direction and changing the PCI PM framework to take advantage of the $subject
-> changes, for example.  So, I need to know how to modify x86 timer code so that
-> the IRQF_TIMER flag is set by it.
 
-How does this sync with the ACPI requirement that the it's late suspend MUST
-happen with irqs disabled?
+Thanks, works fine.
 
-Eric
+
+> 		Linus
+> ---
+>  drivers/base/sys.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+> index c98c31e..ef2055e 100644
+> --- a/drivers/base/sys.c
+> +++ b/drivers/base/sys.c
+> @@ -432,6 +432,7 @@ aux_driver:
+>  	}
+>  	return ret;
+>  }
+> +EXPORT_SYMBOL_GPL(sysdev_suspend);
+>  
+>  
+>  /**
+> @@ -463,6 +464,7 @@ int sysdev_resume(void)
+>  	}
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL_GPL(sysdev_resume);
+>  
+>  
+>  int __init system_bus_init(void)
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
