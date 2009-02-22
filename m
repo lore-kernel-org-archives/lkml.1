@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZBVSgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbZBVSzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbZBVSgE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 13:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZBVSfx
+	id S1752818AbZBVSzO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 13:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZBVSzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 13:35:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34962 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751779AbZBVSfw (ORCPT
+	Sun, 22 Feb 2009 13:55:00 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:34597 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbZBVSy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 13:35:52 -0500
-Date: Sun, 22 Feb 2009 10:35:24 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 0/2] Rework disabling of interrupts during
- suspend-resume
-In-Reply-To: <alpine.LFD.2.00.0902221024500.3111@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902221034170.3111@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0902221007150.3111@localhost.localdomain> <20090222181841.GA17895@elte.hu> <alpine.LFD.2.00.0902221024500.3111@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 22 Feb 2009 13:54:59 -0500
+Date: Sun, 22 Feb 2009 10:54:55 -0800
+From: Josh Hunt <josh@scalex86.org>
+To: sam@ravnborg.org
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       kiran@scalex86.org, mingo@elte.hu
+Subject: [PATCH] Fix mkspec to cleanup RPM_BUILD_ROOT
+Message-ID: <20090222185455.GB17685@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The contents of the %clean section in mkspec is currently commented
+out leaving RPM_BUILD_ROOT and its contents on the build machine.
+This patch removes it once the rpm build process is complete.
 
+Signed-off-by: Josh Hunt <josh@scalex86.org>
+---
 
-On Sun, 22 Feb 2009, Linus Torvalds wrote:
-> 
-> Oops yes. I got one of them right. I guess that's the same one I happened 
-> to compile in my config. Duh.
+Index: linux-2.6/scripts/package/mkspec
+===================================================================
+--- linux-2.6.orig/scripts/package/mkspec       2009-02-20
+15:51:22.000000000 -0800
++++ linux-2.6/scripts/package/mkspec    2009-02-20 16:06:32.000000000
+-0800
+@@ -96,7 +96,7 @@ echo "%endif"
+ 
+ echo ""
+ echo "%clean"
+-echo '#echo -rf $RPM_BUILD_ROOT'
++echo 'rm -rf $RPM_BUILD_ROOT'
+ echo ""
+ echo "%files"
+ echo '%defattr (-, root, root)'
 
-I committed the trivially fixed version. 
-
-I also committed Rafael's patch 1/2 (the one that doesn't actually change 
-anything). Even if we don't do this in 2.6.29, I want to make it easy to 
-test, and get the infrastructure unified.
-
-		Linus
