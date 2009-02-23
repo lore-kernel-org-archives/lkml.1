@@ -1,196 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZBWLZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZBWLZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbZBWLZT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 06:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZBWLZG
+	id S1754892AbZBWLZl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 06:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZBWLZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 06:25:06 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:47996 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbZBWLZE (ORCPT
+	Mon, 23 Feb 2009 06:25:30 -0500
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:36223 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754750AbZBWLZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 06:25:04 -0500
-Date: Mon, 23 Feb 2009 16:54:30 +0530
+	Mon, 23 Feb 2009 06:25:29 -0500
+Date: Mon, 23 Feb 2009 16:55:17 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arun@linux.vnet.ibm.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+       ego@in.ibm.com, tglx@linutronix.de, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
+       arun@linux.vnet.ibm.com, Suresh Siddha <suresh.b.siddha@intel.com>
 Subject: Re: [RFC PATCH 0/4] timers: framework for migration between CPU
-Message-ID: <20090223112430.GC10226@balbir.in.ibm.com>
+Message-ID: <20090223112517.GD10226@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
-References: <20090220125516.GB10232@linux.vnet.ibm.com> <20090220132145.GF26418@elte.hu> <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu> <20090223075521.GA3725@balbir.in.ibm.com> <20090223091158.GJ9582@elte.hu> <20090223094850.GA10226@balbir.in.ibm.com> <20090223102234.GQ9582@elte.hu>
+References: <20090220132145.GF26418@elte.hu> <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu> <20090223075521.GA3725@balbir.in.ibm.com> <20090223091158.GJ9582@elte.hu> <20090223094850.GA10226@balbir.in.ibm.com> <20090223103814.GB8817@dirshya.in.ibm.com> <20090223110725.GB17312@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090223102234.GQ9582@elte.hu>
+In-Reply-To: <20090223110725.GB17312@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-02-23 11:22:34]:
+* Ingo Molnar <mingo@elte.hu> [2009-02-23 12:07:25]:
 
 > 
-> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 > 
-> > * Ingo Molnar <mingo@elte.hu> [2009-02-23 10:11:58]:
-> > 
-> > > 
-> > > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > * Ingo Molnar <mingo@elte.hu> [2009-02-20 22:53:18]:
-> > > > 
-> > > > > 
-> > > > > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > > > > 
-> > > > > > On Fri, 20 Feb 2009 17:07:37 +0100
-> > > > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > > > 
-> > > > > > > 
-> > > > > > > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > > > > > 
-> > > > > > > > > I'd also suggest to not do that rather ugly 
-> > > > > > > > > enable_timer_migration per-cpu variable, but simply reuse 
-> > > > > > > > > the existing nohz.load_balancer as a target CPU.
-> > > > > > > > 
-> > > > > > > > This is a good idea to automatically bias the timers.  But 
-> > > > > > > > this nohz.load_balancer is a very fast moving target and we 
-> > > > > > > > will need some heuristics to estimate overall system idleness 
-> > > > > > > > before moving the timers.
-> > > > > > > > 
-> > > > > > > > I would agree that the power saving load balancer has a good 
-> > > > > > > > view of the system and can potentially guide the timer biasing 
-> > > > > > > > framework.
-> > > > > > > 
-> > > > > > > Yeah, it's a fast moving target, but it already concentrates 
-> > > > > > > the load somewhat.
-> > > > > > > 
-> > > > > > 
-> > > > > > I wonder if the real answer for this isn't to have timers be 
-> > > > > > considered schedulable-entities and have the regular scheduler 
-> > > > > > decide where they actually run.
-> > > > > 
-> > > > > hm, not sure - it's a bit heavy for that.
-> > > > >
-> > > > 
-> > > > I think the basic timer migration policy should exist in user 
-> > > > space.
-> > > 
-> > > I disagree.
-> > >
-> > 
-> > See below
-> >  
-> > > > One of the ways of looking at it is, as we begin to 
-> > > > consolidate, using range timers and migrating all timers to 
-> > > > lesser number of CPUs would make a whole lot of sense.
-> > > > 
-> > > > As far as the scheduler making those decisions is concerned, 
-> > > > my concern is that the load balancing is a continuous process 
-> > > > and timers don't necessarily work that way. I'd put my neck 
-> > > > out and say that irqbalance, range timers and timer migration 
-> > > > should all belong to user space. irqbalance and range timers 
-> > > > do, so should timer migration.
-> > > 
-> > > As i said it my first reply, IRQ migration is special because 
-> > > they are not kernel-internal objects, they come externally so 
-> > > there's a lot of user-space enumeration, policy and other steps 
-> > > involved. Furthermore, IRQs are migrated in a 'slow' fashion.
-> > > 
-> > > Timers on the other hand are fast entities tied to _tasks_ 
-> > > primarily, not external entities. 
-> > 
-> > Timers are also queued due to external events like interrupts 
-> > (device drivers tend to set of timers all the time). [...]
+> > My understanding is that we will certainly have a sysfs 
+> > tunable to 'enable' timer migration or consolidation, similar 
+> > to the sched_mc=2 policy, but the actual set of CPUs to 
+> > evacuate and the correct set of target CPUs to consolidate 
+> > should come from the scheduler and not necessarily from the 
+> > user space.
 > 
-> That is a silly argument. Tasks are created due to 'external 
-> events' as well such as the user hitting a key.
+> Yes.
 > 
-
-The point I was trying to make was that not all timers are due to
-tasks, some are due to interrupts and thus the focus on looking at
-getting irqbalance and timers to work together.
-
-> What matters, and what was my argument is the distinction 
-> whether the kernel _generates_ the event. For most IRQ events it 
-> does not, for the overwhelming majority of timers events it 
-> consciously generates timer events. Which makes them all the 
-> much different.
+> > The scheduler should be able to figure out the following 
+> > parameters:
+> > 
+> > * Identify set of idle CPUs (CPU package) from which timers 
+> >   can be removed
+> > * Identify a semi-idle or idle CPU package to which the timers
+> >   can be moved
+> > * Decide when to start moving timers as the system has large
+> >   number of idle CPUs
+> > * Decide when to stop migrating as system becomes less idle
+> >   and utilisation increases
+> > 
+> > Guiding all of the above decisions from user space may not be 
+> > fast enough.
+> 
+> Exactly.
 >
 
-Yes, agreed
- 
-> > [...] I am not fully against what you've said, at some 
-> > semantic level what you are suggesting is that at a higher 
-> > level of power saving, when the scheduler balances timers it 
-> > is doing a form of soft CPU hotplug on the system by migrating 
-> > timers and tasks away from idle CPUs when the load can be 
-> > handled by other CPUs. See below as well.
-> > 
-> > > Hence they should migrate 
-> > > according to the CPU where the activities of the system 
-> > > concentrates - i.e. where tasks are running.
-> > > 
-> > > Another thing: do you argue for the existing timer-migration 
-> > > code we have in mod_timer() to move to user-space too? It isnt a 
-> > > consistent argument to push 'some' of it to user-space, and some 
-> > > of it in kernel-space.
-> > > 
-> > 
-> > No.. mod_timer() is correct where it belongs.
-> 
-> You did not reply to my statement that the argument is a double 
-> standard. Why do certain migrations in the kernel and some not?
-
-Sorry, I am not sure I understand what portions of mod_timer were you
-recommending move to user space?
-
-> 
-> > Consider the powertop usage scenario today
-> > 
-> > 1. Powertop displays a list of timers and common causes of wakeup
-> > 2. It recommends policies in user space that can affect power savings
-> >    a. usb autosuspend
-> >    b. wireless link management
-> >    c. disable HAL polling
-> 
-> That's different - those are PowerTop timer event _reduction_ 
-> policies. Not migration policies of existing timers.
-> 
-> > My argument is, why can't we add
-> > 
-> >    d. Use range timers
-> >    e. Consolidate timers
-> > 
-> > In the future.
-> > 
-> > Even sched_mc=n is set by user space, so really the
-> > policy is in user space.
-> 
-> that is different again. sched_mc is a broad switch not a 
-> dynamic control like the sysfs migration interface that was 
-> introduced in this patchset. Which patchset we are discussing.
->
-
-The timer migration patchset. We are discussing sched_mc=n, since I
-expect sched_mc=3 or so to enable timer migration.
-
-I guess we could try and select the target cpu for consolidation from
-within the scheduler, but my concerns are
-
-1. Not all timers are due to tasks
-2. The effect of migrating a timer from the scheduler automatically
-can vary, since we don't know the load associated with a timer.
-
-But having said that some experimentation with Ingo's suggestion of
-automatically selecting the target CPU would be nice.
-
- 
+OK, lets head that way for now. I've highlighted my concerns in a
+different email. Experimentation will definitely show us if they are
+justified or not. 
 
 -- 
 	Balbir
