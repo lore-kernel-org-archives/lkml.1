@@ -1,103 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZBWMfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbZBWMjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbZBWMfj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 07:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbZBWMe7
+	id S1754992AbZBWMjB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 07:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZBWMix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 07:34:59 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:48335 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753764AbZBWMe5 (ORCPT
+	Mon, 23 Feb 2009 07:38:53 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:56617 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753112AbZBWMiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 07:34:57 -0500
-Date: Mon, 23 Feb 2009 13:34:49 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-cc: rtc-linux@googlegroups.com, Richard Zidlicky <rz@linux-m68k.org>,
-       linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Woodhouse <dwmw2@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
-In-Reply-To: <20090220170454.04382e9e@i1501.lan.towertech.it>
-Message-ID: <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090220170454.04382e9e@i1501.lan.towertech.it>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Feb 2009 07:38:52 -0500
+From: Andy Whitcroft <apw@canonical.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Andy Whitcroft <apw@canonical.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
+Date: Mon, 23 Feb 2009 12:38:41 +0000
+Message-Id: <1235392721-22545-2-git-send-email-apw@canonical.com>
+X-Mailer: git-send-email 1.6.1.2.419.g0d87e
+In-Reply-To: <20090218205654.05896ece@mjolnir.ossman.eu>
+References: <20090218205654.05896ece@mjolnir.ossman.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Feb 2009, Alessandro Zummo wrote:
-> On Fri, 20 Feb 2009 16:46:44 +0100
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > Fortunately there already exists a generic RTC class driver: "rtc-parisc".
-> > Despite it's name, it's platform-independent, as it's build on top of the RTC
-> > abstraction used by "genrtc".
-> > 
-> > This patch series
-> >   - adds a missing module alias to rtc-parisc,
-> >   - renames rtc-parisc to rtc-generic,
-> >   - converts the architectures that currently have CONFIG_GEN_RTC enabled in
-> >     their defconfig (m68k, parisc, powerpc) to rtc-generic,
-> >   - removes the obsolete rtc-ppc driver,
-> >   - removes the old genrtc driver.
-> >   
-> > Note that genrtc may be used on other archictectures as well: at least alpha
-> > has the required infrastructure ([gs]et_rtc_time()). The Kconfig rules allow
-> > genrtc to be enabled on several others (cris, h8300, mn10300, um, x86, xtensa).
-> > 
-> > Furthermore genrtc and rtc-generic are not 100% userspace compatible:
-> >   - /dev/rtc provided by genrtc uses a misc character device (10:135),
-> >   - /dev/rtc provided by rtc-generic uses a dynamic character device.
-> 
->  Hello,
-> 
->    my opinion on this kind of stuff is that I want to avoid the layering
->  of implementations under the rtc subsystem. I'd rather prefer that each
->  rtc device had its own driver. 
->  
->   I've made error in the past, by accepting such kind of drivers, and
->  would like to avoid that it happens again.
+[Pierre, here is the updated version.  Got lost somewhere after testing
+and before sending out.]
 
-So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
-mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
-RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
+Currently we are using an explicit udev rule to trigger loading of the
+mmc-block module when an MMC or SD card is detected:
 
-What about ppc_md.get_boot_time() [ppc]?
-Please note that the functions above may also be used for very early clock
-setting (e.g. time_init()) and in read_persistent_clock().
-How should we handle these?
+    SUBSYSTEM=="mmc", RUN+="/sbin/modprobe -Qba mmc-block"
 
-Even on x86 there seems to be way too much RTC logic in arch/x86/kernel/rtc.c
-(e.g. mach_get_cmos_time()), which is duplicated in drivers/rtc/rtc-cmos.c
-through the inline function __get_rtc_time() in include/asm-generic/rtc.h
-(clever, hardware-specific stuff in asm-generic ;-)
+It makes much more sense for the mmc bus driver and the mmc-block module to
+share MODALIAS information so that they are linked automatically.
 
->   Regarding the user space, the assumption that a device has
->  a fixed major:minor number should be dropped as well.
+There is no real information of use in the MMC system at the current time.
+All devices inserted require us to load the mmc-block device.  Until such
+time as useful parameters exist simply reflect the module linkage via
+the module alias below:
 
-I know. But it's a userland-visible change, so I wanted to explicit point to
-it.
+	mmc:block
 
-With kind regards,
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ drivers/mmc/card/block.c |    2 ++
+ drivers/mmc/core/bus.c   |    8 ++++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-Geert Uytterhoeven
-Software Architect
+diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
+index 513eb09..fe8041e 100644
+--- a/drivers/mmc/card/block.c
++++ b/drivers/mmc/card/block.c
+@@ -41,6 +41,8 @@
+ 
+ #include "queue.h"
+ 
++MODULE_ALIAS("mmc:block");
++
+ /*
+  * max 8 partitions per card
+  */
+diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+index f210a8e..bdb165f 100644
+--- a/drivers/mmc/core/bus.c
++++ b/drivers/mmc/core/bus.c
+@@ -84,6 +84,14 @@ mmc_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	}
+ 
+ 	retval = add_uevent_var(env, "MMC_NAME=%s", mmc_card_name(card));
++	if (retval)
++		return retval;
++
++	/*
++	 * Request the mmc_block device.  Note: that this is a direct request
++	 * for the module it carries no information as to what is inserted.
++	 */
++	retval = add_uevent_var(env, "MODALIAS=mmc:block");
+ 
+ 	return retval;
+ }
+-- 
+1.6.1.2.419.g0d87e
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
