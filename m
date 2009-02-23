@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbZBWHiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZBWHim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbZBWHiN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:38:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZBWHh6
+	id S1754692AbZBWHim (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:38:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZBWHic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:37:58 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39475 "EHLO
+	Mon, 23 Feb 2009 02:38:32 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39489 "EHLO
 	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778AbZBWHh6 (ORCPT
+	with ESMTP id S1753196AbZBWHib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:37:58 -0500
+	Mon, 23 Feb 2009 02:38:31 -0500
 From: hooanon05@yahoo.co.jp
-Subject: [RFC 7/8] Aufs2: mmap
+Subject: [RFC 8/8] Aufs2: plan
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 In-Reply-To: <7558.1235374266@jrobl>
 References: <7558.1235374266@jrobl>
-Date: Mon, 23 Feb 2009 16:37:56 +0900
-Message-ID: <7828.1235374676@jrobl>
+Date: Mon, 23 Feb 2009 16:38:29 +0900
+Message-ID: <7839.1235374709@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,38 +25,164 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > This is my second trial to ask incorporating aufs into mainline.
 
 
-mmap(2) -- File Memory Mapping
+Plan
+
+Restoring some features which was implemented in aufs1.
+They were dropped in aufs2 in order to make source files simpler and
+easier to be reviewed.
+
+
+Export Aufs via NFS
 ----------------------------------------------------------------------
-In aufs, the file-mapped pages are shared between the file on a branch
-and the virtual one in aufs by overriding vm_operation, particularly
-->fault().
+Here is an approach I adopt in aufs1.
+- like xino/xib, add a new file 'xigen' which stores aufs inode
+  generation.
+- iget_locked(): initialize aufs inode generation for a new inode, and
+  store it in xigen file.
+- destroy_inode(): increment aufs inode generation and store it in xigen
+  file. it is necessary even if it is not unlinked, because any data of
+  inode may be changed by UDBA.
+- encode_fh(): for a root dir, simply return FILEID_ROOT. otherwise
+  build file handle by
+  + branch id (4 bytes)
+  + superblock generation (4 bytes)
+  + inode number (4 or 8 bytes)
+  + parent dir inode number (4 or 8 bytes)
+  + inode generation (4 bytes))
+  + return value of exportfs_encode_fh() for the parent on a branch (4
+    bytes)
+  + file handle for a branch (by exportfs_encode_fh())
+- fh_to_dentry():
+  + find the index of a branch from its id in handle, and check it is
+    still exist in aufs.
+  + 1st level: get the inode number from handle and search it in cache.
+  + 2nd level: if not found, get the parent inode number from handle and
+    search it in cache. and then open the parent dir, find the matching
+    inode number by vfs_readdir() and get its name, and call
+    lookup_one_len() for the target dentry.
+  + 3rd level: if the parent dir is not cached, call
+    exportfs_decode_fh() for a branch and get the parent on a branch,
+    build a pathname of it, convert it a pathname in aufs, call
+    path_lookup(). now aufs gets a parent dir dentry, then handle it as
+    the 2nd level.
+  + to open the dir, aufs needs struct vfsmount. aufs keeps vfsmount
+    for every branch, but not itself. to get this, (currently) aufs
+    searches in current->nsproxy->mnt_ns list. it may not be a good
+    idea, but I didn't get other approach.
+  + test the generation of the gotten inode.
+- every inode operation: they may get EBUSY due to UDBA. in this case,
+  convert it into ESTALE for NFSD.
+- readdir(): call lockdep_on/off() because filldir in NFSD calls
+  lookup_one_len(), vfs_getattr(), encode_fh() and others.
 
-In aufs_mmap(),
-- get and store vm_ops of the real file on a branch.
-- map the file of aufs by generic_file_mmap() and set aufs's vm
-  operations.
 
-In aufs_fault(),
-- get the file of aufs from the passed vma, sleep if needed.
-- get the real file on a branch from the aufs file.
-- a race may happen. for instance a multithreaded library. so some lock
-  is implemented.
-- call ->fault() in the previously stored vm_ops with setting the
-  real file on a branch to vm_file.
-- restore vm_file and wake_up if someone else got sleep.
+Test Only the Highest One for the Directory Permission (dirperm1 option)
+----------------------------------------------------------------------
+Let's try case study.
+- aufs has two branches, upper readwrite and lower readonly.
+  /au = /rw + /ro
+- "dirA" exists under /ro, but /rw. and its mode is 0700.
+- user invoked "chmod a+rx /au/dirA"
+- then "dirA" becomes world readable?
 
-When a branch is added to or deleted from aufs, the same-named file may
-unveil and its contents will be replaced by the new one when a process
-read(2) through previously opened file.
-(Some users may not want to refresh the filedata. For such users, I
-have a plan to implement a mount option 'refrof' which decides to
-refresh the opened files or not. See plan.txt too.)
-In this case, an already mapped file will not be updated since the
-contents are a part of a process already and it should not be changed by
-aufs branch manipulation. Of course, in case of the deleting branch has a
-busy file, it cannot be deleted from the union.
+In this case, /ro/dirA is still 0700 since it exists in readonly branch,
+or it may be a natively readonly filesystem. If aufs respects the lower
+branch, it should not respond readdir request from other users. But user
+allowed it by chmod. Should really aufs rejects showing the entries
+under /ro/dirA?
 
-In Unionfs, it took an approach which the memory pages mapped to
-filedata are copied from the lower (real) file into the Unionfs's
-virtual one and handles it by address_space operations. Recently Unionfs
-changed it to this approach which aufs adopted since Jul 2006.
+To be honest, I don't have a best solution for this case. So I
+implemented 'dirperm1' and 'nodirperm1' option in aufs1, and leave it to
+users.
+When dirperm1 is specified, aufs checks only the highest one for the
+directory permission, and shows the entries. Otherwise, as usual, checks
+every dir existing on all branches and rejects the request.
+
+As a side effect, dirperm1 option improves the performance of aufs
+because the number of permission check is reduced.
+
+
+Show Whiteout Mode (shwh)
+----------------------------------------------------------------------
+Generally aufs hides the name of whiteouts. But in some cases, to show
+them is very useful for users. For instance, creating a new middle layer
+(branch) by merging existing layers.
+
+(borrowing aufs1 HOW-TO from a user, Michael Towers)
+When you have three branches,
+- Bottom: 'system', squashfs (underlying base system), read-only
+- Middle: 'mods', squashfs, read-only
+- Top: 'overlay', ram (tmpfs), read-write
+
+The top layer is loaded at boot time and saved at shutdown, to preserve
+the changes made to the system during the session.
+When larger changes have been made, or smaller changes have accumulated,
+the size of the saved top layer data grows. At this point, it would be
+nice to be able to merge the two overlay branches ('mods' and 'overlay')
+and rewrite the 'mods' squashfs, clearing the top layer and thus
+restoring save and load speed.
+
+This merging is simplified by the use of another aufs mount, of just the
+two overlay branches using the 'shwh' option.
+# mount -t aufs -o ro,shwh,br:/livesys/overlay=ro+wh:/livesys/mods=rr+wh \
+	aufs /livesys/merge_union
+
+A merged view of these two branches is then available at
+/livesys/merge_union, and the new feature is that the whiteouts are
+visible!
+Note that in 'shwh' mode the aufs mount must be 'ro', which will disable
+writing to all branches. Also the default mode for all branches is 'ro'.
+It is now possible to save the combined contents of the two overlay
+branches to a new squashfs, e.g.:
+# mksquashfs /livesys/merge_union /path/to/newmods.squash
+
+This new squashfs archive can be stored on the boot device and the
+initramfs will use it to replace the old one at the next boot.
+
+
+Being Another Aufs's Readonly Branch (robr)
+----------------------------------------------------------------------
+Aufs1 allows aufs to be another aufs's readonly branch.
+This feature was developed by a user's request. But it may not be used
+currecnly.
+
+
+Copy-up on Open (coo=)
+----------------------------------------------------------------------
+By default the internal copy-up is executed when it is really necessary.
+It is not done when a file is opened for writing, but when write(2) is
+done. Users who have many (over 100) branches want to know and analyse
+when and what file is copied-up. To insert a new upper branch which
+contains such files only may improve the performance of aufs.
+
+Aufs1 implemented "coo=none | leaf | all" option.
+
+
+Refresh the Opened File (refrof)
+----------------------------------------------------------------------
+This option is implemented in aufs1 but incomplete.
+
+When user reads from a file, he expects to get its latest filedata
+generally. If the file is removed and a new same named file is created,
+the content he gets is unchanged, ie. the unlinked filedata.
+
+Let's try case study again.
+- aufs has two branches.
+  /au = /rw + /ro
+- "fileA" exists under /ro, but /rw.
+- user opened "/au/fileA".
+- he or someone else inserts a branch (/new) between /rw and /ro.
+  /au = /rw + /new + /ro
+- the new branch has "fileA".
+- user reads from the opened "fileA"
+- which filedata should aufs return, from /ro or /new?
+
+Some people says it has to be "from /ro" and it is a semantics of Unix.
+The others say it should be "from /new" because the file is not removed
+and it is equivalent to the case of someone else modifies the file.
+
+Here again I don't have a best and final answer. I got an idea to
+implement 'refrof' and 'norefrof' option. When 'refrof' (REFResh the
+Opened File) is specified (by default), aufs returns the filedata from
+/new.
+Otherwise from /new.
