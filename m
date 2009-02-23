@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbZBWK0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZBWK2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbZBWK0g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 05:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZBWK02
+	id S1754304AbZBWK2X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 05:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZBWK2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 05:26:28 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39079 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbZBWK01 (ORCPT
+	Mon, 23 Feb 2009 05:28:12 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:32894 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbZBWK2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 05:26:27 -0500
-Subject: Re: [patch 2/2] slub: add min_partial sysfs tunable
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0902230126080.19494@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0902221710430.26165@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0902221712160.26165@chino.kir.corp.google.com>
-	 <1235377162.6216.5.camel@penberg-laptop>
-	 <alpine.DEB.2.00.0902230126080.19494@chino.kir.corp.google.com>
-Date: Mon, 23 Feb 2009 12:26:24 +0200
-Message-Id: <1235384784.6216.34.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 23 Feb 2009 05:28:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XdLwPfvlXSZATNm7KXnmTjpzhdWEry6k/mGF7lMLQWm2zkv8wLc5QKxEX8Ws4l/XSP
+         eC8mngpo6o4H4ZOOzVaCdIgSeWDhrUcCjzx8bofOydDJqXemH8XHC9+zdgblj2FbRTbD
+         rudVx1+Quf+fTNe4Ak1wOakMrUBLy9QlKJxtM=
+MIME-Version: 1.0
+In-Reply-To: <435196707.27641@eyou.net>
+References: <1234944825-10299-1-git-send-email-crquan@gmail.com>
+	 <435196707.27641@eyou.net>
+Date: Mon, 23 Feb 2009 18:28:07 +0800
+Message-ID: <91b13c310902230228g116836b0of85494934e39313f@mail.gmail.com>
+Subject: Re: [PATCH] [KBUILD] add symbol value to help find the real depend
+From: Cheng Renquan <crquan@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Sat, Feb 21, 2009 at 2:12 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Hi,
+>
+> This looks good/helpful.  Can it be made to work with
+> gconfig & xconfig as well as menuconfig?
 
-On Mon, 23 Feb 2009, Pekka Enberg wrote:
-> > The patches look good but the description is bit lacking. Does this
-> > actually fix up something? Why don't we fix the limit calculations
-> > instead?
-> > 
-> > I'm a sucker for numbers so I'm easily fooled into merging patches with
-> > statements of the form "this shaves off N bytes/kb/mb on XYZ systems".
+Patches for gconfig & xconfig are already in progress, please be
+patient, I will post later. Thanks,
 
-On Mon, 2009-02-23 at 01:58 -0800, David Rientjes wrote:
-> The memory savings from simply moving min_partial from struct 
-> kmem_cache_node to struct kmem_cache is obviously not significant (unless 
-> maybe you're from SGI or something), at the largest it's
-> 
-> 	# allocated caches * (MAX_NUMNODES - 1) * sizeof(unsigned long)
-> 
-> The true savings occurs when userspace reduces the number of partial slabs 
-> that would otherwise be wasted, especially on machines with a large 
-> number of nodes (ia64 with CONFIG_NODES_SHIFT at 10 for default?).  As 
-> well as the kernel estimates ideal values for n->min_partial and ensures 
-> it's within a sane range, userspace has no other input other than writing 
-> to /sys/kernel/slab/cache/shrink.
-
-Applied with the above explanation added to the changelog. Thanks!
-
-			Pekka
-
+-- 
+Cheng Renquan, Shenzhen, China
+Henny Youngman  - "When I told my doctor I couldn't afford an
+operation, he offered to touch-up my X-rays."
