@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZBWHey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZBWHfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZBWHey (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZBWHep
+	id S1753958AbZBWHfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZBWHf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:34:45 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39420 "EHLO
+	Mon, 23 Feb 2009 02:35:28 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39432 "EHLO
 	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbZBWHen (ORCPT
+	with ESMTP id S1752430AbZBWHf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:34:43 -0500
+	Mon, 23 Feb 2009 02:35:27 -0500
 From: hooanon05@yahoo.co.jp
-Subject: [RFC 2/8] Aufs2: structure
+Subject: [RFC 3/8] Aufs2: lookup
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 In-Reply-To: <7558.1235374266@jrobl>
 References: <7558.1235374266@jrobl>
-Date: Mon, 23 Feb 2009 16:34:42 +0900
-Message-ID: <7769.1235374482@jrobl>
+Date: Mon, 23 Feb 2009 16:35:26 +0900
+Message-ID: <7781.1235374526@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,195 +25,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > This is my second trial to ask incorporating aufs into mainline.
 
 
-Basic Aufs Internal Structure
-
-Superblock/Inode/Dentry/File Objects
+Lookup in a Branch
 ----------------------------------------------------------------------
-As like an ordinary filesystem, aufs has its own
-superblock/inode/dentry/file objects. All these objects have a
-dynamically allocated array and store the same kind of pointers to the
-lower filesystem, branch.
-For example, when you build a union with one readwrite branch and one
-readonly, mounted /au, /rw and /ro respectively.
-- /au = /rw + /ro
-- /ro/fileA exists but /rw/fileA
+Since aufs has a character of sub-VFS (see Introduction), it operates
+lookup for branches as VFS does. It may be a heavy work. Generally
+speaking struct nameidata is a bigger structure and includes many
+information. But almost all lookup operation in aufs is the simplest
+case, ie. lookup only an entry directly connected to its parent. Digging
+down the directory hierarchy is unnecessary.
 
-Aufs lookup operation finds /ro/fileA and gets dentry for that. These
-pointers are stored in a aufs dentry. The array in aufs dentry will be,
-- [0] = NULL
-- [1] = /ro/fileA
+VFS has a function lookup_one_len() for that use, but it is not usable
+for a branch filesystem which requires struct nameidata. So aufs
+implements a simple lookup wrapper function. When a branch filesystem
+allows NULL as nameidata, it calls lookup_one_len(). Otherwise it builds
+a simplest nameidata and calls lookup_hash().
+Here aufs applies "a principle in NFSD", ie. if the filesystem supports
+NFS-export, then it has to support NULL as a nameidata parameter for
+->create(), ->lookup() and ->d_revalidate(). So the lookup wrapper in
+aufs tests if ->s_export_op in the branch is NULL or not.
 
-This style of an array is essentially same to the aufs
-superblock/inode/dentry/file objects.
-
-Because aufs supports manipulating branches, ie. add/delete/change
-dynamically, these objects has its own generation. When branches are
-changed, the generation in aufs superblock is incremented. And a
-generation in other object are compared when it is accessed.
-When a generation in other objects are obsoleted, aufs refreshes the
-internal array.
+When a branch is a remote filesystem, aufs trusts its ->d_revalidate().
+For d_revalidate, aufs implements three levels of revalidate tests. See
+"Revalidate Dentry and UDBA" in detail.
 
 
-Superblock
+Loopback Mount
 ----------------------------------------------------------------------
-Additionally aufs superblock has some data for policies to select one
-among multiple writable branches, XIB files, pseudo-links and kobject.
-See below in detail.
-About the policies which supports copy-down a directory, see policy.txt
-too.
+Basically aufs supports any type of filesystem and block device for a
+branch (actually there are some exceptions). But it is prohibited to add
+a loopback mounted one whose backend file exists in a filesystem which is
+already added to aufs. The reason is to protect aufs from a recursive
+lookup. If it was allowed, the aufs lookup operation might re-enter a
+lookup for the loopback mounted branch in the same context, and will
+cause a deadlock.
 
 
-Branch and XINO(External Inode Number Translation Table)
+Revalidate Dentry and UDBA (User's Direct Branch Access)
 ----------------------------------------------------------------------
-Every branch has its own xino (external inode number translation table)
-file. The xino file is created and unlinked by aufs internally. When two
-members of a union exist on the same filesystem, they share the single
-xino file.
-The struct of a xino file is simple, just a sequence of aufs inode
-numbers which is indexed by the lower inode number.
-In the above sample, assume the inode number of /ro/fileA is i111 and
-aufs assigns the inode number i999 for fileA. Then aufs writes 999 as
-4(8) bytes at 111 * 4(8) bytes offset in the xino file.
+Generally VFS helpers re-validate a dentry as a part of lookup.
+0. digging down the directory hierarchy.
+1. lock the parent dir by its i_mutex.
+2. lookup the final (child) entry.
+3. revalidate it.
+4. call the actual operation (create, unlink, etc.)
+5. unlock the parent dir
 
-Also a writable branch has three kinds of "whiteout bases". All these
-are existed when the branch is joined to aufs and the names are
-whiteout-ed doubly, so that users will never see their names in aufs
-hierarchy.
-1. a regular file which will be linked to all whiteouts.
-2. a directory to store a pseudo-link.
-3. a directory to store an "orphan-ed" file temporary.
+If the filesystem implements its ->d_revalidate() (step 3), then it is
+called. Actually aufs implements it and checks the dentry on a branch is
+still valid.
+But it is not enough. Because aufs has to release the lock for the
+parent dir on a branch at the end of ->lookup() (step 2) and
+->d_revalidate() (step 3) while the i_mutex of the aufs dir is still
+held by VFS.
+If the file on a branch is changed directly, eg. bypassing aufs, after
+aufs released the lock, then the subsequent operation may cause
+something unpleasant result.
 
-1. Whiteout Base
-   When you remove a file on a readonly branch, aufs handles it as a
-   logical deletion and creates a whiteout on the upper writable branch
-   as a hardlink of this file in order not to consume inode on the
-   writable branch.
-2. Pseudo-link Dir
-   See below, Pseudo-link.
-3. Step-Parent Dir
-   When "fileC" exists on the lower readonly branch only and it is
-   opened and removed with its parent dir, and then user writes
-   something into it, then aufs copies-up fileC to this
-   directory. Because there is no other dir to store fileC. After
-   creating a file under this dir, the file is unlinked.
+This situation is a result of VFS architecture, ->lookup() and
+->d_revalidate() is separated. But I never say it is wrong. It is a good
+design from VFS's point of view. It is just not suitable for sub-VFS
+character in aufs.
 
-Because aufs supports manipulating branches, ie. add/delete/change
-dynamically, a branch has its own id. When the branch order changes, aufs
-finds the new index by searching the branch id.
-
-
-Pseudo-link
-----------------------------------------------------------------------
-Assume "fileA" exists on the lower readonly branch only and it is
-hardlinked to "fileB" on the branch. When you write something to fileA,
-aufs copies-up it to the upper writable branch. Additionally aufs
-creates a hardlink under the Pseudo-link Directory of the writable
-branch. The inode of a pseudo-link is kept in aufs super_block as a
-simple list. If fileB is read after unlinking fileA, aufs returns
-filedata from the pseudo-link instead of the lower readonly
-branch. Because the pseudo-link is based upon the inode, to keep the
-inode number by xino (see above) is important.
-
-All the hardlinks under the Pseudo-link Directory of the writable branch
-should be restored in a proper location later. Aufs provides a utility
-to do this. The userspace helpers executed at remounting and unmounting
-aufs by default.
-
-
-XIB(external inode number bitmap)
-----------------------------------------------------------------------
-Addition to the xino file per a branch, aufs has an external inode number
-bitmap in a superblock object. It is also a file such like a xino file.
-It is a simple bitmap to mark whether the aufs inode number is in-use or
-not.
-To reduce the file I/O, aufs prepares a single memory page to cache xib.
-
-Aufs implements a feature to truncate/refresh both of xino and xib to
-reduce the number of consumed disk blocks for these files.
-
-
-Virtual or Vertical Dir
-----------------------------------------------------------------------
-In order to support multiple layers (branches), aufs readdir operation
-constructs a virtual dir block on memory. For readdir, aufs calls
-vfs_readdir() internally for each dir on branches, merges their entries
-with eliminating the whiteout-ed ones, and sets it to file (dir)
-object. So the file object has its entry list until it is closed. The
-entry list will be updated when the file position is zero and becomes
-old. This decision is made in aufs automatically.
-
-The dynamically allocated memory block for the name of entries has a
-unit of 512 bytes (by default) and stores the names contiguously (no
-padding). Another block for each entry is handled by kmem_cache too.
-During building dir blocks, aufs creates hash list and judging whether
-the entry is whiteouted by its upper branch or already listed.
-
-Some people may call it can be a security hole or invite DoS attack
-since the opened and once readdir-ed dir (file object) holds its entry
-list and becomes a pressure for system memory. But I'd say it is similar
-to files under /proc or /sys. The virtual files in them also holds a
-memory page (generally) while they are opened. When an idea to reduce
-memory for them is introduced, it will be applied to aufs too.
-
-
-Workqueue
-----------------------------------------------------------------------
-Aufs sometimes requires privilege access to a branch. For instance,
-in copy-up/down operation. When a user process is going to make changes
-to a file which exists in the lower readonly branch only, and the mode
-of one of ancestor directories may not be writable by a user
-process. Here aufs copy-up the file with its ancestors and they may
-require privilege to set its owner/group/mode/etc.
-This is a typical case of a application character of aufs (see
-Introduction).
-
-Aufs uses workqueue synchronously for this case. It creates its own
-workqueue. The workqueue is a kernel thread and has privilege. Aufs
-passes the request to call mkdir or write (for example), and wait for
-its completion. This approach solves a problem of a signal handler
-simply.
-If aufs didn't adopt the workqueue and changed the privilege of the
-process, and if the mkdir/write call arises SIGXFSZ or other signal,
-then the user process might gain a privilege or the generated core file
-was owned by a superuser. But I have a plan to switch to a new
-credential approach which will be introduced in linux-2.6.29.
-
-Also aufs uses the system global workqueue ("events" kernel thread) too
-for asynchronous tasks, such like handling inotify, re-creating a
-whiteout base and etc. This is unrelated to a privilege.
-Most of aufs operation tries acquiring a rw_semaphore for aufs
-superblock at the beginning, at the same time waits for the completion
-of all queued asynchronous tasks.
-
-
-Whiteout
-----------------------------------------------------------------------
-The whiteout in aufs is very similar to Unionfs's. That is represented
-by its filename. UnionMount takes an approach of a file mode, but I am
-afraid several utilities (find(1) or something) will have to support it.
-
-Basically the whiteout represents "logical deletion" which stops aufs to
-lookup further, but also it represents "dir is opaque" which also stop
-lookup.
-
-In aufs, rmdir(2) and rename(2) for dir uses whiteout alternatively.
-In order to make several functions in a single systemcall to be
-revertible, aufs adopts an approach to rename a directory to a temporary
-unique whiteouted name.
-For example, in rename(2) dir where the target dir already existed, aufs
-renames the target dir to a temporary unique whiteouted name before the
-actual rename on a branch and then handles other actions (make it opaque,
-update the attributes, etc). If an error happens in these actions, aufs
-simply renames the whiteouted name back and returns an error. If all are
-succeeded, aufs registers a function to remove the whiteouted unique
-temporary name completely and asynchronously to the system global
-workqueue.
-
-
-Copy-up
-----------------------------------------------------------------------
-It is a well-known feature or concept.
-When user modifies a file on a readonly branch, aufs operate "copy-up"
-internally and makes change to the new file on the upper writable branch.
-When the trigger systemcall does not update the timestamps of the parent
-dir, aufs reverts it after copy-up.
+Aufs supports such case by three level of revalidation which is
+selectable by user.
+1. Simple Revalidate
+   Addition to the native flow in VFS's, confirm the child-parent
+   relationship on the branch just after locking the parent dir on the
+   branch in the "actual operation" (step 4). When this validation
+   fails, aufs returns EBUSY. ->d_revalidate() (step 3) in aufs still
+   checks the validation of the dentry on branches.
+2. Monitor Changes Internally by Inotify
+   Addition to above, in the "actual operation" (step 4) aufs re-lookup
+   the dentry on the branch, and returns EBUSY if it finds different
+   dentry.
+   Additionally, aufs sets the inotify watch for every dir on branches
+   during it is in cache. When the event is notified, aufs registers a
+   function to kernel 'events' thread by schedule_work(). And the
+   function sets some special status to the cached aufs dentry and inode
+   private data. If they are not cached, then aufs has nothing to
+   do. When the same file is accessed through aufs (step 0-3) later,
+   aufs will detect the status and refresh all necessary data.
+   In this mode, aufs has to ignore the event which is fired by aufs
+   itself.
+3. No Extra Validation
+   This is the simplest test and doesn't add any additional revalidation
+   test, and skip therevalidatin in step 4. It is useful and improves
+   aufs performance when system surely hide the aufs branches from user,
+   by over-mounting something (or another method).
