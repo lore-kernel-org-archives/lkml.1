@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbZBWUfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZBWUlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbZBWUfs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 15:35:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbZBWUfj
+	id S1753387AbZBWUlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 15:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZBWUlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 15:35:39 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:24141 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085AbZBWUfj (ORCPT
+	Mon, 23 Feb 2009 15:41:06 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43517 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbZBWUlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 15:35:39 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: etienne <etienne.basset@numericable.fr>
-Subject: Re: [PATCH][SMACK] convert smack_known list to a standard linux list.
-Date: Mon, 23 Feb 2009 15:35:33 -0500
-User-Agent: KMail/1.11.0 (Linux/2.6.27-gentoo-r8; KDE/4.2.0; i686; ; )
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM <linux-security-module@vger.kernel.org>, paulmck@linux.vnet.ibm.com
-References: <49A1C895.5030803@numericable.fr> <49A2013A.6020508@schaufler-ca.com> <49A242C6.1000400@numericable.fr>
-In-Reply-To: <49A242C6.1000400@numericable.fr>
+	Mon, 23 Feb 2009 15:41:03 -0500
+Date: Mon, 23 Feb 2009 14:40:41 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 4/4] keys: make procfiles per-user-namespace
+Message-ID: <20090223204041.GA31626@us.ibm.com>
+References: <20090109225313.GB15599@us.ibm.com> <20090109225208.GA15252@us.ibm.com> <5296.1234522990@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902231535.33392.paul.moore@hp.com>
+In-Reply-To: <5296.1234522990@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 February 2009 01:31:34 am etienne wrote:
-> Casey Schaufler wrote:
-> > etienne wrote:
-> >> hello,
-> >>
-> >> this patch on top of [PATCH][SMACK] convert smack rule list to linux
-> >> list V2 converts "smack_known" to a regular linux list. (rcu variant)
-> >
-> > I'm having some trouble applying this group of patches.
-> > I assume that I'm starting at the wrong place. Could you
-> > do a single patch to help me avoid confusion?
+Quoting David Howells (dhowells@redhat.com):
+> Serge E. Hallyn <serue@us.ibm.com> wrote:
+> 
+> > Restrict the /proc/keys and /proc/key-users output to keys
+> > belonging to the same user namespace as the reading task.
+> > 
+> > We may want to make this more complicated - so that any
+> > keys in a user-namespace which is belongs to the reading
+> > task are also shown.  But let's see if anyone wants that
+> > first.
+> 
+> Hmmm...  I wonder if we can do better by making the file position indicate the
+> key ID rather than being a count of the number of keys read.  It might make
+> this cleaner.
 
-...
+file position?  as in the result of lseek(fd, 0, SEEK_CUR)?
 
->
-> here you are!
-> (it is still on top of my 02/20 "[PATCH] SMACK netlabel fixes v2")
+I don't understand what you're suggesting.
 
-If Casey wants to ACK your Smack labeled networking patch from last week I'm 
-okay with pulling it into the lblnet-2.6_next tree (it is sorta labeled 
-networking related) so you can use it as a base if needed.  It would also get 
-the patch into the linux-next tree which is important if you want to target 
-2.6.30.
-
--- 
-paul moore
-linux @ hp
-
+-serge
