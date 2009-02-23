@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZBWWLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZBWWMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbZBWWLb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 17:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZBWWLW
+	id S1757319AbZBWWMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 17:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZBWWMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 17:11:22 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:15578 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbZBWWLW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 17:11:22 -0500
-MIME-Version: 1.0
-In-Reply-To: <200902221839.50357.rjw@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <200902221839.50357.rjw@sisk.pl>
-Date: Mon, 23 Feb 2009 14:11:19 -0800
-Message-ID: <d6200be20902231411s654f8b3csf1388a97f3f94ac4@mail.gmail.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
-	suspend-resume
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
+	Mon, 23 Feb 2009 17:12:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42019 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753444AbZBWWMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 17:12:06 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
+Date: Mon, 23 Feb 2009 23:11:34 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        pm list <linux-pm@lists.linux-foundation.org>,
        Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+References: <200902221837.49396.rjw@sisk.pl> <20090223171630.GA28651@elte.hu> <alpine.LFD.2.00.0902230926030.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902230926030.3111@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902232311.36133.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 9:39 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Introduce two helper functions allowing us to disable device
-> interrupts (at the IO-APIC level) during suspend or hibernation
-> and enable them during the subsequent resume, respectively, so that
-> the timer interrupts are enabled while "late" suspend callbacks and
-> "early" resume callbacks provided by device drivers are being
-> executed.
->
-> Use these functions to rework the handling of interrupts during
-> suspend (hibernation) and resume.  Namely, interrupts will only be
-> disabled on the CPU right before suspending sysdevs, while device
-> interrupts will be disabled (at the IO-APIC level), with the help of
-> the new helper function, before calling "late" suspend callbacks
-> provided by device drivers and analogously during resume.
->
+On Monday 23 February 2009, Linus Torvalds wrote:
+> 
+> On Mon, 23 Feb 2009, Ingo Molnar wrote:
+> > 
+> > Linus, do you have a strong opinion about which variant we 
+> > should use?
+> 
+> Strong? No. I think mine is better just because _if_ another CPU is busy 
+> handling an interrupt that we're just now disabling, we'll just go on to 
+> the next interrupt. Waiting for them all at the end is always more 
+> efficient.
+> 
+> But does it really matter? No. In this case I think we've shut down all 
+> other CPU's anyway, so the whole "serialize_irq()" should probably not 
+> even be needed. 
 
-What impact does this have on wakeup interrupts? Unless you add a
-check, after masking all interrupt at the CPU, to abort suspend if any
-wakeup interrupt has IRQ_PENDING set I think you will loose wakeup
-interrupts (at least for irqs that use default_disable).
+But we're going to move the shutting down of the other CPUs after this point.
 
--- 
-Arve Hjønnevåg
+Finally, the sequence is going to be:
+- "normal" suspend of devices
+- disable device interrupts
+- "late" suspend of devices
+- _PTS
+- disable nonboot CPUs
+- local_irq_disable
+- sysdev_suspend
+[This is because ACPI wants us to put devices into low power states before
+doing the _PTS, which in turn is supposed to be done before the disabling of
+nonboot CPUs, and we want to put devices into low power states during "late"
+suspend.  Of course, analogously for the resume part.]
+
+So, I think your version is _really_ better. :-)
+
+Thanks,
+Rafael
