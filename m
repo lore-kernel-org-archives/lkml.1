@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZBWHuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZBWH4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZBWHuy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:50:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZBWHuo
+	id S1753980AbZBWH4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZBWHzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:50:44 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:22967 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbZBWHuo (ORCPT
+	Mon, 23 Feb 2009 02:55:52 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:54830 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752845AbZBWHzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:50:44 -0500
-Message-ID: <49A258A2.2020408@nokia.com>
-Date: Mon, 23 Feb 2009 10:04:50 +0200
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 23 Feb 2009 02:55:51 -0500
+Date: Mon, 23 Feb 2009 13:25:21 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arun@linux.vnet.ibm.com,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration between CPU
+Message-ID: <20090223075521.GA3725@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090220125516.GB10232@linux.vnet.ibm.com> <20090220132145.GF26418@elte.hu> <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu>
 MIME-Version: 1.0
-To: Kim Kyuwon <chammoru@gmail.com>
-CC: David Brownell <david-b@pacbell.net>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
-       =?EUC-KR?B?seix1L/4?= <q1.kim@samsung.com>,
-       =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>
-Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when
- 	resuming
-References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com>	 <200902201311.44056.david-b@pacbell.net> <4d34a0a70902222141y345a7bc3g314e6de5df156f2d@mail.gmail.com>
-In-Reply-To: <4d34a0a70902222141y345a7bc3g314e6de5df156f2d@mail.gmail.com>
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Feb 2009 07:50:18.0535 (UTC) FILETIME=[5F1ABB70:01C9958B]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090220215318.GA30665@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext Kim Kyuwon wrote:
-> Hi,
-> 
-> On Sat, Feb 21, 2009 at 6:11 AM, David Brownell <david-b@pacbell.net> wrote:
->> On Friday 20 February 2009, Kim Kyuwon wrote:
->>> +static void omap_hsmmc_init(struct mmc_omap_host *host)
->>> +{
->>> +       u32 hctl, capa, value;
->>> +
->>> +       /* Only MMC1 supports 3.0V */
->>> +       if (host->id == OMAP_MMC1_DEVID) {
->>> +               hctl = SDVS30;
->> Shouldn't it be remembering what voltage it was using,
->> and then restore that, instead of always making MMC1
->> restart at a 3.0V level?  That's pretty awkward to test
->> unless you have a 1.8V-capable card in MMC1...
-> 
-> You are somewhat right, thank you.
-> But remebering what voltage it was using doesn't feasible to me,
-> because the card can be changed while in 'Sleep' state. I should have
-> inserted a function that detect the right voltage after intializing. I
-> will resend the patch later.
+* Ingo Molnar <mingo@elte.hu> [2009-02-20 22:53:18]:
 
-Doesn't it already do that? Can you explain more?  
+> 
+> * Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > On Fri, 20 Feb 2009 17:07:37 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > > I'd also suggest to not do that rather ugly 
+> > > > > enable_timer_migration per-cpu variable, but simply reuse 
+> > > > > the existing nohz.load_balancer as a target CPU.
+> > > > 
+> > > > This is a good idea to automatically bias the timers.  But 
+> > > > this nohz.load_balancer is a very fast moving target and we 
+> > > > will need some heuristics to estimate overall system idleness 
+> > > > before moving the timers.
+> > > > 
+> > > > I would agree that the power saving load balancer has a good 
+> > > > view of the system and can potentially guide the timer biasing 
+> > > > framework.
+> > > 
+> > > Yeah, it's a fast moving target, but it already concentrates 
+> > > the load somewhat.
+> > > 
+> > 
+> > I wonder if the real answer for this isn't to have timers be 
+> > considered schedulable-entities and have the regular scheduler 
+> > decide where they actually run.
+> 
+> hm, not sure - it's a bit heavy for that.
+>
 
-Although I have not tested it, I very much doubt
-dual-voltage cards work.  That is because VMMC1_185V
-is zero, which has the side-effect of turning the
-regulator off (see arch/arm/mach-omap2/mmc-twl4030.c)
+I think the basic timer migration policy should exist in user space.
+One of the ways of looking at it is, as we begin to consolidate, using
+range timers and migrating all timers to lesser number of CPUs would
+make a whole lot of sense. 
+
+As far as the scheduler making those decisions is concerned, my
+concern is that the load balancing is a continuous process and timers
+don't necessarily work that way. I'd put my neck out and say that
+irqbalance, range timers and timer migration should all belong to user
+space. irqbalance and range timers do, so should timer migration.
+
+-- 
+	Balbir
