@@ -1,34 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbZBWRRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZBWRVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753770AbZBWRRf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 12:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZBWRR1
+	id S1753947AbZBWRVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 12:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZBWRVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 12:17:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50847 "EHLO mx3.mail.elte.hu"
+	Mon, 23 Feb 2009 12:21:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36227 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbZBWRR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 12:17:26 -0500
-Date: Mon, 23 Feb 2009 18:16:30 +0100
+	id S1751274AbZBWRVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 12:21:04 -0500
+Date: Mon, 23 Feb 2009 18:20:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
-	suspend-resume
-Message-ID: <20090223171630.GA28651@elte.hu>
-References: <200902221837.49396.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl> <20090223083645.GA9582@elte.hu> <200902231229.58743.rjw@sisk.pl>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
+Message-ID: <20090223172044.GA29344@elte.hu>
+References: <20090220140157.GA12799@elte.hu> <20090222030030.GD6860@linux.vnet.ibm.com> <20090223051709.GA5990@linux.vnet.ibm.com> <200902240029.37815.nickpiggin@yahoo.com.au> <20090223161726.GD6751@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902231229.58743.rjw@sisk.pl>
+In-Reply-To: <20090223161726.GD6751@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -43,55 +38,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> > > +void suspend_device_irqs(void)
-> > > +{
-> > > +	struct irq_desc *desc;
-> > > +	int irq;
-> > > +
-> > > +	for_each_irq_desc(irq, desc) {
-> > > +		unsigned long flags;
-> > > +
-> > > +		spin_lock_irqsave(&desc->lock, flags);
-> > > +
-> > > +		if (!desc->depth && desc->action
-> > > +		    && !(desc->action->flags & IRQF_TIMER)) {
-> > > +			desc->depth++;
-> > > +			desc->status |= IRQ_DISABLED | IRQ_SUSPENDED;
-> > > +			desc->chip->disable(irq);
-> > > +		}
-> > > +
-> > > +		spin_unlock_irqrestore(&desc->lock, flags);
-> > > +	}
-> > > +
-> > > +	for_each_irq_desc(irq, desc) {
-> > > +		if (desc->status & IRQ_SUSPENDED)
-> > > +			synchronize_irq(irq);
-> > > +	}
+> On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
+> > On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
 > > 
-> > Optimization/code-flow nit: a possibility might be to do a 
-> > single loop, i.e. i think it's safe to couple the 
-> > disable+sync bits [as in 99.99% of the cases there will be 
-> > no in-execution irq handlers when we execute this.]
+> > > The boot CPU runs in the context of its idle thread during boot-up.
+> > > During this time, idle_cpu(0) will always return nonzero, which will
+> > > fool Classic and Hierarchical RCU into deciding that a large chunk of
+> > > the boot-up sequence is a big long quiescent state.  This in turn causes
+> > > RCU to prematurely end grace periods during this time.
+> > >
+> > > This patch creates a new global variable that is set to 1 just before
+> > > the boot CPU first enters the scheduler, after which the idle task
+> > > really is idle.
+> > 
+> > Nice work all (btw. if this patch goes in rather than using system_state,
+> > then please make the variable __read_mostly).
 > 
-> Well, Linus suggested to do it in a separate loop.  I'm fine 
-> with both ways.
+> Hmmm...  I misread this and made system_state be 
+> __read_mostly.  Let me know if this is bad, easy to fix if 
+> needed.
 
-Linus, do you have a strong opinion about which variant we 
-should use?
-
-The two approaches are not completely equivalent, the variant 
-suggested by Linus is a bit more 'atomic' - in that it first 
-turns off everything, then looks for everything that needs to be 
-synchronized.
-
-OTOH, it _shouldnt_ make much of a difference on a correctly 
-working system - we ought to be able to disable the irqs one by 
-one and wait on any pending ones on the spot. Maybe if there was 
-some implicit dependency between irq sources it would be more 
-robust to do Linus's version.
-
-Dunno ... no strong feelings either way.
+no, it's the right thing to do. I'd not be surprised if we were 
+already running into it as a performance problem - a number of 
+common things check this flag.
 
 	Ingo
