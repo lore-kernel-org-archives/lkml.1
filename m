@@ -1,41 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZBWJbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZBWJf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbZBWJbJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 04:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbZBWJaz
+	id S1753714AbZBWJf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 04:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZBWJfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 04:30:55 -0500
-Received: from cuda1.bluetone.cz ([212.158.128.5]:48927 "EHLO mail.bluetone.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752011AbZBWJay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 04:30:54 -0500
-Message-ID: <49A268A7.1010708@slax.org>
-Date: Mon, 23 Feb 2009 10:13:11 +0100
-From: Tomas M <tomas@slax.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
-MIME-Version: 1.0
-To: hooanon05@yahoo.co.jp
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 2/8] Aufs2: structure
-References: <7558.1235374266@jrobl> <7769.1235374482@jrobl>
-In-Reply-To: <7769.1235374482@jrobl>
-Content-Type: text/plain; charset=windows-1252
+	Mon, 23 Feb 2009 04:35:16 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:43429 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbZBWJfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 04:35:15 -0500
+Subject: [PATCH] kmemcheck: Disable SLUB and SLAB debugging when kmemcheck
+	is enabled
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, vegard.nossum@gmail.com,
+       cl@linux-foundation.org
+Date: Mon, 23 Feb 2009 11:35:12 +0200
+Message-Id: <1235381712.6216.22.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The struct of a xino file is simple, just a sequence of aufs inode
-> numbers which is indexed by the lower inode number.
-> In the above sample, assume the inode number of /ro/fileA is i111 and
-> aufs assigns the inode number i999 for fileA. Then aufs writes 999 as
-> 4(8) bytes at 111 * 4(8) bytes offset in the xino file.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-I think it is worth mentioning that the xino file, if I understand it correctly, is a 'sparse file', that means it is full of 'holes' and doesn't consume as much disk space as it might appear.
+Enabling kmemcheck in Kconfig is a painful experience. Lets make it a
+tad bit easier by inverting the dependencies to SLUB and SLAB debugging.
+As kmemcheck is more powerful than slab debugging, disable the latter
+functionality if an user enables kmemcheck.
 
-In my opinion, the current xino-file approach is not much usable on filesystems which do not support sparse files (for example, if you wish to union two vfats), since some 'seeks' would probably write a lot of nulls. But I am not any kernel developer so I don't even know if there exists any filesystem which would be unable to support sparse files (except the mentioned VFAT, of course).
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ arch/x86/Kconfig.debug |    2 +-
+ init/Kconfig           |    2 +-
+ lib/Kconfig.debug      |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index de186c5..3d1d593 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -276,7 +276,7 @@ menuconfig KMEMCHECK
+ 	bool "kmemcheck: trap use of uninitialized memory"
+ 	depends on X86
+ 	depends on !X86_USE_3DNOW
+-	depends on (SLUB && !SLUB_DEBUG_ON) || (SLAB && !DEBUG_SLAB)
++	depends on SLUB || SLAB
+ 	depends on !CC_OPTIMIZE_FOR_SIZE
+ 	depends on !DEBUG_PAGEALLOC
+ 	depends on !FUNCTION_TRACER
+diff --git a/init/Kconfig b/init/Kconfig
+index f068071..36617a4 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -890,7 +890,7 @@ config PCI_QUIRKS
+ config SLUB_DEBUG
+ 	default y
+ 	bool "Enable SLUB debugging support" if EMBEDDED
+-	depends on SLUB && SYSFS
++	depends on SLUB && SYSFS && !KMEMCHECK
+ 	help
+ 	  SLUB has extensive debug support features. Disabling these can
+ 	  result in significant savings in code size. This also disables
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 29044f5..768e426 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -262,7 +262,7 @@ config DEBUG_OBJECTS_ENABLE_DEFAULT
+ 
+ config DEBUG_SLAB
+ 	bool "Debug slab memory allocations"
+-	depends on DEBUG_KERNEL && SLAB
++	depends on DEBUG_KERNEL && SLAB && !KMEMCHECK
+ 	help
+ 	  Say Y here to have the kernel do limited verification on memory
+ 	  allocation as well as poisoning memory on free to catch use of freed
+-- 
+1.5.4.3
 
 
-Tomas M
-slax.org
 
