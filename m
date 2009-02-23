@@ -1,116 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZBWMoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbZBWMpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbZBWMoo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 07:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZBWMog
+	id S1755309AbZBWMpu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 07:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZBWMpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 07:44:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45120 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbZBWMof (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 07:44:35 -0500
-Subject: Re: [PATCH 15/20] Do not disable interrupts in free_page_mlock()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-In-Reply-To: <20090223122331.GF6740@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
-	 <1235344649-18265-16-git-send-email-mel@csn.ul.ie>
-	 <1235380740.4645.2.camel@laptop>  <20090223122331.GF6740@csn.ul.ie>
-Content-Type: text/plain
-Date: Mon, 23 Feb 2009 13:44:18 +0100
-Message-Id: <1235393058.4645.134.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Feb 2009 07:45:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39831 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753637AbZBWMpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 07:45:41 -0500
+Date: Mon, 23 Feb 2009 13:45:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
+	suspend-resume
+Message-ID: <20090223124503.GC31427@elte.hu>
+References: <200902221837.49396.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl> <20090223083645.GA9582@elte.hu> <200902231229.58743.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902231229.58743.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-23 at 12:23 +0000, Mel Gorman wrote:
-> On Mon, Feb 23, 2009 at 10:19:00AM +0100, Peter Zijlstra wrote:
-> > On Sun, 2009-02-22 at 23:17 +0000, Mel Gorman wrote:
 
-> > >  static inline void free_page_mlock(struct page *page)
-> > >  {
-> > > -	if (unlikely(TestClearPageMlocked(page))) {
-> > > -		unsigned long flags;
-> > > -
-> > > -		local_irq_save(flags);
-> > > -		__dec_zone_page_state(page, NR_MLOCK);
-> > > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > > -		local_irq_restore(flags);
-> > > -	}
-> > > +	__dec_zone_page_state(page, NR_MLOCK);
-> > > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > >  }
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> > > +resume_devices:
+> > > +	resume_device_irqs();
 > > 
-> > Its not actually clearing PG_mlocked anymore, so the name is now a tad
-> > misleading.
-> > 
+> > Small style nit: labels should start with a space character. 
+> > I.e. it should be:
 > 
-> Really? I see the following
+> I know, but the second label in there starts without a space 
+> character and IMO keeping a uniform coding style i a single 
+> file is more important than trying to adjust it to a broader 
+> set of rules FWIW. [...]
 
-> So there is a PG_mlocked bit once UNEVITABLE_LRU is set which was the
-> case on the tests I was running. I'm probably missing something silly.
+Even though it's just a very small and insignificant detail 
+(nowhere described in the CodingStyle), barely worth the mention 
+(and i already regret having brought it up at all), what you say 
+is wrong on a conceptual level and that alarms me a bit ;-)
 
-What I was trying to say was that free_page_mlock() doesn't change the
-page-state after your change, hence the 'free' part of its name is
-misleading.
+It is exactly these kinds of "my code, my style!" world view 
+that results in a crappy overall kernel style.
 
-> > That said, since we're freeing the page, there ought to not be another
-> > reference to the page, in which case it appears to me we could safely
-> > use the unlocked variant of TestClear*().
-> > 
-> 
-> Regrettably, unlocked variants do not appear to be defined as such but
-> the following should do the job, right? It applies on top of the current
-> change.
-> 
-> diff --git a/mm/internal.h b/mm/internal.h
-> index b52bf86..7f775a1 100644
-> --- a/mm/internal.h
-> +++ b/mm/internal.h
-> @@ -155,6 +155,7 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
->   */
->  static inline void free_page_mlock(struct page *page)
->  {
-	VM_BUG_ON(!PageMlocked(page)); ?
+For a single file to look consistent is just the first (and 
+required) step, what matters even more is for files to have 
+similar coding patterns, to make the style as helpful to the 
+general kernel developer/reviewer/bug-fixer/maintainer as 
+possible.
 
-> +	__ClearPageMlocked(page);
->  	__dec_zone_page_state(page, NR_MLOCK);
->  	__count_vm_event(UNEVICTABLE_MLOCKFREED);
->  }
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index edac673..8bd0533 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -580,7 +580,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
->  	unsigned long flags;
->  	int i;
->  	int bad = 0;
-> -	int clearMlocked = TestClearPageMlocked(page);
-> +	int clearMlocked = PageMlocked(page);
->  
->  	for (i = 0 ; i < (1 << order) ; ++i)
->  		bad += free_pages_check(page + i);
-> @@ -1040,7 +1040,7 @@ static void free_pcp_page(struct page *page)
->  	struct per_cpu_pages *pcp;
->  	unsigned long flags;
->  	int migratetype;
-> -	int clearMlocked = TestClearPageMlocked(page);
-> +	int clearMlocked = PageMlocked(page);
->  
->  	if (PageAnon(page))
->  		page->mapping = NULL;
+"code with a helpful style" here means two things:
 
-Right, that should do.
+1) it should understand and adhere to basic style principles. 
+   This is just an (often arbitrary) subset of the infinite set 
+   of reasonable style guides. The most common-sense ones are
+   written down in Documentation/CodingStyle. There's a lot of 
+   leeway, as long as the basic principle of "be helpful" is
+   understood and followed.
 
+2) it should carry meta information outside of the language 
+   syntax and it should build expectations about a code's 
+   purpose and general structure.
+
+   That is essential so that we can find bugs during review.
+
+   If each file has a slightly different style to express labels 
+   then that means we insert extra entropy and degrades and 
+   obfuscates the true meat of the code and hurts the overall 
+   reviewability of the code.
+
+In practical terms: i noticed that weird label - otherwise i 
+would not have commented on it. I noticed it because it had the 
+pattern of a comment block (most comment blocks start with 
+capital letters, and for that good reason).
+
+It was completely unnecessary for me to notice that label - it 
+carries no information about the patch itself. Ergo, it would be 
+better in the long run if code does not raise unnecessary mental 
+exceptions. We have a limited set of exceptions we are able to 
+handle during review, lets make sure we use them sparingly.
+
+Sure, there will always be borderline cases where we'll have to 
+agree to disagree, even if we agree about the general principle.
+
+But this is not one of those cases - having a "Suspend:" 
+capitalized label is not something you added to enhance the 
+basic coding style - it is something very uncommon and 
+self-serving which you added in _spite_ of the general 
+principles i believe. It has no other message beyond "I do this 
+because i can!".
+
+I.e. it is not helpful at all. When it comes to coding style the 
+kernel is not a democracy at all.
+
+> [...]  I also think that coding style changes shouldn't be 
+> mixed with functional changes as far as reasonably possible.
+
+Sure, you got that drive-by review for free, by virtue of 
+context diffs ;-)
+
+	Ingo
