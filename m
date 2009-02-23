@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbZBWO2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZBWOcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754929AbZBWO2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbZBWO2C
+	id S1754967AbZBWOcn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZBWOce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:28:02 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:53890 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884AbZBWO2B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:28:01 -0500
-To: xiyou.wangcong@gmail.com
-CC: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       miklos@szeredi.hu
-In-reply-to: <20090222135818.GA12782@hack.private> (message from
-	=?utf-8?Q?Am=C3=A9rico?= Wang on Sun, 22 Feb 2009 21:58:18 +0800)
-Subject: Re: [Bug #12208] uml is very slow on 2.6.28 host
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.Y3B.t50lJB@chimera> <20090222135818.GA12782@hack.private>
-Message-Id: <E1Lbbml-0002ww-BW@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 23 Feb 2009 15:27:55 +0100
+	Mon, 23 Feb 2009 09:32:34 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55561 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752579AbZBWOce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 09:32:34 -0500
+Date: Mon, 23 Feb 2009 14:32:32 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [RFC PATCH 00/20] Cleanup and optimise the page allocator
+Message-ID: <20090223143232.GJ6740@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <87ljryuij0.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <87ljryuij0.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Feb 2009, =?utf-8?Q?Am=C3=A9rico?= Wang wrote:
-> On Sat, Feb 14, 2009 at 09:50:19PM +0100, Rafael J. Wysocki wrote:
-> >This message has been generated automatically as a part of a report
-> >of regressions introduced between 2.6.27 and 2.6.28.
-> >
-> >The following bug entry is on the current list of known regressions
-> >introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> >be listed and let me know (either way).
-> >
-> >
-> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
-> >Subject		: uml is very slow on 2.6.28 host
-> >Submitter	: Miklos Szeredi <miklos@szeredi.hu>
-> >Date		: 2008-12-12 9:35 (65 days old)
-> >References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
+On Mon, Feb 23, 2009 at 01:02:59AM +0100, Andi Kleen wrote:
+> Mel Gorman <mel@csn.ul.ie> writes:
 > 
-> Hello, Miklos!
 > 
-> I can't reproduce this on host 2.6.28.7 with uml guest of current git.
-> Have you tried 2.6.28.7? Does it have the same problem?
+> BTW one additional tuning opportunity would be to change cpusets to
+> always precompute zonelists out of line and then avoid doing
+> all these checks in the fast path.
+> 
 
-It's still slow for me on 2.6.29-rc5.  I haven't tried 2.6.28.7 yet.
+hmm, it would be ideal but I haven't looked too closely at how it could
+be implemented. I thought first you could just associate a zonelist with
+the cpuset but you'd need one for each node allowed by the cpuset so it
+could get quite large. Then again, it might be worthwhile if cpusets
+were expected to be very long lived.
 
-Thanks,
-Miklos
+If there are any users of cpusets watching, would you be interested in
+profiling with cpusets enabled and see how much time we spend in that
+code?
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
