@@ -1,126 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbZBWWvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZBWXBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbZBWWvX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 17:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZBWWug
+	id S1756818AbZBWXBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 18:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZBWXBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 17:50:36 -0500
-Received: from mail-fx0-f167.google.com ([209.85.220.167]:34396 "EHLO
-	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753982AbZBWWua (ORCPT
+	Mon, 23 Feb 2009 18:01:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54522 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754432AbZBWXBF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 17:50:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=Ol6LaTGImMdhbWZAFOhITlsbpswTmNUqK+zr8d4YOQY01TMwZgX8cHZ+oFAGHEQU1K
-         glh4Rf2z2YrZz+ZeknzwHIhUDib6qC46YPXt4jBiDCNrqcGnkVF5qdm3QlpHBYKhvsnA
-         PD07gEYeYOvwdkw9WJ9spcYlRifTzdu4xLT/0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] ide: remove CONFIG_BLK_DEV_IDEDOUBLER config option
-Date: Mon, 23 Feb 2009 23:50:39 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-next-20090220-dirty; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 23 Feb 2009 18:01:05 -0500
+Date: Mon, 23 Feb 2009 14:59:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mel@csn.ul.ie, linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
+       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH] mm: gfp_to_alloc_flags()
+Message-Id: <20090223145936.ba2b51e7.akpm@linux-foundation.org>
+In-Reply-To: <1235390103.4645.80.camel@laptop>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
+	<1235390103.4645.80.camel@laptop>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902232350.39412.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove CONFIG_BLK_DEV_IDEDOUBLER config option
+On Mon, 23 Feb 2009 12:55:03 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Nowadays it is not worth having a separate config option for
-Amiga IDE Doubler support so always include it (it still needs
-to be explicitly enabled by module parameter).
+> +static int gfp_to_alloc_flags(gfp_t gfp_mask)
+> +{
+> +	struct task_struct *p = current;
+> +	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+> +	const gfp_t wait = gfp_mask & __GFP_WAIT;
+> +
+> +	/*
+> +	 * The caller may dip into page reserves a bit more if the caller
+> +	 * cannot run direct reclaim, or if the caller has realtime scheduling
+> +	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+> +	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+> +	 */
+> +	if (gfp_mask & __GFP_HIGH)
+> +		alloc_flags |= ALLOC_HIGH;
 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/Kconfig |   23 ++++++++---------------
- drivers/ide/gayle.c |   12 +-----------
- 2 files changed, 9 insertions(+), 26 deletions(-)
+This could be sped up by making ALLOC_HIGH==__GFP_HIGH (hack)
 
-Index: b/drivers/ide/Kconfig
-===================================================================
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -765,27 +765,20 @@ config BLK_DEV_GAYLE
- 	  This includes on-board IDE interfaces on some Amiga models (A600,
- 	  A1200, A4000, and A4000T), and IDE interfaces on the Zorro expansion
- 	  bus (M-Tech E-Matrix 530 expansion card).
--	  Say Y if you have an Amiga with a Gayle IDE interface and want to use
--	  IDE devices (hard disks, CD-ROM drives, etc.) that are connected to
--	  it.
--	  Note that you also have to enable Zorro bus support if you want to
--	  use Gayle IDE interfaces on the Zorro expansion bus.
- 
--config BLK_DEV_IDEDOUBLER
--	bool "Amiga IDE Doubler support (EXPERIMENTAL)"
--	depends on BLK_DEV_GAYLE && EXPERIMENTAL
--	---help---
--	  This feature provides support for the so-called `IDE doublers' (made
-+	  It also provides support for the so-called `IDE doublers' (made
- 	  by various manufacturers, e.g. Eyetech) that can be connected to
- 	  the on-board IDE interface of some Amiga models. Using such an IDE
- 	  doubler, you can connect up to four instead of two IDE devices to
--	  the Amiga's on-board IDE interface.
-+	  the Amiga's on-board IDE interface. The feature is enabled at kernel
-+	  runtime using the "gayle.doubler" kernel boot parameter.
- 
--	  Note that the normal Amiga Gayle IDE driver may not work correctly
--	  if you have an IDE doubler and don't enable this feature!
-+	  Say Y if you have an Amiga with a Gayle IDE interface and want to use
-+	  IDE devices (hard disks, CD-ROM drives, etc.) that are connected to
-+	  it.
- 
--	  Say Y if you have an IDE doubler.  The feature is enabled at kernel
--	  runtime using the "gayle.doubler" kernel boot parameter.
-+	  Note that you also have to enable Zorro bus support if you want to
-+	  use Gayle IDE interfaces on the Zorro expansion bus.
- 
- config BLK_DEV_BUDDHA
- 	tristate "Buddha/Catweasel/X-Surf IDE interface support (EXPERIMENTAL)"
-Index: b/drivers/ide/gayle.c
-===================================================================
---- a/drivers/ide/gayle.c
-+++ b/drivers/ide/gayle.c
-@@ -53,11 +53,6 @@
- 
- #define GAYLE_NEXT_PORT	0x1000
- 
--#ifndef CONFIG_BLK_DEV_IDEDOUBLER
--#define GAYLE_NUM_HWIFS		1
--#define GAYLE_NUM_PROBE_HWIFS	GAYLE_NUM_HWIFS
--#define GAYLE_HAS_CONTROL_REG	1
--#else /* CONFIG_BLK_DEV_IDEDOUBLER */
- #define GAYLE_NUM_HWIFS		2
- #define GAYLE_NUM_PROBE_HWIFS	(ide_doubler ? GAYLE_NUM_HWIFS : \
- 					       GAYLE_NUM_HWIFS-1)
-@@ -66,8 +61,6 @@
- static int ide_doubler;
- module_param_named(doubler, ide_doubler, bool, 0);
- MODULE_PARM_DESC(doubler, "enable support for IDE doublers");
--#endif /* CONFIG_BLK_DEV_IDEDOUBLER */
--
- 
-     /*
-      *  Check and acknowledge the interrupt status
-@@ -151,10 +144,7 @@ static int __init gayle_init(void)
- found:
- 	printk(KERN_INFO "ide: Gayle IDE controller (A%d style%s)\n",
- 			 a4000 ? 4000 : 1200,
--#ifdef CONFIG_BLK_DEV_IDEDOUBLER
--			 ide_doubler ? ", IDE doubler" :
--#endif
--			 "");
-+			 ide_doubler ? ", IDE doubler" : "");
- 
- 	if (a4000) {
- 	    phys_base = GAYLE_BASE_4000;
+> +	if (!wait) {
+> +		alloc_flags |= ALLOC_HARDER;
+> +		/*
+> +		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+> +		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> +		 */
+> +		alloc_flags &= ~ALLOC_CPUSET;
+> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
+> +		alloc_flags |= ALLOC_HARDER;
+> +
+> +	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+> +		if (!in_interrupt() &&
+> +		    ((p->flags & PF_MEMALLOC) ||
+> +		     unlikely(test_thread_flag(TIF_MEMDIE))))
+> +			alloc_flags |= ALLOC_NO_WATERMARKS;
+> +	}
+> +	return alloc_flags;
+> +}
+
+
+But really, the whole function can be elided on the fastpath.  Try the
+allocation with the current flags (and __GFP_NOWARN) and only if it
+failed will we try altering the flags to try harder?
+
