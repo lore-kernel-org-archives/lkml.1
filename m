@@ -1,107 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZBWHsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZBWHuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbZBWHsl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZBWHsc
+	id S1754017AbZBWHuy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZBWHuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:48:32 -0500
-Received: from mail-fx0-f167.google.com ([209.85.220.167]:44085 "EHLO
-	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752845AbZBWHsb (ORCPT
+	Mon, 23 Feb 2009 02:50:44 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:22967 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbZBWHuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:48:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cbeYxgEbFMOOfsXBAA1HO5ZCNDDBxjO5dlEYvcbO4UhP5lrWHSIEfC45AYUQYm0SDZ
-         E7PJXk6SyyOYBXMto41AZytHjfoFvLjki73K2Ba5MpwmZF9qmM0GQ2gQss9cpuhENb9j
-         xmOvMDCbI03mA+/8uUDup3QN9m58SvHUgqu18=
-Date: Mon, 23 Feb 2009 10:48:37 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kernel building procedure changed?
-Message-ID: <20090223074837.GA29898@localhost>
-References: <20090222220747.GB7279@localhost> <20090222221653.GA30498@uranus.ravnborg.org> <49A1D167.8050801@gmail.com> <20090222230031.GB30619@uranus.ravnborg.org>
+	Mon, 23 Feb 2009 02:50:44 -0500
+Message-ID: <49A258A2.2020408@nokia.com>
+Date: Mon, 23 Feb 2009 10:04:50 +0200
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090222230031.GB30619@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Kim Kyuwon <chammoru@gmail.com>
+CC: David Brownell <david-b@pacbell.net>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
+       =?EUC-KR?B?seix1L/4?= <q1.kim@samsung.com>,
+       =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>
+Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when
+ 	resuming
+References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com>	 <200902201311.44056.david-b@pacbell.net> <4d34a0a70902222141y345a7bc3g314e6de5df156f2d@mail.gmail.com>
+In-Reply-To: <4d34a0a70902222141y345a7bc3g314e6de5df156f2d@mail.gmail.com>
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Feb 2009 07:50:18.0535 (UTC) FILETIME=[5F1ABB70:01C9958B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Mon, Feb 23, 2009 at 12:00:31AM +0100]
-| On Sun, Feb 22, 2009 at 11:27:51PM +0100, Jiri Slaby wrote:
-| > On 22.2.2009 23:16, Sam Ravnborg wrote:
-| > >On Mon, Feb 23, 2009 at 01:07:48AM +0300, Cyrill Gorcunov wrote:
-| > >>Hi all,
-| > >>
-| > >>I found a bit strange thing happens now --
-| > >>plain
-| > >>
-| > >>	make arch/x86/kernel/head64.o
-| > >>
-| > >>doesn't work anymore. Instead of compiling
-| > >>_just_ this file I've got the following:
-| > >>
-| > >>---
-| > >>cyrill@lenovo linux-2.6.git $ make arch/x86/kernel/head64.o
-| > >>   CHK     include/linux/version.h
-| > >>   CHK     include/linux/utsrelease.h
-| > >>   SYMLINK include/asm ->  include/asm-x86
-| > >>   CALL    scripts/checksyscalls.sh
-| > >>   CHK     include/linux/compile.h
-| > >>   AS      arch/x86/kernel/head_64.o
-| > >>   VDSOSYM arch/x86/vdso/vdso-syms.lds
-| > >>   VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
-| > >>   VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
-| > >>   VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
-| > >>   VDSOSYM arch/x86/vdso/vdso32-syms.lds
-| > >>   LD      arch/x86/vdso/built-in.o
-| > >>   CC      fs/hpfs/dnode.o
-| > >>make[2]: *** [fs/hpfs/dnode.o] Interrupt
-| > >>make[1]: *** [fs/hpfs] Interrupt
-| > >>make: *** [fs] Interrupt
-| > >>---
-| > >>
-| > >>I've done make allyesconfig previously.
-| > >>I don't understand what I'm doing wrong... :(
-| > >
-| > >I should work...
-| > 
-| > It is matter of days, new mmotm doesn't work either, older did.
-| 
-| Does it happen with -next?
-| Does it happen with mainline?
-| I need to know what tree to look at - and I do not have mmotm handy.
-| 
-| 	Sam
-| 
+ext Kim Kyuwon wrote:
+> Hi,
+> 
+> On Sat, Feb 21, 2009 at 6:11 AM, David Brownell <david-b@pacbell.net> wrote:
+>> On Friday 20 February 2009, Kim Kyuwon wrote:
+>>> +static void omap_hsmmc_init(struct mmc_omap_host *host)
+>>> +{
+>>> +       u32 hctl, capa, value;
+>>> +
+>>> +       /* Only MMC1 supports 3.0V */
+>>> +       if (host->id == OMAP_MMC1_DEVID) {
+>>> +               hctl = SDVS30;
+>> Shouldn't it be remembering what voltage it was using,
+>> and then restore that, instead of always making MMC1
+>> restart at a 3.0V level?  That's pretty awkward to test
+>> unless you have a 1.8V-capable card in MMC1...
+> 
+> You are somewhat right, thank you.
+> But remebering what voltage it was using doesn't feasible to me,
+> because the card can be changed while in 'Sleep' state. I should have
+> inserted a function that detect the right voltage after intializing. I
+> will resend the patch later.
 
-Sam, it seems I never paid attention on Makefile
-rules before. Which means -- I don't know if kernel
-build procedure should behave like it do now.
+Doesn't it already do that? Can you explain more?  
 
-We have the following rule (arch/x86/kernel/Makefile)
-
-extra-y                := head_$(BITS).o head$(BITS).o head.o init_task.o
-vmlinux.lds
-
-Does it mean that any obj-y targets should be built before
-extra-y? If "yes" -- all is fine and works well and I'm just
-noising here (sorry for that).
-
-To be precise -- I don't remember how it worked before :)
-I mean it's possible that my previous workflow was:
-
-1) build whole kernel by "make"
-2) modify head_64.S
-3) run "make arch/x86/kernel/head_64.o"
-
-So I will try to repeat these 3 points and report.
-
-	- Cyrill -
+Although I have not tested it, I very much doubt
+dual-voltage cards work.  That is because VMMC1_185V
+is zero, which has the side-effect of turning the
+regulator off (see arch/arm/mach-omap2/mmc-twl4030.c)
