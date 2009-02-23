@@ -1,97 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZBWO5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZBWPAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbZBWO5c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbZBWO5S
+	id S1755972AbZBWPAB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 10:00:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZBWO7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:57:18 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:60065 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755859AbZBWO5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:57:16 -0500
-X-Auth-Info: AoqsFqfq/cIhf4bjAil9y0huyrq2hh9fAIrWrMW2vHY=
-Message-ID: <49A2B949.7060909@grandegger.com>
-Date: Mon, 23 Feb 2009 15:57:13 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 23 Feb 2009 09:59:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44049 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754742AbZBWO7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 09:59:50 -0500
+Date: Mon, 23 Feb 2009 15:59:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix unused variable without softlock detection and
+	highmem
+Message-ID: <20090223145925.GD3377@elte.hu>
+References: <200902231739.51863.knikanth@suse.de>
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
-References: <1235070082-7069-1-git-send-email-wg@grandegger.com> <1235070082-7069-2-git-send-email-wg@grandegger.com> <1235070082-7069-3-git-send-email-wg@grandegger.com> <1235070082-7069-4-git-send-email-wg@grandegger.com> <499E7B9B.6030603@trash.net> <49A01932.4090004@grandegger.com> <49A272A3.5040405@trash.net>
-In-Reply-To: <49A272A3.5040405@trash.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902231739.51863.knikanth@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Wolfgang Grandegger wrote:
->> Patrick McHardy wrote:
->>> Is sysfs really the best choice for this? It has the usual problems,
->>> you can't change multiple parameters at once atomically. Now, I don't
->>> know whether this is actually (and currently) a problem for CAN, but
->>> given that we already have a generic netlink interface for creating
->>> network interfaces that can easily support this, what are the reasons
->>> for adding a new interface instead of using the existing one?
->>
->> You refer to the API described at http://lwn.net/Articles/236919/, I
->> assume.
+
+* Nikanth Karthikesan <knikanth@suse.de> wrote:
+
+> When both CONFIG_DETECT_SOFTLOCKUP and CONFIG_HIGHMEM are not 
+> defined avoid defining the constant for one fixing the 'define 
+> but not used' warning.
 > 
-> Exactly.
-> 
->> Well, I know that netlink is used to define routes in the kernel
->> or VLANs but I was not aware that it can also be used to configure real
->> network devices. What a pity. At a first glance, I could also be used
->> for CAN, of course. There are the following requirements:
->>
->> 1. Set and get CAN device properties like bit-rate and controller mode.
->> 2. Show CAN bus state (active, error-passive or bus-off).
->> 3. Get device constants like clock frequency and bit-timing parameters.
->> 4. Dump CAN device statistics.
->> 5. Trigger device restart if CAN bus-off state has been detected.
->>
->> Not sure yet, if the interface if good for all purposes. Especially
->> point 5. might be better handled by an IOCTL.
-> 
-> The first points sound pretty regular. The last one - just triggering
-> it is no problem of course, but since I don't know how the detection
-> works, I can't really tell whether its suitable.
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-CAN errors and state changes might be delivered as CAN error messages to
-the receiving socket/application, like normal messages. When the
-application realizes the state change to CAN bus-off, it may want to
-trigger a bus-off recovery (controller restart). The CAN controller HW
-enters bus-off, when too much errors occurred on the bus. No more
-messages can then be sent of received and therefore the driver calls
-netif_carrier_off(). Is there already an interface for the user to
-restart? An appropriate IOCTL request would be a simply option, but they
-are generally deprecated, AFAIK. Using netlink would be more cumbersome,
-as with SYSFS.
+A variant of this is already fixed a bit differently in 
+tip:core/softlockup:
 
->> And we need a user space
->> tool, e.g. canconfig, to handle the user requests and communicate with
->> the kernel side.
-> 
-> Thats pretty standard :)
+9f8d979: softlockup: move 'one' to the softlockup section in sysctl.c
 
-For the iproute2 utility "ip", mainliy a netlink_can.c would be
-required. But a dedicated tool for CAN seems more appropriate to me.
-
->> We will follow that promising route. Any further help
->> or link is appreciated. Thanks.
-> 
-> It should be quite easy to move your interface on top. A few examples
-> that might be useful are vlan, ip_gre and macvlan.
-
-Also the drivers dummy and ipb are quite useful. Using netlink seems
-straight-forward, indeed, but it requires still some effort. Hope to
-find some time soon.
-
-Wolfgang.
-
-
+	Ingo
