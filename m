@@ -1,108 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbZBWUEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbZBWUEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbZBWUEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 15:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbZBWUCW
+	id S1758088AbZBWUEj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 15:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757455AbZBWUC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 15:02:22 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:54532 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755893AbZBWUCU (ORCPT
+	Mon, 23 Feb 2009 15:02:29 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:53416 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757448AbZBWUC2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 15:02:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:user-agent:date:from:to:cc:subject:references
-         :content-disposition;
-        b=tlQ1NRE5ISJVAVdx2KwEaqavwNOMl6H0t4tsqiR2QRGmOD5VIeZWpg4uzA0ggw5DlZ
-         JThvSWoTt1+cmfJAubE9AWcWo47ZW9gXguhTGOjaYwfxUfFEDCjfG8gwochecasVXfN+
-         Z6cDDal4sMP0qf0F1EI7r9nuR7xlsdDQRQeqQ=
-Message-Id: <20090223200227.458712506@openvz.org>
-User-Agent: quilt/0.47-1
-Date: Mon, 23 Feb 2009 22:57:02 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: hpa@zytor.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Cc: heukelum@fastmail.fm, Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: [patch 6/6] x86: efi_stub_32,64 - add missing ENDPROCs
-References: <20090223195656.512422509@openvz.org>
-Content-Disposition: inline; filename=x86-efi-stub
+	Mon, 23 Feb 2009 15:02:28 -0500
+Subject: Re: [Linux 2.6.29-rc6] [drm:i915_set_status_page] *ERROR* can not
+	ioremap  virtual address for G33 hw status page
+From: Eric Anholt <eric@anholt.net>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "lenb@kernel.org" <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       mjg@redhat.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, rui.zhang@intel.com
+In-Reply-To: <8db1092f0902230646o78a07a09t920ad65369b5a20d@mail.gmail.com>
+References: <8db1092f0902230646o78a07a09t920ad65369b5a20d@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-d9UK60VbkgjhGAA9KiqI"
+Date: Mon, 23 Feb 2009 12:02:23 -0800
+Message-Id: <1235419343.4816.27.camel@gaiman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/efi_stub_32.S |    1 +
- arch/x86/kernel/efi_stub_64.S |    7 +++++++
- 2 files changed, 8 insertions(+)
 
-Index: linux-2.6.git/arch/x86/kernel/efi_stub_32.S
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/efi_stub_32.S
-+++ linux-2.6.git/arch/x86/kernel/efi_stub_32.S
-@@ -113,6 +113,7 @@ ENTRY(efi_call_phys)
- 	movl	(%edx), %ecx
- 	pushl	%ecx
- 	ret
-+ENDPROC(efi_call_phys)
- .previous
- 
- .data
-Index: linux-2.6.git/arch/x86/kernel/efi_stub_64.S
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/efi_stub_64.S
-+++ linux-2.6.git/arch/x86/kernel/efi_stub_64.S
-@@ -41,6 +41,7 @@ ENTRY(efi_call0)
- 	addq $32, %rsp
- 	RESTORE_XMM
- 	ret
-+ENDPROC(efi_call0)
- 
- ENTRY(efi_call1)
- 	SAVE_XMM
-@@ -50,6 +51,7 @@ ENTRY(efi_call1)
- 	addq $32, %rsp
- 	RESTORE_XMM
- 	ret
-+ENDPROC(efi_call1)
- 
- ENTRY(efi_call2)
- 	SAVE_XMM
-@@ -59,6 +61,7 @@ ENTRY(efi_call2)
- 	addq $32, %rsp
- 	RESTORE_XMM
- 	ret
-+ENDPROC(efi_call2)
- 
- ENTRY(efi_call3)
- 	SAVE_XMM
-@@ -69,6 +72,7 @@ ENTRY(efi_call3)
- 	addq $32, %rsp
- 	RESTORE_XMM
- 	ret
-+ENDPROC(efi_call3)
- 
- ENTRY(efi_call4)
- 	SAVE_XMM
-@@ -80,6 +84,7 @@ ENTRY(efi_call4)
- 	addq $32, %rsp
- 	RESTORE_XMM
- 	ret
-+ENDPROC(efi_call4)
- 
- ENTRY(efi_call5)
- 	SAVE_XMM
-@@ -92,6 +97,7 @@ ENTRY(efi_call5)
- 	addq $48, %rsp
- 	RESTORE_XMM
- 	ret
-+ENDPROC(efi_call5)
- 
- ENTRY(efi_call6)
- 	SAVE_XMM
-@@ -107,3 +113,4 @@ ENTRY(efi_call6)
- 	addq $48, %rsp
- 	RESTORE_XMM
- 	ret
-+ENDPROC(efi_call6)
+--=-d9UK60VbkgjhGAA9KiqI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2009-02-23 at 15:46 +0100, Maciej Rutecki wrote:
+> 2.6.29-rc5 and 2.6.29-rc5-git6 work OK. In 2.6.29-rc6 XWindow (KDM)
+> doesn't start, from dmesg:
+>=20
+> [   18.170614] [drm] Initialized drm 1.1.0 20060810
+> [   18.247445] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ =
+16
+> [   18.247455] pci 0000:00:02.0: setting latency timer to 64
+> [   18.249610] mtrr: type mismatch for d0000000,10000000 old:
+> write-back new: write-combining
+> [   18.249621] [drm] MTRR allocation failed
+> [   18.249622] .  Graphics performance may suffer.
+> [   18.249658] pci 0000:00:02.0: irq 27 for MSI/MSI-X
+> [   18.249691] [drm] Initialized i915 1.6.0 20080730 on minor 0
+> [   18.290152] mtrr: type mismatch for d0000000,10000000 old:
+> write-back new: write-combining
+> [   18.567435] set status page addr 0x00043000
+> [   18.567463] [drm:i915_set_status_page] *ERROR* can not ioremap
+> virtual address for G33 hw status page
+
+The non-GEM G33 HWS support is wrong, and has been more or less broken
+since inception (only now it's failing at startup instead of just being
+slow).  It's doing a mapping of the framebuffer when it should be using
+a cached mapping of the page backing the framebuffer address.
+
+For a quick fix, converting to ioremap_wc will shut the kernel up and
+get us the old ioremap behavior (whatever the MTRR said, which happens
+to be WC).
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-d9UK60VbkgjhGAA9KiqI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmjAM8ACgkQHUdvYGzw6vfvHgCgi7waGd9IC6VD671l3LDgZBTM
+kHUAoIMnsHVO+NL4orBlCSGQOdvvYBuo
+=ral7
+-----END PGP SIGNATURE-----
+
+--=-d9UK60VbkgjhGAA9KiqI--
 
