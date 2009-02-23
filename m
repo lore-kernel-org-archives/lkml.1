@@ -1,66 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbZBWOn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbZBWOpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbZBWOn0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZBWOnS
+	id S1755440AbZBWOpk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:45:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZBWOpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:43:18 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:55248 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754000AbZBWOnR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:43:17 -0500
-Date: Mon, 23 Feb 2009 14:43:12 +0000
-From: Andy Whitcroft <apw@canonical.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: checkpatch --file warns about p0 patch
-Message-ID: <20090223144312.GC22617@shadowen.org>
-References: <49A2B0A5.8050905@compulab.co.il>
+	Mon, 23 Feb 2009 09:45:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39894 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754079AbZBWOpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 09:45:31 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
+Date: Mon, 23 Feb 2009 15:45:25 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200902221837.49396.rjw@sisk.pl> <m1bpst77te.fsf@fess.ebiederm.org> <20090223110433.GA17312@elte.hu>
+In-Reply-To: <20090223110433.GA17312@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49A2B0A5.8050905@compulab.co.il>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902231545.26250.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 04:20:21PM +0200, Mike Rapoport wrote:
-> When running checkpatch.pl with --file option it warns about -p0 patch:
+On Monday 23 February 2009, Ingo Molnar wrote:
 > 
-> ./scripts/checkpatch.pl --file ./drivers/rtc/rtc-v3020.c
-> WARNING: patch prefix '.' exists, appears to be a -p0 patch
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
 > 
-> total: 0 errors, 1 warnings, 263 lines checked
+> > > What makes s2ram fragile is not human failure but the 
+> > > combination of a handful of physical property:
+> > >
+> > > 1) Psychology: shutting the lid or pushing the suspend button is 
+> > >    a deceivingly 'simple' action to the user. But under the 
+> > >    hood, a ton of stuff happens: we deinitialize a lot of 
+> > >    things, we go through _all hardware state_, and we do so in a 
+> > >    serial fashion. If just one piece fails to do the right 
+> > >    thing, the box might not resume. Still, the user expects this 
+> > >    'simple' thing to just work, all the time. No excuses 
+> > >    accepted.
+> > >
+> > > 2) Length of code: To get a successful s2ram sequence the kernel
+> > >    runs through tens of thousands of lines of code. Code which
+> > >    never gets executed on a normal box - only if we s2ram. If 
+> > >    just one step fails, we get a hung box.
+> > >
+> > > 3) Debuggability: a lot of s2ram code runs with the console off, 
+> > >    making any bugs hard to debug. Furthermore we have no 
+> > >    meaningful persistent storage either for kernel bug messages. 
+> > >    The RTC trick of PM_DEBUG works but is a very narrow channel 
+> > >    of information and it takes a lot of time to debug a bug via 
+> > >    that method.
+> > 
+> > Yep that is an issue.
 > 
-> ./drivers/rtc/rtc-v3020.c has style problems, please review.  If any of these errors
-> are false positives report them to the maintainer, see
-> CHECKPATCH in MAINTAINERS.
+> I'd also like to add #4:
 > 
-> I hope this is the fix that'll work:
+>      4) One more thing that makes s2ram special is that when the 
+>         resume path finds hardware often in an even more 
+>         deinitialized form than during normal bootup. During
+>         normal bootup the BIOS/firmware has at least done some
+>         minimal bootstrap (to get the kernel loaded), which
+>         makes life easier for the kernel.
 > 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index 45eb0ae..1869388 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -1240,7 +1240,7 @@ sub process {
->  			$realfile =~ s@^([^/]*)/@@;
-> 
->  			$p1_prefix = $1;
-> -			if ($tree && $p1_prefix ne '' && -e "$root/$p1_prefix") {
-> +			if (!$file && $tree && $p1_prefix ne '' && -e "$root/$p1_prefix") {
->  				WARN("patch prefix '$p1_prefix' exists, appears to be a -p0 patch\n");
->  			}
-> 
-> 
-> 
-> -- 
+>         At s2ram stage we've got a completely pure hardware
+>         init state, with very minimal firmware activation.
 
-Hmm, that should already be fixed in the version Andrew Morton has.
-Could you test with v0.28 and confirm its already fixed?
+This is very true and at least in some cases done on purpose, AFAICS, due to
+some timing constraints forced on HW vendors by M$, for example.
 
+>         So many of the init and deinit problems and bugs we only 
+>         hit in the s2ram path - which dynamics is again not 
+>         helpful.
 
-  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-v0.28
+Plus ACPI requires us to do additional things during suspend-resume that
+are not done on boot-shutdown and which have their own ordering requirements
+(not necessarily stated directly, but such that we have do discover
+experimentally).  That also change from one BIOS to another.
 
--apw
+> > > The combination of these factors really makes up for a 
+> > > perfect storm in terms of kernel technology: we have this 
+> > > very-deceivingly-simple-looking but 
+> > > complex-and-rarely-executed piece of code, which is very 
+> > > hard to debug.
+> > 
+> > And much of this as you are finding with this piece of code is 
+> > how the software was designed rather then how the software 
+> > needed to be.
+> 
+> Well most of the 4 problems above are externalities and cannot 
+> go away just by fixing the kernel.
+> 
+>  #1 will always be with us.
+>  #3 needs the hardware to change. It's happening, but slowly.
+>  #4 will be with us as long as there's non-Linux BIOSes
+> 
+> #2 is the only thing where we can make a realistic difference,
+> but there's just so much we can do there.
+> 
+> And that still leaves the other three items: each of which is 
+> powerful enough of a force to give a bad name to any normal 
+> subsystem.
+
+Agreed.
+
+Thanks,
+Rafael
