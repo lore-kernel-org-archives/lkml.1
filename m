@@ -1,78 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZBWUMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZBWU1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbZBWUMt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 15:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZBWUMk
+	id S1756652AbZBWU1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 15:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZBWU1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 15:12:40 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49755 "EHLO e3.ny.us.ibm.com"
+	Mon, 23 Feb 2009 15:27:06 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:50883 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753062AbZBWUMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 15:12:39 -0500
-Date: Mon, 23 Feb 2009 12:12:36 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nickpiggin@yahoo.com.au, vegard.nossum@gmail.com, mingo@elte.hu,
-       stable@kernel.org, npiggin@suse.de, penberg@cs.helsinki.fi,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Message-ID: <20090223201236.GS6751@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090220140157.GA12799@elte.hu> <20090222030030.GD6860@linux.vnet.ibm.com> <20090223051709.GA5990@linux.vnet.ibm.com> <200902240029.37815.nickpiggin@yahoo.com.au> <20090223161726.GD6751@linux.vnet.ibm.com> <20090223111009.d48ff81d.akpm@linux-foundation.org> <20090223193057.GL6751@linux.vnet.ibm.com> <20090223115926.ed03e954.akpm@linux-foundation.org>
+	id S1753347AbZBWU1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 15:27:05 -0500
+Date: Mon, 23 Feb 2009 20:26:59 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [RFC PATCH 00/20] Cleanup and optimise the page allocator
+Message-ID: <20090223202659.GT6740@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <200902240146.03456.nickpiggin@yahoo.com.au> <20090223150055.GK6740@csn.ul.ie> <200902240222.04645.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090223115926.ed03e954.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200902240222.04645.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 11:59:26AM -0800, Andrew Morton wrote:
-> On Mon, 23 Feb 2009 11:30:57 -0800
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Tue, Feb 24, 2009 at 02:22:03AM +1100, Nick Piggin wrote:
+> On Tuesday 24 February 2009 02:00:56 Mel Gorman wrote:
+> > On Tue, Feb 24, 2009 at 01:46:01AM +1100, Nick Piggin wrote:
 > 
-> > On Mon, Feb 23, 2009 at 11:10:09AM -0800, Andrew Morton wrote:
-> > > On Mon, 23 Feb 2009 08:17:26 -0800 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
-> > > > > On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
-> > > > > 
-> > > > > > The boot CPU runs in the context of its idle thread during boot-up.
-> > > > > > During this time, idle_cpu(0) will always return nonzero, which will
-> > > > > > fool Classic and Hierarchical RCU into deciding that a large chunk of
-> > > > > > the boot-up sequence is a big long quiescent state.  This in turn causes
-> > > > > > RCU to prematurely end grace periods during this time.
-> > > > > >
-> > > > > > This patch creates a new global variable that is set to 1 just before
-> > > > > > the boot CPU first enters the scheduler, after which the idle task
-> > > > > > really is idle.
-> > > > > 
-> > > > > Nice work all (btw. if this patch goes in rather than using system_state,
-> > > > > then please make the variable __read_mostly).
-> > > > 
-> > > > Hmmm...  I misread this and made system_state be __read_mostly.  Let
-> > > > me know if this is bad, easy to fix if needed.
-> > > 
-> > > Please don't use system_state.  The whole thing is just bad design. 
-> > > It's a global variable, breaks encapsulation, creates interactions etc.
-> > > CS-101 stuff.
-> > 
-> > OK.  Would it help if I wrapped an accessor function around system_state?
+> > > free_page_mlock shouldn't really be in free_pages_check, but oh well.
+> >
+> > Agreed, I took it out of there.
 > 
-> That doesn't help the core problem: system_state creates interactions
-> between unrelated subsystems.  And the number of interactions grows
-> exponentially with the number of subsystems which use system_state.
+> Oh good. I didn't notice that.
 > 
-> > I do need some sort of global state if I am to solve this problem.  ;-)
+> > > > Patch 16 avoids using the zonelist cache on non-NUMA machines
+> > > >
+> > > > Patch 17 removes an expensive and excessively paranoid check in the
+> > > > allocator fast path
+> > >
+> > > I would be careful of removing useful debug checks completely like
+> > > this. What is the cost? Obviously non-zero, but it is also a check
+> >
+> > The cost was something like 1/10th the cost of the path. There are atomic
+> > operations in there that are causing the problems.
 > 
-> As I suggested before, please add a new state variable which is private
-> to your subsystem.  That way it remains isolated from other subsystems.
+> The only atomic memory operations in there should be atomic loads of
+> word or atomic_t sized and aligned locations, which should just be
+> normal loads on any architecture?
+> 
+> The only atomic RMW you might see in that function would come from
+> free_page_mlock (which you moved out of there, and anyway can be
+> made non-atomic).
+> 
 
-OK, so my thought would be to have a function call into RCU from either
-init_post() or from rest_init().  This function would then set a variable
-private to RCU.
+You're right, they're normal loads. I wasn't looking at the resulting
+assembly closely enough.  I saw a lock and branch in that general area of
+free_pages_check(), remembered that it was an atomic read, conflated the
+lock-bit-clear with the atomic read and went astray from there. Silly.
 
-Seem reasonable?
+> I'd like you to just reevaluate it after your patchset, after the
+> patch to make mlock non-atomic, and my patch I just sent.
+> 
 
-							Thanx, Paul
+I re-evaluated with your patch in place of the check being dropped. With
+the mlock bit clear moved out of the way, the assembly looks grand and the
+amount of time being spent in that check is ok according to profiles
+
+  o roughly 70 samples out of 398 in __free_pages_ok()
+  o 2354 samples out of 31295 in free_pcp_pages()
+  o 859 samples out of 35362 get_page_from_freelist 
+
+I guess it's 7.5% of the free_pcp_pages() path but it would probably cause
+more hassle with hard-to-debug problems the check was removed.
+
+I was momentarily concerned about the compound aspect of page_count. We can
+have compound pages in the __free_pages_ok() path and we'll end up checking
+the count for each of the sub-pages instead of the head page. It shouldn't be
+a problem as the count should be zero for each of the tail pages. A positive
+count is a bug and will now trigger where in fact we would have missed it
+before. I convinced myself that this change is ok but if anyone can spot a
+problem with this reasoning, please shout now.
+
+Is the page_mapcount() change in your patch really necessary? Unlikely
+page_count(), it does not check for a compound page so it's not branching
+like page_count() is. I don't think it is so I dropped that part of the
+patch for the moment.
+
+> 
+> > > I have seen trigger on quite a lot of occasions (due to kernel bugs
+> > > and hardware bugs, and in each case it is better to warn than not,
+> > > even if many other situations can go undetected).
+> >
+> > Have you really seen it trigger for the allocation path or did it
+> > trigger in teh free path? Essentially we are making the same check on
+> > every allocation and free which is why I considered it excessivly
+> > paranoid.
+> 
+> Yes I've seen it trigger in the allocation path. Kernel memory scribbles
+> or RAM errors.
+> 
+
+That's the type of situation I expected it to occur but felt that the free
+path would be sufficient. However, I'm convinced now to leave it in place,
+particularly as its cost is not as excessive as I initially believed.
+
+> 
+> > > One problem is that some of the calls we're making in page_alloc.c
+> > > do the compound_head() thing, wheras we know that we only want to
+> > > look at this page. I've attached a patch which cuts out about 150
+> > > bytes of text and several branches from these paths.
+> >
+> > Nice, I should have spotted that. I'm going to fold this into the series
+> > if that is ok with you? I'll replace patch 17 with it and see does it
+> > still show up on profiles.
+> 
+> Great! Sure fold it in (and put SOB: me on there if you like).
+> 
+
+Done, thanks. The version I'm currently using is below.
+
+> 
+> > > > So, by and large it's an improvement of some sort.
+> > >
+> > > Most of these benchmarks *really* need to be run quite a few times to get
+> > > a reasonable confidence.
+> >
+> > Most are run repeatedly and an average taken but I should double check
+> > what is going on. It's irritating that gains/regressions are
+> > inconsistent between different machine types but that is nothing new.
+> 
+> Yeah. Cache behaviour maybe. One thing you might try is to size the struct
+> page out to 64 bytes if it isn't already. This could bring down any skews
+> if one kernel is lucky to get a nice packing of pages, or another is unlucky
+> to get lots of struct pages spread over 2 cachelines. Maybe I'm just
+> thinking wishfully :)
+> 
+
+It's worth an investigate :)
+
+> I think with many of your changes, common sense will tell us that it is a
+> better code sequence. Sometimes it's just impossible to really get
+> "scientific proof" :)
+> 
+
+Sounds good to me but I'm hoping that it'll be possible to show a gains in
+a few benchmarks on a few machines without large regressions showing up.
+
+The replacement patch now looks like
+
+=====
+    Do not check for compound pages during the page allocator sanity checks
+    
+    A number of sanity checks are made on each page allocation and free
+    including that the page count is zero. page_count() checks for
+    compound pages and checks the count of the head page if true. However,
+    in these paths, we do not care if the page is compound or not as the
+    count of each tail page should also be zero.
+    
+    This patch makes two changes to the use of page_count() in the free path. It
+    converts one check of page_count() to a VM_BUG_ON() as the count should
+    have been unconditionally checked earlier in the free path. It also avoids
+    checking for compound pages.
+    
+    [mel@csn.ul.ie: Wrote changelog]
+    Signed-off-by: Nick Piggin <nickpiggin@yahoo.com.au>
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index e598da8..8a8db71 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -426,7 +426,7 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
+ 		return 0;
+ 
+ 	if (PageBuddy(buddy) && page_order(buddy) == order) {
+-		BUG_ON(page_count(buddy) != 0);
++		VM_BUG_ON(page_count(buddy) != 0);
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -503,7 +503,7 @@ static inline int free_pages_check(struct page *page)
+ {
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+-		(page_count(page) != 0)  |
++		(atomic_read(&page->_count) != 0) |
+ 		(page->flags & PAGE_FLAGS_CHECK_AT_FREE))) {
+ 		bad_page(page);
+ 		return 1;
+@@ -648,7 +648,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+ {
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+-		(page_count(page) != 0)  |
++		(atomic_read(&page->_count) != 0)  |
+ 		(page->flags & PAGE_FLAGS_CHECK_AT_PREP))) {
+ 		bad_page(page);
+ 		return 1;
