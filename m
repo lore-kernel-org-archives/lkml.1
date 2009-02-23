@@ -1,41 +1,25 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbZBVWbq (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 22 Feb 2009 17:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZBVWbh
+	id S1756786AbZBWA14 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 22 Feb 2009 19:27:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbZBWA1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 17:31:37 -0500
-Received: from 195-5-179-62.altanusprivatemedia.com ([195.5.179.62]:36630 "EHLO
-	mx11.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753050AbZBVWbg (ORCPT
+	Sun, 22 Feb 2009 19:27:47 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:2631 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbZBWA1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 17:31:36 -0500
-X-Greylist: delayed 1325 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Feb 2009 17:31:36 EST
+	Sun, 22 Feb 2009 19:27:46 -0500
+Message-ID: <49A1ED80.9050402@gmail.com>
+Date: Sun, 22 Feb 2009 19:27:44 -0500
+From: jacques <ocean4200@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-From: "Martin Schmitz" <Schmitz@Extra-Superbonus.org>
-User-Agent: Microsoft-Entourage/10.1.4.030702.0
-X-BounceID: 708bf6bf7f0f46c495996b838e616a5e
-Subject: Ihre Auszahlung
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Message-ID: <kfhmvv.8fwavf@localhost>
 To: linux-kernel@vger.kernel.org
-Date: Sun, 22 Feb 2009 23:09:31 +0100 (CET)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755528AbZBVWbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756786AbZBWA14@vger.kernel.org>
 
-Guten Tag,
-
-holen Sie sich jetzt Ihre Auzahlung von 3.000 Euro ab:
-
-http://Extra-Superbonus.org/
-
-Sie können nur gewinnen!
-
-
-
-Mit freundlichen Grüßen
-Schmitz
-Abt. FK/S3
-
+unsubscribe linux-kernel
