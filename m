@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZBWCLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZBWC10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbZBWCLn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 21:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZBWCLe
+	id S1754773AbZBWC10 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 21:27:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZBWC1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 21:11:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53196 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752362AbZBWCLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 21:11:33 -0500
-Date: Sun, 22 Feb 2009 18:10:52 -0800
-From: Jeff Layton <jlayton@redhat.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Horst Reiterer <horst.reiterer@gmail.com>,
-       Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-cifs-client] Re: [PATCH] fs/cifs: send SMB_COM_FLUSH in
- cifs_fsync
-Message-ID: <20090222181052.36763a2d@tupile.poochiereds.net>
-In-Reply-To: <20090222173446.2da6b182@tupile.poochiereds.net>
-References: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
-	<524f69650902201721l1c7f0d34p4708980a90d7fc8f@mail.gmail.com>
-	<alpine.OSX.2.00.0902222137080.7676@horst-reiterers-macbook-air.local>
-	<524f69650902221303h37feb366k3d89a07bfd100ea3@mail.gmail.com>
-	<alpine.OSX.2.00.0902222206360.7676@horst-reiterers-macbook-air.local>
-	<20090222173446.2da6b182@tupile.poochiereds.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Feb 2009 21:27:17 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62702 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751412AbZBWC1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 21:27:16 -0500
+Message-ID: <49A20976.2050301@cn.fujitsu.com>
+Date: Mon, 23 Feb 2009 10:27:02 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       menage@google.com, containers@lists.linux-foundation.org
+Subject: Re: Question for remount
+References: <20090220190223.e8b4f6a8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090220190223.e8b4f6a8.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Feb 2009 17:34:46 -0800
-Jeff Layton <jlayton@redhat.com> wrote:
-
-> On Sun, 22 Feb 2009 22:12:11 +0100 (CET)
-> Horst Reiterer <horst.reiterer@gmail.com> wrote:
-> 
-> > On Sun, 22 Feb 2009, Steve French wrote:
-> > > Suggestions on what to call such a new mount option?  How about
-> > > "nostrictfsync"  ?
-> > 
-> > Sound good, should be self-explanatory for Samba users and those familiar
-> > with the fsync concept.
-> > 
-> > Horst.
-> 
-> My suggestion would be to not add a new option until someone requests
-> it/complains about it. We already have a lot of unneeded/unused mount
-> options, and I think this will just be adding one to the pile.
-> 
-> My $.02...
+> 1. Documentation/cgroups/cgroup.txt says
+>    #mount -oremount,cpuset,ns /dev/cgroup
+>    But this should be
+>    #mount -tcgroup none /dev/cgroup -oremount,cpuset,ns
 > 
 
-...and to lend further strength to this argument, we're not doing this
-at close(), but rather at fsync(). posix is pretty clear about what's
-supposed to happen at fsync:
+I agree. Actually I noticed this long ago.
 
-"The fsync() function shall request that all data for the open file
-descriptor named by fildes is to be transferred to the storage device
-associated with the file described by fildes."
+Doing this won't remove cpuacct from the cgroup hierarchy:
+# mount -t cgroup -o cpu,cpuacct xxx /mnt
+# mount -o remount,cpu /mnt
+This will get you right:
+# mount [-t cgroup] -o remount,cpu xxx /mnt
 
-...if you don't want to take the performance penalty then don't use
-fsync(). If you're using fsync, then you care about data integrity
-and adding a mount option to disable it is rather pointless.
-
--- 
-Jeff Layton <jlayton@redhat.com>
