@@ -1,276 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZBWHbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbZBWHdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbZBWHbW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZBWHbK
+	id S1753547AbZBWHdP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:33:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZBWHc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:31:10 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39322 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbZBWHbI (ORCPT
+	Mon, 23 Feb 2009 02:32:59 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41494 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbZBWHc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:31:08 -0500
-From: hooanon05@yahoo.co.jp
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC 0/8] Aufs2 documents
-Date: Mon, 23 Feb 2009 16:31:06 +0900
-Message-ID: <7558.1235374266@jrobl>
+	Mon, 23 Feb 2009 02:32:59 -0500
+Date: Mon, 23 Feb 2009 08:34:52 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/10] ide: flags query macros
+Message-ID: <20090223073452.GA1764@uranus.ravnborg.org>
+References: <1234699692-9452-1-git-send-email-petkovbb@gmail.com> <200902171533.29135.bzolnier@gmail.com> <20090223070413.GA17783@gollum.tnic>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090223070413.GA17783@gollum.tnic>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 23, 2009 at 08:04:13AM +0100, Borislav Petkov wrote:
+> > Since it is not a lot of modified lines and the change is rather
+> > straightforward it could as well be done in a single patch...
+> 
+> here's version 2:
+> --
+> From: Borislav Petkov <petkovbb@gmail.com>
+> Date: Mon, 23 Feb 2009 07:58:23 +0100
+> Subject: [PATCH] ide: flags query macros
+> 
+> Add drive->atapi_flags and drive->dev_flags macro wrappers
+> 
+> v2:
+> - use static inlines for better typechecking
+> - use macro indirection for convenience
+> 
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
-Hello,
+Version 2 looks much better - thanks.
 
-This is my second trial to ask incorporating aufs into mainline.
-Aufs2 is a refined version of old aufs1:
-- to be reviewed easily and widely.
-- to make the source files simpler and smaller by dropping several
-  original features.
+diff --git a/drivers/ide/ide-cd_ioctl.c b/drivers/ide/ide-cd_ioctl.c
+index df3df00..3553759 100644
+--- a/drivers/ide/ide-cd_ioctl.c
++++ b/drivers/ide/ide-cd_ioctl.c
+@@ -86,7 +86,7 @@ int ide_cdrom_check_media_change_real(struct cdrom_device_info *cdi,
 
-Before posting source files, here are some documents from aufs2 which
-describes some of ideas, design or approaches which are implemented.
-Kindly review and let me know your comments.
+        if (slot_nr == CDSL_CURRENT) {
+                (void) cdrom_check_status(drive, NULL);
+-               retval = (drive->dev_flags & IDE_DFLAG_MEDIA_CHANGED) ? 1 : 0;
++               retval = ide_dev_media_changed(drive) ? 1 : 0;
+                drive->dev_flags &= ~IDE_DFLAG_MEDIA_CHANGED;
+                return retval;
+        } else {
 
-J. R. Okajima
+The use of ? 1 : 0; here is redundant.
 
-
-----------------------------------------------------------------------
-
-Aufs2 -- advanced multi layered unification filesystem version 2
-http://aufs.sf.net
-Junjiro R. Okajima
-
-
-0. Introduction
-----------------------------------------
-In the early days, aufs was entirely re-designed and re-implemented
-Unionfs Version 1.x series. After many original ideas, approaches,
-improvements and implementations, it becomes totally different from
-Unionfs while keeping the basic features.
-Recently, Unionfs Version 2.x series begin taking some of the same
-approaches to aufs1's.
-Unionfs is being developed by Professor Erez Zadok at Stony Brook
-University and his team.
-
-This version of AUFS, aufs2 has several purposes.
-- to be reviewed easily and widely.
-- to make the source files simpler and smaller by dropping several
-  original features.
-
-Through this work, I found some bad things in aufs1 source code and
-fixed them. Some of the dropped features will be reverted in the future,
-but not all I'm afraid.
-Aufs2 supports linux-2.6.27 and later. If you want older kernel version
-support, try aufs1 from CVS on SourceForge.
-
-
-1. Features
-----------------------------------------
-- unite several directories into a single virtual filesystem. The member
-  directory is called as a branch.
-- you can specify the permission flags to the branch, which are 'readonly',
-  'readwrite' and 'whiteout-able.'
-- by upper writable branch, internal copyup and whiteout, files/dirs on
-  readonly branch are modifiable logically.
-- dynamic branch manipulation, add, del.
-- etc...
-
-Also there are many enhancements in aufs1, such as:
-- keep inode number by external inode number table
-- keep the timestamps of file/dir in internal copyup operation
-- seekable directory, supporting NFS readdir.
-- support mmap(2) including /proc/PID/exe symlink, without page-copy
-- whiteout is hardlinked in order to reduce the consumption of inodes
-  on branch
-- do not copyup, nor create a whiteout when it is unnecessary
-- revert a single systemcall when an error occurs in aufs
-- remount interface instead of ioctl
-- maintain /etc/mtab by an external shell script, /sbin/mount.aufs.
-- loopback mounted filesystem as a branch
-- kernel thread for removing the dir who has a plenty of whiteouts
-- support copyup sparse file (a file which has a 'hole' in it)
-- default permission flags for branches
-- selectable permission flags for ro branch, whether whiteout can
-  exist or not
-- export via NFS.
-- support <sysfs>/fs/aufs.
-- support multiple writable branches, some policies to select one
-  among multiple writable branches.
-- a new semantics for link(2) and rename(2) to support multiple
-  writable branches.
-- a delegation of the internal branch access to support task I/O
-  accounting, which also supports Linux Security Modules (LSM) mainly
-  for Suse AppArmor.
-- nested mount, i.e. aufs as readonly no-whiteout branch of another aufs.
-- copyup-on-open or copyup-on-write
-- show-whiteout mode
-- show configuration even out of kernel tree
-- no glibc changes are required.
-- pseudo hardlink (hardlink over branches)
-- allow a direct access manually to a file on branch, e.g. bypassing aufs.
-  including NFS or remote filesystem branch.
-- and more...
-
-Currently these features are dropped temporary from this version, aufs2.
-See design/08plan.txt in detail.
-- exporting via NFS
-- test only the highest one for the directory permission (dirperm1)
-- show whiteout mode (shwh)
-- copyup on open (coo=)
-- being another aufs's readonly branch (robr)
-- statistics of aufs thread (/sys/fs/aufs/stat)
-- delegation mode (dlgt)
-- intent.open/create (file open in a single lookup)
+                        if (drive->media == ide_disk) {
+-                               printk(KERN_INFO "%s: non-IDE drive, CHS=%d/%d/%d\n",
++                               pr_info("%s: non-IDE drive, CHS=%d/%d/%d\n",
+                                        drive->name, drive->cyl,
+                                        drive->head, drive->sect);
+                        } else if (drive->media == ide_cdrom) {
+-                               printk(KERN_INFO "%s: ATAPI cdrom (?)\n", drive->name);
++                               pr_info("%s: ATAPI cdrom (?)\n", drive->name);
+                        } else {
+                                /* nuke it */
+-                               printk(KERN_WARNING "%s: Unknown device on bus refused identification. Ignoring.\n",
++drive->name);
++                               pr_warning("%s: Unknown device on bus refused "
++                                          "identification, ignoring.\n",
++                                          drive->name);
+I did not see this addressed in the changelog?
 
 
-2. Download
-----------------------------------------
-Kindly one of aufs user, the Center for Scientific Computing and Free
-Software (C3SL), Federal University of Parana offered me a public GIT
-tree space.
+                                drive->dev_flags &= ~IDE_DFLAG_PRESENT;
 
-There are three GIT trees, aufs2-2.6, aufs2-standalone and aufs2-util.
-While the aufs2-util is always necessary, you need either of aufs2-2.6
-or aufs2-standalone.
-
-The aufs2-2.6 tree includes the whole linux-2.6 GIT tree,
-git://git.kernel.org/.../torvalds/linux-2.6.git.
-And you cannot select CONFIG_AUFS_FS=m for this version, eg. you cannot
-build aufs2 as an externel kernel module.
-If you already have linux-2.6 GIT tree, you may want to pull and merge
-the "aufs2" branch from this tree.
-
-On the other hand, the aufs2-standalone tree has only aufs2 source files
-and a necessary patch, and you can select CONFIG_AUFS_FS=m. In other
-words, the aufs2-standalone tree is generated from aufs2-2.6 tree by,
-- extract new files and modifications.
-- generate a single patch file from modifications.
-- generate a ChangeLog file from git-log.
-- commit the files newly and no log messages. this is not git-pull.
-
-Both of aufs2-2.6 and aufs2-standalone trees have a branch whose name is
-in form of "aufs2-xx" where "xx" represents the linux kernel version,
-"linux-2.6.xx".
-
-o aufs2-2.6 tree
-$ git clone --reference /your/linux-2.6/git/tree \
-	http://git.c3sl.ufpr.br/pub/scm/aufs/aufs2-2.6.git \
-	aufs2-2.6.git
-- if you don't have linux-2.6 GIT tree, then remove "--reference ..."
-$ cd aufs2-2.6.git
-$ git checkout aufs2-xx	# for instance, aufs2-27 for linux-2.6.27
-
-o aufs2-standalone tree
-$ git clone http://git.c3sl.ufpr.br/pub/scm/aufs/aufs2-standalone.git \
-	aufs2-standalone.git
-$ cd aufs2-standalone.git
-$ git checkout aufs2-xx	# for instance, aufs2-27 for linux-2.6.27
-- apply "aufs2-standalone.patch" to your kernel source files.
-
-o aufs2-util tree
-$ git clone http://git.c3sl.ufpr.br/pub/scm/aufs/aufs2-util.git \
-	aufs2-util.git
-$ cd aufs2-util.git
-- no particular tag/branch currently.
+You have a nice set of inlines to facilitate testing bits,
+but not for the above use?
+I guess this was not worth the abstraction for now.
 
 
-3. Configuration and Compilation
-----------------------------------------
-For aufs2-2.6 tree,
-- enable CONFIG_EXPERIMENTAL and CONFIG_AUFS_FS.
-- set other aufs configurations if necessary.
-
-For aufs2-standalone tree,
-- enable CONFIG_EXPERIMENTAL and CONFIG_AUFS_FS, you can select =m.
-- edit fs/aufs/config.mk and set other aufs configurations if necessary.
-
-And then,
-- build your kernel (or a module) by "make"
-- install it and reboot your system
-- read README in aufs2-util, build and install it
-
-
-4. Usage
-----------------------------------------
-At first, make sure aufs2-util are installed, and please read the aufs
-manual, ./Documentation/filesystems/aufs/aufs.5.
-$ man -l aufs.5
-
-And then,
-$ mkdir /tmp/rw /tmp/aufs
-# mount -t aufs -o br=/tmp/rw:${HOME}=ro none /tmp/aufs
-
-Here is another example. The result is equivalent.
-# mount -t aufs -o br=/tmp/rw:${HOME} none /tmp/aufs
-  Or
-# mount -t aufs -o br:/tmp/rw none /tmp/aufs
-# mount -o remount,append:${HOME} /tmp/aufs
-
-Then, you can see whole tree of your home dir through /tmp/aufs. If
-you modify a file under /tmp/aufs, the one on your home directory is
-not affected, instead the same named file will be newly created under
-/tmp/rw. And all of your modification to a file will be applied to
-the one under /tmp/rw. This is called the file based Copy on Write
-(COW) method.
-Aufs mount options are described in aufs.5.
-
-Additionally, there are some sample usages of aufs which are a
-diskless system with network booting, and LiveCD over NFS.
-See sample dir in CVS tree on SourceForge.
-
-
-5. Contact
-----------------------------------------
-When you have any problems or strange behaviour in aufs, please let me
-know with:
-- /proc/mounts (instead of the output of mount(8))
-- /sys/fs/aufs/* (if you have them)
-- /sys/module/aufs/*
-- linux kernel version
-  if your kernel is not plain, for example modified by distributor,
-  the url where i can download its source is necessary too.
-- aufs version which was printed at loading the module or booting the
-  system, instead of the date you downloaded.
-- configuration (define/undefine CONFIG_AUFS_xxx)
-- kernel configuration or /proc/config.gz (if you have it)
-- behaviour which you think to be incorrect
-- actual operation, reproducible one is better
-- mailto: aufs-users at lists.sourceforge.net
-
-Usually, I don't watch the Public Areas(Bugs, Support Requests, Patches,
-and Feature Requests) on SourceForge. Please join and write to
-aufs-users ML.
-
-
-6. Acknowledgements
-----------------------------------------
-Thanks to everyone who have tried and are using aufs, whoever
-have reported a bug or any feedback.
-
-Especially donors:
-Tomas Matejicek(slax.org) made a donation (much more than once).
-Dai Itasaka made a donation (2007/8).
-Chuck Smith made a donation (2008/4, 10 and 12).
-Henk Schoneveld made a donation (2008/9).
-Chih-Wei Huang, ASUS, CTC donated Eee PC 4G (2008/10).
-Francois Dupoux made a donation (2008/11).
-Bruno Cesar Ribas and Luis Carlos Erpen de Bona, C3SL serves public GIT
-tree (2009/2).
-
-Thank you very much.
-Donations are always, including future donations, very important and
-helpful for me to keep on developing aufs.
-
-
-7.
-----------------------------------------
-If you are an experienced user, no explanation is needed. Aufs is
-just a linux filesystem.
-
-
-Enjoy!
-
-# Local variables: ;
-# mode: text;
-# End: ;
+	Sam
