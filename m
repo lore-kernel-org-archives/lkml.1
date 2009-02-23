@@ -1,101 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZBWIJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZBWIKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbZBWIJZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 03:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZBWIJQ
+	id S1754209AbZBWIKP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 03:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZBWIKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 03:09:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42932 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752912AbZBWIJP (ORCPT
+	Mon, 23 Feb 2009 03:10:01 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:24752 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbZBWIKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 03:09:15 -0500
-Date: Mon, 23 Feb 2009 00:08:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Danny Kukawka <dkukawka@suse.de>
-Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] 8250_pnp.c: add another serial Wacom tablet
-Message-Id: <20090223000855.e94765d9.akpm@linux-foundation.org>
-In-Reply-To: <200902222016.06946.dkukawka@suse.de>
-References: <200902222016.06946.dkukawka@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Feb 2009 03:10:00 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=vEzJMQoL4RjTe4qPFUE9Gny0MesK5PCWBvN580AcrpJjP8GzC8t+IoheLMNoAxHdD
+	R52G+8o4anqtn9TsG17Ww==
+MIME-Version: 1.0
+In-Reply-To: <d95d44a20902220437m2fb7af08y8c71fe275fe06a57@mail.gmail.com>
+References: <d95d44a20902220437m2fb7af08y8c71fe275fe06a57@mail.gmail.com>
+Date: Mon, 23 Feb 2009 00:09:54 -0800
+Message-ID: <6599ad830902230009mbfe7ddkf40f183c4a61a81a@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] cgroup: accounting and limitation of disk quota
+From: Paul Menage <menage@google.com>
+To: anqin <anqin.qin@gmail.com>
+Cc: Daniel Lezcano <dlezcano@fr.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Rolando Martins <rolando.martins@gmail.com>,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Feb 2009 20:16:06 +0100 Danny Kukawka <dkukawka@suse.de> wrote:
+Hi An,
 
-> From: Danny Kukawka <dkukawka@suse.de>
-> Subject: 8250_pnp.c: add another Wacom tablet
-> 
-> Add another serial Wacom tablet with pnp_id: WACF009.
-> 
-> Signed-off-by: Danny Kukawka <dkukawka@suse.de>
-> --
->  8250_pnp.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/serial/8250_pnp.c b/drivers/serial/8250_pnp.c
-> index bbcfc26..6db9f13 100644
-> --- a/drivers/serial/8250_pnp.c
-> +++ b/drivers/serial/8250_pnp.c
-> @@ -333,6 +333,7 @@ static const struct pnp_device_id pnp_dev_table[] = {
->  	{       "WACF006",              0       },
->  	{       "WACF007",              0       },
->  	{       "WACF008",              0       },
-> +	{       "WACF009",              0       },
->  	/* Compaq touchscreen */
->  	{       "FPI2002",              0 },
->  	/* Fujitsu Stylistic touchscreens */
+On Sun, Feb 22, 2009 at 4:37 AM, anqin <anqin.qin@gmail.com> wrote:
+> The patch presents a cgroup subsystem to control the usage of disk quota.
 
-I already had the below queued.  Can you review it please?
+Thanks for sending this patch.
 
-Alan seems to be having a bit of quiet time so I think I'll merge this
-into 2.6.29.
+My overall feeling is that disk quotas aren't really something that
+you want to control at a cgroup level (i.e. associating a limit with a
+specific set of processes), they're something that you want to control
+at the directory hierarchy level (i.e. associate a limit with this
+directory and all its children).
 
+In the case of a virtual server these may well be the same thing - a
+process in the virtual server can't touch any files outside the
+virtual server's filespace, and stuff outside the virtual server will
+be well-behaved and won't touch files inside the virtual server's
+filespace.
 
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+But for systems that are doing resource isolation without
+virtualization, this isn't necessarily still the case. A process may
+have access to multiple areas of the disk with independent quotas.
 
-Add new Wacom device IDs to the 8250_pnp serial driver, to support
-autoconfig on some newer tablet PCs.  Also add a comment to clarify that
-the FUJ02E6 device is a custom protocol, not a Wacom tablet.
+E.g. I work on a job control system where each job has some private
+disk space, and may share a common pool of disk space with some
+related jobs on the same machine, for data that's shared between
+multiple jobs.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+In this case, there are separate disk quotas for the per-job private
+areas and the shared area, so this cgroup-based approach wouldn't be
+much use there. Something like Neil Brown's "tree quota" proposal from
+way back in 2001 seemed much more useful for this kind of isolation.
+The proposal was that you could associate a "tree id" with an inode,
+and then that inode and all its children were accounted against the
+quota of that tree id. The arguments against it were (AFAIR) mostly
+about the non-determinism issues that could arise if a single inode
+were hard-linked into multiple trees - essentially, the first time it
+was accessed from either tree it would become part of that tree, even
+though it was reachable (and modifiable) from the other tree. But as
+long as root doesn't do anything silly, this isn't really an issue,
+and similar issues arise with this cgroup-based approach - if a
+process outside a virtual server moves a file into that virtual
+server's filespace without updating the usage correctly (which AFAICS
+can't be done atomically?) then the quota stats will be off.
 
- drivers/serial/8250_pnp.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+More specific comments on this patch:
 
-diff -puN drivers/serial/8250_pnp.c~serial-update-pnp-ids drivers/serial/8250_pnp.c
---- a/drivers/serial/8250_pnp.c~serial-update-pnp-ids
-+++ a/drivers/serial/8250_pnp.c
-@@ -333,6 +333,10 @@ static const struct pnp_device_id pnp_de
- 	{       "WACF006",              0       },
- 	{       "WACF007",              0       },
- 	{       "WACF008",              0       },
-+	{       "WACF009",              0       },
-+	{       "WACF00A",              0       },
-+	{       "WACF00B",              0       },
-+	{       "WACF00C",              0       },
- 	/* Compaq touchscreen */
- 	{       "FPI2002",              0 },
- 	/* Fujitsu Stylistic touchscreens */
-@@ -346,8 +350,9 @@ static const struct pnp_device_id pnp_de
- 	{       "FUJ02B8",              0 },
- 	{       "FUJ02B9",              0 },
- 	{       "FUJ02BC",              0 },
--	/* Fujitsu Wacom Tablet PC devices */
-+	/* Fujitsu Wacom Tablet PC device */
- 	{	"FUJ02E5",		0	},
-+	/* Fujitsu P-series tablet PC device */
- 	{	"FUJ02E6",		0	},
- 	/*
- 	 * LG C1 EXPRESS DUAL (C1-PB11A3) touch screen (actually a FUJ02E6 in
-_
+- it would make more sense to integrate with the existing DQUOT_XXX
+macros rather than have to update every filesystem to include
+references to cgroup quotas as well as regular quotas.
 
+- disk_cgroup_read_stats() should be a read_map() handler, and
+disk_cgroup_read_quota() should be a read_u64() handler.
+
+- why do you have the checks and EPERM returns in disk_cgroup_create()
+? cgroupfs already does permission checking.
+
+Paul
