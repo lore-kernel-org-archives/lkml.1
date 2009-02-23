@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbZBWRFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZBWRKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754772AbZBWRFp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 12:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbZBWRFf
+	id S1755513AbZBWRKu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 12:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZBWRKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 12:05:35 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:55214 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbZBWRFf (ORCPT
+	Mon, 23 Feb 2009 12:10:42 -0500
+Received: from mail-fx0-f167.google.com ([209.85.220.167]:36056 "EHLO
+	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbZBWRKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 12:05:35 -0500
+	Mon, 23 Feb 2009 12:10:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=ahnvWGOrVXO7i5ZyflLZi7oXO5lc4sDbJPFMqXc9n8+kGlQTKtXDNjABLe83FCcXZ3
-         sat5g38YyDtbsrqwYfo3Yh/Puw9GyCbBVFBT6Mcco4eD3PCOg4rdc9uOvaikZOjQPtIk
-         FoX8tZK6F2StwCIFCxZza8W5k39T4Iu+KFtw4=
-Date: Mon, 23 Feb 2009 18:05:29 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH] tracing/ftrace: add missing wake-up on some callsites
-Message-ID: <20090223170528.GH5961@nowhere>
-References: <49a1cc8f.2283420a.54d2.ffff8461@mx.google.com> <alpine.DEB.2.00.0902231034570.18221@gandalf.stny.rr.com> <alpine.DEB.2.00.0902231039290.18221@gandalf.stny.rr.com> <20090223162630.GG5961@nowhere> <alpine.DEB.2.00.0902231151020.18221@gandalf.stny.rr.com>
+        b=AWN4y2UBIT4Pp8Zm/XUPV4Y0wicW3CzwPzl/Tor5yACjfy54q660XrZlICDHM9Wuzl
+         Dy1zBYIViMqksor8HGAvJlH2+GPKdauYAXBx0gKG8OrWvPrVRLIgj0pyZ/TiQ6R8COqz
+         h909gowX9gxfcajekQzI+TOAUZyo8YvqulOFY=
+Date: Mon, 23 Feb 2009 18:10:32 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: "eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel panic on 2.6.28
+Message-ID: <20090223171030.GA5925@joi>
+References: <200902201924.n1KJOsRw027332@indigo.cs.bgu.ac.il> <200902230638.n1N6cg06015206@indigo.cs.bgu.ac.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0902231151020.18221@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200902230638.n1N6cg06015206@indigo.cs.bgu.ac.il>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 11:51:30AM -0500, Steven Rostedt wrote:
-> 
-> On Mon, 23 Feb 2009, Frederic Weisbecker wrote:
-> > > 
-> > > Perhaps we could add these callsites back, but we would need to update 
-> > > trace_wake_up.
-> > > 
-> > > Have trace_wake_up set a flag instead, and add a tracepoint around the 
-> > > scheduler (outside the grabbing of runqueue locks), that will have a 
-> > > callback to the tracing code. That call back can perform the wakeups.
-> > > 
-> > > How does that sound?
+On Mon, Feb 23, 2009 at 08:38:42AM +0200, eial@cs.bgu.ac.il wrote:
+> On Fri 20 Feb 21:24 2009 eial@cs.bgu.ac.il wrote:
 > > 
+> > hello, I'm having a kernel panic with kernel 2.6.28 upon shutdown right after unmounting remaining file system under gentoo.
+> > I've enabled kernel dump feature in the kernel but I can't seem to be able to locate the file, where can I find it?
 > > 
-> > That sounds good but only for these particular tracers I guess.
-> 
-> OK, what about making a trace_delay_wake_up()?
+> > thanks
+> > 
+> > Eial
+>
+> I apologize of the bump, can anyone help me on this subject?
 
+As I read Documentation/kdump/kdump.txt kdump works in a different way,
+so it's a dead end. Does this panic happen on gentoo-sources or vanilla-sources?
+If it's on gentoo-sources, test vanilla (if it happens only on gentoo-sources
+then file a bug at http://bugs.gentoo.org).
 
-Which would send a delayed work to wake up?
+No matter on which kernel it happens, you will have to write down an oops.
+You can take a picture of a screen with a camera.
 
- 
-> -- Steve
-> 
+And then read REPORTING-BUGS in kernel sources.
 
+PS: Please don't top post.
+
+Marcin
