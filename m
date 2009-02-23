@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbZBWWXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbZBWWYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbZBWWXQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 17:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZBWWW5
+	id S1757474AbZBWWYX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 17:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbZBWWYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 17:22:57 -0500
-Received: from mail-fx0-f167.google.com ([209.85.220.167]:51618 "EHLO
-	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753024AbZBWWW4 (ORCPT
+	Mon, 23 Feb 2009 17:24:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42064 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753024AbZBWWYD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 17:22:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=vEQLGG0yYRyqn+jsdpL/4m71EfhI44Jc5jzJJuPsV65571l9FpWTq8S5Qdzzhmsemn
-         MpfjbfvWEDZbQT98SpyKQp6c3hNA4ksNlqV7cBRPHrKcD8FmSmM3XTJIujYnJlh0uAah
-         HLztd9YUaonIDIXQnli9lF3l/dScNREHRprNA=
-Message-ID: <49A321BA.2040500@gmail.com>
-Date: Mon, 23 Feb 2009 23:22:50 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090218 SUSE/3.0b2-1.1 Thunderbird/3.0b2
+	Mon, 23 Feb 2009 17:24:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
+Date: Mon, 23 Feb 2009 23:23:24 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200902221837.49396.rjw@sisk.pl> <200902221839.50357.rjw@sisk.pl> <d6200be20902231411s654f8b3csf1388a97f3f94ac4@mail.gmail.com>
+In-Reply-To: <d6200be20902231411s654f8b3csf1388a97f3f94ac4@mail.gmail.com>
 MIME-Version: 1.0
-To: Bob Copeland <me@bobcopeland.com>
-CC: Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com>
-In-Reply-To: <20090223152724.M82409@bobcopeland.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200902232323.25583.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23.2.2009 16:35, Bob Copeland wrote:
-> As I understand it, yes, we don't do the right thing when the more flag
-> is set.  We're supposed to keep processing packets until we get one with
-> the done flag, and then all of that is supposed to be merged into a single
-> packet.  Other flags such as the rx rate are only valid on the final
-> packet.
+On Monday 23 February 2009, Arve Hjønnevåg wrote:
+> On Sun, Feb 22, 2009 at 9:39 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > Introduce two helper functions allowing us to disable device
+> > interrupts (at the IO-APIC level) during suspend or hibernation
+> > and enable them during the subsequent resume, respectively, so that
+> > the timer interrupts are enabled while "late" suspend callbacks and
+> > "early" resume callbacks provided by device drivers are being
+> > executed.
+> >
+> > Use these functions to rework the handling of interrupts during
+> > suspend (hibernation) and resume.  Namely, interrupts will only be
+> > disabled on the CPU right before suspending sysdevs, while device
+> > interrupts will be disabled (at the IO-APIC level), with the help of
+> > the new helper function, before calling "late" suspend callbacks
+> > provided by device drivers and analogously during resume.
+> >
+> 
+> What impact does this have on wakeup interrupts? Unless you add a
+> check, after masking all interrupt at the CPU, to abort suspend if any
+> wakeup interrupt has IRQ_PENDING set I think you will loose wakeup
+> interrupts (at least for irqs that use default_disable).
 
-What I don't understand is how we can proceed further, if we should 
-never get done flag set according to the specs for the buffer which has 
-more flag set. We should hit (unlikely(ret == -EINPROGRESS)) test everytime.
+I _think_ they would have to be reenabled after we've called
+local_irq_disable().
 
-> So I am not sure if the jumbo packets are causing bad things to happen,
-> or if they are an indication that something bad has already happened.
-
-I don't know, it was just an idea. I tried to lower rxbufsize to 1000 
-and see no problems so far (except unsupported jumbo warnings and packet 
-loss indeed).
+Thanks,
+Rafael
