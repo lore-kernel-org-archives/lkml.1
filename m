@@ -1,118 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbZBWPNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZBWPMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757000AbZBWPNY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 10:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZBWPNN
+	id S1756920AbZBWPMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 10:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbZBWPKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 10:13:13 -0500
-Received: from ufisa.uninett.no ([158.38.152.126]:53305 "EHLO ufisa.uninett.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754326AbZBWPNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 10:13:12 -0500
-X-Greylist: delayed 1988 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Feb 2009 10:13:12 EST
-Date: Mon, 23 Feb 2009 15:42:41 +0100 (CET)
-From: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux@kolla.no>
-X-X-Sender: kolla@halbrend.uninett.no
-To: linux-kernel@vger.kernel.org
-Subject: PROBLEM: IPv6 autoconf/accept_ra default values
-Message-ID: <alpine.LNX.2.00.0902231319380.14151@halbrend.uninett.no>
-User-Agent: Alpine 2.00 (LNX 1184 2008-12-16)
+	Mon, 23 Feb 2009 10:10:34 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:51050 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755703AbZBWPKc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 10:10:32 -0500
+Date: Mon, 23 Feb 2009 10:01:35 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH 03/20] Do not check NUMA node ID when the caller knows
+ the node is valid
+In-Reply-To: <1235344649-18265-4-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0902230958440.7298@qirst.com>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-4-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 22 Feb 2009, Mel Gorman wrote:
 
-Hello
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 75f49d3..6566c9e 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -1318,11 +1318,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
+>  	for (i = 0; i < area->nr_pages; i++) {
+>  		struct page *page;
+>
+> -		if (node < 0)
+> -			page = alloc_page(gfp_mask);
+> -		else
+> -			page = alloc_pages_node(node, gfp_mask, 0);
+> -
+> +		page = alloc_pages_node(node, gfp_mask, 0);
+>  		if (unlikely(!page)) {
+>  			/* Successfully allocated i pages, free them in __vunmap() */
+>  			area->nr_pages = i;
+>
 
-1. Summary of problem
-
-autoconfig and accept_ra is by default on (by the way of forwarning) -
-this is very problematic in many ways.
-
-2. Full description of the problem/report:
-
-* if you want staticly only configured addresses/gateway (which is
-  something you just might want for server machines for example) you need
-  to change the sysctl parameters before the interface is brought up. 
-  (yes, I want staticly, and only staticly configured addresses, dont get
-  me started on why - keywords: source address, dns, ssl, access control)
-
-* to change the default values, ipv6 module needs to be loaded, in many
-  distros this leads to race conditions, especially in these "autodetect
-  hardware and bring up everything magically" days :)
-
-* if you netboot with ipv6 enabled kernel, interface will pick up ipv6
-  autoconf no matter, so you need to remove addresses and routes manually
-  after boot. As far as I know there is now kernel parameters to tell
-  kernel to not autoconf ipv6. I admit I have not tested out whether it's
-  possible to use ipv6-addresses as kernel parameters at all.
-
-* ipv6 kernel module has no load paramters as far as I can tell?
-
-* changing net.ipv6.conf.all.* and net.ipv6.conf.default.* dont work as
-  intended? I'm really not sure how this is meant to work, but intuitively
-  I would think that "...all.*" would affect all interfaces present, and
-  "...*.default.*" would set the default values for "future" interfaces.
-  Maybe I'm wrong? Look further down...
-
-3. Keywords
-   ipv6, forwarding, autoconf, accept_ra
-
-4. Kernel version (from /proc/version):
-   This goes accross all 2.6 kernels as far as I can tell, no matter what
-   distro.
-
-5. Output of Oops.. message
-   No oops so far :)
-
-6. A small shell script or example program which triggers the problem 
-   
-   root:~# sysctl net.ipv6.conf.all.accept_ra
-   net.ipv6.conf.all.accept_ra = 1
-   root:~# sysctl -w net.ipv6.conf.all.accept_ra=0
-   net.ipv6.conf.all.accept_ra = 0
-   root:~# sysctl net.ipv6.conf.eth0.accept_ra
-   net.ipv6.conf.all.accept_ra = 1
-   
-I suppose the above is fals behaviour? I'm really not sure, but if this is
-not a bug, then I fail to see the purpose of the "...all.*" and
-"...default.*" sysctl parameters. From the documentation
-(networking/ip-sysctl.txt) I get the impression that the above behaviour
-is wrong:
-
---- 
-conf/default/*:
-        Change the interface-specific default settings.
-
-conf/all/*:
-        Change all the interface-specific settings.
-
-        [XXX:  Other special features than forwarding?]
----
-
-Looks like this is unclear for more than just me :)
+That wont work. alloc_pages() obeys memory policies. alloc_pages_node()
+does not.
 
 
-My personal oppinion is that anything ipv6 autoconfig/accept_ra should be
-default _off_, since this simplifies all the above mentioned issues, and
-it is incredibly easy to turn on again with systcl if people want it.
-It is much easier to enable ipv6 automagic than to disable it.
-At least there should be kernel/module parameter to set default behaviour.
-
-Part of the problem with deploying IPv6 is due to "magic" like this, all
-the autoconfig/router announcement magic looks very well on paper and in
-theory, but out in the field it quickly leads to loads of totally
-unnecessary extra work, work that could easily be avoided if default
-behaviour was to have it off. It should be in the interest of IPv6
-advocates to support a "soft" transition from IPv4-only to dual-stack,
-fencing off unwanted "magic" only adds to the frustration for those who
-actually try to deploy it.
-
-What do you think?
-
-If there already is a simple stright forward solution, then I apologize
-for this rant - please enlighten me :)
-
--- kolla
