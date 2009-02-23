@@ -1,98 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZBWPz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZBWQDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZBWPz2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 10:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZBWPzP
+	id S1755843AbZBWQDa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZBWQDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 10:55:15 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41458 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbZBWPzN (ORCPT
+	Mon, 23 Feb 2009 11:03:20 -0500
+Received: from el-out-1112.google.com ([209.85.162.183]:61603 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754453AbZBWQDT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 10:55:13 -0500
-Date: Mon, 23 Feb 2009 10:55:11 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
- conversions
-In-Reply-To: <alpine.DEB.2.00.0902231044050.18221@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0902231053360.18221@gandalf.stny.rr.com>
-References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <87y6vyuzsn.fsf@basil.nowhere.org> <alpine.DEB.2.00.0902221741040.18221@gandalf.stny.rr.com> <20090223023332.GA5430@Krystal> <alpine.DEB.2.00.0902222317510.18221@gandalf.stny.rr.com>
- <20090223045357.GA9158@Krystal> <alpine.DEB.2.00.0902230928000.18221@gandalf.stny.rr.com> <20090223154258.GB28727@Krystal> <alpine.DEB.2.00.0902231044050.18221@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 23 Feb 2009 11:03:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QYWqnrnLQvy6Fs4cnCFGlYD4PBpPqXKrlVs0Hc9teZNQ4c+YqkFvDSssesWNfoBOKA
+         /obXewz8xai5SO/iTIFpdEYN6UiHjNG5/QohJ1DjuuV39p7H9Qu58O4PQSFqIvxvaxmt
+         t+UWExK9Oj5kAn15pIOFjsLIZHe4GgU7/ioNw=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090223152724.M82409@bobcopeland.com>
+References: <20090222111807.GB5538@silver.sucs.org>
+	 <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org>
+	 <20090222144742.GA6078@nowhere>
+	 <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com>
+	 <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com>
+Date: Mon, 23 Feb 2009 18:03:16 +0200
+Message-ID: <40f31dec0902230803qcbd4c20kc66a50e6e2e8eef2@mail.gmail.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+From: Nick Kossifidis <mickflemm@gmail.com>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/2/23 Bob Copeland <me@bobcopeland.com>:
+> On Mon, 23 Feb 2009 00:20:50 +0100, Jiri Slaby wrote
+>> On 22.2.2009 22:56, Jiri Slaby wrote:
+>> > Well, maybe we should try to reproduce with jumbo packets sent to the
+>> > ath5k receiver, since I think it (1) is not very much test-covered code
+>> > (2) appears to be related.
+>>
+>> According to the spec I have for older chip, there is not `done' flag
+>> set for descriptors which have `more' flag set. We handle this wrongly.
+>> Am I looking correctly, Nick, Luis, Bob?
+>>
+>> I still don't see what could have caused this though.
+>
+> As I understand it, yes, we don't do the right thing when the more flag
+> is set.  We're supposed to keep processing packets until we get one with
+> the done flag, and then all of that is supposed to be merged into a single
+> packet.  Other flags such as the rx rate are only valid on the final
+> packet.
+>
+> However, I did some debugging of this a while ago and concluded that the
+> 'jumbo' frames were largely garbage data.  The dma buffer size is certainly
+> large enough for a standard 802.11 frame and the 'more' flag is only
+> supposed to be set if the dma buffer size is too small for a packet.  In
+> all cases the dma buffer size was 2500+ bytes and the actual contents of
+> the packets looked like random values (I did have encryption turned on,
+> but there were no 802.11 headers I could see.)
+>
+> So I am not sure if the jumbo packets are causing bad things to happen,
+> or if they are an indication that something bad has already happened.
+>
 
-On Mon, 23 Feb 2009, Steven Rostedt wrote:
+Hmm can someone test ath5k against an Atheros AP using fast frames ?
+Maybe they are jumbo frames but they don't have any header etc so that
+they look like one frame after un-fragmentation, documentation says
+that the current frame is continued in the next descriptor if more is
+set to 1 so i guess next buffer might not have the header. If more = 0
+then it's our last descriptor and only then other fields such as done,
+frame receive ok, rssi etc are valid.
 
-> 
-> On Mon, 23 Feb 2009, Mathieu Desnoyers wrote:
-> > > 
-> > > As for RO_DATA and bugs, it is a very small window for this to happen, and 
-> > > the sys-admin is the one making the change. This is not some periodical 
-> > > update. The sys-admin must be the one to initiate the tracer to modify 
-> > > text, ie, enabling or disabling the function tracer. Which, by the way, is 
-> > > something a sys-admin should only do when the system is off line. The 
-> > > overhead of all functions being traced, would not be something to be 
-> > > doing on a production system, unless they need to analyze something going 
-> > > wrong.
-> > > 
-> > 
-> > The argument "not to be used on production systems" is incompatible with
-> > the LTTng view, sorry. If you design your code so it's usable only in
-> > debugging scenarios on development machines and not in the field, then I
-> > doubt LTTng will be able to rely on it. I'm OK with that, as long as
-> > nobody argue that such tracepoint could be replaced by the function
-> > tracer, because tracepoints has to be enabled in the field on production
-> > machines.
-> 
-> Please do not confuse ftrace with the function tracer. The stop_machine
-> is only about the function tracer and has nothing to do with the rest of
-> ftrace. This is one detail. Yes, tracing EVERY function in the kernel
-> will add an overhead. There's no way around it. It's OK to do it on a
-> production system, but it WILL add overhead. That's what happens when you
-> trace EVERY function.
-> 
-> Note, I leave a lot of the other tracers on by default, and those are all
-> within the noise of overhead. I'm only talking about the function tracer
-> that is meant to do a lot of tracing. Does LTTng trace EVERY function?
+The fact that they are not reported as PHY error packets makes me
+wonder why would we have garbage data on our rx buffer. How about the
+FRAME_RECEIVE_OK or CRC_ERROR flags (also valid for the last
+descriptor) ? Are they set or not ?
 
-BTW, The above is more about the answer to my statement about running on
-a production system. Below, is more an answer to the above. After 
-rereading what I wrote, I did not explain it very well.
-
--- Steve
-
-> 
-> Now, yes, if you only select a few functions, there's no noticeable 
-> overhead. And yes then you would need to do the stop_machine anyway, and 
-> there will be a small window where the kernel text will be writable. 
-> Tracing only a small set of functions (say a few 100) is not much of an 
-> overhead, and I could see that being done on a production system.
-> 
-> > 
-> > I agree that the racy time window is not that large and is not really a
-> > security concern, but it's still just annoying.
-> 
-> Annoying? how so?
-> 
-> Again, the stop_machine part has nothing to do with DEBUG_RODATA, it is 
-> about the safest and easiest way to modify kernel text.
-> 
-> -- Steve
-> 
-> 
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
