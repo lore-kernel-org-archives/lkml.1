@@ -1,148 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZBWMXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZBWM0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbZBWMXo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 07:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZBWMXe
+	id S1753765AbZBWM0U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 07:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZBWM0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 07:23:34 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:38912 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753664AbZBWMXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 07:23:34 -0500
-Date: Mon, 23 Feb 2009 12:23:32 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 15/20] Do not disable interrupts in free_page_mlock()
-Message-ID: <20090223122331.GF6740@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-16-git-send-email-mel@csn.ul.ie> <1235380740.4645.2.camel@laptop>
+	Mon, 23 Feb 2009 07:26:09 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:20922 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753565AbZBWM0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 07:26:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Ubr0UlgGROPOGk+Ihe+xaApzQWVucrHe+NFauj/tiC59CevT4APw+RcLlwfJKH9Zay
+         ZnfpI3odk8Ay/L1bYjyF2mtN0oOc1Xf5mzOmgCSzOPvUfZpWui1+8Aq33RiZMDtbi7h3
+         grP2hVBHHERUg3wGRqqMAZ6kqtrrF6PK0lHL4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1235380740.4645.2.camel@laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <49A258A2.2020408@nokia.com>
+References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com>
+	 <200902201311.44056.david-b@pacbell.net>
+	 <4d34a0a70902222141y345a7bc3g314e6de5df156f2d@mail.gmail.com>
+	 <49A258A2.2020408@nokia.com>
+Date: Mon, 23 Feb 2009 21:26:06 +0900
+X-Google-Sender-Auth: 0e6081b63e80d396
+Message-ID: <9c9fda240902230426s2003d208xebeb6630c61b3bec@mail.gmail.com>
+Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when 
+	resuming
+From: Kyungmin Park <kyungmin.park@samsung.com>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: Kim Kyuwon <chammoru@gmail.com>, David Brownell <david-b@pacbell.net>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
+       =?EUC-KR?B?seix1L/4?= <q1.kim@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 10:19:00AM +0100, Peter Zijlstra wrote:
-> On Sun, 2009-02-22 at 23:17 +0000, Mel Gorman wrote:
-> > free_page_mlock() tests and clears PG_mlocked. If set, it disables interrupts
-> > to update counters and this happens on every page free even though interrupts
-> > are disabled very shortly afterwards a second time.  This is wasteful.
-> > 
-> > This patch splits what free_page_mlock() does. The bit check is still
-> > made. However, the update of counters is delayed until the interrupts are
-> > disabled. One potential weirdness with this split is that the counters do
-> > not get updated if the bad_page() check is triggered but a system showing
-> > bad pages is getting screwed already.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  mm/internal.h   |   10 ++--------
-> >  mm/page_alloc.c |    8 +++++++-
-> >  2 files changed, 9 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/mm/internal.h b/mm/internal.h
-> > index 478223b..b52bf86 100644
-> > --- a/mm/internal.h
-> > +++ b/mm/internal.h
-> > @@ -155,14 +155,8 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
-> >   */
-> >  static inline void free_page_mlock(struct page *page)
-> >  {
-> > -	if (unlikely(TestClearPageMlocked(page))) {
-> > -		unsigned long flags;
-> > -
-> > -		local_irq_save(flags);
-> > -		__dec_zone_page_state(page, NR_MLOCK);
-> > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> > -		local_irq_restore(flags);
-> > -	}
-> > +	__dec_zone_page_state(page, NR_MLOCK);
-> > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
-> >  }
-> 
-> Its not actually clearing PG_mlocked anymore, so the name is now a tad
-> misleading.
-> 
+Hi,
 
-Really? I see the following
+On Mon, Feb 23, 2009 at 5:04 PM, Adrian Hunter
+<ext-adrian.hunter@nokia.com> wrote:
+> ext Kim Kyuwon wrote:
+>> Hi,
+>>
+>> On Sat, Feb 21, 2009 at 6:11 AM, David Brownell <david-b@pacbell.net> wrote:
+>>> On Friday 20 February 2009, Kim Kyuwon wrote:
+>>>> +static void omap_hsmmc_init(struct mmc_omap_host *host)
+>>>> +{
+>>>> +       u32 hctl, capa, value;
+>>>> +
+>>>> +       /* Only MMC1 supports 3.0V */
+>>>> +       if (host->id == OMAP_MMC1_DEVID) {
+>>>> +               hctl = SDVS30;
+>>> Shouldn't it be remembering what voltage it was using,
+>>> and then restore that, instead of always making MMC1
+>>> restart at a 3.0V level?  That's pretty awkward to test
+>>> unless you have a 1.8V-capable card in MMC1...
+>>
+>> You are somewhat right, thank you.
+>> But remebering what voltage it was using doesn't feasible to me,
+>> because the card can be changed while in 'Sleep' state. I should have
+>> inserted a function that detect the right voltage after intializing. I
+>> will resend the patch later.
+>
+> Doesn't it already do that? Can you explain more?
+>
+> Although I have not tested it, I very much doubt
+> dual-voltage cards work.  That is because VMMC1_185V
+> is zero, which has the side-effect of turning the
+> regulator off (see arch/arm/mach-omap2/mmc-twl4030.c)
 
-#ifdef CONFIG_UNEVICTABLE_LRU
-PAGEFLAG(Unevictable, unevictable) __CLEARPAGEFLAG(Unevictable, unevictable)
-        TESTCLEARFLAG(Unevictable, unevictable)
+It's also to difficult to test in our H/W since it's configured only
+support 3.0V.
 
-#define MLOCK_PAGES 1
-PAGEFLAG(Mlocked, mlocked) __CLEARPAGEFLAG(Mlocked, mlocked)
-        TESTSCFLAG(Mlocked, mlocked)
+How about to separate it two phases, first fix the mmc suspend/resume
+works again, and then verify dual voltage if there are these hardware
 
-#else
+How to you think?
 
-#define MLOCK_PAGES 0
-PAGEFLAG_FALSE(Mlocked)
-        SETPAGEFLAG_NOOP(Mlocked) TESTCLEARFLAG_FALSE(Mlocked)
-
-PAGEFLAG_FALSE(Unevictable) TESTCLEARFLAG_FALSE(Unevictable)
-        SETPAGEFLAG_NOOP(Unevictable) CLEARPAGEFLAG_NOOP(Unevictable)
-        __CLEARPAGEFLAG_NOOP(Unevictable)
-#endif
-
-So there is a PG_mlocked bit once UNEVITABLE_LRU is set which was the
-case on the tests I was running. I'm probably missing something silly.
-
-> That said, since we're freeing the page, there ought to not be another
-> reference to the page, in which case it appears to me we could safely
-> use the unlocked variant of TestClear*().
-> 
-
-Regrettably, unlocked variants do not appear to be defined as such but
-the following should do the job, right? It applies on top of the current
-change.
-
-diff --git a/mm/internal.h b/mm/internal.h
-index b52bf86..7f775a1 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -155,6 +155,7 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
-  */
- static inline void free_page_mlock(struct page *page)
- {
-+	__ClearPageMlocked(page);
- 	__dec_zone_page_state(page, NR_MLOCK);
- 	__count_vm_event(UNEVICTABLE_MLOCKFREED);
- }
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index edac673..8bd0533 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -580,7 +580,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
- 	unsigned long flags;
- 	int i;
- 	int bad = 0;
--	int clearMlocked = TestClearPageMlocked(page);
-+	int clearMlocked = PageMlocked(page);
- 
- 	for (i = 0 ; i < (1 << order) ; ++i)
- 		bad += free_pages_check(page + i);
-@@ -1040,7 +1040,7 @@ static void free_pcp_page(struct page *page)
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
- 	int migratetype;
--	int clearMlocked = TestClearPageMlocked(page);
-+	int clearMlocked = PageMlocked(page);
- 
- 	if (PageAnon(page))
- 		page->mapping = NULL;
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thank you,
+Kyungmin Park
