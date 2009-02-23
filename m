@@ -1,40 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZBWQVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZBWQVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbZBWQVi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZBWQVQ
+	id S1753653AbZBWQVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZBWQVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:21:16 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:2588 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbZBWQVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:21:15 -0500
-Date: Mon, 23 Feb 2009 11:21:03 -0500
-From: Bob Copeland <me@bobcopeland.com>
-To: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090223162103.GA3383@hash.localnet>
-References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com> <40f31dec0902230803qcbd4c20kc66a50e6e2e8eef2@mail.gmail.com> <40f31dec0902230815x6b43fa50h41edfeead96822a3@mail.gmail.com>
+	Mon, 23 Feb 2009 11:21:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54927 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754188AbZBWQVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 11:21:18 -0500
+Message-ID: <49A2CD1E.60606@redhat.com>
+Date: Mon, 23 Feb 2009 11:21:50 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40f31dec0902230815x6b43fa50h41edfeead96822a3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [tip:x86/mm] x86, mm, kprobes: fault.c, simplify	notify_page_fault()
+References: <tip-b18018126f422f5b706fd750373425e10e84b486@kernel.org> <499F383B.6060700@redhat.com> <20090222093109.GE6964@elte.hu>
+In-Reply-To: <20090222093109.GE6964@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 06:15:51PM +0200, Nick Kossifidis wrote:
-> Typo alert...
-> rs->rs_more = !!(rx_status->rx_status_0 & AR5K_5212_RX_DESC_STATUS0_MORE);
+Hi Ingo,
 
-I'm slow... what's wrong with it?
+Ingo Molnar wrote:
+> another very small thing, while we are discussing kprobes:
+> 
+> I always found that the __kprobes annotation is very confusingly 
+> euphemistic: what those annotations really mean is not 
+> 'kprobes', but 'no kprobes'.
+
+As far as I know, __kprobes originally means 'this function will be
+called from kprobes'. However, now many functions are tagged as
+__kprobes, it might be confusingly.
+
+> So how about renaming __kprobes to __nokprobes, similar to how 
+> we have the notrace attribute?
+
+Would you mean that will include changing section name of
+'.text.kprobes'? That's what I mind.
+
+> We have about 350 __kprobes annotations in the kernel, so 
+> renaming it now would not be practical - but any objections 
+> against me sending Linus a rename patch somewhere late in the 
+> next merge window that just does this rename?
+
+Just renaming __kprobes to __nokprobes seems good for me.
+
+Thank you!
+
+
+> [ likewise, i'll rename notrace to __notrace to make it visually 
+>   less intrusive to the return value type. There's a lot less 
+>   such annotations in the kernel. ]
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Bob Copeland %% www.bobcopeland.com
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
