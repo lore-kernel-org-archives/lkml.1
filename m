@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbZBWQmC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbZBWQll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbZBWQmC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:42:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbZBWQlr
+	id S1755800AbZBWQll (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbZBWQlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:41:47 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:34042 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754548AbZBWQlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:41:47 -0500
-Date: Mon, 23 Feb 2009 11:33:00 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 04/20] Convert gfp_zone() to use a table of precalculated
- value
-In-Reply-To: <20090223163322.GN6740@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0902231130280.3333@qirst.com>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0902231003090.7298@qirst.com> <20090223163322.GN6740@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 23 Feb 2009 11:41:21 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57946 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754541AbZBWQlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 11:41:19 -0500
+Date: Tue, 24 Feb 2009 00:41:12 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc: mpatocka@redhat.com
+Subject: net: amend the fix for SO_BSDCOMPAT gsopt infoleak
+Message-ID: <20090223164112.GA29425@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Feb 2009, Mel Gorman wrote:
+The fix for CVE-2009-0676 (upstream commit df0bca04) is incomplete. Note
+that the same problem of leaking kernel memory will reappear if someone
+on some architecture uses struct timeval with some internal padding (for
+example tv_sec 64-bit and tv_usec 32-bit) --- then, you are going to
+leak the padded bytes to userspace.
 
-> I was concerned with mispredictions here rather than the actual assembly
-> and gfp_zone is inlined so it's lot of branches introduced in a lot of paths.
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+Reported-by: Mikulas Patocka <mpatocka@redhat.com>
 
-The amount of speculation that can be done by the processor pretty
-limited to a few instructions. So the impact of a misprediction also
-should be minimal. The decoder is likely to have sucked in the following
-code anyways.
-
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 6f2e133..913c95f 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -696,7 +696,7 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
+ 	if (len < 0)
+ 		return -EINVAL;
+ 
+-	v.val = 0;
++	memset(&v, 0, sizeof(v));
+ 
+ 	switch(optname) {
+ 	case SO_DEBUG:
