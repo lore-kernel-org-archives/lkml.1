@@ -1,160 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbZBWQsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZBWQti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbZBWQsq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:48:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbZBWQsh
+	id S1757300AbZBWQti (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:49:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZBWQta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:48:37 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40130 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbZBWQsg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:48:36 -0500
-Date: Mon, 23 Feb 2009 11:48:32 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
- conversions
-In-Reply-To: <20090223161312.GA30279@Krystal>
-Message-ID: <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com>
-References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <87y6vyuzsn.fsf@basil.nowhere.org> <alpine.DEB.2.00.0902221741040.18221@gandalf.stny.rr.com> <20090223023332.GA5430@Krystal> <alpine.DEB.2.00.0902222317510.18221@gandalf.stny.rr.com>
- <20090223045357.GA9158@Krystal> <alpine.DEB.2.00.0902230928000.18221@gandalf.stny.rr.com> <20090223154258.GB28727@Krystal> <alpine.DEB.2.00.0902231044050.18221@gandalf.stny.rr.com> <20090223161312.GA30279@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 23 Feb 2009 11:49:30 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37492 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbZBWQt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 11:49:29 -0500
+Date: Mon, 23 Feb 2009 08:17:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
+Message-ID: <20090223161726.GD6751@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090220140157.GA12799@elte.hu> <20090222030030.GD6860@linux.vnet.ibm.com> <20090223051709.GA5990@linux.vnet.ibm.com> <200902240029.37815.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902240029.37815.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 23 Feb 2009, Mathieu Desnoyers wrote:
-> It can, by using your function tracer. It has a mode where it can
-> enable/disable a filter in a callback connected on tracepoints. This
-> filter is then used to enable detailed function tracing for a short time
-> window. Also, you could think of tracing every function calls with
-> LTTng's flight recorder mode, which only spins in memory overwriting the
-> oldest information. That would provide snapshots on demand of the last
-> functions called.
+On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
+> On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
 > 
-> > Now, yes, if you only select a few functions, there's no noticeable 
-> > overhead. And yes then you would need to do the stop_machine anyway, and 
-> > there will be a small window where the kernel text will be writable. 
-> > Tracing only a small set of functions (say a few 100) is not much of an 
-> > overhead, and I could see that being done on a production system.
-> > 
+> > The boot CPU runs in the context of its idle thread during boot-up.
+> > During this time, idle_cpu(0) will always return nonzero, which will
+> > fool Classic and Hierarchical RCU into deciding that a large chunk of
+> > the boot-up sequence is a big long quiescent state.  This in turn causes
+> > RCU to prematurely end grace periods during this time.
+> >
+> > This patch creates a new global variable that is set to 1 just before
+> > the boot CPU first enters the scheduler, after which the idle task
+> > really is idle.
 > 
-> This is what LTTng can do today. But that involves the function tracer
-> stop_machine() call, which I dislike.
+> Nice work all (btw. if this patch goes in rather than using system_state,
+> then please make the variable __read_mostly).
 
-What's wrong with stop_machine?  Specifically, what do you dislike about 
-it?
+Hmmm...  I misread this and made system_state be __read_mostly.  Let
+me know if this is bad, easy to fix if needed.
 
+							Thanx, Paul
+
+> Vegard, I would like to still use your patch in vmalloc.c as well. It
+> solves a possible use-after-free with preemptible RCU, and also helps with
+> a patch I have to conditionally disable lazy vmap unmapping (for Xen).
 > 
-> > > 
-> > > I agree that the racy time window is not that large and is not really a
-> > > security concern, but it's still just annoying.
-> > 
-> > Annoying? how so?
-> > 
-> > Again, the stop_machine part has nothing to do with DEBUG_RODATA, it is 
-> > about the safest and easiest way to modify kernel text.
-> > 
+> We _could_ disable RCU there instead to solve the preemptible RCU bug, but
+> your patch I think is less overhead.
 > 
-> We are running in circles here because there is no real argument
-> brought.
+> So with appropriate changelog update, please also resend your patch
+> (with Acked-by: Nick Piggin <npiggin@suse.de>)
 > 
-> 1 - You claim that changing the kernel's mapping, which has been
-> pointed out as an intrusive kernel modification, is faster than using a
-> text-poke-like approach. Please provide numbers to support such claims.
-
-Hmm, lets see. I simply set a bit in the PTE mappings. There's not many, 
-since a lot are 2M pages, for x86_64. Call stop_machine, and now I can 
-modify 1 or 20,000 locations. Set the PTE bit back. Note, the changing of 
-the bits are only done when CONFIG_DEBUG_RODATA is set.
-
-text_poke requires allocating a page. Map the page into memory. Set up a 
-break point. Knowing what to do when that break point is hit by another 
-process. Modify the one location. Unmap the page. Free the page. Remove 
-the breakpoint.
-
-Yes, this may be faster if I only modify one location. I would be hard 
-pressed that this is faster when I modify a few hundred locations. 
-The stop_machine method does it all at once. Not one at a time.
-
-
+> Thanks,
+> Nick
 > 
-> 2 - You claim that using stop_machine is simpler and therefore safer
-> than using a breakpoint-based approach. I start having some doubts about
-> simplicity when you start talking about the workarounds you have to do
-> for NMIs,
-
-I agree, the NMI work around was tricky, but the final solution (which
-we tested vigorously) works well. My claim that it is simpler is not about 
-the small steps, but rather the number of variables we need to deal with.
-Stop machine shuts down all the CPUs and executes my code on one CPU. 
-Interrupts are disabled on all CPUs, and we only need to worry about the 
-NMI. Which we now do.
-
-Your solution is about mapping another page on a running system, where
-anything can happen. The number of variables that can go wrong is much 
-greater simply by the fact that you have no idea as to what is running at 
-the same time as you perform your modifications.
-
-With stop_machine, the number of variables is much less, because I know 
-everything that is happening when I do the modification. I do not need to 
-worry about some strange driver doing some kind of tricks because it 
-simply is not running.
-
-> but more importantly, you seem to recognise that the latency
-> it induces would be inadequate for production systems.
-
-Wrong. I recognise the latency of tracing all functions on a production 
-system. Heck, we trace spin_lock, rcu_read_lock, mutex_lock, and all that 
-jazz. Just slowing those functions down a bit will have a noticeable 
-impact. I've found that adding those functions to set_ftrace_notrace drops 
-the function tracer penalty, significantly.
-
-
-> Therefore it's
-> unusable in some LTTng use-cases just because of that. If you expect the
-> function tracer to become used more widely in LTTng, these concerns
-> should be addressed.
-
-If you only want to trace a few hundred functions, then the overhead with
-it on should not be significant. Depending on which functions you trace. 
-As mentioned above, tracing only spin_lock can slow the system down.
-
-Set up the functions you want to trace, enable them. You can have the
-ring buffer disabled (echo 0 > /debug/tracing/tracing_on) and just turn on 
-the ring buffer for your snapshot, and turn it off when you are done. When 
-all tracing is done, then disable the function tracing.
-
-
+> > Located-by: Vegard Nossum <vegard.nossum@gmail.com>
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> >
+> >  init/main.c         |    3 +++
+> >  kernel/rcuclassic.c |    4 +++-
+> >  kernel/rcutree.c    |    4 +++-
+> >  3 files changed, 9 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/init/main.c b/init/main.c
+> > index 8442094..51f4b71 100644
+> > --- a/init/main.c
+> > +++ b/init/main.c
+> > @@ -121,6 +121,8 @@ static char *static_command_line;
+> >  static char *execute_command;
+> >  static char *ramdisk_execute_command;
+> >
+> > +int idle_task_is_really_idle;	/* set to 1 late in boot. */
+> > +
+> >  #ifdef CONFIG_SMP
+> >  /* Setup configured maximum number of CPUs to activate */
+> >  unsigned int __initdata setup_max_cpus = NR_CPUS;
+> > @@ -463,6 +465,7 @@ static noinline void __init_refok rest_init(void)
+> >  	 * at least once to get things moving:
+> >  	 */
+> >  	init_idle_bootup_task(current);
+> > +	idle_task_is_really_idle = 1;
+> >  	preempt_enable_no_resched();
+> >  	schedule();
+> >  	preempt_disable();
+> > diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+> > index bd5a900..a758fa6 100644
+> > --- a/kernel/rcuclassic.c
+> > +++ b/kernel/rcuclassic.c
+> > @@ -678,8 +678,10 @@ int rcu_needs_cpu(int cpu)
+> >   */
+> >  void rcu_check_callbacks(int cpu, int user)
+> >  {
+> > +	extern int idle_task_is_really_idle;
+> > +
+> >  	if (user ||
+> > -	    (idle_cpu(cpu) && !in_softirq() &&
+> > +	    (idle_cpu(cpu) && idle_task_is_really_idle && !in_softirq() &&
+> >  				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+> >
+> >  		/*
+> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> > index b2fd602..e996d85 100644
+> > --- a/kernel/rcutree.c
+> > +++ b/kernel/rcutree.c
+> > @@ -947,8 +947,10 @@ static void rcu_do_batch(struct rcu_data *rdp)
+> >   */
+> >  void rcu_check_callbacks(int cpu, int user)
+> >  {
+> > +	extern int idle_task_is_really_idle;
+> > +
+> >  	if (user ||
+> > -	    (idle_cpu(cpu) && !in_softirq() &&
+> > +	    (idle_cpu(cpu) && idle_task_is_really_idle && !in_softirq() &&
+> >  				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+> >
+> >  		/*
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> If, in the end, your argument is "the function tracer works as-is now,
-> and I have no time to change it given it represents too much work" or "I
-> don't care about your use-cases", I'm OK with that. But please then don't
-> argue that it's because it's the best technical solution when it isn't.
-
-No, I have yet to hear a valuable argument against stop_machine. You are 
-pushing the burden of proof on me, when we have something that does work, 
-on several archs. You want me to redesign the system to be x86 only, and 
-then say, hey, my original code works better.
-
-I do not see text_poke being theoretically better. The only reason you 
-given me to use it is because you dislike stop_machine.
-
--- Steve
-
-
-
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
