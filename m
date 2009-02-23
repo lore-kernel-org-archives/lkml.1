@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZBWIKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZBWINN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbZBWIKP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 03:10:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZBWIKB
+	id S1753995AbZBWINN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 03:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZBWIM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 03:10:01 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:24752 "EHLO
+	Mon, 23 Feb 2009 03:12:57 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:24895 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbZBWIKA (ORCPT
+	with ESMTP id S1752579AbZBWIM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 03:10:00 -0500
+	Mon, 23 Feb 2009 03:12:56 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
 	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=vEzJMQoL4RjTe4qPFUE9Gny0MesK5PCWBvN580AcrpJjP8GzC8t+IoheLMNoAxHdD
-	R52G+8o4anqtn9TsG17Ww==
+	b=kia3K3Par4jGiYbYxvEb/RudYX7Z49st+6PPfEu1SOSJ9jVA1ITAABLeyXFW7ku/2
+	VB7fi7FCw117veVI5+vpQ==
 MIME-Version: 1.0
-In-Reply-To: <d95d44a20902220437m2fb7af08y8c71fe275fe06a57@mail.gmail.com>
-References: <d95d44a20902220437m2fb7af08y8c71fe275fe06a57@mail.gmail.com>
-Date: Mon, 23 Feb 2009 00:09:54 -0800
-Message-ID: <6599ad830902230009mbfe7ddkf40f183c4a61a81a@mail.gmail.com>
-Subject: Re: [RFC] [PATCH] cgroup: accounting and limitation of disk quota
+In-Reply-To: <alpine.LNX.2.00.0902222254350.1236@swampdragon.chaosbits.net>
+References: <alpine.LNX.2.00.0902222254350.1236@swampdragon.chaosbits.net>
+Date: Mon, 23 Feb 2009 00:12:51 -0800
+Message-ID: <6599ad830902230012x170e2183q1540670d761ef80e@mail.gmail.com>
+Subject: Re: [PATCH] Remove some pointless conditionals before kfree() in 
+	kernel/cgroup.c
 From: Paul Menage <menage@google.com>
-To: anqin <anqin.qin@gmail.com>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Rolando Martins <rolando.martins@gmail.com>,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Paul Jackson <pj@sgi.com>, Simon Derr <simon.derr@bull.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 X-System-Of-Record: true
@@ -33,61 +34,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi An,
+On Sun, Feb 22, 2009 at 2:05 PM, Jesper Juhl <jj@chaosbits.net> wrote:
+> Hi,
+>
+> Here's a small patch for kernel/cgroup.c
+>
+> Removes a few pointless tests of pointer == 0 before kfree() in
+> kernel/cgroup.c.
+> If the pointer we hand to kfree() is 0, then kfree() is a noop, so there
+> is no need to test.
+>
+> Reduces object file size a bit :
+>
+> Before:
+> $ size kernel/cgroup.o
+>   text    data     bss     dec     hex filename
+>  21593    7804    4924   34321    8611 kernel/cgroup.o
+> After:
+> $ size kernel/cgroup.o
+>   text    data     bss     dec     hex filename
+>  21537    7744    4924   34205    859d kernel/cgroup.o
 
-On Sun, Feb 22, 2009 at 4:37 AM, anqin <anqin.qin@gmail.com> wrote:
-> The patch presents a cgroup subsystem to control the usage of disk quota.
+Thanks. I'm a bit surprised that it also shrunk the data segment size
+(and in fact, by more than the text segment size). Any idea how that
+came about?
 
-Thanks for sending this patch.
+>
+> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
 
-My overall feeling is that disk quotas aren't really something that
-you want to control at a cgroup level (i.e. associating a limit with a
-specific set of processes), they're something that you want to control
-at the directory hierarchy level (i.e. associate a limit with this
-directory and all its children).
-
-In the case of a virtual server these may well be the same thing - a
-process in the virtual server can't touch any files outside the
-virtual server's filespace, and stuff outside the virtual server will
-be well-behaved and won't touch files inside the virtual server's
-filespace.
-
-But for systems that are doing resource isolation without
-virtualization, this isn't necessarily still the case. A process may
-have access to multiple areas of the disk with independent quotas.
-
-E.g. I work on a job control system where each job has some private
-disk space, and may share a common pool of disk space with some
-related jobs on the same machine, for data that's shared between
-multiple jobs.
-
-In this case, there are separate disk quotas for the per-job private
-areas and the shared area, so this cgroup-based approach wouldn't be
-much use there. Something like Neil Brown's "tree quota" proposal from
-way back in 2001 seemed much more useful for this kind of isolation.
-The proposal was that you could associate a "tree id" with an inode,
-and then that inode and all its children were accounted against the
-quota of that tree id. The arguments against it were (AFAIR) mostly
-about the non-determinism issues that could arise if a single inode
-were hard-linked into multiple trees - essentially, the first time it
-was accessed from either tree it would become part of that tree, even
-though it was reachable (and modifiable) from the other tree. But as
-long as root doesn't do anything silly, this isn't really an issue,
-and similar issues arise with this cgroup-based approach - if a
-process outside a virtual server moves a file into that virtual
-server's filespace without updating the usage correctly (which AFAICS
-can't be done atomically?) then the quota stats will be off.
-
-More specific comments on this patch:
-
-- it would make more sense to integrate with the existing DQUOT_XXX
-macros rather than have to update every filesystem to include
-references to cgroup quotas as well as regular quotas.
-
-- disk_cgroup_read_stats() should be a read_map() handler, and
-disk_cgroup_read_quota() should be a read_u64() handler.
-
-- why do you have the checks and EPERM returns in disk_cgroup_create()
-? cgroupfs already does permission checking.
+Acked-by: Paul Menage <menage@google.com>
 
 Paul
+
+> ---
+>
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 9edb5c4..1c0a9b5 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -865,8 +865,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+>        if (opts.release_agent)
+>                strcpy(root->release_agent_path, opts.release_agent);
+>  out_unlock:
+> -       if (opts.release_agent)
+> -               kfree(opts.release_agent);
+> +       kfree(opts.release_agent);
+>        mutex_unlock(&cgroup_mutex);
+>        mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
+>        return ret;
+> @@ -969,15 +968,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>        /* First find the desired set of subsystems */
+>        ret = parse_cgroupfs_options(data, &opts);
+>        if (ret) {
+> -               if (opts.release_agent)
+> -                       kfree(opts.release_agent);
+> +               kfree(opts.release_agent);
+>                return ret;
+>        }
+>
+>        root = kzalloc(sizeof(*root), GFP_KERNEL);
+>        if (!root) {
+> -               if (opts.release_agent)
+> -                       kfree(opts.release_agent);
+> +               kfree(opts.release_agent);
+>                return -ENOMEM;
+>        }
+>
+>
+>
+> --
+> Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+> Plain text mails only, please      http://www.expita.com/nomime.html
+> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+>
+>
