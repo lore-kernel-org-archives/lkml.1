@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZBWXBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbZBWXE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbZBWXBT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 18:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZBWXBI
+	id S1757282AbZBWXE6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 18:04:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZBWXEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 18:01:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54522 "EHLO
+	Mon, 23 Feb 2009 18:04:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51662 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754432AbZBWXBF (ORCPT
+	by vger.kernel.org with ESMTP id S1754432AbZBWXEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 18:01:05 -0500
-Date: Mon, 23 Feb 2009 14:59:36 -0800
+	Mon, 23 Feb 2009 18:04:49 -0500
+Date: Mon, 23 Feb 2009 15:04:05 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mel@csn.ul.ie, linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
-       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH] mm: gfp_to_alloc_flags()
-Message-Id: <20090223145936.ba2b51e7.akpm@linux-foundation.org>
-In-Reply-To: <1235390103.4645.80.camel@laptop>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
-	<1235390103.4645.80.camel@laptop>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: mike@compulab.co.il, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch --file warns about p0 patch
+Message-Id: <20090223150405.ce90a2c0.akpm@linux-foundation.org>
+In-Reply-To: <20090223144312.GC22617@shadowen.org>
+References: <49A2B0A5.8050905@compulab.co.il>
+	<20090223144312.GC22617@shadowen.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,47 +27,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Feb 2009 12:55:03 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Mon, 23 Feb 2009 14:43:12 +0000
+Andy Whitcroft <apw@canonical.com> wrote:
 
-> +static int gfp_to_alloc_flags(gfp_t gfp_mask)
-> +{
-> +	struct task_struct *p = current;
-> +	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
-> +	const gfp_t wait = gfp_mask & __GFP_WAIT;
-> +
-> +	/*
-> +	 * The caller may dip into page reserves a bit more if the caller
-> +	 * cannot run direct reclaim, or if the caller has realtime scheduling
-> +	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
-> +	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
-> +	 */
-> +	if (gfp_mask & __GFP_HIGH)
-> +		alloc_flags |= ALLOC_HIGH;
+> Hmm, that should already be fixed in the version Andrew Morton has.
 
-This could be sped up by making ALLOC_HIGH==__GFP_HIGH (hack)
+Hmm, all of these:
 
-> +	if (!wait) {
-> +		alloc_flags |= ALLOC_HARDER;
-> +		/*
-> +		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
-> +		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-> +		 */
-> +		alloc_flags &= ~ALLOC_CPUSET;
-> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
-> +		alloc_flags |= ALLOC_HARDER;
-> +
-> +	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-> +		if (!in_interrupt() &&
-> +		    ((p->flags & PF_MEMALLOC) ||
-> +		     unlikely(test_thread_flag(TIF_MEMDIE))))
-> +			alloc_flags |= ALLOC_NO_WATERMARKS;
-> +	}
-> +	return alloc_flags;
-> +}
+checkpatch-make-in_atomic-ok-in-the-core.patch
+checkpatch-do-not-warn-about-p0-patches-when-checking-files.patch
+checkpatch-correctly-handle-type-spacing-in-the-face-of-modifiers.patch
+checkpatch-pointer-type-star-may-have-modifiers-following.patch
+checkpatch-a-modifier-is-not-an-identifier-at-the-end-of-a-type.patch
+checkpatch-extend-attribute-testing-to-all-modifiers.patch
+checkpatch-add-__ref-as-a-sparse-modifier.patch
+checkpatch-version-028.patch
 
-
-But really, the whole function can be elided on the fastpath.  Try the
-allocation with the current flags (and __GFP_NOWARN) and only if it
-failed will we try altering the flags to try harder?
+apart from perhaps checkpatch-add-__ref-as-a-sparse-modifier.patch look
+like bugfixes.  So I suppose we should slip them into 2.6.29, yes?
 
