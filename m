@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbZBWTLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbZBWTVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568AbZBWTLY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 14:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBWTLO
+	id S1756531AbZBWTVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 14:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZBWTVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 14:11:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53961 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752813AbZBWTLN (ORCPT
+	Mon, 23 Feb 2009 14:21:11 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:38347 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbZBWTVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 14:11:13 -0500
-Date: Mon, 23 Feb 2009 11:10:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       stable@kernel.org, Nick Piggin <npiggin@suse.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Message-Id: <20090223111009.d48ff81d.akpm@linux-foundation.org>
-In-Reply-To: <20090223161726.GD6751@linux.vnet.ibm.com>
-References: <20090220140157.GA12799@elte.hu>
-	<20090222030030.GD6860@linux.vnet.ibm.com>
-	<20090223051709.GA5990@linux.vnet.ibm.com>
-	<200902240029.37815.nickpiggin@yahoo.com.au>
-	<20090223161726.GD6751@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Feb 2009 14:21:11 -0500
+Date: Mon, 23 Feb 2009 11:21:04 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, wli@movementarian.org, linux-mm@kvack.org,
+       shai@scalex86.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] mm: Fix SHM_HUGETLB to work with users in
+	hugetlb_shm_group
+Message-ID: <20090223192104.GB27240@localdomain>
+References: <20090221015457.GA32674@localdomain> <20090223110404.GA6740@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090223110404.GA6740@csn.ul.ie>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Feb 2009 08:17:26 -0800 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Mon, Feb 23, 2009 at 11:04:05AM +0000, Mel Gorman wrote:
+>On Fri, Feb 20, 2009 at 05:54:57PM -0800, Ravikiran G Thirumalai wrote:
+>> This is a two patch series to fix a long standing inconsistency with the
+>> mechanism to allow non root users allocate hugetlb shm.  The patch changelog
+>> is self explanatory.  Here's a link to the previous discussion as well:
+>> 
+>> 	http://lkml.org/lkml/2009/2/10/89
+>> 
+>
+>checkpatch complains about the () around the check being unnecessary.
+>Not a big issue though.
+>
 
-> On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
-> > On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
-> > 
-> > > The boot CPU runs in the context of its idle thread during boot-up.
-> > > During this time, idle_cpu(0) will always return nonzero, which will
-> > > fool Classic and Hierarchical RCU into deciding that a large chunk of
-> > > the boot-up sequence is a big long quiescent state.  This in turn causes
-> > > RCU to prematurely end grace periods during this time.
-> > >
-> > > This patch creates a new global variable that is set to 1 just before
-> > > the boot CPU first enters the scheduler, after which the idle task
-> > > really is idle.
-> > 
-> > Nice work all (btw. if this patch goes in rather than using system_state,
-> > then please make the variable __read_mostly).
-> 
-> Hmmm...  I misread this and made system_state be __read_mostly.  Let
-> me know if this is bad, easy to fix if needed.
+Hmm! I could have sworn I ran it through checkpatch.pl (usually I do)
+but apparently this time I didn't.  Here's the corrected patch.
 
-Please don't use system_state.  The whole thing is just bad design. 
-It's a global variable, breaks encapsulation, creates interactions etc.
-CS-101 stuff.
+Thanks,
+Kiran
 
+---
+
+Fix hugetlb subsystem so that non root users belonging to hugetlb_shm_group
+can actually allocate hugetlb backed shm.
+
+Currently non root users cannot even map one large page using SHM_HUGETLB
+when they belong to the gid in /proc/sys/vm/hugetlb_shm_group.
+This is because allocation size is verified against RLIMIT_MEMLOCK resource
+limit even if the user belongs to hugetlb_shm_group.
+
+This patch
+1. Fixes hugetlb subsystem so that users with CAP_IPC_LOCK and users
+   belonging to hugetlb_shm_group don't need to be restricted with
+   RLIMIT_MEMLOCK resource limits
+2. This patch also disables mlock based rlimit checking (which will
+   be reinstated and marked deprecated in a subsequent patch).
+
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+Cc: Wli <wli@movementarian.org>
+
+Index: git.tip/fs/hugetlbfs/inode.c
+===================================================================
+--- git.tip.orig/fs/hugetlbfs/inode.c	2009-02-19 09:47:58.000000000 -0800
++++ git.tip/fs/hugetlbfs/inode.c	2009-02-23 11:09:46.000000000 -0800
+@@ -943,9 +943,7 @@ static struct vfsmount *hugetlbfs_vfsmou
+ 
+ static int can_do_hugetlb_shm(void)
+ {
+-	return likely(capable(CAP_IPC_LOCK) ||
+-			in_group_p(sysctl_hugetlb_shm_group) ||
+-			can_do_mlock());
++	return capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group);
+ }
+ 
+ struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag)
+@@ -963,9 +961,6 @@ struct file *hugetlb_file_setup(const ch
+ 	if (!can_do_hugetlb_shm())
+ 		return ERR_PTR(-EPERM);
+ 
+-	if (!user_shm_lock(size, user))
+-		return ERR_PTR(-ENOMEM);
+-
+ 	root = hugetlbfs_vfsmount->mnt_root;
+ 	quick_string.name = name;
+ 	quick_string.len = strlen(quick_string.name);
+@@ -1004,7 +999,6 @@ out_inode:
+ out_dentry:
+ 	dput(dentry);
+ out_shm_unlock:
+-	user_shm_unlock(size, user);
+ 	return ERR_PTR(error);
+ }
+ 
