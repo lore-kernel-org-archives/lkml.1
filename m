@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbZBWPn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbZBWPos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbZBWPn7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 10:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbZBWPnt
+	id S1756849AbZBWPos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 10:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbZBWPoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 10:43:49 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:43636 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755725AbZBWPns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 10:43:48 -0500
-Date: Mon, 23 Feb 2009 10:34:58 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Mel Gorman <mel@csn.ul.ie>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [RFC PATCH 00/20] Cleanup and optimise the page allocato
-In-Reply-To: <87prhauiry.fsf@basil.nowhere.org>
-Message-ID: <alpine.DEB.1.10.0902231032150.7298@qirst.com>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <87prhauiry.fsf@basil.nowhere.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Feb 2009 10:44:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55758 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755440AbZBWPoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 10:44:37 -0500
+Date: Mon, 23 Feb 2009 10:44:04 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
+Message-ID: <20090223154404.GA30147@redhat.com>
+References: <499edf47.1818d00a.060b.2b8d@mx.google.com> <499EE162.4050008@oracle.com> <20090220172241.GF24538@elte.hu> <1235302980.4632.8.camel@laptop> <y0mocwuptbc.fsf@ton.toronto.redhat.com> <1235304876.4632.10.camel@laptop> <20090222122424.GA9951@redhat.com> <1235387487.4645.28.camel@laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235387487.4645.28.camel@laptop>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Feb 2009, Andi Kleen wrote:
+Hi -
 
-> > Counters are surprising expensive, we spent a good chuck of our time in
-> > functions like __dec_zone_page_state and __dec_zone_state. In a profiled
-> > run of kernbench, the time spent in __dec_zone_state was roughly equal to
-> > the combined cost of the rest of the page free path. A quick check showed
-> > that almost half of the time in that function is spent on line 233 alone
-> > which for me is;
-> >
-> > 	(*p)--;
-> >
-> > That's worth a separate investigation but it might be a case that
-> > manipulating int8_t on the machine I was using for profiling is unusually
-> > expensive.
->
-> What machine was that?
->
-> In general I wouldn't expect even on a system with slow char
-> operations to be that expensive. It sounds more like a cache miss or a
-> cache line bounce. You could possibly confirm by using appropiate
-> performance counters.
+On Mon, Feb 23, 2009 at 12:11:27PM +0100, Peter Zijlstra wrote:
+> [...]
+> > > Because after a printk() debug spree, I don't commit them, I toss them
+> > > out and keep the fix.
+> > 
+> > Markers solve a problem closer to tracepoints than to debugging
+> > printk's.
 
-I have seen similar things occur with some processors. 16 bit or 8 bit
-arithmetic can be a problem.
+> Not so. In both cases the regular stuff (NMI trace, OOPS,
+> function/graph/sched trace, etc) is not enough and you wish to
+> augment its output.
 
-> > Converting this to an int might be faster but the increased
-> > memory consumption and cache footprint might be a problem. Opinions?
->
-> One possibility would be to move the zone statistics to allocated
-> per cpu data. Or perhaps just stop counting per zone at all and
-> only count per cpu.
+Sorry, I don't see how that relates.  If the general function tracing
+widgetry is insufficient for some subsystem/purpose, some sort of
+static instrumentation is needed.  Whether that instrumentation is
+done by markers (with a thin glue to ftrace) or by tracepoints (with a
+thick glue to ftrace) doesn't change the need for "augmentation".
 
-Statistics are in a structure allocated and dedicated for a certain cpu.
-It cannot be per cpu data as long as the per cpu allocator has not been
-merged. Cache line footprint is reduced with the per cpu allocator.
 
-> > So, by and large it's an improvement of some sort.
->
-> That seems like an understatement.
+> > In this context, the main difference between tracepoints is that
+> > markers need almost no hand-written glue code of the sort that make up
+> > ftrace engines that just trace simple values.  Simpler & smaller code
+> > for the same output seems like a win.
+> 
+> Right, for dumb tracers that's true I suppose, however any
+> high-bandwidth tracer will try to avoid putting silly ASCII strings in
+> and will therefore need to write more glue code.
 
-Ack. There is certainly more work to be done on the page allocator. Looks
-like a good start to me though.
+So let's leave it up to the wisdom of each subsystem maintainer to
+decide whether any particular trace event is high enough throughput
+that direct ASCII rendering is not favourable.  (Considering the
+finite size of tracing buffers, high-throughput trace events would
+need to be continually drained with ASCII conversion anyway, so the
+overall benefit of using packed binary as an intermediate copy may not
+be large after all.)
+
+I see all this as an argument to keep the subsystem's options open.
+Sometimes the extra complexity of tracepoints is worth it, sometimes
+it isn't.
+
+- FChE
