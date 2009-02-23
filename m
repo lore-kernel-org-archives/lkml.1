@@ -1,21 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbZBWAPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbZBWAX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbZBWAPb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 19:15:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZBWAPW
+	id S1756208AbZBWAX3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 19:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbZBWAXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 19:15:22 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:58357 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752444AbZBWAPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 19:15:21 -0500
-Date: Mon, 23 Feb 2009 00:15:19 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: [git pull] drm-fixes
-Message-ID: <alpine.DEB.2.00.0902230014080.30665@skynet.skynet.ie>
+	Sun, 22 Feb 2009 19:23:20 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56247 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753577AbZBWAXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 19:23:20 -0500
+Date: Sun, 22 Feb 2009 19:23:17 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
+In-Reply-To: <1235302980.4632.8.camel@laptop>
+Message-ID: <alpine.DEB.2.00.0902221922360.18221@gandalf.stny.rr.com>
+References: <499edf47.1818d00a.060b.2b8d@mx.google.com>  <499EE162.4050008@oracle.com>  <20090220172241.GF24538@elte.hu> <1235302980.4632.8.camel@laptop>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -24,116 +29,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Linus,
+On Sun, 22 Feb 2009, Peter Zijlstra wrote:
 
-Please pull the 'drm-fixes' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
+> On Fri, 2009-02-20 at 18:22 +0100, Ingo Molnar wrote:
+> > Eventually we should eliminate markers, their uses can either be 
+> > converted to new-style tracepoints, or to ftrace_printk().
+> 
+> I would like to never merge an ftrace_printk() user... just as I'd like
+> to get rid of every marker.
+> 
+> Then again, some people appear happy to commit their printk debug spree
+> too :/
 
-Another bunch of KMS/GEM related fixes for the Intel driver, should fix 
-the oops you saw. Also enable suspend/resume on KMS which is a regression
-for anyone who wanted to use it.
+/me looks at arch/powerpc/kernel/ftrace.c and realizes that he's guilty as 
+charged :-p
 
-Dave.
+-- Steve
 
- drivers/gpu/drm/i915/i915_dma.c      |    2 +-
- drivers/gpu/drm/i915/i915_drv.c      |   23 +++++++++++-
- drivers/gpu/drm/i915/i915_drv.h      |    1 +
- drivers/gpu/drm/i915/i915_gem.c      |   67 +++++++++++++++++++++-------------
- drivers/gpu/drm/i915/intel_display.c |    1 +
- 5 files changed, 67 insertions(+), 27 deletions(-)
-
-commit 5004417d840e6dcb0052061fd04569b9c9f037a8
-Author: Pierre Willenbrock <pierre@pirsoft.de>
-Date:   Mon Feb 23 10:12:15 2009 +1000
-
-    drm/i915: Add missing mutex_lock(&dev->struct_mutex)
-    
-    there might be a nicer way to fix this but this is the simplest for now.
-    
-    Signed-off-by: Pierre Willenbrock <pierre@pirsoft.de>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 6fb88588555a18792a27f483887fe1f2af5f9c9b
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Mon Feb 23 10:08:21 2009 +1000
-
-    drm/i915: fix WC mapping in non-GEM i915 code.
-    
-    [airlied - taken from mailing list posting]
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit bab2d1f6531657e37dc84f26184f3f64e1e73ecd
-Author: Chris Wilson <chris@chris-wilson.co.uk>
-Date:   Fri Feb 20 17:52:20 2009 +0000
-
-    drm/i915: Fix regression in 95ca9d
-    
-    The object is dereferenced before the NULL check. Oops.
-    
-    Fixes http://bugs.freedesktop.org/show_bug.cgi?id=20235
-    
-    Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit f21289b355cee8738d80c2ae5cbd272c3f7b5689
-Author: Eric Anholt <eric@anholt.net>
-Date:   Wed Feb 18 09:44:56 2009 -0800
-
-    drm/i915: Retire requests from i915_gem_busy_ioctl.
-    
-    This ensures that the user gets the latest information from the hardware
-    on whether the buffer is busy, potentially reducing the working set of objects
-    that the user chooses.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 5669fcacc58bf3a7386057addffd280d75380858
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Tue Feb 17 15:13:31 2009 -0800
-
-    drm/i915: suspend/resume GEM when KMS is active
-    
-    In the KMS case, we need to suspend/resume GEM as well.  So on suspend, make
-    sure we idle GEM and stop any new rendering from coming in, and on resume,
-    re-init the framebuffer and clear the suspended flag.
-    
-    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit efbeed96f7e20783b22d9529ef536b61f7ea8637
-Author: Eric Anholt <eric@anholt.net>
-Date:   Thu Feb 19 14:54:51 2009 -0800
-
-    drm/i915: Don't let a device flush to prepare buffers clear new write_domains.
-    
-    The problem was that object_set_to_gpu_domain would set the new write_domains
-    that are getting set by this batchbuffer, then the accumulated flushes required
-    for all the objects in preparation for this batchbuffer were posted, and the
-    brand new write domain would get cleared by the flush being posted.  Instead,
-    hang on to the new (or old if we're not changing it) value and set it after
-    the flush is queued.
-    
-    Results from this noticably included conformance test failures from reads
-    shortly after writes (where the new write domain had been lost and thus not
-    flushed and waited on), but is a suspected cause of hangs in some apps when
-    a write domain is lost on a buffer that gets reused for instruction or
-    commmand state.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 8b0e378a20e48c691d374f39d8b0596e63598cfc
-Author: Eric Anholt <eric@anholt.net>
-Date:   Thu Feb 19 14:40:50 2009 -0800
-
-    drm/i915: Cut two args to set_to_gpu_domain that confused this tricky path.
-    
-    While not strictly required, it helped while thinking about the following
-    change.  This change should be invariant.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
