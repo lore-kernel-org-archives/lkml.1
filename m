@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZBWOi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZBWOjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZBWOi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZBWOiQ
+	id S1755457AbZBWOjg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZBWOj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:38:16 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53950 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbZBWOiP (ORCPT
+	Mon, 23 Feb 2009 09:39:26 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:49791 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753523AbZBWOjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:38:15 -0500
-Date: Mon, 23 Feb 2009 14:38:01 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH B 06/10] OMAP3 pwrdm: add CORE SAR handling (for USBTLL module)
-Message-ID: <20090223143801.GA27145@n2100.arm.linux.org.uk>
-References: <20090128024301.27240.39391.stgit@localhost.localdomain> <20090128024421.27240.95450.stgit@localhost.localdomain> <13B9B4C6EF24D648824FF11BE89671620376DEB7A5@dlee02.ent.ti.com> <alpine.DEB.2.00.0901290042020.32081@utopia.booyaka.com> <alpine.DEB.2.00.0901290212360.18004@utopia.booyaka.com> <20090131142213.GL1394@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902052050220.8131@utopia.booyaka.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0902052050220.8131@utopia.booyaka.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 23 Feb 2009 09:39:25 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC 7/8] Aufs2: mmap 
+To: Tomas M <tomas@slax.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <49A269F7.3040602@slax.org>
+References: <7558.1235374266@jrobl> <7828.1235374676@jrobl> <49A269F7.3040602@slax.org>
+Date: Mon, 23 Feb 2009 23:39:21 +0900
+Message-ID: <14258.1235399961@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 08:52:17PM -0700, Paul Walmsley wrote:
-> Hello Russell,
-> 
-> On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
-> 
-> > On Thu, Jan 29, 2009 at 02:15:44AM -0700, Paul Walmsley wrote:
-> > > Hi Richard,
-> > > 
-> > > On Thu, 29 Jan 2009, Paul Walmsley wrote:
-> > > 
-> > > > > TLLSAR is not functional till ES3.1 (and beyound).  Is it possible to flag it this way?
-> > > > 
-> > > > Yes, it's easy in this case.  Thanks for the note.  I will send along an 
-> > > > updated patch for this.
-> > > 
-> > > N.B. - fixxing this required a separate change to the omap_chip flag 
-> > > system, so I'll send the two necessary patches to the linux-omap mailing 
-> > > list for further testing.
-> > 
-> > I'll hold off on this patch then.
-> 
-> The patches that obsolete patch B 06 have lasted a week on linux-omap@vger 
-> without any comment, so am passing them along in subsequent E-mails.
 
-It seems that the patches don't obsolete this patch, but instead
-require this patch to be applied first.
+Tomas M:
+> > In Unionfs, it took an approach which the memory pages mapped to
+> > filedata are copied from the lower (real) file into the Unionfs's
+> > virtual one and handles it by address_space operations. Recently Unionfs
+> > changed it to this approach which aufs adopted since Jul 2006.
+> 
+> I think there are much more areas where people around unionfs actually get the good ideas from AUFS. But it appears most projects already switched from StonyBrook's unionfs to AUFS, since AUFS proves to be better for many years.
 
-We really really need to get out of this pattern of building fixes
-on top of bad patches.  If a patch is the wrong approach then it is
-the wrong approach and should be dropped, or it should be merged with
-the patches which fix stuff up to the new approach.
+Yes, AUFS is used by many people for many years.
+And several people asked me to put it into mainline. Unfortunately I am
+not the one who decide it. I can only post and ask to do it.
 
-I'm going to combine B06 with patch 2 and hope things come out right.
+
+J. R. Okajima
