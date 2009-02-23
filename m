@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZBWIcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZBWIey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbZBWIcl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 03:32:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZBWIca
+	id S1753882AbZBWIey (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 03:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZBWIeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 03:32:30 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51022 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbZBWIc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 03:32:29 -0500
-Message-ID: <49A25F30.9060305@cn.fujitsu.com>
-Date: Mon, 23 Feb 2009 16:32:48 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Jesper Juhl <jj@chaosbits.net>
-CC: linux-kernel@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Paul Jackson <pj@sgi.com>, Simon Derr <simon.derr@bull.net>,
-       Paul Menage <menage@google.com>
-Subject: Re: [PATCH] Remove some pointless conditionals before kfree() in
- kernel/cgroup.c
-References: <alpine.LNX.2.00.0902222254350.1236@swampdragon.chaosbits.net>
-In-Reply-To: <alpine.LNX.2.00.0902222254350.1236@swampdragon.chaosbits.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Feb 2009 03:34:46 -0500
+Received: from mga09.intel.com ([134.134.136.24]:27330 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751430AbZBWIep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 03:34:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,253,1233561600"; 
+   d="scan'208";a="388965082"
+Subject: Re: [RFC PATCH 00/20] Cleanup and optimise the page allocator
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>
+In-Reply-To: <84144f020902222329u5754f8b1k790809191ac48f4a@mail.gmail.com>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
+	 <84144f020902222329u5754f8b1k790809191ac48f4a@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 23 Feb 2009 16:34:25 +0800
+Message-Id: <1235378065.2604.434.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> Hi,
+On Mon, 2009-02-23 at 09:29 +0200, Pekka Enberg wrote:
+> On Mon, Feb 23, 2009 at 1:17 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+> > The complexity of the page allocator has been increasing for some time
+> > and it has now reached the point where the SLUB allocator is doing strange
+> > tricks to avoid the page allocator. This is obviously bad as it may encourage
+> > other subsystems to try avoiding the page allocator as well.
 > 
-> Here's a small patch for kernel/cgroup.c
+> I'm not an expert on the page allocator but the series looks sane to me.
 > 
-> Removes a few pointless tests of pointer == 0 before kfree() in 
-> kernel/cgroup.c.
-> If the pointer we hand to kfree() is 0, then kfree() is a noop, so there 
-> is no need to test.
+> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> Reduces object file size a bit : 
-> 
-> Before:
-> $ size kernel/cgroup.o
->    text    data     bss     dec     hex filename
->   21593    7804    4924   34321    8611 kernel/cgroup.o
-> After:
-> $ size kernel/cgroup.o
->    text    data     bss     dec     hex filename
->   21537    7744    4924   34205    859d kernel/cgroup.o
-> 
-> and source file size shrinks a bit too - always nice.
-> 
-> 
-> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
-
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+> Yanmin, it would be interesting to know if we still need 8K kmalloc
+> caches with these patches applied. :-)
+We are running testing against the series of patches on top of 2.6.29-rc5, and
+will keep you posted on the results.
 
 
