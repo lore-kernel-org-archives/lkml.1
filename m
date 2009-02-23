@@ -1,280 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZBWXyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbZBWX4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbZBWXyj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 18:54:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZBWXya
+	id S1757296AbZBWX4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 18:56:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZBWX4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 18:54:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41781 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753050AbZBWXy3 (ORCPT
+	Mon, 23 Feb 2009 18:56:34 -0500
+Received: from mail-fx0-f167.google.com ([209.85.220.167]:44256 "EHLO
+	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbZBWX4d convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 18:54:29 -0500
-Date: Mon, 23 Feb 2009 15:53:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
-       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
-Message-Id: <20090223155313.abd41881.akpm@linux-foundation.org>
-In-Reply-To: <20090223233030.GA26562@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
-	<1235344649-18265-21-git-send-email-mel@csn.ul.ie>
-	<20090223013723.1d8f11c1.akpm@linux-foundation.org>
-	<20090223233030.GA26562@csn.ul.ie>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Feb 2009 18:56:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=rzHihZpLDx4fUEhC733FEJMLWXJbkb6HvrtvZQ0/Hu3B/QIkRTzdgmnHZ7heaWtn9B
+         rdiFyR2dn6n22TBFjKmfdRcD9GkeKAwparXPTMRPIb3ROMk0jLd3gCZHmAYPWnykfmWL
+         gOOoeJVK0beeYSDGUiayYkcd+F9sqvD2PnG9w=
+From: Krzysztof Sachanowicz <analyzer1@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] proc: proc_get_inode should de_put when inode already initialized
+Date: Tue, 24 Feb 2009 00:56:25 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, marcin.pilipczuk@gmail.com,
+       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>
+References: <200902232221.55714.analyzer1@gmail.com> <20090223152555.a499b76a.akpm@linux-foundation.org>
+In-Reply-To: <20090223152555.a499b76a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200902240056.26462.analyzer1@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Feb 2009 23:30:30 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
+Tuesday 24 February 2009 00:25:55 Andrew Morton napisa³(a):
+> On Mon, 23 Feb 2009 22:21:55 +0100
+>
+> Krzysztof Sachanowicz <analyzer1@gmail.com> wrote:
+> > de_get is called before every proc_get_inode, but corresponding de_put is
+> > called only when dropping last reference to an inode. This might cause
+> > something like
+> > remove_proc_entry: /proc/stats busy, count=14496
+> > to be printed to the syslog.
+> >
+> > The fix is to call de_put in case of an already initialized inode in
+> > proc_get_inode.
+> >
+> > Signed-off-by: Krzysztof Sachanowicz <analyzer1@gmail.com>
+> > Tested-by: Marcin Pilipczuk <marcin.pilipczuk@gmail.com>
+> > ---
+> > --- linux-2.6.29-rc6.orig/fs/proc/inode.c	2009-02-23 20:43:32.000000000
+> > +0100 +++ linux-2.6.29-rc6/fs/proc/inode.c	2009-02-23 20:46:37.000000000
+> > +0100 @@ -485,8 +485,10 @@ struct inode *proc_get_inode(struct supe
+> >  			}
+> >  		}
+> >  		unlock_new_inode(inode);
+> > -	} else
+> > +	} else {
+> >  	       module_put(de->owner);
+> > +	       de_put(de);
+> > +	}
+> >  	return inode;
+> >
+> >  out_ino:
+>
+> This code area looks quite different in linux-next, although the
+> changes there are removing proc_dir_entry.owner altogether and aren't
+> obviously targetted at fixing this bug.
+>
+> Also...
+>
+> It's unpleasing to have the de_get() inside the caller and the de_put()
+> inside the callee - it is better to have them both happening at the
+> same level.  If it is the case that "de_get is called before every
+> proc_get_inode", then perhaps that operation should simply be moved
+> into proc_get_inode().
 
-> On Mon, Feb 23, 2009 at 01:37:23AM -0800, Andrew Morton wrote:
-> > On Sun, 22 Feb 2009 23:17:29 +0000 Mel Gorman <mel@csn.ul.ie> wrote:
-> > 
-> > > Currently an effort is made to determine if a page is hot or cold when
-> > > it is being freed so that cache hot pages can be allocated to callers if
-> > > possible. However, the reasoning used whether to mark something hot or
-> > > cold is a bit spurious. A profile run of kernbench showed that "cold"
-> > > pages were never freed so it either doesn't happen generally or is so
-> > > rare, it's barely measurable.
-> > > 
-> > > It's dubious as to whether pages are being correctly marked hot and cold
-> > > anyway. Things like page cache and pages being truncated are are considered
-> > > "hot" but there is no guarantee that these pages have been recently used
-> > > and are cache hot. Pages being reclaimed from the LRU are considered
-> > > cold which is logical because they cannot have been referenced recently
-> > > but if the system is reclaiming pages, then we have entered allocator
-> > > slowpaths and are not going to notice any potential performance boost
-> > > because a "hot" page was freed.
-> > > 
-> > > This patch just deletes the concept of freeing hot or cold pages and
-> > > just frees them all as hot.
-> > > 
-> > 
-> > Well yes.  We waffled for months over whether to merge that code originally.
-> > 
-> > What tipped the balance was a dopey microbenchmark which I wrote which
-> > sat in a loop extending (via write()) and then truncating the same file
-> > by 32 kbytes (or thereabouts).  Its performance was increased by a lot
-> > (2x or more, iirc) and no actual regressions were demonstrable, so we
-> > merged it.
-> > 
-> > Could you check that please?  I'd suggest trying various values of 32k,
-> > too.
-> > 
-> 
-> I dug around the archives but hadn't much luck finding the original
-> discussion. I saw some results from around the 2.5.40-mm timeframe that talked
-> about ~60% difference with this benchmark (http://lkml.org/lkml/2002/10/6/174)
-> but didn't find the source. The more solid benchmark reports was
-> https://lwn.net/Articles/14761/ where you talked about 1-2% kernel compile
-> improvements, good SpecWEB and a big hike on performance with SDET.
-> 
-> It's not clearcut. I tried reproducing your original benchmark rather than
-> whinging about not finding yours :) . The source is below so maybe you can
-> tell me if it's equivalent? I only ran it on one CPU which also may be a
-> factor. The results were
-> 
->     size      with   without difference
->       64  0.216033  0.558803 -158.67%
->      128  0.158551  0.150673   4.97%
->      256  0.153240  0.153488  -0.16%
->      512  0.156502  0.158769  -1.45%
->     1024  0.162146  0.163302  -0.71%
->     2048  0.167001  0.169573  -1.54%
->     4096  0.175376  0.178882  -2.00%
->     8192  0.237618  0.243385  -2.43%
->    16384  0.735053  0.351040  52.24%
->    32768  0.524731  0.583863 -11.27%
->    65536  1.149310  1.227855  -6.83%
->   131072  2.160248  2.084981   3.48%
->   262144  3.858264  4.046389  -4.88%
->   524288  8.228358  8.259957  -0.38%
->  1048576 16.228190 16.288308  -0.37%
-> 
-> with    == Using hot/cold information to place pages at the front or end of
->         the freelist
-> without == Consider all pages being freed as hot
+Yes, but unfortunately in proc_lookup_de() (fs/proc/generic.c) we have:
+ 391                        de_get(de);
+ 392                        spin_unlock(&proc_subdir_lock);
+ 393                        error = -EINVAL;
+ 394                        inode = proc_get_inode(dir->i_sb, ino, de);
 
-My head is spinning.  Smaller is better, right?  So for 16384-byte
-writes, current mainline is slower?
+So if we move de_get() into proc_get_inode(), we will also have to move 
+spin_unlock there. Then we will have spin_lock in proc_lookup_de but 
+spin_unlock in proc_get_inode...
 
-That's odd.
-
-> The results are a bit all over the place but mostly negative but nowhere near
-> 60% of a difference so the benchmark might be wrong. Oddly, 64 shows massive
-> regressions but 16384 shows massive improvements. With profiling enabled, it's
-> 
->       64  0.214873  0.196666   8.47%
->      128  0.166807  0.162612   2.51%
->      256  0.170776  0.161861   5.22%
->      512  0.175772  0.164903   6.18%
->     1024  0.178835  0.168695   5.67%
->     2048  0.183769  0.174317   5.14%
->     4096  0.191877  0.183343   4.45%
->     8192  0.262511  0.254148   3.19%
->    16384  0.388201  0.371461   4.31%
->    32768  0.655402  0.611528   6.69%
->    65536  1.325445  1.193961   9.92%
->   131072  2.218135  2.209091   0.41%
->   262144  4.117233  4.116681   0.01%
->   524288  8.514915  8.590700  -0.89%
->  1048576 16.657330 16.708367  -0.31%
-> 
-> Almost the opposite with steady improvements almost all the way through.
-> 
-> With the patch applied, we are still using hot/cold information on the
-> allocation side so I'm somewhat surprised the patch even makes much of a
-> difference. I'd have expected the pages being freed to be mostly hot.
-
-Oh yeah.  Back in the ancient days, hot-cold-pages was using separate
-magazines for hot and cold pages.  Then Christoph went and mucked with
-it, using a single queue.  That might have affected things.
-
-It would be interesting to go back to a suitably-early kernel to see if
-we broke it sometime after the early quantitative testing.  But I could
-understand you not being so terribly interested ;)
-
-> Kernbench was no help figuring this out either.
-> 
-> with:    Elapsed: 74.1625s User: 253.85s System: 27.1s CPU: 378.5%
-> without: Elapsed: 74.0525s User: 252.9s System: 27.3675s CPU: 378.25%
-> 
-> Improvements on elapsed and user time but a regression on system time.
-> 
-> The issue is sufficiently cloudy that I'm just going to drop the patch
-> for now. Hopefully the rest of the patchset is more clear-cut. I'll pick
-> it up again at a later time.
-
-Well...  if the benefits of the existing code are dubious then we
-should default to deleting it.
-
-> Here is the microbenchmark I used
-> 
-> Thanks.
-> 
-> /*
->  * write-truncate.c
->  * Microbenchmark that tests the speed of write/truncate of small files.
->  * 
->  * Suggested by Andrew Morton
->  * Written by Mel Gorman 2009
->  */
-> #include <stdio.h>
-> #include <limits.h>
-> #include <unistd.h>
-> #include <sys/types.h>
-> #include <sys/time.h>
-> #include <fcntl.h>
-> #include <stdlib.h>
-> #include <string.h>
-> 
-> #define TESTFILE "./write-truncate-testfile.dat"
-> #define ITERATIONS 10000
-> #define STARTSIZE 32
-> #define SIZES 15
-> 
-> #ifndef MIN
-> #define MIN(x,y) ((x)<(y)?(x):(y))
-> #endif
-> #ifndef MAX
-> #define MAX(x,y) ((x)>(y)?(x):(y))
-> #endif
-> 
-> double whattime()
-> {
->         struct timeval tp;
->         int i;
-> 
-> 	if (gettimeofday(&tp,NULL) == -1) {
-> 		perror("gettimeofday");
-> 		exit(EXIT_FAILURE);
-> 	}
-> 
->         return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
-> }
-> 
-> int main(void)
-> {
-> 	int fd;
-> 	int bufsize, sizes, iteration;
-> 	char *buf;
-> 	double t;
-> 
-> 	/* Create test file */
-> 	fd = open(TESTFILE, O_RDWR|O_CREAT|O_EXCL);
-> 	if (fd == -1) {
-> 		perror("open");
-> 		exit(EXIT_FAILURE);
-> 	}
-> 
-> 	/* Unlink now for cleanup */
-> 	if (unlink(TESTFILE) == -1) {
-> 		perror("unlinke");
-> 		exit(EXIT_FAILURE);
-> 	}
-> 
-> 	/* Go through a series of sizes */
-> 	bufsize = STARTSIZE;
-> 	for (sizes = 1; sizes <= SIZES; sizes++) {
-> 		bufsize *= 2;
-> 		buf = malloc(bufsize);
-> 		if (buf == NULL) {
-> 			printf("ERROR: Malloc failed\n");
-> 			exit(EXIT_FAILURE);
-> 		}
-> 		memset(buf, 0xE0, bufsize);
-> 
-> 		t = whattime();
-> 		for (iteration = 0; iteration < ITERATIONS; iteration++) {
-> 			size_t written = 0, thiswrite;
-> 			
-> 			while (written != bufsize) {
-> 				thiswrite = write(fd, buf, bufsize);
-
-(it should write bufsize-written ;))
-
-> 				if (thiswrite == -1) {
-> 					perror("write");
-> 					exit(EXIT_FAILURE);
-> 				}
-> 				written += thiswrite;
-> 			}
-> 
-> 			if (ftruncate(fd, 0) == -1) {
-> 				perror("ftruncate");
-> 				exit(EXIT_FAILURE);
-> 			}
-> 
-> 			if (lseek(fd, 0, SEEK_SET) != 0) {
-> 				perror("lseek");
-> 				exit(EXIT_FAILURE);
-> 			}
-> 		}
-
-yup, I think that captures the same idea.
-
-> 		t = whattime() - t;
-> 		free(buf);
-> 
-> 		printf("%d %f\n", bufsize, t);
-> 	}
-> 
-> 	if (close(fd) == -1) {
-> 		perror("close");
-> 		exit(EXIT_FAILURE);
-> 	}
-> 
-> 	exit(EXIT_SUCCESS);
-> }
-> -- 
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
+Maybe my solution is not that bad, because usually de_put is called from 
+proc_delete_inode(). Only if iget_locked() returns an already initialized 
+inode we want de_put to be called in proc_get_inode. So the callee need not 
+care about who will eventually call de_put.
