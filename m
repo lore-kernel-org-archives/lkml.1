@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZBWNAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZBWNAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbZBWNAM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 08:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZBWM76
+	id S1755345AbZBWNAt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 08:00:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZBWNAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 07:59:58 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:55889 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752555AbZBWM75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 07:59:57 -0500
-To: catalin.marinas@arm.com
-Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
-Subject: Re: How to analyze kmemleak message?
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200902230824.n1N8OV3P015018@www262.sakura.ne.jp>
-	<84144f020902230140v83e153cr3a0c8195aab1b835@mail.gmail.com>
-	<1235385947.14987.41.camel@pc1117.cambridge.arm.com>
-	<200902232029.HGI04666.FLOOFSVFJtHQMO@I-love.SAKURA.ne.jp>
-	<1235391634.14987.61.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1235391634.14987.61.camel@pc1117.cambridge.arm.com>
-Message-Id: <200902232159.DBJ26012.JHFSMVOOQtFFLO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 23 Feb 2009 21:59:55 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 23 Feb 2009 08:00:39 -0500
+Received: from phunq.net ([64.81.85.152]:38380 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753582AbZBWNAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 08:00:38 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: linux-kernel@vger.kernel.org
+Subject: Tux3 Report: Tux3 Debut at SCALE 7x
+Date: Mon, 23 Feb 2009 05:00:35 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-fsdevel@vger.kernel.org, tux3@tux3.org,
+       Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902230500.36275.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sunday, Tux3 was presented at SCALE 7x in Los Angeles:
 
-Catalin Marinas wrote:
-> On Mon, 2009-02-23 at 20:29 +0900, Tetsuo Handa wrote:
-> >   void *p1;
-> >   
-> >   void foo(void)
-> >   {
-> >       void *p2 = kmalloc(1, GFP_KERNEL);
-> >       p1 = kmalloc(1, GFP_KERNEL);
-> >   }
-> > 
-> > "p1" will be reported by default.
-> 
-> p1 won't be reported as a leak because it is a global variable and the
-> data section is scanned.
-> 
-I see.
+   http://scale7x.socallinuxexpo.org/
 
-> > To report "p2", we need to write "stack=on" to /sys/kernel/debug/kmemleak .
-> 
-> It's the opposite - p2 will be reported as leak by default (stack=off)
-> unless you enable the stack scanning (stack=on).
->
-I see.
+Slides from the presentation are here:
 
-> I don't think you need to do anything here. Since p is a static local
-> variable, isn't it placed in a data section somewhere (and automatically
-> scanned by kmemleak)?
->
-I see.
+   http://tux3.org/docs/tux3.scale.7x.pdf
 
-After all, I have nothing to modify for kmemleak. All I need to do is
-"Just turn on kmemleak and see if functions in my module are reported or not".
+Audio will be available later (eek!).
 
-Thank you.
+The presentation was given on a ten year old Vaio laptop running
+a completely modern Debian Sid, with XFCE, Openoffice, and one of
+Linus's latest kernels from Git.  The root filesytem was Tux3:
+
+   http://tux3.org/images/tux3.root.jpg
+   
+Preliminary benchmarks show Tux3 performing well, though optimization
+work has not yet begun in earnest.  Many thanks to the usual cast of
+characters, especially Hirofumi who continued to feed me bug fix
+patches into the wee hours of Sunday morning, and Timothy Huber who
+provided a wild ride to the show as well as some very slick graphics.
+
+Tux3 did not crash.  That is good, because recovery is not fully
+implemented.  However, we think it is about time to start reviewing
+this code, with a view to getting an early merge.  The essential
+structure is all there, and it works pretty well.  Tux3 has plenty to
+offer in terms of advancing the state of the art of Linux storage,
+and will best be able to offer that as part of mainline.
+
+Tux3 source code is here:
+
+  http://hg.tux3.org/tux3
+  http://hg.tux3.org/tux3/file/3118107954f1/user/kernel/
+
+A Git tree will appear soon, along with proper kernel patches.  But
+that is for later and now is time to sleep.  It has been a long week.
+
+Regards,
+
+Daniel
