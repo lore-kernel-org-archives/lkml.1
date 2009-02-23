@@ -1,113 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZBWKsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZBWKxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZBWKsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 05:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZBWKsO
+	id S1753972AbZBWKxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 05:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZBWKxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 05:48:14 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:51268 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbZBWKsN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 05:48:13 -0500
-Message-ID: <49A27EE8.5030700@in.ibm.com>
-Date: Mon, 23 Feb 2009 16:18:08 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Mon, 23 Feb 2009 05:53:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37273 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751680AbZBWKxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 05:53:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
+Date: Mon, 23 Feb 2009 11:52:53 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0902221603440.3111@localhost.localdomain> <alpine.LFD.2.00.0902221722100.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902221722100.3111@localhost.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
-       Jan Kara <jack@ucw.cz>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-References: <49A2705D.9030008@in.ibm.com> <20090223021320.11019d64.akpm@linux-foundation.org>
-In-Reply-To: <20090223021320.11019d64.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902231152.53928.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> hm, I wonder what could have caused that - we haven't altered
-> fs/ext3/xattr.c in ages.
->
-> What is the most recent kernel version you know of which didn't do
-> this?  Bear in mind that this crash might be triggered by the
-> current contents of the filesystem, so if possible, please test
-> some other kernel versions on that disk.
->   
-I am trying to boot a vanilla kernel on this machine for the first
-time. Haven't tried any other kernels. Will give it a try.
+On Monday 23 February 2009, Linus Torvalds wrote:
+> 
+> On Sun, 22 Feb 2009, Linus Torvalds wrote:
+> > 
+> > Ok, looks sane to me. I'll try it on my poor eeepc, although right now 
+> > Fedora-11 rawhide (that poor laptop gets _all_ the crazy stuff thrown at 
+> > it, and runs btrfs to boot) has broken something in X by enabling DRI2, so 
+> > I may not get around to it today.
+> 
+> Well, the suspend/resume part seems to work for me.
 
-> It looks like we died in ext3_xattr_block_get():
->
-> 		memcpy(buffer, bh->b_data + le16_to_cpu(entry->e_value_offs),
-> 		       size);
->
-> Perhaps entry->e_value_offs is no good.  I wonder if the filesystem is
-> corrupted and this snuck through the defenses.
->
-> I also wonder if there is enough info in that trace for a ppc person to
-> be able to determine whether the faulting address is in the source or
-> destination of the memcpy() (please)?
->   
-Some more information if this could be of any help.
+Great, thanks for testing.
 
-0:mon> di 0xc000000000039574
-c000000000039574  e9240008      ld      r9,8(r4)
-c000000000039578  409d0010      ble     cr7,c000000000039588    # .memcpy+0x88/0x244
-c00000000003957c  79290002      rotldi  r9,r9,32
-c000000000039580  91230000      stw     r9,0(r3)
-c000000000039584  38630004      addi    r3,r3,4
-c000000000039588  409e0010      bne     cr7,c000000000039598    # .memcpy+0x98/0x244
-c00000000003958c  79298000      rotldi  r9,r9,16
-c000000000039590  b1230000      sth     r9,0(r3)
-c000000000039594  38630002      addi    r3,r3,2
-c000000000039598  409f000c      bns     cr7,c0000000000395a4    # .memcpy+0xa4/0x244
-c00000000003959c  79294000      rotldi  r9,r9,8
-c0000000000395a0  99230000      stb     r9,0(r3)
-c0000000000395a4  e8610030      ld      r3,48(r1)
-c0000000000395a8  4e800020      blr
-c0000000000395ac  78a6e8c2      rldicl  r6,r5,61,3
-c0000000000395b0  38a5fff0      addi    r5,r5,-16
-0:mon> r
-R00 = 000000000000e40f   R16 = 00000000100edbc8
-R01 = c00000003e59b3e0   R17 = 00000000100b0000
-R02 = c0000000009c2110   R18 = 0000000000000005
-R03 = c000000044bc90e0   R19 = 00000000fff0d7a8
-R04 = c000000039cffff4   R20 = 00000000fff0d708
-R05 = 0000000000000003   R21 = 00000000000000ff
-R06 = 0000000000000000   R22 = 0000000000000006
-R07 = 0000000000000001   R23 = c00000000079ab49
-R08 = 723a7573725f743a   R24 = c0000000372fe2a8
-R09 = 3a6f626a6563745f   R25 = c000000044bc90c8
-R10 = c00000003b250968   R26 = c0000000372fe240
-R11 = c000000000039500   R27 = c0000000372fe3b0
-R12 = d00000000244c590   R28 = c0000000372c5280
-R13 = c000000000a53480   R29 = 000000000000001b
-R14 = 00000000100d0000   R30 = d0000000024654d0
-R15 = 0000000000000000   R31 = ffffffffffffffde
-pc  = c000000000039574 .memcpy+0x74/0x244
-lr  = d00000000244916c .ext3_xattr_get+0x288/0x2f4 [ext3]
-msr = 8000000000009032   cr  = 4400844b
-ctr = 0000000000000000   xer = 0000000000000001   trap =  300
-dar = c000000039d00000   dsisr = 40000000
-0:mon>
-
-So the other thing i noticed was that this machine was running
-a kernel with selinux enabled. I turned off selinux and there
-were no issues during bootup. It was a clean boot.
-
-Thanks
--Sachin
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+Rafael
