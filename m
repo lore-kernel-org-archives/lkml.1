@@ -1,56 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbZBWHdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbZBWHd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbZBWHdb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZBWHdU
+	id S1753410AbZBWHd4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZBWHdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:33:20 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58875 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752482AbZBWHdU (ORCPT
+	Mon, 23 Feb 2009 02:33:44 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39397 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbZBWHdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:33:20 -0500
-Message-ID: <49A2511B.7030606@zytor.com>
-Date: Sun, 22 Feb 2009 23:32:43 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: George Rapp <george.rapp@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: pci 0000:01:00.0: BAR 0: can't allocate resource
-References: <f1f3dd8f0902221910n2722b024pe3ec8748fd3aed5b@mail.gmail.com> <alpine.LFD.2.00.0902221941510.3111@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902221941510.3111@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Feb 2009 02:33:43 -0500
+From: hooanon05@yahoo.co.jp
+Subject: [RFC 1/8] Aufs2: introduction
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <7558.1235374266@jrobl>
+References: <7558.1235374266@jrobl>
+Date: Mon, 23 Feb 2009 16:33:41 +0900
+Message-ID: <7756.1235374421@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sun, 22 Feb 2009, George Rapp wrote:
->> In case the attachments don't survive Gmail, dmesg output is at
->> http://novia.net/~gwr/dmesg_2.6.29-0.33.rc5, and output of 'lspci -vv' is at
->> http://novia.net/~gwr/lspci-vv_2.6.29-0.33.rc5
-> 
-> Can you also show the contents of /proc/iomem?
-> 
-> It does look like it's this one:
-> 
-> 	pci 0000:01:00.0: BAR 0: can't allocate mem resource [0xe0000000-0xe7ffffff]
-> 
-> and the problem is that the kernel cannot find enough space to map the 
-> required 128MB region for the graphics aperture.
-> 
 
-Which makes sense on 32 bits, since by default the entire vmalloc region
-is only 128 MB in size.
+> This is my second trial to ask incorporating aufs into mainline.
 
-Booting with vmalloc=256M or something like that might help.
 
-	-hpa
+Introduction
+----------------------------------------
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+aufs [ei ju: ef es] | [a u f s]
+1. abbrev. for "advanced multi-layered unification filesystem".
+2. abbrev. for "another unionfs".
+3. abbrev. for "auf das" in German which means "on the" in English.
+   Ex. "Butter aufs Brot"(G) means "butter onto bread"(E).
+   But "Filesystem aufs Filesystem" is hard to understand.
 
+AUFS is a filesystem with features:
+- multi layered stackable unification filesystem, the member directory
+  is called as a branch.
+- branch permission and attribute, 'readonly', 'real-readonly',
+  'readwrite', 'whiteout-able', 'link-able whiteout' and their
+  combination.
+- internal "file copy-on-write".
+- logical deletion, whiteout.
+- dynamic branch manipulation, adding, deleting and changing permission.
+- allow bypassing aufs, user's direct branch access.
+- external inode number translation table and bitmap which maintains the
+  persistent aufs inode number.
+- seekable directory, including NFS readdir.
+- file mapping, mmap and sharing pages.
+- pseudo-link, hardlink over branches.
+- loopback mounted filesystem as a branch.
+- several policies to select one among multiple writable branches.
+- revert a single systemcall when an error occurs in aufs.
+- and more...
+
+
+Multi Layered Stackable Unification Filesystem
+----------------------------------------------------------------------
+Most people already knows what it is.
+It is a filesystem which unifies several directories and provides a
+merged single directory. When users access a file, the access will be
+passed/re-directed/converted (sorry, I am not sure which English word is
+correct) to the real file on the member filesystem. The member
+filesystem is called 'lower filesystem' or 'branch' and has a mode
+'readonly' and 'readwrite.' And the deletion for a file on the lower
+readonly branch is handled by creating 'whiteout' on the upper writable
+branch.
+
+On LKML, there have been discussions about UnionMount (Jan Blunck and
+Bharata B Rao) and Unionfs (Erez Zadok). They took different approaches
+to implement the merged-view.
+The former tries putting it into VFS, and the latter implements as a
+separate filesystem.
+(If I misunderstand about these implementations, please let me know and
+I shall correct it. Because it is a long time ago when I read their
+source files last time).
+UnionMount's approach will be able to small, but may be hard to share
+branches between several UnionMount since the whiteout in it is
+implemented in the inode on branch filesystem and always
+shared. According to Bharata's post, readdir does not seems to be
+finished yet.
+Unionfs has a longer history. When I started implementing a stacking filesystem
+(Aug 2005), it already existed. It has virtual super_block, inode,
+dentry and file objects and they have an array pointing lower same kind
+objects. After contributing many patches for Unionfs, I re-started my
+project AUFS (Jun 2006).
+
+In AUFS, the structure of filesystem resembles to Unionfs, but I
+implemented my own ideas, approaches and enhancements and it became
+totally different one.
+
+
+Several characters/aspects of aufs
+----------------------------------------------------------------------
+
+Aufs has several characters or aspects.
+1. a filesystem, callee of VFS helper
+2. sub-VFS, caller of VFS helper for branches
+3. a virtual filesystem which maintains persistent inode number
+4. reader/writer of files on branches such like an application
+
+1. Caller of VFS Helper
+As an ordinary linux filesystem, aufs is a callee of VFS. For instance,
+unlink(2) from an application reaches sys_unlink() kernel function and
+then vfs_unlink() is called. vfs_unlink() is one of VFS helper and it
+calls filesystem specific unlink operation. Actually aufs implements the
+unlink operation but it behaves like a redirector.
+
+2. Caller of VFS Helper for Branches
+aufs_unlink() passes the unlink request to the branch filesystem as if
+it were called from VFS. So the called unlink operation of the branch
+filesystem acts as usual. As a caller of VFS helper, aufs should handle
+every necessary pre/post operation for the branch filesystem.
+- acquire the lock for the parent dir on a branch
+- lookup in a branch
+- revalidate dentry on a branch
+- mnt_want_write() for a branch
+- vfs_unlink() for a branch
+- mnt_drop_write() for a branch
+- release the lock on a branch
+
+3. Persistent Inode Number
+One of the most important issue for a filesystem is to maintain inode
+numbers. This is particularly important to support exporting a
+filesystem via NFS. Aufs is a virtual filesystem which doesn't have a
+backend block device for its own. But some storage is necessary to
+maintain inode number. It may be a large space and may not suit to keep
+in memory. Aufs rents some space from its first writable branch
+filesystem (by default) and creates file(s) on it. These files are
+created by aufs internally and removed soon (currently) keeping opened.
+Note: Because these files are removed, they are totally gone after
+      unmounting aufs. It means the inode numbers are not persistent
+      across unmount or reboot. I have a plan to make them really
+      persistent which will be important for aufs on NFS server.
+
+4. Read/Write Files Internally (copy-on-write)
+Because a branch can be readonly, when you write a file on it, aufs will
+"copy-up" it to the upper writable branch internally. And then write the
+originally requested thing to the file. Generally kernel doesn't
+open/read/write file actively. In aufs, even a single write may cause a
+internal "file copy". This behaviour is very similar to cp(1) command.
+
+Some people may think it is better to pass such work to user space
+helper, instead of doing in kernel space. Actually I am still thinking
+about it. But currently I have implemented it in kernel space.
