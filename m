@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbZBWKPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbZBWKSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752014AbZBWKPW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 05:15:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZBWKPH
+	id S1753638AbZBWKSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 05:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZBWKSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 05:15:07 -0500
-Received: from gate.crashing.org ([63.228.1.57]:55979 "EHLO gate.crashing.org"
+	Mon, 23 Feb 2009 05:18:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52101 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751917AbZBWKPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 05:15:06 -0500
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
- suspend-resume
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <m17i3ha4nk.fsf@fess.ebiederm.org>
-References: <200902221837.49396.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902220946070.3111@localhost.localdomain>
-	 <200902222342.08285.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl>
-	 <m1ab8ddfbr.fsf@fess.ebiederm.org> <20090223084400.GB9582@elte.hu>
-	 <m17i3ha4nk.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Mon, 23 Feb 2009 21:13:06 +1100
-Message-Id: <1235383986.8805.239.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1751411AbZBWKSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 05:18:06 -0500
+Date: Mon, 23 Feb 2009 11:17:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, jeremy@goop.org, cpw@sgi.com
+Subject: Re: [PATCHSET x86/core/percpu] implement dynamic percpu allocator
+Message-ID: <20090223101741.GP9582@elte.hu>
+References: <1234958676-27618-1-git-send-email-tj@kernel.org> <499CA834.4080208@kernel.org> <20090219110718.GK2354@elte.hu> <499E20BC.4020408@kernel.org> <20090220093234.GF24555@elte.hu> <499FA8D1.8030806@kernel.org> <499FAE55.8070801@kernel.org> <20090222193817.GC21320@elte.hu> <49A1F132.8080004@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A1F132.8080004@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-23 at 01:22 -0800, Eric W. Biederman wrote:
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> 
-> > I think this aspect has been well-understood during the 
-> > discussion of this topic and it's just a slightly misleading 
-> > changelog.
-> 
-> As I was a member of that discussion I did not see that.
-> 
-> It took me several passes through the patches to realize
-> the goal is to allow drivers to be able to sleep while they
-> are in their late pm shutdown routines.
-> 
-> Why we want this I don't know.  But it seems simple enough
-> to implement, and it makes it harder to get the late pm
-> suspend routines wrong, which is always good.
 
-To simplify (it's really all in the discussion we had the last few
-weeks) It boils down to being able to do the proper ACPI calls (which
-require core interrupts to be on, ie, ACPI uses mutexes, sleeps, etc...)
-after we have saved and before we restore the PCI config space, in the
-late suspend or early resume stages of devices.
+* Tejun Heo <tj@kernel.org> wrote:
 
-Cheers,
-Ben.
+> Hello, Ingo.
+> 
+> Ingo Molnar wrote:
+> > Heck no. It is absolutely crazy to complicate __pa()/__va() in 
+> > _any_ way just to 'save' one more 2MB dTLB.
+> 
+> Are __pa()/__va() that hot paths?  Or am I over-estimating the 
+> cost of 2MB dTLB?
 
+yes, __pa()/__va() is a very hot path - in a defconfig they are 
+used in about a thousand different places.
 
+In fact it would be nice to get rid of the __phys_addr() 
+redirection on the 64-bit side (which is non-linear and a 
+function there, and all __pa()s go through it) and make it a 
+constant offset again.
+
+This isnt trivial/possible to do though as .data/.bss is in the 
+high alias. (high .text aliases alone wouldnt be a big issue to 
+fix, but the data aliases are an issue.)
+
+Moving .data/.bss into the linear space isnt feasible as we'd 
+lose RIP-relative addressing shortcuts.
+
+Maybe we could figure out the places that do __pa() on a high 
+alias and gradually eliminate them. __pa() on .data/.bss is a 
+rare and unusal thing to do, and CONFIG_DEBUG_VIRTUAL could warn 
+about them without crashing the kernel.
+
+Later on we could make this check unconditional, and then switch 
+over __pa() to addr-PAGE_OFFSET in the !CONFIG_DEBUG_VIRTUAL 
+case (which is the default).
+
+	Ingo
