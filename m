@@ -1,39 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZBWOjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbZBWOn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbZBWOjg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZBWOj0
+	id S1755247AbZBWOn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZBWOnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:39:26 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:49791 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753523AbZBWOjZ (ORCPT
+	Mon, 23 Feb 2009 09:43:18 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:55248 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754000AbZBWOnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:39:25 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC 7/8] Aufs2: mmap 
-To: Tomas M <tomas@slax.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <49A269F7.3040602@slax.org>
-References: <7558.1235374266@jrobl> <7828.1235374676@jrobl> <49A269F7.3040602@slax.org>
-Date: Mon, 23 Feb 2009 23:39:21 +0900
-Message-ID: <14258.1235399961@jrobl>
+	Mon, 23 Feb 2009 09:43:17 -0500
+Date: Mon, 23 Feb 2009 14:43:12 +0000
+From: Andy Whitcroft <apw@canonical.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: checkpatch --file warns about p0 patch
+Message-ID: <20090223144312.GC22617@shadowen.org>
+References: <49A2B0A5.8050905@compulab.co.il>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A2B0A5.8050905@compulab.co.il>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Tomas M:
-> > In Unionfs, it took an approach which the memory pages mapped to
-> > filedata are copied from the lower (real) file into the Unionfs's
-> > virtual one and handles it by address_space operations. Recently Unionfs
-> > changed it to this approach which aufs adopted since Jul 2006.
+On Mon, Feb 23, 2009 at 04:20:21PM +0200, Mike Rapoport wrote:
+> When running checkpatch.pl with --file option it warns about -p0 patch:
 > 
-> I think there are much more areas where people around unionfs actually get the good ideas from AUFS. But it appears most projects already switched from StonyBrook's unionfs to AUFS, since AUFS proves to be better for many years.
+> ./scripts/checkpatch.pl --file ./drivers/rtc/rtc-v3020.c
+> WARNING: patch prefix '.' exists, appears to be a -p0 patch
+> 
+> total: 0 errors, 1 warnings, 263 lines checked
+> 
+> ./drivers/rtc/rtc-v3020.c has style problems, please review.  If any of these errors
+> are false positives report them to the maintainer, see
+> CHECKPATCH in MAINTAINERS.
+> 
+> I hope this is the fix that'll work:
+> 
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> index 45eb0ae..1869388 100755
+> --- a/scripts/checkpatch.pl
+> +++ b/scripts/checkpatch.pl
+> @@ -1240,7 +1240,7 @@ sub process {
+>  			$realfile =~ s@^([^/]*)/@@;
+> 
+>  			$p1_prefix = $1;
+> -			if ($tree && $p1_prefix ne '' && -e "$root/$p1_prefix") {
+> +			if (!$file && $tree && $p1_prefix ne '' && -e "$root/$p1_prefix") {
+>  				WARN("patch prefix '$p1_prefix' exists, appears to be a -p0 patch\n");
+>  			}
+> 
+> 
+> 
+> -- 
 
-Yes, AUFS is used by many people for many years.
-And several people asked me to put it into mainline. Unfortunately I am
-not the one who decide it. I can only post and ask to do it.
+Hmm, that should already be fixed in the version Andrew Morton has.
+Could you test with v0.28 and confirm its already fixed?
 
 
-J. R. Okajima
+  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-v0.28
+
+-apw
