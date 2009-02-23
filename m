@@ -1,107 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbZBWXYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbZBWXYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636AbZBWXYc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 18:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZBWXYW
+	id S1756722AbZBWXYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 18:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbZBWXYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 18:24:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42274 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbZBWXYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 18:24:20 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Fries <david@fries.net>
-Subject: Re: TSC marked unstable on suspend and resume
-Date: Tue, 24 Feb 2009 00:23:51 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20090221023943.GA4894@spacedout.fries.net>
-In-Reply-To: <20090221023943.GA4894@spacedout.fries.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902240023.52166.rjw@sisk.pl>
+	Mon, 23 Feb 2009 18:24:32 -0500
+Received: from smtp3.ono.com ([62.42.230.176]:32891 "EHLO resmaa14.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753636AbZBWXYb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 18:24:31 -0500
+Date: Tue, 24 Feb 2009 00:24:26 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Status of ext4 tools
+Message-ID: <20090224002426.23fd5466@werewolf.home>
+In-Reply-To: <20090220124618.GH14810@mini-me.lan>
+References: <20090219234838.4c06c98b@werewolf.home>
+	<20090220124618.GH14810@mini-me.lan>
+X-Mailer: Claws Mail 3.7.0cvs69 (GTK+ 2.15.4; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 February 2009, David Fries wrote:
-> I'm getting TSC marked as unsable on hibernate to disk with
-> 2.6.29-rc3.  The last kernel I ran 2.6.24.4 ran 300+ days without a
-> problem and does not loose TSC on hibernate.
+Sorry for the late answer...
 
-Ingo, Andrew, can you please tell us who's the right person to look into this
-problem?
+On Fri, 20 Feb 2009 07:46:18 -0500, Theodore Tso <tytso@mit.edu> wrote:
 
-> I'm hibernating with `echo disk > /sys/power/state`.
-> These look like the relavant messages,
-> 
-> CPU 0 irqstacks, hard=c0379000 soft=c0378000
-> PID hash table entries: 1024 (order: 10, 4096 bytes)
-> Fast TSC calibration using PIT
-> Detected 300.705 MHz processor.
-> Calibrating delay loop (skipped), value calculated using timer frequency.. 601.41 BogoMIPS (lpj=300705)
-> hibernate to disk,
-> Restarting tasks ... done.
-> Clocksource tsc unstable (delta = 499883531 ns)
-> 
-> another reboot,
-> Restarting tasks ... done.
-> Clocksource tsc unstable (delta = 499883531 ns)
-> 
-> another reboot,
-> Freezing user space processes ... (elapsed 0.07 seconds) done.
-> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> PM: Shrinking memory...  ^H-<4>Clocksource tsc unstable (delta = 78961880 ns)
-> ^H\^H|^H/^Hdone (34745 pages freed)
-> 
-> 
-> 
-> I didn't spot the problem until I raw the HP48 calculator emulator x48
-> and it was running like a dog, but the same binary ran fine on my
-> other systems.  It was looping on gettimeofday intending to delay 2us,
-> but was getting 1ms when TSC wasn't available.
-> 
-> On Thu, Feb 05, 2009 at 10:02:39PM +0100, Ingo Molnar wrote:
-> > What does this tool output:
+> On Thu, Feb 19, 2009 at 11:48:38PM +0100, J.A. Magallón wrote:
 > > 
-> >  http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
+> > - Where is the 'official' source for e4defrag ?
+> > - I've read that e4defrag needs in-kernel support.
+> >   Is it already in mainline ?
+> >   From what kernel version ?
 > 
-> time-warp-test is getting the number of CPUs wrong here, trivial
-> patch included.
+> Ext4's defragmentation code is still under development.  There are
+> multiple versions of e4defrag, paired with kernel patches that have
+> been submitted to linux-ext4@vger.kernel.org.  The patches are not yet
+> in in mainline, and the kernel/userspace interface is still subject to
+> change (which is why it's not in mainline yet).
 > 
-> ./time-warp-test  
-> 2 CPUs, running 2 parallel test-tasks.
+> > - I have seen that some distros refer to a package called 'e4fsprogs'.
+> >   Does that thing exist ? Where ?
 > 
-> grep processor /proc/cpuinfo
-> processor       : 0
-> model name      : AMD-K6(tm) 3D processor
+> e4fsprogs was a snapshot of something between e2fprogs 1.41.1 and
+> e2fsprogs 1.41.2, if I remember correctly, and it was created for
+> RHEL5's technology preview of ext4; the concern was that Red Hat
+> didn't want to risk making a major change to e2fsprogs in an
+> enterprise distribution; so e4fsprogs is the e2fsprogs's various
+> binaries with ext4 support, statically linked.
 > 
+
+So, in short, forget online defrag for the moment. No problem.
+
+> > - Booting:
+> >   - There seem to be patches for grub
+> >     http://lists.openwall.net/linux-ext4/2008/11/19/8
+> >     to boot ext4
+> >   - and a Google SoC called 'grub4ext4'.
+> >    -and there is also grub2 (ext4 support in svn).
+> >   What would you recommend ?
 > 
-> --- time-warp-test.c.orig	2009-02-19 20:52:40.000000000 -0600
-> +++ time-warp-test.c	2009-02-19 21:32:58.000000000 -0600
-> @@ -295,7 +295,7 @@ int main(int argc, char **argv)
->  	unsigned long *shared;
->  	unsigned long cpus, tasks;
->  
-> -	cpus = system("exit `grep processor /proc/cpuinfo  | wc -l`");
-> +	cpus = system("exit `grep ^processor /proc/cpuinfo  | wc -l`");
->  	cpus = WEXITSTATUS(cpus);
->  
->  	if (argc > 2) {
+> I can't speak to that; I'm still using an ext3 boot partition since
+> until very recently I was still using an somewhat oldish (Ubuntu
+> Hardy) userspace.  It's exciting enough to be on the bleeding edge of
+> the kernel, I don't need to be on the bleeding edge of userspace too.  :-)
 > 
+> (For example, after my laptop got stolen and I decided to finally move
+> to Ubuntu Intrepid, with pulseaudio sound is only sporadically
+> working.  And I don't have time to debug how and why the new
+> complexities in the !@#!@ sound system is failing.  I'll probably have
+> to carve out a few hours to figure out how to rip out pulseaudio by
+> its roots, since it clearly isn't working for me.  Lovely...)
+
+So for the full move to ext4 I need a patched grub. I'm not sure I
+trust grub2 for the moment...
+
 > 
+> > Apart from that, it works pretty fine.
+> > The thing that most surprised me was that after the needed fsck, it had
+> > converted files with contiguous blocks to big extents ;). Nice.
 > 
+> Um, e2fsck won't convert files to use extents.  Once you set the
+> extents flag, new files that are created will be created with extents,
+> but existing files are left untouched.  
+
+Mmmm. I had some big files on my drive, and some of them now use
+only 1 extent and some 2. I supposed that fsck.ext4 recognized a
+run of contiguous blocks and turned the list of inodes onto one
+and only extent:
+
+werewolf:/mnt/dsk0/music/zzz# ll
+total 121760
+-rw-r--r-- 1 magallon home 21892759 2008.03.02 23:30 01 zzz.mp3
+-rw-r--r-- 1 magallon home  7192808 2008.03.02 23:30 02 zzz.mp3
+-rw-r--r-- 1 magallon home  6709136 2008.03.02 23:30 03 zzz.mp3
+-rw-r--r-- 1 magallon home  7155107 2008.03.02 23:30 04 zzz.mp3
+-rw-r--r-- 1 magallon home 10457465 2008.03.02 23:30 05 zzz.mp3
+-rw-r--r-- 1 magallon home  6082273 2008.03.02 23:30 06 zzz.mp3
+-rw-r--r-- 1 magallon home 10052444 2008.03.02 23:30 07 zzz.mp3
+
+werewolf:/mnt/dsk0/music/zzz# filefrag *
+01 zzz.mp3: 1 extent found
+02 zzz.mp3: 1 extent found
+03 zzz.mp3: 1 extent found
+04 zzz.mp3: 1 extent found
+05 zzz.mp3: 2 extents found, perfection would be 1 extent
+06 zzz.mp3: 1 extent found
+07 zzz.mp3: 2 extents found, perfection would be 1 extent
+
+But I have just discovered that filefrag also works on ext3, so
+it has not so much meaning...
+
+> Also, some of ext4's
+> performance improvements will only come after doing a
+> dump/mke2fs/restore pass.  People who are thinking about doing that
+> would be advised to wait until after 2.6.30 or 2.6.31, though, since
+> we have a patch that changes how the block/inode allocator works
+> currently pending in development.
 > 
-> With any optimizations, -O or -O1 or -O2 I don't get any status
-> output, with -O0 I get,
+> Eventually, I hope the online defragger will be able to fully convert
+> an ext3 filesystem to use extents, with files defragged and placed in
+> locations that is as close as possible to a dump/mke2fs/restore pass
+> --- but we're not there yet.  Obviously you'll get a some of the
+> performance improvements simply going to ext4, and more by enabling
+> various ext4 features, such as extents et. al.  But for example, the
+> defragger still tries to keep blocks in the same block group, and it's
+> not aware of the new allocation policies that tries to keep inodes and
+> blocks within the same flex_bg (which is a collection of block
+> groups).  So that's an example of how the defragger needs to be made
+> more intelligent, and that work hasn't happened yet.
 > 
-> ./time-warp-test 
-> 1 CPUs, running 1 parallel test-tasks.
-> checking for time-warps via:
-> - read time stamp counter (RDTSC) instruction (cycle resolution)
-> 
->  | TSC: 0.82us, fail:0 /
+
+Many thanks forr the info !!
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.28.2-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed Jan
