@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZBWV04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbZBWVao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZBWV04 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 16:26:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZBWV0r
+	id S1755850AbZBWVao (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 16:30:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZBWVag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 16:26:47 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:36401 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171AbZBWV0p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 16:26:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=eyvr9/5V57cyhV4CVi6meXC3QafdDJdWU13bQ1KFPz/IhmFEPtaBNo/p0gjFuxx98o
-         dajo1VI17jylt8HMoThjHYsaixVawclWbrVoHbD5zsiboIyfVQqgClpzZHfGK9nSIus9
-         Dk+hnNotw3YT6+4EKSpy40N7kQRpeaIGLLwp8=
-Date: Mon, 23 Feb 2009 22:26:15 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org
-Subject: iwlagn warning in 2.6.29-rc6
-Message-ID: <20090223212615.GA5047@Pilar.Speedport_W_303V_Typ_A>
+	Mon, 23 Feb 2009 16:30:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41873 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752589AbZBWVaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 16:30:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Eric Anholt <eric@anholt.net>
+Subject: Re: [Linux 2.6.29-rc6] [drm:i915_set_status_page] *ERROR* can not ioremap  virtual address for G33 hw status page
+Date: Mon, 23 Feb 2009 22:30:28 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "lenb@kernel.org" <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       mjg@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       rui.zhang@intel.com
+References: <8db1092f0902230646o78a07a09t920ad65369b5a20d@mail.gmail.com> <1235419343.4816.27.camel@gaiman>
+In-Reply-To: <1235419343.4816.27.camel@gaiman>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902232230.29501.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've just got this warning in my Vaio laptop:
+On Monday 23 February 2009, Eric Anholt wrote:
+> On Mon, 2009-02-23 at 15:46 +0100, Maciej Rutecki wrote:
+> > 2.6.29-rc5 and 2.6.29-rc5-git6 work OK. In 2.6.29-rc6 XWindow (KDM)
+> > doesn't start, from dmesg:
+> > 
+> > [   18.170614] [drm] Initialized drm 1.1.0 20060810
+> > [   18.247445] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> > [   18.247455] pci 0000:00:02.0: setting latency timer to 64
+> > [   18.249610] mtrr: type mismatch for d0000000,10000000 old:
+> > write-back new: write-combining
+> > [   18.249621] [drm] MTRR allocation failed
+> > [   18.249622] .  Graphics performance may suffer.
+> > [   18.249658] pci 0000:00:02.0: irq 27 for MSI/MSI-X
+> > [   18.249691] [drm] Initialized i915 1.6.0 20080730 on minor 0
+> > [   18.290152] mtrr: type mismatch for d0000000,10000000 old:
+> > write-back new: write-combining
+> > [   18.567435] set status page addr 0x00043000
+> > [   18.567463] [drm:i915_set_status_page] *ERROR* can not ioremap
+> > virtual address for G33 hw status page
+> 
+> The non-GEM G33 HWS support is wrong, and has been more or less broken
+> since inception (only now it's failing at startup instead of just being
+> slow).  It's doing a mapping of the framebuffer when it should be using
+> a cached mapping of the page backing the framebuffer address.
+> 
+> For a quick fix, converting to ioremap_wc will shut the kernel up and
+> get us the old ioremap behavior (whatever the MTRR said, which happens
+> to be WC).
 
-------------[ cut here ]------------
-WARNING: at drivers/net/wireless/iwlwifi/iwl-tx.c:1254 iwl_tx_cmd_complete+0x28a/0x2e0()
-Hardware name: VGN-FZ240E
-wrong command queue 31, sequence 0x7FFF readp=241 writep=241
-Modules linked in: usbhid nvram snd_hda_codec_idt snd_hda_intel snd_hda_codec uvcvideo snd_hwdep snd_pcm iwlagn videodev snd_timer sky2 v4l1_compat v4l2_compat_ioctl32 evdev sg i2c_i801 snd_page_alloc sr_mod ata_piix ahci libata sd_mod scsi_mod uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: scsi_wait_scan]
-Pid: 0, comm: swapper Not tainted 2.6.29-rc6 #37
-Call Trace:
- <IRQ>  [<ffffffff8023d850>] warn_slowpath+0xd0/0x130
- [<ffffffff8025072d>] ? queue_work_on+0x4d/0x60
- [<ffffffff802508da>] ? queue_work+0x1a/0x20
- [<ffffffff8053bb70>] ? ieee80211_sta_rx_mgmt+0xc0/0xf0
- [<ffffffff80540f45>] ? ieee80211_invoke_rx_handlers+0x12c5/0x1650
- [<ffffffff80233530>] ? enqueue_task_fair+0x190/0x2d0
- [<ffffffff8022ecc0>] ? enqueue_task+0x50/0x60
- [<ffffffff8025c049>] ? getnstimeofday+0x59/0xe0
- [<ffffffff80234c24>] ? find_busiest_group+0x234/0x760
- [<ffffffff8041eb3a>] iwl_tx_cmd_complete+0x28a/0x2e0
- [<ffffffffa0124245>] iwl_rx_handle+0x115/0x4a0 [iwlagn]
- [<ffffffffa01249ef>] iwl_irq_tasklet+0x41f/0xb30 [iwlagn]
- [<ffffffff8025c049>] ? getnstimeofday+0x59/0xe0
- [<ffffffff80242c39>] tasklet_action+0x69/0xf0
- [<ffffffff80243784>] __do_softirq+0x94/0x160
- [<ffffffff8020d57c>] call_softirq+0x1c/0x30
- [<ffffffff8020ef35>] do_softirq+0x45/0x90
- [<ffffffff80243435>] irq_exit+0x75/0xa0
- [<ffffffff8020f196>] do_IRQ+0x86/0x110
- [<ffffffff8020ce53>] ret_from_intr+0x0/0xa
- <EOI>  [<ffffffff803a0322>] ? acpi_idle_enter_bm+0x2bf/0x344
- [<ffffffff803a0318>] ? acpi_idle_enter_bm+0x2b5/0x344
- [<ffffffff802587cf>] ? notifier_call_chain+0x3f/0x80
- [<ffffffff80455345>] ? cpuidle_idle_call+0xa5/0x100
- [<ffffffff8020b492>] ? cpu_idle+0x62/0xc0
- [<ffffffff80549c7c>] ? rest_init+0x5c/0x70
----[ end trace 281a546e35661751 ]---
+This is a serious regression on this particular hardware, though.  We need it
+fixed before 2.6.29-final, this way or another.
 
-The wireless connection still seems to be good after this (I've
-found this warning after a curious look in the dmesg), but I
-thought I should send the warning to lkml just in case it has
-a deeper meaning to people out there.
-
-The card is this one,
-Network controller: Intel Corporation PRO/Wireless 4965 AG or AGN Network Connection (rev 61)
-
-I can provide the whole dmesg output if needed too.
+Thanks,
+Rafael
