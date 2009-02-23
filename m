@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZBWBYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbZBWBfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612AbZBWBYZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 20:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZBWBXz
+	id S1754234AbZBWBfi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 20:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZBWBf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 20:23:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36285 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752441AbZBWBXy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 20:23:54 -0500
-Date: Sun, 22 Feb 2009 17:23:01 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
- suspend-resume
-In-Reply-To: <alpine.LFD.2.00.0902221603440.3111@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902221722100.3111@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0902220946070.3111@localhost.localdomain> <200902222342.08285.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl> <alpine.LFD.2.00.0902221603440.3111@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Feb 2009 20:35:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34003 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751771AbZBWBf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 20:35:29 -0500
+Date: Sun, 22 Feb 2009 17:34:46 -0800
+From: Jeff Layton <jlayton@redhat.com>
+To: Horst Reiterer <horst.reiterer@gmail.com>
+Cc: Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-cifs-client] Re: [PATCH] fs/cifs: send SMB_COM_FLUSH in
+ cifs_fsync
+Message-ID: <20090222173446.2da6b182@tupile.poochiereds.net>
+In-Reply-To: <alpine.OSX.2.00.0902222206360.7676@horst-reiterers-macbook-air.local>
+References: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
+	<524f69650902201721l1c7f0d34p4708980a90d7fc8f@mail.gmail.com>
+	<alpine.OSX.2.00.0902222137080.7676@horst-reiterers-macbook-air.local>
+	<524f69650902221303h37feb366k3d89a07bfd100ea3@mail.gmail.com>
+	<alpine.OSX.2.00.0902222206360.7676@horst-reiterers-macbook-air.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 22 Feb 2009 22:12:11 +0100 (CET)
+Horst Reiterer <horst.reiterer@gmail.com> wrote:
 
-
-On Sun, 22 Feb 2009, Linus Torvalds wrote:
+> On Sun, 22 Feb 2009, Steve French wrote:
+> > Suggestions on what to call such a new mount option?  How about
+> > "nostrictfsync"  ?
 > 
-> Ok, looks sane to me. I'll try it on my poor eeepc, although right now 
-> Fedora-11 rawhide (that poor laptop gets _all_ the crazy stuff thrown at 
-> it, and runs btrfs to boot) has broken something in X by enabling DRI2, so 
-> I may not get around to it today.
+> Sound good, should be self-explanatory for Samba users and those familiar
+> with the fsync concept.
+> 
+> Horst.
 
-Well, the suspend/resume part seems to work for me. My X issues keep my 
-from testing it with compiz, but here's an ack for v2 of the 2/2 patch at 
-least on my EeePC.
+My suggestion would be to not add a new option until someone requests
+it/complains about it. We already have a lot of unneeded/unused mount
+options, and I think this will just be adding one to the pile.
 
-		Linus
+My $.02...
+
+-- 
+Jeff Layton <jlayton@redhat.com>
