@@ -1,93 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbZBWPyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZBWPz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757093AbZBWPyE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 10:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbZBWPxs
+	id S1756223AbZBWPz2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 10:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZBWPzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 10:53:48 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:52649 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756713AbZBWPxr (ORCPT
+	Mon, 23 Feb 2009 10:55:15 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41458 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752934AbZBWPzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 10:53:47 -0500
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
-	suspend-resume
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>,
+	Mon, 23 Feb 2009 10:55:13 -0500
+Date: Mon, 23 Feb 2009 10:55:11 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <200902231229.58743.rjw@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl>
-	 <200902230048.33635.rjw@sisk.pl> <20090223083645.GA9582@elte.hu>
-	 <200902231229.58743.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WLDOjTgt0bnjj6pp3LN6"
-Date: Mon, 23 Feb 2009 07:52:59 -0800
-Message-Id: <1235404380.4455.13.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
+ conversions
+In-Reply-To: <alpine.DEB.2.00.0902231044050.18221@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.2.00.0902231053360.18221@gandalf.stny.rr.com>
+References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <87y6vyuzsn.fsf@basil.nowhere.org> <alpine.DEB.2.00.0902221741040.18221@gandalf.stny.rr.com> <20090223023332.GA5430@Krystal> <alpine.DEB.2.00.0902222317510.18221@gandalf.stny.rr.com>
+ <20090223045357.GA9158@Krystal> <alpine.DEB.2.00.0902230928000.18221@gandalf.stny.rr.com> <20090223154258.GB28727@Krystal> <alpine.DEB.2.00.0902231044050.18221@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-WLDOjTgt0bnjj6pp3LN6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mon, 23 Feb 2009, Steven Rostedt wrote:
 
-On Mon, 2009-02-23 at 12:29 +0100, Rafael J. Wysocki wrote:
+> 
+> On Mon, 23 Feb 2009, Mathieu Desnoyers wrote:
+> > > 
+> > > As for RO_DATA and bugs, it is a very small window for this to happen, and 
+> > > the sys-admin is the one making the change. This is not some periodical 
+> > > update. The sys-admin must be the one to initiate the tracer to modify 
+> > > text, ie, enabling or disabling the function tracer. Which, by the way, is 
+> > > something a sys-admin should only do when the system is off line. The 
+> > > overhead of all functions being traced, would not be something to be 
+> > > doing on a production system, unless they need to analyze something going 
+> > > wrong.
+> > > 
+> > 
+> > The argument "not to be used on production systems" is incompatible with
+> > the LTTng view, sorry. If you design your code so it's usable only in
+> > debugging scenarios on development machines and not in the field, then I
+> > doubt LTTng will be able to rely on it. I'm OK with that, as long as
+> > nobody argue that such tracepoint could be replaced by the function
+> > tracer, because tracepoints has to be enabled in the field on production
+> > machines.
+> 
+> Please do not confuse ftrace with the function tracer. The stop_machine
+> is only about the function tracer and has nothing to do with the rest of
+> ftrace. This is one detail. Yes, tracing EVERY function in the kernel
+> will add an overhead. There's no way around it. It's OK to do it on a
+> production system, but it WILL add overhead. That's what happens when you
+> trace EVERY function.
+> 
+> Note, I leave a lot of the other tracers on by default, and those are all
+> within the noise of overhead. I'm only talking about the function tracer
+> that is meant to do a lot of tracing. Does LTTng trace EVERY function?
 
-> > > +     arch_suspend_disable_irqs();
-> > > +     BUG_ON(!irqs_disabled());
-> >=20
-> > Please. We just disabled all devices - a BUG_ON() is a very=20
-> > counter-productive thing to do here - chances are the user will=20
-> > never see anything but a hang. So please turn this into a nice=20
-> > WARN_ONCE().
->=20
-> This is just moving code.  Also, the BUG_ON() can only affect powerpc and=
- it's
-> there on purpose AFAICS (Johannes?).  Anyway, changing that would be a se=
-parate
-> patch.
+BTW, The above is more about the answer to my statement about running on
+a production system. Below, is more an answer to the above. After 
+rereading what I wrote, I did not explain it very well.
 
-It can affect any platform that overrides the weak symbol
-arch_suspend_disable_irqs(), and I think that if you're writing this
-low-level code you better have a way to debug. As such, I don't think it
-needs changing, because you can only ever see that while implementing
-arch_suspend_disable_irqs(). OTOH, since it can only trigger then, a
-WARN_ON is probably fine as well since you'll be getting your machine
-into inconsistent states all the time while implementing this ;)
+-- Steve
 
-johannes
-
---=-WLDOjTgt0bnjj6pp3LN6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJosZZAAoJEKVg1VMiehFY0vsP/1ZYOLqdIHKoeabMGn7grIrI
-PMxZQ3n5o+NgxU15eSrJllCMh4Dy5srkMYZgddt5Fz+TT7QPiGPlK60MNkhUl66/
-Nj3jJpgqTyjfLm4Da2VWpNRTbJ+sKIW9qX+vcabkU77CpH5PwQ4LinrkgSfO2LGV
-49rPoFJ5lcoj2xXL52i98gdeqesbSlt+EbFl0WcKtDi8m28sGoch4IprnbYEOVLD
-pB79qK8BhV3W9d8RVX1JmxycvvxkaaGW7Zp1nn9xQC8DPrH+uyR5NApt/SZvbeYs
-KIknVn8tJOYWSpaK7DbAAmmI/fLfSowXO9oTbwOSe4z4vKypej0FTPVHmjMa2C/x
-f6zWIOJFhtppk1FtV/4459Rp6WBT/7P4DmOC4ge2rorHvi9ZAd699kdty/J/wY9g
-I+lh+BSSV6i6EsKYGg9Be3iivVEIfpJMmIdCctaeTRXzcJpPLSDTiClsB2OYbPxO
-HLf91avps4G9d3bCWIsbMAwBIdGxhsrj9NBXy7cx/C3cDACb5Bx7caA7OVB62ySB
-O27qSnm6mHbfk2b8/oqsxJpyvPehHbTPCsD2i7g1rvaObNXFv+BWxMMvVjxAtlim
-kGF2VE2wxNws5GR0HqzXZn4KO5D4HLnCNOPZ/oKLbsb3uYrkKbnINtIiSmVooll0
-dtLkxohp5ukFcHF024DT
-=X+WV
------END PGP SIGNATURE-----
-
---=-WLDOjTgt0bnjj6pp3LN6--
-
+> 
+> Now, yes, if you only select a few functions, there's no noticeable 
+> overhead. And yes then you would need to do the stop_machine anyway, and 
+> there will be a small window where the kernel text will be writable. 
+> Tracing only a small set of functions (say a few 100) is not much of an 
+> overhead, and I could see that being done on a production system.
+> 
+> > 
+> > I agree that the racy time window is not that large and is not really a
+> > security concern, but it's still just annoying.
+> 
+> Annoying? how so?
+> 
+> Again, the stop_machine part has nothing to do with DEBUG_RODATA, it is 
+> about the safest and easiest way to modify kernel text.
+> 
+> -- Steve
+> 
+> 
