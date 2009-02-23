@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZBWJ4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZBWJ6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbZBWJ4D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 04:56:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbZBWJzu
+	id S1753714AbZBWJ6Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 04:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbZBWJ6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 04:55:50 -0500
-Received: from stinky.trash.net ([213.144.137.162]:61288 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbZBWJzu (ORCPT
+	Mon, 23 Feb 2009 04:58:16 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:30778 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbZBWJ6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 04:55:50 -0500
-Message-ID: <49A272A3.5040405@trash.net>
-Date: Mon, 23 Feb 2009 10:55:47 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 23 Feb 2009 04:58:15 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ulu3Oy9Gwj+R0w5u2gjb/Zps7qWQR2EbWVgj7FaXtCUwLE0BYNPyCxx0lldegtBK4
+	pqr8L5S3BGWWcO8XvWM+A==
+Date: Mon, 23 Feb 2009 01:58:04 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] slub: add min_partial sysfs tunable
+In-Reply-To: <1235377162.6216.5.camel@penberg-laptop>
+Message-ID: <alpine.DEB.2.00.0902230126080.19494@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0902221710430.26165@chino.kir.corp.google.com>  <alpine.DEB.2.00.0902221712160.26165@chino.kir.corp.google.com> <1235377162.6216.5.camel@penberg-laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
-References: <1235070082-7069-1-git-send-email-wg@grandegger.com> <1235070082-7069-2-git-send-email-wg@grandegger.com> <1235070082-7069-3-git-send-email-wg@grandegger.com> <1235070082-7069-4-git-send-email-wg@grandegger.com> <499E7B9B.6030603@trash.net> <49A01932.4090004@grandegger.com>
-In-Reply-To: <49A01932.4090004@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wolfgang Grandegger wrote:
-> Patrick McHardy wrote:
->> Is sysfs really the best choice for this? It has the usual problems,
->> you can't change multiple parameters at once atomically. Now, I don't
->> know whether this is actually (and currently) a problem for CAN, but
->> given that we already have a generic netlink interface for creating
->> network interfaces that can easily support this, what are the reasons
->> for adding a new interface instead of using the existing one?
+On Mon, 23 Feb 2009, Pekka Enberg wrote:
+
+> The patches look good but the description is bit lacking. Does this
+> actually fix up something? Why don't we fix the limit calculations
+> instead?
 > 
-> You refer to the API described at http://lwn.net/Articles/236919/, I
-> assume.
-
-Exactly.
-
-> Well, I know that netlink is used to define routes in the kernel
-> or VLANs but I was not aware that it can also be used to configure real
-> network devices. What a pity. At a first glance, I could also be used
-> for CAN, of course. There are the following requirements:
+> I'm a sucker for numbers so I'm easily fooled into merging patches with
+> statements of the form "this shaves off N bytes/kb/mb on XYZ systems".
 > 
-> 1. Set and get CAN device properties like bit-rate and controller mode.
-> 2. Show CAN bus state (active, error-passive or bus-off).
-> 3. Get device constants like clock frequency and bit-timing parameters.
-> 4. Dump CAN device statistics.
-> 5. Trigger device restart if CAN bus-off state has been detected.
-> 
-> Not sure yet, if the interface if good for all purposes. Especially
-> point 5. might be better handled by an IOCTL.
 
-The first points sound pretty regular. The last one - just triggering
-it is no problem of course, but since I don't know how the detection
-works, I can't really tell whether its suitable.
+The memory savings from simply moving min_partial from struct 
+kmem_cache_node to struct kmem_cache is obviously not significant (unless 
+maybe you're from SGI or something), at the largest it's
 
-> And we need a user space
-> tool, e.g. canconfig, to handle the user requests and communicate with
-> the kernel side.
+	# allocated caches * (MAX_NUMNODES - 1) * sizeof(unsigned long)
 
-Thats pretty standard :)
+The true savings occurs when userspace reduces the number of partial slabs 
+that would otherwise be wasted, especially on machines with a large 
+number of nodes (ia64 with CONFIG_NODES_SHIFT at 10 for default?).  As 
+well as the kernel estimates ideal values for n->min_partial and ensures 
+it's within a sane range, userspace has no other input other than writing 
+to /sys/kernel/slab/cache/shrink.
 
-> We will follow that promising route. Any further help
-> or link is appreciated. Thanks.
+There simply isn't any better heuristic to add when calculating the 
+partial values for a better estimate that works for all possible caches.  
+And since it's currently a static value, the user really has no way of 
+reclaiming that wasted space, which can be significant when constrained by 
+a cgroup (either cpusets or, later, memory controller slab limits) without 
+shrinking it entirely.
 
-It should be quite easy to move your interface on top. A few examples
-that might be useful are vlan, ip_gre and macvlan.
+This also allows the user to specify that increased fragmentation and more 
+partial slabs are actually desired to avoid the cost of allocating new 
+slabs at runtime for specific caches.
+
+There's also no reason why this should be a per-struct kmem_cache_node 
+value in the first place.  You could argue that a machine would have such 
+node size asymmetries that it should be specified on a per-node basis, but 
+we know nobody is doing that right now since it's a purely static value at 
+the moment and there's no convenient way to tune that via slub's sysfs 
+interface.
