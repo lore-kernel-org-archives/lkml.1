@@ -1,109 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZBWLWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZBWLZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbZBWLWP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 06:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZBWLV7
+	id S1754699AbZBWLZT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 06:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZBWLZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 06:21:59 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:33878 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752923AbZBWLV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 06:21:59 -0500
-Date: Mon, 23 Feb 2009 11:21:56 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: akpm@linux-foundation.org, wli@movementarian.org, linux-mm@kvack.org,
-       shai@scalex86.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] mm: Reintroduce and deprecate rlimit based access
-	for SHM_HUGETLB
-Message-ID: <20090223112156.GB6740@csn.ul.ie>
-References: <20090221015457.GA32674@localdomain> <20090221015748.GB32674@localdomain>
+	Mon, 23 Feb 2009 06:25:06 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:47996 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141AbZBWLZE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 06:25:04 -0500
+Date: Mon, 23 Feb 2009 16:54:30 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arun@linux.vnet.ibm.com,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration between CPU
+Message-ID: <20090223112430.GC10226@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090220125516.GB10232@linux.vnet.ibm.com> <20090220132145.GF26418@elte.hu> <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu> <20090223075521.GA3725@balbir.in.ibm.com> <20090223091158.GJ9582@elte.hu> <20090223094850.GA10226@balbir.in.ibm.com> <20090223102234.GQ9582@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090221015748.GB32674@localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090223102234.GQ9582@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 05:57:48PM -0800, Ravikiran G Thirumalai wrote:
-> Allow non root users with sufficient mlock rlimits to be able to allocate
-> hugetlb backed shm for now.  Deprecate this though.  This is being
-> deprecated because the mlock based rlimit checks for SHM_HUGETLB
-> is not consistent with mmap based huge page allocations.
-> 
-> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Wli <wli@movementarian.org>
-> 
-> Index: linux-2.6-tip/fs/hugetlbfs/inode.c
-> ===================================================================
-> --- linux-2.6-tip.orig/fs/hugetlbfs/inode.c	2009-02-10 13:30:05.000000000 -0800
-> +++ linux-2.6-tip/fs/hugetlbfs/inode.c	2009-02-11 21:58:23.000000000 -0800
-> @@ -948,6 +948,7 @@ static int can_do_hugetlb_shm(void)
->  struct file *hugetlb_file_setup(const char *name, size_t size)
->  {
->  	int error = -ENOMEM;
-> +	int unlock_shm = 0;
->  	struct file *file;
->  	struct inode *inode;
->  	struct dentry *dentry, *root;
-> @@ -957,8 +958,14 @@ struct file *hugetlb_file_setup(const ch
->  	if (!hugetlbfs_vfsmount)
->  		return ERR_PTR(-ENOENT);
->  
-> -	if (!can_do_hugetlb_shm())
-> -		return ERR_PTR(-EPERM);
-> +	if (!can_do_hugetlb_shm()) {
-> +		if (user_shm_lock(size, user)) {
-> +			unlock_shm = 1;
-> +			WARN_ONCE(1,
-> +			  "Using mlock ulimits for SHM_HUGETLB deprecated\n");
-> +		} else
-> +			return ERR_PTR(-EPERM);
-> +	}
->  
+* Ingo Molnar <mingo@elte.hu> [2009-02-23 11:22:34]:
 
-Seems to do what is promised by the patch and basic tests worked out for
-me. I think the behaviour has changed slightly in that we are getting EPERM
-now where we might have seen ENOMEM before but that should be ok.
-
->  	root = hugetlbfs_vfsmount->mnt_root;
->  	quick_string.name = name;
-> @@ -997,6 +1004,8 @@ out_inode:
->  out_dentry:
->  	dput(dentry);
->  out_shm_unlock:
-> +	if (unlock_shm)
-> +		user_shm_unlock(size, user);
->  	return ERR_PTR(error);
->  }
->  
-> Index: linux-2.6-tip/Documentation/feature-removal-schedule.txt
-> ===================================================================
-> --- linux-2.6-tip.orig/Documentation/feature-removal-schedule.txt	2009-02-09 16:45:47.000000000 -0800
-> +++ linux-2.6-tip/Documentation/feature-removal-schedule.txt	2009-02-11 21:35:28.000000000 -0800
-> @@ -335,3 +335,14 @@ Why:	In 2.6.18 the Secmark concept was i
->  	Secmark, it is time to deprecate the older mechanism and start the
->  	process of removing the old code.
->  Who:	Paul Moore <paul.moore@hp.com>
-> +---------------------------
-> +
-> +What:	Ability for non root users to shm_get hugetlb pages based on mlock
-> +	resource limits
-> +When:	2.6.31
-> +Why:	Non root users need to be part of /proc/sys/vm/hugetlb_shm_group or
-> +	have CAP_IPC_LOCK to be able to allocate shm segments backed by
-> +	huge pages.  The mlock based rlimit check to allow shm hugetlb is
-> +	inconsistent with mmap based allocations.  Hence it is being
-> +	deprecated.
-> +Who:	Ravikiran Thirumalai <kiran@scalex86.org>
+> 
+> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * Ingo Molnar <mingo@elte.hu> [2009-02-23 10:11:58]:
+> > 
+> > > 
+> > > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > * Ingo Molnar <mingo@elte.hu> [2009-02-20 22:53:18]:
+> > > > 
+> > > > > 
+> > > > > * Arjan van de Ven <arjan@infradead.org> wrote:
+> > > > > 
+> > > > > > On Fri, 20 Feb 2009 17:07:37 +0100
+> > > > > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > > > > 
+> > > > > > > 
+> > > > > > > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> > > > > > > 
+> > > > > > > > > I'd also suggest to not do that rather ugly 
+> > > > > > > > > enable_timer_migration per-cpu variable, but simply reuse 
+> > > > > > > > > the existing nohz.load_balancer as a target CPU.
+> > > > > > > > 
+> > > > > > > > This is a good idea to automatically bias the timers.  But 
+> > > > > > > > this nohz.load_balancer is a very fast moving target and we 
+> > > > > > > > will need some heuristics to estimate overall system idleness 
+> > > > > > > > before moving the timers.
+> > > > > > > > 
+> > > > > > > > I would agree that the power saving load balancer has a good 
+> > > > > > > > view of the system and can potentially guide the timer biasing 
+> > > > > > > > framework.
+> > > > > > > 
+> > > > > > > Yeah, it's a fast moving target, but it already concentrates 
+> > > > > > > the load somewhat.
+> > > > > > > 
+> > > > > > 
+> > > > > > I wonder if the real answer for this isn't to have timers be 
+> > > > > > considered schedulable-entities and have the regular scheduler 
+> > > > > > decide where they actually run.
+> > > > > 
+> > > > > hm, not sure - it's a bit heavy for that.
+> > > > >
+> > > > 
+> > > > I think the basic timer migration policy should exist in user 
+> > > > space.
+> > > 
+> > > I disagree.
+> > >
+> > 
+> > See below
+> >  
+> > > > One of the ways of looking at it is, as we begin to 
+> > > > consolidate, using range timers and migrating all timers to 
+> > > > lesser number of CPUs would make a whole lot of sense.
+> > > > 
+> > > > As far as the scheduler making those decisions is concerned, 
+> > > > my concern is that the load balancing is a continuous process 
+> > > > and timers don't necessarily work that way. I'd put my neck 
+> > > > out and say that irqbalance, range timers and timer migration 
+> > > > should all belong to user space. irqbalance and range timers 
+> > > > do, so should timer migration.
+> > > 
+> > > As i said it my first reply, IRQ migration is special because 
+> > > they are not kernel-internal objects, they come externally so 
+> > > there's a lot of user-space enumeration, policy and other steps 
+> > > involved. Furthermore, IRQs are migrated in a 'slow' fashion.
+> > > 
+> > > Timers on the other hand are fast entities tied to _tasks_ 
+> > > primarily, not external entities. 
+> > 
+> > Timers are also queued due to external events like interrupts 
+> > (device drivers tend to set of timers all the time). [...]
+> 
+> That is a silly argument. Tasks are created due to 'external 
+> events' as well such as the user hitting a key.
 > 
 
-Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+The point I was trying to make was that not all timers are due to
+tasks, some are due to interrupts and thus the focus on looking at
+getting irqbalance and timers to work together.
+
+> What matters, and what was my argument is the distinction 
+> whether the kernel _generates_ the event. For most IRQ events it 
+> does not, for the overwhelming majority of timers events it 
+> consciously generates timer events. Which makes them all the 
+> much different.
+>
+
+Yes, agreed
+ 
+> > [...] I am not fully against what you've said, at some 
+> > semantic level what you are suggesting is that at a higher 
+> > level of power saving, when the scheduler balances timers it 
+> > is doing a form of soft CPU hotplug on the system by migrating 
+> > timers and tasks away from idle CPUs when the load can be 
+> > handled by other CPUs. See below as well.
+> > 
+> > > Hence they should migrate 
+> > > according to the CPU where the activities of the system 
+> > > concentrates - i.e. where tasks are running.
+> > > 
+> > > Another thing: do you argue for the existing timer-migration 
+> > > code we have in mod_timer() to move to user-space too? It isnt a 
+> > > consistent argument to push 'some' of it to user-space, and some 
+> > > of it in kernel-space.
+> > > 
+> > 
+> > No.. mod_timer() is correct where it belongs.
+> 
+> You did not reply to my statement that the argument is a double 
+> standard. Why do certain migrations in the kernel and some not?
+
+Sorry, I am not sure I understand what portions of mod_timer were you
+recommending move to user space?
+
+> 
+> > Consider the powertop usage scenario today
+> > 
+> > 1. Powertop displays a list of timers and common causes of wakeup
+> > 2. It recommends policies in user space that can affect power savings
+> >    a. usb autosuspend
+> >    b. wireless link management
+> >    c. disable HAL polling
+> 
+> That's different - those are PowerTop timer event _reduction_ 
+> policies. Not migration policies of existing timers.
+> 
+> > My argument is, why can't we add
+> > 
+> >    d. Use range timers
+> >    e. Consolidate timers
+> > 
+> > In the future.
+> > 
+> > Even sched_mc=n is set by user space, so really the
+> > policy is in user space.
+> 
+> that is different again. sched_mc is a broad switch not a 
+> dynamic control like the sysfs migration interface that was 
+> introduced in this patchset. Which patchset we are discussing.
+>
+
+The timer migration patchset. We are discussing sched_mc=n, since I
+expect sched_mc=3 or so to enable timer migration.
+
+I guess we could try and select the target cpu for consolidation from
+within the scheduler, but my concerns are
+
+1. Not all timers are due to tasks
+2. The effect of migrating a timer from the scheduler automatically
+can vary, since we don't know the load associated with a timer.
+
+But having said that some experimentation with Ingo's suggestion of
+automatically selecting the target CPU would be nice.
+
+ 
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Balbir
