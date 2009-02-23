@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZBWQRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbZBWQTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755056AbZBWQRr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZBWQRj
+	id S1755352AbZBWQTa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZBWQTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:17:39 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:60461 "EHLO
+	Mon, 23 Feb 2009 11:19:22 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:59114 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751944AbZBWQRi (ORCPT
+	with ESMTP id S1752014AbZBWQTV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:17:38 -0500
-Date: Mon, 23 Feb 2009 11:09:22 -0500 (EST)
+	Mon, 23 Feb 2009 11:19:21 -0500
+Date: Mon, 23 Feb 2009 11:11:06 -0500 (EST)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] slub: move min_partial to struct kmem_cache
-In-Reply-To: <alpine.DEB.2.00.0902221710430.26165@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0902231108200.22276@qirst.com>
-References: <alpine.DEB.2.00.0902221710430.26165@chino.kir.corp.google.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] slub: add min_partial sysfs tunable
+In-Reply-To: <1235384784.6216.34.camel@penberg-laptop>
+Message-ID: <alpine.DEB.1.10.0902231110190.22276@qirst.com>
+References: <alpine.DEB.2.00.0902221710430.26165@chino.kir.corp.google.com>  <alpine.DEB.2.00.0902221712160.26165@chino.kir.corp.google.com>  <1235377162.6216.5.camel@penberg-laptop>  <alpine.DEB.2.00.0902230126080.19494@chino.kir.corp.google.com>
+ <1235384784.6216.34.camel@penberg-laptop>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,35 +27,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Feb 2009, David Rientjes wrote:
-
-> +static void calculate_min_partial(struct kmem_cache *s, unsigned long min)
-> +{
-> +	if (min < MIN_PARTIAL)
-> +		min = MIN_PARTIAL;
-> +	else if (min > MAX_PARTIAL)
-> +		min = MAX_PARTIAL;
-> +	s->min_partial = min;
-> +}
-> +
->  /*
->   * calculate_sizes() determines the order and the distribution of data within
->   * a slab object.
-> @@ -2319,6 +2317,11 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
->  	if (!calculate_sizes(s, -1))
->  		goto error;
->
-> +	/*
-> +	 * The larger the object size is, the more pages we want on the partial
-> +	 * list to avoid pounding the page allocator excessively.
-> +	 */
-> +	calculate_min_partial(s, ilog2(s->size));
->  	s->refcount = 1;
->  #ifdef CONFIG_NUMA
->  	s->remote_node_defrag_ratio = 1000;
->
-
-Move the ilog2 use into calculate_min_partial()? Otherweise
-calculate_min_partial is merely enforcing limits and not doing any
-calculations.
+Note also that the min_partial is something useful to reduce the page
+allocator overhead. If we can get the page allocator faster then the
+min_partial defaults can be reduced.
 
