@@ -1,82 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZBWQdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbZBWQd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbZBWQdf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZBWQd0
+	id S1756926AbZBWQd4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZBWQdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:33:26 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:45078 "EHLO gir.skynet.ie"
+	Mon, 23 Feb 2009 11:33:45 -0500
+Received: from mail.aknet.ru ([78.158.192.26]:50929 "EHLO mail.aknet.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753073AbZBWQd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:33:26 -0500
-Date: Mon, 23 Feb 2009 16:33:23 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 04/20] Convert gfp_zone() to use a table of
-	precalculated values
-Message-ID: <20090223163322.GN6740@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0902231003090.7298@qirst.com>
+	id S1755695AbZBWQdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 11:33:44 -0500
+X-Greylist: delayed 1437 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Feb 2009 11:33:44 EST
+Message-ID: <49A2CB13.4080708@aknet.ru>
+Date: Mon, 23 Feb 2009 19:13:07 +0300
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902231003090.7298@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Linux kernel <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Chuck Ebbert <76306.1226@compuserve.com>
+Subject: [patch] small fix to espfix code
+Content-Type: multipart/mixed;
+ boundary="------------040304000201060500030203"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 10:23:52AM -0500, Christoph Lameter wrote:
-> On Sun, 22 Feb 2009, Mel Gorman wrote:
-> 
-> > Every page allocation uses gfp_zone() to calcuate what the highest zone
-> > allowed by a combination of GFP flags is. This is a large number of branches
-> > to have in a fast path. This patch replaces the branches with a lookup
-> > table that is calculated at boot-time and stored in the read-mostly section
-> > so it can be shared. This requires __GFP_MOVABLE to be redefined but it's
-> > debatable as to whether it should be considered a zone modifier or not.
-> 
-> Are you sure that this is a benefit?
+This is a multi-part message in MIME format.
+--------------040304000201060500030203
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I haven't proved it, but my thinking was that this was a crapload of
-branches in fast paths that will be mispredicted. I tried profiling the
-RETIRED_MISPREDICTED_BRANCH_INSTRUCTIONS event and noticed there were large
-numbers in this general area. However, the profile counters for this event
-seem to be very difficult to isolate to a specific area of code so it's
-difficult to be 100% certain.
+Hi.
 
-> Jumps are forward and pretty short
-> and the compiler is optimizing a branch away in the current code.
-> 
+The attached patch fixes a tiny
+bug introduced by this patch:
+http://lkml.org/lkml/2006/9/30/134
+The patch was changing the espfix
+stack to be 32bit instead of 16bit,
+but this place seems to have been
+overlooked.
+The code was like this:
+---
+  	pushl %esp
+  	movzwl %sp, %esp
+  	addw $4, (%esp)
+---
+and the patch did:
+---
+  	pushl %esp
+  	CFI_ADJUST_CFA_OFFSET 4
+-	movzwl %sp, %esp
+  	addw $4, (%esp)
+---
+but the addw was forgotten to adjust.
 
-I was concerned with mispredictions here rather than the actual assembly
-and gfp_zone is inlined so it's lot of branches introduced in a lot of paths.
+The bug is mostly theoretical, I can't
+really test the effect of this patch.
+So, it is completely untested.
 
-> 
-> 0xffffffff8027bde8 <try_to_free_pages+95>:      mov    %esi,-0x58(%rbp)
-> 0xffffffff8027bdeb <try_to_free_pages+98>:      movq   $0xffffffff80278cd0,-0x48(%rbp)
-> 0xffffffff8027bdf3 <try_to_free_pages+106>:     test   $0x1,%r8b
-> 0xffffffff8027bdf7 <try_to_free_pages+110>:     mov    0x620(%rax),%rax
-> 0xffffffff8027bdfe <try_to_free_pages+117>:     mov    %rax,-0x88(%rbp)
-> 0xffffffff8027be05 <try_to_free_pages+124>:     jne    0xffffffff8027be2c <try_to_free_pages+163>
-> 0xffffffff8027be07 <try_to_free_pages+126>:     mov    $0x1,%r14d
-> 0xffffffff8027be0d <try_to_free_pages+132>:     test   $0x4,%r8b
-> 0xffffffff8027be11 <try_to_free_pages+136>:     jne    0xffffffff8027be2c <try_to_free_pages+163>
-> 0xffffffff8027be13 <try_to_free_pages+138>:     xor    %r14d,%r14d
-> 0xffffffff8027be16 <try_to_free_pages+141>:     and    $0x100002,%r8d
-> 0xffffffff8027be1d <try_to_free_pages+148>:     cmp    $0x100002,%r8d
-> 0xffffffff8027be24 <try_to_free_pages+155>:     sete   %r14b
-> 0xffffffff8027be28 <try_to_free_pages+159>:     add    $0x2,%r14d
-> 0xffffffff8027be2c <try_to_free_pages+163>:     mov    %gs:0x8,%rdx
-> 
+---
+Fix tiny bug in the espfix NMI handling
+code. The bug was inroduced by this patch:
+http://lkml.org/lkml/2006/9/30/134
+and can practically never be triggered.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+CC: Zachary Amsden <zach@vmware.com>
+CC: Chuck Ebbert <76306.1226@compuserve.com>
+
+--------------040304000201060500030203
+Content-Type: text/x-patch;
+ name="espfix.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="espfix.diff"
+
+--- a/arch/x86/kernel/entry_32.S	2009-01-10 21:03:16.000000000 +0300
++++ b/arch/x86/kernel/entry_32.S	2009-02-15 22:34:23.000000000 +0300
+@@ -881,7 +881,7 @@
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	pushl %esp
+ 	CFI_ADJUST_CFA_OFFSET 4
+-	addw $4, (%esp)
++	addl $4, (%esp)
+ 	/* copy the iret frame of 12 bytes */
+ 	.rept 3
+ 	pushl 16(%esp)
+
+--------------040304000201060500030203--
