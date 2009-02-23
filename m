@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZBWOCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZBWOIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbZBWOCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbZBWOCH
+	id S1755310AbZBWOIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbZBWOIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:02:07 -0500
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:28159 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754548AbZBWOCG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:02:06 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=n9ShBdOOJivp/0TZioosNN+9Cv4ijnrmanmp7n0ifLkx44OIyif2HAlVhvcnEZXQXsjnw8Xd5PkkukvoZUH0AYBnAt0qtb3gLxNEJ6k2+eWaWEk9AT6JO9B9YOYcvW50jZxQThEZUAUa6azb7xbnrI4C8MMcvEdk8RwNueUgZc0=  ;
-X-YMail-OSG: z65fW9IVM1nJHDx8BR1KR1iUNx6mZmOOWgaHlDjVujrEcD9A6tWYDNrIJRvMXFxJIs8o7QMhrqMR2MfLqkhAyIKWRLU7E2C4xOLMTTFIcredQfIR0qaUiz6Vrkyg_PfqTv1_vERq_SOJWjYZYvmFkVXj3cpUSCBhYoDEDCEotFtBvkPPb2ZJM8l44V_erw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/7] slab: introduce kzfree()
-Date: Tue, 24 Feb 2009 01:01:24 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Vrabel <david.vrabel@csr.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chas Williams <chas@cmf.nrl.navy.mil>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-References: <499BE7F8.80901@csr.com> <499DB6EC.3020904@cs.helsinki.fi> <Pine.LNX.4.64.0902192022210.8254@blonde.anvils>
-In-Reply-To: <Pine.LNX.4.64.0902192022210.8254@blonde.anvils>
+	Mon, 23 Feb 2009 09:08:06 -0500
+Received: from mout2.freenet.de ([195.4.92.92]:46203 "EHLO mout2.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753852AbZBWOIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 09:08:06 -0500
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Anholt <eric@anholt.net>
+Subject: Re: Linux 2.6.29-rc6 - Fix oops in i915_gem_retire_requests
+Date: Mon, 23 Feb 2009 15:07:57 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902240101.26362.nickpiggin@yahoo.com.au>
+Message-Id: <200902231507.58049.fzu@wemgehoertderstaat.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 February 2009 07:36:48 Hugh Dickins wrote:
-> On Thu, 19 Feb 2009, Pekka Enberg wrote:
+Fix an oops in i915_gem_retire_requests()
 
-> > Quite frankly, I fail to see how kzfree() is fundamentally different from
-> > kfree(). I don't see kzfree() as a memset() + kfree() but rather as a
-> > kfree() "and make sure no one sees my data". So the zeroing happens
-> > _after_ you've invalidated the pointer with kzfree() so there's no
-> > "zeroing of buffer going on".
->
-> Well, that would be one way of picturing it, yes.
-> Imagine the "z" as for "zap" rather than "zero",
-> and the mechanism as opaque as Hannes suggests.
->
-> > So the way I see it, Linus' argument for having const for kfree() applies
-> > to kzfree().
-> >
-> > That said, if you guys think it's a merge blocker, by all means remove
-> > the const. I just want few less open-coded ksize() users, that's all.
->
-> I wouldn't call it a merge blocker, no; though I still
-> think it makes far more sense without the "const" there.
+dev_priv->hw_status_page can be NULL, if i915_gem_retire_requests()
+is called from i915_gem_busy_ioctl().
 
-Well, the buffer is only non-modified in the case of one of the
-allocators (SLAB). All others overwrite some of the data region
-with their own metadata.
+Signed-off-by Karsten Wiese <fzu@wemgehoertderstaat.de>
+---
+ drivers/gpu/drm/i915/i915_gem.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-I think it is OK to use const, though. Because k(z)free has the
-knowledge that the data will not be touched by the caller any
-longer.
-
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 25b3374..28b726d 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -1051,6 +1051,9 @@ i915_gem_retire_requests(struct drm_device *dev)
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	uint32_t seqno;
+ 
++	if (!dev_priv->hw_status_page)
++		return;
++
+ 	seqno = i915_get_gem_seqno(dev);
+ 
+ 	while (!list_empty(&dev_priv->mm.request_list)) {
+-- 
+1.6.0.6
