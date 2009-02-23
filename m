@@ -1,139 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZBWQti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZBWQuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbZBWQti (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZBWQta
+	id S1757386AbZBWQuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbZBWQuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:49:30 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37492 "EHLO e5.ny.us.ibm.com"
+	Mon, 23 Feb 2009 11:50:10 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49534 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbZBWQt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:49:29 -0500
-Date: Mon, 23 Feb 2009 08:17:26 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+	id S1753289AbZBWQuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 11:50:09 -0500
+Date: Mon, 23 Feb 2009 17:46:32 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Message-ID: <20090223161726.GD6751@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090220140157.GA12799@elte.hu> <20090222030030.GD6860@linux.vnet.ibm.com> <20090223051709.GA5990@linux.vnet.ibm.com> <200902240029.37815.nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/4] forget_original_parent: split out the un-ptrace
+	part
+Message-ID: <20090223164632.GA16294@redhat.com>
+References: <20090211211216.GA16847@redhat.com> <20090220022746.8852CFC2F7@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902240029.37815.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090220022746.8852CFC2F7@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
-> On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
-> 
-> > The boot CPU runs in the context of its idle thread during boot-up.
-> > During this time, idle_cpu(0) will always return nonzero, which will
-> > fool Classic and Hierarchical RCU into deciding that a large chunk of
-> > the boot-up sequence is a big long quiescent state.  This in turn causes
-> > RCU to prematurely end grace periods during this time.
-> >
-> > This patch creates a new global variable that is set to 1 just before
-> > the boot CPU first enters the scheduler, after which the idle task
-> > really is idle.
-> 
-> Nice work all (btw. if this patch goes in rather than using system_state,
-> then please make the variable __read_mostly).
+On 02/19, Roland McGrath wrote:
+>
+> > +static inline int task_detached(struct task_struct *p)
+>
+> Maybe take the opportunity to make it bool?
+> Clearly trivial, but a bit of implicit documentation that doesn't hurt.
 
-Hmmm...  I misread this and made system_state be __read_mostly.  Let
-me know if this is bad, easy to fix if needed.
+Agreed. Actually I was going to do this, but forgot.
 
-							Thanx, Paul
+I'll send the cleanup patch.
 
-> Vegard, I would like to still use your patch in vmalloc.c as well. It
-> solves a possible use-after-free with preemptible RCU, and also helps with
-> a patch I have to conditionally disable lazy vmap unmapping (for Xen).
-> 
-> We _could_ disable RCU there instead to solve the preemptible RCU bug, but
-> your patch I think is less overhead.
-> 
-> So with appropriate changelog update, please also resend your patch
-> (with Acked-by: Nick Piggin <npiggin@suse.de>)
-> 
-> Thanks,
-> Nick
-> 
-> > Located-by: Vegard Nossum <vegard.nossum@gmail.com>
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> >
-> >  init/main.c         |    3 +++
-> >  kernel/rcuclassic.c |    4 +++-
-> >  kernel/rcutree.c    |    4 +++-
-> >  3 files changed, 9 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/init/main.c b/init/main.c
-> > index 8442094..51f4b71 100644
-> > --- a/init/main.c
-> > +++ b/init/main.c
-> > @@ -121,6 +121,8 @@ static char *static_command_line;
-> >  static char *execute_command;
-> >  static char *ramdisk_execute_command;
-> >
-> > +int idle_task_is_really_idle;	/* set to 1 late in boot. */
-> > +
-> >  #ifdef CONFIG_SMP
-> >  /* Setup configured maximum number of CPUs to activate */
-> >  unsigned int __initdata setup_max_cpus = NR_CPUS;
-> > @@ -463,6 +465,7 @@ static noinline void __init_refok rest_init(void)
-> >  	 * at least once to get things moving:
-> >  	 */
-> >  	init_idle_bootup_task(current);
-> > +	idle_task_is_really_idle = 1;
-> >  	preempt_enable_no_resched();
-> >  	schedule();
-> >  	preempt_disable();
-> > diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> > index bd5a900..a758fa6 100644
-> > --- a/kernel/rcuclassic.c
-> > +++ b/kernel/rcuclassic.c
-> > @@ -678,8 +678,10 @@ int rcu_needs_cpu(int cpu)
-> >   */
-> >  void rcu_check_callbacks(int cpu, int user)
-> >  {
-> > +	extern int idle_task_is_really_idle;
-> > +
-> >  	if (user ||
-> > -	    (idle_cpu(cpu) && !in_softirq() &&
-> > +	    (idle_cpu(cpu) && idle_task_is_really_idle && !in_softirq() &&
-> >  				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
-> >
-> >  		/*
-> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> > index b2fd602..e996d85 100644
-> > --- a/kernel/rcutree.c
-> > +++ b/kernel/rcutree.c
-> > @@ -947,8 +947,10 @@ static void rcu_do_batch(struct rcu_data *rdp)
-> >   */
-> >  void rcu_check_callbacks(int cpu, int user)
-> >  {
-> > +	extern int idle_task_is_really_idle;
-> > +
-> >  	if (user ||
-> > -	    (idle_cpu(cpu) && !in_softirq() &&
-> > +	    (idle_cpu(cpu) && idle_task_is_really_idle && !in_softirq() &&
-> >  				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
-> >
-> >  		/*
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > +void exit_ptrace(struct task_struct *tracer)
+> > +{
+> > +	struct task_struct *p, *n;
+> > +	LIST_HEAD(ptrace_dead);
+>
+> I think this can do a short-circuit for the common case and avoid the lock:
+>
+> 	if (list_empty(&tracer->ptraced))
+> 		return;
+
+4/4 does this, but
+
+> I see your patch 4/4 on this.  In fact, I think the short-circuit
+> optimization of these two cases should be two separate patches.
+
+agreed,
+
+> The real-child optimization is just a new
+> optimization beyond the status quo.  It can really be considered wholly
+> after this whole series (and probably just punted because it gets so hairy).
+
+Yes. You can see from the changelog that I don't actually like this
+optimizatio very much. Because it complicates the code, adds the barrier,
+but needs thread_group_empty().
+
+If we are going to optimize out tasklist in forget_original_parent(), then
+I'd prefer http://marc.info/?l=linux-kernel&m=123438710725342
+
+But this needs a fat comment. And I didn't think carefully about this code.
+
+> (I don't
+> see how release_task() could be a problem at all.
+
+This was mostly about forget_original_parent...
+
+But from the _pure theoretical_ pov, it is not correct to assume that
+list_empty(&tracer->ptraced) == T means that current can not be used
+somehow as tracee->parent. Another subthread can release a dead tracee.
+
+For example, list_empty(&tracer->ptraced) == T doesn't mean that the
+STOREs to this task_struct are finished, list_del_init(->ptrace_entry)
+can still be in progress.
+
+But since we take tasklist before release_task(current) we are safe,
+even in theory.
+
+> You didn't mention ptrace_traceme() in your 4/4 message.
+
+And I guess you want to know why I didn't...
+
+Because I forgot completely about traceme! Thanks Roland.
+
+> In fact, that seems
+> like a new hole, period--without the short-circuit optimization.
+
+I think you are right, the current code looks racy too.
+
+> That seems addressed by e.g.:
+>
+> --- a/kernel/ptrace.c
+> +++ b/kernel/ptrace.c
+> @@ -534,7 +534,7 @@ repeat:
+>  		 * Set the ptrace bit in the process ptrace flags.
+>  		 * Then link us on our parent's ptraced list.
+>  		 */
+> -		if (!ret) {
+> +		if (!ret && !(current->real_parent->flags & PF_EXITING)) {
+>  			current->ptrace |= PT_PTRACED;
+
+Yes sure.
+
+But this means exit_ptrace() must always take tasklist, otherwise we
+don't have the necessary barriers.
+
+I am still feeling bad, will try to think more later.
+
+Oleg.
+
