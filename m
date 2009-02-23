@@ -1,54 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZBWR3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbZBWRbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbZBWR3t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 12:29:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbZBWR3k
+	id S1754500AbZBWRbY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 12:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZBWRbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 12:29:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57898 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751557AbZBWR3j (ORCPT
+	Mon, 23 Feb 2009 12:31:16 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:61354 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751610AbZBWRbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 12:29:39 -0500
-Date: Mon, 23 Feb 2009 09:28:02 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
- suspend-resume
-In-Reply-To: <20090223171630.GA28651@elte.hu>
-Message-ID: <alpine.LFD.2.00.0902230926030.3111@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl> <20090223083645.GA9582@elte.hu> <200902231229.58743.rjw@sisk.pl> <20090223171630.GA28651@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Feb 2009 12:31:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEEADZroklMQWXi/2dsb2JhbACBbtQqhA8G
+Date: Mon, 23 Feb 2009 12:31:08 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
+	conversions
+Message-ID: <20090223173108.GB1441@Krystal>
+References: <87y6vyuzsn.fsf@basil.nowhere.org> <alpine.DEB.2.00.0902221741040.18221@gandalf.stny.rr.com> <20090223023332.GA5430@Krystal> <alpine.DEB.2.00.0902222317510.18221@gandalf.stny.rr.com> <20090223045357.GA9158@Krystal> <alpine.DEB.2.00.0902230928000.18221@gandalf.stny.rr.com> <20090223154258.GB28727@Krystal> <alpine.DEB.2.00.0902231044050.18221@gandalf.stny.rr.com> <20090223161312.GA30279@Krystal> <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:23:12 up 2 days,  8:57,  4 users,  load average: 0.38, 0.63,
+	0.76
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 23 Feb 2009, Ingo Molnar wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> Linus, do you have a strong opinion about which variant we 
-> should use?
+> On Mon, 23 Feb 2009, Mathieu Desnoyers wrote:
+> > It can, by using your function tracer. It has a mode where it can
+> > enable/disable a filter in a callback connected on tracepoints. This
+> > filter is then used to enable detailed function tracing for a short time
+> > window. Also, you could think of tracing every function calls with
+> > LTTng's flight recorder mode, which only spins in memory overwriting the
+> > oldest information. That would provide snapshots on demand of the last
+> > functions called.
+> > 
+> > > Now, yes, if you only select a few functions, there's no noticeable 
+> > > overhead. And yes then you would need to do the stop_machine anyway, and 
+> > > there will be a small window where the kernel text will be writable. 
+> > > Tracing only a small set of functions (say a few 100) is not much of an 
+> > > overhead, and I could see that being done on a production system.
+> > > 
+> > 
+> > This is what LTTng can do today. But that involves the function tracer
+> > stop_machine() call, which I dislike.
+> 
+> What's wrong with stop_machine?  Specifically, what do you dislike about 
+> it?
+> 
+> > 
+> > > > 
+> > > > I agree that the racy time window is not that large and is not really a
+> > > > security concern, but it's still just annoying.
+> > > 
+> > > Annoying? how so?
+> > > 
+> > > Again, the stop_machine part has nothing to do with DEBUG_RODATA, it is 
+> > > about the safest and easiest way to modify kernel text.
+> > > 
+> > 
+> > We are running in circles here because there is no real argument
+> > brought.
+> > 
+> > 1 - You claim that changing the kernel's mapping, which has been
+> > pointed out as an intrusive kernel modification, is faster than using a
+> > text-poke-like approach. Please provide numbers to support such claims.
+> 
+> Hmm, lets see. I simply set a bit in the PTE mappings. There's not many, 
+> since a lot are 2M pages, for x86_64. Call stop_machine, and now I can 
+> modify 1 or 20,000 locations. Set the PTE bit back. Note, the changing of 
+> the bits are only done when CONFIG_DEBUG_RODATA is set.
+> 
+> text_poke requires allocating a page. Map the page into memory. Set up a 
+> break point.
 
-Strong? No. I think mine is better just because _if_ another CPU is busy 
-handling an interrupt that we're just now disabling, we'll just go on to 
-the next interrupt. Waiting for them all at the end is always more 
-efficient.
+text_poke does not _require_ a break point. text_poke can work with
+stop_machine. There are two different problems here :
 
-But does it really matter? No. In this case I think we've shut down all 
-other CPU's anyway, so the whole "serialize_irq()" should probably not 
-even be needed. 
+- How you deal with concurrency
+  - you use stop machine
+  - I use breakpoints
+- How you deal with RO page mappings
+  - you change the kernel page flags
+  - i use text_poke
 
-		Linus
+Please don't mix those separate concerns.
+
+> Knowing what to do when that break point is hit by another 
+> process. Modify the one location. Unmap the page. Free the page. Remove 
+> the breakpoint.
+> 
+> Yes, this may be faster if I only modify one location. I would be hard 
+> pressed that this is faster when I modify a few hundred locations. 
+> The stop_machine method does it all at once. Not one at a time.
+> 
+> 
+> > 
+> > 2 - You claim that using stop_machine is simpler and therefore safer
+> > than using a breakpoint-based approach. I start having some doubts about
+> > simplicity when you start talking about the workarounds you have to do
+> > for NMIs,
+> 
+> I agree, the NMI work around was tricky, but the final solution (which
+> we tested vigorously) works well. My claim that it is simpler is not about 
+> the small steps, but rather the number of variables we need to deal with.
+> Stop machine shuts down all the CPUs and executes my code on one CPU. 
+> Interrupts are disabled on all CPUs, and we only need to worry about the 
+> NMI. Which we now do.
+> 
+> Your solution is about mapping another page on a running system, where
+> anything can happen. The number of variables that can go wrong is much 
+> greater simply by the fact that you have no idea as to what is running at 
+> the same time as you perform your modifications.
+> 
+> With stop_machine, the number of variables is much less, because I know 
+> everything that is happening when I do the modification. I do not need to 
+> worry about some strange driver doing some kind of tricks because it 
+> simply is not running.
+> 
+> > but more importantly, you seem to recognise that the latency
+> > it induces would be inadequate for production systems.
+> 
+> Wrong. I recognise the latency of tracing all functions on a production 
+> system. Heck, we trace spin_lock, rcu_read_lock, mutex_lock, and all that 
+> jazz. Just slowing those functions down a bit will have a noticeable 
+> impact. I've found that adding those functions to set_ftrace_notrace drops 
+> the function tracer penalty, significantly.
+> 
+> 
+> > Therefore it's
+> > unusable in some LTTng use-cases just because of that. If you expect the
+> > function tracer to become used more widely in LTTng, these concerns
+> > should be addressed.
+> 
+> If you only want to trace a few hundred functions, then the overhead with
+> it on should not be significant. Depending on which functions you trace. 
+> As mentioned above, tracing only spin_lock can slow the system down.
+> 
+> Set up the functions you want to trace, enable them. You can have the
+> ring buffer disabled (echo 0 > /debug/tracing/tracing_on) and just turn on 
+> the ring buffer for your snapshot, and turn it off when you are done. When 
+> all tracing is done, then disable the function tracing.
+> 
+> 
+> > 
+> > If, in the end, your argument is "the function tracer works as-is now,
+> > and I have no time to change it given it represents too much work" or "I
+> > don't care about your use-cases", I'm OK with that. But please then don't
+> > argue that it's because it's the best technical solution when it isn't.
+> 
+> No, I have yet to hear a valuable argument against stop_machine. You are 
+> pushing the burden of proof on me, when we have something that does work, 
+> on several archs. You want me to redesign the system to be x86 only, and 
+> then say, hey, my original code works better.
+> 
+
+stop_machine involves high interrupt latency. This is the argument I've
+been repeating for 1-2 emails already. And I have to disagree with you :
+we can do this code generically given the right abstractions
+(BREAKPOINT_INSN* macros I proposed earlier). Is having something that
+"works" your only argument to stop improving it ?
+
+> I do not see text_poke being theoretically better. The only reason you 
+> given me to use it is because you dislike stop_machine.
+> 
+
+There is absolutely no link between stop_machine and text_poke. I argue
+against stop_machine saying that the breakpoint approach is less
+intrusive because it does not involve disabling interrupts for so long,
+and I argue against modifying the kernel page flags because that
+modifies the access rights of the core kernel and modules to RO
+mappings, which is IMO a side-effect that we should eliminate _if we
+can_. Please keep those two concerns separate.
+
+Mathieu
+
+> -- Steve
+> 
+> 
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
