@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbZBWVAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZBWVBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbZBWVAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 16:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZBWVAR
+	id S1757385AbZBWVBE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 16:01:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZBWVAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 16:00:17 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:32323 "HELO
+	Mon, 23 Feb 2009 16:00:19 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:32333 "HELO
 	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751572AbZBWVAO (ORCPT
+	by vger.kernel.org with SMTP id S1751630AbZBWVAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Feb 2009 16:00:14 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OQFWKbdlWpt5oh7UhVg7BxGGWva7XhojwL7exYkf1kRxM88GdHoGY24lWLtIEraFJ5btLQ4TM+zg4S7D9lvAuw+WM8rjFNhnlEArw70GVb/yjChZ5rb2az5Sfh7SfAdmT/gTpmPovo0b5IOsXXnDGMz8e8SiXMfZVlsoCfsxc3I=  ;
+  b=KOzX+RNzzugYg92IfkZEA/xjqF3IwhFWVbCNuC8tJb7W4vuYAbK4r81bd4BJ6zOurYXhf8ZgrZpIuy5xBbzIIN/XWx734DCf6T0iy8UL/yn+lL6JXozp3BMmFEkcZyra5+wl/kOMpZN9QntSXDXyjh0CucfgUDb5zE88y7FS5Uc=  ;
 X-YMail-OSG: fk6ZM58VM1n_ndPQY7NppDZhpoy49AQd4Ljmo3byJ5fHr4U2_BDxp.8PE2x7D7Q_rSWogn.y6AyenhCMQxCQXYynCu08kdEX_qmJBm1hA8IAYk7s4te4K4ShEiB2IV2W4AaVIxQu76FywgfKsoSZqsvyUqgKddBGu0G.yl.Hfw9ndJrbMN53m2Y6uk0YDqY4CA--
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>, Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
-Date: Mon, 23 Feb 2009 12:52:01 -0800
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage enumeration
+Date: Mon, 23 Feb 2009 12:54:13 -0800
 User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>, OMAP <linux-omap@vger.kernel.org>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
 References: <200902081037.06645.david-b@pacbell.net> <20090210224851.GA6408@sirena.org.uk> <200902231245.44360.david-b@pacbell.net>
 In-Reply-To: <200902231245.44360.david-b@pacbell.net>
 MIME-Version: 1.0
@@ -29,194 +30,167 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902231252.01980.david-b@pacbell.net>
+Message-Id: <200902231254.13990.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <dbrownell@users.sourceforge.net>
 
-Add a basic mechanism for regulators to report the discrete
-voltages they support:  one method to count how many voltages
-are available, and another to enumerate them.
-
-Use those methods to force machine-level constraints into bounds.
-(Example:  regulator supports 1.8V, 2.4V, 2.6V, 3.3V, and board
-constraints for that rail are 2.0V to 3.6V ... so the range of
-voltages is then 2.4V to 3.3V on this board.)
-
-Export those voltages to the regulator consumer interface, so for
-example regulator hooked up to an MMC/SD/SDIO slot can report the
-actual voltage options available to cards connected there.
+Update previously-posted twl4030 regulator driver to export
+supported voltages to upper layers using a new mechanism.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
-I'm not particularly pleased with these names; suggestions?
-This could also be done with one fewer method by designating a
-special list_voltage() return value, but I like this better.
+ drivers/regulator/twl4030-regulator.c |   72 ++++++++++++++------------------
+ 1 file changed, 33 insertions(+), 39 deletions(-)
 
- drivers/regulator/core.c           |  107 +++++++++++++++++++++++++++++++++++
- include/linux/regulator/consumer.h |    2 
- include/linux/regulator/driver.h   |   10 +++
- 3 files changed, 119 insertions(+)
-
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -719,6 +719,44 @@ static int set_machine_constraints(struc
- 	else
- 		name = "regulator";
+--- a/drivers/regulator/twl4030-regulator.c
++++ b/drivers/regulator/twl4030-regulator.c
+@@ -42,7 +42,6 @@ struct twlreg_info {
  
-+	/* maybe force machine-wide voltage constraints to match the
-+	 * voltages supported by this regulator.  use the regulator's
-+	 * entire range for boards with no particular constraints.
-+	 */
-+	if (ops->list_voltage) {
-+		int	count = ops->count_voltages(rdev);
-+		int	i;
-+		int	min_uV = INT_MAX;
-+		int	max_uV = INT_MIN;
-+		int	cmin = constraints->min_uV ? : INT_MIN;
-+		int	cmax = constraints->max_uV ? : INT_MAX;
-+
-+		/* initial: [cmin..cmax] valid, [min_uV..max_uV] not */
-+		for (i = 0; i < count; i++) {
-+			int	value;
-+
-+			value = ops->list_voltage(rdev, i);
-+			if (value <= 0)
-+				continue;
-+
-+			/* maybe adjust [min_uV..max_uV] */
-+			if (value >= cmin && value < min_uV)
-+				min_uV = value;
-+			if (value <= cmax && value > max_uV)
-+				max_uV = value;
-+		}
-+
-+		/* final: [min_uV..max_uV] valid iff constraints valid */
-+		if (max_uV < min_uV) {
-+			pr_err("%s: bad '%s' voltage constraints\n",
-+				       __func__, name);
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+		constraints->min_uV = min_uV;
-+		constraints->max_uV = max_uV;
-+	}
-+
- 	rdev->constraints = constraints;
+ 	/* chip constraints on regulator behavior */
+ 	u16			min_mV;
+-	u16			max_mV;
  
- 	/* do we need to apply the constraint voltage */
-@@ -1245,6 +1283,75 @@ int regulator_is_enabled(struct regulato
- EXPORT_SYMBOL_GPL(regulator_is_enabled);
+ 	/* used by regulator core */
+ 	struct regulator_desc	desc;
+@@ -262,6 +261,24 @@ static const u16 VDAC_VSEL_table[] = {
+ };
  
- /**
-+ * regulator_count_voltages - count regulator_list_voltage() indices
-+ * @regulator: regulator source
-+ *
-+ * Returns number of indices, or negative errno.
-+ */
-+int regulator_count_voltages(struct regulator *regulator)
+ 
++static int twl4030ldo_count_voltages(struct regulator_dev *rdev)
 +{
-+	struct regulator_dev	*rdev = regulator->rdev;
-+	struct regulator_ops	*ops;
-+	int			ret = -EINVAL;
++	struct twlreg_info	*info = rdev_get_drvdata(rdev);
 +
-+	mutex_lock(&rdev->mutex);
-+
-+	ops = rdev->desc->ops;
-+	if (ops->count_voltages)
-+		ret = ops->count_voltages(rdev);
-+
-+	mutex_unlock(&rdev->mutex);
-+
-+	return ret;
++	return info->table_len ? : 1;
 +}
-+EXPORT_SYMBOL_GPL(regulator_count_voltages);
 +
-+/**
-+ * regulator_list_voltage - enumerate supported voltages
-+ * @regulator: regulator source
-+ * @index: identify voltage to list
-+ *
-+ * Returns a voltage that can be passed to @regulator_set_voltage(),
-+ * or negative fault code.
-+ *
-+ * Faults include passing in invalid index, and using an index
-+ * corresponding to a voltage that can't be used on this system.
-+ */
-+int regulator_list_voltage(struct regulator *regulator, unsigned index)
++static int twl4030ldo_list_voltage(struct regulator_dev *rdev, unsigned index)
 +{
-+	struct regulator_dev	*rdev = regulator->rdev;
-+	struct regulator_ops	*ops;
-+	int			ret = -EINVAL;
++	struct twlreg_info	*info = rdev_get_drvdata(rdev);
++	int			mV;
 +
-+	mutex_lock(&rdev->mutex);
-+
-+	ops = rdev->desc->ops;
-+	if (ops->count_voltages && ops->list_voltage)
-+		ret = ops->count_voltages(rdev);
-+
-+	if (ret == 0)
-+		ret = -EIO;
-+	else if (ret > 0) {
-+		if (index >= ret)
-+			ret = -EDOM;
-+		else
-+			ret = ops->list_voltage(rdev, index);
-+	}
-+
-+	if (ret >= 0) {
-+		if (ret < rdev->constraints->min_uV)
-+			ret = -ERANGE;
-+		else if (ret > rdev->constraints->max_uV)
-+			ret = -ERANGE;
-+	}
-+
-+	mutex_unlock(&rdev->mutex);
-+
-+	return ret;
++	mV = info->table[index];
++	if (IS_UNSUP(mV))
++		return -ESRCH;
++	return LDO_MV(mV) * 1000;
 +}
-+EXPORT_SYMBOL_GPL(regulator_list_voltage);
 +
-+/**
-  * regulator_set_voltage - set regulator output voltage
-  * @regulator: regulator source
-  * @min_uV: Minimum required voltage in uV
---- a/include/linux/regulator/consumer.h
-+++ b/include/linux/regulator/consumer.h
-@@ -140,6 +140,8 @@ int regulator_bulk_disable(int num_consu
- void regulator_bulk_free(int num_consumers,
- 			 struct regulator_bulk_data *consumers);
+ static int
+ twl4030ldo_set_voltage(struct regulator_dev *rdev, int min_uV, int max_uV)
+ {
+@@ -276,6 +293,8 @@ twl4030ldo_set_voltage(struct regulator_
+ 			continue;
+ 		uV = LDO_MV(mV) * 1000;
  
-+int regulator_count_voltages(struct regulator *regulator);
-+int regulator_list_voltage(struct regulator *regulator, unsigned index);
- int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV);
- int regulator_get_voltage(struct regulator *regulator);
- int regulator_set_current_limit(struct regulator *regulator,
---- a/include/linux/regulator/driver.h
-+++ b/include/linux/regulator/driver.h
-@@ -40,6 +40,12 @@ enum regulator_status {
-  * @set_voltage: Set the voltage for the regulator within the range specified.
-  *               The driver should select the voltage closest to min_uV.
-  * @get_voltage: Return the currently configured voltage for the regulator.
-+ * @count_voltages: Return the number of supported voltage indices which
-+ *	may be passed to @list_voltage().  Some indices may correspond to
-+ *	voltages that are not usable on this system.
-+ * @list_voltage: Return one of the supported voltages, in microvolts;
-+ *	or negative errno.  Indices range from zero to one less than
-+ *	@count_voltages().  Voltages may be reported in any order.
-  * @set_current_limit: Configure a limit for a current-limited regulator.
-  * @get_current_limit: Get the configured limit for a current-limited regulator.
-  * @set_mode: Set the operating mode for the regulator.
-@@ -62,6 +68,10 @@ enum regulator_status {
++		/* REVISIT for VAUX2, first match may not be best/lowest */
++
+ 		/* use the first in-range value */
+ 		if (min_uV <= uV && uV <= max_uV)
+ 			return twl4030reg_write(info, VREG_DEDICATED, vsel);
+@@ -297,6 +316,9 @@ static int twl4030ldo_get_voltage(struct
+ }
+ 
+ static struct regulator_ops twl4030ldo_ops = {
++	.count_voltages	= twl4030ldo_count_voltages,
++	.list_voltage	= twl4030ldo_list_voltage,
++
+ 	.set_voltage	= twl4030ldo_set_voltage,
+ 	.get_voltage	= twl4030ldo_get_voltage,
+ 
+@@ -314,6 +336,13 @@ static struct regulator_ops twl4030ldo_o
+ /*
+  * Fixed voltage LDOs don't have a VSEL field to update.
   */
- struct regulator_ops {
- 
-+	/* enumerate supported voltages */
-+	int (*count_voltages) (struct regulator_dev *);
-+	int (*list_voltage) (struct regulator_dev *, unsigned index);
++static int twl4030fixed_list_voltage(struct regulator_dev *rdev, unsigned index)
++{
++	struct twlreg_info	*info = rdev_get_drvdata(rdev);
 +
- 	/* get/set regulator voltage */
- 	int (*set_voltage) (struct regulator_dev *, int min_uV, int max_uV);
- 	int (*get_voltage) (struct regulator_dev *);
++	return info->min_mV * 1000;
++}
++
+ static int twl4030fixed_get_voltage(struct regulator_dev *rdev)
+ {
+ 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
+@@ -322,6 +351,9 @@ static int twl4030fixed_get_voltage(stru
+ }
+ 
+ static struct regulator_ops twl4030fixed_ops = {
++	.count_voltages	= twl4030ldo_count_voltages,
++	.list_voltage	= twl4030fixed_list_voltage,
++
+ 	.get_voltage	= twl4030fixed_get_voltage,
+ 
+ 	.enable		= twl4030reg_enable,
+@@ -353,7 +385,6 @@ static struct regulator_ops twl4030fixed
+ 	.base = offset, \
+ 	.id = num, \
+ 	.min_mV = mVolts, \
+-	.max_mV = mVolts, \
+ 	.desc = { \
+ 		.name = #label, \
+ 		.id = TWL4030_REG_##label, \
+@@ -402,14 +433,11 @@ static int twl4030reg_probe(struct platf
+ 	struct regulator_init_data	*initdata;
+ 	struct regulation_constraints	*c;
+ 	struct regulator_dev		*rdev;
+-	int				min_uV, max_uV;
+ 
+ 	for (i = 0, info = NULL; i < ARRAY_SIZE(twl4030_regs); i++) {
+ 		if (twl4030_regs[i].desc.id != pdev->id)
+ 			continue;
+ 		info = twl4030_regs + i;
+-		min_uV = info->min_mV * 1000;
+-		max_uV = info->max_mV * 1000;
+ 		break;
+ 	}
+ 	if (!info)
+@@ -423,10 +451,6 @@ static int twl4030reg_probe(struct platf
+ 	 * this driver and the chip itself can actually do.
+ 	 */
+ 	c = &initdata->constraints;
+-	if (!c->min_uV || c->min_uV < min_uV)
+-		c->min_uV = min_uV;
+-	if (!c->max_uV || c->max_uV > max_uV)
+-		c->max_uV = max_uV;
+ 	c->valid_modes_mask &= REGULATOR_MODE_NORMAL | REGULATOR_MODE_STANDBY;
+ 	c->valid_ops_mask &= REGULATOR_CHANGE_VOLTAGE
+ 				| REGULATOR_CHANGE_MODE
+@@ -471,36 +495,6 @@ static struct platform_driver twl4030reg
+ 
+ static int __init twl4030reg_init(void)
+ {
+-	unsigned i, j;
+-
+-	/* determine min/max voltage constraints, taking into account
+-	 * whether set_voltage() will use the "unsupported" settings
+-	 */
+-	for (i = 0; i < ARRAY_SIZE(twl4030_regs); i++) {
+-		struct twlreg_info	*info = twl4030_regs + i;
+-		const u16		*table;
+-
+-		/* fixed-voltage regulators */
+-		if (!info->table_len)
+-			continue;
+-
+-		/* LDO regulators: */
+-		for (j = 0, table = info->table;
+-				j < info->table_len;
+-				j++, table++) {
+-			u16		mV = *table;
+-
+-			if (IS_UNSUP(mV))
+-				continue;
+-			mV = LDO_MV(mV);
+-
+-			if (info->min_mV == 0 || info->min_mV > mV)
+-				info->min_mV = mV;
+-			if (info->max_mV < mV)
+-				info->max_mV = mV;
+-		}
+-	}
+-
+ 	return platform_driver_register(&twl4030reg_driver);
+ }
+ subsys_initcall(twl4030reg_init);
