@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZBWPMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbZBWPQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbZBWPMn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 10:12:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbZBWPKe
+	id S1756024AbZBWPQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 10:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZBWPP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 10:10:34 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:51050 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755703AbZBWPKc (ORCPT
+	Mon, 23 Feb 2009 10:15:59 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:60506 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbZBWPP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 10:10:32 -0500
-Date: Mon, 23 Feb 2009 10:01:35 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 03/20] Do not check NUMA node ID when the caller knows
- the node is valid
-In-Reply-To: <1235344649-18265-4-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0902230958440.7298@qirst.com>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-4-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 23 Feb 2009 10:15:58 -0500
+Date: Mon, 23 Feb 2009 15:15:55 +0000
+From: Andy Whitcroft <apw@canonical.com>
+To: John Daiker <daikerjohn@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: checkpatch.pl stalls on net/decnet/dn_fib.c
+Message-ID: <20090223151555.GG22617@shadowen.org>
+References: <499DE5CE.3030700@gmail.com> <20090223145329.GF22617@shadowen.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090223145329.GF22617@shadowen.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Feb 2009, Mel Gorman wrote:
+On Mon, Feb 23, 2009 at 02:53:29PM +0000, Andy Whitcroft wrote:
+> On Thu, Feb 19, 2009 at 03:05:50PM -0800, John Daiker wrote:
+> > Andy,
+> >
+> > Was running checkpatch.pl on the entire tree today (because my disk  
+> > loves to get thrashed like that...)  Found what seems to be a stall/hang  
+> > while running checkpatch.  I know nothing of the internal workings of  
+> > checkpatch.pl, but hope that you're able to sniff this one out!
+> >
+> > ./scripts/checkpatch.pl --file ./net/decnet/dn_fib.c  --debug values=9  
+> > types=9 possible=9 attr=9
+> 
+> Hmmm, yes thats broken indeed.  Will have a look at it.
 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index 75f49d3..6566c9e 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -1318,11 +1318,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
->  	for (i = 0; i < area->nr_pages; i++) {
->  		struct page *page;
->
-> -		if (node < 0)
-> -			page = alloc_page(gfp_mask);
-> -		else
-> -			page = alloc_pages_node(node, gfp_mask, 0);
-> -
-> +		page = alloc_pages_node(node, gfp_mask, 0);
->  		if (unlikely(!page)) {
->  			/* Successfully allocated i pages, free them in __vunmap() */
->  			area->nr_pages = i;
->
+Ok, think I have this one sorted.  Could you test with the version of
+checkpatch at this URL:
 
-That wont work. alloc_pages() obeys memory policies. alloc_pages_node()
-does not.
+  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
 
+Thanks for the report. 
 
+-apw
