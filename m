@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbZBWWYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZBWWcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbZBWWYX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 17:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbZBWWYF
+	id S1756318AbZBWWcl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 17:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZBWWcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 17:24:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42064 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753024AbZBWWYD convert rfc822-to-8bit (ORCPT
+	Mon, 23 Feb 2009 17:32:33 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59848 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753512AbZBWWcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 17:24:03 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
-Date: Mon, 23 Feb 2009 23:23:24 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200902221837.49396.rjw@sisk.pl> <200902221839.50357.rjw@sisk.pl> <d6200be20902231411s654f8b3csf1388a97f3f94ac4@mail.gmail.com>
-In-Reply-To: <d6200be20902231411s654f8b3csf1388a97f3f94ac4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Feb 2009 17:32:32 -0500
+Date: Mon, 23 Feb 2009 22:32:26 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: dri-devel@lists.sf.net, LKML <linux-kernel@vger.kernel.org>
+Cc: jbarnes@virtuousgeek.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Eric Anholt <eric@anholt.net>
+Subject: Re: [REGRESSION] i915 VT switch with AIGLX causes X lock up
+Message-ID: <20090223223226.GA23763@silver.sucs.org>
+References: <20090221153822.GA4571@silver.sucs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902232323.25583.rjw@sisk.pl>
+In-Reply-To: <20090221153822.GA4571@silver.sucs.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 February 2009, Arve Hjønnevåg wrote:
-> On Sun, Feb 22, 2009 at 9:39 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > Introduce two helper functions allowing us to disable device
-> > interrupts (at the IO-APIC level) during suspend or hibernation
-> > and enable them during the subsequent resume, respectively, so that
-> > the timer interrupts are enabled while "late" suspend callbacks and
-> > "early" resume callbacks provided by device drivers are being
-> > executed.
-> >
-> > Use these functions to rework the handling of interrupts during
-> > suspend (hibernation) and resume.  Namely, interrupts will only be
-> > disabled on the CPU right before suspending sysdevs, while device
-> > interrupts will be disabled (at the IO-APIC level), with the help of
-> > the new helper function, before calling "late" suspend callbacks
-> > provided by device drivers and analogously during resume.
-> >
+On Sat, Feb 21, 2009 at 03:38:22PM +0000, Sitsofe Wheeler wrote:
+> With 2.6.29rc5 and xorg-server 2:1.4.1~git20080131-1ubuntu9.2 switching
+> to a VT after starting compiz causes X to nearly lock up.
 > 
-> What impact does this have on wakeup interrupts? Unless you add a
-> check, after masking all interrupt at the CPU, to abort suspend if any
-> wakeup interrupt has IRQ_PENDING set I think you will loose wakeup
-> interrupts (at least for irqs that use default_disable).
+> Steps to reproduce:
+> 1. Start X
+> 2. Run compiz
+> 3. Switch to VT1 via ctrl-alt-f1
+> 4. Switch back to X via ctrl-alt-f7
+> 
+> The result is that X will remain displaying a black screen from then on
+> (the mouse cursor is visible and still moves). Switching to a VT after
+> this locks up the keyboard. When compiz is not running this bug does not
+> occur. I am not using kernel mode setting and booting with nomodesetting
+> made no difference. This problem was not present in 2.6.28. The problem
+> is reproducible every time.
+> 
+> Graphics card is an i915 in an EeePC 900:
+> 
+> 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile 915GM/GMS/910GML Express Graphics Controller [8086:2592] (rev 04)
+> 
+> This might be http://bugzilla.kernel.org/show_bug.cgi?id=12264 but I
+> can't reopen that bug and this bug might turn out to be different. Might
+> also be related to
+> http://marc.info/?l=linux-kernel&m=123499984611624&w=2 .
 
-I _think_ they would have to be reenabled after we've called
-local_irq_disable().
+Still here in 2.6.29-rc6.
 
-Thanks,
-Rafael
+-- 
+Sitsofe | http://sucs.org/~sits/
