@@ -1,110 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZBWINN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZBWINu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbZBWINN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 03:13:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZBWIM5
+	id S1754327AbZBWINu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 03:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZBWINl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 03:12:57 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:24895 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752579AbZBWIM4 (ORCPT
+	Mon, 23 Feb 2009 03:13:41 -0500
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:35997 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbZBWINk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 03:12:56 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=kia3K3Par4jGiYbYxvEb/RudYX7Z49st+6PPfEu1SOSJ9jVA1ITAABLeyXFW7ku/2
-	VB7fi7FCw117veVI5+vpQ==
+	Mon, 23 Feb 2009 03:13:40 -0500
+X-Greylist: delayed 2185 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Feb 2009 03:13:39 EST
+Message-ID: <49A2521E.5030805@nttdata.co.jp>
+Date: Mon, 23 Feb 2009 16:37:02 +0900
+From: Toshiharu Harada <haradats@nttdata.co.jp>
+Organization: NTT DATA CORPORATION
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.00.0902222254350.1236@swampdragon.chaosbits.net>
-References: <alpine.LNX.2.00.0902222254350.1236@swampdragon.chaosbits.net>
-Date: Mon, 23 Feb 2009 00:12:51 -0800
-Message-ID: <6599ad830902230012x170e2183q1540670d761ef80e@mail.gmail.com>
-Subject: Re: [PATCH] Remove some pointless conditionals before kfree() in 
-	kernel/cgroup.c
-From: Paul Menage <menage@google.com>
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: linux-kernel@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Paul Jackson <pj@sgi.com>, Simon Derr <simon.derr@bull.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Pavel Machek <pavel@ucw.cz>
+CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, jmorris@namei.org,
+       takedakn@nttdata.co.jp, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [TOMOYO #15 0/8] TOMOYO Linux
+References: <20090205081810.331987920@nttdata.co.jp> <alpine.LRH.1.10.0902121632160.18265@tundra.namei.org> <20090222142327.GF1586@ucw.cz> <200902222327.CIF26085.LOOJVMHQFOFStF@I-love.SAKURA.ne.jp> <20090222144811.GJ1586@ucw.cz>
+In-Reply-To: <20090222144811.GJ1586@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+X-OriginalArrivalTime: 23 Feb 2009 07:37:09.0576 (UTC) FILETIME=[88D92480:01C99589]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 2:05 PM, Jesper Juhl <jj@chaosbits.net> wrote:
-> Hi,
->
-> Here's a small patch for kernel/cgroup.c
->
-> Removes a few pointless tests of pointer == 0 before kfree() in
-> kernel/cgroup.c.
-> If the pointer we hand to kfree() is 0, then kfree() is a noop, so there
-> is no need to test.
->
-> Reduces object file size a bit :
->
-> Before:
-> $ size kernel/cgroup.o
->   text    data     bss     dec     hex filename
->  21593    7804    4924   34321    8611 kernel/cgroup.o
-> After:
-> $ size kernel/cgroup.o
->   text    data     bss     dec     hex filename
->  21537    7744    4924   34205    859d kernel/cgroup.o
+Pavel Machek wrote:
+> On Sun 2009-02-22 23:27:34, Tetsuo Handa wrote:
+>> Pavel Machek wrote:
+>>> On Thu 2009-02-12 16:34:16, James Morris wrote:
+>>>> On Thu, 5 Feb 2009, Kentaro Takeda wrote:
+>>>>
+>>>>> TOMOYO Linux is a name-based MAC extension (LSM module) for the Linux kernel.
+>>>>>
+>>>> Applied to 
+>>>> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+>>>>
+>>> Does that mean tomoyo is scheduled for 2.6.30?
+>>>
+>> TOMOYO is already in linux-next tree and ready to go into 2.6.30 .
+> 
+> Last time I looked it included script parser and some
+> interpretter... Was that solved?
+> 									Pavel
 
-Thanks. I'm a bit surprised that it also shrunk the data segment size
-(and in fact, by more than the text segment size). Any idea how that
-came about?
+Are you talking about the interface between
+userland and kernel regarding string data?
 
+Linus once said in a Smack thread (http://lkml.org/lkml/2007/11/5/129) 
+>> On Sun, Nov 04, 2007 at 12:28:48PM +0000, Pavel Machek wrote:
+>> > Can we avoid string parsers in the kernel?
+>> 
+>> Ok, Could someone suggest a better idea please ?. 
 >
-> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+> I personally think string parsers are *much* better than the alternatives 
+> (which basically boil down to nasty binary interfaces)
+>
+>> I thought about packing the rules in a structure and sending
+>> it over an ioctl() command. Is this applicable ?
+>
+> That's *MUCH* worse.
+>
+> Strings are nice. They aren't that complex, and as long as it's not a 
+> performance-critical area, there are basically no downsides.
+>
+> Binary structures and ioctl's are *much* worse. They are totally 
+> undebuggable with generic tools (think "echo" or "strace"), and they are a 
+> total nightmare to parse across architectures and pointer sizes.
+>
+> So the rule should be: always use strings if at all possible and relevant.
+> If the data is fundamentally binary, it shouldn't be re-coded to ascii
+> (no real advantage), but if the data is "stringish", and there aren't
+> big performance issues, then keep it as strings.
 
-Acked-by: Paul Menage <menage@google.com>
+Admiring your concern, I would like to follow the above directions.
 
-Paul
+Best regards,
+Toshiharu Harada
 
-> ---
->
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 9edb5c4..1c0a9b5 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -865,8 +865,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->        if (opts.release_agent)
->                strcpy(root->release_agent_path, opts.release_agent);
->  out_unlock:
-> -       if (opts.release_agent)
-> -               kfree(opts.release_agent);
-> +       kfree(opts.release_agent);
->        mutex_unlock(&cgroup_mutex);
->        mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
->        return ret;
-> @@ -969,15 +968,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->        /* First find the desired set of subsystems */
->        ret = parse_cgroupfs_options(data, &opts);
->        if (ret) {
-> -               if (opts.release_agent)
-> -                       kfree(opts.release_agent);
-> +               kfree(opts.release_agent);
->                return ret;
->        }
->
->        root = kzalloc(sizeof(*root), GFP_KERNEL);
->        if (!root) {
-> -               if (opts.release_agent)
-> -                       kfree(opts.release_agent);
-> +               kfree(opts.release_agent);
->                return -ENOMEM;
->        }
->
->
->
-> --
-> Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-> Plain text mails only, please      http://www.expita.com/nomime.html
-> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
->
->
