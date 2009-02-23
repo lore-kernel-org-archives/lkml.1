@@ -1,49 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZBWOXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbZBWOZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbZBWOXi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbZBWOX2
+	id S1754745AbZBWOZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZBWOZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:23:28 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:49418 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbZBWOX1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:23:27 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC 2/8] Aufs2: structure 
-To: Tomas M <tomas@slax.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <49A268A7.1010708@slax.org>
-References: <7558.1235374266@jrobl> <7769.1235374482@jrobl> <49A268A7.1010708@slax.org>
-Date: Mon, 23 Feb 2009 23:23:23 +0900
-Message-ID: <13899.1235399003@jrobl>
+	Mon, 23 Feb 2009 09:25:10 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:49630 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752796AbZBWOZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 09:25:09 -0500
+Date: Mon, 23 Feb 2009 14:25:06 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH 15/20] Do not disable interrupts in free_page_mlock()
+Message-ID: <20090223142505.GI6740@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-16-git-send-email-mel@csn.ul.ie> <1235380740.4645.2.camel@laptop> <20090223122331.GF6740@csn.ul.ie> <1235393058.4645.134.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1235393058.4645.134.camel@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Tomas M:
-> > The struct of a xino file is simple, just a sequence of aufs inode
-> > numbers which is indexed by the lower inode number.
-> > In the above sample, assume the inode number of /ro/fileA is i111 and
-> > aufs assigns the inode number i999 for fileA. Then aufs writes 999 as
-> > 4(8) bytes at 111 * 4(8) bytes offset in the xino file.
+On Mon, Feb 23, 2009 at 01:44:18PM +0100, Peter Zijlstra wrote:
+> On Mon, 2009-02-23 at 12:23 +0000, Mel Gorman wrote:
+> > On Mon, Feb 23, 2009 at 10:19:00AM +0100, Peter Zijlstra wrote:
+> > > On Sun, 2009-02-22 at 23:17 +0000, Mel Gorman wrote:
 > 
-> I think it is worth mentioning that the xino file, if I understand it correctly, is a 'sparse file', that means it is full of 'holes' and doesn't consume as much disk space as it might appear.
+> > > >  static inline void free_page_mlock(struct page *page)
+> > > >  {
+> > > > -	if (unlikely(TestClearPageMlocked(page))) {
+> > > > -		unsigned long flags;
+> > > > -
+> > > > -		local_irq_save(flags);
+> > > > -		__dec_zone_page_state(page, NR_MLOCK);
+> > > > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > > > -		local_irq_restore(flags);
+> > > > -	}
+> > > > +	__dec_zone_page_state(page, NR_MLOCK);
+> > > > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > > >  }
+> > > 
+> > > Its not actually clearing PG_mlocked anymore, so the name is now a tad
+> > > misleading.
+> > > 
+> > 
+> > Really? I see the following
+> 
+> > So there is a PG_mlocked bit once UNEVITABLE_LRU is set which was the
+> > case on the tests I was running. I'm probably missing something silly.
+> 
+> What I was trying to say was that free_page_mlock() doesn't change the
+> page-state after your change, hence the 'free' part of its name is
+> misleading.
+> 
 
-That is right.
-Thank you for pointing out.
+Ah right. As you pointed out on mail, the newer version clears the bit
+again so while the name was misleading, it's sortof ok again now. Mind you,
+it's not freeing a page as such. A name like account_freed_mlock() might be
+better. As it is only used in page_alloc.c, it could also be taken out of
+the header file altogether.
 
+> > > That said, since we're freeing the page, there ought to not be another
+> > > reference to the page, in which case it appears to me we could safely
+> > > use the unlocked variant of TestClear*().
+> > > 
+> > 
+> > Regrettably, unlocked variants do not appear to be defined as such but
+> > the following should do the job, right? It applies on top of the current
+> > change.
+> > 
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index b52bf86..7f775a1 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -155,6 +155,7 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+> >   */
+> >  static inline void free_page_mlock(struct page *page)
+> >  {
+> 	VM_BUG_ON(!PageMlocked(page)); ?
+> 
+> > +	__ClearPageMlocked(page);
+> >  	__dec_zone_page_state(page, NR_MLOCK);
+> >  	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> >  }
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index edac673..8bd0533 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -580,7 +580,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
+> >  	unsigned long flags;
+> >  	int i;
+> >  	int bad = 0;
+> > -	int clearMlocked = TestClearPageMlocked(page);
+> > +	int clearMlocked = PageMlocked(page);
+> >  
+> >  	for (i = 0 ; i < (1 << order) ; ++i)
+> >  		bad += free_pages_check(page + i);
+> > @@ -1040,7 +1040,7 @@ static void free_pcp_page(struct page *page)
+> >  	struct per_cpu_pages *pcp;
+> >  	unsigned long flags;
+> >  	int migratetype;
+> > -	int clearMlocked = TestClearPageMlocked(page);
+> > +	int clearMlocked = PageMlocked(page);
+> >  
+> >  	if (PageAnon(page))
+> >  		page->mapping = NULL;
+> 
+> Right, that should do.
+> 
 
-> In my opinion, the current xino-file approach is not much usable on filesystems which do not support sparse files (for example, if you wish to union two vfats), since some 'seeks' would probably write a lot of nulls. But I am not any kernel developer so I don't even know if there exists any filesystem which would be unable to support sparse files (except the mentioned VFAT, of course).
+Nice, thanks.
 
-Aufs creats the xino files on the first writable branch. If it consumes
-disk space for holes, then an aufs mount option 'xino=<path>' may be
-useful.
-
-I will update my local documents.
-Thank you.
-
-
-J. R. Okajima
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
