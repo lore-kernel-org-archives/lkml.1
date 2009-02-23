@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZBWHfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbZBWHgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbZBWHfi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZBWHf2
+	id S1754317AbZBWHgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZBWHgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:35:28 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39432 "EHLO
+	Mon, 23 Feb 2009 02:36:12 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39448 "EHLO
 	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbZBWHf1 (ORCPT
+	with ESMTP id S1751525AbZBWHgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:35:27 -0500
+	Mon, 23 Feb 2009 02:36:10 -0500
 From: hooanon05@yahoo.co.jp
-Subject: [RFC 3/8] Aufs2: lookup
+Subject: [RFC 4/8] Aufs2: branch
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 In-Reply-To: <7558.1235374266@jrobl>
 References: <7558.1235374266@jrobl>
-Date: Mon, 23 Feb 2009 16:35:26 +0900
-Message-ID: <7781.1235374526@jrobl>
+Date: Mon, 23 Feb 2009 16:36:08 +0900
+Message-ID: <7793.1235374568@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,90 +25,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > This is my second trial to ask incorporating aufs into mainline.
 
 
-Lookup in a Branch
+Branch Manipulation
+
+Since aufs supports dynamic branch manipulation, ie. add/remove a branch
+and changing its permission/attribute, there are a lot of works to do.
+
+
+Add a Branch
 ----------------------------------------------------------------------
-Since aufs has a character of sub-VFS (see Introduction), it operates
-lookup for branches as VFS does. It may be a heavy work. Generally
-speaking struct nameidata is a bigger structure and includes many
-information. But almost all lookup operation in aufs is the simplest
-case, ie. lookup only an entry directly connected to its parent. Digging
-down the directory hierarchy is unnecessary.
+o Confirm the adding dir exists outside of aufs, including loopback
+  mount.
+- and other various attributes...
+o Initialize the xino file and whiteout bases if necessary.
+  See struct.txt.
 
-VFS has a function lookup_one_len() for that use, but it is not usable
-for a branch filesystem which requires struct nameidata. So aufs
-implements a simple lookup wrapper function. When a branch filesystem
-allows NULL as nameidata, it calls lookup_one_len(). Otherwise it builds
-a simplest nameidata and calls lookup_hash().
-Here aufs applies "a principle in NFSD", ie. if the filesystem supports
-NFS-export, then it has to support NULL as a nameidata parameter for
-->create(), ->lookup() and ->d_revalidate(). So the lookup wrapper in
-aufs tests if ->s_export_op in the branch is NULL or not.
+o Check the owner/group/mode of the directory
+  When the owner/group/mode of the adding directory differs from the
+  existing branch, aufs issues a warning because it may impose a
+  security risk.
+  For example, when a upper writable branch has a world writable empty
+  top directory, a malicious user can create any files on the writable
+  branch directly, like copy-up and modify manually. If something like
+  /etc/{passwd,shadow} exists on the lower readonly branch but the upper
+  writable branch, and the writable branch is world-writable, then a
+  malicious guy may create /etc/passwd on the writable branch directly
+  and the infected file will be valid in aufs.
+  I am afraid it can be a security issue, but nothing to do except
+  producing a warning.
 
-When a branch is a remote filesystem, aufs trusts its ->d_revalidate().
-For d_revalidate, aufs implements three levels of revalidate tests. See
-"Revalidate Dentry and UDBA" in detail.
 
-
-Loopback Mount
+Delete a Branch
 ----------------------------------------------------------------------
-Basically aufs supports any type of filesystem and block device for a
-branch (actually there are some exceptions). But it is prohibited to add
-a loopback mounted one whose backend file exists in a filesystem which is
-already added to aufs. The reason is to protect aufs from a recursive
-lookup. If it was allowed, the aufs lookup operation might re-enter a
-lookup for the loopback mounted branch in the same context, and will
-cause a deadlock.
+o Confirm the deleting branch is not busy
+  To be general, there is one merit to adopt "remount" interface to
+  manipulate branches. It is to discard caches. At deleting a branch,
+  aufs checks the still cached (and connected) dentries and inodes. If
+  there are any, then they are all in-use. An inode without its
+  corresponding dentry can be alive alone (for example, inotify case).
+
+  For the cached one, aufs checks whether the same named entry exists on
+  other branches.
+  If the cached one is a directory, because aufs provides a merged view
+  to users, as long as one dir is left on any branch aufs can show the
+  dir to users. In this case, the branch can be removed from aufs.
+  Otherwise aufs rejects deleting the branch.
+
+  If any file on the deleting branch is opened by aufs, then aufs
+  rejects deleting.
 
 
-Revalidate Dentry and UDBA (User's Direct Branch Access)
+Modify the Permission of a Branch
 ----------------------------------------------------------------------
-Generally VFS helpers re-validate a dentry as a part of lookup.
-0. digging down the directory hierarchy.
-1. lock the parent dir by its i_mutex.
-2. lookup the final (child) entry.
-3. revalidate it.
-4. call the actual operation (create, unlink, etc.)
-5. unlock the parent dir
+o Re-initialize or remove the xino file and whiteout bases if necessary.
+  See struct.txt.
 
-If the filesystem implements its ->d_revalidate() (step 3), then it is
-called. Actually aufs implements it and checks the dentry on a branch is
-still valid.
-But it is not enough. Because aufs has to release the lock for the
-parent dir on a branch at the end of ->lookup() (step 2) and
-->d_revalidate() (step 3) while the i_mutex of the aufs dir is still
-held by VFS.
-If the file on a branch is changed directly, eg. bypassing aufs, after
-aufs released the lock, then the subsequent operation may cause
-something unpleasant result.
-
-This situation is a result of VFS architecture, ->lookup() and
-->d_revalidate() is separated. But I never say it is wrong. It is a good
-design from VFS's point of view. It is just not suitable for sub-VFS
-character in aufs.
-
-Aufs supports such case by three level of revalidation which is
-selectable by user.
-1. Simple Revalidate
-   Addition to the native flow in VFS's, confirm the child-parent
-   relationship on the branch just after locking the parent dir on the
-   branch in the "actual operation" (step 4). When this validation
-   fails, aufs returns EBUSY. ->d_revalidate() (step 3) in aufs still
-   checks the validation of the dentry on branches.
-2. Monitor Changes Internally by Inotify
-   Addition to above, in the "actual operation" (step 4) aufs re-lookup
-   the dentry on the branch, and returns EBUSY if it finds different
-   dentry.
-   Additionally, aufs sets the inotify watch for every dir on branches
-   during it is in cache. When the event is notified, aufs registers a
-   function to kernel 'events' thread by schedule_work(). And the
-   function sets some special status to the cached aufs dentry and inode
-   private data. If they are not cached, then aufs has nothing to
-   do. When the same file is accessed through aufs (step 0-3) later,
-   aufs will detect the status and refresh all necessary data.
-   In this mode, aufs has to ignore the event which is fired by aufs
-   itself.
-3. No Extra Validation
-   This is the simplest test and doesn't add any additional revalidation
-   test, and skip therevalidatin in step 4. It is useful and improves
-   aufs performance when system surely hide the aufs branches from user,
-   by over-mounting something (or another method).
+o rw --> ro: Confirm the modifying branch is not busy
+  Aufs rejects the request if any of these conditions are true.
+  - a file on the branch is mmap-ed.
+  - a regular file on the branch is opened for write and there is no
+    same named entry on the upper branch.
