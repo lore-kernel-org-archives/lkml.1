@@ -1,153 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZBWJkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbZBWJp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZBWJkw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 04:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZBWJkn
+	id S1753848AbZBWJp0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 04:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZBWJpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 04:40:43 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:41599 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752401AbZBWJkm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 04:40:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=AAlUA4fakl0NCSOA7Lg9JlVZvzDdQwBXL9lxpkUwD0EJAVbZyEtKLIveMHHFrq20oG
-         8QWNRhnleyiZaGlvKaPIaKzJkg3ch2dv7RIeLK7P+d8oas90WdklJedW/mOHoUE2oITE
-         uQpG7E8y08d+wL4ewPM4ypcmR3qwqEwj824fA=
+	Mon, 23 Feb 2009 04:45:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51197 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751265AbZBWJpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 04:45:10 -0500
+Date: Mon, 23 Feb 2009 10:44:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
+	suspend-resume
+Message-ID: <20090223094441.GM9582@elte.hu>
+References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0902220946070.3111@localhost.localdomain> <200902222342.08285.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl> <m1ab8ddfbr.fsf@fess.ebiederm.org> <20090223084400.GB9582@elte.hu> <m17i3ha4nk.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <200902230824.n1N8OV3P015018@www262.sakura.ne.jp>
-References: <200902230824.n1N8OV3P015018@www262.sakura.ne.jp>
-Date: Mon, 23 Feb 2009 11:40:38 +0200
-X-Google-Sender-Auth: e196b7f2e915aaaa
-Message-ID: <84144f020902230140v83e153cr3a0c8195aab1b835@mail.gmail.com>
-Subject: Re: How to analyze kmemleak message?
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m17i3ha4nk.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I'm cc'ing Catalin.)
 
-On Mon, Feb 23, 2009 at 10:24 AM, Tetsuo Handa
-<penguin-kernel@i-love.sakura.ne.jp> wrote:
-> I got this message with linux-2.6.29-rc5-next-20090220 .
->
-> [   89.856902] unreferenced object 0xf7009180 (size 124):
-> [   89.857484]   comm "swapper", pid 0, jiffies 4294892306
-> [   89.857484]   backtrace:
-> [   89.857484]     [<c0230695>] create_object+0x155/0x2c0
-> [   89.857484]     [<c0230dcb>] kmemleak_alloc+0x10b/0x1b0
-> [   89.857484]     [<c0228581>] kmem_cache_alloc+0x191/0x220
-> [   89.857484]     [<c025dc23>] alloc_vfsmnt+0x23/0x170
-> [   89.857484]     [<c023b632>] vfs_kern_mount+0x52/0x230
-> [   89.857484]     [<c023ba2a>] kern_mount_data+0x1a/0x20
-> [   89.857484]     [<c126a03e>] bdev_cache_init+0x6e/0xd0
-> [   89.857484]     [<c1268ce7>] vfs_caches_init+0x77/0x90
-> [   89.857484]     [<c1237e8d>] start_kernel+0x25d/0x380
-> [   89.857484]     [<c1237092>] __init_begin+0x92/0xe0
-> [   89.857484]     [<ffffffff>] 0xffffffff
-> [   89.886404] unreferenced object 0xf700d0e0 (size 8):
-> [   89.888384]   comm "swapper", pid 0, jiffies 4294892306
-> [   89.890117]   backtrace:
-> [   89.890393]     [<c0230695>] create_object+0x155/0x2c0
-> [   89.890393]     [<c0230dcb>] kmemleak_alloc+0x10b/0x1b0
-> [   89.890393]     [<c022bb44>] __kmalloc_track_caller+0x234/0x2d0
-> [   89.890393]     [<c0200a95>] kstrdup+0x55/0xa0
-> [   89.890393]     [<c025dcf1>] alloc_vfsmnt+0xf1/0x170
-> [   89.890393]     [<c023b632>] vfs_kern_mount+0x52/0x230
-> [   89.890393]     [<c023ba2a>] kern_mount_data+0x1a/0x20
-> [   89.890393]     [<c126a03e>] bdev_cache_init+0x6e/0xd0
-> [   89.890393]     [<c1268ce7>] vfs_caches_init+0x77/0x90
-> [   89.890393]     [<c1237e8d>] start_kernel+0x25d/0x380
-> [   89.890393]     [<c1237092>] __init_begin+0x92/0xe0
-> [   89.890393]     [<ffffffff>] 0xffffffff
-> [   89.926356] unreferenced object 0xf60f6080 (size 16):
-> [   89.929082]   comm "swapper", pid 1, jiffies 4294897223
-> [   89.929480]   backtrace:
-> [   89.929480]     [<c0230695>] create_object+0x155/0x2c0
-> [   89.929480]     [<c0230dcb>] kmemleak_alloc+0x10b/0x1b0
-> [   89.929480]     [<c0228581>] kmem_cache_alloc+0x191/0x220
-> [   89.929480]     [<c03c9ecd>] reserve_range+0x52d/0x630
-> [   89.929480]     [<c03ca103>] reserve_resources_of_dev+0x133/0x150
-> [   89.929480]     [<c03ca12d>] system_pnp_probe+0xd/0x30
-> [   89.929480]     [<c03bb52d>] pnp_device_probe+0xed/0x1c0
-> [   89.929480]     [<c040d798>] really_probe+0x358/0x490
-> [   89.929480]     [<c040dada>] driver_probe_device+0xaa/0x150
-> [   89.929480]     [<c040dd69>] __driver_attach+0xb9/0x110
-> [   89.929480]     [<c040acf5>] bus_for_each_dev+0x65/0x90
-> [   89.929480]     [<c040ddde>] driver_attach+0x1e/0x30
-> [   89.929480]     [<c040baa2>] bus_add_driver+0x1a2/0x830
-> [   89.929480]     [<c040e568>] driver_register+0xc8/0x180
-> [   89.929480]     [<c03bb97c>] pnp_register_driver+0x1c/0x20
-> [   89.929480]     [<c1274c4d>] pnp_system_init+0xd/0x10
-> [   89.978981] unreferenced object 0xf65205a0 (size 32):
-> [   89.981599]   comm "swapper", pid 1, jiffies 4294897223
-> [   89.982969]   backtrace:
-> [   89.982969]     [<c0230695>] create_object+0x155/0x2c0
-> [   89.982969]     [<c0230dcb>] kmemleak_alloc+0x10b/0x1b0
-> [   89.982969]     [<c0228581>] kmem_cache_alloc+0x191/0x220
-> [   89.982969]     [<c016e29d>] __request_region+0x4cd/0x5d0
-> [   89.982969]     [<c03c9a6e>] reserve_range+0xce/0x630
-> [   89.982969]     [<c03ca103>] reserve_resources_of_dev+0x133/0x150
-> [   89.982969]     [<c03ca12d>] system_pnp_probe+0xd/0x30
-> [   89.982969]     [<c03bb52d>] pnp_device_probe+0xed/0x1c0
-> [   89.982969]     [<c040d798>] really_probe+0x358/0x490
-> [   89.982969]     [<c040dada>] driver_probe_device+0xaa/0x150
-> [   89.982969]     [<c040dd69>] __driver_attach+0xb9/0x110
-> [   89.982969]     [<c040acf5>] bus_for_each_dev+0x65/0x90
-> [   89.982969]     [<c040ddde>] driver_attach+0x1e/0x30
-> [   89.982969]     [<c040baa2>] bus_add_driver+0x1a2/0x830
-> [   89.982969]     [<c040e568>] driver_register+0xc8/0x180
-> [   89.982969]     [<c03bb97c>] pnp_register_driver+0x1c/0x20
-> [   90.037062] unreferenced object 0xf6189ee0 (size 8):
-> [   90.038484]   comm "swapper", pid 1, jiffies 4294898432
-> [   90.038484]   backtrace:
-> [   90.038484]     [<c0230695>] create_object+0x155/0x2c0
-> [   90.038484]     [<c0230dcb>] kmemleak_alloc+0x10b/0x1b0
-> [   90.038484]     [<c022a9ea>] __kmalloc+0x22a/0x2d0
-> [   90.038484]     [<c033fd06>] kvasprintf+0x36/0x80
-> [   90.038484]     [<c0332b63>] kobject_set_name_vargs+0x13/0x60
-> [   90.038484]     [<c0332ce1>] kobject_add_varg+0x21/0x70
-> [   90.038484]     [<c0332db0>] kobject_add+0x80/0xa0
-> [   90.038484]     [<c127ad05>] memmap_init+0xd5/0x160
-> [   90.038484]     [<c0101147>] do_one_initcall+0x47/0x2b0
-> [   90.038484]     [<c1237fda>] do_initcalls+0x2a/0x40
-> [   90.038484]     [<c123800c>] do_basic_setup+0x1c/0x20
-> [   90.038484]     [<c1238095>] kernel_init+0x55/0xd0
-> [   90.038484]     [<c01053a7>] kernel_thread_helper+0x7/0x10
-> [   90.038484]     [<ffffffff>] 0xffffffff
-> (...snipped...)
-> [   94.387185] unreferenced object 0xf6cbec98 (size 56):
-> [   94.389132]   comm "rcS", pid 1332, jiffies 4294901842
-> [   94.390892]   backtrace:
-> [   94.391173]     [<c0230695>] create_object+0x155/0x2c0
-> [   94.391173]     [<c0230dcb>] kmemleak_alloc+0x10b/0x1b0
-> [   94.391173]     [<c0228581>] kmem_cache_alloc+0x191/0x220
-> [   94.391173]     [<c02794fe>] alloc_buffer_head+0x1e/0xd0
-> [   94.391173]     [<c0272b9a>] alloc_page_buffers+0x3a/0x120
-> [   94.391173]     [<c0272f08>] grow_dev_page+0x168/0x2d0
-> [   94.391173]     [<c0273120>] grow_buffers+0xb0/0x140
-> [   94.391173]     [<c027329b>] __getblk_slow+0xeb/0x1d0
-> [   94.391173]     [<c0273d22>] __getblk+0x72/0x80
-> [   94.391173]     [<f895256e>] ext3_getblk+0x11e/0x3e0 [ext3]
-> [   94.391173]     [<f895989a>] ext3_find_entry+0x18a/0x6e0 [ext3]
-> [   94.391173]     [<f895a1dd>] ext3_lookup+0x5d/0x1c0 [ext3]
-> [   94.391173]     [<c0245ece>] real_lookup+0xbe/0x230
-> [   94.391173]     [<c02466af>] do_lookup+0x14f/0x240
-> [   94.391173]     [<c024742c>] __link_path_walk+0xc8c/0x17e0
-> [   94.391173]     [<c0247fc2>] path_walk+0x42/0xa0
->
-> How to analyze kmemleak message?
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-The stack traces refer to the call-site that allocated an unfree'd
-object that is no longer being referenced by anyone. For example, the
-first stack trace claims that vfs_kern_mount() allocated a struct
-vfsmount that was never free'd.
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > I think this aspect has been well-understood during the 
+> > discussion of this topic and it's just a slightly misleading 
+> > changelog.
+> 
+> As I was a member of that discussion I did not see that.
+> 
+> It took me several passes through the patches to realize the 
+> goal is to allow drivers to be able to sleep while they are in 
+> their late pm shutdown routines.
+> 
+> Why we want this I don't know.  But it seems simple enough to 
+> implement, and it makes it harder to get the late pm suspend 
+> routines wrong, which is always good.
+
+That's not the only goal. The other goal is to further shrink a 
+particular window of suspend fragility: the irqs-disabled stage 
+of the suspend/resume sequence.
+
+Since suspend/resume is a mini-reboot sequence, there's a large 
+amount of code executed - and the variety of code is large as 
+well. We had repeat cases of random drivers re-enabling 
+interrupts and thus breaking other drivers - and these are nasty 
+to debug.
+
+So this patchset disables device IRQs centrally and serializes 
+with pending work - so there's no races with pending IRQs 
+anymore.
+
+The fact that we keep the timer irq running is two-fold: firstly 
+the timer code is special and not really part of the regular 
+suspend/resume sequence.
+
+Drivers want to take timestamps, sometimes they even want to do 
+a small usleep(), etc. Ideally the suspend/resume code is pretty 
+much _the same_ as a regular bootup (and shutdown) code - so we 
+want to provide a similar environment to how drivers initialize 
+and deinitialize, and we want to enable them to share code 
+between bootup/shutdown and suspend/resume agressively.
+
+So the more generic kernel environment we give these fragile 
+handlers, the better we are off in the end. Since we already had 
+IRQS_TIMER, that was just the natural thing to do.
+
+> > The new suspend code does not rely on truly disabling IRQs 
+> > on the low level. The purpose is to not get IRQs to drivers 
+> > - which might crash/hang/race/misbehave.
+> 
+> Reasonable.  I expect one of the problems with drivers getting 
+> it wrong is that the interface is too complex for mortal 
+> humans to understand.
+
+The suspend/resume state machine certainly used to be a piece of 
+code that makes a seasoned kernel developer weep in fear.
+
+That has changed drastically in the past few months. The 
+suspend+hibernation logic got unified (at least as far as driver 
+methods go), and all the flow and ordering has been cleaned up 
+and has been made more robust.
+
+What makes s2ram fragile is not human failure but the 
+combination of a handful of physical property:
+
+1) Psychology: shutting the lid or pushing the suspend button is 
+   a deceivingly 'simple' action to the user. But under the 
+   hood, a ton of stuff happens: we deinitialize a lot of 
+   things, we go through _all hardware state_, and we do so in a 
+   serial fashion. If just one piece fails to do the right 
+   thing, the box might not resume. Still, the user expects this 
+   'simple' thing to just work, all the time. No excuses 
+   accepted.
+
+2) Length of code: To get a successful s2ram sequence the kernel
+   runs through tens of thousands of lines of code. Code which
+   never gets executed on a normal box - only if we s2ram. If 
+   just one step fails, we get a hung box.
+
+3) Debuggability: a lot of s2ram code runs with the console off, 
+   making any bugs hard to debug. Furthermore we have no 
+   meaningful persistent storage either for kernel bug messages. 
+   The RTC trick of PM_DEBUG works but is a very narrow channel 
+   of information and it takes a lot of time to debug a bug via 
+   that method.
+
+The combination of these factors really makes up for a perfect 
+storm in terms of kernel technology: we have this 
+very-deceivingly-simple-looking but complex-and-rarely-executed 
+piece of code, which is very hard to debug.
+
+Even just one of these factors would be enough to make an 
+otherwise healthy subsystem fragile - no wonder s2ram has been a 
+problem ever since it existed in the upstream kernel.
+
+So now we need just one thing: patience and more of the same 
+good stuff that happened lately.
+
+> > Still, it might make sense to not just use the ->disable 
+> > sequence but primarily the ->shutdown irqchip method (when 
+> > it's available in the irqchip).
+> 
+> Disable seems fine to me.  This is interesting in the context 
+> of all of the irqs that will when masked show up somewhere 
+> else (think boot interrupts).
+> 
+> > While we obviously cannot turn off the PIC that delivers 
+> > timer IRQs at this stage - there's no theoretical reason why 
+> > the suspend sequence couldnt power down some secondary PICs 
+> > as well - in some arch code, or maybe even in the generic 
+> > driver suspend sequence if the device tree is structured 
+> > carefully enough so that the PIC gets turned off last.
+> 
+> If the point is simply to prevent deliver of irqs to the 
+> drivers I don't see the point of anything more than what the 
+> patch does now.
+
+... except for the usecase i described above. Say some PIC sits 
+on a piece of silicon which gets turned off. I'm not talking 
+about x86 but some custom device. We really dont want that IRQ 
+line to send half of an IRQ message (un-ACK-ed) when it gets 
+turned off. So physically 'suspending' all IRQ lines does make a 
+certain level of long-term sense.
+
+Especially if it's just 3 extra lines of code to the existing 
+patch.
+
+There _might_ be one downside: overhead of ->shutdown() methods. 
+With a typical IRQ count on the typical netbook i doubt it's 
+more than ~50 usecs combined.
+
+	Ingo
