@@ -1,476 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZBWSMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZBWSR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbZBWSMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 13:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZBWSMl
+	id S1755294AbZBWSR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 13:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZBWSRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 13:12:41 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:62266 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbZBWSMk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 13:12:40 -0500
-Message-ID: <49A2E6D3.1040800@oracle.com>
-Date: Mon, 23 Feb 2009 10:11:31 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Mon, 23 Feb 2009 13:17:20 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:45199 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752555AbZBWSRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 13:17:19 -0500
+Date: Mon, 23 Feb 2009 18:17:13 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] mm: gfp_to_alloc_flags()
+Message-ID: <20090223181713.GS6740@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235390103.4645.80.camel@laptop>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: akpm <akpm@linux-foundation.org>, Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH] alpha: convert u64 to unsigned long long
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.49A2E6E8.0023:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1235390103.4645.80.camel@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, Feb 23, 2009 at 12:55:03PM +0100, Peter Zijlstra wrote:
+> I've always found the below a clean-up, respun it on top of your changes.
+> Test box still boots ;-)
+> 
+> ---
+> Subject: mm: gfp_to_alloc_flags()
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Mon Feb 23 12:46:36 CET 2009
+> 
+> Clean up the code by factoring out the gfp to alloc_flags mapping.
+> 
+> [neilb@suse.de says]
+> As the test:
+> 
+> -       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+> -                       && !in_interrupt()) {
+> -               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+> 
 
-Convert alpha architecture to use u64 as unsigned long long.
-This is being done so that (a) all arches use u64 as unsigned
-long long and (b) printk of a u64 as %ll[ux] will not generate
-format warnings by gcc.
+At what point was this code deleted?
 
-The only gcc cross-compiler that I have is 4.0.2, which generates
-errors about miscompiling __weak references, so I have commented
-out that line in compiler-gcc4.h so that most of these compile,
-but more builds and real machine testing would be Real Good.
+If it still exists, then I like the idea of this patch anyway. It takes
+more code out of the loop. We end up checking if __GFP_WAIT is set twice,
+but no major harm in that.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Richard Henderson <rth@twiddle.net>
-cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- arch/alpha/include/asm/types.h |    5 +++++
- arch/alpha/kernel/err_ev6.c    |    4 ++--
- arch/alpha/kernel/err_ev7.c    |    6 +++---
- arch/alpha/kernel/err_marvel.c |   40 ++++++++++++++++++++--------------------
- arch/alpha/kernel/err_titan.c  |   28 ++++++++++++++--------------
- arch/alpha/kernel/pci_iommu.c  |   34 +++++++++++++++++-----------------
- arch/alpha/kernel/setup.c      |    2 +-
- arch/alpha/kernel/smc37c669.c  |    4 ++--
- arch/alpha/kernel/sys_sable.c  |    4 ++--
- arch/alpha/kernel/traps.c      |    2 +-
- 10 files changed, 67 insertions(+), 62 deletions(-)
+> has been replaced with a slightly weaker one:
+> 
+> +       if (alloc_flags & ALLOC_NO_WATERMARKS) {
+> 
+> we need to ensure we don't recurse when PF_MEMALLOC is set
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  mm/page_alloc.c |   90 ++++++++++++++++++++++++++++++++------------------------
+>  1 file changed, 52 insertions(+), 38 deletions(-)
+> 
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -1658,16 +1658,6 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m
+>  	return page;
+>  }
+>  
+> -static inline int is_allocation_high_priority(struct task_struct *p,
+> -							gfp_t gfp_mask)
+> -{
+> -	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+> -			&& !in_interrupt())
+> -		if (!(gfp_mask & __GFP_NOMEMALLOC))
+> -			return 1;
+> -	return 0;
+> -}
+> -
+>  /*
+>   * This is called in the allocator slow-path if the allocation request is of
+>   * sufficient urgency to ignore watermarks and take other desperate measures
+> @@ -1702,6 +1692,44 @@ void wake_all_kswapd(unsigned int order,
+>  		wakeup_kswapd(zone, order);
+>  }
+>  
+> +/*
+> + * get the deepest reaching allocation flags for the given gfp_mask
+> + */
+> +static int gfp_to_alloc_flags(gfp_t gfp_mask)
+> +{
+> +	struct task_struct *p = current;
+> +	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+> +	const gfp_t wait = gfp_mask & __GFP_WAIT;
+> +
+> +	/*
+> +	 * The caller may dip into page reserves a bit more if the caller
+> +	 * cannot run direct reclaim, or if the caller has realtime scheduling
+> +	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+> +	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+> +	 */
+> +	if (gfp_mask & __GFP_HIGH)
+> +		alloc_flags |= ALLOC_HIGH;
+> +
+> +	if (!wait) {
+> +		alloc_flags |= ALLOC_HARDER;
+> +		/*
+> +		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+> +		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> +		 */
+> +		alloc_flags &= ~ALLOC_CPUSET;
+> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
+> +		alloc_flags |= ALLOC_HARDER;
+> +
+> +	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+> +		if (!in_interrupt() &&
+> +		    ((p->flags & PF_MEMALLOC) ||
+> +		     unlikely(test_thread_flag(TIF_MEMDIE))))
+> +			alloc_flags |= ALLOC_NO_WATERMARKS;
+> +	}
+> +
+> +	return alloc_flags;
+> +}
+> +
+>  static struct page * noinline
+>  __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+>  	struct zonelist *zonelist, enum zone_type high_zoneidx,
+> @@ -1732,48 +1760,34 @@ __alloc_pages_slowpath(gfp_t gfp_mask, u
+>  	 * OK, we're below the kswapd watermark and have kicked background
+>  	 * reclaim. Now things get more complex, so set up alloc_flags according
+>  	 * to how we want to proceed.
+> -	 *
+> -	 * The caller may dip into page reserves a bit more if the caller
+> -	 * cannot run direct reclaim, or if the caller has realtime scheduling
+> -	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+> -	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+>  	 */
+> -	alloc_flags = ALLOC_WMARK_MIN;
+> -	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
+> -		alloc_flags |= ALLOC_HARDER;
+> -	if (gfp_mask & __GFP_HIGH)
+> -		alloc_flags |= ALLOC_HIGH;
+> -	if (wait)
+> -		alloc_flags |= ALLOC_CPUSET;
+> +	alloc_flags = gfp_to_alloc_flags(gfp_mask);
+>  
+>  restart:
+> -	/*
+> -	 * Go through the zonelist again. Let __GFP_HIGH and allocations
+> -	 * coming from realtime tasks go deeper into reserves.
+> -	 *
+> -	 * This is the last chance, in general, before the goto nopage.
+> -	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+> -	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> -	 */
+> +	/* This is the last chance, in general, before the goto nopage. */
+>  	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
+> -						high_zoneidx, alloc_flags,
+> -						preferred_zone,
+> -						migratetype);
+> +			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
+> +			preferred_zone, migratetype);
+>  	if (page)
+>  		goto got_pg;
+>  
+>  	/* Allocate without watermarks if the context allows */
+> -	if (is_allocation_high_priority(p, gfp_mask))
+> +	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+>  		page = __alloc_pages_high_priority(gfp_mask, order,
+> -			zonelist, high_zoneidx, nodemask, preferred_zone,
+> -			migratetype);
+> -	if (page)
+> -		goto got_pg;
+> +				zonelist, high_zoneidx, nodemask,
+> +				preferred_zone, migratetype);
+> +		if (page)
+> +			goto got_pg;
+> +	}
+>  
+>  	/* Atomic allocations - we can't balance anything */
+>  	if (!wait)
+>  		goto nopage;
+>  
+> +	/* Avoid recursion of direct reclaim */
+> +	if (p->flags & PF_MEMALLOC)
+> +		goto nopage;
+> +
+>  	/* Try direct reclaim and then allocating */
+>  	page = __alloc_pages_direct_reclaim(gfp_mask, order,
+>  					zonelist, high_zoneidx,
+> 
 
---- linux-2.6.29-rc5-git3.orig/arch/alpha/include/asm/types.h
-+++ linux-2.6.29-rc5-git3/arch/alpha/include/asm/types.h
-@@ -8,7 +8,12 @@
-  * not a major issue.  However, for interoperability, libraries still
-  * need to be careful to avoid a name clashes.
-  */
-+
-+#ifdef __KERNEL__
-+#include <asm-generic/int-ll64.h>
-+#else
- #include <asm-generic/int-l64.h>
-+#endif
- 
- #ifndef __ASSEMBLY__
- 
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/err_ev6.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/err_ev6.c
-@@ -157,8 +157,8 @@ ev6_parse_cbox(u64 c_addr, u64 c1_syn, u
- 		       err_print_prefix,
- 		       streamname[stream], bitsname[bits], sourcename[source]);
- 
--	printk("%s    Address: 0x%016lx\n"
--	         "    Syndrome[upper.lower]: %02lx.%02lx\n", 
-+	printk("%s    Address: 0x%016llx\n"
-+	         "    Syndrome[upper.lower]: %02llx.%02llx\n",
- 	       err_print_prefix,
- 	       c_addr,
- 	       c2_syn, c1_syn);
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/pci_iommu.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/pci_iommu.c
-@@ -247,7 +247,7 @@ pci_map_single_1(struct pci_dev *pdev, v
- 	    && paddr + size <= __direct_map_size) {
- 		ret = paddr + __direct_map_base;
- 
--		DBGA2("pci_map_single: [%p,%lx] -> direct %lx from %p\n",
-+		DBGA2("pci_map_single: [%p,%zx] -> direct %llx from %p\n",
- 		      cpu_addr, size, ret, __builtin_return_address(0));
- 
- 		return ret;
-@@ -258,7 +258,7 @@ pci_map_single_1(struct pci_dev *pdev, v
- 	if (dac_allowed) {
- 		ret = paddr + alpha_mv.pci_dac_offset;
- 
--		DBGA2("pci_map_single: [%p,%lx] -> DAC %lx from %p\n",
-+		DBGA2("pci_map_single: [%p,%zx] -> DAC %llx from %p\n",
- 		      cpu_addr, size, ret, __builtin_return_address(0));
- 
- 		return ret;
-@@ -299,7 +299,7 @@ pci_map_single_1(struct pci_dev *pdev, v
- 	ret = arena->dma_base + dma_ofs * PAGE_SIZE;
- 	ret += (unsigned long)cpu_addr & ~PAGE_MASK;
- 
--	DBGA2("pci_map_single: [%p,%lx] np %ld -> sg %lx from %p\n",
-+	DBGA2("pci_map_single: [%p,%zx] np %ld -> sg %llx from %p\n",
- 	      cpu_addr, size, npages, ret, __builtin_return_address(0));
- 
- 	return ret;
-@@ -355,14 +355,14 @@ pci_unmap_single(struct pci_dev *pdev, d
- 	    && dma_addr < __direct_map_base + __direct_map_size) {
- 		/* Nothing to do.  */
- 
--		DBGA2("pci_unmap_single: direct [%lx,%lx] from %p\n",
-+		DBGA2("pci_unmap_single: direct [%llx,%zx] from %p\n",
- 		      dma_addr, size, __builtin_return_address(0));
- 
- 		return;
- 	}
- 
- 	if (dma_addr > 0xffffffff) {
--		DBGA2("pci64_unmap_single: DAC [%lx,%lx] from %p\n",
-+		DBGA2("pci64_unmap_single: DAC [%llx,%zx] from %p\n",
- 		      dma_addr, size, __builtin_return_address(0));
- 		return;
- 	}
-@@ -373,9 +373,9 @@ pci_unmap_single(struct pci_dev *pdev, d
- 
- 	dma_ofs = (dma_addr - arena->dma_base) >> PAGE_SHIFT;
- 	if (dma_ofs * PAGE_SIZE >= arena->size) {
--		printk(KERN_ERR "Bogus pci_unmap_single: dma_addr %lx "
--		       " base %lx size %x\n", dma_addr, arena->dma_base,
--		       arena->size);
-+		printk(KERN_ERR "Bogus pci_unmap_single: dma_addr %llx "
-+		       " base %llx size %x\n",
-+		       dma_addr, arena->dma_base, arena->size);
- 		return;
- 		BUG();
- 	}
-@@ -394,7 +394,7 @@ pci_unmap_single(struct pci_dev *pdev, d
- 
- 	spin_unlock_irqrestore(&arena->lock, flags);
- 
--	DBGA2("pci_unmap_single: sg [%lx,%lx] np %ld from %p\n",
-+	DBGA2("pci_unmap_single: sg [%llx,%zx] np %ld from %p\n",
- 	      dma_addr, size, npages, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(pci_unmap_single);
-@@ -444,7 +444,7 @@ try_again:
- 		goto try_again;
- 	}
- 		
--	DBGA2("pci_alloc_consistent: %lx -> [%p,%x] from %p\n",
-+	DBGA2("pci_alloc_consistent: %zx -> [%p,%llx] from %p\n",
- 	      size, cpu_addr, *dma_addrp, __builtin_return_address(0));
- 
- 	return cpu_addr;
-@@ -464,7 +464,7 @@ pci_free_consistent(struct pci_dev *pdev
- 	pci_unmap_single(pdev, dma_addr, size, PCI_DMA_BIDIRECTIONAL);
- 	free_pages((unsigned long)cpu_addr, get_order(size));
- 
--	DBGA2("pci_free_consistent: [%x,%lx] from %p\n",
-+	DBGA2("pci_free_consistent: [%llx,%zx] from %p\n",
- 	      dma_addr, size, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(pci_free_consistent);
-@@ -551,7 +551,7 @@ sg_fill(struct device *dev, struct scatt
- 		out->dma_address = paddr + __direct_map_base;
- 		out->dma_length = size;
- 
--		DBGA("    sg_fill: [%p,%lx] -> direct %lx\n",
-+		DBGA("    sg_fill: [%p,%lx] -> direct %llx\n",
- 		     __va(paddr), size, out->dma_address);
- 
- 		return 0;
-@@ -563,7 +563,7 @@ sg_fill(struct device *dev, struct scatt
- 		out->dma_address = paddr + alpha_mv.pci_dac_offset;
- 		out->dma_length = size;
- 
--		DBGA("    sg_fill: [%p,%lx] -> DAC %lx\n",
-+		DBGA("    sg_fill: [%p,%lx] -> DAC %llx\n",
- 		     __va(paddr), size, out->dma_address);
- 
- 		return 0;
-@@ -589,7 +589,7 @@ sg_fill(struct device *dev, struct scatt
- 	out->dma_address = arena->dma_base + dma_ofs*PAGE_SIZE + paddr;
- 	out->dma_length = size;
- 
--	DBGA("    sg_fill: [%p,%lx] -> sg %lx np %ld\n",
-+	DBGA("    sg_fill: [%p,%lx] -> sg %llx np %ld\n",
- 	     __va(paddr), size, out->dma_address, npages);
- 
- 	/* All virtually contiguous.  We need to find the length of each
-@@ -752,7 +752,7 @@ pci_unmap_sg(struct pci_dev *pdev, struc
- 
- 		if (addr > 0xffffffff) {
- 			/* It's a DAC address -- nothing to do.  */
--			DBGA("    (%ld) DAC [%lx,%lx]\n",
-+			DBGA("    (%ld) DAC [%llx,%zx]\n",
- 			      sg - end + nents, addr, size);
- 			continue;
- 		}
-@@ -760,12 +760,12 @@ pci_unmap_sg(struct pci_dev *pdev, struc
- 		if (addr >= __direct_map_base
- 		    && addr < __direct_map_base + __direct_map_size) {
- 			/* Nothing to do.  */
--			DBGA("    (%ld) direct [%lx,%lx]\n",
-+			DBGA("    (%ld) direct [%llx,%zx]\n",
- 			      sg - end + nents, addr, size);
- 			continue;
- 		}
- 
--		DBGA("    (%ld) sg [%lx,%lx]\n",
-+		DBGA("    (%ld) sg [%llx,%zx]\n",
- 		     sg - end + nents, addr, size);
- 
- 		npages = iommu_num_pages(addr, size, PAGE_SIZE);
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/err_ev7.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/err_ev7.c
-@@ -246,13 +246,13 @@ ev7_process_pal_subpacket(struct el_subp
- 
- 	switch(header->type) {
- 	case EL_TYPE__PAL__LOGOUT_FRAME:
--		printk("%s*** MCHK occurred on LPID %ld (RBOX %lx)\n",
-+		printk("%s*** MCHK occurred on LPID %ld (RBOX %llx)\n",
- 		       err_print_prefix,
- 		       packet->by_type.logout.whami, 
- 		       packet->by_type.logout.rbox_whami);
- 		el_print_timestamp(&packet->by_type.logout.timestamp);
--		printk("%s  EXC_ADDR: %016lx\n"
--		         "  HALT_CODE: %lx\n", 
-+		printk("%s  EXC_ADDR: %016llx\n"
-+		         "  HALT_CODE: %llx\n",
- 		       err_print_prefix,
- 		       packet->by_type.logout.exc_addr,
- 		       packet->by_type.logout.halt_code);
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/err_marvel.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/err_marvel.c
-@@ -129,7 +129,7 @@ marvel_print_po7_crrct_sym(u64 crrct_sym
- 
- 
- 	printk("%s      Correctable Error Symptoms:\n"
--	       "%s        Syndrome: 0x%lx\n",
-+	       "%s        Syndrome: 0x%llx\n",
- 	       err_print_prefix,
- 	       err_print_prefix, EXTRACT(crrct_sym, IO7__PO7_CRRCT_SYM__SYN));
- 	marvel_print_err_cyc(EXTRACT(crrct_sym, IO7__PO7_CRRCT_SYM__ERR_CYC));
-@@ -186,7 +186,7 @@ marvel_print_po7_uncrr_sym(u64 uncrr_sym
- 	uncrr_sym &= valid_mask;
- 
- 	if (EXTRACT(valid_mask, IO7__PO7_UNCRR_SYM__SYN))
--		printk("%s        Syndrome: 0x%lx\n",
-+		printk("%s        Syndrome: 0x%llx\n",
- 		       err_print_prefix, 
- 		       EXTRACT(uncrr_sym, IO7__PO7_UNCRR_SYM__SYN));
- 
-@@ -307,7 +307,7 @@ marvel_print_po7_ugbge_sym(u64 ugbge_sym
- 		sprintf(opcode_str, "BlkIO");
- 		break;
- 	default:
--		sprintf(opcode_str, "0x%lx\n", 
-+		sprintf(opcode_str, "0x%llx\n",
- 			EXTRACT(ugbge_sym, IO7__PO7_UGBGE_SYM__UPH_OPCODE));
- 		break;
- 	}
-@@ -321,7 +321,7 @@ marvel_print_po7_ugbge_sym(u64 ugbge_sym
- 	       opcode_str);
- 
- 	if (0xC5 != EXTRACT(ugbge_sym, IO7__PO7_UGBGE_SYM__UPH_OPCODE))
--		printk("%s        Packet Offset 0x%08lx\n",
-+		printk("%s        Packet Offset 0x%08llx\n",
- 		       err_print_prefix,
- 		       EXTRACT(ugbge_sym, IO7__PO7_UGBGE_SYM__UPH_PKT_OFF));
- }
-@@ -480,8 +480,8 @@ marvel_print_po7_err_sum(struct ev7_pal_
- 		printk("%s    Lost Error\n", err_print_prefix);
- 
- 	printk("%s    Failing Packet:\n"
--	       "%s      Cycle 1: %016lx\n"
--	       "%s      Cycle 2: %016lx\n",
-+	       "%s      Cycle 1: %016llx\n"
-+	       "%s      Cycle 2: %016llx\n",
- 	       err_print_prefix,
- 	       err_print_prefix, io->po7_err_pkt0,
- 	       err_print_prefix, io->po7_err_pkt1);
-@@ -515,9 +515,9 @@ marvel_print_pox_tlb_err(u64 tlb_err)
- 	if (!(tlb_err & IO7__POX_TLBERR__ERR_VALID))
- 		return;
- 
--	printk("%s      TLB Error on index 0x%lx:\n"
-+	printk("%s      TLB Error on index 0x%llx:\n"
- 	       "%s        - %s\n"
--	       "%s        - Addr: 0x%016lx\n",
-+	       "%s        - Addr: 0x%016llx\n",
- 	       err_print_prefix,
- 	       EXTRACT(tlb_err, IO7__POX_TLBERR__ERR_TLB_PTR),
- 	       err_print_prefix,
-@@ -579,7 +579,7 @@ marvel_print_pox_spl_cmplt(u64 spl_cmplt
- 		sprintf(message, "Uncorrectable Split Write Data Error");
- 		break;
- 	default:
--		sprintf(message, "%08lx\n", 
-+		sprintf(message, "%08llx\n",
- 			EXTRACT(spl_cmplt, IO7__POX_SPLCMPLT__MESSAGE));
- 		break;
- 	}
-@@ -620,9 +620,9 @@ marvel_print_pox_trans_sum(u64 trans_sum
- 		return;
- 
- 	printk("%s      Transaction Summary:\n"
--	       "%s        Command: 0x%lx - %s\n"
--	       "%s        Address: 0x%016lx%s\n"
--	       "%s        PCI-X Master Slot: 0x%lx\n",
-+	       "%s        Command: 0x%llx - %s\n"
-+	       "%s        Address: 0x%016llx%s\n"
-+	       "%s        PCI-X Master Slot: 0x%llx\n",
- 	       err_print_prefix, 
- 	       err_print_prefix, 
- 	       EXTRACT(trans_sum, IO7__POX_TRANSUM__PCIX_CMD),
-@@ -964,12 +964,12 @@ marvel_process_io_error(struct ev7_lf_su
- 
- #if 0
- 		printk("%s  PORT 7 ERROR:\n"
--		       "%s    PO7_ERROR_SUM: %016lx\n"
--		       "%s    PO7_UNCRR_SYM: %016lx\n"
--		       "%s    PO7_CRRCT_SYM: %016lx\n"
--		       "%s    PO7_UGBGE_SYM: %016lx\n"
--		       "%s    PO7_ERR_PKT0:  %016lx\n"
--		       "%s    PO7_ERR_PKT1:  %016lx\n",
-+		       "%s    PO7_ERROR_SUM: %016llx\n"
-+		       "%s    PO7_UNCRR_SYM: %016llx\n"
-+		       "%s    PO7_CRRCT_SYM: %016llx\n"
-+		       "%s    PO7_UGBGE_SYM: %016llx\n"
-+		       "%s    PO7_ERR_PKT0:  %016llx\n"
-+		       "%s    PO7_ERR_PKT1:  %016llx\n",
- 		       err_print_prefix,
- 		       err_print_prefix, io->po7_error_sum,
- 		       err_print_prefix, io->po7_uncrr_sym,
-@@ -987,12 +987,12 @@ marvel_process_io_error(struct ev7_lf_su
- 		if (!MARVEL_IO_ERR_VALID(io->ports[i].pox_err_sum))
- 			continue;
- 
--		printk("%s  PID %u PORT %d POx_ERR_SUM: %016lx\n", 
-+		printk("%s  PID %u PORT %d POx_ERR_SUM: %016llx\n",
- 		       err_print_prefix, 
- 		       lf_subpackets->io_pid, i, io->ports[i].pox_err_sum);
- 		marvel_print_pox_err(io->ports[i].pox_err_sum, &io->ports[i]);
- 
--		printk("%s  [ POx_FIRST_ERR: %016lx ]\n", 
-+		printk("%s  [ POx_FIRST_ERR: %016llx ]\n",
- 		       err_print_prefix, io->ports[i].pox_first_err);
- 		marvel_print_pox_err(io->ports[i].pox_first_err, 
- 				     &io->ports[i]);
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/err_titan.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/err_titan.c
-@@ -107,12 +107,12 @@ titan_parse_p_serror(int which, u64 serr
- 	if (!print)
- 		return status;
- 
--	printk("%s  PChip %d SERROR: %016lx\n", 
-+	printk("%s  PChip %d SERROR: %016llx\n",
- 	       err_print_prefix, which, serror);
- 	if (serror & TITAN__PCHIP_SERROR__ECCMASK) {
- 		printk("%s    %sorrectable ECC Error:\n"
- 		       "      Source: %-6s  Command: %-8s  Syndrome: 0x%08x\n"
--		       "      Address: 0x%lx\n", 
-+		       "      Address: 0x%llx\n",
- 		       err_print_prefix,
- 		       (serror & TITAN__PCHIP_SERROR__UECC) ? "Unc" : "C",
- 		       serror_src[EXTRACT(serror, TITAN__PCHIP_SERROR__SRC)],
-@@ -223,7 +223,7 @@ titan_parse_p_perror(int which, int port
- 	if (!print) 
- 		return status;
- 
--	printk("%s  PChip %d %cPERROR: %016lx\n", 
-+	printk("%s  PChip %d %cPERROR: %016llx\n",
- 	       err_print_prefix, which, 
- 	       port ? 'A' : 'G', perror);
- 	if (perror & TITAN__PCHIP_PERROR__IPTPW)
-@@ -316,7 +316,7 @@ titan_parse_p_agperror(int which, u64 ag
- 	addr = EXTRACT(agperror, TITAN__PCHIP_AGPERROR__ADDR) << 3;
- 	len = EXTRACT(agperror, TITAN__PCHIP_AGPERROR__LEN);
- 
--	printk("%s  PChip %d AGPERROR: %016lx\n", err_print_prefix,
-+	printk("%s  PChip %d AGPERROR: %016llx\n", err_print_prefix,
- 	       which, agperror);
- 	if (agperror & TITAN__PCHIP_AGPERROR__NOWINDOW)
- 		printk("%s    No Window\n", err_print_prefix);
-@@ -597,16 +597,16 @@ privateer_process_680_frame(struct el_co
- 		return status;
- 
- 	/* TODO - decode instead of just dumping... */
--	printk("%s  Summary Flags:         %016lx\n"
-- 	         "  CChip DIRx:            %016lx\n"
--		 "  System Management IR:  %016lx\n"
--		 "  CPU IR:                %016lx\n"
--		 "  Power Supply IR:       %016lx\n"
--		 "  LM78 Fault Status:     %016lx\n"
--		 "  System Doors:          %016lx\n"
--		 "  Temperature Warning:   %016lx\n"
--		 "  Fan Control:           %016lx\n"
--		 "  Fatal Power Down Code: %016lx\n",
-+	printk("%s  Summary Flags:         %016llx\n"
-+ 	         "  CChip DIRx:            %016llx\n"
-+		 "  System Management IR:  %016llx\n"
-+		 "  CPU IR:                %016llx\n"
-+		 "  Power Supply IR:       %016llx\n"
-+		 "  LM78 Fault Status:     %016llx\n"
-+		 "  System Doors:          %016llx\n"
-+		 "  Temperature Warning:   %016llx\n"
-+		 "  Fan Control:           %016llx\n"
-+		 "  Fatal Power Down Code: %016llx\n",
- 	       err_print_prefix,
- 	       emchk->summary,
- 	       emchk->c_dirx,
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/setup.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/setup.c
-@@ -1255,7 +1255,7 @@ show_cpuinfo(struct seq_file *f, void *s
- 		       platform_string(), nr_processors);
- 
- #ifdef CONFIG_SMP
--	seq_printf(f, "cpus active\t\t: %d\n"
-+	seq_printf(f, "cpus active\t\t: %u\n"
- 		      "cpu active mask\t\t: %016lx\n",
- 		       num_online_cpus(), cpus_addr(cpu_possible_map)[0]);
- #endif
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/smc37c669.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/smc37c669.c
-@@ -2542,8 +2542,8 @@ void __init SMC669_Init ( int index )
-         SMC37c669_display_device_info( );
- #endif
- 	local_irq_restore(flags);
--        printk( "SMC37c669 Super I/O Controller found @ 0x%lx\n",
--		(unsigned long) SMC_base );
-+        printk( "SMC37c669 Super I/O Controller found @ 0x%p\n",
-+		SMC_base );
-     }
-     else {
- 	local_irq_restore(flags);
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/sys_sable.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/sys_sable.c
-@@ -453,7 +453,7 @@ sable_lynx_enable_irq(unsigned int irq)
- 	sable_lynx_irq_swizzle->update_irq_hw(bit, mask);
- 	spin_unlock(&sable_lynx_irq_lock);
- #if 0
--	printk("%s: mask 0x%lx bit 0x%x irq 0x%x\n",
-+	printk("%s: mask 0x%lx bit 0x%lx irq 0x%x\n",
- 	       __func__, mask, bit, irq);
- #endif
- }
-@@ -469,7 +469,7 @@ sable_lynx_disable_irq(unsigned int irq)
- 	sable_lynx_irq_swizzle->update_irq_hw(bit, mask);
- 	spin_unlock(&sable_lynx_irq_lock);
- #if 0
--	printk("%s: mask 0x%lx bit 0x%x irq 0x%x\n",
-+	printk("%s: mask 0x%lx bit 0x%lx irq 0x%x\n",
- 	       __func__, mask, bit, irq);
- #endif
- }
---- linux-2.6.29-rc5-git3.orig/arch/alpha/kernel/traps.c
-+++ linux-2.6.29-rc5-git3/arch/alpha/kernel/traps.c
-@@ -623,7 +623,7 @@ do_entUna(void * va, unsigned long opcod
- 	}
- 
- 	lock_kernel();
--	printk("Bad unaligned kernel access at %016lx: %p %lx %ld\n",
-+	printk("Bad unaligned kernel access at %016lx: %p %lx %lu\n",
- 		pc, va, opcode, reg);
- 	do_exit(SIGSEGV);
- 
+Looks good eyeballing it here at least. I'll slot it in and see what the
+end result looks like but I think it'll be good.
+
+Thanks
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
