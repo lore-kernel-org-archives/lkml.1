@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbZBWTus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZBWTwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbZBWTus (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 14:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZBWTuj
+	id S1757255AbZBWTwm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 14:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbZBWTwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 14:50:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47521 "EHLO hera.kernel.org"
+	Mon, 23 Feb 2009 14:52:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47549 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755063AbZBWTui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 14:50:38 -0500
-Message-ID: <49A2FDBF.6050205@kernel.org>
-Date: Mon, 23 Feb 2009 11:49:19 -0800
+	id S1755177AbZBWTwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 14:52:32 -0500
+Message-ID: <49A2FE5F.2080307@kernel.org>
+Date: Mon, 23 Feb 2009 11:51:59 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-CC: Jeffrey Trull <jetrull@sbcglobal.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/agp: tight check to update amd nb aperture
-References: <622229.85336.qm@web82407.mail.mud.yahoo.com> <49A257AB.4040200@kernel.org>
-In-Reply-To: <49A257AB.4040200@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+CC: Prakash Punnoor <prakash@punnoor.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: [PATCH] pci: don't enable too many HT MSI mapping
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200902221308.55053.prakash@punnoor.de> <m1iqn2ein5.fsf@fess.ebiederm.org> <200902221617.21621.prakash@punnoor.de> <49A23FBA.2020004@kernel.org>
+In-Reply-To: <49A23FBA.2020004@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,58 +31,161 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: fix bug to make agp working with dri
+Impact: fix bug
 
-Jeffrey Reported that dri does work with 64bit, but doesn't work with 32bit
-it turns out NB aperture is 32M, aperture on agp is 128M
+Prakash reported that his c51-mcp51 system ondie sound card doesn't work MSI
+but if he hack out the HT-MSI on mcp51, the MSI will work well with sound card.
 
-64bit is using 64M for vaidation for 64 iommu/gart
-32bit is only using 32M..., and will not update the nb aperture.
+this patch rework the nv_msi_ht_cap_quirk()
+and will only enable ht_msi on own root device and try to avoid to enable ht_msi
+on device following that root dev
 
-so try to compare nb apterture and agp apterture before leaving not touch nb
-aperture.
-
-Reported-by: Jeffrey Trull <jetrull@sbcglobal.net>
-Tested-by: Jeffrey Trull <jetrull@sbcglobal.net>
+Reported-by: Prakash Punnoor <prakash@punnoor.de>
+Tested-by: Prakash Punnoor <prakash@punnoor.de>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- drivers/char/agp/amd64-agp.c |   13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ drivers/pci/quirks.c |  115 ++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 100 insertions(+), 15 deletions(-)
 
-Index: linux-2.6/drivers/char/agp/amd64-agp.c
+Index: linux-2.6/drivers/pci/quirks.c
 ===================================================================
---- linux-2.6.orig/drivers/char/agp/amd64-agp.c
-+++ linux-2.6/drivers/char/agp/amd64-agp.c
-@@ -271,15 +271,15 @@ static __devinit int fix_northbridge(str
- 	nb_order = (nb_order >> 1) & 7;
- 	pci_read_config_dword(nb, AMD64_GARTAPERTUREBASE, &nb_base);
- 	nb_aper = nb_base << 25;
--	if (agp_aperture_valid(nb_aper, (32*1024*1024)<<nb_order)) {
--		return 0;
--	}
+--- linux-2.6.orig/drivers/pci/quirks.c
++++ linux-2.6/drivers/pci/quirks.c
+@@ -2050,11 +2050,101 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_NV
+ 			PCI_DEVICE_ID_NVIDIA_NVENET_15,
+ 			nvenet_msi_disable);
  
- 	/* Northbridge seems to contain crap. Try the AGP bridge. */
- 
- 	pci_read_config_word(agp, cap+0x14, &apsize);
--	if (apsize == 0xffff)
-+	if (apsize == 0xffff) {
-+		if (agp_aperture_valid(nb_aper, (32*1024*1024)<<nb_order))
-+			return 0;
- 		return -1;
-+	}
- 
- 	apsize &= 0xfff;
- 	/* Some BIOS use weird encodings not in the AGPv3 table. */
-@@ -301,6 +301,11 @@ static __devinit int fix_northbridge(str
- 		order = nb_order;
- 	}
- 
-+	if (nb_order >= order) {
-+		if (agp_aperture_valid(nb_aper, (32*1024*1024)<<nb_order))
-+			return 0;
+-static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
++static void __devinit nv_ht_enable_msi_mapping(struct pci_dev *dev)
+ {
+ 	struct pci_dev *host_bridge;
++	int pos;
++	int i, dev_no;
++	int found = 0;
++
++	dev_no = dev->devfn >> 3;
++	for (i = dev_no; i >= 0; i--) {
++		host_bridge = pci_get_slot(dev->bus, PCI_DEVFN(i, 0));
++		if (!host_bridge)
++			continue;
++
++		pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE);
++		if (pos != 0) {
++			found = 1;
++			break;
++		}
++		pci_dev_put(host_bridge);
 +	}
 +
- 	dev_info(&agp->dev, "aperture from AGP @ %Lx size %u MB\n",
- 		 aper, 32 << order);
- 	if (order < 0 || !agp_aperture_valid(aper, (32*1024*1024)<<order))
++	if (!found)
++		return;
++
++	/* root did that ! */
++	if (msi_ht_cap_enabled(host_bridge))
++		goto out;
++
++	ht_enable_msi_mapping(dev);
++
++out:
++	pci_dev_put(host_bridge);
++}
++
++static void __devinit ht_disable_msi_mapping(struct pci_dev *dev)
++{
+ 	int pos, ttl = 48;
+ 
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
++
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++					 &flags) == 0) {
++			dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
++
++			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
++					      flags & ~HT_MSI_FLAGS_ENABLE);
++		}
++		pos = pci_find_next_ht_capability(dev, pos,
++						  HT_CAPTYPE_MSI_MAPPING);
++	}
++}
++
++static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
++{
++	int pos, ttl = 48;
++	int found = 0;
++
++	/* check if there is HT MSI cap or enabled on this device */
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
++
++		if (found < 1)
++			found = 1;
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++					 &flags) == 0) {
++			if (flags & HT_MSI_FLAGS_ENABLE) {
++				if (found < 2) {
++					found = 2;
++					break;
++				}
++			}
++		}
++		pos = pci_find_next_ht_capability(dev, pos,
++						  HT_CAPTYPE_MSI_MAPPING);
++	}
++
++	return found;
++}
++
++static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
++{
++	struct pci_dev *host_bridge;
++	int pos;
++	int found;
++
++	/* check if there is HT MSI cap or enabled on this device */
++	found = ht_check_msi_mapping(dev);
++
++	/* no HT MSI CAP */
++	if (found == 0)
++		return;
++
+ 	/*
+ 	 * HT MSI mapping should be disabled on devices that are below
+ 	 * a non-Hypertransport host bridge. Locate the host bridge...
+@@ -2069,24 +2159,19 @@ static void __devinit nv_msi_ht_cap_quir
+ 	pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE);
+ 	if (pos != 0) {
+ 		/* Host bridge is to HT */
+-		ht_enable_msi_mapping(dev);
++		if (found == 1) {
++			/* it is not enabled, try to enable it */
++			nv_ht_enable_msi_mapping(dev);
++		}
+ 		return;
+ 	}
+ 
+-	/* Host bridge is not to HT, disable HT MSI mapping on this device */
+-	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
+-	while (pos && ttl--) {
+-		u8 flags;
++	/* HT MSI is not enabled */
++	if (found == 1)
++		return;
+ 
+-		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
+-					 &flags) == 0) {
+-			dev_info(&dev->dev, "Disabling HT MSI mapping");
+-			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
+-					      flags & ~HT_MSI_FLAGS_ENABLE);
+-		}
+-		pos = pci_find_next_ht_capability(dev, pos,
+-						  HT_CAPTYPE_MSI_MAPPING);
+-	}
++	/* Host bridge is not to HT, disable HT MSI mapping on this device */
++	ht_disable_msi_mapping(dev);
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, nv_msi_ht_cap_quirk);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, PCI_ANY_ID, nv_msi_ht_cap_quirk);
