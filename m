@@ -1,60 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZBWMXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZBWMXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbZBWMXQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 07:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZBWMW7
+	id S1755199AbZBWMXo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 07:23:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZBWMXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 07:22:59 -0500
-Received: from thunk.org ([69.25.196.29]:48844 "EHLO thunker.thunk.org"
+	Mon, 23 Feb 2009 07:23:34 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:38912 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753413AbZBWMW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 07:22:58 -0500
-Date: Mon, 23 Feb 2009 07:22:48 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arthur Jones <ajones@riverbed.com>, C Sights <csights@fastmail.fm>,
-       Eric Sandeen <sandeen@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #12224] journal activity on inactive partition causes
-	inactive harddrive spinup
-Message-ID: <20090223122248.GD19739@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arthur Jones <ajones@riverbed.com>, C Sights <csights@fastmail.fm>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.UsB.m50lJB@chimera>
+	id S1753664AbZBWMXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 07:23:34 -0500
+Date: Mon, 23 Feb 2009 12:23:32 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH 15/20] Do not disable interrupts in free_page_mlock()
+Message-ID: <20090223122331.GF6740@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-16-git-send-email-mel@csn.ul.ie> <1235380740.4645.2.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <ROx6X68CGJG.A.UsB.m50lJB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1235380740.4645.2.camel@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 09:50:20PM +0100, Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12224
-> Subject		: journal activity on inactive partition causes inactive harddrive spinup
-> Submitter	: C Sights <csights@fastmail.fm>
-> Date		: 2008-12-14 11:39 (63 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c87591b719737b4e91eb1a9fa8fd55a4ff1886d6
-> Handled-By	: Eric Sandeen <sandeen@redhat.com>
+On Mon, Feb 23, 2009 at 10:19:00AM +0100, Peter Zijlstra wrote:
+> On Sun, 2009-02-22 at 23:17 +0000, Mel Gorman wrote:
+> > free_page_mlock() tests and clears PG_mlocked. If set, it disables interrupts
+> > to update counters and this happens on every page free even though interrupts
+> > are disabled very shortly afterwards a second time.  This is wasteful.
+> > 
+> > This patch splits what free_page_mlock() does. The bit check is still
+> > made. However, the update of counters is delayed until the interrupts are
+> > disabled. One potential weirdness with this split is that the counters do
+> > not get updated if the bad_page() check is triggered but a system showing
+> > bad pages is getting screwed already.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > ---
+> >  mm/internal.h   |   10 ++--------
+> >  mm/page_alloc.c |    8 +++++++-
+> >  2 files changed, 9 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index 478223b..b52bf86 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -155,14 +155,8 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+> >   */
+> >  static inline void free_page_mlock(struct page *page)
+> >  {
+> > -	if (unlikely(TestClearPageMlocked(page))) {
+> > -		unsigned long flags;
+> > -
+> > -		local_irq_save(flags);
+> > -		__dec_zone_page_state(page, NR_MLOCK);
+> > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > -		local_irq_restore(flags);
+> > -	}
+> > +	__dec_zone_page_state(page, NR_MLOCK);
+> > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> >  }
+> 
+> Its not actually clearing PG_mlocked anymore, so the name is now a tad
+> misleading.
 > 
 
-The fix for this has landed in mainline as commit 02ac59 for ext3, and
-commit 9eddac for ext4.
+Really? I see the following
 
-Rafael, I've marked the bug closed in BZ for your convenience.
+#ifdef CONFIG_UNEVICTABLE_LRU
+PAGEFLAG(Unevictable, unevictable) __CLEARPAGEFLAG(Unevictable, unevictable)
+        TESTCLEARFLAG(Unevictable, unevictable)
 
-    	    	     	       	  	      	 - Ted
+#define MLOCK_PAGES 1
+PAGEFLAG(Mlocked, mlocked) __CLEARPAGEFLAG(Mlocked, mlocked)
+        TESTSCFLAG(Mlocked, mlocked)
+
+#else
+
+#define MLOCK_PAGES 0
+PAGEFLAG_FALSE(Mlocked)
+        SETPAGEFLAG_NOOP(Mlocked) TESTCLEARFLAG_FALSE(Mlocked)
+
+PAGEFLAG_FALSE(Unevictable) TESTCLEARFLAG_FALSE(Unevictable)
+        SETPAGEFLAG_NOOP(Unevictable) CLEARPAGEFLAG_NOOP(Unevictable)
+        __CLEARPAGEFLAG_NOOP(Unevictable)
+#endif
+
+So there is a PG_mlocked bit once UNEVITABLE_LRU is set which was the
+case on the tests I was running. I'm probably missing something silly.
+
+> That said, since we're freeing the page, there ought to not be another
+> reference to the page, in which case it appears to me we could safely
+> use the unlocked variant of TestClear*().
+> 
+
+Regrettably, unlocked variants do not appear to be defined as such but
+the following should do the job, right? It applies on top of the current
+change.
+
+diff --git a/mm/internal.h b/mm/internal.h
+index b52bf86..7f775a1 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -155,6 +155,7 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+  */
+ static inline void free_page_mlock(struct page *page)
+ {
++	__ClearPageMlocked(page);
+ 	__dec_zone_page_state(page, NR_MLOCK);
+ 	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+ }
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index edac673..8bd0533 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -580,7 +580,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
+ 	unsigned long flags;
+ 	int i;
+ 	int bad = 0;
+-	int clearMlocked = TestClearPageMlocked(page);
++	int clearMlocked = PageMlocked(page);
+ 
+ 	for (i = 0 ; i < (1 << order) ; ++i)
+ 		bad += free_pages_check(page + i);
+@@ -1040,7 +1040,7 @@ static void free_pcp_page(struct page *page)
+ 	struct per_cpu_pages *pcp;
+ 	unsigned long flags;
+ 	int migratetype;
+-	int clearMlocked = TestClearPageMlocked(page);
++	int clearMlocked = PageMlocked(page);
+ 
+ 	if (PageAnon(page))
+ 		page->mapping = NULL;
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
