@@ -1,139 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZBWMfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZBWMfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbZBWMfL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 07:35:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZBWMe4
+	id S1755274AbZBWMfj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 07:35:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbZBWMe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 07:34:56 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:35045 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753232AbZBWMez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 07:34:55 -0500
-Date: Mon, 23 Feb 2009 12:34:52 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [RFC PATCH 00/20] Cleanup and optimise the page allocator
-Message-ID: <20090223123452.GG6740@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <87prhauiry.fsf@basil.nowhere.org>
+	Mon, 23 Feb 2009 07:34:59 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:48335 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753764AbZBWMe5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 07:34:57 -0500
+Date: Mon, 23 Feb 2009 13:34:49 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+cc: rtc-linux@googlegroups.com, Richard Zidlicky <rz@linux-m68k.org>,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Woodhouse <dwmw2@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <20090220170454.04382e9e@i1501.lan.towertech.it>
+Message-ID: <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090220170454.04382e9e@i1501.lan.towertech.it>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <87prhauiry.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 12:57:37AM +0100, Andi Kleen wrote:
-> Mel Gorman <mel@csn.ul.ie> writes:
+On Fri, 20 Feb 2009, Alessandro Zummo wrote:
+> On Fri, 20 Feb 2009 16:46:44 +0100
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > Fortunately there already exists a generic RTC class driver: "rtc-parisc".
+> > Despite it's name, it's platform-independent, as it's build on top of the RTC
+> > abstraction used by "genrtc".
+> > 
+> > This patch series
+> >   - adds a missing module alias to rtc-parisc,
+> >   - renames rtc-parisc to rtc-generic,
+> >   - converts the architectures that currently have CONFIG_GEN_RTC enabled in
+> >     their defconfig (m68k, parisc, powerpc) to rtc-generic,
+> >   - removes the obsolete rtc-ppc driver,
+> >   - removes the old genrtc driver.
+> >   
+> > Note that genrtc may be used on other archictectures as well: at least alpha
+> > has the required infrastructure ([gs]et_rtc_time()). The Kconfig rules allow
+> > genrtc to be enabled on several others (cris, h8300, mn10300, um, x86, xtensa).
+> > 
+> > Furthermore genrtc and rtc-generic are not 100% userspace compatible:
+> >   - /dev/rtc provided by genrtc uses a misc character device (10:135),
+> >   - /dev/rtc provided by rtc-generic uses a dynamic character device.
 > 
-> > The complexity of the page allocator has been increasing for some time
-> > and it has now reached the point where the SLUB allocator is doing strange
-> > tricks to avoid the page allocator. This is obviously bad as it may encourage
-> > other subsystems to try avoiding the page allocator as well.
+>  Hello,
 > 
-> Congratulations! That was long overdue. Haven't read the patches yet though.
-> 
+>    my opinion on this kind of stuff is that I want to avoid the layering
+>  of implementations under the rtc subsystem. I'd rather prefer that each
+>  rtc device had its own driver. 
+>  
+>   I've made error in the past, by accepting such kind of drivers, and
+>  would like to avoid that it happens again.
 
-Thanks
+So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
 
-> > Patch 15 reduces the number of times interrupts are disabled by reworking
-> > what free_page_mlock() does. However, I notice that the cost of calling
-> > TestClearPageMlocked() is still quite high and I'm guessing it's because
-> > it's a locked bit operation. It's be nice if it could be established if
-> > it's safe to use an unlocked version here. Rik, can you comment?
-> 
-> What machine was that again?
-> 
+What about ppc_md.get_boot_time() [ppc]?
+Please note that the functions above may also be used for very early clock
+setting (e.g. time_init()) and in read_persistent_clock().
+How should we handle these?
 
-It's a AMD Phenom 9950 quad core.
+Even on x86 there seems to be way too much RTC logic in arch/x86/kernel/rtc.c
+(e.g. mach_get_cmos_time()), which is duplicated in drivers/rtc/rtc-cmos.c
+through the inline function __get_rtc_time() in include/asm-generic/rtc.h
+(clever, hardware-specific stuff in asm-generic ;-)
 
-> > Patch 16 avoids using the zonelist cache on non-NUMA machines
-> 
-> My suspicion is that it can be even dropped on most small (all?) NUMA systems.
-> 
+>   Regarding the user space, the assumption that a device has
+>  a fixed major:minor number should be dropped as well.
 
-I'm assuming it should not be dropped for all. My vague memory was that this
-was introduced for large IA-64 machines and that they were able to show a
-clear gain when scanning large numbers of zones. Patch 16 disables zonelist
-caching if there is only one NUMA node but maybe it should be disabled for
-more than that.
+I know. But it's a userland-visible change, so I wanted to explicit point to
+it.
 
-> > Patch 20 gets rid of hot/cold freeing of pages because it incurs cost for
-> > what I believe to be very dubious gain. I'm not sure we currently gain
-> > anything by it but it's further discussed in the patch itself.
-> 
-> Yes the hot/cold thing was always quite dubious.
-> 
+With kind regards,
 
-Andrew mentioned a micro-benchmark so I will be digging that up to see
-what it can show.
+Geert Uytterhoeven
+Software Architect
 
-> > Counters are surprising expensive, we spent a good chuck of our time in
-> > functions like __dec_zone_page_state and __dec_zone_state. In a profiled
-> > run of kernbench, the time spent in __dec_zone_state was roughly equal to
-> > the combined cost of the rest of the page free path. A quick check showed
-> > that almost half of the time in that function is spent on line 233 alone
-> > which for me is;
-> >
-> > 	(*p)--;
-> >
-> > That's worth a separate investigation but it might be a case that
-> > manipulating int8_t on the machine I was using for profiling is unusually
-> > expensive. 
-> 
-> What machine was that?
-> 
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-This is the AMD Phenom again but I might be mistaken on the line causing
-the problem. A second profile run shows all the cost in the function entry
-so it might just be a co-incidence that the sampling happened to trigger on
-that particular line. It's high on the profiles simply because it's called
-a lot. The assembler doesn't look particularly bad or anything.
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-> In general I wouldn't expect even on a system with slow char
-> operations to be that expensive. It sounds more like a cache miss or a
-> cache line bounce. You could possibly confirm by using appropiate
-> performance counters.
-> 
-
-I'll check for cache line misses.
-
-> > Converting this to an int might be faster but the increased
-> > memory consumption and cache footprint might be a problem. Opinions?
-> 
-> One possibility would be to move the zone statistics to allocated
-> per cpu data. Or perhaps just stop counting per zone at all and
-> only count per cpu.
-> 
-> > The downside is that the patches do increase text size because of the
-> > splitting of the fast path into one inlined blob and the slow path into a
-> > number of other functions. On my test machine, text increased by 1.2K so
-> > I might revisit that again and see how much of a difference it really made.
-> >
-> > That all said, I'm seeing good results on actual benchmarks with these
-> > patches.
-> >
-> > o On many machines, I'm seeing a 0-2% improvement on kernbench. The dominant
-> 
-> Neat.
-> 
-> > So, by and large it's an improvement of some sort.
-> 
-> That seems like an understatement.
-> 
-
-It'll all depend on what other peoples machines turn up :)
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
