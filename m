@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZBWRbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZBWRcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZBWRbq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 12:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZBWRbf
+	id S1755741AbZBWRcD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 12:32:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZBWRbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 12:31:35 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43195 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbZBWRbe (ORCPT
+	Mon, 23 Feb 2009 12:31:50 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33779 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbZBWRbu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 12:31:34 -0500
-Date: Mon, 23 Feb 2009 12:31:31 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-In-Reply-To: <20090223171032.GA2566@redhat.com>
-Message-ID: <alpine.DEB.2.00.0902231228420.18221@gandalf.stny.rr.com>
-References: <499edf47.1818d00a.060b.2b8d@mx.google.com> <499EE162.4050008@oracle.com> <20090220172241.GF24538@elte.hu> <1235302980.4632.8.camel@laptop> <y0mocwuptbc.fsf@ton.toronto.redhat.com> <1235304876.4632.10.camel@laptop> <20090222122424.GA9951@redhat.com>
- <1235387487.4645.28.camel@laptop> <20090223154404.GA30147@redhat.com> <1235406159.4645.366.camel@laptop> <20090223171032.GA2566@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Feb 2009 12:31:50 -0500
+Date: Mon, 23 Feb 2009 18:49:48 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [RFC PATCH 00/20] Cleanup and optimise the page allocator
+Message-ID: <20090223174947.GT26292@one.firstfloor.org>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <87ljryuij0.fsf@basil.nowhere.org> <20090223143232.GJ6740@csn.ul.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090223143232.GJ6740@csn.ul.ie>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> hmm, it would be ideal but I haven't looked too closely at how it could
+> be implemented. I thought first you could just associate a zonelist with
 
-On Mon, 23 Feb 2009, Frank Ch. Eigler wrote:
-> 
-> > Furthermore, trace_mark() exposes that crap like an ABI, now suppose
-> > some distro goes and declares that stable for some daft reason,
-> > imagine the poor sod having to fix something littered with
-> > trace_mark().
-> 
-> The impression that this is somehow different with tracepoints is
-> mistaken.  Tracepoints are *exactly* as "ABI-like" as markers.
-> 
+Yes like that. This was actually discussed during the initial cpuset
+implementation. I thought back then it would be better to do it
+elsewhere, but changed my mind later when I saw the impact on the
+fast path.
 
-I disagree with this point. markers are text strings that will eventually 
-appear to userspace. trace points need translation. A trace point can be 
-modified at any time and should never mess up user apps.
+> the cpuset but you'd need one for each node allowed by the cpuset so it
+> could get quite large. Then again, it might be worthwhile if cpusets
 
-You may have a hook to a trace point that provides user apps a text based 
-output. If the trace point changes, this hook may break. But the tracer 
-maintainer of that hook will be responsible for that change, not the 
-maintainer of the code the tracepoint existed in.
+Yes you would need one per node, but that's not a big problem because
+systems with lots of nodes are also expected to have lots of memory.
+Most systems have a very small number of nodes.
 
--- Steve
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
