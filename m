@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZBWQVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbZBWQWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZBWQVy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZBWQVU
+	id S1756678AbZBWQWi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZBWQW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:21:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54927 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754188AbZBWQVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:21:18 -0500
-Message-ID: <49A2CD1E.60606@redhat.com>
-Date: Mon, 23 Feb 2009 11:21:50 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 23 Feb 2009 11:22:28 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:64181 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752579AbZBWQW1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 11:22:27 -0500
+Message-ID: <49A2CD3B.4090703@lwfinger.net>
+Date: Mon, 23 Feb 2009 10:22:19 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [tip:x86/mm] x86, mm, kprobes: fault.c, simplify	notify_page_fault()
-References: <tip-b18018126f422f5b706fd750373425e10e84b486@kernel.org> <499F383B.6060700@redhat.com> <20090222093109.GE6964@elte.hu>
-In-Reply-To: <20090222093109.GE6964@elte.hu>
-X-Enigmail-Version: 0.95.7
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [Bug #12609] v2.6.29-rc2 libata sff 32bit PIO regression
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <200902052354.16361.rjw@sisk.pl> <498CC380.1070705@lwfinger.net> <200902070058.26539.rjw@sisk.pl>
+In-Reply-To: <200902070058.26539.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-Ingo Molnar wrote:
-> another very small thing, while we are discussing kprobes:
+Rafael J. Wysocki wrote:
+> On Saturday 07 February 2009, Larry Finger wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Thursday 05 February 2009, Hugh Dickins wrote:
+>>>> On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
+>>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12609
+>>>>> Subject		: v2.6.29-rc2 libata sff 32bit PIO regression
+>>>>> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+>>>>> Date		: 2009-01-23 23:52 (13 days old)
+>>>>> References	: http://marc.info/?l=linux-kernel&m=123275478111406&w=4
+>>>>> 		  http://marc.info/?l=linux-kernel&m=123254501314058&w=4
+>>>>> Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
+>>>>> 		  Hugh Dickins <hugh@veritas.com>
+>>>>> Patch		: http://marc.info/?l=linux-kernel&m=123254501314058&w=2
+>>>> Yes, this does still need to be listed.  My initial patch for it was
+>>>> not enough, but I think the three patches necessary have all now been
+>>>> posted (though Sergei may rewrite mine).  I'm expecting Alan to gather
+>>>> them together and send them in due course, but I believe he's occupied
+>>>> with other stuff just at the moment.
+>> I still have the problem as of 2.6.29-rc3-00634-g9be260a
 > 
-> I always found that the __kprobes annotation is very confusingly 
-> euphemistic: what those annotations really mean is not 
-> 'kprobes', but 'no kprobes'.
 
-As far as I know, __kprobes originally means 'this function will be
-called from kprobes'. However, now many functions are tagged as
-__kprobes, it might be confusingly.
+The problem was fixed as of 2.6.29-rc5-00168-gba95fd4 with commit d1b3525. At
+least for my system, the regression is cleared.
 
-> So how about renaming __kprobes to __nokprobes, similar to how 
-> we have the notrace attribute?
-
-Would you mean that will include changing section name of
-'.text.kprobes'? That's what I mind.
-
-> We have about 350 __kprobes annotations in the kernel, so 
-> renaming it now would not be practical - but any objections 
-> against me sending Linus a rename patch somewhere late in the 
-> next merge window that just does this rename?
-
-Just renaming __kprobes to __nokprobes seems good for me.
-
-Thank you!
-
-
-> [ likewise, i'll rename notrace to __notrace to make it visually 
->   less intrusive to the return value type. There's a lot less 
->   such annotations in the kernel. ]
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Larry
 
