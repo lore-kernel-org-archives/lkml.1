@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZBWDRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZBWDeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbZBWDRt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 22:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZBWDRj
+	id S1754293AbZBWDeg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 22:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbZBWDe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 22:17:39 -0500
-Received: from web34408.mail.mud.yahoo.com ([66.163.178.157]:29210 "HELO
-	web34408.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751356AbZBWDRj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 22:17:39 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.br;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=byNzyonl8JIbsNlFcWAfDh04v0uAV6bS915L9PzQQPWhYbSvnfX6hSimS9hodewc4OG0CrZScp9NdINwUu0QM88bupchJmq3ME6Tm+ZquVoX9BURd+0XTAU752cgkTso2rY3dug3Nu2VqIa9JefSmzUYdCAHbz8MwQ0n0KcmVIk=;
-X-YMail-OSG: BEhKghYVM1kTsfr5tJQa8vnD1Wr6SaPK7T.mExXqIZs6cYqObEwU3RMjgxI9kZMRfptCX6oABuCkfGbP4Sw07sdahKm1qF8OWOoscy6Y519DnPS2_K.fYrRod.zfdTlFJhbyitBeGxtdTWneAUVM1MM5ZUfdUHdR3mQsMGCVJRrjBaHs8fcTl5SZrH5nEAbbbbXN2Q0R.ry.F.2fB3KST6Iqcpic8Q--
-X-Mailer: YahooMailWebService/0.7.289.1
-Date: Sun, 22 Feb 2009 19:17:38 -0800 (PST)
-From: Jose Luis Marchetti <joseluismarchetti@yahoo.com.br>
-Reply-To: joseluismarchetti@yahoo.com.br
-Subject: Re: Is interrupt priority supported ?
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <499DFF79.6090404@gmail.com>
+	Sun, 22 Feb 2009 22:34:28 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:56215 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbZBWDe1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Feb 2009 22:34:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:cc:date:subject:mime-version:content-type
+         :content-transfer-encoding;
+        b=XVVaRru2EBREqShmbihi4NjJT7HfgjDgC0/1PnUNwmuf8wGpRVOUQFBz415PKPR3bl
+         hlL5173BsWDZmrXVTi9L4e+2+40ASe7FBxznhjg5Z+9nzZ75hHy68Kesv1g/Tx89mX5w
+         LgWn8AnfdbSByEJK0uu6GUqG95JlQAc5ZRLKw=
+Message-ID: <49a21941.0a04d00a.5f94.1245@mx.google.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org
+Date: Mon, 23 Feb 2009 04:31:22 +0100
+Subject: [PATCH] rt: fix a build error on locking-selftest.c
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <260723.67629.qm@web34408.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix a build error while rt mutexes selftests:
 
-> It doesn't really work that way in Linux. Normally
-> disabling interrupts is all or nothing. Whether or not other
-> devices can cause interrupts during an interrupt handler
-> execution by default is a bit platform-dependent, I think
-> (unless the driver requests IRQF_DISABLED which requests
-> that other interrupts should not run).
-> 
-> Normally in Ethernet drivers these days only very minimal
-> processing is done during the interrupt handler, the rest is
-> deferred to softirq context which runs with interrupts
-> enabled so other interrupts can happen. That's not to
-> say that all Ethernet drivers are so well-behaved, however,
-> especially if they haven't been updated to use NAPI. (In
-> the NAPI case, the driver disables further interrupts from
-> the device until the softirq is able to run and process the
-> packets.) In your case it seems likely that yours is not
-> behaving so well, as one would expect the interrupt handler
-> to complete in less than the time  it takes one character to
-> arrive on the serial port..
+lib/locking-selftest.c: In function ‘dotest’:
+lib/locking-selftest.c:951: erreur: incompatible types in initialization
+lib/locking-selftest.c:1003: erreur: incompatible types in assignment
 
-Interesting, thanks for all the info, I had to research before responding.
-It appears network cards was one of the reasons for the softirqs, there is two definitions for network cards in softirqs.
-Yes, I looked the DM9000 driver and saw the data being read inside the interrupts so... you are right, that driver was not changed to use softirqs.
-I also saw how the IRQF_DISABLED flag works.
-I Think using this flag is the way to go for my 4 byte FIFO uart, I would say a 4 byte FIFO is critical enough to be read inside an interrupt.
-I know it is kind of strange, the correct way it would be to fix the Ethernet driver and instead of doing that I will not allow any other interrupt inside the uart interrupt, which degrades the system somehow.
-What do you think ?
-Do you know if the same kind of problem I am having with Ethernet is also seen with USBs ?
+lock_count is of type atomic_t.
 
-Thanks again for all your response.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ lib/locking-selftest.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/locking-selftest.c b/lib/locking-selftest.c
+index 0732078..9520632 100644
+--- a/lib/locking-selftest.c
++++ b/lib/locking-selftest.c
+@@ -948,7 +948,7 @@ static void dotest(void (*testcase_fn)(void), int expected, int lockclass_mask)
+ 	unsigned long saved_preempt_count = preempt_count();
+ 	int expected_failure = 0;
+ #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_DEBUG_RT_MUTEXES)
+-        int saved_lock_count = current->lock_count;
++        int saved_lock_count = atomic_read(&current->lock_count);
+ #endif
+ 
+ 	WARN_ON(irqs_disabled());
+@@ -1000,7 +1000,7 @@ static void dotest(void (*testcase_fn)(void), int expected, int lockclass_mask)
+ 
+ 	reset_locks();
+ #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_DEBUG_RT_MUTEXES)
+-        current->lock_count = saved_lock_count;
++        atomic_set(&current->lock_count, saved_lock_count);
+ #endif
+ }
+ 
+-- 
+1.6.1
 
 
-
-      Veja quais s�o os assuntos do momento no Yahoo! +Buscados
-http://br.maisbuscados.yahoo.com
