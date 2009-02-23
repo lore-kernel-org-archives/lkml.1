@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZBWRKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZBWRNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbZBWRKu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 12:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZBWRKm
+	id S1755891AbZBWRNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 12:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZBWRND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 12:10:42 -0500
-Received: from mail-fx0-f167.google.com ([209.85.220.167]:36056 "EHLO
-	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbZBWRKl (ORCPT
+	Mon, 23 Feb 2009 12:13:03 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:59974 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751571AbZBWRNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 12:10:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AWN4y2UBIT4Pp8Zm/XUPV4Y0wicW3CzwPzl/Tor5yACjfy54q660XrZlICDHM9Wuzl
-         Dy1zBYIViMqksor8HGAvJlH2+GPKdauYAXBx0gKG8OrWvPrVRLIgj0pyZ/TiQ6R8COqz
-         h909gowX9gxfcajekQzI+TOAUZyo8YvqulOFY=
-Date: Mon, 23 Feb 2009 18:10:32 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: "eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel panic on 2.6.28
-Message-ID: <20090223171030.GA5925@joi>
-References: <200902201924.n1KJOsRw027332@indigo.cs.bgu.ac.il> <200902230638.n1N6cg06015206@indigo.cs.bgu.ac.il>
+	Mon, 23 Feb 2009 12:13:01 -0500
+Date: Mon, 23 Feb 2009 12:03:50 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH 04/20] Convert gfp_zone() to use a table of precalculated
+ value
+In-Reply-To: <20090223164047.GO6740@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0902231203050.25810@qirst.com>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0902231003090.7298@qirst.com> <200902240241.48575.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0902231042440.7790@qirst.com>
+ <20090223164047.GO6740@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902230638.n1N6cg06015206@indigo.cs.bgu.ac.il>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 08:38:42AM +0200, eial@cs.bgu.ac.il wrote:
-> On Fri 20 Feb 21:24 2009 eial@cs.bgu.ac.il wrote:
-> > 
-> > hello, I'm having a kernel panic with kernel 2.6.28 upon shutdown right after unmounting remaining file system under gentoo.
-> > I've enabled kernel dump feature in the kernel but I can't seem to be able to locate the file, where can I find it?
-> > 
-> > thanks
-> > 
-> > Eial
+On Mon, 23 Feb 2009, Mel Gorman wrote:
+
+> > Maybe we can come up with a version of gfp_zone that has no branches and
+> > no lookup?
+> >
 >
-> I apologize of the bump, can anyone help me on this subject?
+> Ideally, yes, but I didn't spot any obvious way of figuring it out at
+> compile time then or now. Suggestions?
 
-As I read Documentation/kdump/kdump.txt kdump works in a different way,
-so it's a dead end. Does this panic happen on gentoo-sources or vanilla-sources?
-If it's on gentoo-sources, test vanilla (if it happens only on gentoo-sources
-then file a bug at http://bugs.gentoo.org).
+Can we just mask the relevant bits and then find the highest set bit? With
+some rearrangement of gfp flags this may work.
 
-No matter on which kernel it happens, you will have to write down an oops.
-You can take a picture of a screen with a camera.
-
-And then read REPORTING-BUGS in kernel sources.
-
-PS: Please don't top post.
-
-Marcin
