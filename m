@@ -1,76 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbZBWEOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbZBWEQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbZBWEOq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 23:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZBWEOh
+	id S1756475AbZBWEQv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 23:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBWEQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 23:14:37 -0500
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:21787 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751630AbZBWEOg (ORCPT
+	Sun, 22 Feb 2009 23:16:43 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:57360 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751577AbZBWEQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 23:14:36 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ujYqv2Erj9UIAX9ySfwamLFHNo6cTBSkDhrNCShe4FieVoOVnxdBK9o7aj8MS13ZLMgyd5chGXncs/ihbS/ABcspnra/4vqCeAOGEDAfWVifN4cX7a4IcB6CdeLn3gjGU88aIg6m0MHUA5UUPqP2fDmhOsdmtqxKTHHsgJ+RdEI=  ;
-X-YMail-OSG: LTSyH5AVM1njja9CuCT.G2F1WYZMYJeMuHbsWcC2IEpjs514mJ557ZjFBTujeyy4S3wyADub_VViN.HyO2XAOIS3YGUhPCcLKr2QLo.eUesKMAxmcKw3APCe3HKcTjPuR8TY7qPsaJfPEkqXQ6U1fvGeDoiGa2PcYWksMqqxo09chiSfViwy0JnJ92OIHg--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
-Date: Mon, 23 Feb 2009 15:14:00 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <49416494.6040009@goop.org> <200902200441.08541.nickpiggin@yahoo.com.au> <499DAEE4.8010507@goop.org>
-In-Reply-To: <499DAEE4.8010507@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902231514.01965.nickpiggin@yahoo.com.au>
+	Sun, 22 Feb 2009 23:16:42 -0500
+Subject: Re: i915: drm:i915_wait_irq EBUSY
+From: Eric Anholt <eric@anholt.net>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Cc: "linux.kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49A0053F.2050109@gmail.com>
+References: <49A0053F.2050109@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-fKjm4JIqqk5rs5VUDI9z"
+Date: Sun, 22 Feb 2009 20:16:40 -0800
+Message-Id: <1235362600.5811.23.camel@gaiman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 February 2009 06:11:32 Jeremy Fitzhardinge wrote:
-> Nick Piggin wrote:
-> > Then what is the point of the vm_unmap_aliases? If you are doing it
-> > for security it won't work because other CPUs might still be able
-> > to write through dangling TLBs. If you are not doing it for
-> > security then it does not need to be done at all.
->
-> Xen will make sure any danging tlb entries are flushed before handing
-> the page out to anyone else.
->
-> > Unless it is something strange that Xen does with the page table
-> > structure and you just need to get rid of those?
->
-> Yeah.  A pte pointing at a page holds a reference on it, saying that it
-> belongs to the domain.  You can't return it to Xen until the refcount is 0.
 
-OK. Then I will remember to find some time to get the interrupt
-safe patches working. I wonder why you can't just return it to
-Xen when (or have Xen hold it somewhere until) the refcount
-reaches 0?
+--=-fKjm4JIqqk5rs5VUDI9z
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Anyway...
+On Sat, 2009-02-21 at 15:44 +0200, Niel Lambrechts wrote:
+> Hi
+>=20
+> I recently changed AccelMethod to XAA in my xorg.conf, and after
+> resuming (from hibernate), my X-server crashed with the following dmesg.
+> It was non-fatal, as I could restart X (from a black console screen -
+> not sure if that is related). Never had any problems suspending to
+> either disk/memory without this option up to now...
+> =20
+> dmesg output:
+> ata2.00: ACPI cmd e3/00:1f:00:00:00:a0
+> succeeded                                                            =20
+> ata2.00: ACPI cmd e3/00:02:00:00:00:a0
+> succeeded                                                            =20
+> ata2.00: ACPI cmd e3/00:1f:00:00:00:a0
+> succeeded                                                            =20
+> ata2.00: ACPI cmd e3/00:02:00:00:00:a0
+> succeeded                                                            =20
+> ata2.00: configured for
+> UDMA/133                                                                 =
+           =20
+>=20
+> Restarting tasks ...
+> done.                                                                    =
+              =20
+>=20
+> ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9
+> t4                                                  =20
+> ata2: irq_stat
+> 0x40000001                                                               =
+                    =20
+>=20
+> ata2.00: configured for
+> UDMA/133                                                                 =
+           =20
+>=20
+> ata2: EH
+> complete                                                                 =
+                          =20
+>=20
+> [drm:i915_wait_irq] *ERROR* EBUSY -- rec: 44209483 emitted:
+> 44209484                                        =20
+> [drm:i915_wait_irq] *ERROR* EBUSY -- rec: 44209483 emitted:
+> 44209484                                        =20
+> [drm:i915_wait_irq] *ERROR* EBUSY -- rec: 44209483 emitted:
+> 44209484                                        =20
+> [drm:i915_wait_irq] *ERROR* EBUSY -- rec: 44209483 emitted:
+> 44209484                                        =20
+> [drm:i915_wait_irq] *ERROR* EBUSY -- rec: 44209483 emitted: 44209484
+>=20
+> The problem occurred on my Thinkpad W500, running OpenSUSE 11.1 with
+> vanilla 2.6.28.6-pae kernel, using the integrated Intel Mobile GM45
+> Express chipset.
+>=20
+> Any ideas?
 
-> > Or... what if we just allow a compile and/or boot time flag to direct
-> > that it does not want lazy vmap unmapping and it will just revert to
-> > synchronous unmapping? If Xen needs lots of flushing anyway it might
-> > not be a win anyway.
->
-> That may be worth considering.
+The chip is hung.  Don't use XAA -- it hasn't been the default or even
+supported while your chipset has existed.
 
-... in the meantime, shall we just do this for Xen? It is probably
-safer and may end up with no worse performance on Xen anyway. If
-we get more vmap users and it becomes important, you could look at
-more sophisticated ways of doing this. Eg. a page could be flagged
-if it potentially has lazy vmaps.
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-fKjm4JIqqk5rs5VUDI9z
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmiIygACgkQHUdvYGzw6vd1AQCffNaleRJSsxDqcDbo2AoT+KUP
+Y3gAn0J2p8il5e4ABt8iLgvc0nDVQbrg
+=uw7Y
+-----END PGP SIGNATURE-----
+
+--=-fKjm4JIqqk5rs5VUDI9z--
 
