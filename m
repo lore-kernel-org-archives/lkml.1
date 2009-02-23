@@ -1,145 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZBWEHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZBWEMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZBWEHY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 23:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZBWEHK
+	id S1754773AbZBWEMU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 23:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZBWEMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 23:07:10 -0500
-Received: from mail-gx0-f174.google.com ([209.85.217.174]:54380 "EHLO
-	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbZBWEHI (ORCPT
+	Sun, 22 Feb 2009 23:12:12 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58336
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751630AbZBWEML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 23:07:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xOma4DCkU6E48yt4l0b8Ij2LAe+TVhAqYpW0+HPC1kOHI1hlqGrOb/UCeffswnfojx
-         ybJObaB4I0naTdfWpR/HodCJQwrHVKUcU401CyKoBbBlWIKEpfdMMJMISIjEokOtMj22
-         pSfg9hnZtHOWZAxoYW+3+1aFCwK2s9NU6fdpw=
-MIME-Version: 1.0
-In-Reply-To: <alpine.OSX.2.00.0902222206360.7676@horst-reiterers-macbook-air.local>
-References: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
-	 <524f69650902201721l1c7f0d34p4708980a90d7fc8f@mail.gmail.com>
-	 <alpine.OSX.2.00.0902222137080.7676@horst-reiterers-macbook-air.local>
-	 <524f69650902221303h37feb366k3d89a07bfd100ea3@mail.gmail.com>
-	 <alpine.OSX.2.00.0902222206360.7676@horst-reiterers-macbook-air.local>
-Date: Sun, 22 Feb 2009 22:07:05 -0600
-Message-ID: <524f69650902222007o3f56d394yecab17c22296aaa4@mail.gmail.com>
-Subject: Re: [PATCH] fs/cifs: send SMB_COM_FLUSH in cifs_fsync
-From: Steve French <smfrench@gmail.com>
-To: Horst Reiterer <horst.reiterer@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
-Content-Type: multipart/mixed; boundary=000325575a36b384b304638e2231
+	Sun, 22 Feb 2009 23:12:11 -0500
+Date: Sun, 22 Feb 2009 20:11:52 -0800 (PST)
+Message-Id: <20090222.201152.169082487.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: x86's nmi_hz wrt. oprofile's nmi_timer_int.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <873ae6wgd6.fsf@basil.nowhere.org>
+References: <20090129.155852.161923905.davem@davemloft.net>
+	<873ae6wgd6.fsf@basil.nowhere.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000325575a36b384b304638e2231
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Andi Kleen <andi@firstfloor.org>
+Date: Sun, 22 Feb 2009 18:06:45 +0100
 
-On Sun, Feb 22, 2009 at 3:12 PM, Horst Reiterer
-<horst.reiterer@gmail.com> wrote:
-> On Sun, 22 Feb 2009, Steve French wrote:
->> Suggestions on what to call such a new mount option?  How about
->> "nostrictfsync"  ?
->
-> Sound good, should be self-explanatory for Samba users and those familiar
-> with the fsync concept.
->
-> Horst.
+> David Miller <davem@davemloft.net> writes:
+> 
+> Really old mail, but I was very behind. I didn't see an 
+> correct answer, so let's answer it.
+> 
+> > While working on an NMI watchdog implementation on sparc64
+> > I noticed what seems to be a peculiar behavior of the NMI
+> > timer int oprofile support on x86.
+> >
+> > When the NMI watchdog tests itself at boot timer we start
+> > with nmi_hz equal to HZ.
+> >
+> > After the NMI watchdog self-test passes, nmi_hz is reduced
+> > down to '1'.
+> >
+> > The NMI timer int oprofile support simply uses DIE_NMI notifiers for
+> > it's implementation.  But I don't see anything in the code of
+> > arch/x86/oprofile/nmi_timer_int.c nor the NMI watchdog infrastructure
+> > which will re-adjust nmi_hz back to HZ or something similar.
+> >
+> > Am I missing something?
+> 
+> oprofile generates its own NMIs, it does not rely on 
+> the ones from the nmi watchdog.
 
-Patch attached for nostrictfsync cifs mount option
+The code in nmi_timer_int.c doesn't.
 
+> In timer mode it does not use nmis or die notifiers, but relies on the 
+> regular non nmi timer interrupt.
 
+Again, the code in nmi_timer_int.c doesn't.
 
--- 
-Thanks,
+It uses the NMI watchdog timer interrupts, it catches DIE_NMI
+events.
 
-Steve
+> Does that answer your question?
 
---000325575a36b384b304638e2231
-Content-Type: text/x-diff; charset=US-ASCII; name="new-mount-option.patch"
-Content-Disposition: attachment; filename="new-mount-option.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_frimmub40
-
-ZGlmZiAtLWdpdCBhL2ZzL2NpZnMvQ0hBTkdFUyBiL2ZzL2NpZnMvQ0hBTkdFUwppbmRleCBkNDNl
-MGZlLi5iMzNjODQxIDEwMDY0NAotLS0gYS9mcy9jaWZzL0NIQU5HRVMKKysrIGIvZnMvY2lmcy9D
-SEFOR0VTCkBAIC04LDcgKzgsOSBAQCB1c2VyJ3Mgc21iIHNlc3Npb24uICBUaGlzIGZpeCBhbGxv
-d3MgY2lmcyB0byBtb3VudCBtdWx0aXBsZSB0aW1lcyB0byB0aGUKIHNhbWUgc2VydmVyIHdpdGgg
-ZGlmZmVyZW50IHVzZXJpZHMgd2l0aG91dCByaXNraW5nIGludmFsaWRhdGluZyBlYXJsaWVyCiBl
-c3RhYmxpc2hlZCBzZWN1cml0eSBjb250ZXh0cy4gIGZzeW5jIG5vdyBzZW5kcyBTTUIgRmx1c2gg
-b3BlcmF0aW9uCiB0byBiZXR0ZXIgZW5zdXJlIHRoYXQgd2Ugd2FpdCBmb3Igc2VydmVyIHRvIHdy
-aXRlIGFsbCBvZiB0aGUgZGF0YSB0bwotc2VydmVyIGRpc2sgKG5vdCBqdXN0IHdyaXRlIGl0IG92
-ZXIgdGhlIG5ldHdvcmspLgorc2VydmVyIGRpc2sgKG5vdCBqdXN0IHdyaXRlIGl0IG92ZXIgdGhl
-IG5ldHdvcmspLiAgQWRkIG5ldyBtb3VudAorcGFyYW1ldGVyIHRvIGFsbG93IHVzZXIgdG8gZGlz
-YWJsZSBzZW5kaW5nIHRoZSAoc2xvdykgU01CIGZsdXNoIG9uCitmc3luYyBpZiBkZXNpcmVkIChm
-c3luYyBzdGlsbCBmbHVzaGVzIGFsbCBjYWNoZWQgd3JpdGUgZGF0YSB0byB0aGUgc2VydmVyKS4K
-IAogVmVyc2lvbiAxLjU2CiAtLS0tLS0tLS0tLS0KZGlmZiAtLWdpdCBhL2ZzL2NpZnMvUkVBRE1F
-IGIvZnMvY2lmcy9SRUFETUUKaW5kZXggZGE0NTE1ZS4uNjQzNjk2NiAxMDA2NDQKLS0tIGEvZnMv
-Y2lmcy9SRUFETUUKKysrIGIvZnMvY2lmcy9SRUFETUUKQEAgLTQ3Miw2ICs0NzIsMTkgQEAgQSBw
-YXJ0aWFsIGxpc3Qgb2YgdGhlIHN1cHBvcnRlZCBtb3VudCBvcHRpb25zIGZvbGxvd3M6CiAJCWV2
-ZW4gaWYgdGhlIGNpZnMgc2VydmVyIHdvdWxkIHN1cHBvcnQgcG9zaXggYWR2aXNvcnkgbG9ja3Mu
-CiAJCSJmb3JjZW1hbmQiIGlzIGFjY2VwdGVkIGFzIGEgc2hvcnRlciBmb3JtIG9mIHRoaXMgbW91
-bnQKIAkJb3B0aW9uLgorIG5vc3RyaWN0c3luYyAgIElmIHRoaXMgbW91bnQgb3B0aW9uIGlzIHNl
-dCwgd2hlbiBhbiBhcHBsaWNhdGlvbiBkb2VzIGFuCisJCWZzeW5jIGNhbGwgdGhlbiB0aGUgY2lm
-cyBjbGllbnQgZG9lcyBub3Qgc2VuZCBhbiBTTUIgRmx1c2gKKwkJdG8gdGhlIHNlcnZlciAodG8g
-Zm9yY2UgdGhlIHNlcnZlciB0byB3cml0ZSBhbGwgZGlydHkgZGF0YQorCQlmb3IgdGhpcyBmaWxl
-IGltbWVkaWF0ZWx5IHRvIGRpc2spLCBhbHRob3VnaCBjaWZzIHN0aWxsIHNlbmRzCisJCWFsbCBk
-aXJ0eSAoY2FjaGVkKSBmaWxlIGRhdGEgdG8gdGhlIHNlcnZlciBhbmQgd2FpdHMgZm9yIHRoZQor
-CQlzZXJ2ZXIgdG8gcmVzcG9uZCB0byB0aGUgd3JpdGUgd3JpdGUuICBTaW5jZSBTTUIgRmx1c2gg
-Y2FuIGJlCisJCXZlcnkgc2xvdywgYW5kIHNvbWUgc2VydmVycyBtYXkgYmUgcmVsaWFibGUgZW5v
-dWdoICh0byByaXNrCisJCWRlbGF5aW5nIHNsaWdodGx5IGZsdXNoaW5nIHRoZSBkYXRhIHRvIGRp
-c2sgb24gdGhlIHNlcnZlciksCisJCXR1cm5pbmcgb24gdGhpcyBvcHRpb24gbWF5IGJlIHVzZWZ1
-bCB0byBpbXByb3ZlIHBlcmZvcm1hbmNlIGZvcgorCQlhcHBsaWNhdGlvbnMgdGhhdCBmc3luYyB0
-b28gbXVjaCwgYXQgYSBzbWFsbCByaXNrIG9mIHNlcnZlcgorCQljcmFzaC4gIElmIHRoaXMgbW91
-bnQgb3B0aW9uIGlzIG5vdCBzZXQsIGJ5IGRlZmF1bHQgY2lmcyB3aWxsCisJCXNlbmQgYW4gU01C
-IGZsdXNoIHJlcXVlc3QgKGFuZCB3YWl0IGZvciBhIHJlc3BvbnNlKSBvbiBldmVyeQorCQlmc3lu
-YyBjYWxsLgogIG5vZGZzICAgICAgICAgIERpc2FibGUgREZTIChnbG9iYWwgbmFtZSBzcGFjZSBz
-dXBwb3J0KSBldmVuIGlmIHRoZQogCQlzZXJ2ZXIgY2xhaW1zIHRvIHN1cHBvcnQgaXQuICBUaGlz
-IGNhbiBoZWxwIHdvcmsgYXJvdW5kCiAJCWEgcHJvYmxlbSB3aXRoIHBhcnNpbmcgb2YgREZTIHBh
-dGhzIHdpdGggU2FtYmEgc2VydmVyCmRpZmYgLS1naXQgYS9mcy9jaWZzL2NpZnNfZnNfc2IuaCBi
-L2ZzL2NpZnMvY2lmc19mc19zYi5oCmluZGV4IGM0YzMwNmYuLmU5ZjE3N2IgMTAwNjQ0Ci0tLSBh
-L2ZzL2NpZnMvY2lmc19mc19zYi5oCisrKyBiL2ZzL2NpZnMvY2lmc19mc19zYi5oCkBAIC0zMiw2
-ICszMiw3IEBACiAjZGVmaW5lIENJRlNfTU9VTlRfT1ZFUlJfR0lEICAgIDB4ODAwIC8qIG92ZXJy
-aWRlIGdpZCByZXR1cm5lZCBmcm9tIHNlcnZlciAgICAqLwogI2RlZmluZSBDSUZTX01PVU5UX0RZ
-TlBFUk0gICAgICAweDEwMDAgLyogYWxsb3cgaW4tbWVtb3J5IG9ubHkgbW9kZSBzZXR0aW5nICAg
-Ki8KICNkZWZpbmUgQ0lGU19NT1VOVF9OT1BPU0lYQlJMICAgMHgyMDAwIC8qIG1hbmRhdG9yeSBu
-b3QgcG9zaXggYnl0ZSByYW5nZSBsb2NrICovCisjZGVmaW5lIENJRlNfTU9VTlRfTk9fU1NZTkMg
-ICAgIDB4NDAwMCAvKiBkb24ndCBkbyBzbG93IFNNQmZsdXNoIG9uIGV2ZXJ5IHN5bmMqLwogCiBz
-dHJ1Y3QgY2lmc19zYl9pbmZvIHsKIAlzdHJ1Y3QgY2lmc1Rjb25JbmZvICp0Y29uOwkvKiBwcmlt
-YXJ5IG1vdW50ICovCmRpZmYgLS1naXQgYS9mcy9jaWZzL2Nvbm5lY3QuYyBiL2ZzL2NpZnMvY29u
-bmVjdC5jCmluZGV4IGRhMGY0ZmYuLjE4ZTg0YTQgMTAwNjQ0Ci0tLSBhL2ZzL2NpZnMvY29ubmVj
-dC5jCisrKyBiL2ZzL2NpZnMvY29ubmVjdC5jCkBAIC05NSw2ICs5NSw3IEBAIHN0cnVjdCBzbWJf
-dm9sIHsKIAlib29sIGxvY2FsX2xlYXNlOjE7IC8qIGNoZWNrIGxlYXNlcyBvbmx5IG9uIGxvY2Fs
-IHN5c3RlbSwgbm90IHJlbW90ZSAqLwogCWJvb2wgbm9ibG9ja3NuZDoxOwogCWJvb2wgbm9hdXRv
-dHVuZToxOworCWJvb2wgbm9zdHJpY3RzeW5jOjE7IC8qIGRvIG5vdCBmb3JjZSBleHBlbnNpdmUg
-U01CZmx1c2ggb24gZXZlcnkgc3luYyAqLwogCXVuc2lnbmVkIGludCByc2l6ZTsKIAl1bnNpZ25l
-ZCBpbnQgd3NpemU7CiAJdW5zaWduZWQgaW50IHNvY2tvcHQ7CkBAIC0xMjc0LDYgKzEyNzUsMTAg
-QEAgY2lmc19wYXJzZV9tb3VudF9vcHRpb25zKGNoYXIgKm9wdGlvbnMsIGNvbnN0IGNoYXIgKmRl
-dm5hbWUsCiAJCQl2b2wtPmludHIgPSAwOwogCQl9IGVsc2UgaWYgKHN0cm5pY21wKGRhdGEsICJp
-bnRyIiwgNCkgPT0gMCkgewogCQkJdm9sLT5pbnRyID0gMTsKKwkJfSBlbHNlIGlmIChzdHJuaWNt
-cChkYXRhLCAibm9zdHJpY3RzeW5jIiwgMTIpID09IDApIHsKKwkJCXZvbC0+bm9zdHJpY3RzeW5j
-ID0gMTsKKwkJfSBlbHNlIGlmIChzdHJuaWNtcChkYXRhLCAic3RyaWN0c3luYyIsIDEwKSA9PSAw
-KSB7CisJCQl2b2wtPm5vc3RyaWN0c3luYyA9IDA7CiAJCX0gZWxzZSBpZiAoc3RybmljbXAoZGF0
-YSwgInNlcnZlcmlubyIsIDcpID09IDApIHsKIAkJCXZvbC0+c2VydmVyX2lubyA9IDE7CiAJCX0g
-ZWxzZSBpZiAoc3RybmljbXAoZGF0YSwgIm5vc2VydmVyaW5vIiwgOSkgPT0gMCkgewpAQCAtMjE2
-MCw2ICsyMTY1LDggQEAgc3RhdGljIHZvaWQgc2V0dXBfY2lmc19zYihzdHJ1Y3Qgc21iX3ZvbCAq
-cHZvbHVtZV9pbmZvLAogCQljaWZzX3NiLT5tbnRfY2lmc19mbGFncyB8PSBDSUZTX01PVU5UX1VO
-WF9FTVVMOwogCWlmIChwdm9sdW1lX2luZm8tPm5vYnJsKQogCQljaWZzX3NiLT5tbnRfY2lmc19m
-bGFncyB8PSBDSUZTX01PVU5UX05PX0JSTDsKKwlpZiAocHZvbHVtZV9pbmZvLT5ub3N0cmljdHN5
-bmMpCisJCWNpZnNfc2ItPm1udF9jaWZzX2ZsYWdzIHw9IENJRlNfTU9VTlRfTk9fU1NZTkM7CiAJ
-aWYgKHB2b2x1bWVfaW5mby0+bWFuZF9sb2NrKQogCQljaWZzX3NiLT5tbnRfY2lmc19mbGFncyB8
-PSBDSUZTX01PVU5UX05PUE9TSVhCUkw7CiAJaWYgKHB2b2x1bWVfaW5mby0+Y2lmc19hY2wpCmRp
-ZmYgLS1naXQgYS9mcy9jaWZzL2ZpbGUuYyBiL2ZzL2NpZnMvZmlsZS5jCmluZGV4IDgzYjQ3NDEu
-LjY0MTFmNWYgMTAwNjQ0Ci0tLSBhL2ZzL2NpZnMvZmlsZS5jCisrKyBiL2ZzL2NpZnMvZmlsZS5j
-CkBAIC0xNTM4LDcgKzE1MzgsOCBAQCBpbnQgY2lmc19mc3luYyhzdHJ1Y3QgZmlsZSAqZmlsZSwg
-c3RydWN0IGRlbnRyeSAqZGVudHJ5LCBpbnQgZGF0YXN5bmMpCiAJCXJjID0gQ0lGU19JKGlub2Rl
-KS0+d3JpdGVfYmVoaW5kX3JjOwogCQlDSUZTX0koaW5vZGUpLT53cml0ZV9iZWhpbmRfcmMgPSAw
-OwogCQl0Y29uID0gQ0lGU19TQihpbm9kZS0+aV9zYiktPnRjb247Ci0JCWlmICghcmMgJiYgdGNv
-biAmJiBzbWJmaWxlKQorCQlpZiAoIXJjICYmIHRjb24gJiYgc21iZmlsZSAmJgorCQkgICAhKGNp
-ZnNfc2ItPm1udF9jaWZzX2ZsYWdzICYgQ0lGU19NT1VOVF9OT19TU1lOQykpCiAJCQlyYyA9IENJ
-RlNTTUJGbHVzaCh4aWQsIHRjb24sIHNtYmZpbGUtPm5ldGZpZCk7CiAJfQogCg==
---000325575a36b384b304638e2231--
+Not really.
