@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZBWOhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZBWOi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbZBWOhM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZBWOg6
+	id S1755337AbZBWOi0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZBWOiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:36:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39831 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576AbZBWOg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:36:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: [Bug #12224] journal activity on inactive partition causes inactive harddrive spinup
-Date: Mon, 23 Feb 2009 15:36:19 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arthur Jones <ajones@riverbed.com>, C Sights <csights@fastmail.fm>,
-       Eric Sandeen <sandeen@redhat.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.UsB.m50lJB@chimera> <20090223122248.GD19739@mit.edu>
-In-Reply-To: <20090223122248.GD19739@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Feb 2009 09:38:16 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53950 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbZBWOiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 09:38:15 -0500
+Date: Mon, 23 Feb 2009 14:38:01 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH B 06/10] OMAP3 pwrdm: add CORE SAR handling (for USBTLL module)
+Message-ID: <20090223143801.GA27145@n2100.arm.linux.org.uk>
+References: <20090128024301.27240.39391.stgit@localhost.localdomain> <20090128024421.27240.95450.stgit@localhost.localdomain> <13B9B4C6EF24D648824FF11BE89671620376DEB7A5@dlee02.ent.ti.com> <alpine.DEB.2.00.0901290042020.32081@utopia.booyaka.com> <alpine.DEB.2.00.0901290212360.18004@utopia.booyaka.com> <20090131142213.GL1394@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902052050220.8131@utopia.booyaka.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902231536.20878.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.2.00.0902052050220.8131@utopia.booyaka.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 February 2009, Theodore Tso wrote:
-> On Sat, Feb 14, 2009 at 09:50:20PM +0100, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12224
-> > Subject		: journal activity on inactive partition causes inactive harddrive spinup
-> > Submitter	: C Sights <csights@fastmail.fm>
-> > Date		: 2008-12-14 11:39 (63 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c87591b719737b4e91eb1a9fa8fd55a4ff1886d6
-> > Handled-By	: Eric Sandeen <sandeen@redhat.com>
+On Thu, Feb 05, 2009 at 08:52:17PM -0700, Paul Walmsley wrote:
+> Hello Russell,
+> 
+> On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
+> 
+> > On Thu, Jan 29, 2009 at 02:15:44AM -0700, Paul Walmsley wrote:
+> > > Hi Richard,
+> > > 
+> > > On Thu, 29 Jan 2009, Paul Walmsley wrote:
+> > > 
+> > > > > TLLSAR is not functional till ES3.1 (and beyound).  Is it possible to flag it this way?
+> > > > 
+> > > > Yes, it's easy in this case.  Thanks for the note.  I will send along an 
+> > > > updated patch for this.
+> > > 
+> > > N.B. - fixxing this required a separate change to the omap_chip flag 
+> > > system, so I'll send the two necessary patches to the linux-omap mailing 
+> > > list for further testing.
 > > 
+> > I'll hold off on this patch then.
 > 
-> The fix for this has landed in mainline as commit 02ac59 for ext3, and
-> commit 9eddac for ext4.
-> 
-> Rafael, I've marked the bug closed in BZ for your convenience.
+> The patches that obsolete patch B 06 have lasted a week on linux-omap@vger 
+> without any comment, so am passing them along in subsequent E-mails.
 
-Thanks a lot!
+It seems that the patches don't obsolete this patch, but instead
+require this patch to be applied first.
 
-Best,
-Rafael
+We really really need to get out of this pattern of building fixes
+on top of bad patches.  If a patch is the wrong approach then it is
+the wrong approach and should be dropped, or it should be merged with
+the patches which fix stuff up to the new approach.
+
+I'm going to combine B06 with patch 2 and hope things come out right.
