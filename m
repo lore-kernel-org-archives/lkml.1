@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbZBWWRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbZBWWXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbZBWWRo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 17:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZBWWRf
+	id S1756750AbZBWWXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 17:23:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZBWWW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 17:17:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47283 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbZBWWRe (ORCPT
+	Mon, 23 Feb 2009 17:22:57 -0500
+Received: from mail-fx0-f167.google.com ([209.85.220.167]:51618 "EHLO
+	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbZBWWW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 17:17:34 -0500
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+	Mon, 23 Feb 2009 17:22:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vEQLGG0yYRyqn+jsdpL/4m71EfhI44Jc5jzJJuPsV65571l9FpWTq8S5Qdzzhmsemn
+         MpfjbfvWEDZbQT98SpyKQp6c3hNA4ksNlqV7cBRPHrKcD8FmSmM3XTJIujYnJlh0uAah
+         HLztd9YUaonIDIXQnli9lF3l/dScNREHRprNA=
+Message-ID: <49A321BA.2040500@gmail.com>
+Date: Mon, 23 Feb 2009 23:22:50 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090218 SUSE/3.0b2-1.1 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Bob Copeland <me@bobcopeland.com>
+CC: Sitsofe Wheeler <sitsofe@yahoo.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
-In-Reply-To: <20090223183220.GE19739@mit.edu>
-References: <20090220172241.GF24538@elte.hu>
-	 <1235302980.4632.8.camel@laptop> <y0mocwuptbc.fsf@ton.toronto.redhat.com>
-	 <1235304876.4632.10.camel@laptop> <20090222122424.GA9951@redhat.com>
-	 <1235387487.4645.28.camel@laptop> <20090223154404.GA30147@redhat.com>
-	 <1235406159.4645.366.camel@laptop> <20090223171032.GA2566@redhat.com>
-	 <alpine.DEB.2.00.0902231228420.18221@gandalf.stny.rr.com>
-	 <20090223183220.GE19739@mit.edu>
-Content-Type: text/plain
-Date: Mon, 23 Feb 2009 23:16:59 +0100
-Message-Id: <1235427419.4645.959.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+References: <20090222111807.GB5538@silver.sucs.org> <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com>
+In-Reply-To: <20090223152724.M82409@bobcopeland.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-23 at 13:32 -0500, Theodore Tso wrote:
-> On Mon, Feb 23, 2009 at 12:31:31PM -0500, Steven Rostedt wrote:
-> > > The impression that this is somehow different with tracepoints is
-> > > mistaken.  Tracepoints are *exactly* as "ABI-like" as markers.
-> > 
-> > I disagree with this point. markers are text strings that will eventually 
-> > appear to userspace. trace points need translation. A trace point can be 
-> > modified at any time and should never mess up user apps.
-> > 
-> > You may have a hook to a trace point that provides user apps a text based 
-> > output. If the trace point changes, this hook may break. But the tracer 
-> > maintainer of that hook will be responsible for that change, not the 
-> > maintainer of the code the tracepoint existed in.
-> 
-> So stupid question time --- exactly who is supposed to write and
-> maintain trnaslation code; the "hook"?  What trace points have done is
-> added an extra layer of indirection, but in order for someone to
-> actually make *use* of the have the trace point, someone has to
-> maintain the "hook".
+On 23.2.2009 16:35, Bob Copeland wrote:
+> As I understand it, yes, we don't do the right thing when the more flag
+> is set.  We're supposed to keep processing packets until we get one with
+> the done flag, and then all of that is supposed to be merged into a single
+> packet.  Other flags such as the rx rate are only valid on the final
+> packet.
 
-That just means we have to make it easier to write/generate this glue,
-no? If we had function argument debug data (see below) we could generate
-a generic tracepoint hook.
+What I don't understand is how we can proceed further, if we should 
+never get done flag set according to the specs for the buffer which has 
+more flag set. We should hit (unlikely(ret == -EINPROGRESS)) test everytime.
 
-> I'm sorry I've offended Peter with the ext4 trace_mark() hooks, but
-> it's what I could forsee needing if someone wants reports a wierd sh*t
-> bug in ext4 and I wanted to be able to be able to extract debugging
-> information without forcing them to patch and recompile the kernel,
-> and in the ideal world, without even needing to reboot the kernel.
-> (If we had usable and reliable debuginfo information, in most cases
-> I'd be able simply use access to function parameters as replacements
-> for trace_mark().)
+> So I am not sure if the jumbo packets are causing bad things to happen,
+> or if they are an indication that something bad has already happened.
 
-We're working on adding arguments to the function/graph tracer, it would
-fit all your above requirements and doesn't need any source modification
-to boot.
-
-Furthermore, most of it is upstream.
-
-> I've had to debug problems in the field on customer machines where
-> installing a new kernel was a big deal (as in, you get a window to
-> reboot the machine every 24 hours, and the problem is so complex you
-> can't replicate it anywhere *but* the production environment).  It's
-> also been the case that more than once I've seen wierd behaviour on my
-> laptop, and being able to peer inside it to see what is going on
-> easily and conveniently is a major win.
-
-Yeah, I know, the function graph tracer is brilliant that way. It even
-provides information on the rest of the system and requires no
-additional patches or big lumps of userspace.
-
-> Finally, whether or not the text string is an ABI really depends on
-> the tools.  Given that the string is self describing, it's only an ABI
-> if the tools are stupid.  
-
->  This really isn't rocket science....
-
-It isn't, yet how many scripts/programs have you seen that failed at the
-above?
-
-
+I don't know, it was just an idea. I tried to lower rxbufsize to 1000 
+and see no problems so far (except unsupported jumbo warnings and packet 
+loss indeed).
