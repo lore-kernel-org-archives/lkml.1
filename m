@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbZBWQll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbZBWQmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800AbZBWQll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 11:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbZBWQlV
+	id S1757364AbZBWQmm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 11:42:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZBWQmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 11:41:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57946 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754541AbZBWQlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 11:41:19 -0500
-Date: Tue, 24 Feb 2009 00:41:12 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Cc: mpatocka@redhat.com
-Subject: net: amend the fix for SO_BSDCOMPAT gsopt infoleak
-Message-ID: <20090223164112.GA29425@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+	Mon, 23 Feb 2009 11:42:32 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:13163 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753840AbZBWQmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 11:42:31 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200902202202.13994.rusty@rustcorp.com.au>
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
+	 <ac3eb2510902191359o3e32c424h830e78cd0ace446a@mail.gmail.com>
+	 <200902201128.55959.rusty@rustcorp.com.au>
+	 <200902202202.13994.rusty@rustcorp.com.au>
+Date: Mon, 23 Feb 2009 17:42:28 +0100
+Message-ID: <ac3eb2510902230842n278503a7w33d5ac2e622ec711@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andreas Robinson <andr345@gmail.com>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       heiko.carstens@de.ibm.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The fix for CVE-2009-0676 (upstream commit df0bca04) is incomplete. Note
-that the same problem of leaking kernel memory will reappear if someone
-on some architecture uses struct timeval with some internal padding (for
-example tv_sec 64-bit and tv_usec 32-bit) --- then, you are going to
-leak the padded bytes to userspace.
+On Fri, Feb 20, 2009 at 12:32, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Friday 20 February 2009 11:28:55 Rusty Russell wrote:
+>> +     /* Unlink carefully: kallsyms could be walking list. */
+>> +     __list_del(&mod->list);
+>> +     synchronize_sched();
+>
+> That should be list_del_rcu() of course.
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
-Reported-by: Mikulas Patocka <mpatocka@redhat.com>
+Rusty,
+are you taking care, that this patch gets merged somewhere, and shows
+up in -next?
 
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 6f2e133..913c95f 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -696,7 +696,7 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
- 	if (len < 0)
- 		return -EINVAL;
- 
--	v.val = 0;
-+	memset(&v, 0, sizeof(v));
- 
- 	switch(optname) {
- 	case SO_DEBUG:
+I still get a ~10% improvement without the mutex, and traces show some
+parallelism from different modprobe processes. Any idea how to safely
+minimize the time we need to hold it?
+
+Thanks,
+Kay
