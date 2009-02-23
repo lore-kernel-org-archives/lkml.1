@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbZBWHgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbZBWHg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754317AbZBWHgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 02:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZBWHgM
+	id S1753544AbZBWHg7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 02:36:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZBWHgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 02:36:12 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39448 "EHLO
+	Mon, 23 Feb 2009 02:36:49 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39456 "EHLO
 	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbZBWHgK (ORCPT
+	with ESMTP id S1752497AbZBWHgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 02:36:10 -0500
+	Mon, 23 Feb 2009 02:36:49 -0500
 From: hooanon05@yahoo.co.jp
-Subject: [RFC 4/8] Aufs2: branch
+Subject: [RFC 5/8] Aufs2: wbr_policy
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 In-Reply-To: <7558.1235374266@jrobl>
 References: <7558.1235374266@jrobl>
-Date: Mon, 23 Feb 2009 16:36:08 +0900
-Message-ID: <7793.1235374568@jrobl>
+Date: Mon, 23 Feb 2009 16:36:47 +0900
+Message-ID: <7805.1235374607@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,62 +25,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > This is my second trial to ask incorporating aufs into mainline.
 
 
-Branch Manipulation
-
-Since aufs supports dynamic branch manipulation, ie. add/remove a branch
-and changing its permission/attribute, there are a lot of works to do.
-
-
-Add a Branch
+Policies to Select One among Multiple Writable Branches
 ----------------------------------------------------------------------
-o Confirm the adding dir exists outside of aufs, including loopback
-  mount.
-- and other various attributes...
-o Initialize the xino file and whiteout bases if necessary.
-  See struct.txt.
+When the number of writable branch is more than one, aufs has to decide
+the target branch for file creation or copy-up. By default, the highest
+writable branch which has the parent (or ancestor) dir of the target
+file is chosen (top-down-parent policy).
+By user's request, aufs implements some other policies to select the
+writable branch, for file creation two policies, round-robin and
+most-free-space policies. For copy-up three policies, top-down-parent,
+bottom-up-parent and bottom-up policies.
 
-o Check the owner/group/mode of the directory
-  When the owner/group/mode of the adding directory differs from the
-  existing branch, aufs issues a warning because it may impose a
-  security risk.
-  For example, when a upper writable branch has a world writable empty
-  top directory, a malicious user can create any files on the writable
-  branch directly, like copy-up and modify manually. If something like
-  /etc/{passwd,shadow} exists on the lower readonly branch but the upper
-  writable branch, and the writable branch is world-writable, then a
-  malicious guy may create /etc/passwd on the writable branch directly
-  and the infected file will be valid in aufs.
-  I am afraid it can be a security issue, but nothing to do except
-  producing a warning.
+As expected, the round-robin policy selects the branch in circular. When
+you have two writable branches and creates 10 new files, 5 files will be
+created for each branch. mkdir(2) systemcall is an exception. When you
+create 10 new directories, all will be created on the same branch.
+And the most-free-space policy selects the one which has most free
+space among the writable branches. The amount of free space will be
+checked by aufs internally, and users can specify its time interval.
 
+The policies for copy-up is more simple,
+top-down-parent is equivalent to the same named on in create policy,
+bottom-up-parent selects the writable branch where the parent dir
+exists and the nearest upper one from the copyup-source,
+bottom-up selects the nearest upper writable branch from the
+copyup-source, regardless the existence of the parent dir.
 
-Delete a Branch
-----------------------------------------------------------------------
-o Confirm the deleting branch is not busy
-  To be general, there is one merit to adopt "remount" interface to
-  manipulate branches. It is to discard caches. At deleting a branch,
-  aufs checks the still cached (and connected) dentries and inodes. If
-  there are any, then they are all in-use. An inode without its
-  corresponding dentry can be alive alone (for example, inotify case).
-
-  For the cached one, aufs checks whether the same named entry exists on
-  other branches.
-  If the cached one is a directory, because aufs provides a merged view
-  to users, as long as one dir is left on any branch aufs can show the
-  dir to users. In this case, the branch can be removed from aufs.
-  Otherwise aufs rejects deleting the branch.
-
-  If any file on the deleting branch is opened by aufs, then aufs
-  rejects deleting.
-
-
-Modify the Permission of a Branch
-----------------------------------------------------------------------
-o Re-initialize or remove the xino file and whiteout bases if necessary.
-  See struct.txt.
-
-o rw --> ro: Confirm the modifying branch is not busy
-  Aufs rejects the request if any of these conditions are true.
-  - a file on the branch is mmap-ed.
-  - a regular file on the branch is opened for write and there is no
-    same named entry on the upper branch.
+There are some rules or exceptions to apply these policies.
+- If there is a readonly branch above the policy-selected branch and
+  the parent dir is marked as opaque (a variation of whiteout), or the
+  target (creating) file is whiteout-ed on the upper readonly branch,
+  then the result of the policy is ignored and the target file will be
+  created on the nearest upper writable branch than the readonly branch.
+- If there is a writable branch above the policy-selected branch and
+  the parent dir is marked as opaque or the target file is whiteouted
+  on the branch, then the result of the policy is ignored and the target
+  file will be created on the highest one among the upper writable
+  branches who has diropq or whiteout. In case of whiteout, aufs removes
+  it as usual.
+- link(2) and rename(2) systemcalls are exceptions in every policy.
+  They try selecting the branch where the source exists as possible
+  since copyup a large file will take long time. If it can't be,
+  ie. the branch where the source exists is readonly, then they will
+  follow the copyup policy.
+- There is an exception for rename(2) when the target exists.
+  If the rename target exists, aufs compares the index of the branches
+  where the source and the target exists and selects the higher
+  one. If the selected branch is readonly, then aufs follows the
+  copyup policy.
