@@ -1,136 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZBWPHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZBWPIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbZBWPHw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 10:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbZBWPHj
+	id S1756109AbZBWPIi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 10:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbZBWPI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 10:07:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40124 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753820AbZBWPHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 10:07:38 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
-Date: Mon, 23 Feb 2009 16:07:10 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200902221837.49396.rjw@sisk.pl> <200902231229.58743.rjw@sisk.pl> <20090223124503.GC31427@elte.hu>
-In-Reply-To: <20090223124503.GC31427@elte.hu>
+	Mon, 23 Feb 2009 10:08:29 -0500
+Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:25494 "HELO
+	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753478AbZBWPI3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 10:08:29 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KW/BBPSxWPiW0QdQveTJo/EUZO2qmRRgTVnmhfWK2NQkk/5ykc6C98VHr1RfRAf5JmYuRLu42TIewg0QvzRwVzJijagomdTB7f0X13cnffJK8iPTTnHwagmPVB1EpvZ47hIevOkkgZCStkICBkqdDvndFnF3cB1ILO9tCfNE0Eo=  ;
+X-YMail-OSG: Fcqbz0cVM1k6zTG1CU8Dt.MU9Afu8hU_yknNIs_dugZ.GuvfPg8LNsIKBHsuOmQOhwUT2IcXrVOMjG.HysbJSC.uBqhu5oSWJXDNO25ykltLWlhWw.ChGFWF30.Tc0XHvqOx9HIliD_zDdDH0xFzU.M3aB5Ray8BsydQ.GQ_g7OT8zDUpAmVBN807WXjag--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/7] slab: introduce kzfree()
+Date: Tue, 24 Feb 2009 02:07:52 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Vrabel <david.vrabel@csr.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chas Williams <chas@cmf.nrl.navy.mil>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+References: <499BE7F8.80901@csr.com> <200902240101.26362.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0902231429360.28573@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0902231429360.28573@blonde.anvils>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902231607.11064.rjw@sisk.pl>
+Message-Id: <200902240207.53590.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 February 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > > > +resume_devices:
-> > > > +	resume_device_irqs();
-> > > 
-> > > Small style nit: labels should start with a space character. 
-> > > I.e. it should be:
-> > 
-> > I know, but the second label in there starts without a space 
-> > character and IMO keeping a uniform coding style i a single 
-> > file is more important than trying to adjust it to a broader 
-> > set of rules FWIW. [...]
-> 
-> Even though it's just a very small and insignificant detail 
-> (nowhere described in the CodingStyle), barely worth the mention 
-> (and i already regret having brought it up at all), what you say 
-> is wrong on a conceptual level and that alarms me a bit ;-)
-> 
-> It is exactly these kinds of "my code, my style!" world view 
-> that results in a crappy overall kernel style.
-> 
-> For a single file to look consistent is just the first (and 
-> required) step, what matters even more is for files to have 
-> similar coding patterns, to make the style as helpful to the 
-> general kernel developer/reviewer/bug-fixer/maintainer as 
-> possible.
-> 
-> "code with a helpful style" here means two things:
-> 
-> 1) it should understand and adhere to basic style principles. 
->    This is just an (often arbitrary) subset of the infinite set 
->    of reasonable style guides. The most common-sense ones are
->    written down in Documentation/CodingStyle. There's a lot of 
->    leeway, as long as the basic principle of "be helpful" is
->    understood and followed.
-> 
-> 2) it should carry meta information outside of the language 
->    syntax and it should build expectations about a code's 
->    purpose and general structure.
-> 
->    That is essential so that we can find bugs during review.
-> 
->    If each file has a slightly different style to express labels 
->    then that means we insert extra entropy and degrades and 
->    obfuscates the true meat of the code and hurts the overall 
->    reviewability of the code.
-> 
-> In practical terms: i noticed that weird label - otherwise i 
-> would not have commented on it. I noticed it because it had the 
-> pattern of a comment block (most comment blocks start with 
-> capital letters, and for that good reason).
-> 
-> It was completely unnecessary for me to notice that label - it 
-> carries no information about the patch itself. Ergo, it would be 
-> better in the long run if code does not raise unnecessary mental 
-> exceptions. We have a limited set of exceptions we are able to 
-> handle during review, lets make sure we use them sparingly.
+On Tuesday 24 February 2009 01:51:05 Hugh Dickins wrote:
+> On Tue, 24 Feb 2009, Nick Piggin wrote:
+> > Well, the buffer is only non-modified in the case of one of the
+> > allocators (SLAB). All others overwrite some of the data region
+> > with their own metadata.
+> >
+> > I think it is OK to use const, though. Because k(z)free has the
+> > knowledge that the data will not be touched by the caller any
+> > longer.
+>
+> Sorry, you're not adding anything new to the thread here.
+>
+> Yes, the caller is surrendering the buffer, so we can get
+> away with calling the argument const; and Linus argues that's
+> helpful in the case of kfree (to allow passing a const pointer
+> without having to cast it).
 
-Just to clarify, I have nothing against labels that are not capitalized etc.,
-actually I can live with whatever style of labels is considered as appropriate
-and/or helpful.
+(Yes, not that I agree his argument is strong enough to be able
+to call libc's definition wrong)
 
-However, if specific style of labels was chosen for given file in the past and
-it is consistent over the entire file, I don't think it should be changed in a
-patch that does a different thing, regardless of who's maintaining the file
-or who's written the code in question.  It should be changed in a separate
-patch with a changelog describing why this change is being made.  I don't
-really have the time to write such a patch at the moment and I don't really
-think it's _that_ important.  YMMV.
+> My contention is that kzfree(const void *ptr) is nonsensical
+> because it says please zero this buffer without modifying it.
+>
+> But the change has gone in, I seem to be the only one still
+> bothered by it, and I've conceded that the "z" might stand
+> for zap rather than zero.
+>
+> So it may be saying please hide the contents of this buffer,
+> rather than please zero it.  And then it can be argued that
+> the modification is an implementation detail which happens
+> (like other housekeeping internal to the sl?b allocator)
+> only after the original buffer has been freed.
+>
+> Philosophy.
 
-> Sure, there will always be borderline cases where we'll have to 
-> agree to disagree, even if we agree about the general principle.
-> 
-> But this is not one of those cases - having a "Suspend:" 
-> capitalized label is not something you added to enhance the 
-> basic coding style - it is something very uncommon and 
-> self-serving which you added in _spite_ of the general 
-> principles i believe. It has no other message beyond "I do this 
-> because i can!".
-> 
-> I.e. it is not helpful at all. When it comes to coding style the 
-> kernel is not a democracy at all.
-> 
-> > [...]  I also think that coding style changes shouldn't be 
-> > mixed with functional changes as far as reasonably possible.
-> 
-> Sure, you got that drive-by review for free, by virtue of 
-> context diffs ;-)
+Hmm, well it better if kzfree is defined to zap rather than zero
+anyway. zap is a better definition because it theoretically allows
+the implementation to do something else (poision it with some
+other value; mark it as zapped and don't reallocate it without
+zeroing it; etc). And also it doesn't imply that the caller still
+cares about what it actually gets filled with.
 
-Well, OK. :-)
 
-Still, IMHO it's more helpful if the comments related to the changes that
-belong to the patch in question are not mixed with comments related to the
-coding style of the files being modified.  Perhaps I'm picky ...
-
-Thanks,
-Rafael
