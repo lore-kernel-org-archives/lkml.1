@@ -1,195 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZBWLz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZBWL5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbZBWLz4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 06:55:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZBWLze
+	id S1754810AbZBWL5e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 06:57:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZBWL5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 06:55:34 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48362 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753512AbZBWLzc (ORCPT
+	Mon, 23 Feb 2009 06:57:25 -0500
+Received: from smtp03.msg.oleane.net ([62.161.4.3]:57704 "EHLO
+	smtp03.msg.oleane.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbZBWL5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 06:55:32 -0500
-Subject: [PATCH] mm: gfp_to_alloc_flags()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
-Content-Type: text/plain
-Date: Mon, 23 Feb 2009 12:55:03 +0100
-Message-Id: <1235390103.4645.80.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Mon, 23 Feb 2009 06:57:25 -0500
+X-Greylist: delayed 1250 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Feb 2009 06:57:24 EST
+X-Oleane-Rep: REPA
+From: "Thomas Jourdan" <tjourdan@interfaceconcept.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [BUG] dmi_scan_machine uses uninitialized address on x86 / EFI
+Date: Mon, 23 Feb 2009 16:40:29 +0100
+Message-ID: <342F93DAA55A4EE888FBD256CE6044F4@thje6600v>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0052_01C995D5.73E4B1B0"
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook CWS, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Importance: Normal
+X-Spam-Flag: NO
+X-PMX-Spam: Probability=14%
+X-PFSI-Info: PMX 5.5.2.365749, Antispam-Engine: 2.6.1.350677, Antispam-Data: 2009.2.23.111922 (no antivirus check)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've always found the below a clean-up, respun it on top of your changes.
-Test box still boots ;-)
+This is a multi-part message in MIME format.
 
----
-Subject: mm: gfp_to_alloc_flags()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Mon Feb 23 12:46:36 CET 2009
+------=_NextPart_000_0052_01C995D5.73E4B1B0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-Clean up the code by factoring out the gfp to alloc_flags mapping.
+Hi
 
-[neilb@suse.de says]
-As the test:
+On x86/EFI platforms, if efi_enabled is true, the dmi_scan_machine function
+fails, even if valid DMI table is present. In the setup_arch function,
+efi_init is called after dmi_scan_machine. But this is efi_init which will
+initialize the smbios address, needed by dmi_scan_machine.
 
--       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
--                       && !in_interrupt()) {
--               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+This leads to dmi_scan_machine ioremapping physical address 0, instead of
+the address provided by the EFI system table. The following patch fixes the
+problem.
 
-has been replaced with a slightly weaker one:
+Regards,
+Thomas
 
-+       if (alloc_flags & ALLOC_NO_WATERMARKS) {
+------=_NextPart_000_0052_01C995D5.73E4B1B0
+Content-Type: application/octet-stream;
+	name="dmi_scan.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="dmi_scan.patch"
 
-we need to ensure we don't recurse when PF_MEMALLOC is set
+On x86 / EFI platforms, the SMBIOS table address is available in the EFI=0A=
+system table. During the setup_arch function, the dmi_scan_machine =
+function=0A=
+will detect valid DMI table or not. =0A=
+=0A=
+If CONFIG_EFI is set, the dmi_scan_table function will use the address =
+provided=0A=
+by the EFI system table. But it is inialized later, in the efi_init =
+function. =0A=
+=0A=
+This patch fixes the call order.=0A=
+=0A=
+--- linux-2.6.28.6/arch/x86/kernel/setup.c	2009-02-17 18:29:27.000000000 =
++0100=0A=
++++ linux-2.6.28.6/arch/x86/kernel/setup.c	2009-02-23 09:57:57.000000000 =
++0100=0A=
+@@ -903,6 +903,9 @@=0A=
+ =0A=
+ 	finish_e820_parsing();=0A=
+ =0A=
++	if (efi_enabled)=0A=
++		efi_init();=0A=
++=0A=
+ 	dmi_scan_machine();=0A=
+ =0A=
+ 	dmi_check_system(bad_bios_dmi_table);=0A=
+@@ -916,9 +919,6 @@=0A=
+ 	insert_resource(&iomem_resource, &data_resource);=0A=
+ 	insert_resource(&iomem_resource, &bss_resource);=0A=
+ =0A=
+-	if (efi_enabled)=0A=
+-		efi_init();=0A=
+-=0A=
+ #ifdef CONFIG_X86_32=0A=
+ 	if (ppro_with_ram_bug()) {=0A=
+ 		e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,=0A=
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- mm/page_alloc.c |   90 ++++++++++++++++++++++++++++++++------------------------
- 1 file changed, 52 insertions(+), 38 deletions(-)
-
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1658,16 +1658,6 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m
- 	return page;
- }
- 
--static inline int is_allocation_high_priority(struct task_struct *p,
--							gfp_t gfp_mask)
--{
--	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
--			&& !in_interrupt())
--		if (!(gfp_mask & __GFP_NOMEMALLOC))
--			return 1;
--	return 0;
--}
--
- /*
-  * This is called in the allocator slow-path if the allocation request is of
-  * sufficient urgency to ignore watermarks and take other desperate measures
-@@ -1702,6 +1692,44 @@ void wake_all_kswapd(unsigned int order,
- 		wakeup_kswapd(zone, order);
- }
- 
-+/*
-+ * get the deepest reaching allocation flags for the given gfp_mask
-+ */
-+static int gfp_to_alloc_flags(gfp_t gfp_mask)
-+{
-+	struct task_struct *p = current;
-+	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
-+	const gfp_t wait = gfp_mask & __GFP_WAIT;
-+
-+	/*
-+	 * The caller may dip into page reserves a bit more if the caller
-+	 * cannot run direct reclaim, or if the caller has realtime scheduling
-+	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
-+	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
-+	 */
-+	if (gfp_mask & __GFP_HIGH)
-+		alloc_flags |= ALLOC_HIGH;
-+
-+	if (!wait) {
-+		alloc_flags |= ALLOC_HARDER;
-+		/*
-+		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
-+		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-+		 */
-+		alloc_flags &= ~ALLOC_CPUSET;
-+	} else if (unlikely(rt_task(p)) && !in_interrupt())
-+		alloc_flags |= ALLOC_HARDER;
-+
-+	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-+		if (!in_interrupt() &&
-+		    ((p->flags & PF_MEMALLOC) ||
-+		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+	}
-+
-+	return alloc_flags;
-+}
-+
- static struct page * noinline
- __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
- 	struct zonelist *zonelist, enum zone_type high_zoneidx,
-@@ -1732,48 +1760,34 @@ __alloc_pages_slowpath(gfp_t gfp_mask, u
- 	 * OK, we're below the kswapd watermark and have kicked background
- 	 * reclaim. Now things get more complex, so set up alloc_flags according
- 	 * to how we want to proceed.
--	 *
--	 * The caller may dip into page reserves a bit more if the caller
--	 * cannot run direct reclaim, or if the caller has realtime scheduling
--	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
--	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
- 	 */
--	alloc_flags = ALLOC_WMARK_MIN;
--	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
--		alloc_flags |= ALLOC_HARDER;
--	if (gfp_mask & __GFP_HIGH)
--		alloc_flags |= ALLOC_HIGH;
--	if (wait)
--		alloc_flags |= ALLOC_CPUSET;
-+	alloc_flags = gfp_to_alloc_flags(gfp_mask);
- 
- restart:
--	/*
--	 * Go through the zonelist again. Let __GFP_HIGH and allocations
--	 * coming from realtime tasks go deeper into reserves.
--	 *
--	 * This is the last chance, in general, before the goto nopage.
--	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
--	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
--	 */
-+	/* This is the last chance, in general, before the goto nopage. */
- 	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
--						high_zoneidx, alloc_flags,
--						preferred_zone,
--						migratetype);
-+			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
-+			preferred_zone, migratetype);
- 	if (page)
- 		goto got_pg;
- 
- 	/* Allocate without watermarks if the context allows */
--	if (is_allocation_high_priority(p, gfp_mask))
-+	if (alloc_flags & ALLOC_NO_WATERMARKS) {
- 		page = __alloc_pages_high_priority(gfp_mask, order,
--			zonelist, high_zoneidx, nodemask, preferred_zone,
--			migratetype);
--	if (page)
--		goto got_pg;
-+				zonelist, high_zoneidx, nodemask,
-+				preferred_zone, migratetype);
-+		if (page)
-+			goto got_pg;
-+	}
- 
- 	/* Atomic allocations - we can't balance anything */
- 	if (!wait)
- 		goto nopage;
- 
-+	/* Avoid recursion of direct reclaim */
-+	if (p->flags & PF_MEMALLOC)
-+		goto nopage;
-+
- 	/* Try direct reclaim and then allocating */
- 	page = __alloc_pages_direct_reclaim(gfp_mask, order,
- 					zonelist, high_zoneidx,
-
+------=_NextPart_000_0052_01C995D5.73E4B1B0--
 
