@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZBWOUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZBWOXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZBWOUf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 09:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbZBWOU0
+	id S1754593AbZBWOXi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 09:23:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbZBWOX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 09:20:26 -0500
-Received: from cathcart.site5.com ([74.54.107.137]:54673 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbZBWOU0 (ORCPT
+	Mon, 23 Feb 2009 09:23:28 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:49418 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbZBWOX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 09:20:26 -0500
-Message-ID: <49A2B0A5.8050905@compulab.co.il>
-Date: Mon, 23 Feb 2009 16:20:21 +0200
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
-MIME-Version: 1.0
-To: apw@canonical.com, LKML <linux-kernel@vger.kernel.org>
-Subject: checkpatch --file warns about p0 patch
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 23 Feb 2009 09:23:27 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC 2/8] Aufs2: structure 
+To: Tomas M <tomas@slax.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <49A268A7.1010708@slax.org>
+References: <7558.1235374266@jrobl> <7769.1235374482@jrobl> <49A268A7.1010708@slax.org>
+Date: Mon, 23 Feb 2009 23:23:23 +0900
+Message-ID: <13899.1235399003@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When running checkpatch.pl with --file option it warns about -p0 patch:
 
-./scripts/checkpatch.pl --file ./drivers/rtc/rtc-v3020.c
-WARNING: patch prefix '.' exists, appears to be a -p0 patch
+Tomas M:
+> > The struct of a xino file is simple, just a sequence of aufs inode
+> > numbers which is indexed by the lower inode number.
+> > In the above sample, assume the inode number of /ro/fileA is i111 and
+> > aufs assigns the inode number i999 for fileA. Then aufs writes 999 as
+> > 4(8) bytes at 111 * 4(8) bytes offset in the xino file.
+> 
+> I think it is worth mentioning that the xino file, if I understand it correctly, is a 'sparse file', that means it is full of 'holes' and doesn't consume as much disk space as it might appear.
 
-total: 0 errors, 1 warnings, 263 lines checked
-
-./drivers/rtc/rtc-v3020.c has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
-I hope this is the fix that'll work:
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 45eb0ae..1869388 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1240,7 +1240,7 @@ sub process {
- 			$realfile =~ s@^([^/]*)/@@;
-
- 			$p1_prefix = $1;
--			if ($tree && $p1_prefix ne '' && -e "$root/$p1_prefix") {
-+			if (!$file && $tree && $p1_prefix ne '' && -e "$root/$p1_prefix") {
- 				WARN("patch prefix '$p1_prefix' exists, appears to be a -p0 patch\n");
- 			}
+That is right.
+Thank you for pointing out.
 
 
+> In my opinion, the current xino-file approach is not much usable on filesystems which do not support sparse files (for example, if you wish to union two vfats), since some 'seeks' would probably write a lot of nulls. But I am not any kernel developer so I don't even know if there exists any filesystem which would be unable to support sparse files (except the mentioned VFAT, of course).
 
--- 
-Sincerely yours,
-Mike.
+Aufs creats the xino files on the first writable branch. If it consumes
+disk space for holes, then an aufs mount option 'xino=<path>' may be
+useful.
+
+I will update my local documents.
+Thank you.
 
 
+J. R. Okajima
