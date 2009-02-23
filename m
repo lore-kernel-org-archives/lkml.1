@@ -1,117 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZBWD7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZBWEHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbZBWD7c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Feb 2009 22:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZBWD7W
+	id S1754747AbZBWEHY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Feb 2009 23:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZBWEHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Feb 2009 22:59:22 -0500
-Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:41292 "HELO
-	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751104AbZBWD7V (ORCPT
+	Sun, 22 Feb 2009 23:07:10 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:54380 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbZBWEHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Feb 2009 22:59:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=JiikZAgLRIu0g7rl7Bbrte5eQGba+CtcQOzSrJ6ezJGN/7+8uxEZsZXDQDQFzo2M4psB//v28hLRZuq2yRzJeLegiJ8rPp5jipgWLqwOkjcP+bBskb2jGCSiq620Dy0X0SNgIHsebZ8NDzqLtbGOIx9bwfVslFUDsTYs/DmlXYo=  ;
-X-YMail-OSG: OX2kFKAVM1nUQMP6PVC60mSJGubkhS84q4aTApPPgplfHdMUVsxIEFalLrfMCW45NGtl.lYezXCDza5.51xxlHVb_tunsfhK9V2rmnHTnBF9Z_xAKwCv6xJ3zVyeHVZZgVfvMxKx5bXNcNXbI60gmVWdds.4zRJSu0GTtP0WttFX7yGOvrXm4hBl5MdL21LhVClBCq3GRxnIcqu_dO5knIhnqSBpzVK5xAw-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: Question regarding concurrent accesses through block device and fs
-Date: Mon, 23 Feb 2009 14:58:32 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <m2hc2yulrw.fsf@gmail.com> <200902200044.48328.nickpiggin@yahoo.com.au> <38b2ab8a0902200610i6c91725cjc91adca31042daa9@mail.gmail.com>
-In-Reply-To: <38b2ab8a0902200610i6c91725cjc91adca31042daa9@mail.gmail.com>
+	Sun, 22 Feb 2009 23:07:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=xOma4DCkU6E48yt4l0b8Ij2LAe+TVhAqYpW0+HPC1kOHI1hlqGrOb/UCeffswnfojx
+         ybJObaB4I0naTdfWpR/HodCJQwrHVKUcU401CyKoBbBlWIKEpfdMMJMISIjEokOtMj22
+         pSfg9hnZtHOWZAxoYW+3+1aFCwK2s9NU6fdpw=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902231458.32911.nickpiggin@yahoo.com.au>
+In-Reply-To: <alpine.OSX.2.00.0902222206360.7676@horst-reiterers-macbook-air.local>
+References: <alpine.OSX.2.00.0902202138421.3998@horst-reiterers-macbook-air.local>
+	 <524f69650902201721l1c7f0d34p4708980a90d7fc8f@mail.gmail.com>
+	 <alpine.OSX.2.00.0902222137080.7676@horst-reiterers-macbook-air.local>
+	 <524f69650902221303h37feb366k3d89a07bfd100ea3@mail.gmail.com>
+	 <alpine.OSX.2.00.0902222206360.7676@horst-reiterers-macbook-air.local>
+Date: Sun, 22 Feb 2009 22:07:05 -0600
+Message-ID: <524f69650902222007o3f56d394yecab17c22296aaa4@mail.gmail.com>
+Subject: Re: [PATCH] fs/cifs: send SMB_COM_FLUSH in cifs_fsync
+From: Steve French <smfrench@gmail.com>
+To: Horst Reiterer <horst.reiterer@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
+Content-Type: multipart/mixed; boundary=000325575a36b384b304638e2231
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 February 2009 01:10:24 Francis Moreau wrote:
-> On Thu, Feb 19, 2009 at 2:44 PM, Nick Piggin <nickpiggin@yahoo.com.au> 
-> > This is done for only newly allocated on-disk blocks, (which is what
-> > buffer_new means, not new in-memory buffers). And it is only there to
-> > synchronize buffercache access by the filesystem for its metadata, rather
-> > than trying to make /dev/bdev access coherent with file access.
->
-> Well I'm (still) confused by 2 things:
->
->   - the comments of unmap_underlying_metadata() doesn't sound that we're
->     dealing with meta data only:
->
->     " ... we don't want any output from any buffer-cache aliases starting
-> ... "
->
->     note the word *any*. But I must admit that I don't understand the whole
->     comment.
+--000325575a36b384b304638e2231
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Well buffer cache is (almost) always metadata from the filesystem pov. The
-comment *could* be talking about access to /dev/bdev, but in that case the
-code is doing the wrong thing WRT coherency anyway (clearing dirty bit), so
-I don't see how it could be talking about that.
+On Sun, Feb 22, 2009 at 3:12 PM, Horst Reiterer
+<horst.reiterer@gmail.com> wrote:
+> On Sun, 22 Feb 2009, Steve French wrote:
+>> Suggestions on what to call such a new mount option?  How about
+>> "nostrictfsync"  ?
+>
+> Sound good, should be self-explanatory for Samba users and those familiar
+> with the fsync concept.
+>
+> Horst.
+
+Patch attached for nostrictfsync cifs mount option
 
 
->   - looking at unmap_underlying_metadata(), there's no code to deal with
->     meta data buffers. It gets the buffer and unmap it whatever the type of
->     data it contains.
 
-That's why I say it only really works for buffer cache used by the same
-filesystem that is now known to be unused.
+-- 
+Thanks,
 
+Steve
 
-> But at least the name of this function is now more clear.
->
-> > Basically what can happen is that a filesystem will have perhaps
-> > allocated a block for an array of indirect pointers. The filesystem
-> > manages this via the buffercache and writes a few pointers into it. Then
-> > suppose the file is truncated and that block becomes unused so it can be
-> > freed by the filesystem block allocator. And the filesystem may also call
-> > bforget to prevent the now useless buffer from being written out in
-> > future.
->
-> ok, so now  the buffercache is discarded and its content is either
-> discarded or is writing back.
->
-> > Now suppose a new block required for *file* data, and the filesystem
-> > happens to reallocate that block. So now we may still have that old
-> > buffercache and buffer head around, but we also have this new pagecache
-> > and buffer head for the file that points to the same block (buffer_new
-> > will be set on this new buffer head, btw, to reflect that it is a newly
-> > allocated block).
->
-> ok
->
-> > All fine so far.
-> >
-> > Now there is a potential problem because the old buffer can *still be
-> > under writeback* dating back from when it was still good metadata and
-> > before bforget was called. That's a problem because the new buffer is
-> > expecting to be the owner and master of the block and its data.
->
-> Now I don't see the problem.
->
-> Even if the old meta data is under writeback process, the new buffer can
-> still be used: since it's new there's no point to do IOs to read its
-> content. If we need to write it to disk then the IOs will overwrite the old
-> meta data, there's
-> no risk that the old meta data overwrite the new data.
->
-> What am I missing ?
+--000325575a36b384b304638e2231
+Content-Type: text/x-diff; charset=US-ASCII; name="new-mount-option.patch"
+Content-Disposition: attachment; filename="new-mount-option.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_frimmub40
 
-That we might complete the write of the new buffer before the
-old buffer is finished writing out?
-
-Or, I suppose it also covers filesystems that do not always
-discard old buffers with bforget, so they don't have dirty
-bit cleared (but I don't know 100% sure if this is considered a
-filesystem bug or not -- but at least unmap_underlying_metadata
-protects against it).
-
+ZGlmZiAtLWdpdCBhL2ZzL2NpZnMvQ0hBTkdFUyBiL2ZzL2NpZnMvQ0hBTkdFUwppbmRleCBkNDNl
+MGZlLi5iMzNjODQxIDEwMDY0NAotLS0gYS9mcy9jaWZzL0NIQU5HRVMKKysrIGIvZnMvY2lmcy9D
+SEFOR0VTCkBAIC04LDcgKzgsOSBAQCB1c2VyJ3Mgc21iIHNlc3Npb24uICBUaGlzIGZpeCBhbGxv
+d3MgY2lmcyB0byBtb3VudCBtdWx0aXBsZSB0aW1lcyB0byB0aGUKIHNhbWUgc2VydmVyIHdpdGgg
+ZGlmZmVyZW50IHVzZXJpZHMgd2l0aG91dCByaXNraW5nIGludmFsaWRhdGluZyBlYXJsaWVyCiBl
+c3RhYmxpc2hlZCBzZWN1cml0eSBjb250ZXh0cy4gIGZzeW5jIG5vdyBzZW5kcyBTTUIgRmx1c2gg
+b3BlcmF0aW9uCiB0byBiZXR0ZXIgZW5zdXJlIHRoYXQgd2Ugd2FpdCBmb3Igc2VydmVyIHRvIHdy
+aXRlIGFsbCBvZiB0aGUgZGF0YSB0bwotc2VydmVyIGRpc2sgKG5vdCBqdXN0IHdyaXRlIGl0IG92
+ZXIgdGhlIG5ldHdvcmspLgorc2VydmVyIGRpc2sgKG5vdCBqdXN0IHdyaXRlIGl0IG92ZXIgdGhl
+IG5ldHdvcmspLiAgQWRkIG5ldyBtb3VudAorcGFyYW1ldGVyIHRvIGFsbG93IHVzZXIgdG8gZGlz
+YWJsZSBzZW5kaW5nIHRoZSAoc2xvdykgU01CIGZsdXNoIG9uCitmc3luYyBpZiBkZXNpcmVkIChm
+c3luYyBzdGlsbCBmbHVzaGVzIGFsbCBjYWNoZWQgd3JpdGUgZGF0YSB0byB0aGUgc2VydmVyKS4K
+IAogVmVyc2lvbiAxLjU2CiAtLS0tLS0tLS0tLS0KZGlmZiAtLWdpdCBhL2ZzL2NpZnMvUkVBRE1F
+IGIvZnMvY2lmcy9SRUFETUUKaW5kZXggZGE0NTE1ZS4uNjQzNjk2NiAxMDA2NDQKLS0tIGEvZnMv
+Y2lmcy9SRUFETUUKKysrIGIvZnMvY2lmcy9SRUFETUUKQEAgLTQ3Miw2ICs0NzIsMTkgQEAgQSBw
+YXJ0aWFsIGxpc3Qgb2YgdGhlIHN1cHBvcnRlZCBtb3VudCBvcHRpb25zIGZvbGxvd3M6CiAJCWV2
+ZW4gaWYgdGhlIGNpZnMgc2VydmVyIHdvdWxkIHN1cHBvcnQgcG9zaXggYWR2aXNvcnkgbG9ja3Mu
+CiAJCSJmb3JjZW1hbmQiIGlzIGFjY2VwdGVkIGFzIGEgc2hvcnRlciBmb3JtIG9mIHRoaXMgbW91
+bnQKIAkJb3B0aW9uLgorIG5vc3RyaWN0c3luYyAgIElmIHRoaXMgbW91bnQgb3B0aW9uIGlzIHNl
+dCwgd2hlbiBhbiBhcHBsaWNhdGlvbiBkb2VzIGFuCisJCWZzeW5jIGNhbGwgdGhlbiB0aGUgY2lm
+cyBjbGllbnQgZG9lcyBub3Qgc2VuZCBhbiBTTUIgRmx1c2gKKwkJdG8gdGhlIHNlcnZlciAodG8g
+Zm9yY2UgdGhlIHNlcnZlciB0byB3cml0ZSBhbGwgZGlydHkgZGF0YQorCQlmb3IgdGhpcyBmaWxl
+IGltbWVkaWF0ZWx5IHRvIGRpc2spLCBhbHRob3VnaCBjaWZzIHN0aWxsIHNlbmRzCisJCWFsbCBk
+aXJ0eSAoY2FjaGVkKSBmaWxlIGRhdGEgdG8gdGhlIHNlcnZlciBhbmQgd2FpdHMgZm9yIHRoZQor
+CQlzZXJ2ZXIgdG8gcmVzcG9uZCB0byB0aGUgd3JpdGUgd3JpdGUuICBTaW5jZSBTTUIgRmx1c2gg
+Y2FuIGJlCisJCXZlcnkgc2xvdywgYW5kIHNvbWUgc2VydmVycyBtYXkgYmUgcmVsaWFibGUgZW5v
+dWdoICh0byByaXNrCisJCWRlbGF5aW5nIHNsaWdodGx5IGZsdXNoaW5nIHRoZSBkYXRhIHRvIGRp
+c2sgb24gdGhlIHNlcnZlciksCisJCXR1cm5pbmcgb24gdGhpcyBvcHRpb24gbWF5IGJlIHVzZWZ1
+bCB0byBpbXByb3ZlIHBlcmZvcm1hbmNlIGZvcgorCQlhcHBsaWNhdGlvbnMgdGhhdCBmc3luYyB0
+b28gbXVjaCwgYXQgYSBzbWFsbCByaXNrIG9mIHNlcnZlcgorCQljcmFzaC4gIElmIHRoaXMgbW91
+bnQgb3B0aW9uIGlzIG5vdCBzZXQsIGJ5IGRlZmF1bHQgY2lmcyB3aWxsCisJCXNlbmQgYW4gU01C
+IGZsdXNoIHJlcXVlc3QgKGFuZCB3YWl0IGZvciBhIHJlc3BvbnNlKSBvbiBldmVyeQorCQlmc3lu
+YyBjYWxsLgogIG5vZGZzICAgICAgICAgIERpc2FibGUgREZTIChnbG9iYWwgbmFtZSBzcGFjZSBz
+dXBwb3J0KSBldmVuIGlmIHRoZQogCQlzZXJ2ZXIgY2xhaW1zIHRvIHN1cHBvcnQgaXQuICBUaGlz
+IGNhbiBoZWxwIHdvcmsgYXJvdW5kCiAJCWEgcHJvYmxlbSB3aXRoIHBhcnNpbmcgb2YgREZTIHBh
+dGhzIHdpdGggU2FtYmEgc2VydmVyCmRpZmYgLS1naXQgYS9mcy9jaWZzL2NpZnNfZnNfc2IuaCBi
+L2ZzL2NpZnMvY2lmc19mc19zYi5oCmluZGV4IGM0YzMwNmYuLmU5ZjE3N2IgMTAwNjQ0Ci0tLSBh
+L2ZzL2NpZnMvY2lmc19mc19zYi5oCisrKyBiL2ZzL2NpZnMvY2lmc19mc19zYi5oCkBAIC0zMiw2
+ICszMiw3IEBACiAjZGVmaW5lIENJRlNfTU9VTlRfT1ZFUlJfR0lEICAgIDB4ODAwIC8qIG92ZXJy
+aWRlIGdpZCByZXR1cm5lZCBmcm9tIHNlcnZlciAgICAqLwogI2RlZmluZSBDSUZTX01PVU5UX0RZ
+TlBFUk0gICAgICAweDEwMDAgLyogYWxsb3cgaW4tbWVtb3J5IG9ubHkgbW9kZSBzZXR0aW5nICAg
+Ki8KICNkZWZpbmUgQ0lGU19NT1VOVF9OT1BPU0lYQlJMICAgMHgyMDAwIC8qIG1hbmRhdG9yeSBu
+b3QgcG9zaXggYnl0ZSByYW5nZSBsb2NrICovCisjZGVmaW5lIENJRlNfTU9VTlRfTk9fU1NZTkMg
+ICAgIDB4NDAwMCAvKiBkb24ndCBkbyBzbG93IFNNQmZsdXNoIG9uIGV2ZXJ5IHN5bmMqLwogCiBz
+dHJ1Y3QgY2lmc19zYl9pbmZvIHsKIAlzdHJ1Y3QgY2lmc1Rjb25JbmZvICp0Y29uOwkvKiBwcmlt
+YXJ5IG1vdW50ICovCmRpZmYgLS1naXQgYS9mcy9jaWZzL2Nvbm5lY3QuYyBiL2ZzL2NpZnMvY29u
+bmVjdC5jCmluZGV4IGRhMGY0ZmYuLjE4ZTg0YTQgMTAwNjQ0Ci0tLSBhL2ZzL2NpZnMvY29ubmVj
+dC5jCisrKyBiL2ZzL2NpZnMvY29ubmVjdC5jCkBAIC05NSw2ICs5NSw3IEBAIHN0cnVjdCBzbWJf
+dm9sIHsKIAlib29sIGxvY2FsX2xlYXNlOjE7IC8qIGNoZWNrIGxlYXNlcyBvbmx5IG9uIGxvY2Fs
+IHN5c3RlbSwgbm90IHJlbW90ZSAqLwogCWJvb2wgbm9ibG9ja3NuZDoxOwogCWJvb2wgbm9hdXRv
+dHVuZToxOworCWJvb2wgbm9zdHJpY3RzeW5jOjE7IC8qIGRvIG5vdCBmb3JjZSBleHBlbnNpdmUg
+U01CZmx1c2ggb24gZXZlcnkgc3luYyAqLwogCXVuc2lnbmVkIGludCByc2l6ZTsKIAl1bnNpZ25l
+ZCBpbnQgd3NpemU7CiAJdW5zaWduZWQgaW50IHNvY2tvcHQ7CkBAIC0xMjc0LDYgKzEyNzUsMTAg
+QEAgY2lmc19wYXJzZV9tb3VudF9vcHRpb25zKGNoYXIgKm9wdGlvbnMsIGNvbnN0IGNoYXIgKmRl
+dm5hbWUsCiAJCQl2b2wtPmludHIgPSAwOwogCQl9IGVsc2UgaWYgKHN0cm5pY21wKGRhdGEsICJp
+bnRyIiwgNCkgPT0gMCkgewogCQkJdm9sLT5pbnRyID0gMTsKKwkJfSBlbHNlIGlmIChzdHJuaWNt
+cChkYXRhLCAibm9zdHJpY3RzeW5jIiwgMTIpID09IDApIHsKKwkJCXZvbC0+bm9zdHJpY3RzeW5j
+ID0gMTsKKwkJfSBlbHNlIGlmIChzdHJuaWNtcChkYXRhLCAic3RyaWN0c3luYyIsIDEwKSA9PSAw
+KSB7CisJCQl2b2wtPm5vc3RyaWN0c3luYyA9IDA7CiAJCX0gZWxzZSBpZiAoc3RybmljbXAoZGF0
+YSwgInNlcnZlcmlubyIsIDcpID09IDApIHsKIAkJCXZvbC0+c2VydmVyX2lubyA9IDE7CiAJCX0g
+ZWxzZSBpZiAoc3RybmljbXAoZGF0YSwgIm5vc2VydmVyaW5vIiwgOSkgPT0gMCkgewpAQCAtMjE2
+MCw2ICsyMTY1LDggQEAgc3RhdGljIHZvaWQgc2V0dXBfY2lmc19zYihzdHJ1Y3Qgc21iX3ZvbCAq
+cHZvbHVtZV9pbmZvLAogCQljaWZzX3NiLT5tbnRfY2lmc19mbGFncyB8PSBDSUZTX01PVU5UX1VO
+WF9FTVVMOwogCWlmIChwdm9sdW1lX2luZm8tPm5vYnJsKQogCQljaWZzX3NiLT5tbnRfY2lmc19m
+bGFncyB8PSBDSUZTX01PVU5UX05PX0JSTDsKKwlpZiAocHZvbHVtZV9pbmZvLT5ub3N0cmljdHN5
+bmMpCisJCWNpZnNfc2ItPm1udF9jaWZzX2ZsYWdzIHw9IENJRlNfTU9VTlRfTk9fU1NZTkM7CiAJ
+aWYgKHB2b2x1bWVfaW5mby0+bWFuZF9sb2NrKQogCQljaWZzX3NiLT5tbnRfY2lmc19mbGFncyB8
+PSBDSUZTX01PVU5UX05PUE9TSVhCUkw7CiAJaWYgKHB2b2x1bWVfaW5mby0+Y2lmc19hY2wpCmRp
+ZmYgLS1naXQgYS9mcy9jaWZzL2ZpbGUuYyBiL2ZzL2NpZnMvZmlsZS5jCmluZGV4IDgzYjQ3NDEu
+LjY0MTFmNWYgMTAwNjQ0Ci0tLSBhL2ZzL2NpZnMvZmlsZS5jCisrKyBiL2ZzL2NpZnMvZmlsZS5j
+CkBAIC0xNTM4LDcgKzE1MzgsOCBAQCBpbnQgY2lmc19mc3luYyhzdHJ1Y3QgZmlsZSAqZmlsZSwg
+c3RydWN0IGRlbnRyeSAqZGVudHJ5LCBpbnQgZGF0YXN5bmMpCiAJCXJjID0gQ0lGU19JKGlub2Rl
+KS0+d3JpdGVfYmVoaW5kX3JjOwogCQlDSUZTX0koaW5vZGUpLT53cml0ZV9iZWhpbmRfcmMgPSAw
+OwogCQl0Y29uID0gQ0lGU19TQihpbm9kZS0+aV9zYiktPnRjb247Ci0JCWlmICghcmMgJiYgdGNv
+biAmJiBzbWJmaWxlKQorCQlpZiAoIXJjICYmIHRjb24gJiYgc21iZmlsZSAmJgorCQkgICAhKGNp
+ZnNfc2ItPm1udF9jaWZzX2ZsYWdzICYgQ0lGU19NT1VOVF9OT19TU1lOQykpCiAJCQlyYyA9IENJ
+RlNTTUJGbHVzaCh4aWQsIHRjb24sIHNtYmZpbGUtPm5ldGZpZCk7CiAJfQogCg==
+--000325575a36b384b304638e2231--
