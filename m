@@ -1,100 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZBWLE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZBWLFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbZBWLE0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 06:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbZBWLEK
+	id S1754730AbZBWLFZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 06:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbZBWLFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 06:04:10 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:57835 "EHLO gir.skynet.ie"
+	Mon, 23 Feb 2009 06:05:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49239 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754646AbZBWLEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 06:04:07 -0500
-Date: Mon, 23 Feb 2009 11:04:05 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: akpm@linux-foundation.org, wli@movementarian.org, linux-mm@kvack.org,
-       shai@scalex86.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] mm: Fix SHM_HUGETLB to work with users in
-	hugetlb_shm_group
-Message-ID: <20090223110404.GA6740@csn.ul.ie>
-References: <20090221015457.GA32674@localdomain>
+	id S1752370AbZBWLFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 06:05:10 -0500
+Date: Mon, 23 Feb 2009 12:04:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
+	suspend-resume
+Message-ID: <20090223110433.GA17312@elte.hu>
+References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0902220946070.3111@localhost.localdomain> <200902222342.08285.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl> <m1ab8ddfbr.fsf@fess.ebiederm.org> <20090223084400.GB9582@elte.hu> <m17i3ha4nk.fsf@fess.ebiederm.org> <20090223094441.GM9582@elte.hu> <m1bpst77te.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090221015457.GA32674@localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <m1bpst77te.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 05:54:57PM -0800, Ravikiran G Thirumalai wrote:
-> This is a two patch series to fix a long standing inconsistency with the
-> mechanism to allow non root users allocate hugetlb shm.  The patch changelog
-> is self explanatory.  Here's a link to the previous discussion as well:
-> 
-> 	http://lkml.org/lkml/2009/2/10/89
-> 
-> ---
-> Fix hugetlb subsystem so that non root users belonging to hugetlb_shm_group
-> can actually allocate hugetlb backed shm.
-> 
-> Currently non root users cannot even map one large page using SHM_HUGETLB
-> when they belong to the gid in /proc/sys/vm/hugetlb_shm_group.
-> This is because allocation size is verified against RLIMIT_MEMLOCK resource
-> limit even if the user belongs to hugetlb_shm_group.
-> 
-> This patch
-> 1. Fixes hugetlb subsystem so that users with CAP_IPC_LOCK and users
->    belonging to hugetlb_shm_group don't need to be restricted with
->    RLIMIT_MEMLOCK resource limits
-> 2. This patch also disables mlock based rlimit checking (which will
->    be reinstated and marked deprecated in a subsequent patch).
-> 
-> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Wli <wli@movementarian.org>
-> 
-> Index: linux-2.6-tip/fs/hugetlbfs/inode.c
-> ===================================================================
-> --- linux-2.6-tip.orig/fs/hugetlbfs/inode.c	2009-02-10 13:24:56.000000000 -0800
-> +++ linux-2.6-tip/fs/hugetlbfs/inode.c	2009-02-10 13:30:05.000000000 -0800
-> @@ -942,9 +942,7 @@ static struct vfsmount *hugetlbfs_vfsmou
->  
->  static int can_do_hugetlb_shm(void)
->  {
-> -	return likely(capable(CAP_IPC_LOCK) ||
-> -			in_group_p(sysctl_hugetlb_shm_group) ||
-> -			can_do_mlock());
-> +	return (capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group));
->  }
->  
 
-checkpatch complains about the () around the check being unnecessary.
-Not a big issue though.
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
->  struct file *hugetlb_file_setup(const char *name, size_t size)
-> @@ -962,9 +960,6 @@ struct file *hugetlb_file_setup(const ch
->  	if (!can_do_hugetlb_shm())
->  		return ERR_PTR(-EPERM);
->  
-> -	if (!user_shm_lock(size, user))
-> -		return ERR_PTR(-ENOMEM);
-> -
->  	root = hugetlbfs_vfsmount->mnt_root;
->  	quick_string.name = name;
->  	quick_string.len = strlen(quick_string.name);
-> @@ -1002,7 +997,6 @@ out_inode:
->  out_dentry:
->  	dput(dentry);
->  out_shm_unlock:
-> -	user_shm_unlock(size, user);
->  	return ERR_PTR(error);
->  }
->  
+> > What makes s2ram fragile is not human failure but the 
+> > combination of a handful of physical property:
+> >
+> > 1) Psychology: shutting the lid or pushing the suspend button is 
+> >    a deceivingly 'simple' action to the user. But under the 
+> >    hood, a ton of stuff happens: we deinitialize a lot of 
+> >    things, we go through _all hardware state_, and we do so in a 
+> >    serial fashion. If just one piece fails to do the right 
+> >    thing, the box might not resume. Still, the user expects this 
+> >    'simple' thing to just work, all the time. No excuses 
+> >    accepted.
+> >
+> > 2) Length of code: To get a successful s2ram sequence the kernel
+> >    runs through tens of thousands of lines of code. Code which
+> >    never gets executed on a normal box - only if we s2ram. If 
+> >    just one step fails, we get a hung box.
+> >
+> > 3) Debuggability: a lot of s2ram code runs with the console off, 
+> >    making any bugs hard to debug. Furthermore we have no 
+> >    meaningful persistent storage either for kernel bug messages. 
+> >    The RTC trick of PM_DEBUG works but is a very narrow channel 
+> >    of information and it takes a lot of time to debug a bug via 
+> >    that method.
+> 
+> Yep that is an issue.
 
-Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+I'd also like to add #4:
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+     4) One more thing that makes s2ram special is that when the 
+        resume path finds hardware often in an even more 
+        deinitialized form than during normal bootup. During
+        normal bootup the BIOS/firmware has at least done some
+        minimal bootstrap (to get the kernel loaded), which
+        makes life easier for the kernel.
+
+        At s2ram stage we've got a completely pure hardware
+        init state, with very minimal firmware activation. So 
+        many of the init and deinit problems and bugs we only 
+        hit in the s2ram path - which dynamics is again not 
+        helpful.
+
+> > The combination of these factors really makes up for a 
+> > perfect storm in terms of kernel technology: we have this 
+> > very-deceivingly-simple-looking but 
+> > complex-and-rarely-executed piece of code, which is very 
+> > hard to debug.
+> 
+> And much of this as you are finding with this piece of code is 
+> how the software was designed rather then how the software 
+> needed to be.
+
+Well most of the 4 problems above are externalities and cannot 
+go away just by fixing the kernel.
+
+ #1 will always be with us.
+ #3 needs the hardware to change. It's happening, but slowly.
+ #4 will be with us as long as there's non-Linux BIOSes
+
+#2 is the only thing where we can make a realistic difference,
+but there's just so much we can do there.
+
+And that still leaves the other three items: each of which is 
+powerful enough of a force to give a bad name to any normal 
+subsystem.
+
+	Ingo
