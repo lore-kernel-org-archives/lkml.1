@@ -1,87 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZBWXVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbZBWXYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbZBWXVv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 18:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbZBWXVn
+	id S1753636AbZBWXYc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 18:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZBWXYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 18:21:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59970 "EHLO hera.kernel.org"
+	Mon, 23 Feb 2009 18:24:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42274 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbZBWXVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 18:21:42 -0500
-Message-ID: <49A32F40.7080403@kernel.org>
-Date: Mon, 23 Feb 2009 15:20:32 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	id S1751143AbZBWXYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 18:24:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Fries <david@fries.net>
+Subject: Re: TSC marked unstable on suspend and resume
+Date: Tue, 24 Feb 2009 00:23:51 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, "linux-kernel" <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: check range in reserve_early()
-Content-Type: text/plain; charset=ISO-8859-1
+References: <20090221023943.GA4894@spacedout.fries.net>
+In-Reply-To: <20090221023943.GA4894@spacedout.fries.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902240023.52166.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 21 February 2009, David Fries wrote:
+> I'm getting TSC marked as unsable on hibernate to disk with
+> 2.6.29-rc3.  The last kernel I ran 2.6.24.4 ran 300+ days without a
+> problem and does not loose TSC on hibernate.
 
-Impact: cleanup
+Ingo, Andrew, can you please tell us who's the right person to look into this
+problem?
 
-one 32bit system report:
-
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000001c000000 (usable)
- BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
-DMI 2.0 present.
-last_pfn = 0x1c000 max_arch_pfn = 0x100000
-kernel direct mapping tables up to 1c000000 @ 7000-c000
-...
-RAMDISK: 1bc69000 - 1bfef4fa
-...
-0MB HIGHMEM available.
-448MB LOWMEM available.
-  mapped low ram: 0 - 1c000000
-  low ram: 00000000 - 1c000000
-  bootmap 00002000 - 00005800
-(9 early reservations) ==> bootmem [0000000000 - 001c000000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
-  #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
-  #3 [0000400000 - 00009ed14c]    TEXT DATA BSS ==> [0000400000 - 00009ed14c]
-  #4 [001bc69000 - 001bfef4fa]          RAMDISK ==> [001bc69000 - 001bfef4fa]
-  #5 [00009ee000 - 00009f2000]    INIT_PG_TABLE ==> [00009ee000 - 00009f2000]
-  #6 [000009f400 - 0000100000]    BIOS reserved ==> [000009f400 - 0000100000]
-  #7 [0000007000 - 0000007000]          PGTABLE
-  #8 [0000002000 - 0000006000]          BOOTMAP ==> [0000002000 - 0000006000]
-
-got strange blank entry with PGTABLE
-
-the reason is init_pg_table is big enough, and zero range is called with
-init_memory_mapping/reserve_early()
-
-so try to check the range in reserve_early()
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/e820.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -858,6 +858,9 @@ void __init reserve_early_overlap_ok(u64
-  */
- void __init reserve_early(u64 start, u64 end, char *name)
- {
-+	if (start <= end)
-+		return;
-+
- 	drop_overlaps_that_are_ok(start, end);
- 	__reserve_early(start, end, name, 0);
- }
+> I'm hibernating with `echo disk > /sys/power/state`.
+> These look like the relavant messages,
+> 
+> CPU 0 irqstacks, hard=c0379000 soft=c0378000
+> PID hash table entries: 1024 (order: 10, 4096 bytes)
+> Fast TSC calibration using PIT
+> Detected 300.705 MHz processor.
+> Calibrating delay loop (skipped), value calculated using timer frequency.. 601.41 BogoMIPS (lpj=300705)
+> hibernate to disk,
+> Restarting tasks ... done.
+> Clocksource tsc unstable (delta = 499883531 ns)
+> 
+> another reboot,
+> Restarting tasks ... done.
+> Clocksource tsc unstable (delta = 499883531 ns)
+> 
+> another reboot,
+> Freezing user space processes ... (elapsed 0.07 seconds) done.
+> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> PM: Shrinking memory...  ^H-<4>Clocksource tsc unstable (delta = 78961880 ns)
+> ^H\^H|^H/^Hdone (34745 pages freed)
+> 
+> 
+> 
+> I didn't spot the problem until I raw the HP48 calculator emulator x48
+> and it was running like a dog, but the same binary ran fine on my
+> other systems.  It was looping on gettimeofday intending to delay 2us,
+> but was getting 1ms when TSC wasn't available.
+> 
+> On Thu, Feb 05, 2009 at 10:02:39PM +0100, Ingo Molnar wrote:
+> > What does this tool output:
+> > 
+> >  http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
+> 
+> time-warp-test is getting the number of CPUs wrong here, trivial
+> patch included.
+> 
+> ./time-warp-test  
+> 2 CPUs, running 2 parallel test-tasks.
+> 
+> grep processor /proc/cpuinfo
+> processor       : 0
+> model name      : AMD-K6(tm) 3D processor
+> 
+> 
+> --- time-warp-test.c.orig	2009-02-19 20:52:40.000000000 -0600
+> +++ time-warp-test.c	2009-02-19 21:32:58.000000000 -0600
+> @@ -295,7 +295,7 @@ int main(int argc, char **argv)
+>  	unsigned long *shared;
+>  	unsigned long cpus, tasks;
+>  
+> -	cpus = system("exit `grep processor /proc/cpuinfo  | wc -l`");
+> +	cpus = system("exit `grep ^processor /proc/cpuinfo  | wc -l`");
+>  	cpus = WEXITSTATUS(cpus);
+>  
+>  	if (argc > 2) {
+> 
+> 
+> 
+> 
+> With any optimizations, -O or -O1 or -O2 I don't get any status
+> output, with -O0 I get,
+> 
+> ./time-warp-test 
+> 1 CPUs, running 1 parallel test-tasks.
+> checking for time-warps via:
+> - read time stamp counter (RDTSC) instruction (cycle resolution)
+> 
+>  | TSC: 0.82us, fail:0 /
