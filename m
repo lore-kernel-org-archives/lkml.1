@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbZBWTe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbZBWTne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbZBWTe1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 14:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZBWTeT
+	id S1756740AbZBWTne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 14:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZBWTnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 14:34:19 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39080 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753042AbZBWTeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 14:34:18 -0500
-Date: Mon, 23 Feb 2009 20:33:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: paulmck@linux.vnet.ibm.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>, stable@kernel.org,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Message-ID: <20090223193351.GA11921@elte.hu>
-References: <20090220140157.GA12799@elte.hu> <20090222030030.GD6860@linux.vnet.ibm.com> <20090223051709.GA5990@linux.vnet.ibm.com> <200902240029.37815.nickpiggin@yahoo.com.au> <20090223161726.GD6751@linux.vnet.ibm.com> <20090223111009.d48ff81d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090223111009.d48ff81d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 23 Feb 2009 14:43:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34757 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754950AbZBWTnY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 14:43:24 -0500
+Date: Mon, 23 Feb 2009 11:42:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: nickpiggin@yahoo.com.au, penberg@cs.helsinki.fi, mpm@selenic.com,
+       kosaki.motohiro@jp.fujitsu.com, david.vrabel@csr.com,
+       hannes@cmpxchg.org, chas@cmf.nrl.navy.mil, johnpol@2ka.mipt.ru,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: [patch 1/7] slab: introduce kzfree()
+Message-Id: <20090223114200.3d14cc3b.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0902231429360.28573@blonde.anvils>
+References: <499BE7F8.80901@csr.com>
+	<499DB6EC.3020904@cs.helsinki.fi>
+	<Pine.LNX.4.64.0902192022210.8254@blonde.anvils>
+	<200902240101.26362.nickpiggin@yahoo.com.au>
+	<Pine.LNX.4.64.0902231429360.28573@blonde.anvils>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 23 Feb 2009 14:51:05 +0000 (GMT)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Mon, 23 Feb 2009 08:17:26 -0800 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
-> > > On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
-> > > 
-> > > > The boot CPU runs in the context of its idle thread during boot-up.
-> > > > During this time, idle_cpu(0) will always return nonzero, which will
-> > > > fool Classic and Hierarchical RCU into deciding that a large chunk of
-> > > > the boot-up sequence is a big long quiescent state.  This in turn causes
-> > > > RCU to prematurely end grace periods during this time.
-> > > >
-> > > > This patch creates a new global variable that is set to 1 just before
-> > > > the boot CPU first enters the scheduler, after which the idle task
-> > > > really is idle.
-> > > 
-> > > Nice work all (btw. if this patch goes in rather than using system_state,
-> > > then please make the variable __read_mostly).
+> On Tue, 24 Feb 2009, Nick Piggin wrote:
 > > 
-> > Hmmm...  I misread this and made system_state be __read_mostly.  Let
-> > me know if this is bad, easy to fix if needed.
+> > Well, the buffer is only non-modified in the case of one of the
+> > allocators (SLAB). All others overwrite some of the data region
+> > with their own metadata.
+> > 
+> > I think it is OK to use const, though. Because k(z)free has the
+> > knowledge that the data will not be touched by the caller any
+> > longer.
 > 
-> Please don't use system_state.  The whole thing is just bad 
-> design. It's a global variable, breaks encapsulation, creates 
-> interactions etc. CS-101 stuff.
+> Sorry, you're not adding anything new to the thread here.
+> 
+> Yes, the caller is surrendering the buffer, so we can get
+> away with calling the argument const; and Linus argues that's
+> helpful in the case of kfree (to allow passing a const pointer
+> without having to cast it).
+> 
+> My contention is that kzfree(const void *ptr) is nonsensical
+> because it says please zero this buffer without modifying it.
 
-ok, i've removed the patch - Paul, would you mind to re-send 
-your original flag solution, with it marked __read_mostly and 
-with the extern declarations put into a suitable header file?
+yup.  The intent of kzfree() is explicitly, overtly, deliberately to
+modify the passed memory before freeing it.  Marking it const is dopey.
 
-Paul, incidentally, this very minute i tracked down that the 
-patch is also causing boot lockups in -tip testing. I havent yet 
-fully debugged it, but a question comes immediately: if there's 
-no grace periods during bootup, wont rcu_sync() & friends just 
-hang indefinitely?
+But the const marker is potentially useful to some caller.  An arguably
+misdesigned caller.
 
-More thought is needed.
+> But the change has gone in, I seem to be the only one still
+> bothered by it, and I've conceded that the "z" might stand
+> for zap rather than zero.
 
-	Ingo
+Yeah.  But it's a very small bother.
+
