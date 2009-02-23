@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbZBWJys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZBWJ4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbZBWJys (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 04:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZBWJyj
+	id S1753469AbZBWJ4D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 04:56:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbZBWJzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 04:54:39 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:50161 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750971AbZBWJyi (ORCPT
+	Mon, 23 Feb 2009 04:55:50 -0500
+Received: from stinky.trash.net ([213.144.137.162]:61288 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbZBWJzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 04:54:38 -0500
-Date: Mon, 23 Feb 2009 17:54:28 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Fixes for 2.6.29
-Message-ID: <20090223095428.GA11076@gondor.apana.org.au>
-References: <20080501102812.GA7151@gondor.apana.org.au> <20080727063659.GA936@gondor.apana.org.au> <20090115044020.GA29891@gondor.apana.org.au> <20090127061546.GA27962@gondor.apana.org.au> <20090209033924.GA31250@gondor.apana.org.au> <20090217121252.GA22812@gondor.apana.org.au>
+	Mon, 23 Feb 2009 04:55:50 -0500
+Message-ID: <49A272A3.5040405@trash.net>
+Date: Mon, 23 Feb 2009 10:55:47 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090217121252.GA22812@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
+References: <1235070082-7069-1-git-send-email-wg@grandegger.com> <1235070082-7069-2-git-send-email-wg@grandegger.com> <1235070082-7069-3-git-send-email-wg@grandegger.com> <1235070082-7069-4-git-send-email-wg@grandegger.com> <499E7B9B.6030603@trash.net> <49A01932.4090004@grandegger.com>
+In-Reply-To: <49A01932.4090004@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+Wolfgang Grandegger wrote:
+> Patrick McHardy wrote:
+>> Is sysfs really the best choice for this? It has the usual problems,
+>> you can't change multiple parameters at once atomically. Now, I don't
+>> know whether this is actually (and currently) a problem for CAN, but
+>> given that we already have a generic netlink interface for creating
+>> network interfaces that can easily support this, what are the reasons
+>> for adding a new interface instead of using the existing one?
+> 
+> You refer to the API described at http://lwn.net/Articles/236919/, I
+> assume.
 
-This push fixes a bug in /proc/crypto where it may display a
-bogus digest size for ahash algorithms.
+Exactly.
 
-Please pull from
+> Well, I know that netlink is used to define routes in the kernel
+> or VLANs but I was not aware that it can also be used to configure real
+> network devices. What a pity. At a first glance, I could also be used
+> for CAN, of course. There are the following requirements:
+> 
+> 1. Set and get CAN device properties like bit-rate and controller mode.
+> 2. Show CAN bus state (active, error-passive or bus-off).
+> 3. Get device constants like clock frequency and bit-timing parameters.
+> 4. Dump CAN device statistics.
+> 5. Trigger device restart if CAN bus-off state has been detected.
+> 
+> Not sure yet, if the interface if good for all purposes. Especially
+> point 5. might be better handled by an IOCTL.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+The first points sound pretty regular. The last one - just triggering
+it is no problem of course, but since I don't know how the detection
+works, I can't really tell whether its suitable.
 
-or
+> And we need a user space
+> tool, e.g. canconfig, to handle the user requests and communicate with
+> the kernel side.
 
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+Thats pretty standard :)
 
+> We will follow that promising route. Any further help
+> or link is appreciated. Thanks.
 
-Lee Nipper (1):
-      crypto: ahash - Fix digest size in /proc/crypto
-
- crypto/ahash.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+It should be quite easy to move your interface on top. A few examples
+that might be useful are vlan, ip_gre and macvlan.
