@@ -1,77 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZBWLRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZBWLWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbZBWLRT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 06:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZBWLRH
+	id S1754533AbZBWLWP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 06:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZBWLV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 06:17:07 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:57116 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752370AbZBWLRE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 06:17:04 -0500
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <m1pri623g9.fsf@fess.ebiederm.org>
-	<49815BF6.7060402@jp.fujitsu.com>
-	<200902131129.09523.jbarnes@virtuousgeek.org>
-	<m11vu1wtk6.fsf@fess.ebiederm.org> <49991D3A.7090001@jp.fujitsu.com>
-	<m1mycktw5t.fsf@fess.ebiederm.org> <499BB4EB.6020602@jp.fujitsu.com>
-	<m1hc2s5dyp.fsf@fess.ebiederm.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 23 Feb 2009 03:17:32 -0800
-In-Reply-To: <m1hc2s5dyp.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Wed\, 18 Feb 2009 00\:47\:10 -0800")
-Message-ID: <m17i3h5rn7.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 23 Feb 2009 06:21:59 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:33878 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752923AbZBWLV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 06:21:59 -0500
+Date: Mon, 23 Feb 2009 11:21:56 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: akpm@linux-foundation.org, wli@movementarian.org, linux-mm@kvack.org,
+       shai@scalex86.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] mm: Reintroduce and deprecate rlimit based access
+	for SHM_HUGETLB
+Message-ID: <20090223112156.GB6740@csn.ul.ie>
+References: <20090221015457.GA32674@localdomain> <20090221015748.GB32674@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: kaneshige.kenji@jp.fujitsu.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  2.0 XMPhish11 BODY: Confirm email account/addy
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1204]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pciehp:  Handle interrupts that happen during initialization.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090221015748.GB32674@localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+On Fri, Feb 20, 2009 at 05:57:48PM -0800, Ravikiran G Thirumalai wrote:
+> Allow non root users with sufficient mlock rlimits to be able to allocate
+> hugetlb backed shm for now.  Deprecate this though.  This is being
+> deprecated because the mlock based rlimit checks for SHM_HUGETLB
+> is not consistent with mmap based huge page allocations.
+> 
+> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Wli <wli@movementarian.org>
+> 
+> Index: linux-2.6-tip/fs/hugetlbfs/inode.c
+> ===================================================================
+> --- linux-2.6-tip.orig/fs/hugetlbfs/inode.c	2009-02-10 13:30:05.000000000 -0800
+> +++ linux-2.6-tip/fs/hugetlbfs/inode.c	2009-02-11 21:58:23.000000000 -0800
+> @@ -948,6 +948,7 @@ static int can_do_hugetlb_shm(void)
+>  struct file *hugetlb_file_setup(const char *name, size_t size)
+>  {
+>  	int error = -ENOMEM;
+> +	int unlock_shm = 0;
+>  	struct file *file;
+>  	struct inode *inode;
+>  	struct dentry *dentry, *root;
+> @@ -957,8 +958,14 @@ struct file *hugetlb_file_setup(const ch
+>  	if (!hugetlbfs_vfsmount)
+>  		return ERR_PTR(-ENOENT);
+>  
+> -	if (!can_do_hugetlb_shm())
+> -		return ERR_PTR(-EPERM);
+> +	if (!can_do_hugetlb_shm()) {
+> +		if (user_shm_lock(size, user)) {
+> +			unlock_shm = 1;
+> +			WARN_ONCE(1,
+> +			  "Using mlock ulimits for SHM_HUGETLB deprecated\n");
+> +		} else
+> +			return ERR_PTR(-EPERM);
+> +	}
+>  
 
-> Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> writes:
->
->> In the current pciehp implementation, minimum resources enough to
->> enable devices under the bridge are assigned when P2P bridge is
->> hot-added. My concern is that enough resources are NOT assigned to
->> the bridge if an additional slot is empty. As a result, hot-add
->> adapter card on the additional slot won't work because of resource
->> shortage.
->
-> It is a good concern.  Right now I know I won't need a bus number
-> but you are quite right the mmio and iospace may be a problem.
->
-> My preliminary test case doesn't cover that so I will look and
-> confirm it is a problem I need to address.
+Seems to do what is promised by the patch and basic tests worked out for
+me. I think the behaviour has changed slightly in that we are getting EPERM
+now where we might have seen ENOMEM before but that should be ok.
 
-Tested.  I do have a problem with not assigning resources to new
-bridges.
+>  	root = hugetlbfs_vfsmount->mnt_root;
+>  	quick_string.name = name;
+> @@ -997,6 +1004,8 @@ out_inode:
+>  out_dentry:
+>  	dput(dentry);
+>  out_shm_unlock:
+> +	if (unlock_shm)
+> +		user_shm_unlock(size, user);
+>  	return ERR_PTR(error);
+>  }
+>  
+> Index: linux-2.6-tip/Documentation/feature-removal-schedule.txt
+> ===================================================================
+> --- linux-2.6-tip.orig/Documentation/feature-removal-schedule.txt	2009-02-09 16:45:47.000000000 -0800
+> +++ linux-2.6-tip/Documentation/feature-removal-schedule.txt	2009-02-11 21:35:28.000000000 -0800
+> @@ -335,3 +335,14 @@ Why:	In 2.6.18 the Secmark concept was i
+>  	Secmark, it is time to deprecate the older mechanism and start the
+>  	process of removing the old code.
+>  Who:	Paul Moore <paul.moore@hp.com>
+> +---------------------------
+> +
+> +What:	Ability for non root users to shm_get hugetlb pages based on mlock
+> +	resource limits
+> +When:	2.6.31
+> +Why:	Non root users need to be part of /proc/sys/vm/hugetlb_shm_group or
+> +	have CAP_IPC_LOCK to be able to allocate shm segments backed by
+> +	huge pages.  The mlock based rlimit check to allow shm hugetlb is
+> +	inconsistent with mmap based allocations.  Hence it is being
+> +	deprecated.
+> +Who:	Ravikiran Thirumalai <kiran@scalex86.org>
+> 
 
-My plan to handle this currently is to do what the pci code does for
-cardbus without resources.  To give them a fixed sized resource
-assignment without looking downstream from the bridge.  The code
-looks simple, and we have existing practice so it should not be too
-bad to deal with.
+Reviewed-by: Mel Gorman <mel@csn.ul.ie>
 
-Eric
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
