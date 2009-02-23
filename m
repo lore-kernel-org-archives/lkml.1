@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbZBWLqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZBWLzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754964AbZBWLqW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 06:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZBWLqO
+	id S1754699AbZBWLzl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 06:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbZBWLzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 06:46:14 -0500
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:35975 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752079AbZBWLqN (ORCPT
+	Mon, 23 Feb 2009 06:55:32 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50465 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753330AbZBWLzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 06:46:13 -0500
-Date: Mon, 23 Feb 2009 17:15:41 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: RT scheduling and a way to make a process hang, unkillable
-Message-ID: <20090223114541.GD31277@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090216103636.GC17355@linux.vnet.ibm.com> <1234782516.4703.15.camel@laptop> <20090216120213.GB3925@linux.vnet.ibm.com> <1234787082.30178.3.camel@laptop> <20090216131440.GC3925@linux.vnet.ibm.com> <20090216132014.GD3925@linux.vnet.ibm.com> <4999BC0C.1010304@fatooh.org> <20090217050033.GA10409@linux.vnet.ibm.com> <20090217101542.GB15989@linux.vnet.ibm.com> <1234869339.4744.77.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234869339.4744.77.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 23 Feb 2009 06:55:31 -0500
+Subject: [PATCH] mm: clean up __GFP_* flags a bit
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1235344649-18265-5-git-send-email-mel@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
+	 <1235344649-18265-5-git-send-email-mel@csn.ul.ie>
+Content-Type: text/plain
+Date: Mon, 23 Feb 2009 12:55:01 +0100
+Message-Id: <1235390101.4645.79.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 12:15:39PM +0100, Peter Zijlstra wrote:
-> On Tue, 2009-02-17 at 15:45 +0530, Dhaval Giani wrote:
-> 
-> > sched: Don't allow setuid to succeed if the user does not have rt bandwidth
-> > 
-> > Corey Hickey reported that on using setuid to change the uid of a
-> > rt process, the process would be unkillable and not be running.
-> > This is because there was no rt runtime for that user group. Add
-> > in a check to see if a user can attach an rt task to its task group.
-> 
-> This looks good to me.
-> 
-> Does anybody object to the -ENOSPC return value? Should we introduce
-> -ENOTIME for that?
-> 
-> Michael, Alan?
-> 
+Subject: mm: clean up __GFP_* flags a bit
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Mon Feb 23 12:28:33 CET 2009
 
-Hi,
+re-sort them and poke at some whitespace alignment for easier reading.
 
-Any comments on which return value to return? Should we introduce
--ENOTIME?
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/gfp.h |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Corey mentioned he found ENOSPC confusing.
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -25,6 +25,8 @@ struct vm_area_struct;
+ #define __GFP_HIGHMEM	((__force gfp_t)0x02u)
+ #define __GFP_DMA32	((__force gfp_t)0x04u)
+ 
++#define __GFP_MOVABLE	((__force gfp_t)0x08u)  /* Page is movable */
++
+ /*
+  * Action modifiers - doesn't change the zoning
+  *
+@@ -50,16 +52,15 @@ struct vm_area_struct;
+ #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* See above */
+ #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+-#define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+-#define __GFP_HARDWALL   ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
+-#define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
++#define __GFP_NOMEMALLOC  ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
++#define __GFP_HARDWALL    ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
++#define __GFP_THISNODE	  ((__force gfp_t)0x40000u) /* No fallback, no policies */
+ #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
+-#define __GFP_MOVABLE	((__force gfp_t)0x08u)  /* Page is movable */
+ 
+ #ifdef CONFIG_KMEMCHECK
+-#define __GFP_NOTRACK	((__force gfp_t)0x200000u)  /* Don't track with kmemcheck */
++#define __GFP_NOTRACK	  ((__force gfp_t)0x100000u) /* Don't track with kmemcheck */
+ #else
+-#define __GFP_NOTRACK	((__force gfp_t)0)
++#define __GFP_NOTRACK	  ((__force gfp_t)0)
+ #endif
+ 
+ #define __GFP_BITS_SHIFT 22	/* Room for 22 __GFP_FOO bits */
 
-Thanks,
--- 
-regards,
-Dhaval
+
