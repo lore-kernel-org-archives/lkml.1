@@ -1,135 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZBWPH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZBWPHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755810AbZBWPH3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 10:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbZBWPHQ
+	id S1755716AbZBWPHw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 10:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbZBWPHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 10:07:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56002 "EHLO mx2.mail.elte.hu"
+	Mon, 23 Feb 2009 10:07:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40124 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752889AbZBWPHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 10:07:14 -0500
-Date: Mon, 23 Feb 2009 16:06:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+	id S1753820AbZBWPHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 10:07:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
+Date: Mon, 23 Feb 2009 16:07:10 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Johannes Berg <johannes@sipsolutions.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        pm list <linux-pm@lists.linux-foundation.org>,
        Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
-	suspend-resume
-Message-ID: <20090223150647.GE3377@elte.hu>
-References: <200902221837.49396.rjw@sisk.pl> <m1bpst77te.fsf@fess.ebiederm.org> <20090223110433.GA17312@elte.hu> <200902231545.26250.rjw@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200902231229.58743.rjw@sisk.pl> <20090223124503.GC31427@elte.hu>
+In-Reply-To: <20090223124503.GC31427@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200902231545.26250.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902231607.11064.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Monday 23 February 2009, Ingo Molnar wrote:
-> > 
-> > * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> > 
-> > > > What makes s2ram fragile is not human failure but the 
-> > > > combination of a handful of physical property:
-> > > >
-> > > > 1) Psychology: shutting the lid or pushing the suspend button is 
-> > > >    a deceivingly 'simple' action to the user. But under the 
-> > > >    hood, a ton of stuff happens: we deinitialize a lot of 
-> > > >    things, we go through _all hardware state_, and we do so in a 
-> > > >    serial fashion. If just one piece fails to do the right 
-> > > >    thing, the box might not resume. Still, the user expects this 
-> > > >    'simple' thing to just work, all the time. No excuses 
-> > > >    accepted.
-> > > >
-> > > > 2) Length of code: To get a successful s2ram sequence the kernel
-> > > >    runs through tens of thousands of lines of code. Code which
-> > > >    never gets executed on a normal box - only if we s2ram. If 
-> > > >    just one step fails, we get a hung box.
-> > > >
-> > > > 3) Debuggability: a lot of s2ram code runs with the console off, 
-> > > >    making any bugs hard to debug. Furthermore we have no 
-> > > >    meaningful persistent storage either for kernel bug messages. 
-> > > >    The RTC trick of PM_DEBUG works but is a very narrow channel 
-> > > >    of information and it takes a lot of time to debug a bug via 
-> > > >    that method.
+On Monday 23 February 2009, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > > > +resume_devices:
+> > > > +	resume_device_irqs();
 > > > 
-> > > Yep that is an issue.
+> > > Small style nit: labels should start with a space character. 
+> > > I.e. it should be:
 > > 
-> > I'd also like to add #4:
-> > 
-> >      4) One more thing that makes s2ram special is that when the 
-> >         resume path finds hardware often in an even more 
-> >         deinitialized form than during normal bootup. During
-> >         normal bootup the BIOS/firmware has at least done some
-> >         minimal bootstrap (to get the kernel loaded), which
-> >         makes life easier for the kernel.
-> > 
-> >         At s2ram stage we've got a completely pure hardware
-> >         init state, with very minimal firmware activation.
+> > I know, but the second label in there starts without a space 
+> > character and IMO keeping a uniform coding style i a single 
+> > file is more important than trying to adjust it to a broader 
+> > set of rules FWIW. [...]
 > 
-> This is very true and at least in some cases done on purpose, 
-> AFAICS, due to some timing constraints forced on HW vendors by 
-> M$, for example.
-
-IMHO i think it's the technically sane thing to do. Personally i 
-trust the quirks of bare metal much more than the combined 
-quirks of firmware _and_ bare metal.
-
-> >         So many of the init and deinit problems and bugs we 
-> >         only hit in the s2ram path - which dynamics is again 
-> >         not helpful.
+> Even though it's just a very small and insignificant detail 
+> (nowhere described in the CodingStyle), barely worth the mention 
+> (and i already regret having brought it up at all), what you say 
+> is wrong on a conceptual level and that alarms me a bit ;-)
 > 
-> Plus ACPI requires us to do additional things during 
-> suspend-resume that are not done on boot-shutdown and which 
-> have their own ordering requirements (not necessarily stated 
-> directly, but such that we have do discover experimentally).  
-> That also change from one BIOS to another.
+> It is exactly these kinds of "my code, my style!" world view 
+> that results in a crappy overall kernel style.
+> 
+> For a single file to look consistent is just the first (and 
+> required) step, what matters even more is for files to have 
+> similar coding patterns, to make the style as helpful to the 
+> general kernel developer/reviewer/bug-fixer/maintainer as 
+> possible.
+> 
+> "code with a helpful style" here means two things:
+> 
+> 1) it should understand and adhere to basic style principles. 
+>    This is just an (often arbitrary) subset of the infinite set 
+>    of reasonable style guides. The most common-sense ones are
+>    written down in Documentation/CodingStyle. There's a lot of 
+>    leeway, as long as the basic principle of "be helpful" is
+>    understood and followed.
+> 
+> 2) it should carry meta information outside of the language 
+>    syntax and it should build expectations about a code's 
+>    purpose and general structure.
+> 
+>    That is essential so that we can find bugs during review.
+> 
+>    If each file has a slightly different style to express labels 
+>    then that means we insert extra entropy and degrades and 
+>    obfuscates the true meat of the code and hurts the overall 
+>    reviewability of the code.
+> 
+> In practical terms: i noticed that weird label - otherwise i 
+> would not have commented on it. I noticed it because it had the 
+> pattern of a comment block (most comment blocks start with 
+> capital letters, and for that good reason).
+> 
+> It was completely unnecessary for me to notice that label - it 
+> carries no information about the patch itself. Ergo, it would be 
+> better in the long run if code does not raise unnecessary mental 
+> exceptions. We have a limited set of exceptions we are able to 
+> handle during review, lets make sure we use them sparingly.
 
-We could perhaps do a few things here to trigger bugs sooner.
+Just to clarify, I have nothing against labels that are not capitalized etc.,
+actually I can live with whatever style of labels is considered as appropriate
+and/or helpful.
 
-For example at driver init, instead of executing just 
-->driver_open(), we could execute:
+However, if specific style of labels was chosen for given file in the past and
+it is consistent over the entire file, I don't think it should be changed in a
+patch that does a different thing, regardless of who's maintaining the file
+or who's written the code in question.  It should be changed in a separate
+patch with a changelog describing why this change is being made.  I don't
+really have the time to write such a patch at the moment and I don't really
+think it's _that_ important.  YMMV.
 
-   ->driver_open()
-   ->driver_suspend()
-   ->driver_resume()
+> Sure, there will always be borderline cases where we'll have to 
+> agree to disagree, even if we agree about the general principle.
+> 
+> But this is not one of those cases - having a "Suspend:" 
+> capitalized label is not something you added to enhance the 
+> basic coding style - it is something very uncommon and 
+> self-serving which you added in _spite_ of the general 
+> principles i believe. It has no other message beyond "I do this 
+> because i can!".
+> 
+> I.e. it is not helpful at all. When it comes to coding style the 
+> kernel is not a democracy at all.
+> 
+> > [...]  I also think that coding style changes shouldn't be 
+> > mixed with functional changes as far as reasonably possible.
+> 
+> Sure, you got that drive-by review for free, by virtue of 
+> context diffs ;-)
 
-I.e. we'd simulate a suspend+resume mini-step. This makes it 
-sure that the basic driver callbacks are sane. It is also 
-supposed to work because the driver is just being initialized. 
+Well, OK. :-)
 
-This way certain types of bugs would not show up as difficult to 
-debug s2ram regressions - but would show up as 'boot hang' or 
-'boot crash' bugs.
+Still, IMHO it's more helpful if the comments related to the changes that
+belong to the patch in question are not mixed with comments related to the
+coding style of the files being modified.  Perhaps I'm picky ...
 
-This does not simulate the "big picture" resume machinery (the 
-dependencies, etc.), nor does it trigger any of the "hardware 
-got really turned off" effects that true resume will trigger - 
-but at least it offloads a portion of the testing space from 
-'s2ram' to 'bootup' testing.
-
-What's your feeling - what percentage of all s2ram regressions 
-in the last year or so could have been triggered this way? Lets 
-assume we had 100 regressions in that timeframe - would it be in 
-the 10 bugs range? Or much lower or much higher?
-
-	Ingo
+Thanks,
+Rafael
