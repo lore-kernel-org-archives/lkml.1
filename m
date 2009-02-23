@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbZBWSzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZBWS7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbZBWSzA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 13:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZBWSyw
+	id S1756888AbZBWS7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 13:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755076AbZBWS7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 13:54:52 -0500
-Received: from mail.phnxsoft.com ([195.227.45.4]:3359 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754186AbZBWSyw (ORCPT
+	Mon, 23 Feb 2009 13:59:08 -0500
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:55300 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755075AbZBWS7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 13:54:52 -0500
-X-Greylist: delayed 1023 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Feb 2009 13:54:51 EST
-Message-ID: <49A2ECF5.80104@phoenixsoftware.de>
-Date: Mon, 23 Feb 2009 19:37:41 +0100
-From: Tilman Schmidt <t.schmidt@phoenixsoftware.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 23 Feb 2009 13:59:07 -0500
+X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-04.arcor-online.net 7606933AE7A
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] pci: enable MSI on 8132
+Date: Mon, 23 Feb 2009 20:01:16 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5; KDE/4.2.0; x86_64; ; )
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200902231921.22759.prakash@punnoor.de> <49A2EFF9.9020109@kernel.org>
+In-Reply-To: <49A2EFF9.9020109@kernel.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.28.7] BUG: using smp_processor_id() in preemptible [00000000]
- code: pageattr-test/207
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -0.423 () AWL,BAYES_50,RDNS_NONE
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902232001.17240.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Booting the most recent stable kernel 2.6.28.7 on my workhorse machine
-(Pentium D, openSUSE 10.3 32 bit userspace) produces rather a lot of
-the following BUG messages:
+On Montag 23 Februar 2009 19:50:33 Yinghai Lu wrote:
+> Prakash Punnoor wrote:
+> > On Montag 23 Februar 2009 07:18:34 Yinghai Lu wrote:
+> >> please try, you may need Eric's patch too.
+> >>
+> >> [PATCH] pci: don't enable too much HT MSI mapping
+> >>
+> >> Impact: fix bug
+> >>
+> >> Prakesh reported that his c51-mcp51 system ondie sound card doesn't work
+> >> MSI but if he hack out the HT-MSI on mcp51, the MSI will work well with
+> >> sound card.
+> >>
+> >> this patch rework the nv_msi_ht_cap_quirk()
+> >> and will only enable ht_msi and try to avoid to enable ht_msi both.
+> >>
+> >> Reported-by: Prakesh Punnoor <prakash@punnoor.de>
+> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >
+> > Hi, I can confirm that the patch works nicely with 2.6.29-rc6. (BTW, my
+> > name is written with two 'a's...)
+>
+> good, will resend to Jesse.
+>
+>
+> what are your correct name with two 'a's?
 
-<3>BUG: using smp_processor_id() in preemptible [00000000] code: pageattr-test/207
-<4>caller is paravirt_get_lazy_mode+0xe/0x1b
-<4>Pid: 207, comm: pageattr-test Not tainted 2.6.28.7-testing #1
-<4>Call Trace:
-<4> [<c0204760>] debug_smp_processor_id+0xac/0xc0
-<4> [<c011ad90>] paravirt_get_lazy_mode+0xe/0x1b
-<4> [<c011c925>] arch_flush_lazy_mmu_mode+0x8/0x19
-<4> [<c011d07c>] change_page_attr_set_clr+0x283/0x28e
-<4> [<c011d152>] change_page_attr_set+0xf/0x11
-<4> [<c011d347>] do_pageattr_test+0x1f3/0x3e3
-<4> [<c01247f1>] ? finish_task_switch+0xa0/0xa8
-<4> [<c032f799>] ? schedule+0x462/0x472
-<4> [<c0331353>] ? _spin_unlock_irqrestore+0x40/0x74
-<4> [<c011d154>] ? do_pageattr_test+0x0/0x3e3
-<4> [<c0139f1d>] kthread+0x3b/0x62 
-<4> [<c0139ee2>] ? kthread+0x0/0x62
-<4> [<c0104a43>] kernel_thread_helper+0x7/0x10
-
-They occur regularly in bursts of ten, separated by 30 second break.
-The previous kernel:
-
-ts@xenon:~> uname -a
-Linux xenon 2.6.28.6-testing #1 SMP PREEMPT Wed Feb 18 21:05:30 CET 2009 i686 i686 i386 GNU/Linux
-
-with identical config and userspace (double-checked this time ;-)
-runs quite BUG-free.
-
-HTH
-Tilman
-
--- 
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
-
-
+Well, as in my sender field/email: Prakash (not Prakesh)
