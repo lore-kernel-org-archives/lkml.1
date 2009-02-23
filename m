@@ -1,171 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbZBWKXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbZBWK0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753894AbZBWKXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 05:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZBWKXD
+	id S1753860AbZBWK0g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 05:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZBWK02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 05:23:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42869 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751664AbZBWKXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 05:23:01 -0500
-Date: Mon, 23 Feb 2009 11:22:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arun@linux.vnet.ibm.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH 0/4] timers: framework for migration between CPU
-Message-ID: <20090223102234.GQ9582@elte.hu>
-References: <20090220125516.GB10232@linux.vnet.ibm.com> <20090220132145.GF26418@elte.hu> <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu> <20090223075521.GA3725@balbir.in.ibm.com> <20090223091158.GJ9582@elte.hu> <20090223094850.GA10226@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090223094850.GA10226@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 23 Feb 2009 05:26:28 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39079 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751858AbZBWK01 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 05:26:27 -0500
+Subject: Re: [patch 2/2] slub: add min_partial sysfs tunable
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0902230126080.19494@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0902221710430.26165@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0902221712160.26165@chino.kir.corp.google.com>
+	 <1235377162.6216.5.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0902230126080.19494@chino.kir.corp.google.com>
+Date: Mon, 23 Feb 2009 12:26:24 +0200
+Message-Id: <1235384784.6216.34.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi David,
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * Ingo Molnar <mingo@elte.hu> [2009-02-23 10:11:58]:
-> 
+On Mon, 23 Feb 2009, Pekka Enberg wrote:
+> > The patches look good but the description is bit lacking. Does this
+> > actually fix up something? Why don't we fix the limit calculations
+> > instead?
 > > 
-> > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * Ingo Molnar <mingo@elte.hu> [2009-02-20 22:53:18]:
-> > > 
-> > > > 
-> > > > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > > > 
-> > > > > On Fri, 20 Feb 2009 17:07:37 +0100
-> > > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > > 
-> > > > > > 
-> > > > > > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > > > > 
-> > > > > > > > I'd also suggest to not do that rather ugly 
-> > > > > > > > enable_timer_migration per-cpu variable, but simply reuse 
-> > > > > > > > the existing nohz.load_balancer as a target CPU.
-> > > > > > > 
-> > > > > > > This is a good idea to automatically bias the timers.  But 
-> > > > > > > this nohz.load_balancer is a very fast moving target and we 
-> > > > > > > will need some heuristics to estimate overall system idleness 
-> > > > > > > before moving the timers.
-> > > > > > > 
-> > > > > > > I would agree that the power saving load balancer has a good 
-> > > > > > > view of the system and can potentially guide the timer biasing 
-> > > > > > > framework.
-> > > > > > 
-> > > > > > Yeah, it's a fast moving target, but it already concentrates 
-> > > > > > the load somewhat.
-> > > > > > 
-> > > > > 
-> > > > > I wonder if the real answer for this isn't to have timers be 
-> > > > > considered schedulable-entities and have the regular scheduler 
-> > > > > decide where they actually run.
-> > > > 
-> > > > hm, not sure - it's a bit heavy for that.
-> > > >
-> > > 
-> > > I think the basic timer migration policy should exist in user 
-> > > space.
-> > 
-> > I disagree.
-> >
+> > I'm a sucker for numbers so I'm easily fooled into merging patches with
+> > statements of the form "this shaves off N bytes/kb/mb on XYZ systems".
+
+On Mon, 2009-02-23 at 01:58 -0800, David Rientjes wrote:
+> The memory savings from simply moving min_partial from struct 
+> kmem_cache_node to struct kmem_cache is obviously not significant (unless 
+> maybe you're from SGI or something), at the largest it's
 > 
-> See below
->  
-> > > One of the ways of looking at it is, as we begin to 
-> > > consolidate, using range timers and migrating all timers to 
-> > > lesser number of CPUs would make a whole lot of sense.
-> > > 
-> > > As far as the scheduler making those decisions is concerned, 
-> > > my concern is that the load balancing is a continuous process 
-> > > and timers don't necessarily work that way. I'd put my neck 
-> > > out and say that irqbalance, range timers and timer migration 
-> > > should all belong to user space. irqbalance and range timers 
-> > > do, so should timer migration.
-> > 
-> > As i said it my first reply, IRQ migration is special because 
-> > they are not kernel-internal objects, they come externally so 
-> > there's a lot of user-space enumeration, policy and other steps 
-> > involved. Furthermore, IRQs are migrated in a 'slow' fashion.
-> > 
-> > Timers on the other hand are fast entities tied to _tasks_ 
-> > primarily, not external entities. 
+> 	# allocated caches * (MAX_NUMNODES - 1) * sizeof(unsigned long)
 > 
-> Timers are also queued due to external events like interrupts 
-> (device drivers tend to set of timers all the time). [...]
+> The true savings occurs when userspace reduces the number of partial slabs 
+> that would otherwise be wasted, especially on machines with a large 
+> number of nodes (ia64 with CONFIG_NODES_SHIFT at 10 for default?).  As 
+> well as the kernel estimates ideal values for n->min_partial and ensures 
+> it's within a sane range, userspace has no other input other than writing 
+> to /sys/kernel/slab/cache/shrink.
 
-That is a silly argument. Tasks are created due to 'external 
-events' as well such as the user hitting a key.
+Applied with the above explanation added to the changelog. Thanks!
 
-What matters, and what was my argument is the distinction 
-whether the kernel _generates_ the event. For most IRQ events it 
-does not, for the overwhelming majority of timers events it 
-consciously generates timer events. Which makes them all the 
-much different.
+			Pekka
 
-> [...] I am not fully against what you've said, at some 
-> semantic level what you are suggesting is that at a higher 
-> level of power saving, when the scheduler balances timers it 
-> is doing a form of soft CPU hotplug on the system by migrating 
-> timers and tasks away from idle CPUs when the load can be 
-> handled by other CPUs. See below as well.
-> 
-> > Hence they should migrate 
-> > according to the CPU where the activities of the system 
-> > concentrates - i.e. where tasks are running.
-> > 
-> > Another thing: do you argue for the existing timer-migration 
-> > code we have in mod_timer() to move to user-space too? It isnt a 
-> > consistent argument to push 'some' of it to user-space, and some 
-> > of it in kernel-space.
-> > 
-> 
-> No.. mod_timer() is correct where it belongs.
-
-You did not reply to my statement that the argument is a double 
-standard. Why do certain migrations in the kernel and some not?
-
-> Consider the powertop usage scenario today
-> 
-> 1. Powertop displays a list of timers and common causes of wakeup
-> 2. It recommends policies in user space that can affect power savings
->    a. usb autosuspend
->    b. wireless link management
->    c. disable HAL polling
-
-That's different - those are PowerTop timer event _reduction_ 
-policies. Not migration policies of existing timers.
-
-> My argument is, why can't we add
-> 
->    d. Use range timers
->    e. Consolidate timers
-> 
-> In the future.
-> 
-> Even sched_mc=n is set by user space, so really the
-> policy is in user space.
-
-that is different again. sched_mc is a broad switch not a 
-dynamic control like the sysfs migration interface that was 
-introduced in this patchset. Which patchset we are discussing.
-
-	Ingo
