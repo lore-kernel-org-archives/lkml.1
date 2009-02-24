@@ -1,146 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbZBXPa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZBXPbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbZBXPa2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 10:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbZBXPaS
+	id S1756943AbZBXPbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 10:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZBXPaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 10:30:18 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:43883 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbZBXPaQ (ORCPT
+	Tue, 24 Feb 2009 10:30:55 -0500
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:37839 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752134AbZBXPay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 10:30:16 -0500
-Date: Tue, 24 Feb 2009 16:29:58 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org, vapier.adi@gmail.com
-Subject: Re: [PATCH] physmap: Fix leak of memory returned by
-	parse_mtd_partitions
-Message-ID: <20090224152958.GN21900@pengutronix.de>
-References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp> <20090224133505.GJ21900@pengutronix.de> <20090224.233600.27954115.anemo@mba.ocn.ne.jp>
+	Tue, 24 Feb 2009 10:30:54 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Ra8RwkZASABDkhAHJeJsYuL9zYuiAraRvgZtGocSeltsFyEEXoEpgzKw9MkVCXIIR/sVpU+PNQtQrt6n+laaHZl+34EXCh5jmR+E9/Qqk3vTIGujQfLBjbwN0RQnHhTUc4P4ykNGxIOiAUVK3d4OZL1bD2M9zmHrOKJ2PqZs3tY=  ;
+X-YMail-OSG: geNihRoVM1n6RZwxR18zJxxzm_5h7VGED1CWVO4rrwSZegTzgaajZxilBy0621A7zEG2HkFwb7OipInn9xS47ZX9w.1KkJvK3icnS5r6S5uvLU6ctsHo.mOZM95fbl7rWE1VeDzBEbTmmpNBCVrBtVZG05c.U_SetumwJg4SmfwGV4OTE1uLij3NcGUfW0Rb6PMKTQtO44yxPYYfaCmTx0Dfte8G6yiR
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk allocation
+Date: Wed, 25 Feb 2009 02:30:17 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Tejun Heo <tj@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       jeremy@goop.org, cpw@sgi.com, ink@jurassic.park.msu.ru
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <49A4087B.8080405@kernel.org> <20090224151920.GB12438@elte.hu>
+In-Reply-To: <20090224151920.GB12438@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090224.233600.27954115.anemo@mba.ocn.ne.jp>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 15:49:28 up 6 days,  6:42, 40 users,  load average: 0.56, 1.57,
-	1.85
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Message-Id: <200902250230.18703.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 11:36:00PM +0900, Atsushi Nemoto wrote:
-> On Tue, 24 Feb 2009 14:35:05 +0100, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> > On Wed, Nov 12, 2008 at 11:57:33PM +0900, Atsushi Nemoto wrote:
-> > > The mtd partition parser returns an allocated pointer array of
-> > > mtd_partition.  The caller must free it.  The array is used only for
-> > > add_mtd_partitions(), so free it just after the call.
-> > 
-> > This patch breaks command line parsing support. With command line
-> > partition parsing the struct mtd_partition array is allocated, but only
-> > once. On my board with NAND and NOR (both with command line partition
-> > parsing) It fails badly in parse_cmdline_partitions() when the second
-> > device gets parsed.
-> > 
-> > The following patch fixes it, but I don't know if this is
-> > the correct solution. Does anybody have more insights on this?
-> 
-> Do your NAND and NOR have same mtd-id?  The cmdlinepart allocates
-> mtd_partition aray for each mtd-id.  So usually another array will be
-> returned for NAND and NOR.
-
-Yes, it allocates one array for NAND and one for NOR. The problem starts
-in mtdpart_setup_real():
-
->		struct cmdline_mtd_partition *this_mtd;
-> 		struct mtd_partition *parts;
-> 
-> 		[...]
-> 
-> 		/*
-> 		 * parse one mtd. have it reserve memory for the
-> 		 * struct cmdline_mtd_partition and the mtd-id string.
-> 		 */
-> 		parts = newpart(p + 1,		/* cmdline */
-> 				&s,		/* out: updated cmdline ptr */
-> 				&num_parts,	/* out: number of parts */
-> 				0,		/* first partition */
-> 				(unsigned char**)&this_mtd, /* out: extra mem */
-> 				mtd_id_len + 1 + sizeof(*this_mtd) +
-> 				sizeof(void*)-1 /*alignment*/);
+On Wednesday 25 February 2009 02:19:20 Ingo Molnar wrote:
+> * Tejun Heo <tj@kernel.org> wrote:
+> > Hi,
+> >
+> > Ingo Molnar wrote:
+> > --snip--
+> >
+> > > So what i'm saying is that these are strong reasons for us to
+> > > want to make the unit size to be something like 2MB - on 64-bit
+> > > x86 at least.
+> > >
+> > > ( Using a 2MB unit size will also have another advantage: _iff_
+> > >   we can still allocate a hugepage at that point we can map it
+> > >   straight there when extending the dynamic area. )
+> >
+> > Thanks for the explanation.  Yeap, it would be nice to have
+> > units aligned on 2MB boundary.  We'll need to add @align to vm
+> > area alloc function to do it correctly.  As for using large
+> > page, it would be nice if we can do that automatically.
+> > Upfront 2MB unit allocation is probably too expensive but
+> > merging 4k pages into a large page (if we can get them) will
+> > add a lot of irregular latency too.  Hmmm...
 >
+> Yeah, largepage support - if we ever get there (the chances of
+> finding a proper 2MB aligned 2MB sized chunk of physical memory
+> are not very good except the first few minutes of uptime),
+> should indeed be automatic to all get_vm_area() users -
+> vmalloc(), ioremap() and now percpu.c.
 
-Here we allocate the array containing not only the struct mtd_partition,
-but also the names and the struct cmdline_mtd_partition...
+The problem is that it doesn't always know what the callers want.
+It would be trivial (there is already support in the virtual
+address allocator) to specify alignment. Then kernel page table
+setup could presumably use larger size mappings if it is given
+contiguous memory.
 
-> 	for(part = partitions; part; part = part->next)
-> 	{
-> 		if ((!mtd_id) || (!strcmp(part->mtd_id, mtd_id)))
-> 		{
-> 			for(i = 0, offset = 0; i < part->num_parts; i++)
-> 			{
-> 				if (part->parts[i].offset == OFFSET_CONTINUOUS)
-> 				  part->parts[i].offset = offset;
-> 				else
-> 				  offset = part->parts[i].offset;
-> 				if (part->parts[i].size == SIZE_REMAINING)
-> 				  part->parts[i].size = master->size - offset;
-> 				if (offset + part->parts[i].size > master->size)
-> 				{
-> 					printk(KERN_WARNING ERRP
-> 					       "%s: partitioning exceeds flash size, truncating\n",
-> 					       part->mtd_id);
-> 					part->parts[i].size = master->size - offset;
-> 					part->num_parts = i;
-> 				}
-> 				offset += part->parts[i].size;
-> 			}
-> 			*pparts = part->parts;
 
-...here this array is returned and kfreed in the physmap flash driver. The
-next time we enter this loop 'part' points to already freed memory.
+> I think a far more realistic angle to utilize more of the 2MB
+> TLB will be to gradually increase PERCPU_ENOUGH_ROOM, as we
+> observe more and more percpu_alloc() sites in the kernel. Right
+> now it's pretty rare so going beyond the 8K we do for modules
+> would probably be a waste of RAM.
 
-*pparts is not meant to be freed, cmdlinepart.c needs it for the whole
-kernel life. We can only return a copy of the partition array.
+It might possibly be useful for smaller NUMA machines using
+hashdist for the big early hashes (hash sizes scale log, but
+number of nodes tends to scale linearly with memory size, so
+2MB per node for hashes would probably be far too much on big
+machines).
 
- 
-> 
-> The physmap patch has another bug and fixes are on the way mainline:
-> 
-> http://git.infradead.org/mtd-2.6.git?a=commit;h=e480814f138cd5d78a8efe397756ba6b6518fdb6
-> 
-> But this seems not enough, as you wrote.  If multiple mtd have same
-> mtd-id, bad things can happen.  And more seriously, if I load physmap
-> driver _again_ after unload, cmdlinepart will return a freed pointer
-> on the second time.
-> 
-> Hmm, little memory leak is less serious than crash.  Now I start
-> thinking reverting the commit 176bf2e0 will be best for 2.6.29
-> release.
-
-Even when reverting the commit the same problem still exists because the
-array then gets freed in physmap_flash_remove(). This won't hurt me
-though because I never use mtd drivers as modules.
-
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
