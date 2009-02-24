@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbZBXWcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761405AbZBXWcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761287AbZBXWcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 17:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760474AbZBXWcL
+	id S1761405AbZBXWcs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 17:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761118AbZBXWcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 17:32:11 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:43367 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760334AbZBXWcK (ORCPT
+	Tue, 24 Feb 2009 17:32:24 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57997 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761077AbZBXWcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 17:32:10 -0500
-Date: Tue, 24 Feb 2009 16:32:07 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: adobriyan@gmail.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [PATCH 4/4] mqueue namespace: adapt sysctl
-Message-ID: <20090224223207.GA31959@us.ibm.com>
-References: <20090224220256.GA31001@us.ibm.com> <20090224141651.70155ebd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224141651.70155ebd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Feb 2009 17:32:22 -0500
+Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       rtc-linux@googlegroups.com, Richard Zidlicky <rz@linux-m68k.org>,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20090224231154.60ba18d6@i1501.lan.towertech.it>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <20090220170454.04382e9e@i1501.lan.towertech.it>
+	 <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	 <1235511327.18632.73.camel@macbook.infradead.org>
+	 <20090224231154.60ba18d6@i1501.lan.towertech.it>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 07:32:07 +0900
+Message-Id: <1235514727.18632.93.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Tue, 24 Feb 2009 16:02:56 -0600
-> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+On Tue, 2009-02-24 at 23:11 +0100, Alessandro Zummo wrote:
+> On Wed, 25 Feb 2009 06:35:27 +0900
+> David Woodhouse <dwmw2@infradead.org> wrote:
 > 
-> > +#ifdef CONFIG_PROC_SYSCTL
-> > +static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-> > +	void __user *buffer, size_t *lenp, loff_t *ppos)
-> > +{
-> > +	struct ctl_table mq_table;
-> > +	memcpy(&mq_table, table, sizeof(mq_table));
-> > +	mq_table.data = get_mq(table);
-> > +
-> > +	return proc_dointvec(&mq_table, write, filp, buffer, lenp, ppos);
-> > +}
-> > +
-> > +static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-> > +	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-> > +{
-> > +	struct ctl_table mq_table;
-> > +	memcpy(&mq_table, table, sizeof(mq_table));
-> > +	mq_table.data = get_mq(table);
-> > +
-> > +	return proc_dointvec_minmax(&mq_table, write, filp, buffer,
-> > +					lenp, ppos);
-> > +}
-> > +#else
-> > +proc_handler *proc_mq_dointvec = NULL;
-> > +proc_handler *proc_mq_dointvec_minmax = NULL;
-> > +#endif
+> > > So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+> > > mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+> > > RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
+> > 
+> > That's the ideal... although did we get NTP sync working again yet?
 > 
-> looks odd.  Was this
-> 
-> --- a/ipc/mq_sysctl.c~mqueue-namespace-adapt-sysctl-update-fix
-> +++ a/ipc/mq_sysctl.c
-> @@ -52,8 +52,8 @@ static int proc_mq_dointvec_minmax(ctl_t
->  					lenp, ppos);
->  }
->  #else
-> -proc_handler *proc_mq_dointvec = NULL;
-> -proc_handler *proc_mq_dointvec_minmax = NULL;
-> +#define proc_mq_dointvec NULL
-> +#define proc_mq_dointvec_minmax NULL
->  #endif
-> 
->  static int msg_max_limit_min = MIN_MSGMAX;
-> _
-> 
-> intended?
+>  not yet. we're close but I've been very busy :(
 
-It just seemed more in line with the idea of ensuring type
-safety...  Of course the #defines will work and are how the
-others (at least ipc and utsname) do it, but this seemed
-a touch better.  Of course I'll change it if that's the
-preference.
+I know the feeling.
 
-thanks,
--serge
+Once that's working, we can convert individual PPC platforms over,
+removing the routines from the ppc_md and creating a generic RTC driver
+instead. PA Electra is already like that -- because it wasn't a
+regression there to have broken NTP sync. But the others need to wait.
+
+Eventually, we ought to be able to drop the RTC functions from the
+ppc_md -- and presumably the equivalent for other architectures too.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
