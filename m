@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbZBXPPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbZBXPT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758012AbZBXPPz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 10:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZBXPPr
+	id S1758132AbZBXPT5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 10:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZBXPTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 10:15:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41796 "EHLO mx2.mail.elte.hu"
+	Tue, 24 Feb 2009 10:19:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44590 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753860AbZBXPPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 10:15:46 -0500
-Date: Tue, 24 Feb 2009 16:15:12 +0100
+	id S1751880AbZBXPTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 10:19:48 -0500
+Date: Tue, 24 Feb 2009 16:19:20 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Tejun Heo <tj@kernel.org>
 Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
@@ -17,12 +17,12 @@ Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
 Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
 	allocation
-Message-ID: <20090224151512.GA12438@elte.hu>
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org> <20090224124042.GA31295@elte.hu> <49A3F5C5.4060107@kernel.org> <20090224141217.GA17287@elte.hu> <49A40624.4000100@kernel.org>
+Message-ID: <20090224151920.GB12438@elte.hu>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org> <20090224125132.GB31295@elte.hu> <49A4087B.8080405@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A40624.4000100@kernel.org>
+In-Reply-To: <49A4087B.8080405@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,35 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Tejun Heo <tj@kernel.org> wrote:
 
-> > It's still about this restriction:
-> > 
-> > +       /*
-> > +        * If large page isn't supported, there's no benefit in doing
-> > +        * this.  Also, embedding allocation doesn't play well with
-> > +        * NUMA.
-> > +        */
-> > +       if (!cpu_has_pse || pcpu_need_numa())
-> > +               return -EINVAL;
-> > 
-> > This is what makes no sense (why force the static percpu area 
-> > into 4K mappings on NUMA).
+> Hi,
 > 
-> No, the first allocator tried is remap allocator which will do 
-> the 2MB remapping thing if NUMA.  If not, it gives its way to 
-> embedding allocator which only kicks in for pse && !numa.  The 
-> 4k thing is just the last resort.  We might as well kill it 
-> and make it
+> Ingo Molnar wrote:
+> --snip--
+> > So what i'm saying is that these are strong reasons for us to 
+> > want to make the unit size to be something like 2MB - on 64-bit 
+> > x86 at least.
+> >
+> > ( Using a 2MB unit size will also have another advantage: _iff_ 
+> >   we can still allocate a hugepage at that point we can map it 
+> >   straight there when extending the dynamic area. )
 > 
->  if (numa)
-> 	do remap
->  else
-> 	do embed
->  panic if failed
-> 
-> The 4k thing is the final fallback for cases where pse isn't 
-> supported.
+> Thanks for the explanation.  Yeap, it would be nice to have 
+> units aligned on 2MB boundary.  We'll need to add @align to vm 
+> area alloc function to do it correctly.  As for using large 
+> page, it would be nice if we can do that automatically.  
+> Upfront 2MB unit allocation is probably too expensive but 
+> merging 4k pages into a large page (if we can get them) will 
+> add a lot of irregular latency too.  Hmmm...
 
-ah, ok :-) Then i was confused by that and wanted to see 
-something implemented that ... was already there :)
+Yeah, largepage support - if we ever get there (the chances of 
+finding a proper 2MB aligned 2MB sized chunk of physical memory 
+are not very good except the first few minutes of uptime), 
+should indeed be automatic to all get_vm_area() users - 
+vmalloc(), ioremap() and now percpu.c.
+
+I think a far more realistic angle to utilize more of the 2MB 
+TLB will be to gradually increase PERCPU_ENOUGH_ROOM, as we 
+observe more and more percpu_alloc() sites in the kernel. Right 
+now it's pretty rare so going beyond the 8K we do for modules 
+would probably be a waste of RAM.
 
 	Ingo
