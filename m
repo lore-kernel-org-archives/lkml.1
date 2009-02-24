@@ -1,140 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759405AbZBXRt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbZBXRva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759405AbZBXRt7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZBXRtq
+	id S1759320AbZBXRva (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZBXRvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:49:46 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46919 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbZBXRtp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:49:45 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 24 Feb 2009 18:48:35 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] DVB + ieee1394: firedtv driver
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       linux-media@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Ben Backx <ben@bbackx.com>, Henrik Kurelid <henrik@kurelid.se>
-Message-ID: <tkrat.847a062a8a488f0d@s5r6.in-berlin.de>
+	Tue, 24 Feb 2009 12:51:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57362 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752175AbZBXRvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 12:51:21 -0500
+Date: Tue, 24 Feb 2009 18:50:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Salman Qazi <sqazi@google.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: Another Performance Regression in write() syscall
+Message-ID: <20090224175055.GA14534@elte.hu>
+References: <20090224060558.GA14812@google.com> <1235456745.26788.237.camel@nimitz> <200902241947.53180.nickpiggin@yahoo.com.au> <1235494732.26788.256.camel@nimitz> <alpine.LFD.2.00.0902240924490.3111@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902240924490.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-if you don't mind receiving yet another new driver this late in the
-game, then please pull from the firedtv-merge branch at
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git firedtv-merge
+> On Tue, 24 Feb 2009, Dave Hansen wrote:
+> > 
+> > Yeah, that's a good point.  Are we sure that's what is 
+> > happening here, though?  That's one thing a profile would 
+> > hopefully help with.
+> 
+> One thing to note is that _if_ it's purely an issue of 
+> nontemporal stores vs normal stores, then profiling is very 
+> likely going to be almost entirely useless. You'll get 
+> "results", but the results have nothing what-so-ever to do 
+> with reality or anything interesting.
+> 
+> The nontemporal stores may stand out in the profiles, but the 
+> actual performance impact will be all about whether totally 
+> unrelated code got cache misses or not. Quite often those 
+> cache misses will also be in user mode, and very possibly in 
+> other processes.
+> 
+> So profiles can certainly be interesting, but if Salman says 
+> that his patch makes a difference for his benchmark, then 
+> profiling is almost certainly not interesting FOR THAT PATCH. 
+> It's interesting mainly as a way to look at whether there are 
+> then also _other_ issues that are worth addressing (ie the 
+> whole atime thing is in a whole different dimension and an 
+> independent issue).
 
-to receive the following IEEE 1394 + DVB updates.  More information
-after the shortlog and diffstat...
+a 'perfstat' run would certainly be interesting (for cases where 
+a pure /usr/bin/time run is inconclusive), comparing the 
+unpatched and patched kernel.
 
-Beat Michel Liechti (1):
-      firedtv: dvb_frontend_info for FireDTV S2, fix "frequency limits undefined" error
+That way we can see summary counts for the whole workload, like:
 
-Ben Backx (2):
-      firesat: fix DVB-S2 device recognition
-      firesat: add DVB-S support for DVB-S2 devices
+ -----------------------------------------------
+ | Performance counter stats for './mmap-perf' |
+ -----------------------------------------------
+ |                |
+ |  x86-defconfig |   PARAVIRT=y
+ |------------------------------------------------------------------
+ |
+ |    1311.554526 |  1360.624932  task clock ticks (msecs)    +3.74%
+ |                |
+ |              1 |            1  CPU migrations
+ |             91 |           79  context switches
+ |          55945 |        55943  pagefaults
+ |    ............................................
+ |     3781392474 |   3918777174  CPU cycles                  +3.63%
+ |     1957153827 |   2161280486  instructions               +10.43%
+ |       50234816 |     51303520  cache references            +2.12%
+ |        5428258 |      5583728  cache misses                +2.86%
+ |
+ |      437983499 |    478967061  branches                    +9.36%
+ |       32486067 |     32336874  branch-misses               -0.46%
+ |                |
+ |    1314.782469 |  1363.694447  time elapsed (msecs)        +3.72%
+ |                |
+ -----------------------------------
 
-Greg Kroah-Hartman (1):
-      DVB: add firesat driver
+Such a comparison of would certainly be more meaningful for such 
+things than a profile.
 
-Henrik Kurelid (5):
-      firesat: update isochronous interface, add CI support
-      firesat: avc resend
-      firedtv: fix returned struct for ca_info
-      firedtv: use length_field() of PMT as length
-      firedtv: fix registration - adapter number could only be zero
+Salman, if you are interested in doing a perfstat comparison, 
+just pick up a tip:master kernel [perfcounters are 
+default-enabled in it]:
 
-Julia Lawall (1):
-      firedtv: Use DEFINE_SPINLOCK
+   http://people.redhat.com/mingo/tip.git/README
 
-Rambaldi (1):
-      firedtv: rename files, variables, functions from firesat to firedtv
+and run perfstat on it (as root, to get the kernel-mode counts 
+too):
 
-Stefan Richter (7):
-      firesat: copyrights, rename to firedtv, API conversions, fix remote control input
-      ieee1394: use correct barrier types between accesses of nodeid and generation
-      ieee1394: add hpsb_node_read() and hpsb_node_lock()
-      ieee1394: inherit ud vendor_id from node vendor_id
-      ieee1394: remove superfluous assertions
-      firedtv: cleanups and minor fixes
-      firedtv: massive refactoring
+   http://redhat.com/~mingo/perfcounters/perfstat.c
 
- drivers/ieee1394/dma.h                    |    1 +
- drivers/ieee1394/ieee1394_core.c          |    1 +
- drivers/ieee1394/ieee1394_transactions.c  |   31 +-
- drivers/ieee1394/ieee1394_transactions.h  |    2 +
- drivers/ieee1394/iso.h                    |    1 +
- drivers/ieee1394/nodemgr.c                |   10 +-
- drivers/ieee1394/nodemgr.h                |   18 +
- drivers/media/dvb/Kconfig                 |    4 +
- drivers/media/dvb/Makefile                |    2 +
- drivers/media/dvb/firewire/Kconfig        |   22 +
- drivers/media/dvb/firewire/Makefile       |    8 +
- drivers/media/dvb/firewire/firedtv-1394.c |  285 +++++++
- drivers/media/dvb/firewire/firedtv-avc.c  | 1315 +++++++++++++++++++++++++++++
- drivers/media/dvb/firewire/firedtv-ci.c   |  260 ++++++
- drivers/media/dvb/firewire/firedtv-dvb.c  |  364 ++++++++
- drivers/media/dvb/firewire/firedtv-fe.c   |  247 ++++++
- drivers/media/dvb/firewire/firedtv-rc.c   |  190 +++++
- drivers/media/dvb/firewire/firedtv.h      |  182 ++++
- 18 files changed, 2936 insertions(+), 7 deletions(-)
- create mode 100644 drivers/media/dvb/firewire/Kconfig
- create mode 100644 drivers/media/dvb/firewire/Makefile
- create mode 100644 drivers/media/dvb/firewire/firedtv-1394.c
- create mode 100644 drivers/media/dvb/firewire/firedtv-avc.c
- create mode 100644 drivers/media/dvb/firewire/firedtv-ci.c
- create mode 100644 drivers/media/dvb/firewire/firedtv-dvb.c
- create mode 100644 drivers/media/dvb/firewire/firedtv-fe.c
- create mode 100644 drivers/media/dvb/firewire/firedtv-rc.c
- create mode 100644 drivers/media/dvb/firewire/firedtv.h
-
-Some background:
-
-firedtv is a driver for a series of DVB boxes and cards which are
-attached through FireWire.  The driver has already been in use by
-enthusiasts during the last ~half year and has been exposed in
-linux-next for several months.
-
-The ieee1394 core changes which accompany the driver are rather
-peripheral and have been in successful testing for months too.  For
-these changes, this DVB driver was taken through the linux1394-2.6.git
-tree rather than the DVB tree.
-
-The final review posting of the driver a week ago at
-http://lkml.org/lkml/2009/2/16/270 has been
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-Still to do:
-  - Make it also work with firewire-core alternatively to the older
-    ieee1394 core.  (50% done)
-  - Support the new DVB S2API.
-  - Broader exposure to users will surely bring up one or the other
-    issue although it works fine here. :-)
-
-Changes since last week's review:
-  - msecs_to_jiffies fixlet suggested by Mauro,
-  - reenable verbose logging option (recommended to me by Henrik)
-  - small Kconfig fix for CONFIG-INPUT=m, folded into the history for
-    100% bisectability,
-  - FireDTV S2 frontend info fixlet,
-  - collapsed more than 50 baby-step cleanup commits written by me into
-    fewer commits.  The old history is still available in
-    linux1394-2.6.git's firedtv branch.
-
-Thanks,
--- 
-Stefan Richter
--=====-==--= --=- ==---
-http://arcgraph.de/sr/
-
+	Ingo
