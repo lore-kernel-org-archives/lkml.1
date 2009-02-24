@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbZBXPwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbZBXPx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758489AbZBXPwv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 10:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbZBXPwj
+	id S1758580AbZBXPx1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 10:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbZBXPxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 10:52:39 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:41810 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758229AbZBXPwi (ORCPT
+	Tue, 24 Feb 2009 10:53:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33419 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756544AbZBXPxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 10:52:38 -0500
-Date: Tue, 24 Feb 2009 09:43:51 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, hpa@zytor.com,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
-       mpm@selenic.com, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org
-Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
-Message-ID: <20090224154351.GD17294@us.ibm.com>
-References: <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain> <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz> <20090218231545.GA17524@elte.hu> <20090219190637.GA4846@x200.localdomain> <1235070714.26788.56.camel@nimitz> <20090224044752.GB3202@x200.localdomain> <1235452285.26788.226.camel@nimitz>
+	Tue, 24 Feb 2009 10:53:14 -0500
+Date: Tue, 24 Feb 2009 07:52:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Salman Qazi <sqazi@google.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: Performance regression in write() syscall
+In-Reply-To: <200902242002.37555.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.2.00.0902240744500.3111@localhost.localdomain>
+References: <20090224020304.GA4496@google.com> <200902241510.33911.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0902232021310.3111@localhost.localdomain> <200902242002.37555.nickpiggin@yahoo.com.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235452285.26788.226.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Tue, 2009-02-24 at 07:47 +0300, Alexey Dobriyan wrote:
-> > > I think what I posted is a decent compromise.  It gets you those
-> > > warnings at runtime and is a one-way trip for any given process.  But,
-> > > it does detect in certain cases (fork() and unshare(FILES)) when it is
-> > > safe to make the trip back to the "I'm checkpointable" state again.
-> > 
-> > "Checkpointable" is not even per-process property.
-> > 
-> > Imagine, set of SAs (struct xfrm_state) and SPDs (struct xfrm_policy).
-> > They are a) per-netns, b) persistent.
-> > 
-> > You can hook into socketcalls to mark process as uncheckpointable,
-> > but since SAs and SPDs are persistent, original process already exited.
-> > You're going to walk every process with same netns as SA adder and mark
-> > it as uncheckpointable. Definitely doable, but ugly, isn't it?
-> > 
-> > Same for iptable rules.
-> > 
-> > "Checkpointable" is container property, OK?
+
+
+On Tue, 24 Feb 2009, Nick Piggin wrote:
+>
+> > it does make some kind of sense to try to avoid the noncached versions for
+> > small writes - because small writes tend to be for temp-files.
 > 
-> Ideally, I completely agree.
+> I don't see the significance of a temp file. If the pagecache is truncated,
+> then the cachelines remain dirty and so you can't avoid an eventual store
+> back to RAM? 
+
+No, because many small files end up being used as scratch-pads (think 
+shell script sequences etc), and get read back immediately again. Doing 
+non-temporal stores might just be bad simply because trying to play games 
+with caching may simply do the wrong thing.
+
+
+> > I don't know if PAGE_SIZE is the right thing to test, and I also don't
+> > know if this is necessarily the best place to test it in, but I don't
+> > think it's necessarily wrong to do something like this.
 > 
-> But, we don't currently have a concept of a true container in the
-> kernel.  Do you have any suggestions for any current objects that we
-> could use in its place for a while?
+> No, but I think it should be in arch code, and the "_nocache" suffix
+> should just be a hint to the architecture that the destination is not
+> so likely to be used.
 
-I think the main point is that it makes the concept of marking a task as
-uncheckpointable unworkable.  So at sys_checkpoint() time or when we cat
-/proc/$$/checkpointable, we can check for all of the uncheckpointable
-state of both $$ and its container (including whether $$ is a container
-init).  But we can't expect that (to use Alexey's example) when one task
-in a netns does a certain sys_socketcall, all tasks in the container
-will be marked uncheckpointable.  Or at least we don't want to.
+Yes. Especially since arch code is likely to need various arch-specific 
+checks anyway (like the x86 code does about aligning the destination).
 
-Which means task->uncheckpointable can't be the big stick which I think
-you were hoping it would be.
+> It would have been nice to have had some numbers to justify
+> 0812a579c92fefa57506821fa08e90f47cb6dbdd in the first place, so you have
+> a point of reference to see what happens to your speed-up-case when you
+> change things like this. Sigh.
 
--serge
+Well, there were no performance numbers for that commit, since it didn't 
+actually tie it into anything, but I'm pretty sure we saw several 
+performance numbers for the change.
+
+Yes, and they are in the commit logs. See "x86: cache pollution aware 
+__copy_from_user_ll()", commit c22ce143d15eb288543fe9873e1c5ac1c01b69a1.
+
+But notice how that is iozone numbers. Very much about _big_ writes.
+
+		Linus
