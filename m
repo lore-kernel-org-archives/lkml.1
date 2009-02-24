@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZBXBVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZBXB1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749AbZBXBVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 20:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZBXBVG
+	id S1755120AbZBXB1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 20:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZBXB1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 20:21:06 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:36754 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbZBXBVD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 20:21:03 -0500
-Subject: Re: [RFC][PATCH 3/5] check files for checkpointability
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090224011037.GB4797@us.ibm.com>
-References: <20090219182007.B4B47C1F@kernel>
-	 <20090219182009.1A3E8860@kernel> <20090223234911.GB2590@us.ibm.com>
-	 <1235435430.26788.212.camel@nimitz>  <20090224011037.GB4797@us.ibm.com>
-Content-Type: text/plain
-Date: Mon, 23 Feb 2009 17:20:59 -0800
-Message-Id: <1235438459.26788.222.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 23 Feb 2009 20:27:22 -0500
+Received: from ozlabs.org ([203.10.76.45]:53834 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751824AbZBXB1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 20:27:21 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andreas Robinson <andr345@gmail.com>
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+Date: Tue, 24 Feb 2009 11:57:10 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Kay Sievers <kay.sievers@vrfy.org>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com> <1234952753.10531.48.camel@andreas-laptop> <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
+In-Reply-To: <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902241157.12067.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-23 at 19:10 -0600, Serge E. Hallyn wrote:
-> > This allows us to tell where and when we went wrong.  Take a process
-> > that's been running for a month.  After 5 days it did something random
-> > to keep it from being checkpointed.  You're going to have forgotten all
-> > about it 25 days later.  This gives us an opportunity to spit into dmesg
-> > or just plain log it.  It also gives the app some ability to reflect and
-> > see what its uncheckpointable attributes are.  
+On Friday 20 February 2009 11:07:05 Andreas Robinson wrote:
+> 1. Monolithic:  6.27 s, (0.22). bzImg=3419 kB ramfs=515 kB
+> 2. Megamodule:  6.80 s, (0.16). bzImg=2297 kB ramfs=1783 kB
+> 3. Insmod list: 6.83 s, (0.07). bzImg=2297 kB ramfs=1942 kB
 > 
-> Hmm.  In that case, rather than refuse checkpoint, I prefer that we make
-> this a footnote in the /proc/$$/checkpointable output.
+> 10 samples were taken in each case. Standard deviations are in parenthesis.
+> The measured times are printk timestamps from a dummy module inserted last.
+> 
+> Reading these benchmark results I can only conclude that my work is
+> useless and life has no meaning.
 
-Yeah, that's cool.  If we were smart, we'd also get hooked into some of
-the ftrace output so that we have a real chance of logging these things
-and being able to go look at something about them down the line.
+I know that feeling!  Performance work tends to be like that.  I assume this
+is an unpatched kernel, or did you apply some of the stop_machine prevention
+/ lock reduction patches?
+ 
+> So, what's missing or been done wrong here? I expected the difference
+> between monolithic and modular to be greater to be honest.
 
--- Dave
+modprobe vs insmod?
 
+You could try copying /lib/modules/`uname -r`/modules.* and using modprobe,
+see if the slowdown is actually there.
+
+Thanks for chasing this!
+Rusty.
+Rusty.
