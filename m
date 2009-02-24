@@ -1,95 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZBXDhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZBXDoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753623AbZBXDhe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 22:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZBXDhS
+	id S1753839AbZBXDoz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 22:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZBXDoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 22:37:18 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:47826 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592AbZBXDhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 22:37:16 -0500
-Date: Mon, 23 Feb 2009 19:37:12 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, stable@kernel.org,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Message-ID: <20090224033712.GA7173@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090220140157.GA12799@elte.hu> <20090223193351.GA11921@elte.hu> <20090223204359.GT6751@linux.vnet.ibm.com> <200902241423.21091.nickpiggin@yahoo.com.au>
+	Mon, 23 Feb 2009 22:44:46 -0500
+Received: from exchtp08.via.com.tw ([61.66.243.7]:36025 "EHLO
+	exchtp08.via.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbZBXDop (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 22:44:45 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902241423.21091.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: mmotm 2009-02-20-15-52 uploaded (via-sdmmc)
+Date: Tue, 24 Feb 2009 11:44:35 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB808AFECA1@exchtp03.taipei.via.com.tw>
+In-Reply-To: <499F869C.9000208@oracle.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: mmotm 2009-02-20-15-52 uploaded (via-sdmmc)
+Thread-Index: AcmT3x++xOik6NM9SLK1/HNbrlCT7gCUmXPA
+From: <JosephChan@via.com.tw>
+To: <randy.dunlap@oracle.com>, <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 24 Feb 2009 03:44:36.0283 (UTC) FILETIME=[367358B0:01C99632]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n1O3j3wM029215
 
-On Tue, Feb 24, 2009 at 02:23:19PM +1100, Nick Piggin wrote:
-> On Tuesday 24 February 2009 07:43:59 Paul E. McKenney wrote:
-> > On Mon, Feb 23, 2009 at 08:33:51PM +0100, Ingo Molnar wrote:
-> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > On Mon, 23 Feb 2009 08:17:26 -0800 "Paul E. McKenney" 
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
-> > > > > > On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
-> > > > > > > The boot CPU runs in the context of its idle thread during
-> > > > > > > boot-up. During this time, idle_cpu(0) will always return
-> > > > > > > nonzero, which will fool Classic and Hierarchical RCU into
-> > > > > > > deciding that a large chunk of the boot-up sequence is a big long
-> > > > > > > quiescent state.  This in turn causes RCU to prematurely end
-> > > > > > > grace periods during this time.
-> > > > > > >
-> > > > > > > This patch creates a new global variable that is set to 1 just
-> > > > > > > before the boot CPU first enters the scheduler, after which the
-> > > > > > > idle task really is idle.
-> > > > > >
-> > > > > > Nice work all (btw. if this patch goes in rather than using
-> > > > > > system_state, then please make the variable __read_mostly).
-> > > > >
-> > > > > Hmmm...  I misread this and made system_state be __read_mostly.  Let
-> > > > > me know if this is bad, easy to fix if needed.
-> > > >
-> > > > Please don't use system_state.  The whole thing is just bad
-> > > > design. It's a global variable, breaks encapsulation, creates
-> > > > interactions etc. CS-101 stuff.
-> > >
-> > > ok, i've removed the patch - Paul, would you mind to re-send
-> > > your original flag solution, with it marked __read_mostly and
-> > > with the extern declarations put into a suitable header file?
-> > >
-> > > Paul, incidentally, this very minute i tracked down that the
-> > > patch is also causing boot lockups in -tip testing. I havent yet
-> > > fully debugged it, but a question comes immediately: if there's
-> > > no grace periods during bootup, wont rcu_sync() & friends just
-> > > hang indefinitely?
-> >
-> > Ouch!!!  Indeed they would.
-> >
-> > > More thought is needed.
-> >
-> > One fix would be to sprinkle calls to rcu_qsctr_inc() through the
-> > boot process.  But a much better approach would be for me to make
-> > synchronize_rcu() check this same flag, and simply return if called
-> > during early boot.  The rationale for this is that there is but a single
-> > CPU during early boot, so tinyrcu.c's optimization can be used.  ;-)
+Randy,
+
+Weâ€™ve fixed this is v5 patch. Thanks.
+I will send out  this patch later.
+
+
+Andrew,
+
+Any comment on this? Should I send the whole v5 patch to linux-kernel mail-list? Or just patch for this issue? Thanks.
+
+BRs,
+Joseph
+
+> -----Original Message-----
+> From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
+> Sent: Saturday, February 21, 2009 12:44 PM
+> To: linux-kernel@vger.kernel.org
+> Cc: Andrew Morton; Joseph Chan
+> Subject: Re: mmotm 2009-02-20-15-52 uploaded (via-sdmmc)
 > 
-> Well can you simply return if called if num_online_cpus() == 1, regardless
-> of the state of boot?
-
-Yep!
-
-And that is indeed what I do in http://lkml.org/lkml/2009/2/23/305.
-
-						Thanx, Paul
-
-> > Out of both paranoia and self defense, I would check num_online_cpus()
-> > in my proposed call into RCU.  ;-)
-> >
-> > Seem reasonable?  And does synchronize_sched() also need the UP-only
-> > optimization?
+> akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-02-20-15-52 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > It contains the following patches against 2.6.29-rc5:
+> > 
 > 
+> > via-sdmmc-via-msp-card-reader-driver-support.patch
+> 
+> 
+> when CONFIG_PM=n:
+> 
+> drivers/mmc/host/via-sdmmc.c:336: error: 'struct 
+> via_crdr_chip' has no member named 'pm_pcictrl_reg'
+> drivers/mmc/host/via-sdmmc.c:355: error: 'struct 
+> via_crdr_chip' has no member named 'pm_pcictrl_reg'
+> drivers/mmc/host/via-sdmmc.c:372: error: 'struct 
+> via_crdr_chip' has no member named 'pm_sdhc_reg'
+> drivers/mmc/host/via-sdmmc.c:392: error: 'struct 
+> via_crdr_chip' has no member named 'pm_sdhc_reg'
+> 
+> --
+> ~Randy
+> 
+> 
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
