@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbZBXR7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbZBXSCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbZBXR7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756510AbZBXR7E
+	id S1759360AbZBXSCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 13:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZBXSCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:59:04 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:49844 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755221AbZBXR7B (ORCPT
+	Tue, 24 Feb 2009 13:02:04 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:44368 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752175AbZBXSCC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:59:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lQPVfSbY3bHHz2676O6N8c8nvUkt2g7k3UVaxaXeVlK0hksJUlFQNctwO29Us35W2O
-         5URoVN0cF+KdzYDAb8KVALqxyTkvQb5BtShJeuCBKPE0rm5HSmwGPAnZE3uZEr/8A6f+
-         ZZx9Scgtzbka9HBsv55wSTC64xae4t9IVIUug=
-Date: Tue, 24 Feb 2009 18:58:55 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: What made this bug report better?
-Message-ID: <20090224175854.GH5765@nowhere>
-References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain> <200902171007.28257.rusty@rustcorp.com.au> <20090220102705.GA2884@silver.sucs.org> <200902241343.22762.rusty@rustcorp.com.au> <20090224081612.GA6160@silver.sucs.org>
+	Tue, 24 Feb 2009 13:02:02 -0500
+Date: Tue, 24 Feb 2009 19:01:59 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Paul Mackerras <paulus@samba.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@ucw.cz>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, linux-ext4@vger.kernel.org
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+In-Reply-To: <18850.31567.212454.514549@cargo.ozlabs.ibm.com>
+Message-ID: <alpine.LRH.2.00.0902241857170.544@vixen.sonytel.be>
+References: <49A2705D.9030008@in.ibm.com> <20090223021320.11019d64.akpm@linux-foundation.org> <18850.31567.212454.514549@cargo.ozlabs.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224081612.GA6160@silver.sucs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 08:16:12AM +0000, Sitsofe Wheeler wrote:
-> On Tue, Feb 24, 2009 at 01:43:22PM +1030, Rusty Russell wrote:
-> > On Friday 20 February 2009 20:57:05 Sitsofe Wheeler wrote:
-> > > What happened this time that made things succesful? Was the original
-> > > mail too big? Did it not make it to the list?
+On Mon, 23 Feb 2009, Paul Mackerras wrote:
+> Andrew Morton writes:
+> > It looks like we died in ext3_xattr_block_get():
 > > 
-> > Frederic was the difference; he pulled me in by CC'ing me, once he figured
-> > out it was my bug.
+> > 		memcpy(buffer, bh->b_data + le16_to_cpu(entry->e_value_offs),
+> > 		       size);
+> > 
+> > Perhaps entry->e_value_offs is no good.  I wonder if the filesystem is
+> > corrupted and this snuck through the defenses.
+> > 
+> > I also wonder if there is enough info in that trace for a ppc person to
+> > be able to determine whether the faulting address is in the source or
+> > destination of the memcpy() (please)?
 > 
-> Rusty, Ingo: Thanks for letting me know!
-> 
-> Frederic: What information are you looking for in bug reports? 
+> It appears to have faulted on a load, implicating the source.  The
+> address being referenced (0xc00000003f380000) doesn't look
+> outlandish.  I wonder if this kernel has CONFIG_DEBUG_PAGEALLOC turned
+> on, and what page size is selected?
 
+I'm seeing a similar thing on PS3, but not in ext3. During early userspace
+setup (udevd), it crashes accessing a 0xc00* address in:
 
-Like everyone, the most possible matching traces, locking states, and other
-states (irq, atomic, ...), well it depends on the particular case.
+| NIP setup+0x20/0x130
+| LR copy_user_page+0x18/0x6c
+| Call trace:
+| do_wp_page+0x5b4/0x89c
+| do_page_fault+0x3a8/0x58c
+| handle_page_fault+0x20/0x5c
 
-The best thing is to provide a way to reproduce it, that's what you did, so
-that we can use specific tracers for specific issues.
+I have CONFIG_DEBUG_PAGEALLOC=y. If I disable it, the system boots fine.
 
+If needed, I can probably bisect this tomorrow. It definitely didn't happen in
+2.6.29-rc5.
 
-> What sort of areas interest you?
+With kind regards,
 
-You mean, what I'm interested in the kernel?
-All the kernel :-)
-Though I have a preference for the kernel core, and improving tracing
-because I'm lazy and I like when there are tools which do most of the things
-for me.
- 
-> -- 
-> Sitsofe | http://sucs.org/~sits/
+Geert Uytterhoeven
+Software Architect
 
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
