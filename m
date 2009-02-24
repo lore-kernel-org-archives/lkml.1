@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZBXKx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZBXLNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbZBXKx6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 05:53:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZBXKxs
+	id S1754631AbZBXLNB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 06:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZBXLMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 05:53:48 -0500
-Received: from web53304.mail.re2.yahoo.com ([206.190.49.94]:33004 "HELO
-	web53304.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751743AbZBXKxr (ORCPT
+	Tue, 24 Feb 2009 06:12:53 -0500
+Received: from mail-in-10.arcor-online.net ([151.189.21.50]:34444 "EHLO
+	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751329AbZBXLMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 05:53:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=bdAzPlFCiD6i1eopxn04MDP28hASxWex9OwdikK2FX/B2vL0oLUg9U8Z27frwRmDLJ/crsR8+feJucx8MV+O+MALaZDH6ZNPbX0Qq+StHAlvVMRG4CYoYpHgypFJiT/a0fDir5G2J49U2QEcia1L8IUgF3KSisTy4NCBXqMW/tc=;
-X-YMail-OSG: 0T1UziIVM1kp9mGvkv3CXjktUqplStj2dh5nggBdDuutj9m06DXKk9qFa4Bf_arSPK.wQ4D.oO1T.b4ezEy8nbwfLeMl6mwUQgeDMqwNjHyP3JnZy1C8V6ndsRv2KfGSOKfp95ZJoC_sknmW0T9YFXrnCP06PNikA43zsRe4jnv2UiyFdEJ7CV_NHrVCTY1MCq0AIjvU53Fx
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Tue, 24 Feb 2009 02:53:44 -0800 (PST)
-From: Alberto Gonzalez <luis6674@yahoo.com>
-Reply-To: luis6674@yahoo.com
-Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <LLno3yT_fnC.A.Un.8zzoJB@chimera>
+	Tue, 24 Feb 2009 06:12:52 -0500
+X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-04.arcor-online.net DC30233A88E
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Performance regression in write() syscall
+To: Andi Kleen <andi@firstfloor.org>, Salman Qazi <sqazi@google.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>
+Reply-To: 7eggert@gmx.de
+Date: Tue, 24 Feb 2009 12:12:42 +0100
+References: <c8UUh-6G-3@gated-at.bofh.it> <c92fh-3uD-15@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <37338.58465.qm@web53304.mail.re2.yahoo.com>
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LbvDO-0001O1-Ov@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Mon, 2/23/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Andi Kleen <andi@firstfloor.org> wrote:
+> On Mon, Feb 23, 2009 at 06:03:04PM -0800, Salman Qazi wrote:
 
-> The following bug entry is on the current list of known
-> regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it
-> still should
-> be listed and let me know (either way).
+>> @@ -192,14 +192,20 @@ static inline int __copy_from_user_nocache(void *dst,
+>> const void __user *src,
+>>  unsigned size)
+>>  {
+>>  might_sleep();
+>> -    return __copy_user_nocache(dst, src, size, 1);
+>> +    if (likely(size >= PAGE_SIZE))
+>> +            return __copy_user_nocache(dst, src, size, 1);
+>> +    else
+>> +            return __copy_from_user(dst, src, size);
 > 
+> I think you disabled it completely, the kernel never really does
+> any copies larger than page size because all its internal objects
+> are page sized only.
 > 
-> Bug-Entry	:
-> http://bugzilla.kernel.org/show_bug.cgi?id=12337
-> Subject		: ~100 extra wakeups reported by powertop
-> Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
-> Date		: 2008-12-31 12:25 (55 days old)
+> That check would need to be higher up the VFS stack (above filemap.c code)
+> before the copies are split up.
 
-Still present, yes.
+It's bigger-or-equal, so this test is correct.
 
-
-      
