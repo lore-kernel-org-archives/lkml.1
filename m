@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbZBXNCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZBXNCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757609AbZBXNCV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 08:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbZBXNBw
+	id S1757884AbZBXNCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 08:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbZBXNCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 08:01:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59775 "EHLO mx2.redhat.com"
+	Tue, 24 Feb 2009 08:02:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37617 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755005AbZBXNBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 08:01:50 -0500
-Date: Tue, 24 Feb 2009 08:01:13 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-Message-ID: <20090224130113.GA6749@redhat.com>
-References: <20090220172241.GF24538@elte.hu> <1235302980.4632.8.camel@laptop> <y0mocwuptbc.fsf@ton.toronto.redhat.com> <1235304876.4632.10.camel@laptop> <20090222122424.GA9951@redhat.com> <1235387487.4645.28.camel@laptop> <20090223154404.GA30147@redhat.com> <1235406159.4645.366.camel@laptop> <20090223171032.GA2566@redhat.com> <20090223172302.GB29344@elte.hu>
-Mime-Version: 1.0
+	id S1754433AbZBXNCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 08:02:33 -0500
+Date: Tue, 24 Feb 2009 14:02:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
+	allocation
+Message-ID: <20090224130212.GC31295@elte.hu>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090223172302.GB29344@elte.hu>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <49A3DE76.5010606@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
 
-> > The impression that this is somehow different with tracepoints 
-> > is mistaken.  Tracepoints are *exactly* as "ABI-like" as 
-> > markers.
+* Tejun Heo <tj@kernel.org> wrote:
+
+> > and i think that abstraction is wrong.
 > 
-> they arent. To the kernel they look like function calls, with no 
-> ABI properties at all. They can and will change without notice.
+> No, it's not wrong.  It simply is irrelevant - it's congruent 
+> vs. contiguos and all that we need is congruent.  Contiguous 
+> of course achieves congruent but it doesn't make any 
+> difference for this purpose.
 
-Markers also "look like" function calls because they are - the
-callbacks just happen to take a format string and varargs.  What did
-you think they were?
+Well, as long as we can go up in unit size to 2MB (on 64-bit 
+x86) i'm fine with that model.
 
+There's no granularity artifacts, right? pcpu_populate_chunk() 
+intelligently only populates pages on an as-needed basis, so 
+extending the percpu areas with a 2MB unit does not trigger 
+nr_cpus*2MB allocations straight away.
 
-srostedt argues that separating the tracepoint from its rendering is
-necessary to free the instrumentation site from backward-compatibility
-stagnation.  
+The code looks very clean and if we can agree on the SMP/NUMA 
+symmetry and the dynamic-ptr optimizations that it allows, plus 
+if you can up the unit size to 2MB on 64-bit x86, i'm a happy 
+camper and will pull it.
 
-But consider - it has been manifold stated that tracepoints are not
-welcome in the tree without a "tracer" (hand-written glue), so the
-same person ends up writing both.  Since they are tightly coupled.  a
-change on one will affect the other.  A moved tracepoint will produce
-events at different times; a lost tracepoint parameter will lose data
-at trace rendering time.  The tracing engine can only pretend to
-produce the same data by guessing.
-
-Similarly, if a marker site were to change, and if someone deemed the
-old trace data important to preserve, a hand-written marker callback
-function could replace a generic one, The new one could make the same
-heuristic adaptation.
-
-Try working out some examples.  You'll probably see how similar they
-really turn out, with respect to the hypothetical "preserve ABI" idea.
-
-- FChE
+	Ingo
