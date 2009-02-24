@@ -1,62 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZBXNCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbZBXNKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbZBXNCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 08:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbZBXNCd
+	id S1756662AbZBXNKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 08:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbZBXNKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 08:02:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37617 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754433AbZBXNCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 08:02:33 -0500
-Date: Tue, 24 Feb 2009 14:02:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
-Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
-	allocation
-Message-ID: <20090224130212.GC31295@elte.hu>
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org>
+	Tue, 24 Feb 2009 08:10:09 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:61484 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754232AbZBXNKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 08:10:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Q661WvDnBDI2jLQCU3oLpPk0h3VfMeFVVZ4+r6HQl1cbf3O6EEymwsW1mE8rs+Wk0K
+         GCWs+F54QBn/2I+UTEtixSD6DZxxhReGCGPdb84KtgGRIoT4b8xDgrw/3CkJbSRe4vlZ
+         hFJwhp4X4ME4s/4ProCceq7lTWfthskJc1vaw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A3DE76.5010606@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090223213749.GA945@us.ibm.com>
+References: <d95d44a20902220437m2fb7af08y8c71fe275fe06a57@mail.gmail.com>
+	 <20090223213749.GA945@us.ibm.com>
+Date: Tue, 24 Feb 2009 21:10:05 +0800
+Message-ID: <d95d44a20902240510i16ae5785ob11b900daf7fe019@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] cgroup: accounting and limitation of disk quota
+From: anqin <anqin.qin@gmail.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>, menage@google.com
+Cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Rolando Martins <rolando.martins@gmail.com>,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thank you for so many valuable comment and advices.
 
-* Tejun Heo <tj@kernel.org> wrote:
+I will fix the patch and provide more valuable development. :)
 
-> > and i think that abstraction is wrong.
-> 
-> No, it's not wrong.  It simply is irrelevant - it's congruent 
-> vs. contiguos and all that we need is congruent.  Contiguous 
-> of course achieves congruent but it doesn't make any 
-> difference for this purpose.
 
-Well, as long as we can go up in unit size to 2MB (on 64-bit 
-x86) i'm fine with that model.
+Thanks again,
 
-There's no granularity artifacts, right? pcpu_populate_chunk() 
-intelligently only populates pages on an as-needed basis, so 
-extending the percpu areas with a 2MB unit does not trigger 
-nr_cpus*2MB allocations straight away.
+Anqin
 
-The code looks very clean and if we can agree on the SMP/NUMA 
-symmetry and the dynamic-ptr optimizations that it allows, plus 
-if you can up the unit size to 2MB on 64-bit x86, i'm a happy 
-camper and will pull it.
-
-	Ingo
+On Tue, Feb 24, 2009 at 5:37 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> Quoting anqin (anqin.qin@gmail.com):
+>> The patch presents a cgroup subsystem to control the usage of disk quota.
+>>
+>> The subsystem for disk quota (disk_cgroup, to be brief) does accounting
+>> of inode and block allocated by ext3/ext2 filesystem. Simarily as
+>> filesystem quota, the disk_cgroup can do limitation but without needing
+>> to open filesytem quota options (e.g. usrquota,grpquota in /etc/fstab).
+>>
+>> The simple usage of disk_cgroup is as follows:
+>>
+>> # mount -t cgroup cgroup /mnt/cgrp
+>> # lxc-execute -n lxc-template.conf /bin/bash
+>> # ls /mnt/cgrp/11457/           // <--  11457 is the pid of bash
+>> ...
+>> disk.stat
+>> disk.usage_in_inode
+>> disk.usage_in_block
+>> disk.max_usage_in_inode
+>> disk.max_usage_in_block
+>> disk.limit_in_inode
+>> disk.limit_in_inode
+>> ...
+>>
+>> # echo  3 > /mnt/cgrp/11457/disk.max_usage_in_block
+>>
+>> # touch /tmp/mytestfile1
+>> # touch /tmp/mytestfile2
+>> # touch /tmp/mytestfile3
+>> # touch /tmp/mytestfile4
+>> touch: cannot touch `/tmp/mytestfile4': Disk quota exceeded
+>>
+>> The disk_cgroup is easily extended to manage complex objects
+>> of filesystem.
+>>
+>> Signed-off-by: An Qin <anqin.qin@gmail.com>
+>
+> It's probably worth sending this to linux-fsdevel as well as the
+> ext2 and ext3 maintainers and lists (see MAINTAINERS - at
+> least linux-ext4@vger.kernel.org).
+>
+>> +static struct cgroup_subsys_state *disk_cgroup_create(
+>> +                     struct cgroup_subsys *ss, struct cgroup *cont)
+>> +{
+>> +     struct disk_cgroup *disk;
+>> +
+>> +     if (!capable(CAP_SYS_ADMIN))
+>> +             return ERR_PTR(-EPERM);
+>
+> On the whole it is preferred to let the cgroup uid permissions
+> handle access control, and not check CAP_SYS_ADMIN for cgroup
+> creation.
+>
+>> +     if (!cgroup_is_descendant(cont))
+>> +             return ERR_PTR(-EPERM);
+>> +
+>> +     disk = kzalloc(sizeof(struct disk_cgroup), GFP_KERNEL);
+>
+> So you are setting all the limits to 0, with 0 meaning unlimited, at
+> cgroup create?  What do you think about copying the parent cgroup's
+> limits?
+>
+>> --- linux-2.6.28.5/kernel/Makefile    2009-02-13 01:51:15.000000000 +0800
+>> +++ linux-2.6.28.5-cgroup-disk-quota/kernel/Makefile  2009-02-19
+>> 06:52:04.000000000 +0800
+>> @@ -55,6 +55,7 @@ obj-$(CONFIG_COMPAT) += compat.o
+>>  obj-$(CONFIG_CGROUPS) += cgroup.o
+>>  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
+>>  obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
+>> +obj-$(CONFIG_CGROUP_FREEZER) += cgroup_disk.o
+>
+> I don't think you wanted to put this under _FREEZER :)
+>
+>>  obj-$(CONFIG_CPUSETS) += cpuset.o
+>>  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
+>>  obj-$(CONFIG_UTS_NS) += utsname.o
+>
+> per-container quota has been mentioned before as a desireable
+> feature so thanks for working on this.
+>
+> -serge
+>
