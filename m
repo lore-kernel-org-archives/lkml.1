@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbZBXWcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbZBXWcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbZBXWcQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 17:32:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbZBXWcA
+	id S1761287AbZBXWcc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 17:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760474AbZBXWcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 17:32:00 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54379 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756005AbZBXWb7 (ORCPT
+	Tue, 24 Feb 2009 17:32:11 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:43367 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760334AbZBXWcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 17:31:59 -0500
-Date: Tue, 24 Feb 2009 17:31:56 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/4][RFC] event tracer
-In-Reply-To: <49A473ED.4010001@redhat.com>
-Message-ID: <alpine.DEB.2.00.0902241731020.12697@gandalf.stny.rr.com>
-References: <20090224193344.638329210@goodmis.org> <1235504556.4645.2252.camel@laptop> <alpine.DEB.2.00.0902241706260.12697@gandalf.stny.rr.com> <49A473ED.4010001@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 24 Feb 2009 17:32:10 -0500
+Date: Tue, 24 Feb 2009 16:32:07 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: adobriyan@gmail.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [PATCH 4/4] mqueue namespace: adapt sysctl
+Message-ID: <20090224223207.GA31959@us.ibm.com>
+References: <20090224220256.GA31001@us.ibm.com> <20090224141651.70155ebd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090224141651.70155ebd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 24 Feb 2009, Masami Hiramatsu wrote:
-> > 
-> > #undef TPFMT
-> > #define TPFMT(fmt, args...) \
-> > 	"(%s)" fmt "\n", #call, ##args
-> > 
-> > and then I could do
-> > 
-> > 	event_printk(fmt);
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Tue, 24 Feb 2009 16:02:56 -0600
+> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
 > 
-> Why don't you do as below? :)
-> 	event_printk_line("(" #call ")" ##fmtandargs);
-
-Still need to sneak that "\n" in ;-)
-
+> > +#ifdef CONFIG_PROC_SYSCTL
+> > +static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
+> > +	void __user *buffer, size_t *lenp, loff_t *ppos)
+> > +{
+> > +	struct ctl_table mq_table;
+> > +	memcpy(&mq_table, table, sizeof(mq_table));
+> > +	mq_table.data = get_mq(table);
+> > +
+> > +	return proc_dointvec(&mq_table, write, filp, buffer, lenp, ppos);
+> > +}
+> > +
+> > +static int proc_mq_dointvec_minmax(ctl_table *table, int write,
+> > +	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
+> > +{
+> > +	struct ctl_table mq_table;
+> > +	memcpy(&mq_table, table, sizeof(mq_table));
+> > +	mq_table.data = get_mq(table);
+> > +
+> > +	return proc_dointvec_minmax(&mq_table, write, filp, buffer,
+> > +					lenp, ppos);
+> > +}
+> > +#else
+> > +proc_handler *proc_mq_dointvec = NULL;
+> > +proc_handler *proc_mq_dointvec_minmax = NULL;
+> > +#endif
 > 
-> Anyway, your proposal is good for me, because it will recover
-> an information which tracepoint has lost.
+> looks odd.  Was this
+> 
+> --- a/ipc/mq_sysctl.c~mqueue-namespace-adapt-sysctl-update-fix
+> +++ a/ipc/mq_sysctl.c
+> @@ -52,8 +52,8 @@ static int proc_mq_dointvec_minmax(ctl_t
+>  					lenp, ppos);
+>  }
+>  #else
+> -proc_handler *proc_mq_dointvec = NULL;
+> -proc_handler *proc_mq_dointvec_minmax = NULL;
+> +#define proc_mq_dointvec NULL
+> +#define proc_mq_dointvec_minmax NULL
+>  #endif
+> 
+>  static int msg_max_limit_min = MIN_MSGMAX;
+> _
+> 
+> intended?
 
-Thanks,
+It just seemed more in line with the idea of ensuring type
+safety...  Of course the #defines will work and are how the
+others (at least ipc and utsname) do it, but this seemed
+a touch better.  Of course I'll change it if that's the
+preference.
 
--- Steve
-
+thanks,
+-serge
