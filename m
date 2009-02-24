@@ -1,287 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbZBXTga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbZBXTgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbZBXTga (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZBXTe7
+	id S1757787AbZBXTgu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:36:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbZBXTgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:34:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33604 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754319AbZBXTey (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:34:54 -0500
-Message-Id: <20090224193451.447474613@goodmis.org>
-References: <20090224193344.638329210@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 24 Feb 2009 14:33:48 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 4/4][RFC] tracing: make event directory structure
-Content-Disposition: inline; filename=0004-tracing-make-event-directory-structure.patch
+	Tue, 24 Feb 2009 14:36:38 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49219 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755221AbZBXTgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 14:36:37 -0500
+Date: Tue, 24 Feb 2009 20:36:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
+       markus.t.metzger@gmail.com, srostedt@redhat.com
+Subject: Re: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
+Message-ID: <20090224193622.GA26734@elte.hu>
+References: <20090119102653.A18774@sedona.ch.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090119102653.A18774@sedona.ch.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
 
-This patch adds the directory /debug/tracing/events/ that will contain
-all the registered trace points.
+* Markus Metzger <markus.t.metzger@intel.com> wrote:
 
- # ls /debug/tracing/events/
-sched_kthread_stop      sched_process_fork  sched_switch
-sched_kthread_stop_ret  sched_process_free  sched_wait_task
-sched_migrate_task      sched_process_wait  sched_wakeup
-sched_process_exit      sched_signal_send   sched_wakeup_new
+> Support hotplug cpus.
 
- # ls /debug/tracing/events/sched_switch/
-enable
+> +static int __cpuinit bts_hotcpu_handler(struct notifier_block *nfb,
+> +				     unsigned long action, void *hcpu)
+> +{
+> +	unsigned int cpu = (unsigned long)hcpu;
+> +
+> +	mutex_lock(&bts_tracer_mutex);
 
- # cat /debug/tracing/events/sched_switch/enable
-1
+This is buggy: CPU hotplug handlers must not sleep (they are 
+called with irqs disabled), while this code does a mutex_lock() 
+which can sleep.
 
- # cat /debug/tracing/set_event
-sched_switch
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace_events.c |  137 +++++++++++++++++++++++++++++++++++++++++--
- kernel/trace/trace_events.h |    7 ++-
- 2 files changed, 137 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 05bc80e..3bcb9df 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -12,6 +12,11 @@
- 
- #include "trace_events.h"
- 
-+#define events_for_each(event)						\
-+	for (event = __start_ftrace_events;				\
-+	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
-+	     event++)
-+
- void event_trace_printk(unsigned long ip, const char *fmt, ...)
- {
- 	va_list ap;
-@@ -39,15 +44,16 @@ static void ftrace_clear_events(void)
- 
- static int ftrace_set_clr_event(char *buf, int set)
- {
--	struct ftrace_event_call *call = (void *)__start_ftrace_events;
-+	struct ftrace_event_call *call = __start_ftrace_events;
- 
- 
--	while ((unsigned long)call < (unsigned long)__stop_ftrace_events) {
-+	events_for_each(call) {
- 
--		if (strcmp(buf, call->name) != 0) {
--			call++;
-+		if (!call->name)
-+			continue;
-+
-+		if (strcmp(buf, call->name) != 0)
- 			continue;
--		}
- 
- 		if (set) {
- 			/* Already set? */
-@@ -223,6 +229,67 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
- 	return ret;
- }
- 
-+static ssize_t
-+event_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
-+		  loff_t *ppos)
-+{
-+	struct ftrace_event_call *call = filp->private_data;
-+	char *buf;
-+
-+	if (call->enabled)
-+		buf = "1\n";
-+	else
-+		buf = "0\n";
-+
-+	return simple_read_from_buffer(ubuf, cnt, ppos, buf, 2);
-+}
-+
-+static ssize_t
-+event_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
-+		   loff_t *ppos)
-+{
-+	struct ftrace_event_call *call = filp->private_data;
-+	char buf[64];
-+	unsigned long val;
-+	int ret;
-+
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	buf[cnt] = 0;
-+
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (val) {
-+	case 0:
-+		if (!call->enabled)
-+			break;
-+
-+		call->enabled = 0;
-+		call->unregfunc();
-+		break;
-+	case 1:
-+		if (call->enabled)
-+			break;
-+
-+		call->enabled = 1;
-+		call->regfunc();
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	*ppos += cnt;
-+
-+	return cnt;
-+}
-+
- static const struct seq_operations show_event_seq_ops = {
- 	.start = t_start,
- 	.next = t_next,
-@@ -252,10 +319,59 @@ static const struct file_operations ftrace_set_event_fops = {
- 	.release = seq_release,
- };
- 
-+static const struct file_operations ftrace_enable_fops = {
-+	.open = tracing_open_generic,
-+	.read = event_enable_read,
-+	.write = event_enable_write,
-+};
-+
-+static struct dentry *event_trace_events_dir(void)
-+{
-+	static struct dentry *d_tracer;
-+	static struct dentry *d_events;
-+
-+	if (d_events)
-+		return d_events;
-+
-+	d_tracer = tracing_init_dentry();
-+	if (!d_tracer)
-+		return NULL;
-+
-+	d_events = debugfs_create_dir("events", d_tracer);
-+	if (!d_events)
-+		pr_warning("Could not create debugfs "
-+			   "'events' directory\n");
-+
-+	return d_events;
-+}
-+
-+static int
-+event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
-+{
-+	struct dentry *entry;
-+
-+	call->dir = debugfs_create_dir(call->name, d_events);
-+	if (!call->dir) {
-+		pr_warning("Could not create debugfs "
-+			   "'%s' directory\n", call->name);
-+		return -1;
-+	}
-+
-+	entry = debugfs_create_file("enable", 0644, call->dir, call,
-+				    &ftrace_enable_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs "
-+			   "'%s/enable' entry\n", call->name);
-+
-+	return 0;
-+}
-+
- static __init int event_trace_init(void)
- {
-+	struct ftrace_event_call *call = __start_ftrace_events;
- 	struct dentry *d_tracer;
- 	struct dentry *entry;
-+	struct dentry *d_events;
- 
- 	d_tracer = tracing_init_dentry();
- 	if (!d_tracer)
-@@ -275,6 +391,17 @@ static __init int event_trace_init(void)
- 		pr_warning("Could not create debugfs "
- 			   "'set_event' entry\n");
- 
-+	d_events = event_trace_events_dir();
-+	if (!d_events)
-+		return 0;
-+
-+	events_for_each(call) {
-+		/* The linker may leave blanks */
-+		if (!call->name)
-+			continue;
-+		event_create_dir(call, d_events);
-+	}
-+
- 	return 0;
- }
- fs_initcall(event_trace_init);
-diff --git a/kernel/trace/trace_events.h b/kernel/trace/trace_events.h
-index aa82057..a0d45e8 100644
---- a/kernel/trace/trace_events.h
-+++ b/kernel/trace/trace_events.h
-@@ -1,11 +1,13 @@
- #ifndef _LINUX_KERNEL_TRACE_EVENTS_H
- #define _LINUX_KERNEL_TRACE_EVENTS_H
- 
-+#include <linux/debugfs.h>
- #include <linux/ftrace.h>
- #include "trace.h"
- 
- struct ftrace_event_call {
- 	char		*name;
-+	struct dentry	*dir;
- 	int		enabled;
- 	int		(*regfunc)(void);
- 	void		(*unregfunc)(void);
-@@ -36,6 +38,7 @@ static void ftrace_unreg_event_##call(void)				\
- }									\
- 									\
- static struct ftrace_event_call __used					\
-+__attribute__((__aligned__(4)))						\
- __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.name 			= #call,				\
- 	.regfunc		= ftrace_reg_event_##call,		\
-@@ -43,7 +46,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- }
- 
- void event_trace_printk(unsigned long ip, const char *fmt, ...);
--extern unsigned long __start_ftrace_events[];
--extern unsigned long __stop_ftrace_events[];
-+extern struct ftrace_event_call __start_ftrace_events[];
-+extern struct ftrace_event_call __stop_ftrace_events[];
- 
- #endif /* _LINUX_KERNEL_TRACE_EVENTS_H */
--- 
-1.5.6.5
-
--- 
+	Ingo
