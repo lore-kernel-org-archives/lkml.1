@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbZBXHhB (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 24 Feb 2009 02:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZBXHgs
+	id S1755748AbZBXHh2 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 24 Feb 2009 02:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbZBXHgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 02:36:48 -0500
+	Tue, 24 Feb 2009 02:36:52 -0500
 Received: from eastrmmtai101.cox.net ([68.230.240.6]:37138 "EHLO
 	eastrmmtai101.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbZBXHgs (ORCPT
+	with ESMTP id S1753320AbZBXHgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 02:36:48 -0500
+	Tue, 24 Feb 2009 02:36:51 -0500
 X-Greylist: delayed 1640 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Feb 2009 02:36:47 EST
 X-Authority-Analysis: v=1.0 c=1 a=kq60A8MUoECGB8B8MPBcAQ==:17
  a=ecGPKKb9NuWGBihrtQoA:9 a=uuX1FGMBEJAlFYkvtuPoOPDUVQIA:4 a=nbrB6oW77rQA:10
  a=p1A9pjC0uHbd78LO:21
 X-CM-Score: 0.00
-Message-ID: <20090224020925.6VGF0.80209.imail@eastrmwml44>
+Message-ID: <20090224020926.VMGIO.80210.imail@eastrmwml44>
 Date: Tue, 24 Feb 2009 2:09:25 -0500
 From: OXFAM GB UK <lonnieb1@cox.net>
 Reply-To: gedward@jmail.co.za
@@ -28,6 +28,6 @@ To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755659AbZBXHhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755748AbZBXHh2@vger.kernel.org>
 
 Qualification Number(OG/N231/E101/B,oxfam GB has choosen you to redeem $850,000usd,
