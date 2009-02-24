@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZBXCDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZBXCEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbZBXCDu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 21:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZBXCDm
+	id S1757464AbZBXCEP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 21:04:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbZBXCDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 21:03:42 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:54109 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753092AbZBXCDl (ORCPT
+	Mon, 23 Feb 2009 21:03:54 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:48026 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755294AbZBXCDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 21:03:41 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:user-agent:from:x-system-of-record;
-	b=KeSwroPtrtPA8jR9EeqnmmhK4sSh7EH0RqxStZDdK73Eqr4yNZTG2NWWmntBsmX0T
-	c0X05qioWErvSpP+DVY9w==
-Date: Mon, 23 Feb 2009 18:03:04 -0800
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Performance regression in write() syscall
-Message-ID: <20090224020304.GA4496@google.com>
+	Mon, 23 Feb 2009 21:03:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=nRL0f4FHZN1/U51KXq8jbJ1GV/+AXLQ55WB//Hq57DPtzRTwyrBeikY9ej1C5w+D193bjPV8M1ZD+IE4o1NbKqKtbydvKSxq62pSsx56ALG7vyZE2UpR3gLikoqivGSZD9FZAhFtCKlIimJkepjipVVeDxCkYeECxDtBnzAfL+Q=  ;
+X-YMail-OSG: bes5WQUVM1k04.8hbEf1UzedgGXO0EfDQ_uOtJmajSJMBN62gxRjFqrsAcHkI2w4tkqDBhWjK13whb9svE2Bn8b19XUmcy.ehQSU.ed2SJ688ndQQguzkWCh74DizRbVniU162DGgWy9OkKLbmfn00IuSSBVgvIiqWApOAC81ZSfreYBFef6bPVvKqnu
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.29-rc3-git 1/2] regulator: twl4030 regulators
+Date: Mon, 23 Feb 2009 18:03:49 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200902081037.06645.david-b@pacbell.net> <200902231443.16334.david-b@pacbell.net> <20090224005536.GC3601@sirena.org.uk>
+In-Reply-To: <20090224005536.GC3601@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: sqazi@google.com (Salman Qazi)
-X-System-Of-Record: true
+Message-Id: <200902231803.50059.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While the introduction of __copy_from_user_nocache (see commit:
-0812a579c92fefa57506821fa08e90f47cb6dbdd) may have been an improvement
-for sufficiently large writes, there is evidence to show that it is
-deterimental for small writes.  Unixbench's fstime test gives the
-following results for 256 byte writes with MAX_BLOCK of 2000:
-    
-    2.6.29-rc6 ( 5 samples, each in KB/sec ):
-    283750, 295200, 294500, 293000, 293300
-    
-    2.6.29-rc6 + this patch (5 samples, each in KB/sec):
-    313050, 3106750, 293350, 306300, 307900
+On Monday 23 February 2009, Mark Brown wrote:
+> The change to add voltage range constraints if none were supplied is a
+> noticable policy change from the existing framework standard - it allows
+> machines to enable voltage changes without specifying what the valid
+> values are. 
 
-    2.6.18
-    395700, 342000, 399100, 366050, 359850
+"Whatever the hardware handles" *is* a specification.
 
-    See w_test() in src/fstime.c in unixbench version 4.1.0.  Basically, the above test
-    consists of counting how much we can write in this manner:
+And there's no more assurance it's right than any
+other specification would be ... except that, as a
+rule, hardware designers like to avoid assemblies
+subject to trivial misconfiguration mistakes (like
+firing up a 2.5V-max rail at 5V).
 
-    alarm(10);
-    while (!sigalarm) {
-            for (f_blocks = 0; f_blocks < 2000; ++f_blocks) {
-                   write(f, buf, 256);
-            }
-            lseek(f, 0L, 0);
-    }
 
-I realised that there are other components to the write syscall regression
-that are not addressed here.  I will send another email shortly stating the
-source of another one.
+> I'm not convinced that this is a good idea in the first 
+> place and it will result in the opposite behaviour to the current core
+> code (which should end up erroring out in constraint checking at runtime).
 
-Signed-off-by: Salman Qazi <sqazi@google.com>
----
-diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
-index 84210c4..efe7315 100644
---- a/arch/x86/include/asm/uaccess_64.h
-+++ b/arch/x86/include/asm/uaccess_64.h
-@@ -192,14 +192,20 @@ static inline int __copy_from_user_nocache(void *dst, const void __user *src,
- 					   unsigned size)
- {
- 	might_sleep();
--	return __copy_user_nocache(dst, src, size, 1);
-+	if (likely(size >= PAGE_SIZE))
-+		return __copy_user_nocache(dst, src, size, 1);
-+	else
-+		return __copy_from_user(dst, src, size);
- }
- 
- static inline int __copy_from_user_inatomic_nocache(void *dst,
- 						    const void __user *src,
- 						    unsigned size)
- {
--	return __copy_user_nocache(dst, src, size, 0);
-+	if (likely(size >= PAGE_SIZE))
-+		return __copy_user_nocache(dst, src, size, 0);
-+	else
-+		return __copy_from_user_inatomic(dst, src, size);
- }
- 
- unsigned long
+Well, if you really dislike it so much, that can
+easily be removed.  Got any comments on the
+framework patch I sent?  I'll take that as the
+first one, even though it's a different thread.
+
+- Dave
+
+
+
