@@ -1,209 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbZBXR00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbZBXR0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759236AbZBXR00 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:26:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbZBXRZ6
+	id S1759326AbZBXR0m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759247AbZBXR03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:25:58 -0500
-Received: from host64.cybernetics.com ([98.174.209.230]:1623 "EHLO
-	mail.cybernetics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757567AbZBXRZ5 (ORCPT
+	Tue, 24 Feb 2009 12:26:29 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36717 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757837AbZBXR01 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:25:57 -0500
-Message-ID: <49A42DA2.5080101@cybernetics.com>
-Date: Tue, 24 Feb 2009 12:25:54 -0500
-From: Tony Battersby <tonyb@cybernetics.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/6] epoll fixes and cleanups
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Feb 2009 12:26:27 -0500
+Date: Tue, 24 Feb 2009 17:26:06 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Cc: greg@kroah.com, s.hauer@pengutronix.de,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/3] mxc: move serial driver init()/exit() to platform_device
+Message-ID: <20090224172606.GA22390@n2100.arm.linux.org.uk>
+References: <20090224155737.28880.3945.stgit@Programuotojas>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090224155737.28880.3945.stgit@Programuotojas>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[forgot to CC linux-kernel]
+On Tue, Feb 24, 2009 at 05:57:37PM +0200, Paulius Zaleckas wrote:
+> Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+> ---
+> 
+>  arch/arm/mach-mx1/devices.c |   43 ++++++++++++++
+>  arch/arm/mach-mx1/mx1ads.c  |   45 ---------------
+>  arch/arm/mach-mx2/mx27ads.c |  131 -------------------------------------------
+>  arch/arm/mach-mx2/pcm038.c  |   64 ---------------------
+>  arch/arm/mach-mx2/serial.c  |  127 ++++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 170 insertions(+), 240 deletions(-)
+> 
+> 
+> diff --git a/arch/arm/mach-mx1/devices.c b/arch/arm/mach-mx1/devices.c
+> index a956441..5fd4ee3 100644
+> --- a/arch/arm/mach-mx1/devices.c
+> +++ b/arch/arm/mach-mx1/devices.c
+> @@ -26,6 +26,7 @@
+>  
+>  #include <mach/irqs.h>
+>  #include <mach/hardware.h>
+> +#include <mach/iomux-mx1-mx2.h>
+>  
+>  static struct resource imx_csi_resources[] = {
+>  	[0] = {
+> @@ -96,11 +97,32 @@ static struct resource imx_uart1_resources[] = {
+>  	},
+>  };
+>  
+> +static int mxc_uart1_pins[] = {
+> +	PC9_PF_UART1_CTS,
+> +	PC10_PF_UART1_RTS,
+> +	PC11_PF_UART1_TXD,
+> +	PC12_PF_UART1_RXD,
+> +};
+> +
+> +static int uart1_mxc_init(struct platform_device *pdev)
+> +{
+> +	return mxc_gpio_setup_multiple_pins(mxc_uart1_pins,
+> +			ARRAY_SIZE(mxc_uart1_pins), "UART1");
+> +}
+> +
+> +static void uart1_mxc_exit(struct platform_device *pdev)
+> +{
+> +	mxc_gpio_release_multiple_pins(mxc_uart1_pins,
+> +			ARRAY_SIZE(mxc_uart1_pins));
+> +}
+> +
+>  struct platform_device imx_uart1_device = {
+>  	.name		= "imx-uart",
+>  	.id		= 0,
+>  	.num_resources	= ARRAY_SIZE(imx_uart1_resources),
+>  	.resource	= imx_uart1_resources,
+> +	.init		= uart1_mxc_init,
+> +	.exit		= uart1_mxc_exit,
 
-Patch #1 fixes an important bug where epoll_wait can incorrectly
-return events for closed fds.  Below is a test program that can
-reliably test for the problem.  This bug has the potential to confuse
-or crash userspace programs, so I consider it to be high-priority.
-For example, a program could crash if it closes a fd, frees the
-associated event.data.ptr, calls epoll_wait, and then gets back an
-event with the freed event.data.ptr.
+I really don't like this approach to controlling multiplex pins, which
+is to setup the SoC pin configuration when the driver is being bound and
+to remove it when the driver is unbound.
 
-The test program uses a thread blocked in read() to keep the struct
-file refcount from dropping to 0.  Then a different thread does close()
-and then epoll_wait(), and epoll_wait() incorrectly returns an event
-on the closed fd.  There are many more ways to trigger the bug with
-a multi-threaded userspace program.  A single-threaded userspace
-program may also trigger the bug if the kernel ever calls fput() from
-outside a system call (e.g. from keventd or some other kernel thread).
-It is difficult to know all the potential ways that the bug could be
-triggered without doing an audit of a lot of kernel code.
+Let's take the issue of a serial driver.
 
-Patches #2 and #3 fix some minor issues; the rest are just cleanups.
+The outputs of a serial port have defined inactive levels - for TXD, RTS
+and DTR, that's logic one.  If a driver is not loaded and you have a
+peripheral connected to this port, you probably don't want them to see
+a break level on TXD, or active RTS or DTR signal.
 
-I would like to have patch #1 included in 2.6.29 and -stable.
-Assuming that everyone agrees that the patch is indeed important,
-it will unfortunately conflict with some of the patches currently
-in -mm and linux-next that are queued for 2.6.30.  Some of my other
-5 patches also conflict with the epoll patches currently in -mm, but
-they are lower priority and do not need to go into 2.6.29 or -stable.
-So I will post two versions of my patchset - one against 2.6.29 and
-one against the current epoll patches in -mm.  I will need some help
-from the authors of the other patches in -mm to resolve the conflicts
-against my patch #1; my patches #2 - #6 hopefully won't conflict if
-you use the versions for -mm and apply after the other patches in -mm.
-I have never handled this situation before, so my apologies if I am
-stepping on anyone's toes.
+However, by hooking the SoC pin configuration into the binding and
+unbinding of the driver, the state of the pins are indeterminent until
+the driver is initialised.
 
-Other things I noticed while auditing epoll code:
+I can think of other cases in hardware I've dealt with which required
+careful handling of SSP signals to ensure that a flip-flop in a FPGA is
+correctly set to ensure that left/right channels aren't swapped.
 
-The following functions could use spin_lock_irq() instead
-of spin_lock_irqsave(): ep_remove, ep_insert, ep_modify,
-ep_scan_ready_list, and ep_poll.  One of my patches changes
-ep_modify to use spin_lock_irq while making some other changes, but
-I haven't done anything with the others.  Some people prefer to use
-spin_lock_irqsave() always because it is harder to use incorrectly,
-so it is just a matter of preference.
+Basically, my point is that for 99.9% of the time, SoC pin configuration
+is determined by the platform board layout, and the right place to set
+this configuration up is in the board support file, just like we do on
+PXA platforms.
 
-epoll uses wake_up_locked() instead of wake_up() for ep->wq although
-it never uses eq->wq.lock; presumably ep->lock outside of the
-wait_queue_head_t protects the wait queue internals, but I don't see
-this documented anywhere.
+For the 0.1% of cases where a board needs to manipulate the SoC pin
+configuration depending on which drivers are loaded, doing so at driver
+probe time _may_ make sense, but it feels all together cumbersome,
+especially as unloading drivers has historically had question marks
+over it.
 
----
+Surely, for this 0.1% of cases, the right solution would be to have an
+interface which allows a platform device to be unregistered, the SoC pin
+mux settings changed by platform code, and the new device registered?
 
-/*
-This program tests for a bug in the kernel's implementation of epoll where
-epoll_wait can incorrectly return an event on a fd that has been closed.
-You can work around the kernel bug by calling epoll_ctl(EPOLL_CTL_DEL) before
-closing the fd.
-
-Compile:
-   gcc -D_REENTRANT -o epoll_wait_bug epoll_wait_bug.c -lpthread
-*/
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/epoll.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <pthread.h>
-
-#define EPOLL_DATA_MAGIC 0x1234567890123456ULL
-
-static int fd[2];
-
-static void *thread_func(void *arg)
-{
-   for (;;)
-      {
-      char ch;
-
-      if (read(fd[0], &ch, sizeof(ch)) <= 0)
-         {
-         break;
-         }
-      }
-
-   return NULL;
-}
-
-int main(int argc, char *argv[])
-{
-   pthread_attr_t detached_thread_attr;
-   pthread_t thread;
-   struct epoll_event evt;
-   int epfd;
-   int ret;
-   int exit_status = EXIT_FAILURE;
-
-   epfd = epoll_create(1);
-   if (epfd == -1)
-      {
-      perror("epoll_create");
-      exit(EXIT_FAILURE);
-      }
-
-   if (socketpair(AF_UNIX, SOCK_STREAM, 0, fd))
-      {
-      perror("socketpair");
-      exit(EXIT_FAILURE);
-      }
-
-   evt.events   = EPOLLOUT;
-   evt.data.u64 = EPOLL_DATA_MAGIC;
-   if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd[0], &evt))
-      {
-      perror("epoll_ctl EPOLL_CTL_ADD");
-      exit(EXIT_FAILURE);
-      }
-
-   pthread_attr_init(&detached_thread_attr);
-   pthread_attr_setdetachstate(&detached_thread_attr,
-                               PTHREAD_CREATE_DETACHED);
-   if (pthread_create(&thread,
-                      &detached_thread_attr,
-                      &thread_func,
-                      NULL))
-      {
-      perror("pthread_create");
-      exit(EXIT_FAILURE);
-      }
-
-   sleep(1);
-
-#if 0
-   /* This works around the kernel bug. */
-   if (epoll_ctl(epfd, EPOLL_CTL_DEL, fd[0], &evt))
-      {
-      perror("epoll_ctl EPOLL_CTL_DEL");
-      exit(EXIT_FAILURE);
-      }
-#endif
-
-   close(fd[0]);
-
-   memset(&evt, 0, sizeof(evt));
-   ret = epoll_wait(epfd, &evt, 1, 100);
-   switch (ret)
-      {
-      case -1 :
-         perror("epoll_wait");
-         break;
-
-      case 0 : /* timeout */
-         printf("This kernel does not have the epoll_wait bug.\n");
-         exit_status = EXIT_SUCCESS;
-         break;
-
-      case 1 :
-         if (evt.data.u64 == EPOLL_DATA_MAGIC)
-            {
-            /* This is what happens for kernels with the bug. */
-            printf("KERNEL BUG DETECTED: epoll_wait returned an event on a "
-                   "closed fd\n");
-            }
-         else
-            {
-            printf("KERNEL BUG DETECTED: epoll_wait returned a bad event\n");
-            }
-         break;
-
-      default :
-         printf("KERNEL BUG DETECTED: epoll_wait returned unexpected value "
-                "%d\n", ret);
-      }
-
-   return exit_status;
-}
-
-
-
+Finally, note that the approach of putting init/exit into struct
+platform_device doesn't cater for all cases - we're still going to need
+to have init/exit pointers in platform data for some platform devices,
+such as MMC drivers, which have to pass parameters to those hooks.
