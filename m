@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760062AbZBXU2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbZBXUgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760062AbZBXU2V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 15:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbZBXU2M
+	id S1759888AbZBXUgi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 15:36:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZBXUg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 15:28:12 -0500
-Received: from mga09.intel.com ([134.134.136.24]:11453 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758114AbZBXU2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 15:28:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,260,1233561600"; 
-   d="scan'208";a="492754992"
-Date: Tue, 24 Feb 2009 12:28:08 -0800
-From: Matthew Wilcox <willy@linux.intel.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
-       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Rewrite MSI-HOWTO
-Message-ID: <20090224202808.GG25248@linux.intel.com>
-References: <1235410082-5016-1-git-send-email-matthew@wil.cx> <1235410082-5016-2-git-send-email-matthew@wil.cx> <49A451C3.4000602@oracle.com>
+	Tue, 24 Feb 2009 15:36:27 -0500
+Received: from host64.cybernetics.com ([98.174.209.230]:4031 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753797AbZBXUg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 15:36:27 -0500
+Message-ID: <49A45A48.6020805@cybernetics.com>
+Date: Tue, 24 Feb 2009 15:36:24 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A451C3.4000602@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] [2.6.29] epoll: fix for epoll_wait sometimes returning
+ events on closed fds
+References: <49A42DDE.8060605@cybernetics.com> <49A4387D.2020801@cosmosbay.com> <49A43FF0.2070703@cybernetics.com> <49A44FEB.6000803@cosmosbay.com>
+In-Reply-To: <49A44FEB.6000803@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Dumazet wrote:
+> I believe Davide already said that close() meant the real close, not
+> the file descriptor freeing. 
+>
+> And current documentations clearly states it, maybe your man page is too old ?
+>
+> ---
+>
+> Q6  Will closing a file descriptor cause it to be removed from all epoll sets automatically?
+>
+> A6  Yes,  but  be  aware  of  the  following  point.   A  file descriptor is a reference to an open file description (see
+>     open(2)).  Whenever a descriptor is duplicated via dup(2), dup2(2), fcntl(2) F_DUPFD, or fork(2), a new file descriptor  referring  to  the same open file description is created.  An open file description continues to exist until all
+>     file descriptors referring to it have been closed.  A file descriptor is removed from an epoll set only after all the
+>     file  descriptors  referring to the underlying open file description have been closed (or before if the descriptor is
+>     explicitly removed using epoll_ctl() EPOLL_CTL_DEL).  This means that even after a file descriptor that is part of an
+>     epoll set has been closed, events may be reported for that file descriptor if other file descriptors referring to the
+>     same underlying file description remain open.
+>
+>
+>
+>
+>   
+Ugh.  The manpage on Ubuntu 8.04 that I am using doesn't contain this
+lengthy caveat; it just says "A6     Yes."  To me it sounds like the
+(newer) manpage is just documenting away a bug/misfeature with "It's
+supposed to do that.  Gives it character." rather than expecting the
+kernel developers to make the API behave in a more reasonable way.  Just
+my opinion; others may agree or disagree.
 
-Thanks for the review!
+If the officially-sanctioned epoll interface is supposed to report
+events on fds that were added, duped, and then the original fd closed,
+then my patch will probably break that behavior.  In that case, it will
+be more difficult to fix problem that my patch is trying to fix (which
+doesn't involve dup, dup2, fcntl, fork, etc.).  So before I try to think
+of another way, let me ask: do we want to fix the problem that I am
+reporting, or just document it away in the manpage as (apparently) has
+been done before?
 
-On Tue, Feb 24, 2009 at 12:00:03PM -0800, Randy Dunlap wrote:
-> Matthew Wilcox wrote:
-> > +A Message Signalled Interrupt is a write from the device to a special
-> 
-> Consistent spelling, please.
+Tony
 
-Ah yes, I thought I'd fixed that.  I'll follow the PCI spec and use one 'l'.
-
-> > +To support this, the kernel must call each interrupt handler associated
-> > +with an interrupt which leads to reduced performance for the system as
-> 
->    with an interrupt,
-
-Ack.
-
-> > +Device drivers should normally call this function once per device
-> > +during the initialization phase.
-> 
-> Consistent isation/ization (or ised/ized), please.
-
-The Shorter OED is quite amusing on this point.  It lists 'Initialise' as a
-variant, but in the main definition under 'Initialize', the example it
-gives of the computer usage uses 'initialise'.  I can only conclude that
-a foolish consistency is the hobgoblin of little minds ;-)
-
-> > +4.6 How to tell whether MSI/MSI-X is enabled on a device
-> > +
-> > +Using lspci -v (as root) will show some devices with "Message Signalled
-> 
-> Oh gosh, does lspci misspell it?
-
-It used to.  The good news is that recent pciutils now just use MSI
-instead of spelling it out.  As a bonus, the capability now fits on one
-line.
-
-> > +Interrupts" and others with "MSI-X".  Each of these capabilities have an
-> 
->                                          Each ..................... has an
-
-You're correct.
-
-> > +'Enable' flag which will be followed with either "+" (enabled) or "-"
-> > +(disabled).
-
-
-> > +including a full lspci -v so we can add the quirks to the kernel.
-> 
->    I would say      "lspci -v" ...
-
-Good idea.
-
-> > +Then, lspci -t gives the list of bridges above a device.  Reading
-> 
->          "lspci -t"
-
-Likewise.
-
-> > +It is also worth checking whether the device driver supports MSIs.
-> > +
-> 
-> Unneeded ending blank line (nit).
-
-Heh.  I'll take it out.
-
-May I add your reviewed-by tag?
