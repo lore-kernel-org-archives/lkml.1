@@ -1,97 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZBXR0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbZBXR00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbZBXR0J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:26:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbZBXRZz
+	id S1759236AbZBXR00 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbZBXRZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:25:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49111 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757055AbZBXRZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:25:54 -0500
-Date: Tue, 24 Feb 2009 18:25:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 0/3] tracing/ftrace: ftrace_bprintk
-Message-ID: <20090224172530.GD14553@elte.hu>
-References: <20090224051618.GA5142@nowhere> <20090224171718.GA3189@redhat.com>
+	Tue, 24 Feb 2009 12:25:58 -0500
+Received: from host64.cybernetics.com ([98.174.209.230]:1623 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757567AbZBXRZ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 12:25:57 -0500
+Message-ID: <49A42DA2.5080101@cybernetics.com>
+Date: Tue, 24 Feb 2009 12:25:54 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224171718.GA3189@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6] epoll fixes and cleanups
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[forgot to CC linux-kernel]
 
-* Jason Baron <jbaron@redhat.com> wrote:
+Patch #1 fixes an important bug where epoll_wait can incorrectly
+return events for closed fds.  Below is a test program that can
+reliably test for the problem.  This bug has the potential to confuse
+or crash userspace programs, so I consider it to be high-priority.
+For example, a program could crash if it closes a fd, frees the
+associated event.data.ptr, calls epoll_wait, and then gets back an
+event with the freed event.data.ptr.
 
-> On Tue, Feb 24, 2009 at 06:16:18AM +0100, Frederic Weisbecker wrote:
-> > Hi,
-> > 
-> > These three patches are part of a patchset posted by Lai Jiangshan in december 2008.
-> > They introduce a binary version of ftrace_printk() called ftrace_bprintk()
-> > 
-> > While having the same goal: print a generic message entry into the ring buffer,
-> > their approaches are very different.
-> > 
-> > - ftrace_printk() does the formatting job on tracing time, insert the whole resulting string
-> >   into the ring buffer, and then the string is printed on output time without a lot of modifications.
-> > 
-> > - ftrace_bprintk() does no formatting on tracing time. Instead, it looks at the format string
-> >   to find the types and the numbers of the arguments and directly stores them as-is into the
-> >   ring-buffer. Then the format string is stored into the ring-buffer too, but only by its address,
-> >   it is not copied. Then on output time only, the final string is formatted and sent to the user.
-> >   This gives a result about as fast as a traditional tracer with fixed fields types, except that
-> >   we can print random types and numbers of fields here.
-> > 
-> > 
-> > The first patch adds the generic support for binary formatting.
-> > The second adds the support for binary print types on ftrace
-> > and the last introduces ftrace_bprintk() which supports safely the modules
-> > by listening on the module loading/unloading notifier to keep track of
-> > unwanted freed format strings.
-> > 
-> > Lai Jiangshan (3):
-> >       add binary printf
-> >       ftrace: infrastructure for supporting binary record
-> >       ftrace: add ftrace_bprintk()
-> > 
-> 
-> hi,
-> 
-> this seems like a really valuable feature....I'm just 
-> wondering about a couple of things....
-> 
-> If the 'brpintk tracer' in trace/trace_bprintk.c is just being 
-> used to set an enabled flag for printing out these binary 
-> records, then are we better off with just an option flag in 
-> the 'trace_options' file?
-> 
-> Second, can we somehow combine ftrace_printk() and 
-> ftrace_bprintk(), so that a developer can just use one 
-> interface? Perhaps, ftrace_printk calls ftrace_bprintk if 
-> binary option flag is set, otherwise, it just outputs things 
-> normally.
+The test program uses a thread blocked in read() to keep the struct
+file refcount from dropping to 0.  Then a different thread does close()
+and then epoll_wait(), and epoll_wait() incorrectly returns an event
+on the closed fd.  There are many more ways to trigger the bug with
+a multi-threaded userspace program.  A single-threaded userspace
+program may also trigger the bug if the kernel ever calls fput() from
+outside a system call (e.g. from keventd or some other kernel thread).
+It is difficult to know all the potential ways that the bug could be
+triggered without doing an audit of a lot of kernel code.
 
-Well, ftrace_bprintk() seems to be a worthy and transparent 
-replacement for ftrace_printk() to me. I.e. lets just use this 
-as the new implementation for ftrace_printk().
+Patches #2 and #3 fix some minor issues; the rest are just cleanups.
 
-Would there be any downsides of doing so? I dont see any.
+I would like to have patch #1 included in 2.6.29 and -stable.
+Assuming that everyone agrees that the patch is indeed important,
+it will unfortunately conflict with some of the patches currently
+in -mm and linux-next that are queued for 2.6.30.  Some of my other
+5 patches also conflict with the epoll patches currently in -mm, but
+they are lower priority and do not need to go into 2.6.29 or -stable.
+So I will post two versions of my patchset - one against 2.6.29 and
+one against the current epoll patches in -mm.  I will need some help
+from the authors of the other patches in -mm to resolve the conflicts
+against my patch #1; my patches #2 - #6 hopefully won't conflict if
+you use the versions for -mm and apply after the other patches in -mm.
+I have never handled this situation before, so my apologies if I am
+stepping on anyone's toes.
 
-	Ingo
+Other things I noticed while auditing epoll code:
+
+The following functions could use spin_lock_irq() instead
+of spin_lock_irqsave(): ep_remove, ep_insert, ep_modify,
+ep_scan_ready_list, and ep_poll.  One of my patches changes
+ep_modify to use spin_lock_irq while making some other changes, but
+I haven't done anything with the others.  Some people prefer to use
+spin_lock_irqsave() always because it is harder to use incorrectly,
+so it is just a matter of preference.
+
+epoll uses wake_up_locked() instead of wake_up() for ep->wq although
+it never uses eq->wq.lock; presumably ep->lock outside of the
+wait_queue_head_t protects the wait queue internals, but I don't see
+this documented anywhere.
+
+---
+
+/*
+This program tests for a bug in the kernel's implementation of epoll where
+epoll_wait can incorrectly return an event on a fd that has been closed.
+You can work around the kernel bug by calling epoll_ctl(EPOLL_CTL_DEL) before
+closing the fd.
+
+Compile:
+   gcc -D_REENTRANT -o epoll_wait_bug epoll_wait_bug.c -lpthread
+*/
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/epoll.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <pthread.h>
+
+#define EPOLL_DATA_MAGIC 0x1234567890123456ULL
+
+static int fd[2];
+
+static void *thread_func(void *arg)
+{
+   for (;;)
+      {
+      char ch;
+
+      if (read(fd[0], &ch, sizeof(ch)) <= 0)
+         {
+         break;
+         }
+      }
+
+   return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+   pthread_attr_t detached_thread_attr;
+   pthread_t thread;
+   struct epoll_event evt;
+   int epfd;
+   int ret;
+   int exit_status = EXIT_FAILURE;
+
+   epfd = epoll_create(1);
+   if (epfd == -1)
+      {
+      perror("epoll_create");
+      exit(EXIT_FAILURE);
+      }
+
+   if (socketpair(AF_UNIX, SOCK_STREAM, 0, fd))
+      {
+      perror("socketpair");
+      exit(EXIT_FAILURE);
+      }
+
+   evt.events   = EPOLLOUT;
+   evt.data.u64 = EPOLL_DATA_MAGIC;
+   if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd[0], &evt))
+      {
+      perror("epoll_ctl EPOLL_CTL_ADD");
+      exit(EXIT_FAILURE);
+      }
+
+   pthread_attr_init(&detached_thread_attr);
+   pthread_attr_setdetachstate(&detached_thread_attr,
+                               PTHREAD_CREATE_DETACHED);
+   if (pthread_create(&thread,
+                      &detached_thread_attr,
+                      &thread_func,
+                      NULL))
+      {
+      perror("pthread_create");
+      exit(EXIT_FAILURE);
+      }
+
+   sleep(1);
+
+#if 0
+   /* This works around the kernel bug. */
+   if (epoll_ctl(epfd, EPOLL_CTL_DEL, fd[0], &evt))
+      {
+      perror("epoll_ctl EPOLL_CTL_DEL");
+      exit(EXIT_FAILURE);
+      }
+#endif
+
+   close(fd[0]);
+
+   memset(&evt, 0, sizeof(evt));
+   ret = epoll_wait(epfd, &evt, 1, 100);
+   switch (ret)
+      {
+      case -1 :
+         perror("epoll_wait");
+         break;
+
+      case 0 : /* timeout */
+         printf("This kernel does not have the epoll_wait bug.\n");
+         exit_status = EXIT_SUCCESS;
+         break;
+
+      case 1 :
+         if (evt.data.u64 == EPOLL_DATA_MAGIC)
+            {
+            /* This is what happens for kernels with the bug. */
+            printf("KERNEL BUG DETECTED: epoll_wait returned an event on a "
+                   "closed fd\n");
+            }
+         else
+            {
+            printf("KERNEL BUG DETECTED: epoll_wait returned a bad event\n");
+            }
+         break;
+
+      default :
+         printf("KERNEL BUG DETECTED: epoll_wait returned unexpected value "
+                "%d\n", ret);
+      }
+
+   return exit_status;
+}
+
+
+
