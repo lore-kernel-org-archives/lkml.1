@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbZBXWXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbZBXW0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbZBXWXu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 17:23:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZBXWXk
+	id S1760959AbZBXW0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 17:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZBXW0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 17:23:40 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2412 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754005AbZBXWXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 17:23:39 -0500
-Date: Tue, 24 Feb 2009 22:23:29 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Message-ID: <20090224222328.GA21553@sirena.org.uk>
-References: <200902081037.06645.david-b@pacbell.net> <20090210224851.GA6408@sirena.org.uk> <200902231245.44360.david-b@pacbell.net> <200902231252.01980.david-b@pacbell.net>
+	Tue, 24 Feb 2009 17:26:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37723 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754005AbZBXW0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 17:26:08 -0500
+Message-ID: <49A473ED.4010001@redhat.com>
+Date: Tue, 24 Feb 2009 17:25:49 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902231252.01980.david-b@pacbell.net>
-X-Cookie: You will soon forget this.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/4][RFC] event tracer
+References: <20090224193344.638329210@goodmis.org> <1235504556.4645.2252.camel@laptop> <alpine.DEB.2.00.0902241706260.12697@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0902241706260.12697@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 12:52:01PM -0800, David Brownell wrote:
+Steven Rostedt wrote:
+> On Tue, 24 Feb 2009, Peter Zijlstra wrote:
+> 
+>> On Tue, 2009-02-24 at 14:33 -0500, Steven Rostedt wrote:
+>>
+>>>  DECLARE_TRACE_FMT(sched_kthread_stop,
+>>>         TPPROTO(struct task_struct *t),
+>>>                   TPARGS(t),
+>>>                    "task %s:%d", TPARGS(t->comm, t->pid));
+>> Consistency would require something like:
+>>
+>> DECLARE_TRACE_FMT(sched_kthread_stop,
+>> 		  TPPROTO(struct task_struct *t),
+>> 		  TPARGS(t),
+>> 		  TPFMT("task %s:%d", t->comm, t->pid));
+>>
+>> I seem to remember Jason proposing something like this in the past.
+> 
+> Hmm, I'll have to look at that. (althought I was going to use a different 
+> TPARGS for the format args.)
+> 
+> I have, for now:
+> 
+> 	event_printk("(%s)" fmt "\n", #call, fmtargs);
+> 
+> I guess I can redefine the TPFMT too.
+> 
+> #undef TPFMT
+> #define TPFMT(fmt, args...) \
+> 	"(%s)" fmt "\n", #call, ##args
+> 
+> and then I could do
+> 
+> 	event_printk(fmt);
 
-> Use those methods to force machine-level constraints into bounds.
-> (Example:  regulator supports 1.8V, 2.4V, 2.6V, 3.3V, and board
-> constraints for that rail are 2.0V to 3.6V ... so the range of
-> voltages is then 2.4V to 3.3V on this board.)
+Why don't you do as below? :)
+	event_printk_line("(" #call ")" ##fmtandargs);
 
-Being able to support this is definitely a win, thanks for looking at
-this.
+Anyway, your proposal is good for me, because it will recover
+an information which tracepoint has lost.
 
-> +	/* maybe force machine-wide voltage constraints to match the
-> +	 * voltages supported by this regulator.  use the regulator's
-> +	 * entire range for boards with no particular constraints.
-> +	 */
+Thank you!
 
-I'd really rather the second bit weren't here.  I'd like to see a
-warning for the first part.
+-- 
+Masami Hiramatsu
 
-> + * @count_voltages: Return the number of supported voltage indices which
-> + *	may be passed to @list_voltage().  Some indices may correspond to
-> + *	voltages that are not usable on this system.
-> + * @list_voltage: Return one of the supported voltages, in microvolts;
-> + *	or negative errno.  Indices range from zero to one less than
-> + *	@count_voltages().  Voltages may be reported in any order.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-I'm having a hard time loving this interface for the driver.  It feels
-fairly cumbersome to have to provide two functions to look up what I'd
-expect to be static data - I'd be fairly surprised to see it change at
-runtime.  I think I'd expect to see something more like the way ALSA
-represents dB scales where the driver supplies a list of ranges that can
-either be simple values or value ranges expressed as (start, step,
-count).  That would cover both complicated cases like the TWL4030 and
-the other common case with large regular ranges of voltages.
+e-mail: mhiramat@redhat.com
 
-This mostly applies to the driver interface - on the consumer side it
-feels a bit cumbersome to use but I can't think of anything that's
-particularly better.  An interface that also allows consumers to ask if
-particular ranges can be satisfied might help here - it'd be nice for
-things like MMC that want to check for a relatively small set of
-voltages or voltage ranges (which I'd expect is the common case).
