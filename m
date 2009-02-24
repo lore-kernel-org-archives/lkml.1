@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZBXNAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbZBXNBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbZBXNAr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 08:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbZBXNAg
+	id S1757228AbZBXNBB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 08:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZBXNAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 08:00:36 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54571 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754256AbZBXNAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 08:00:34 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/5a+wQ8Hv5g+pTSIn3/IbkLIBY/cG9greqhdlcsW
-	1mwVyx+Y+bk5uP
-Subject: !CONFIG_NET_NS build error, net/core/net_namespace.c
-From: Mike Galbraith <efault@gmx.de>
-To: Daniel Lezcano <daniel.lezcano@free.fr>
-Cc: David Miller <davem@davemloft.net>, netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 24 Feb 2009 08:00:38 -0500
+Received: from mail-in-04.arcor-online.net ([151.189.21.44]:33151 "EHLO
+	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754433AbZBXNAf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 08:00:35 -0500
+X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-07.arcor-online.net 12C673CA1C0
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
+To: Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Reply-To: 7eggert@gmx.de
 Date: Tue, 24 Feb 2009 14:00:27 +0100
-Message-Id: <1235480427.5965.22.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+References: <c6GC9-3l7-11@gated-at.bofh.it> <c6GLN-3xO-31@gated-at.bofh.it> <c6IDT-6AZ-9@gated-at.bofh.it> <c6INu-6Ol-1@gated-at.bofh.it> <c6MR7-54s-3@gated-at.bofh.it> <c6ZbG-hF-13@gated-at.bofh.it> <c729F-5gF-21@gated-at.bofh.it> <c73S1-8dJ-19@gated-at.bofh.it> <c7mrC-4YD-3@gated-at.bofh.it> <c7mBk-5b2-23@gated-at.bofh.it> <c8Xp3-3TH-3@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1Lbwtf-0001Zc-Uq@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> On Thu, Feb 19, 2009 at 11:11:54AM -0800, Dave Hansen wrote:
+>> On Thu, 2009-02-19 at 22:06 +0300, Alexey Dobriyan wrote:
 
-  CC      net/core/net_namespace.o
-net/core/net_namespace.c: In function ‘net_ns_init’:
-net/core/net_namespace.c:223: error: implicit declaration of function ‘net_alloc_generic’
-net/core/net_namespace.c:223: warning: assignment makes pointer from integer without a cast
-make[2]: *** [net/core/net_namespace.o] Error 1
-make[1]: *** [net/core] Error 2
-make: *** [net] Error 2
+>> Alexey, I agree with you here.  I've been fighting myself internally
+>> about these two somewhat opposing approaches.  Of *course* we can
+>> determine the "checkpointability" at sys_checkpoint() time by checking
+>> all the various bits of state.
+>> 
+>> The problem that I think Ingo is trying to address here is that doing it
+>> then makes it hard to figure out _when_ you went wrong.  That's the
+>> single most critical piece of finding out how to go address it.
+>> 
+>> I see where you are coming from.  Ingo's suggestion has the *huge*
+>> downside that we've got to go muck with a lot of generic code and hook
+>> into all the things we don't support.
+>> 
+>> I think what I posted is a decent compromise.  It gets you those
+>> warnings at runtime and is a one-way trip for any given process.  But,
+>> it does detect in certain cases (fork() and unshare(FILES)) when it is
+>> safe to make the trip back to the "I'm checkpointable" state again.
+> 
+> "Checkpointable" is not even per-process property.
+> 
+> Imagine, set of SAs (struct xfrm_state) and SPDs (struct xfrm_policy).
+> They are a) per-netns, b) persistent.
+> 
+> You can hook into socketcalls to mark process as uncheckpointable,
+> but since SAs and SPDs are persistent, original process already exited.
+> You're going to walk every process with same netns as SA adder and mark
+> it as uncheckpointable. Definitely doable, but ugly, isn't it?
+> 
+> Same for iptable rules.
+> 
+> "Checkpointable" is container property, OK?
 
+IMO: Everything around the process may change as long as you can do the same
+using 'kill -STOP $PID; ...; kill -CONT $PID;'. E.g. changing iptables rules
+can be done to a normal process, so this should not prevent checkpointing
+(unless you checkpoint iptables, but don't do that then?).
 
-Impact: fix !CONFIG_NET_NS net/core/net_namespace.c build error
+BTW1: I might want to checkpoint something like seti@home. It will connect
+to a server from time to time, and send/receive a packet. If having opened
+a socket once in a lifetime would prevent checkpointing, this won't be
+possible. I see the benefit of the one-way-flag forcing to make all
+syscalls be checkpointable, but this won't work on sockets.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
+Therefore I think you need something inbetween. Some syscalls (etc.) are not
+supported, so just make the process be uncheckpointable. But some syscalls
+will enter and leave non-checkpointable states by design, they need at least
+counters.
 
- net/core/net_namespace.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Maybe you'll want to let the application decide if it's OK to be checkpointed
+on some conditions, too. The Seti client might know how to handle broken
+connections, and doing duplicate transfers or skipping them is expected, too.
+So the Seti client might declare the socket to be checkpointable, instead of
+making the do-the-checkpoint application wait until it's closed.
 
-diff --git a/net/core/net_namespace.c b/net/core/net_namespace.c
-index b0767ab..2adb1a7 100644
---- a/net/core/net_namespace.c
-+++ b/net/core/net_namespace.c
-@@ -63,10 +63,6 @@ out_undo:
- 	goto out;
- }
- 
--#ifdef CONFIG_NET_NS
--static struct kmem_cache *net_cachep;
--static struct workqueue_struct *netns_wq;
--
- static struct net_generic *net_alloc_generic(void)
- {
- 	struct net_generic *ng;
-@@ -80,6 +76,10 @@ static struct net_generic *net_alloc_generic(void)
- 	return ng;
- }
- 
-+#ifdef CONFIG_NET_NS
-+static struct kmem_cache *net_cachep;
-+static struct workqueue_struct *netns_wq;
-+
- static struct net *net_alloc(void)
- {
- 	struct net *net = NULL;
+BTW2: There is the problem of invalidating checkpoints, too. If a browser did
+a HTTP PUT, you don't want to restore the checkpoint where it was just about
+to start the PUT request. The application should be able to signal this to
+a checkpointing daemon. There will be a race, so having a signal "Invalidate
+checkpoints" won't work, but if the application sends a stable hash value,
+the duplicate can be detected. (Off cause you'd say "don't do that then" for
+browsers, but it's just an example. Off cause 2, the checkpoint daemon is
+only needed for advanced setups, a simple "checkpoint $povray --store jobfile"
+should just work.)
 
 
