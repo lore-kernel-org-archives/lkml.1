@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbZBXTgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbZBXTga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbZBXTgI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbZBXTe6
+	id S1759456AbZBXTga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZBXTe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:34:58 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53855 "EHLO
+	Tue, 24 Feb 2009 14:34:59 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33604 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754313AbZBXTey (ORCPT
+	with ESMTP id S1754319AbZBXTey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Feb 2009 14:34:54 -0500
-Message-Id: <20090224193451.229074103@goodmis.org>
+Message-Id: <20090224193451.447474613@goodmis.org>
 References: <20090224193344.638329210@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 24 Feb 2009 14:33:47 -0500
+Date: Tue, 24 Feb 2009 14:33:48 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -29,198 +29,258 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/4][RFC] tracing: add schedule events to event trace
-Content-Disposition: inline; filename=0003-tracing-add-schedule-events-to-event-trace.patch
+Subject: [PATCH 4/4][RFC] tracing: make event directory structure
+Content-Disposition: inline; filename=0004-tracing-make-event-directory-structure.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-This patch changes the trace/sched.h to use the DECLARE_TRACE_FMT
-such that they are automatically registered with the event tracer.
+This patch adds the directory /debug/tracing/events/ that will contain
+all the registered trace points.
 
-And it also adds the tracing sched headers to kernel/trace/events.c
+ # ls /debug/tracing/events/
+sched_kthread_stop      sched_process_fork  sched_switch
+sched_kthread_stop_ret  sched_process_free  sched_wait_task
+sched_migrate_task      sched_process_wait  sched_wakeup
+sched_process_exit      sched_signal_send   sched_wakeup_new
+
+ # ls /debug/tracing/events/sched_switch/
+enable
+
+ # cat /debug/tracing/events/sched_switch/enable
+1
+
+ # cat /debug/tracing/set_event
+sched_switch
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/trace/sched.h             |   49 +------------------------
- include/trace/sched_event_types.h |   74 +++++++++++++++++++++++++++++++++++++
- kernel/trace/Makefile             |    1 +
- kernel/trace/events.c             |   13 ++++++
- 4 files changed, 89 insertions(+), 48 deletions(-)
- create mode 100644 include/trace/sched_event_types.h
- create mode 100644 kernel/trace/events.c
+ kernel/trace/trace_events.c |  137 +++++++++++++++++++++++++++++++++++++++++--
+ kernel/trace/trace_events.h |    7 ++-
+ 2 files changed, 137 insertions(+), 7 deletions(-)
 
-diff --git a/include/trace/sched.h b/include/trace/sched.h
-index 0d81098..4e372a1 100644
---- a/include/trace/sched.h
-+++ b/include/trace/sched.h
-@@ -4,53 +4,6 @@
- #include <linux/sched.h>
- #include <linux/tracepoint.h>
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 05bc80e..3bcb9df 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -12,6 +12,11 @@
  
--DECLARE_TRACE(sched_kthread_stop,
--	TPPROTO(struct task_struct *t),
--		TPARGS(t));
--
--DECLARE_TRACE(sched_kthread_stop_ret,
--	TPPROTO(int ret),
--		TPARGS(ret));
--
--DECLARE_TRACE(sched_wait_task,
--	TPPROTO(struct rq *rq, struct task_struct *p),
--		TPARGS(rq, p));
--
--DECLARE_TRACE(sched_wakeup,
--	TPPROTO(struct rq *rq, struct task_struct *p, int success),
--		TPARGS(rq, p, success));
--
--DECLARE_TRACE(sched_wakeup_new,
--	TPPROTO(struct rq *rq, struct task_struct *p, int success),
--		TPARGS(rq, p, success));
--
--DECLARE_TRACE(sched_switch,
--	TPPROTO(struct rq *rq, struct task_struct *prev,
--		struct task_struct *next),
--		TPARGS(rq, prev, next));
--
--DECLARE_TRACE(sched_migrate_task,
--	TPPROTO(struct task_struct *p, int orig_cpu, int dest_cpu),
--		TPARGS(p, orig_cpu, dest_cpu));
--
--DECLARE_TRACE(sched_process_free,
--	TPPROTO(struct task_struct *p),
--		TPARGS(p));
--
--DECLARE_TRACE(sched_process_exit,
--	TPPROTO(struct task_struct *p),
--		TPARGS(p));
--
--DECLARE_TRACE(sched_process_wait,
--	TPPROTO(struct pid *pid),
--		TPARGS(pid));
--
--DECLARE_TRACE(sched_process_fork,
--	TPPROTO(struct task_struct *parent, struct task_struct *child),
--		TPARGS(parent, child));
--
--DECLARE_TRACE(sched_signal_send,
--	TPPROTO(int sig, struct task_struct *p),
--		TPARGS(sig, p));
-+#include <trace/sched_event_types.h>
+ #include "trace_events.h"
  
- #endif
-diff --git a/include/trace/sched_event_types.h b/include/trace/sched_event_types.h
-new file mode 100644
-index 0000000..da81d4d
---- /dev/null
-+++ b/include/trace/sched_event_types.h
-@@ -0,0 +1,74 @@
++#define events_for_each(event)						\
++	for (event = __start_ftrace_events;				\
++	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
++	     event++)
 +
-+/* use <trace/sched.h> instead */
-+#ifndef DECLARE_TRACE_FMT
-+# error Do not include this file directly.
-+# error Unless you know what you are doing.
-+#endif
-+
-+DECLARE_TRACE_FMT(sched_kthread_stop,
-+	TPPROTO(struct task_struct *t),
-+		  TPARGS(t),
-+		   "task %s:%d", TPARGS(t->comm, t->pid));
-+
-+DECLARE_TRACE_FMT(sched_kthread_stop_ret,
-+	TPPROTO(int ret),
-+		  TPARGS(ret),
-+		   "ret=%d", TPARGS(ret));
-+
-+DECLARE_TRACE_FMT(sched_wait_task,
-+	TPPROTO(struct rq *rq, struct task_struct *p),
-+		  TPARGS(rq, p),
-+		   "task %s:%d", TPARGS(p->comm, p->pid));
-+
-+DECLARE_TRACE_FMT(sched_wakeup,
-+	TPPROTO(struct rq *rq, struct task_struct *p, int success),
-+		  TPARGS(rq, p, success),
-+		   "task %s:%d %s",
-+		   TPARGS(p->comm, p->pid, success?"succeeded":"failed"));
-+
-+DECLARE_TRACE_FMT(sched_wakeup_new,
-+	TPPROTO(struct rq *rq, struct task_struct *p, int success),
-+		  TPARGS(rq, p, success),
-+		   "task %s:%d",
-+		   TPARGS(p->comm, p->pid, success?"succeeded":"failed"));
-+
-+DECLARE_TRACE_FMT(sched_switch,
-+	TPPROTO(struct rq *rq, struct task_struct *prev,
-+		struct task_struct *next),
-+		  TPARGS(rq, prev, next),
-+		   "task %s:%d ==> %s:%d", TPARGS(prev->comm, prev->pid,
-+						  next->comm, next->pid));
-+
-+DECLARE_TRACE_FMT(sched_migrate_task,
-+	TPPROTO(struct task_struct *p, int orig_cpu, int dest_cpu),
-+		  TPARGS(p, orig_cpu, dest_cpu),
-+		   "task %s:%d from: %d  to: %d",
-+		   TPARGS(p->comm, p->pid, orig_cpu, dest_cpu));
-+
-+DECLARE_TRACE_FMT(sched_process_free,
-+	TPPROTO(struct task_struct *p),
-+		  TPARGS(p),
-+		   "task %s:%d", TPARGS(p->comm, p->pid));
-+
-+DECLARE_TRACE_FMT(sched_process_exit,
-+	TPPROTO(struct task_struct *p),
-+		  TPARGS(p),
-+		   "task %s:%d", TPARGS(p->comm, p->pid));
-+
-+DECLARE_TRACE_FMT(sched_process_wait,
-+	TPPROTO(struct pid *pid),
-+		  TPARGS(pid),
-+		   "pid %d", TPARGS(pid));
-+
-+DECLARE_TRACE_FMT(sched_process_fork,
-+	TPPROTO(struct task_struct *parent, struct task_struct *child),
-+		  TPARGS(parent, child),
-+		   "parent %s:%d  child %s:%d",
-+		   TPARGS(parent->comm, parent->pid,
-+			  child->comm, child->pid));
-+
-+DECLARE_TRACE_FMT(sched_signal_send,
-+	TPPROTO(int sig, struct task_struct *p),
-+		  TPARGS(sig, p),
-+		   "sig: %d   task %s:%d",
-+		   TPARGS(sig, p->comm, p->pid));
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index c736356..664b6c0 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -39,5 +39,6 @@ obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
- obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
- obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
- obj-$(CONFIG_EVENT_TRACER) += trace_events.o
-+obj-$(CONFIG_EVENT_TRACER) += events.o
+ void event_trace_printk(unsigned long ip, const char *fmt, ...)
+ {
+ 	va_list ap;
+@@ -39,15 +44,16 @@ static void ftrace_clear_events(void)
  
- libftrace-y := ftrace.o
-diff --git a/kernel/trace/events.c b/kernel/trace/events.c
-new file mode 100644
-index 0000000..38c89ee
---- /dev/null
-+++ b/kernel/trace/events.c
-@@ -0,0 +1,13 @@
-+/*
-+ * This is the place to register all trace points as events.
-+ * Include the trace/<type>.h at the top.
-+ * Include the trace/<type>_event_types.h at the bottom.
-+ */
+ static int ftrace_set_clr_event(char *buf, int set)
+ {
+-	struct ftrace_event_call *call = (void *)__start_ftrace_events;
++	struct ftrace_event_call *call = __start_ftrace_events;
+ 
+ 
+-	while ((unsigned long)call < (unsigned long)__stop_ftrace_events) {
++	events_for_each(call) {
+ 
+-		if (strcmp(buf, call->name) != 0) {
+-			call++;
++		if (!call->name)
++			continue;
 +
-+/* trace/<type>.h here */
-+#include <trace/sched.h>
++		if (strcmp(buf, call->name) != 0)
+ 			continue;
+-		}
+ 
+ 		if (set) {
+ 			/* Already set? */
+@@ -223,6 +229,67 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
+ 	return ret;
+ }
+ 
++static ssize_t
++event_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
++		  loff_t *ppos)
++{
++	struct ftrace_event_call *call = filp->private_data;
++	char *buf;
 +
-+#include "trace_events.h"
++	if (call->enabled)
++		buf = "1\n";
++	else
++		buf = "0\n";
 +
-+/* trace/<type>_event_types.h here */
-+#include <trace/sched_event_types.h>
++	return simple_read_from_buffer(ubuf, cnt, ppos, buf, 2);
++}
++
++static ssize_t
++event_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
++		   loff_t *ppos)
++{
++	struct ftrace_event_call *call = filp->private_data;
++	char buf[64];
++	unsigned long val;
++	int ret;
++
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret < 0)
++		return ret;
++
++	switch (val) {
++	case 0:
++		if (!call->enabled)
++			break;
++
++		call->enabled = 0;
++		call->unregfunc();
++		break;
++	case 1:
++		if (call->enabled)
++			break;
++
++		call->enabled = 1;
++		call->regfunc();
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	*ppos += cnt;
++
++	return cnt;
++}
++
+ static const struct seq_operations show_event_seq_ops = {
+ 	.start = t_start,
+ 	.next = t_next,
+@@ -252,10 +319,59 @@ static const struct file_operations ftrace_set_event_fops = {
+ 	.release = seq_release,
+ };
+ 
++static const struct file_operations ftrace_enable_fops = {
++	.open = tracing_open_generic,
++	.read = event_enable_read,
++	.write = event_enable_write,
++};
++
++static struct dentry *event_trace_events_dir(void)
++{
++	static struct dentry *d_tracer;
++	static struct dentry *d_events;
++
++	if (d_events)
++		return d_events;
++
++	d_tracer = tracing_init_dentry();
++	if (!d_tracer)
++		return NULL;
++
++	d_events = debugfs_create_dir("events", d_tracer);
++	if (!d_events)
++		pr_warning("Could not create debugfs "
++			   "'events' directory\n");
++
++	return d_events;
++}
++
++static int
++event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
++{
++	struct dentry *entry;
++
++	call->dir = debugfs_create_dir(call->name, d_events);
++	if (!call->dir) {
++		pr_warning("Could not create debugfs "
++			   "'%s' directory\n", call->name);
++		return -1;
++	}
++
++	entry = debugfs_create_file("enable", 0644, call->dir, call,
++				    &ftrace_enable_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'%s/enable' entry\n", call->name);
++
++	return 0;
++}
++
+ static __init int event_trace_init(void)
+ {
++	struct ftrace_event_call *call = __start_ftrace_events;
+ 	struct dentry *d_tracer;
+ 	struct dentry *entry;
++	struct dentry *d_events;
+ 
+ 	d_tracer = tracing_init_dentry();
+ 	if (!d_tracer)
+@@ -275,6 +391,17 @@ static __init int event_trace_init(void)
+ 		pr_warning("Could not create debugfs "
+ 			   "'set_event' entry\n");
+ 
++	d_events = event_trace_events_dir();
++	if (!d_events)
++		return 0;
++
++	events_for_each(call) {
++		/* The linker may leave blanks */
++		if (!call->name)
++			continue;
++		event_create_dir(call, d_events);
++	}
++
+ 	return 0;
+ }
+ fs_initcall(event_trace_init);
+diff --git a/kernel/trace/trace_events.h b/kernel/trace/trace_events.h
+index aa82057..a0d45e8 100644
+--- a/kernel/trace/trace_events.h
++++ b/kernel/trace/trace_events.h
+@@ -1,11 +1,13 @@
+ #ifndef _LINUX_KERNEL_TRACE_EVENTS_H
+ #define _LINUX_KERNEL_TRACE_EVENTS_H
+ 
++#include <linux/debugfs.h>
+ #include <linux/ftrace.h>
+ #include "trace.h"
+ 
+ struct ftrace_event_call {
+ 	char		*name;
++	struct dentry	*dir;
+ 	int		enabled;
+ 	int		(*regfunc)(void);
+ 	void		(*unregfunc)(void);
+@@ -36,6 +38,7 @@ static void ftrace_unreg_event_##call(void)				\
+ }									\
+ 									\
+ static struct ftrace_event_call __used					\
++__attribute__((__aligned__(4)))						\
+ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.name 			= #call,				\
+ 	.regfunc		= ftrace_reg_event_##call,		\
+@@ -43,7 +46,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ }
+ 
+ void event_trace_printk(unsigned long ip, const char *fmt, ...);
+-extern unsigned long __start_ftrace_events[];
+-extern unsigned long __stop_ftrace_events[];
++extern struct ftrace_event_call __start_ftrace_events[];
++extern struct ftrace_event_call __stop_ftrace_events[];
+ 
+ #endif /* _LINUX_KERNEL_TRACE_EVENTS_H */
 -- 
 1.5.6.5
 
