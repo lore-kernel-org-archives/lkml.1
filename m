@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbZBXToB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZBXToZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbZBXToB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZBXTnv
+	id S1760115AbZBXToZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbZBXTnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:43:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39242 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754344AbZBXTnv (ORCPT
+	Tue, 24 Feb 2009 14:43:53 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43910 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754501AbZBXTnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:43:51 -0500
-Date: Tue, 24 Feb 2009 11:42:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       peterz@infradead.org, fweisbec@gmail.com, tytso@mit.edu,
-       arjan@infradead.org, pq@iki.fi, acme@redhat.com, jbaron@redhat.com,
-       mbligh@google.com, compudj@krystal.dyndns.org, fche@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, jens.axboe@oracle.com,
-       mhiramat@redhat.com, srostedt@redhat.com
-Subject: Re: [PATCH 1/4][RFC] tracing: add event trace infrastructure
-Message-Id: <20090224114217.d30ab19a.akpm@linux-foundation.org>
-In-Reply-To: <20090224193450.734369391@goodmis.org>
-References: <20090224193344.638329210@goodmis.org>
-	<20090224193450.734369391@goodmis.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Feb 2009 14:43:52 -0500
+Date: Tue, 24 Feb 2009 13:43:29 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: containers <containers@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 3/5] check files for checkpointability
+Message-ID: <20090224194329.GC24007@us.ibm.com>
+References: <20090219182007.B4B47C1F@kernel> <20090219182009.1A3E8860@kernel> <20090223234911.GB2590@us.ibm.com> <1235435430.26788.212.camel@nimitz> <20090224011037.GB4797@us.ibm.com> <1235438459.26788.222.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235438459.26788.222.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Feb 2009 14:33:45 -0500
-Steven Rostedt <rostedt@goodmis.org> wrote:
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Mon, 2009-02-23 at 19:10 -0600, Serge E. Hallyn wrote:
+> > > This allows us to tell where and when we went wrong.  Take a process
+> > > that's been running for a month.  After 5 days it did something random
+> > > to keep it from being checkpointed.  You're going to have forgotten all
+> > > about it 25 days later.  This gives us an opportunity to spit into dmesg
+> > > or just plain log it.  It also gives the app some ability to reflect and
+> > > see what its uncheckpointable attributes are.  
+> > 
+> > Hmm.  In that case, rather than refuse checkpoint, I prefer that we make
+> > this a footnote in the /proc/$$/checkpointable output.
+> 
+> Yeah, that's cool.  If we were smart, we'd also get hooked into some of
+> the ftrace output so that we have a real chance of logging these things
+> and being able to go look at something about them down the line.
 
-> +#define DECLARE_TRACE_FMT(call, proto, args, fmt, fmt_args)		\
-> +static void ftrace_event_##call(proto)					\
-> +{									\
-> +	event_trace_printk(_RET_IP_, "(%s) " fmt "\n", #call, fmt_args); \
-> +}									\
+How exactly woudl that work?  Would that work as a *replacement* for
+filling up the logs as I was recommending?  If so I'm all for it...
 
-<anal>This macro emits a definition, not a declaration.</anal>
+-serge
