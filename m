@@ -1,203 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZBXLs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbZBXLvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbZBXLs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 06:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZBXLsn
+	id S1755815AbZBXLvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 06:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZBXLva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 06:48:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51913 "EHLO hera.kernel.org"
+	Tue, 24 Feb 2009 06:51:30 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:60588 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753355AbZBXLsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 06:48:40 -0500
-Message-ID: <49A3DE76.5010606@kernel.org>
-Date: Tue, 24 Feb 2009 20:48:06 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752430AbZBXLv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 06:51:29 -0500
+Date: Tue, 24 Feb 2009 11:51:26 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
+       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
+Message-ID: <20090224115126.GB25151@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-21-git-send-email-mel@csn.ul.ie> <20090223013723.1d8f11c1.akpm@linux-foundation.org> <20090223233030.GA26562@csn.ul.ie> <20090223155313.abd41881.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
-Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk	allocation
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu>
-In-Reply-To: <20090224095708.GA20739@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Feb 2009 11:48:11 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090223155313.abd41881.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ingo.
-
-Ingo Molnar wrote:
-> Hm, i think there still must be some basic misunderstanding 
-> somewhere here. Let me describe the design i described in the 
-> previous mail in more detail.
+On Mon, Feb 23, 2009 at 03:53:13PM -0800, Andrew Morton wrote:
+> On Mon, 23 Feb 2009 23:30:30 +0000
+> Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> In one of your changelogs you state:
+> > On Mon, Feb 23, 2009 at 01:37:23AM -0800, Andrew Morton wrote:
+> > > On Sun, 22 Feb 2009 23:17:29 +0000 Mel Gorman <mel@csn.ul.ie> wrote:
+> > > 
+> > > > Currently an effort is made to determine if a page is hot or cold when
+> > > > it is being freed so that cache hot pages can be allocated to callers if
+> > > > possible. However, the reasoning used whether to mark something hot or
+> > > > cold is a bit spurious. A profile run of kernbench showed that "cold"
+> > > > pages were never freed so it either doesn't happen generally or is so
+> > > > rare, it's barely measurable.
+> > > > 
+> > > > It's dubious as to whether pages are being correctly marked hot and cold
+> > > > anyway. Things like page cache and pages being truncated are are considered
+> > > > "hot" but there is no guarantee that these pages have been recently used
+> > > > and are cache hot. Pages being reclaimed from the LRU are considered
+> > > > cold which is logical because they cannot have been referenced recently
+> > > > but if the system is reclaiming pages, then we have entered allocator
+> > > > slowpaths and are not going to notice any potential performance boost
+> > > > because a "hot" page was freed.
+> > > > 
+> > > > This patch just deletes the concept of freeing hot or cold pages and
+> > > > just frees them all as hot.
+> > > > 
+> > > 
+> > > Well yes.  We waffled for months over whether to merge that code originally.
+> > > 
+> > > What tipped the balance was a dopey microbenchmark which I wrote which
+> > > sat in a loop extending (via write()) and then truncating the same file
+> > > by 32 kbytes (or thereabouts).  Its performance was increased by a lot
+> > > (2x or more, iirc) and no actual regressions were demonstrable, so we
+> > > merged it.
+> > > 
+> > > Could you check that please?  I'd suggest trying various values of 32k,
+> > > too.
+> > > 
+> > 
+> > I dug around the archives but hadn't much luck finding the original
+> > discussion. I saw some results from around the 2.5.40-mm timeframe that talked
+> > about ~60% difference with this benchmark (http://lkml.org/lkml/2002/10/6/174)
+> > but didn't find the source. The more solid benchmark reports was
+> > https://lwn.net/Articles/14761/ where you talked about 1-2% kernel compile
+> > improvements, good SpecWEB and a big hike on performance with SDET.
+> > 
+> > It's not clearcut. I tried reproducing your original benchmark rather than
+> > whinging about not finding yours :) . The source is below so maybe you can
+> > tell me if it's equivalent? I only ran it on one CPU which also may be a
+> > factor. The results were
+> > 
+> >     size      with   without difference
+> >       64  0.216033  0.558803 -158.67%
+> >      128  0.158551  0.150673   4.97%
+> >      256  0.153240  0.153488  -0.16%
+> >      512  0.156502  0.158769  -1.45%
+> >     1024  0.162146  0.163302  -0.71%
+> >     2048  0.167001  0.169573  -1.54%
+> >     4096  0.175376  0.178882  -2.00%
+> >     8192  0.237618  0.243385  -2.43%
+> >    16384  0.735053  0.351040  52.24%
+> >    32768  0.524731  0.583863 -11.27%
+> >    65536  1.149310  1.227855  -6.83%
+> >   131072  2.160248  2.084981   3.48%
+> >   262144  3.858264  4.046389  -4.88%
+> >   524288  8.228358  8.259957  -0.38%
+> >  1048576 16.228190 16.288308  -0.37%
+> > 
+> > with    == Using hot/cold information to place pages at the front or end of
+> >         the freelist
+> > without == Consider all pages being freed as hot
 > 
-> |    On NUMA, embedding allocator can't be used as different 
-> |    units can't be made to fall in the correct NUMA nodes.
+> My head is spinning.  Smaller is better, right? 
+
+Right. It's measured in time so smaller == faster == better.
+
+> So for 16384-byte
+> writes, current mainline is slower?
 > 
-> This is a direct consequence of the unit/chunk abstraction,
-
-Not at all.  That's an optimization for !NUMA.  The remap allocator is
-what can be done on NUMA.  Chunking or not doesn't make any difference
-in this regard.  The only difference between chunking and not chunking
-is whether separately allocated percpu offsets have more or less holes
-inbetween them, which is irrelevant for all purposes.
-
-> and i think that abstraction is wrong.
-
-No, it's not wrong.  It simply is irrelevant - it's congruent
-vs. contiguos and all that we need is congruent.  Contiguous of course
-achieves congruent but it doesn't make any difference for this
-purpose.
-
-Please take a look at the remap allocator.  That's what you had in
-mind for the contiguos mapping.  The embedding allocator is an
-improvement specifically for !NUMA so that it doesn't even have to
-spend the single extra TLB entry for the first 2MB page, which BTW
-would be impossible with contiguous mapping.
-
-> What i'm suggesting is to have a simple continuous [non-chunked, 
-> with a hole in the last bits of the first 2MB] virtual memory 
-> range for each CPU.
+> That's odd.
 > 
-> This special virtual memory starts with a 2MB page (for the 
-> static bits - perhaps also with a default starter dynamic area 
-> appended to that - we can size this reasonably) and continues 
-> with 4K mappings at the next 2MB boundary and goes on linearly 
-> from that point on.
+
+Indeed.
+
+> > The results are a bit all over the place but mostly negative but nowhere near
+> > 60% of a difference so the benchmark might be wrong. Oddly, 64 shows massive
+> > regressions but 16384 shows massive improvements. With profiling enabled, it's
+> > 
+> >       64  0.214873  0.196666   8.47%
+> >      128  0.166807  0.162612   2.51%
+> >      256  0.170776  0.161861   5.22%
+> >      512  0.175772  0.164903   6.18%
+> >     1024  0.178835  0.168695   5.67%
+> >     2048  0.183769  0.174317   5.14%
+> >     4096  0.191877  0.183343   4.45%
+> >     8192  0.262511  0.254148   3.19%
+> >    16384  0.388201  0.371461   4.31%
+> >    32768  0.655402  0.611528   6.69%
+> >    65536  1.325445  1.193961   9.92%
+> >   131072  2.218135  2.209091   0.41%
+> >   262144  4.117233  4.116681   0.01%
+> >   524288  8.514915  8.590700  -0.89%
+> >  1048576 16.657330 16.708367  -0.31%
+> > 
+> > Almost the opposite with steady improvements almost all the way through.
+> > 
+> > With the patch applied, we are still using hot/cold information on the
+> > allocation side so I'm somewhat surprised the patch even makes much of a
+> > difference. I'd have expected the pages being freed to be mostly hot.
 > 
-> The variables within this singular 'percpu area' mirror each 
-> other amongst CPUs. So if a dynamic (or static) percpu variable 
-> is at offset 156100 in CPU#5's range - then it will be at offset 
-> 156100 in CPU#11's percpu area too. Each of these areas are 
-> tightly packed with that CPU's allocations (and only that CPU's 
-> allocations), there's no chunking, no units.
-
-Yes, I did understand that and did reply that in my previous email.
-
-=== QUOTE ===
-The new percpu_alloc() already does that.  Chunking or not makes no
-difference on this regard.  The only difference whether there are more
-holes in the allocated percpu addresses or not, which basically is
-irrelevant and chunking makes things much more flexible and scalable.
-ie. It can scale toward many many cpus or large large percpu areas
-wheras making the areas contiguous make the scalability determined by
-the product of the two.
-
-Also, contiguous per-cpu areas might look simpler but it actually is
-more complicated because it becomes much more arch dependent.  With
-chunking, the complexity is in generic code as virtual address and
-stuff are already in place.  If the cpu areas need to be made
-contiguous, the generic code will get simpler but each arch needs to
-come up with new address space layout.
-
-There simply isn't any measurable advantage to making the area
-contiguous.
-=== END OF QUOTE ===
-
-> As with your proposal this tears down the current artificial 
-> distinction between static and dynamic percpu variables.
->
-> But with this approach we'd the following additional advantages:
+> Oh yeah.  Back in the ancient days, hot-cold-pages was using separate
+> magazines for hot and cold pages.  Then Christoph went and mucked with
+> it, using a single queue.  That might have affected things.
 > 
-> - No dynamic-alloc single-allocation size limits _at all_ in 
->   practice. [up to the total size of the virtual memory window]
+
+It might have. The impact is that requests for cold pages can get hot pages
+if there are not enough cold pages in the queue so readahead could prevent
+an active process getting cache hot pages. I don't think that would have
+showed up in the microbenchmark though.
+
+> It would be interesting to go back to a suitably-early kernel to see if
+> we broke it sometime after the early quantitative testing.  But I could
+> understand you not being so terribly interested ;)
 > 
->   ( With your current proposal the dynamic alloc is limited to
->     unit size - which is looks a bit inflexible as unit size
->     impacts other characteristics so when we want to increase 
->     the dynamic allocation size we'd also affect other areas of 
->     the code. )
+
+I'm interested, but I now want to put it off for a second or third pass at
+giving the page allocator "go faster stripes". It's pure chicken, but the other
+patches are lower-hanging fruit but hefty enough to deal with on their own.
+
+> > Kernbench was no help figuring this out either.
+> > 
+> > with:    Elapsed: 74.1625s User: 253.85s System: 27.1s CPU: 378.5%
+> > without: Elapsed: 74.0525s User: 252.9s System: 27.3675s CPU: 378.25%
+> > 
+> > Improvements on elapsed and user time but a regression on system time.
+> > 
+> > The issue is sufficiently cloudy that I'm just going to drop the patch
+> > for now. Hopefully the rest of the patchset is more clear-cut. I'll pick
+> > it up again at a later time.
 > 
->   percpu_alloc() would become as limitless (on 64-bit) as 
->   vmalloc().
-
-There is no artificial limit on unit_size.  Contiguous is special form
-of congruent and thus it simply can't be more flexible than congruent.
-If the maximum allocation size is somthing to worry about just bumping
-the MIN constant should do the trick at the cost of consuming more
-virtual address, but seriously I don't think the maximum allocation
-size is something we need to worry about.  64k is way more than
-enough.
-
-> - no NUMA complications and no NUMA assymetry at all. When we 
->   extend a CPU's percpu area we do NUMA-local allocations to 
->   that CPU. The memory allocated is purely for that CPU's 
->   purpose.
-
-Chunking or not doesn't make any difference in this regard.  The
-posted allocator does exactly what you described above.
-
-> - We'd have a very 'compressed' pte presence in the pagetables: 
->   the dynamic percpu area is as tightly packed as possible. With 
->   a chunked design we 'scatter' the ptes a bit more broadly.
-
-Can you please elaborate a bit?
-
-If you're worried about packing, with the current usage pattern, it
-doesn't matter at all.  There are lots of small allocations and larger
-ones often need small alignment.  They pack alright.
-
-> The only thing that gets a bit trickier is sizing - but not by 
-> much. The best way we can size this without practical 
-> complications on very small or very large systems would by 
-> setting the maximum _combined_ size for all percpu allocations.
+> Well...  if the benefits of the existing code are dubious then we
+> should default to deleting it.
 > 
-> Say we set this 'PERCPU_TOTAL' limit to 4 GB. That means that if 
-> there are 8 possible CPUs, each CPU can have up to 512 MB of 
-> RAM. That's plenty in practice.
+
+Some things haven't changed since 2002 - I can't convince myself it's
+either good or bad at the moment so am leaning towards leaving it alone
+for now.
+
+> > Here is the microbenchmark I used
+> > 
+> > Thanks.
+> > 
+> > /*
+> >  * write-truncate.c
+> >  * Microbenchmark that tests the speed of write/truncate of small files.
+> >  * 
+> >  * Suggested by Andrew Morton
+> >  * Written by Mel Gorman 2009
+> >  */
+> > #include <stdio.h>
+> > #include <limits.h>
+> > #include <unistd.h>
+> > #include <sys/types.h>
+> > #include <sys/time.h>
+> > #include <fcntl.h>
+> > #include <stdlib.h>
+> > #include <string.h>
+> > 
+> > #define TESTFILE "./write-truncate-testfile.dat"
+> > #define ITERATIONS 10000
+> > #define STARTSIZE 32
+> > #define SIZES 15
+> > 
+> > #ifndef MIN
+> > #define MIN(x,y) ((x)<(y)?(x):(y))
+> > #endif
+> > #ifndef MAX
+> > #define MAX(x,y) ((x)>(y)?(x):(y))
+> > #endif
+> > 
+> > double whattime()
+> > {
+> >         struct timeval tp;
+> >         int i;
+> > 
+> > 	if (gettimeofday(&tp,NULL) == -1) {
+> > 		perror("gettimeofday");
+> > 		exit(EXIT_FAILURE);
+> > 	}
+> > 
+> >         return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+> > }
+> > 
+> > int main(void)
+> > {
+> > 	int fd;
+> > 	int bufsize, sizes, iteration;
+> > 	char *buf;
+> > 	double t;
+> > 
+> > 	/* Create test file */
+> > 	fd = open(TESTFILE, O_RDWR|O_CREAT|O_EXCL);
+> > 	if (fd == -1) {
+> > 		perror("open");
+> > 		exit(EXIT_FAILURE);
+> > 	}
+> > 
+> > 	/* Unlink now for cleanup */
+> > 	if (unlink(TESTFILE) == -1) {
+> > 		perror("unlinke");
+> > 		exit(EXIT_FAILURE);
+> > 	}
+> > 
+> > 	/* Go through a series of sizes */
+> > 	bufsize = STARTSIZE;
+> > 	for (sizes = 1; sizes <= SIZES; sizes++) {
+> > 		bufsize *= 2;
+> > 		buf = malloc(bufsize);
+> > 		if (buf == NULL) {
+> > 			printf("ERROR: Malloc failed\n");
+> > 			exit(EXIT_FAILURE);
+> > 		}
+> > 		memset(buf, 0xE0, bufsize);
+> > 
+> > 		t = whattime();
+> > 		for (iteration = 0; iteration < ITERATIONS; iteration++) {
+> > 			size_t written = 0, thiswrite;
+> > 			
+> > 			while (written != bufsize) {
+> > 				thiswrite = write(fd, buf, bufsize);
 > 
-> We can do this splitup dynamically during bootup, because the 
-> area is still fully linear, relative to the percpu offset.
+> (it should write bufsize-written ;))
+> 
 
-I think it's a pretty big problem on 32bit and also it makes
-implementing dynamic allocator much more involved for each arch wheras
-chunking puts the complexity at the generic code and just uses the
-existing vmalloc address mapping.  I really can't see advantage of
-contiguous allocation.
+D'oh - and write the buffer from buf + written. Not that it matters in this
+case as it's all just fake data. I wonder did this mistake cause the spike
+at 16384 hmmm....
 
-> [ A system with 4k CPUs would want to have a larger PERCPU_TOTAL 
->   - but obviously it cannot be really mind-blowingly large 
->   because the total max has to be backed up with real RAM. So 
->   realistically we wont have more than 1TB in the next 10 years 
->   or so. Which is still well below the limitations of the 64-bit 
->   address space. ]
-
-With chunking, we simply don't have to think about any of this.
-
-> In a non-chunked allocator the whole bitmap management becomes 
-> much simpler and more straightforward as well. It's also much 
-> easier to think about than an interleaved unit+chunk design.
-
-I don't know.  The bitmap allocator itself would be the same.  It's
-just that with chunking we have multiple of them and complexities are
-added when choosing where to allocate and reverse mapping pointer to
-its chunk.  I think it's reasonably straight forward as it is.
-
-Plus, it's not like we'll be able to do things as simple as
-module_percpu allocator does anyway.  If we map/unmap pages using
-highest allocated mark, single allocation can hold up vast amount of
-memory.  If we start depopulating in the middle, we no longer can use
-simple bitmap allocator and try to group allocations so that we don't
-waste a lot of pages.  Reclamation is one of the reasons why I chose
-chunking.
-
-> The only special complication is the setup of the initial 2MB 
-> area - but that is tricky to bootstrap anyway because we need to 
-> set it up before the page allocator gets initialized. It's also 
-> worthwile to put the most common percpu variables, and an 
-> expected amount of dynamic area into a 2MB TLB.
-
-Yeah, it's bootstrapping.  No matter what we do, it's gonna be a
-little bit hairy.
-
-Thanks.
+> > 				if (thiswrite == -1) {
+> > 					perror("write");
+> > 					exit(EXIT_FAILURE);
+> > 				}
+> > 				written += thiswrite;
+> > 			}
+> > 
+> > 			if (ftruncate(fd, 0) == -1) {
+> > 				perror("ftruncate");
+> > 				exit(EXIT_FAILURE);
+> > 			}
+> > 
+> > 			if (lseek(fd, 0, SEEK_SET) != 0) {
+> > 				perror("lseek");
+> > 				exit(EXIT_FAILURE);
+> > 			}
+> > 		}
+> 
+> yup, I think that captures the same idea.
+> 
+> > 		t = whattime() - t;
+> > 		free(buf);
+> > 
+> > 		printf("%d %f\n", bufsize, t);
+> > 	}
+> > 
+> > 	if (close(fd) == -1) {
+> > 		perror("close");
+> > 		exit(EXIT_FAILURE);
+> > 	}
+> > 
+> > 	exit(EXIT_SUCCESS);
+> > }
 
 -- 
-tejun
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
