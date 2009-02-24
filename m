@@ -1,36 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbZBXTkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbZBXTmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbZBXTkb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:40:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbZBXTkV
+	id S1759565AbZBXTmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZBXTmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:40:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49589 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Feb 2009 14:42:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50081 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756675AbZBXTkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:40:20 -0500
-Date: Tue, 24 Feb 2009 20:39:52 +0100
+	id S1754378AbZBXTmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 14:42:05 -0500
+Date: Tue, 24 Feb 2009 20:41:46 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 0/4][RFC] event tracer
-Message-ID: <20090224193952.GB27491@elte.hu>
-References: <20090224193344.638329210@goodmis.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: check range in reserve_early()
+Message-ID: <20090224194146.GA28772@elte.hu>
+References: <49A32F40.7080403@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090224193344.638329210@goodmis.org>
+In-Reply-To: <49A32F40.7080403@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -45,64 +36,53 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> This is still RFC, do not pull.
+> Impact: cleanup
 > 
-> This patch set gives the ability to add a format string and 
-> args to a trace point declaration. Then it gives a tracer an 
-> opportunity to override the header macro and use the default 
-> trace format to trace the object.
+> one 32bit system report:
 > 
-> For example (and used in this patch series), the sched 
-> tracepoint declarations are moved from include/trace/sched.h 
-> to include/trace/sched_event_types.h, and instead of using the 
-> macro DECLARE_TRACE we use DECLARE_TRACE_FMT. The first three 
-> arguments are the same, but it adds 2 more arguments. A printf 
-> format and arguments.
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+>  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 000000001c000000 (usable)
+>  BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
+> DMI 2.0 present.
+> last_pfn = 0x1c000 max_arch_pfn = 0x100000
+> kernel direct mapping tables up to 1c000000 @ 7000-c000
+> ...
+> RAMDISK: 1bc69000 - 1bfef4fa
+> ...
+> 0MB HIGHMEM available.
+> 448MB LOWMEM available.
+>   mapped low ram: 0 - 1c000000
+>   low ram: 00000000 - 1c000000
+>   bootmap 00002000 - 00005800
+> (9 early reservations) ==> bootmem [0000000000 - 001c000000]
+>   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+>   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+>   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+>   #3 [0000400000 - 00009ed14c]    TEXT DATA BSS ==> [0000400000 - 00009ed14c]
+>   #4 [001bc69000 - 001bfef4fa]          RAMDISK ==> [001bc69000 - 001bfef4fa]
+>   #5 [00009ee000 - 00009f2000]    INIT_PG_TABLE ==> [00009ee000 - 00009f2000]
+>   #6 [000009f400 - 0000100000]    BIOS reserved ==> [000009f400 - 0000100000]
+>   #7 [0000007000 - 0000007000]          PGTABLE
+>   #8 [0000002000 - 0000006000]          BOOTMAP ==> [0000002000 - 0000006000]
 > 
-> The new trace/sched.h file contains:
+> got strange blank entry with PGTABLE
 > 
->   #include <linux/sched.h>
->   #include <linux/tracepoint.h>
+> the reason is init_pg_table is big enough, and zero range is called with
+> init_memory_mapping/reserve_early()
 > 
->   #include <trace/sched_event_types.h>
+> so try to check the range in reserve_early()
 > 
-> The sched_event_types.h file has:
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
->  DECLARE_TRACE_FMT(sched_kthread_stop,
->         TPPROTO(struct task_struct *t),
->                   TPARGS(t),
->                    "task %s:%d", TPARGS(t->comm, t->pid));
-> 
-> The tracepoint.h defines DECLARE_TRACE_FMT as:
-> 
->  #define DECLARE_TRACE_FMT(name, proto, args, fmt, fmt_args) \
->         DECLARE_TRACE(name, TPPROTO(proto), TPARGS(args))
-> 
-> 
-> But in kernel/trace/events.c we have:
-> 
->  /* trace/<type>.h here */
->  #include <trace/sched.h>
-> 
->  #include "trace_events.h"
-> 
->  /* trace/<type>_event_types.h here */
->  #include <trace/sched_event_types.h>
-> 
-> The trace_events.h redefines the DECLARE_TRACE_FMT and makes a 
-> hook for to automate adding event points.
-> 
-> To add event points, convert to the DECLARE_TRACE_FMT, add 
-> your default printf format, and then add to events.c, the 
-> <type>.h and <type>_event_types.h as described. Then your 
-> trace points will appear in the event tracer.
-> 
-> Next I'll convert the rest of the tracepoints that are already 
-> defined to this format.
+> ---
+>  arch/x86/kernel/e820.c |    3 +++
+>  1 file changed, 3 insertions(+)
 
-Looks very good - especially the VFS enumeration of all present 
-tracepoints. Let me know when it gets into pullable state.
+Applied to tip/x86/mm, thanks Yinghai!
 
 	Ingo
