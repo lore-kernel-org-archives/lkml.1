@@ -1,93 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760429AbZBXV3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760553AbZBXV3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760429AbZBXV3B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 16:29:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759728AbZBXV2t
+	id S1760553AbZBXV3n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 16:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZBXV3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 16:28:49 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43205 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759702AbZBXV2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 16:28:48 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix recursive lock in free_uid()/free_user_ns()
-To: torvalds@osdl.org, serue@us.ibm.com
-Cc: adobriyan@gmail.com, kosaki.motohiro@jp.fujitsu.com, dhowells@redhat.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Tue, 24 Feb 2009 21:28:20 +0000
-Message-ID: <20090224212820.27161.49875.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Tue, 24 Feb 2009 16:29:34 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:37845 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753631AbZBXV3d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 16:29:33 -0500
+Date: Tue, 24 Feb 2009 22:29:30 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Suspend regression with 2.6.29-rc
+Message-ID: <20090224212930.GA30264@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20090224190850.GA27800@dose.home.local> <20090224205227.GA17485@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090224205227.GA17485@rhlx01.hs-esslingen.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-free_uid() and free_user_ns() are corecursive when CONFIG_USER_SCHED=n, but
-free_user_ns() is called from free_uid() by way of uid_hash_remove(), which
-requires uidhash_lock to be held.  free_user_ns() then calls free_uid() to
-complete the destruction.
+On Tue, Feb 24, 2009 at 21:52:27 +0100, Andreas Mohr wrote:
 
-Fix this by deferring the destruction of the user_namespace.
+[...]
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
----
+> I'm not entirely sure whether I can achieve similar reliability
+> on a convincing number of desktops 10 years later...
 
- include/linux/user_namespace.h |    1 +
- kernel/user_namespace.c        |   21 +++++++++++++++++----
- 2 files changed, 18 insertions(+), 4 deletions(-)
+Then I guess I should be happy to have _rock_ _solid_ suspend to RAM
+and to disk (using TuxOnIce) on my notebook (X61s) with kernel 2.6.27. 
+:-) It also comes with Intel graphics, but with i965 instead of i945.
 
-
-diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index 315bcd3..cc4f453 100644
---- a/include/linux/user_namespace.h
-+++ b/include/linux/user_namespace.h
-@@ -13,6 +13,7 @@ struct user_namespace {
- 	struct kref		kref;
- 	struct hlist_head	uidhash_table[UIDHASH_SZ];
- 	struct user_struct	*creator;
-+	struct work_struct	destroyer;
- };
- 
- extern struct user_namespace init_user_ns;
-diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 7908431..076c7c8 100644
---- a/kernel/user_namespace.c
-+++ b/kernel/user_namespace.c
-@@ -60,12 +60,25 @@ int create_user_ns(struct cred *new)
- 	return 0;
- }
- 
--void free_user_ns(struct kref *kref)
-+/*
-+ * Deferred destructor for a user namespace.  This is required because
-+ * free_user_ns() may be called with uidhash_lock held, but we need to call
-+ * back to free_uid() which will want to take the lock again.
-+ */
-+static void free_user_ns_work(struct work_struct *work)
- {
--	struct user_namespace *ns;
--
--	ns = container_of(kref, struct user_namespace, kref);
-+	struct user_namespace *ns =
-+		container_of(work, struct user_namespace, destroyer);
- 	free_uid(ns->creator);
- 	kfree(ns);
- }
-+
-+void free_user_ns(struct kref *kref)
-+{
-+	struct user_namespace *ns =
-+		container_of(kref, struct user_namespace, kref);
-+
-+	INIT_WORK(&ns->destroyer, free_user_ns_work);
-+	schedule_work(&ns->destroyer);
-+}
- EXPORT_SYMBOL(free_user_ns);
-
+Regards,
+Tino
