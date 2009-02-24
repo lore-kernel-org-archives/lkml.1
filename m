@@ -1,111 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZBXQNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbZBXQN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbZBXQNm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 11:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZBXQNc
+	id S1758651AbZBXQN4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 11:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757582AbZBXQNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 11:13:32 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:35234 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbZBXQNb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 11:13:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao0GAJqno0lMQWXi/2dsb2JhbACBb4Ew1QmEEQY
-Date: Tue, 24 Feb 2009 11:13:24 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12660] Linux 2.6.28.3 freezing on a 32-bits x86 Thinkpad
-	T43p
-Message-ID: <20090224161324.GB2803@Krystal>
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.IkE.cpzoJB@chimera> <20090224072902.GA20098@elte.hu>
-Mime-Version: 1.0
+	Tue, 24 Feb 2009 11:13:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45122 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757548AbZBXQNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 11:13:39 -0500
+Date: Tue, 24 Feb 2009 17:13:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Salman Qazi <sqazi@google.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Performance regression in write() syscall
+Message-ID: <20090224161329.GA26299@elte.hu>
+References: <20090224020304.GA4496@google.com> <20090224100913.GU26292@one.firstfloor.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090224072902.GA20098@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:09:40 up 3 days,  7:43,  2 users,  load average: 0.52, 0.75,
-	0.76
+In-Reply-To: <20090224100913.GU26292@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> On Mon, Feb 23, 2009 at 06:03:04PM -0800, Salman Qazi wrote:
+
+> > -	return __copy_user_nocache(dst, src, size, 1);
+> > +	if (likely(size >= PAGE_SIZE))
+> > +		return __copy_user_nocache(dst, src, size, 1);
+> > +	else
+> > +		return __copy_from_user(dst, src, size);
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12660
-> > Subject		: Linux 2.6.28.3 freezing on a 32-bits x86 Thinkpad T43p
-> > Submitter	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > Date		: 2009-02-04 21:11 (20 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123378196022258&w=4
-> > Handled-By	: Ingo Molnar <mingo@elte.hu>
-> 
-> Mathieu, this bug is very weird and makes little sense. Could 
-> you please reproduce it with vanilla -git too (without any LTT 
-> patches applied) and send the full boot+crash log?
-> 
-> 	Ingo
+> I think you disabled it completely, the kernel never really 
+> does any copies larger than page size because all its internal 
+> objects are page sized only.
 
-Hi Ingo,
+No, look again, it's not disabled completely - the check now 
+basically special-cases 4K writes _only_, and makes them 
+non-temporal. That still covers the big/midsize file case.
 
-The last time I reproduced this bug (before going back to 2.6.27 on this
-machine) was with a vanilla 2.6.28.5 kernel with the following patche
-applied. So maybe this patch is actually causing the problem now that
-other memory problems have been fixed since 2.6.28.3. I'll try without
-it, but it can take a while before the bug reappears, we'll see.
+And that kind of 4K limit makes a lot of sense. A small file 
+write will unlikely to have a perfect 4K sized copy. Big file 
+writes (and raw/direct IO related copies, etc.) will be chunked 
+down to 4K sized units.
 
-Mathieu
-
-
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 84ba748..fb12f06 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -576,6 +576,13 @@ static int __change_page_attr(struct cpa_data *cpa, int primary)
- 	else
- 		address = *cpa->vaddr;
- 
-+	/*
-+	 * If we're called with lazy mmu updates enabled, the
-+	 * in-memory pte state may be stale.  Flush pending updates to
-+	 * bring them up to date.
-+	 */
-+	arch_flush_lazy_mmu_mode();
-+
- repeat:
- 	kpte = lookup_address(address, &level);
- 	if (!kpte)
-@@ -854,6 +861,13 @@ static int change_page_attr_set_clr(unsigned long *addr, int numpages,
- 	} else
- 		cpa_flush_all(cache);
- 
-+	/* 
-+	 * If we've been called with lazy mmu updates enabled, then
-+	 * make sure that everything gets flushed out before we
-+	 * return.
-+	 */
-+	arch_flush_lazy_mmu_mode();
-+
- out:
- 	return ret;
- }
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Ingo
