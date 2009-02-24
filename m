@@ -1,103 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbZBXVXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbZBXV2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760252AbZBXVXc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 16:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbZBXVXP
+	id S1759291AbZBXV2i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 16:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZBXV23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 16:23:15 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:35310 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754043AbZBXVXO (ORCPT
+	Tue, 24 Feb 2009 16:28:29 -0500
+Received: from smtp6.tech.numericable.fr ([82.216.111.42]:49097 "EHLO
+	smtp6.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbZBXV22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 16:23:14 -0500
-Message-ID: <49A46562.7050906@oracle.com>
-Date: Tue, 24 Feb 2009 13:23:46 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 24 Feb 2009 16:28:28 -0500
+Message-ID: <49A46678.1030803@numericable.fr>
+Date: Tue, 24 Feb 2009 22:28:24 +0100
+From: etienne <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: List of 404 URLs in kernel .c and .h files
-References: <1235506239.2501.46.camel@localhost>
-In-Reply-To: <1235506239.2501.46.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul.moore@hp.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM <linux-security-module@vger.kernel.org>
+Subject: [PATCH][SMACK] add a socket_post_accept hook to fix netlabel issues
+ with labeled TCP servers V1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49A4651D.0108:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> Any suggestions on what if anything should be done
-> to the sources with these dead links?
-> 
-> http://foo.com/bar/baz.html
+hello,
 
-That's just an example/dummy URL.
+Today, if  a  TCP server run with a SMACK non-ambient label, it will send labeled packets back to the client,
+_even_ if the clients IP are in the /smack/netlabel "whitelist"
+that's because "smack_socket_post_create" hook set labeled CIPSO packets unconditionnally
+On connect, they are removed if the dest matches the /smack/netlabel
 
-> http://openib.org/license.html
-
-maybe http://www.openib.org/software_license.htm
-
-> http://pci-ids.ucw.cz/iii
-
-just use http://pci-ids.ucw.cz/
-
-> http://prism54.org/supported_cards.php
-
-maybe http://wireless.kernel.org/en/users/Drivers/p54
-
-> http://sourceforge.net/project/openipmi
-
-                        /projects/
-
-> http://www.ftdi.co.uk
-
-http://www.ftdichip.com/
-
-> http://www.highpoint-tech.com/BIOS
-
-Did the script truncate the URL?  I see:
-./drivers/ide/hpt366.c:15: * available from http://www.highpoint-tech.com/BIOS%20+%20Driver/.
-
-> http://www.kernel.org/log
-
-not a problem AFAICT.
-
-> http://www.lanana.org/docs/device-list/devices-2.6
-
-http://www.lanana.org/docs/device-list/devices-2.6+.txt
-
-another script glitch?
-
-> http://www.linuxjournal.com/article.php
-
-another script problem AFAICT.
-
-> http://www.national.com/pf/DP/DP83840.html
-
-http://www.national.com/opf/DP/DP83840A.html
-
-> http://www.nluug.nl/events/sane2000/papers.html
-
-http://www.sane.nl/events/sane2000/papers.html
-
-> http://www.siliconimaging.com/RGB
-
-another script glitch.
-
-> http://www.torque.net/sg
-> http://www.torque.net/sg/p/scsi-generic_long.txt
-> http://www.torque.net/sg/p/scsi-generic.txt
-> http://www.torque.net/sg/p/sg_v3_ho.html
-> http://www.torque.net/sg/sdebug26.html
-> http://www.torque.net/sg/sg_io.html
-
-http://sg.danny.cz/sg/
+for ->accept, there is no such "feature"; if the client that just connect is in the /smack/netlabel,
+SMACK send packeted label (although it shouldn't)
+This breaks some applications (like sshd)
 
 
--- 
-~Randy
+The following patch  adds a "post_access" hook to get the client IP and check it against the netlabel list. 
+Please comment
+
+regards,
+Etienne
+
+Signed-off-by: <etienne.basset@numericable.fr>
+--
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index e6f89d6..74206db 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -27,6 +27,7 @@
+ #include <net/netlabel.h>
+ #include <net/cipso_ipv4.h>
+ #include <linux/audit.h>
++#include <net/ipv6.h>
+ 
+ #include "smack.h"
+ 
+@@ -1566,6 +1567,78 @@ static int smack_socket_connect(struct socket *sock, struct sockaddr *sap,
+ }
+ 
+ /**
++ * smack_socket_post_access - post access check
++ * @sock: the socket
++ * @newsock : the grafted sock
++ *
++ * we have to match client IP against smack_host_label()
++ */
++static void  smack_socket_post_accept(struct socket *sock, struct socket *newsock)
++{
++	char *hostsp;
++	struct sockaddr_storage address;
++	struct sockaddr_in *sin;
++	struct sockaddr_in6 *sin6;
++	struct in6_addr *addr6;
++	struct socket_smack *ssp = newsock->sk->sk_security;
++	int len;
++
++	if (sock->sk == NULL)
++		return;
++
++	/* sockets can listen on both IPv4 & IPv6,
++	   and fallback to V4 if client is V4 */
++	if  (newsock->sk->sk_family != AF_INET && newsock->sk->sk_family != AF_INET6)
++		return;
++
++	/* get the client IP address **/
++	newsock->ops->getname(newsock, (struct sockaddr *)&address, &len, 2);
++
++	switch (newsock->sk->sk_family) {
++	case AF_INET:
++		sin = (struct sockaddr_in *)&address;
++		break;
++	case AF_INET6:
++		sin6  = (struct sockaddr_in6 *)&address;
++		addr6 = &sin6->sin6_addr;
++		/* if a V4 client connects to a V6 listening server,
++		 * we will get a IPV6_ADDR_MAPPED mapped address here
++		 * we have to handle this case too
++		 * the test below is ipv6_addr_type()== IPV6_ADDR_MAPPED
++		 * without the requirement to have IPv6 compiled in
++		 */
++		if ((addr6->s6_addr32[0] | addr6->s6_addr32[1]) == 0 &&
++				addr6->s6_addr32[2] == htonl(0x0000ffff)) {
++			__be32 addr = sin6->sin6_addr.s6_addr32[3];
++			__be16 port = sin6->sin6_port;
++			sin = (struct sockaddr_in *)&address;
++			sin->sin_family = AF_INET;
++			sin->sin_port = port;
++			sin->sin_addr.s_addr = addr;
++		} else {
++			/* standard IPv6, we'll send unlabeled */
++			smack_netlabel(newsock->sk, SMACK_UNLABELED_SOCKET);
++			return;
++		}
++		break;
++	default:
++		/** not possible to be there **/
++		return;
++	}
++	/* so, is there a label for the source IP **/
++	hostsp = smack_host_label(sin);
++
++	if (hostsp == NULL) {
++		if (ssp->smk_labeled != SMACK_CIPSO_SOCKET)
++			smack_netlabel(newsock->sk, SMACK_CIPSO_SOCKET);
++		return;
++	}
++	if (ssp->smk_labeled != SMACK_UNLABELED_SOCKET)
++		smack_netlabel(newsock->sk, SMACK_UNLABELED_SOCKET);
++	return;
++}
++
++/**
+  * smack_flags_to_may - convert S_ to MAY_ values
+  * @flags: the S_ value
+  *
+@@ -2906,6 +2979,7 @@ struct security_operations smack_ops = {
+ 
+ 	.socket_post_create = 		smack_socket_post_create,
+ 	.socket_connect =		smack_socket_connect,
++	.socket_post_accept =           smack_socket_post_accept,
+ 	.socket_sendmsg =		smack_socket_sendmsg,
+ 	.socket_sock_rcv_skb = 		smack_socket_sock_rcv_skb,
+ 	.socket_getpeersec_stream =	smack_socket_getpeersec_stream,
+@@ -2936,7 +3010,7 @@ struct security_operations smack_ops = {
+ };
+ 
+ 
+-static __init init_smack_know_list(void)
++static __init void init_smack_know_list(void)
+ {
+ 	list_add(&smack_known_huh.list, &smack_known_list);
+ 	list_add(&smack_known_hat.list, &smack_known_list);
+@@ -2944,6 +3018,7 @@ static __init init_smack_know_list(void)
+ 	list_add(&smack_known_floor.list, &smack_known_list);
+ 	list_add(&smack_known_invalid.list, &smack_known_list);
+ 	list_add(&smack_known_web.list, &smack_known_list);
++	return;
+ }
+ 
+ /**
+
