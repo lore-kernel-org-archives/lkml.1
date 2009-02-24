@@ -1,122 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZBXLgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbZBXLjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbZBXLgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 06:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZBXLgX
+	id S1756001AbZBXLjt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 06:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZBXLjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 06:36:23 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:34080 "EHLO gir.skynet.ie"
+	Tue, 24 Feb 2009 06:39:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60777 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752920AbZBXLgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 06:36:23 -0500
-Date: Tue, 24 Feb 2009 11:36:19 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 04/20] Convert gfp_zone() to use a table of
-	precalculated value
-Message-ID: <20090224113619.GA25151@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0902231003090.7298@qirst.com> <200902240241.48575.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0902231042440.7790@qirst.com> <20090223164047.GO6740@csn.ul.ie> <20090224103226.e9e2766f.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1753259AbZBXLji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 06:39:38 -0500
+Message-ID: <49A3DC56.5010907@kernel.org>
+Date: Tue, 24 Feb 2009 20:39:02 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090224103226.e9e2766f.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCH 02/10] bootmem: clean up arch-specific bootmem wrapping
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <1235445101-7882-3-git-send-email-tj@kernel.org> <20090224113044.GA2060@cmpxchg.org>
+In-Reply-To: <20090224113044.GA2060@cmpxchg.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Feb 2009 11:39:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 10:32:26AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Mon, 23 Feb 2009 16:40:47 +0000
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > On Mon, Feb 23, 2009 at 10:43:20AM -0500, Christoph Lameter wrote:
-> > > On Tue, 24 Feb 2009, Nick Piggin wrote:
-> > > 
-> > > > > Are you sure that this is a benefit? Jumps are forward and pretty short
-> > > > > and the compiler is optimizing a branch away in the current code.
-> > > >
-> > > > Pretty easy to mispredict there, though, especially as you can tend
-> > > > to get allocations interleaved between kernel and movable (or simply
-> > > > if the branch predictor is cold there are a lot of branches on x86-64).
-> > > >
-> > > > I would be interested to know if there is a measured improvement.
-> > 
-> > Not in kernbench at least, but that is no surprise. It's a small
-> > percentage of the overall cost. It'll appear in the noise for anything
-> > other than micro-benchmarks.
-> > 
-> > > > It
-> > > > adds an extra dcache line to the footprint, but OTOH the instructions
-> > > > you quote is more than one icache line, and presumably Mel's code will
-> > > > be a lot shorter.
-> > > 
-> > 
-> > Yes, it's an index lookup of a shared read-only cache line versus a lot
-> > of code with branches to mispredict. I wasn't happy with the cache line
-> > consumption but it was the first obvious alternative.
-> > 
-> > > Maybe we can come up with a version of gfp_zone that has no branches and
-> > > no lookup?
-> > > 
-> > 
-> > Ideally, yes, but I didn't spot any obvious way of figuring it out at
-> > compile time then or now. Suggestions?
-> > 
-> 
-> 
-> Assume
->   ZONE_DMA=0
->   ZONE_DMA32=1
->   ZONE_NORMAL=2
->   ZONE_HIGHMEM=3
->   ZONE_MOVABLE=4
-> 
-> #define __GFP_DMA       ((__force gfp_t)0x01u)
-> #define __GFP_DMA32     ((__force gfp_t)0x02u)
-> #define __GFP_HIGHMEM   ((__force gfp_t)0x04u)
-> #define __GFP_MOVABLE   ((__force gfp_t)0x08u)
-> 
-> #define GFP_MAGIC (0400030102) ) #depends on config.
-> 
-> gfp_zone(mask) = ((GFP_MAGIC >> ((mask & 0xf)*3) & 0x7)
-> 
+Hello,
 
-Clever. I can see how this can be made work for __GFP_DMA, __GFP_DMA32 and
-__GFP_HIGHMEM. However, I'm not currently seeing how __GFP_MOVABLE can be dealt
-with properly and quickly. In the above scheme __GFP_MOVABLE would return
-zone 4 which appears right but it's not. Only __GFP_MOVABLE|__GFP_HIGHMEM
-should return 4.
+Johannes Weiner wrote:
+> This won't suffice as reserve_bootmem() doesn't use
+> alloc_bootmem_core(), so now you effectively removed the node-0
+> restriction for reserve_bootmem() on this configuration.
 
-To make that work, you end up with something like the following;
+Ah... right.  :-(
 
-#define GFP_DMA_ZONEMAGIC       0000000100
-#define GFP_DMA32_ZONEMAGIC     0000010000
-#define GFP_NORMAL_ZONEMAGIC    0000000002
-#define GFP_HIGHMEM_ZONEMAGIC   0000000200
-#define GFP_MOVABLE_ZONEMAGIC   040000000000ULL
-#define GFP_MAGIC (GFP_DMA_ZONEMAGIC|GFP_DMA32_ZONEMAGIC|GFP_NORMAL_ZONEMAGIC|GFP_HIGHMEM_ZONEMAGIC|GFP_MOVABLE_ZONEMAGIC)
+> I wonder why this setup wants to register several bootmem nodes but
+> only use node 0, anyway.  Does someone remember? :)
+> 
+...
+>> -static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
+>> +static void * __init __alloc_bootmem_core(struct bootmem_data *bdata,
+>>  				unsigned long size, unsigned long align,
+>>  				unsigned long goal, unsigned long limit)
+> 
+> static but you refer to it in arch/x86/include/mmzone_32.h.
 
-static inline int new_gfp_zone(gfp_t flags) {
-        if ((flags & __GFP_MOVABLE))
-                if (!(flags & __GFP_HIGHMEM))
-                        flags &= ~__GFP_MOVABLE;
-        return (GFP_MAGIC >> ((flags & 0xf)*3) & 0x7);
-}
+Yeah, that's why it's a macro.  I thought about putting it into a
+separate header file, say, asm/bootmem-wrapper.h and including it only
+from bootmem.c but it looked like an overkill, so...
 
-so we end up back again with branches and checking masks. Mind you, I also
-ended up with a different GFP magic value when actually implementing this
-so I might be missing something else with your suggestion and how it works.
+Thanks.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+tejun
