@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbZBXE3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbZBXEla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735AbZBXE3n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 23:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZBXE3f
+	id S1754369AbZBXEla (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 23:41:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZBXElU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 23:29:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57445 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751906AbZBXE3e (ORCPT
+	Mon, 23 Feb 2009 23:41:20 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:51050 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbZBXElT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 23:29:34 -0500
-Date: Mon, 23 Feb 2009 20:28:54 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Salman Qazi <sqazi@google.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: Performance regression in write() syscall
-In-Reply-To: <200902241510.33911.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.2.00.0902232021310.3111@localhost.localdomain>
-References: <20090224020304.GA4496@google.com> <200902241510.33911.nickpiggin@yahoo.com.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 23 Feb 2009 23:41:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Gu2B8FFcd9JVa1fdE2DKb3/QjirrmrjXFR5Ker1txSNSZ2OoIaehIx3bCMBJyKrO0u
+         pjLErmovC7F9tV7O4DpuBtnU3dk4dtipwAvMG2mZqOUTDcwSOJvA/iFWCn+2G1N2MBW7
+         qdCHkNWP1LvMxdF+5dg7pRXOH6T6fv73lyeSQ=
+Date: Tue, 24 Feb 2009 07:47:52 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Nathan Lynch <nathanl@austin.ibm.com>,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       mpm@selenic.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
+Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
+Message-ID: <20090224044752.GB3202@x200.localdomain>
+References: <20090217222319.GA10546@elte.hu> <1234909849.4816.9.camel@nimitz> <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain> <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz> <20090218231545.GA17524@elte.hu> <20090219190637.GA4846@x200.localdomain> <1235070714.26788.56.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235070714.26788.56.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Feb 2009, Nick Piggin wrote:
+On Thu, Feb 19, 2009 at 11:11:54AM -0800, Dave Hansen wrote:
+> On Thu, 2009-02-19 at 22:06 +0300, Alexey Dobriyan wrote:
+> > Inotify isn't supported yet? You do
+> > 
+> >         if (!list_empty(&inode->inotify_watches))
+> >                 return -E;
+> > 
+> > without hooking into inotify syscalls.
+> > 
+> > ptrace(2) isn't supported -- look at struct task_struct::ptraced and
+> > friends.
+> > 
+> > And so on.
+> > 
+> > System call (or whatever) does something with some piece of kernel
+> > internals. We look at this "something" when walking data structures
+> > and
+> > abort if it's scary enough.
+> > 
+> > Please, show at least one counter-example.
 > 
-> What does unixbench's fstime test do? If it is just writing to the
-> pagecache, then this would be unexpected.
+> Alexey, I agree with you here.  I've been fighting myself internally
+> about these two somewhat opposing approaches.  Of *course* we can
+> determine the "checkpointability" at sys_checkpoint() time by checking
+> all the various bits of state.
+> 
+> The problem that I think Ingo is trying to address here is that doing it
+> then makes it hard to figure out _when_ you went wrong.  That's the
+> single most critical piece of finding out how to go address it.
+> 
+> I see where you are coming from.  Ingo's suggestion has the *huge*
+> downside that we've got to go muck with a lot of generic code and hook
+> into all the things we don't support.
+> 
+> I think what I posted is a decent compromise.  It gets you those
+> warnings at runtime and is a one-way trip for any given process.  But,
+> it does detect in certain cases (fork() and unshare(FILES)) when it is
+> safe to make the trip back to the "I'm checkpointable" state again.
 
-Hmm. Not necessarily. Even just plain writes may be slowed down, since the 
-nontemporal loads and stores are generally slower than the normal case. So 
-it does make some kind of sense to try to avoid the noncached versions for 
-small writes - because small writes tend to be for temp-files.
+"Checkpointable" is not even per-process property.
 
-I don't know if PAGE_SIZE is the right thing to test, and I also don't 
-know if this is necessarily the best place to test it in, but I don't 
-think it's necessarily wrong to do something like this.
+Imagine, set of SAs (struct xfrm_state) and SPDs (struct xfrm_policy).
+They are a) per-netns, b) persistent.
 
-In fact, I think we might also just check alignment. Doing the nontemporal 
-crud makes little sense for a non-8-byte-aligned destination, since it 
-will have to do the alignment stores cached anyway - and mixing them 
-across a cacheline is just crazy.
+You can hook into socketcalls to mark process as uncheckpointable,
+but since SAs and SPDs are persistent, original process already exited.
+You're going to walk every process with same netns as SA adder and mark
+it as uncheckpointable. Definitely doable, but ugly, isn't it?
 
-(The test program doesn't seem to be testing that particular case)
+Same for iptable rules.
 
-			Linus
+"Checkpointable" is container property, OK?
