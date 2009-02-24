@@ -1,88 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbZBXTmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbZBXTnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbZBXTmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZBXTmH
+	id S1759741AbZBXTnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZBXTnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:42:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50081 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754378AbZBXTmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:42:05 -0500
-Date: Tue, 24 Feb 2009 20:41:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	Tue, 24 Feb 2009 14:43:05 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50467 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754344AbZBXTnE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 14:43:04 -0500
+Subject: Re: [PATCH 0/4][RFC] event tracer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: check range in reserve_early()
-Message-ID: <20090224194146.GA28772@elte.hu>
-References: <49A32F40.7080403@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A32F40.7080403@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <20090224193344.638329210@goodmis.org>
+References: <20090224193344.638329210@goodmis.org>
+Content-Type: text/plain
+Date: Tue, 24 Feb 2009 20:42:36 +0100
+Message-Id: <1235504556.4645.2252.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-02-24 at 14:33 -0500, Steven Rostedt wrote:
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+>  DECLARE_TRACE_FMT(sched_kthread_stop,
+>         TPPROTO(struct task_struct *t),
+>                   TPARGS(t),
+>                    "task %s:%d", TPARGS(t->comm, t->pid));
 
-> Impact: cleanup
-> 
-> one 32bit system report:
-> 
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
->  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 000000001c000000 (usable)
->  BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
-> DMI 2.0 present.
-> last_pfn = 0x1c000 max_arch_pfn = 0x100000
-> kernel direct mapping tables up to 1c000000 @ 7000-c000
-> ...
-> RAMDISK: 1bc69000 - 1bfef4fa
-> ...
-> 0MB HIGHMEM available.
-> 448MB LOWMEM available.
->   mapped low ram: 0 - 1c000000
->   low ram: 00000000 - 1c000000
->   bootmap 00002000 - 00005800
-> (9 early reservations) ==> bootmem [0000000000 - 001c000000]
->   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
->   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
->   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
->   #3 [0000400000 - 00009ed14c]    TEXT DATA BSS ==> [0000400000 - 00009ed14c]
->   #4 [001bc69000 - 001bfef4fa]          RAMDISK ==> [001bc69000 - 001bfef4fa]
->   #5 [00009ee000 - 00009f2000]    INIT_PG_TABLE ==> [00009ee000 - 00009f2000]
->   #6 [000009f400 - 0000100000]    BIOS reserved ==> [000009f400 - 0000100000]
->   #7 [0000007000 - 0000007000]          PGTABLE
->   #8 [0000002000 - 0000006000]          BOOTMAP ==> [0000002000 - 0000006000]
-> 
-> got strange blank entry with PGTABLE
-> 
-> the reason is init_pg_table is big enough, and zero range is called with
-> init_memory_mapping/reserve_early()
-> 
-> so try to check the range in reserve_early()
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/kernel/e820.c |    3 +++
->  1 file changed, 3 insertions(+)
+Consistency would require something like:
 
-Applied to tip/x86/mm, thanks Yinghai!
+DECLARE_TRACE_FMT(sched_kthread_stop,
+		  TPPROTO(struct task_struct *t),
+		  TPARGS(t),
+		  TPFMT("task %s:%d", t->comm, t->pid));
 
-	Ingo
+I seem to remember Jason proposing something like this in the past.
+
