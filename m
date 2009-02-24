@@ -1,51 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbZBXSG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbZBXSMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759233AbZBXSG0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 13:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZBXSGR
+	id S1758942AbZBXSMj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 13:12:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZBXSM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 13:06:17 -0500
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:2339 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbZBXSGR (ORCPT
+	Tue, 24 Feb 2009 13:12:29 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:53073 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175AbZBXSM2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 13:06:17 -0500
-Message-ID: <49A4365A.8080704@phoenixsoftware.de>
-Date: Tue, 24 Feb 2009 19:03:06 +0100
-From: Tilman Schmidt <t.schmidt@phoenixsoftware.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 24 Feb 2009 13:12:28 -0500
+Message-ID: <49A4387D.2020801@cosmosbay.com>
+Date: Tue, 24 Feb 2009 19:12:13 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Stable Kernel <stable@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Bug #12766] Lots of smp_processor_id() in preemptible messages
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.-rC.vozoJB@chimera> <49A34777.3050809@goop.org>
-In-Reply-To: <49A34777.3050809@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.348 () AWL,BAYES_50,RDNS_NONE
+To: Tony Battersby <tonyb@cybernetics.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] [2.6.29] epoll: fix for epoll_wait sometimes returning
+ events on closed fds
+References: <49A42DDE.8060605@cybernetics.com>
+In-Reply-To: <49A42DDE.8060605@cybernetics.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 24 Feb 2009 19:12:13 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge schrieb:
->>
->> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=12766
->> Subject        : Lots of smp_processor_id() in preemptible messages
->> Submitter    : Tilman Schmidt <t.schmidt@phoenixsoftware.de>
->> Date        : 2009-02-23 18:37 (1 days old)
->> References    : http://marc.info/?l=linux-kernel&m=123541536414019&w=4
+Tony Battersby a écrit :
+>>From the epoll manpage:
+> Q: Will closing a file descriptor cause it to be removed from all
+>    epoll sets automatically?
+> A: Yes
 > 
-> Looks like stable needs to pick up 
-> d85cf93da66977dbc645352be1b2084a659d8a0b.
+> sys_close() calls filp_close(), which calls fput().  If no one else
+> holds a reference to the file, then fput() calls __fput(), and __fput()
+> calls eventpoll_release(), which prevents epoll_wait() from returning
+> events on the fd to userspace.  In the rare case that sys_close()
+> doesn't call __fput() because someone else has a reference to the file,
+> a subsequent epoll_wait() may still unexpectedly return events on the
+> fd after it has been closed.  This can end up confusing or crashing
+> a userspace program that doesn't do epoll_ctl(EPOLL_CTL_DEL) before
+> closing the fd.  I have reports of this actually happening under
+> heavy load with a program using epoll with network sockets on 2.6.27.
+> 
+> This patch fixes the problem by calling eventpoll_release_file()
+> from filp_close() instead of from __fput().
+> 
+> The locking in eventpoll_release() and eventpoll_release_file() needs
+> to be changed because previously it relied on the fact that no one
+> else could have a reference to the file when called from __fput(),
+> and this is no longer true.  The new locking is admittedly ugly,
+> but I believe it works.
+> 
+> ep_insert() now also needs to check if the file has been closed
+> to avoid races in multi-threaded programs where one thread is doing
+> epoll_ctl(EPOLL_CTL_ADD) and another thread is closing the fd.  This is
+> done by checking that fget_light still returns the same struct file *
+> as before.
+> 
+> Note that the list_del_init(&epi->fllink) previously done in
+> eventpoll_release_file() was unnecessary because it is also done
+> by ep_remove().
+> 
+> Userspace programs that might run on kernels with this bug can work
+> around the problem by doing epoll_ctl(EPOLL_CTL_DEL) before close().
+> 
+> Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
+> CC: <stable@kernel.org>
 
-I can confirm that commit d85cf93da66977dbc645352be1b2084a659d8a0b applied to 2.6.28.7 fixes this.
+Your patch may solve part of the problem. In your programs, maybe you
+have one thread doing all epoll_wait() and close() syscalls, but what
+of other programs ?
 
-Thanks,
-Tilman
+What prevents a thread doing close(fd) right after an other thread
+got this fd from epoll_wait() ?
+Nothing, and application may strangely react.
+
+The moment you have several threads doing read()/write()/close() syscalls
+on the same fd at the same time, you obviously get problems, not
+only with epoll.
+
+In a typical epoll driven application, with a pool of N worker threads all doing :
+
+while (1) {
+	fd = epoll_wait(epoll_fd);
+	work_on_fd(fd); /* possibly calling close(fd); */
+}
+
+Then, you must be prepared to get a *false* event, ie an fd that another worker
+already closed (and eventually reopened)
+
 
