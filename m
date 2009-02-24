@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZBXMmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZBXMwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbZBXMmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 07:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZBXMmD
+	id S1756383AbZBXMwN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 07:52:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZBXMv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 07:42:03 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3993 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752424AbZBXMmB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 07:42:01 -0500
-Date: Tue, 24 Feb 2009 12:41:56 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Subject: Re: [patch 2.6.29-rc3-git 1/2] regulator: twl4030 regulators
-Message-ID: <20090224124154.GA30130@sirena.org.uk>
-References: <200902081037.06645.david-b@pacbell.net> <200902231443.16334.david-b@pacbell.net> <20090224005536.GC3601@sirena.org.uk> <200902231803.50059.david-b@pacbell.net>
+	Tue, 24 Feb 2009 07:51:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33550 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752100AbZBXMv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 07:51:57 -0500
+Date: Tue, 24 Feb 2009 13:51:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
+	allocation
+Message-ID: <20090224125132.GB31295@elte.hu>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902231803.50059.david-b@pacbell.net>
-X-Cookie: This sentence no verb.
+In-Reply-To: <49A3DE76.5010606@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 06:03:49PM -0800, David Brownell wrote:
-> On Monday 23 February 2009, Mark Brown wrote:
 
-> > The change to add voltage range constraints if none were supplied is a
-> > noticable policy change from the existing framework standard - it allows
-> > machines to enable voltage changes without specifying what the valid
-> > values are. 
+* Tejun Heo <tj@kernel.org> wrote:
 
-> "Whatever the hardware handles" *is* a specification.
+> > - We'd have a very 'compressed' pte presence in the pagetables: 
+> >   the dynamic percpu area is as tightly packed as possible. With 
+> >   a chunked design we 'scatter' the ptes a bit more broadly.
+> 
+> Can you please elaborate a bit?
 
-> And there's no more assurance it's right than any
-> other specification would be ... except that, as a
+Sure. We want to compress data usage on every level of caching. 
 
-You're right that we can't guarantee that users get everything correct,
-the goal is more to ensure that some machine specific checks have been
-done and that the regulator API won't go off by itself and start doing
-things since it has no idea at all what's supportable.
+Part of that is to compress the ptes themselves, as they are 
+laid out in the pagetables. With your current small-chunks setup 
+we get this address space layout:
 
-> rule, hardware designers like to avoid assemblies
-> subject to trivial misconfiguration mistakes (like
-> firing up a 2.5V-max rail at 5V).
+    u1 .... [hole] ... u2 .. [hole] .... u3 ... [hole]
 
-The issue is what happens when software starts changing the
-configuration, for static configurations it doesn't make any difference.
+Where the 'hole' is the units belonging to other CPUs - but this 
+CPU is largely uninterested in it. These 'holes' are the larger 
+the more CPUs there are in the system.
 
-> > I'm not convinced that this is a good idea in the first 
-> > place and it will result in the opposite behaviour to the current core
-> > code (which should end up erroring out in constraint checking at runtime).
+A 'hole' there means that we have a number of ptes that are 
+unused in that CPU. That is bad in several ways:
 
-> Well, if you really dislike it so much, that can
-> easily be removed.  Got any comments on the
-> framework patch I sent?  I'll take that as the
-> first one, even though it's a different thread.
+ - those ptes will still be cached in the CPU - just not used 
+   for anything by that CPU. So the cache utilization ratio for 
+   those ptes will be very low.
 
-Yes, I wanted to sleep on it.  I'll reply at some point today.
+ - a modern x86 CPU's TLB walker will prefetch into nearby 
+   present ptes quite agressively, based on access patterns it 
+   detects. Having a lot of 'other CPU' ptes present will fool 
+   this CPU into prefetching them, if there's nearby usage. 
+   Those TLB entries are lost and they can create pressure on 
+   and eliminate useful TLB entries as well.
+
+ - as the number of CPUs increases in the system, the worse this 
+   situation gets. So up until a certain limit (when the hole
+   becomes so large that the CPU does not speculate to any 
+   additional level into it) this effects gets worse gradually.
+
+So what i'm saying is that these are strong reasons for us to 
+want to make the unit size to be something like 2MB - on 64-bit 
+x86 at least.
+
+( Using a 2MB unit size will also have another advantage: _iff_ 
+  we can still allocate a hugepage at that point we can map it 
+  straight there when extending the dynamic area. )
+
+	Ingo
