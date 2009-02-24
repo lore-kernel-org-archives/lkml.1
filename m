@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbZBXTrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbZBXTr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759723AbZBXTrf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbZBXTr0
+	id S1758794AbZBXTr7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759842AbZBXTrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:47:26 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:42821 "EHLO e4.ny.us.ibm.com"
+	Tue, 24 Feb 2009 14:47:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52935 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757914AbZBXTrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:47:25 -0500
-Subject: Re: [RFC][PATCH 3/5] check files for checkpointability
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090224194329.GC24007@us.ibm.com>
-References: <20090219182007.B4B47C1F@kernel>
-	 <20090219182009.1A3E8860@kernel> <20090223234911.GB2590@us.ibm.com>
-	 <1235435430.26788.212.camel@nimitz> <20090224011037.GB4797@us.ibm.com>
-	 <1235438459.26788.222.camel@nimitz>  <20090224194329.GC24007@us.ibm.com>
-Content-Type: text/plain
-Date: Tue, 24 Feb 2009 11:47:19 -0800
-Message-Id: <1235504839.26788.300.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1757922AbZBXTrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 14:47:49 -0500
+Date: Tue, 24 Feb 2009 20:46:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, peterz@infradead.org, fweisbec@gmail.com,
+       tytso@mit.edu, arjan@infradead.org, pq@iki.fi, acme@redhat.com,
+       jbaron@redhat.com, mbligh@google.com, compudj@krystal.dyndns.org,
+       fche@redhat.com, kosaki.motohiro@jp.fujitsu.com, jens.axboe@oracle.com,
+       mhiramat@redhat.com, srostedt@redhat.com
+Subject: Re: [PATCH 1/4][RFC] tracing: add event trace infrastructure
+Message-ID: <20090224194650.GC28772@elte.hu>
+References: <20090224193344.638329210@goodmis.org> <20090224193450.734369391@goodmis.org> <20090224114217.d30ab19a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090224114217.d30ab19a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-24 at 13:43 -0600, Serge E. Hallyn wrote:
-> Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> > On Mon, 2009-02-23 at 19:10 -0600, Serge E. Hallyn wrote:
-> > > > This allows us to tell where and when we went wrong.  Take a process
-> > > > that's been running for a month.  After 5 days it did something random
-> > > > to keep it from being checkpointed.  You're going to have forgotten all
-> > > > about it 25 days later.  This gives us an opportunity to spit into dmesg
-> > > > or just plain log it.  It also gives the app some ability to reflect and
-> > > > see what its uncheckpointable attributes are.  
-> > > 
-> > > Hmm.  In that case, rather than refuse checkpoint, I prefer that we make
-> > > this a footnote in the /proc/$$/checkpointable output.
-> > 
-> > Yeah, that's cool.  If we were smart, we'd also get hooked into some of
-> > the ftrace output so that we have a real chance of logging these things
-> > and being able to go look at something about them down the line.
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 24 Feb 2009 14:33:45 -0500
+> Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> How exactly woudl that work?  Would that work as a *replacement* for
-> filling up the logs as I was recommending?  If so I'm all for it...
+> > +#define DECLARE_TRACE_FMT(call, proto, args, fmt, fmt_args)		\
+> > +static void ftrace_event_##call(proto)					\
+> > +{									\
+> > +	event_trace_printk(_RET_IP_, "(%s) " fmt "\n", #call, fmt_args); \
+> > +}									\
+> 
+> <anal>This macro emits a definition, not a declaration.</anal>
 
-I think it would be a replacement for dmesg, at least.  
+yes indeed :) It got modified from one that emitted a 
+declaration to also emit a definition and the name was not 
+converted.
 
--- Dave
-
+	Ingo
