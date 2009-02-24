@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZBXEuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZBXEz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZBXEuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 23:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZBXEuJ
+	id S1754781AbZBXEz3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 23:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZBXEzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 23:50:09 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:47981 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751788AbZBXEuI (ORCPT
+	Mon, 23 Feb 2009 23:55:20 -0500
+Received: from web30104.mail.mud.yahoo.com ([209.191.69.36]:24094 "HELO
+	web30104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751788AbZBXEzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 23:50:08 -0500
-Message-ID: <22175803.post@talk.nabble.com>
-Date: Mon, 23 Feb 2009 20:50:05 -0800 (PST)
-From: sidc7 <siddhartha.chhabra@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Copy on write and page initialization
+	Mon, 23 Feb 2009 23:55:19 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=eoMvM3DYyOGpwal2qJpFQ/m5/ZteZJjBDURdkZCzc1lr1TEgTEv9xdmNYHEt2Nli0hxcrBbue/XZl1sYjf21LMVUCGj3rpUbI8v2uJvEHjEnoMM1Ix2eci2AJ1jgy5M6jRqZbxKNSNja+sFyXNPsil+Xh91ddUeQdH78BfXZfK4=;
+Message-ID: <389971.28411.qm@web30104.mail.mud.yahoo.com>
+X-YMail-OSG: ZUOfYagVM1m38TsjPs9RLguhZYSYDYTeEgWFKA007TZoN6h6IHgQj_IhRu1yzXDgX_HrtNs.jWgWaWjuij_LtnBJsJ0xzWgn61otZ5e7poqfPZRTMzpMAUmOmcwnu9uGvMOjzXW5DvUNLAkLjVh3KYMViuDWHFqq6RVFEiB3imwPukJZalUveRRRym.d
+X-Mailer: YahooMailClassic/5.1.18 YahooMailWebService/0.7.289.1
+Date: Mon, 23 Feb 2009 20:55:17 -0800 (PST)
+From: Parav Pandit <paravpandit@yahoo.com>
+Subject: virtually and physically (page) aligned allocation
+To: Linux kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Nabble-From: siddhartha.chhabra@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,31 +30,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-As far as I understand, Linux uses the COW optimization so parent and child
-process share the same address space, till one of them writes to it, at
-which point the kernel creates a copy of the page written to. This is done
-through the function do_wp_page which in turn calls cow_user_page. 
+Can user space application allocate memory which is virtually and physically aligned to the system's page boundary in the Linux 2.6.x?
+Such as using posix_memalign().
 
-I created a simple program, where the child and parent process write to a
-variable differently. I have instrumented the kernel at cow_user_page. On
-inserting the kprobe module and running the fork program, I do not get a
-call to cow_user_page. I had several questions:
-1. Does this mean that the kernel is not doing COW optimization? 
-2. Is COW enabled by default, if not, how do we turn it on? 
-3. Any other point in the kernel, where cow is done, other than
-cow_user_page?
+In other way,
+If user space application allocates memory which is aligned to page boundary for say 4 pages using posix_memalign(), will is ensure that it corresponds to exactly 4 physical pages in kernel which can be pinned down?
 
-Regarding page initialization, if I understand it correctly, the kernel
-calls get_zeroed_page when it has to allocated a zeroed page, once again in
-my kernel module, I have probes the kernel at get_zeroed_page, but get no
-calls, even on running the system for a long time, any other place where the
-kernel gets zeroed pages to return the applications ?
+Regards,
+Parav Pandit
 
 
-
-Any help would be appreciated, thanks in advance
-SC
--- 
-View this message in context: http://www.nabble.com/Copy-on-write-and-page-initialization-tp22175803p22175803.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
-
+      
