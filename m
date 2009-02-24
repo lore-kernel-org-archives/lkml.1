@@ -1,60 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbZBXVrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZBXVtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760787AbZBXVrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 16:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbZBXVrL
+	id S1760628AbZBXVtf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 16:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbZBXVt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 16:47:11 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:24411 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752121AbZBXVrJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 16:47:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=T3IMZejeEphWLurdhi/Tk7n7HuXY1eImRRyR65UWJgW51d+sMK+O1TLyBCgC1cXXih
-         wdKWdXtqk1NPIvQDUhdpemjD7G8khD5LZSAiMZ1hiRl7/xYBLnlhPt3aItQVsFNMueC2
-         tnHVf68F2Jf0sPjGuR5vp9wOqlKINMF7FWhwA=
-Message-ID: <49A46AD4.3060007@gmail.com>
-Date: Tue, 24 Feb 2009 22:47:00 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090218 SUSE/3.0b2-1.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Bob Copeland <me@bobcopeland.com>
-CC: Nick Kossifidis <mickflemm@gmail.com>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-References: <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com> <49A321BA.2040500@gmail.com> <49A326A4.8090103@gmail.com> <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet>
-In-Reply-To: <20090224135817.GB6019@hash.localnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Feb 2009 16:49:26 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:59781 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752121AbZBXVt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 16:49:26 -0500
+To: etienne.basset@numericable.fr
+Cc: casey@schaufler-ca.com, paul.moore@hp.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH][SMACK] add a socket_post_accept hook to fix netlabel issueswith labeled TCP servers V1
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <49A46678.1030803@numericable.fr>
+In-Reply-To: <49A46678.1030803@numericable.fr>
+Message-Id: <200902250649.BIF17188.FFOLSVOtJQHOMF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Wed, 25 Feb 2009 06:49:22 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24.2.2009 14:58, Bob Copeland wrote:
-> On Tue, Feb 24, 2009 at 01:08:03AM +0200, Nick Kossifidis wrote:
->> He does an extra check...
->>
->> 	/*
->> 	 * Given the use of a self-linked tail be very sure that the hw is
->> 	 * done with this descriptor; the hw may have done this descriptor
->> 	 * once and picked it up again...make sure the hw has moved on.
->> 	 */
->> 	if ((ands->ds_rxstatus1&AR_Done) == 0&&  OS_REG_READ(ah, AR_RXDP) == pa)
->> 		return HAL_EINPROGRESS;
->
-> Sounds like we definitely need that.If the hw uses up all the dma buffers
-> in one go, there's a good chance we can send the skb to mac80211 while
-> the hardware is still using it.  I guess an easy way to test would be to
-> set the max rx buffers to 3 or so and watch the fireworks.
+etienne wrote:
+> The following patch  adds a "post_access" hook to get the client IP and check it against the netlabel list. 
 
-I added a check for this in rx tasklet some time ago, because I hit it. 
-So no fireworks really should happen ;).
+Oh, SMACK starts to use security_socket_post_accept() hook?
 
-And yes, we ought to use this much better test (I knew nothing about 
-AR_RXDP reg) than mine.
+Then why not move security_socket_post_accept() to before fd_install()?
+If file descriptor table is shared between multiple processes,
+another process can reach not-yet-labeled-by-security_socket_post_accept()
+accept()ed socket.
+
+(Well, I'm happy if security_socket_post_accept() can return error
+because TOMOYO wants to implement personal firewall.)
