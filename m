@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbZBXQx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbZBXQyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbZBXQx5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 11:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbZBXQxs
+	id S1758964AbZBXQyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 11:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbZBXQxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 11:53:48 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:54944 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753528AbZBXQxq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 11:53:46 -0500
-Date: Tue, 24 Feb 2009 11:43:29 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+	Tue, 24 Feb 2009 11:53:49 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50910 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753734AbZBXQxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 11:53:47 -0500
+Date: Tue, 24 Feb 2009 11:52:50 -0500
+From: Dave Jones <davej@redhat.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Mattias-Christian Ott <ott@mirix.org>, Dominik Brodowski <linux@brodo.de>,
+       Joerg Platte <jplatte@naasa.net>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 04/19] Convert gfp_zone() to use a table of precalculated
- values
-In-Reply-To: <1235477835-14500-5-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0902241112310.22519@qirst.com>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235477835-14500-5-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+       cpufreq@vger.kernel.org
+Subject: Re: [PATCH] p4-clockmod: Calculate frequency based on TSC value
+	for P4 models 0 and 1
+Message-ID: <20090224165250.GB2998@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Frans Pop <elendil@planet.nl>,
+	Mattias-Christian Ott <ott@mirix.org>,
+	Dominik Brodowski <linux@brodo.de>,
+	Joerg Platte <jplatte@naasa.net>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	cpufreq@vger.kernel.org
+References: <200902240809.01312.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902240809.01312.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Feb 2009, Mel Gorman wrote:
+On Tue, Feb 24, 2009 at 08:08:58AM +0100, Frans Pop wrote:
+ > From: Mattias-Christian Ott <ott@mirix.org>
+ > 
+ > Commit ed9cbcd40004904dbe61ccc16d6106a7de38c998 reverted an incorrect
+ > change that resulted in random frequencies being displayed in some cases
+ > for early P4 models because the MSR_FBC_REGISTER_ID ratio is undefined.
+ >     
+ > Result of the revert is that for some users the CPU frequency is displayed
+ > multiplied by a factor 8 in /proc/cpuinfo when p4-clockmod is loaded.
+ >     
+ > Calculating the frequency from the TSC value should work in all cases.
 
->  static inline enum zone_type gfp_zone(gfp_t flags)
->  {
-> -#ifdef CONFIG_ZONE_DMA
-> -	if (flags & __GFP_DMA)
-> -		return ZONE_DMA;
-> -#endif
-> -#ifdef CONFIG_ZONE_DMA32
-> -	if (flags & __GFP_DMA32)
-> -		return ZONE_DMA32;
-> -#endif
-> -	if ((flags & (__GFP_HIGHMEM | __GFP_MOVABLE)) ==
-> -			(__GFP_HIGHMEM | __GFP_MOVABLE))
-> -		return ZONE_MOVABLE;
-> -#ifdef CONFIG_HIGHMEM
-> -	if (flags & __GFP_HIGHMEM)
-> -		return ZONE_HIGHMEM;
-> -#endif
-> -	return ZONE_NORMAL;
-> +	return gfp_zone_table[flags & GFP_ZONEMASK];
->  }
+I already picked this up in cpufreq-next. 
+Additionally, it needs the chunk below.
 
-Aassume
+(checkpatch also complains about the overlong line in the original
+ patch which I fixed up before merging).
 
-GFP_DMA		= 0x01
-GFP_DMA32	= 0x02
-GFP_MOVABLE	= 0x04
-GFP_HIGHMEM	= 0x08
+	Dave
 
-ZONE_NORMAL	= 0
-ZONE_DMA	= 1
-ZONE_DMA32	= 2
-ZONE_MOVABLE	= 3
-ZONE_HIGHMEM	= 4
+diff --git a/arch/x86/include/asm/timer.h b/arch/x86/include/asm/timer.h
+index 2bb6a83..4f5c247 100644
+--- a/arch/x86/include/asm/timer.h
++++ b/arch/x86/include/asm/timer.h
+@@ -11,8 +11,8 @@ unsigned long native_calibrate_tsc(void);
+ 
+ #ifdef CONFIG_X86_32
+ extern int timer_ack;
++#endif
+ extern int recalibrate_cpu_khz(void);
+-#endif /* CONFIG_X86_32 */
 
-then we could implement gfp_zone simply as:
-
-static inline enum zone_type gfp_zone(gfp_t flags)
-{
-	return ffs(flags & 0xf);
-}
-
-However, this would return ZONE_MOVABLE if only GFP_MOVABLE would be
-set but not GFP_HIGHMEM.
-
-If we could make sure that GFP_MOVABLE always includes GFP_HIGHMEM then
-this would not be a problem.
+-- 
+http://www.codemonkey.org.uk
