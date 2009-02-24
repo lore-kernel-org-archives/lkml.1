@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbZBXL0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbZBXL3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbZBXL0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 06:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZBXL0E
+	id S1752803AbZBXL3L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 06:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZBXL25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 06:26:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55004 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751371AbZBXL0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 06:26:03 -0500
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Kyle McMartin <kyle@infradead.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kyle@redhat.com, roland@redhat.com
-Subject: Re: [PATCH/RFC] powerpc: avoid generating .eh_frame sections with gcc-4.4
-References: <20090224065112.GA6690@bombadil.infradead.org>
-	<20090224084034.GA11847@uranus.ravnborg.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Free thinker, does not speak for Red Hat
-		or its Operating System Tools Group
-Date: Tue, 24 Feb 2009 08:25:35 -0300
-In-Reply-To: <20090224084034.GA11847@uranus.ravnborg.org> (Sam Ravnborg's message of "Tue\, 24 Feb 2009 09\:40\:34 +0100")
-Message-ID: <orprh8oz4g.fsf@livre.oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Feb 2009 06:28:57 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:37174 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbZBXL24 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 06:28:56 -0500
+Subject: Re: debugging threaded apps running under a clone(CLONE_NEWPID)
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <49A3C314.6010806@fr.ibm.com>
+References: <499EE0D1.1010001@fr.ibm.com>
+	 <20090223182153.GD13151@us.ibm.com>  <49A3C314.6010806@fr.ibm.com>
+Content-Type: text/plain
+Date: Tue, 24 Feb 2009 12:28:52 +0100
+Message-Id: <1235474932.12827.62.camel@bahia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 24, 2009, Sam Ravnborg <sam@ravnborg.org> wrote:
+On Tue, 2009-02-24 at 10:51 +0100, Cedric Le Goater wrote:
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> ---
+>  fs/proc/base.c |   19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+> 
+> Index: 2.6.27-mcr.git/fs/proc/base.c
+> ===================================================================
+> --- 2.6.27-mcr.git.orig/fs/proc/base.c
+> +++ 2.6.27-mcr.git/fs/proc/base.c
+> @@ -2444,6 +2444,23 @@ static int proc_tgid_io_accounting(struc
+>  }
+>  #endif /* CONFIG_TASK_IO_ACCOUNTING */
+> 
+> +static int proc_pid_vpids(struct task_struct *task, char *buffer)
+> +{
+> +	struct pid_namespace *pid_ns = task->nsproxy->pid_ns;
+> +
 
-> On Tue, Feb 24, 2009 at 01:51:12AM -0500, Kyle McMartin wrote:
->> From: Kyle McMartin <kyle@redhat.com>
->> 
->> On ppc64 (at least) gcc-4.4 is defaulting to generating .eh_frame
->> sections, which are, for the kernel, fairly pointless. Additionally, on
->> ppc64 this generates a relocation format which the kernel module loader
->> does not currently support (R_PPC64_REL32.)
->> 
->> Alexandre Oliva verifies that -fno-dwarf2-cfi-asm prevents this
->> .eh_frame section from being generated.
->> 
->> These seem to be used for unwinding, but it doesn't look like we
->> currently use them anywhere. (In fact, we explicitly dump them in the
->> x86_64 linker script.)
+This breaks if task is a zombie...
 
-> A grep for "eh_frame" shows too many hits in the kernel to convince
-> me this is true.
-
-I don't know whether .eh_frame is used for anything in the kernel.  It
-doesn't matter, as far as the patch is concerned.
-
-What the flag above does is to restore the .eh_frame behavior from GCC
-4.3, in which, when compiling with -g, rather than using .cfi assembler
-directives, GCC emitted .debug_frame and (when needed) .eh_frame itself.
-
-The "when needed" is key.  The assembler doesn't know which of these to
-emit, so it emits both in response to .cfi directives.  It's also
-possible that the assembler selects more efficient relocations than GCC.
-Regardless, it's precisely the presence of new relocations in .eh_frame
-that caused the reported problem.
-
-This flag will just restore the .eh_frame that you had with earlier
-versions of GCC, so that you don't have to cope with the enlarged and
-possibly modified one that the combination of new GCC and new binutils
-generates when compiling with -g.  It will thus still serve whatever
-purpose it did before.
-
-I hope this helps,
-
+> +	return sprintf(buffer, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n",
+> +		       task_pid_nr_ns(task, pid_ns), // pid
+> +		       task_pid_nr(task),
+> +		       task_tgid_nr_ns(task, pid_ns), // tgid
+> +		       task_tgid_nr(task),
+> +		       task_tgid_nr_ns(task->real_parent, pid_ns), // ppid
+> +		       task_tgid_nr(task->real_parent),
+> +		       task_pgrp_nr_ns(task, pid_ns), // pgid
+> +		       task_pgrp_nr(task),
+> +		       task_session_nr_ns(task, pid_ns), // sid
+> +		       task_session_nr(task));
+> +}
+> +
+>  /*
+>   * Thread groups
+>   */
+> @@ -2519,6 +2536,7 @@ static const struct pid_entry tgid_base_
+>  #ifdef CONFIG_TASK_IO_ACCOUNTING
+>  	INF("io",	S_IRUGO, tgid_io_accounting),
+>  #endif
+> +	INF("vpids",	S_IRUGO, pid_vpids),
+>  };
+> 
+>  static int proc_tgid_base_readdir(struct file * filp,
+> @@ -2854,6 +2872,7 @@ static const struct pid_entry tid_base_s
+>  #ifdef CONFIG_TASK_IO_ACCOUNTING
+>  	INF("io",	S_IRUGO, tid_io_accounting),
+>  #endif
+> +	INF("vpids",	S_IRUGO, pid_vpids),
+>  };
+> 
+>  static int proc_tid_base_readdir(struct file * filp,
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
 -- 
-Alexandre Oliva           http://www.lsd.ic.unicamp.br/~oliva/
-You must be the change you wish to see in the world. -- Gandhi
-Be Free! -- http://FSFLA.org/   FSF Latin America board member
-Free Software Evangelist      Red Hat Brazil Compiler Engineer
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
+
