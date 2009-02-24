@@ -1,108 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbZBXRqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbZBXRs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758352AbZBXRqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756447AbZBXRqM
+	id S1759280AbZBXRs4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZBXRss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:46:12 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:41555 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755948AbZBXRqL (ORCPT
+	Tue, 24 Feb 2009 12:48:48 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38646 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175AbZBXRss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:46:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lm8Gs3fgYixBJSwE4M/pKt+8D45w2ugkPYuoh2FW5+uvX/CzUrzRhiMsvaWP/ynlM8
-         CqhzWvGO4dvA5prubi02qPdm1n8Xjjn82ehuMI+5DqwDs8r4CsESMwJTWuUahoAyCnkD
-         /6+25ujq6iX6CoKKlhcq/Cm/nCNZkRsaZuJL0=
-Date: Tue, 24 Feb 2009 18:46:05 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 0/3] tracing/ftrace: ftrace_bprintk
-Message-ID: <20090224174604.GG5765@nowhere>
-References: <20090224051618.GA5142@nowhere> <20090224171718.GA3189@redhat.com>
+	Tue, 24 Feb 2009 12:48:48 -0500
+Date: Tue, 24 Feb 2009 12:48:38 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kyle McMartin <kyle@infradead.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, kyle@redhat.com, roland@redhat.com,
+       aoliva@redhat.com
+Subject: Re: [PATCH/RFC] powerpc: avoid generating .eh_frame sections with
+	gcc-4.4
+Message-ID: <20090224174838.GB6690@bombadil.infradead.org>
+References: <20090224065112.GA6690@bombadil.infradead.org> <20090224084034.GA11847@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090224171718.GA3189@redhat.com>
+In-Reply-To: <20090224084034.GA11847@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 12:17:18PM -0500, Jason Baron wrote:
-> On Tue, Feb 24, 2009 at 06:16:18AM +0100, Frederic Weisbecker wrote:
-> > Hi,
-> > 
-> > These three patches are part of a patchset posted by Lai Jiangshan in december 2008.
-> > They introduce a binary version of ftrace_printk() called ftrace_bprintk()
-> > 
-> > While having the same goal: print a generic message entry into the ring buffer,
-> > their approaches are very different.
-> > 
-> > - ftrace_printk() does the formatting job on tracing time, insert the whole resulting string
-> >   into the ring buffer, and then the string is printed on output time without a lot of modifications.
-> > 
-> > - ftrace_bprintk() does no formatting on tracing time. Instead, it looks at the format string
-> >   to find the types and the numbers of the arguments and directly stores them as-is into the
-> >   ring-buffer. Then the format string is stored into the ring-buffer too, but only by its address,
-> >   it is not copied. Then on output time only, the final string is formatted and sent to the user.
-> >   This gives a result about as fast as a traditional tracer with fixed fields types, except that
-> >   we can print random types and numbers of fields here.
-> > 
-> > 
-> > The first patch adds the generic support for binary formatting.
-> > The second adds the support for binary print types on ftrace
-> > and the last introduces ftrace_bprintk() which supports safely the modules
-> > by listening on the module loading/unloading notifier to keep track of
-> > unwanted freed format strings.
-> > 
-> > Lai Jiangshan (3):
-> >       add binary printf
-> >       ftrace: infrastructure for supporting binary record
-> >       ftrace: add ftrace_bprintk()
-> > 
+On Tue, Feb 24, 2009 at 09:40:34AM +0100, Sam Ravnborg wrote:
+> x86 has a specific ".section .eh_frame,"a",@progbits" in vdso32/int80.S as one example.
 > 
-> hi,
-> 
-> this seems like a really valuable feature....I'm just wondering about a
-> couple of things....
-> 
-> If the 'brpintk tracer' in trace/trace_bprintk.c is just being used to
-> set an enabled flag for printing out these binary records, then are we
-> better off with just an option flag in the 'trace_options' file? 
-
-
-This tracer does a bit more, it keeps track of the string formats used
-by a module which uses ftrace_bprintk().
-So for now, the use of this facility can't be decoupled from its tracer.
-In fact, I will try to move this module safety into tracing core so that
-any tracer will be able to use it.
-
- 
-> Second, can we somehow combine ftrace_printk() and ftrace_bprintk(), so
-> that a developer can just use one interface? Perhaps, ftrace_printk
-> calls ftrace_bprintk if binary option flag is set, otherwise, it just
-> outputs things normally.
-> 
-> thanks,
-> 
-> -Jason 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
+> Have you analyzed all these hits?
 > 
 
+These aren't effected by the patch. All the occurances of it inside the
+kernel are explicitly written for the vdso/vsyscall functionality (which
+needs it, since it's mapped into a userspace task, and you obviously
+might be running a debugger on it.) The other hit in x86_64 is just a
+discard section of the linker script.
+
+regards, Kyle
