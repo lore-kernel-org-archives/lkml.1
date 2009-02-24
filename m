@@ -1,60 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZBXMj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZBXMlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZBXMj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 07:39:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbZBXMjN
+	id S1756636AbZBXMlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 07:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZBXMlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 07:39:13 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:51010 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752425AbZBXMjL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 07:39:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GXT9OYRDoqTGHG92Dq0KFAfau5KfOYsksoSzWrxdc/YtmTDeeDS9PSTFM6hcvLfAXm
-         gPaOZPxGzAsVoYGQ4Ij/IIsSenpth26ESz9kDln7+fRRwdTVPAnnFXYlgalnTC1hnpfB
-         TuFoFAQ/5XSL5mqsRcAk7I2luc14vvg5/wfhs=
-Date: Tue, 24 Feb 2009 13:38:43 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: iwlagn warning in 2.6.29-rc6
-Message-ID: <20090224123843.GA4059@Pilar.aei.mpg.de>
-References: <20090223212615.GA5047@Pilar.Speedport_W_303V_Typ_A> <1235429106.18617.42.camel@rc-desk>
+	Tue, 24 Feb 2009 07:41:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35893 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752585AbZBXMlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 07:41:05 -0500
+Date: Tue, 24 Feb 2009 13:40:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
+	allocation
+Message-ID: <20090224124042.GA31295@elte.hu>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1235429106.18617.42.camel@rc-desk>
+In-Reply-To: <49A3DE76.5010606@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 23.Feb'09 at 14:45:06 -0800, reinette chatre wrote:
-> On Mon, 2009-02-23 at 13:26 -0800, Carlos R. Mafra wrote:
-> > I've just got this warning in my Vaio laptop:
-> > 
-> > ------------[ cut here ]------------
-> > WARNING: at drivers/net/wireless/iwlwifi/iwl-tx.c:1254 iwl_tx_cmd_complete+0x28a/0x2e0()
-> > Hardware name: VGN-FZ240E
-> > wrong command queue 31, sequence 0x7FFF readp=241 writep=241
-> > Modules linked in: usbhid nvram snd_hda_codec_idt snd_hda_intel snd_hda_codec uvcvideo snd_hwdep snd_pcm iwlagn videodev snd_timer sky2 v4l1_compat v4l2_compat_ioctl32 evdev sg i2c_i801 snd_page_alloc sr_mod ata_piix ahci libata sd_mod scsi_mod uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: scsi_wait_scan]
-> > Pid: 0, comm: swapper Not tainted 2.6.29-rc6 #37
-> > [...]
+
+* Tejun Heo <tj@kernel.org> wrote:
+
+> Hello, Ingo.
 > 
-> This sounds like
-> http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1703 for
-> which new uCode was released to address the problem. Could you please
-> try with the most recent 4965 uCode available from
-> http://www.intellinuxwireless.org/?n=Downloads ?
+> Ingo Molnar wrote:
+> > Hm, i think there still must be some basic misunderstanding 
+> > somewhere here. Let me describe the design i described in the 
+> > previous mail in more detail.
+> > 
+> > In one of your changelogs you state:
+> > 
+> > |    On NUMA, embedding allocator can't be used as different 
+> > |    units can't be made to fall in the correct NUMA nodes.
+> > 
+> > This is a direct consequence of the unit/chunk abstraction,
+> 
+> Not at all.  That's an optimization for !NUMA.  The remap 
+> allocator is what can be done on NUMA.  Chunking or not 
+> doesn't make any difference in this regard.  The only 
+> difference between chunking and not chunking is whether 
+> separately allocated percpu offsets have more or less holes 
+> inbetween them, which is irrelevant for all purposes.
 
-Ok, I tried it and so far got no warnings at all.
+It's not an optimization, it's a pessimisation :)
 
-I will keep looking the dmesg for a few days, and if you
-don't hear back from me that means it is gone for good.
+Please read what i wrote to you. We want the percpu static and 
+dynamic areas to be _one and the same thing_. (With just the 
+different that static allocations have a handy compile-time 
+offset shortcut - but the access is still the same.)
 
-Thanks for your prompt answer!
+Right now, with your latest code we still have this:
+
+   * Use this to get to a cpu's version of the per-cpu object
+   * dynamically allocated. Non-atomic access to the current  CPU's
+   * version should probably be combined with get_cpu()/put_cpu().
+   */
+  #define per_cpu_ptr(ptr, cpu)   SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
+
+This slows down per_cpu_ptr() and makes the dynamic percpu case 
+a second-class citizen because most actual usages are for the 
+current CPU, still have to go via the per_cpu_offset() 
+indirection.
+
+I.e. we have things like:
+
+        const int cpu = get_cpu();
+
+        u8 *scratch = *per_cpu_ptr(ipcomp_scratches, cpu);
+
+Instead of a straight:
+
+        u8 *scratch = *this_cpu_ptr(ipcomp_scratches);
+
+We cannot do that optimization due to the NUMA and SMP 
+assymetry. If NUMA and SMP had the same linear structure, as i 
+suggested we do, we could do it.
+
+Currently you rely on per_cpu_offset() indirection basically as 
+a soft-TLB entry covering all dynamic allocations. That sucks.
+
+Ok?
+
+	Ingo
