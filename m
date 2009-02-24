@@ -1,92 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbZBXEla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZBXElq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754369AbZBXEla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 23:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZBXElU
+	id S1755237AbZBXElq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 23:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZBXEl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 23:41:20 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:51050 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbZBXElT (ORCPT
+	Mon, 23 Feb 2009 23:41:27 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49570 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753691AbZBXEl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 23:41:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Gu2B8FFcd9JVa1fdE2DKb3/QjirrmrjXFR5Ker1txSNSZ2OoIaehIx3bCMBJyKrO0u
-         pjLErmovC7F9tV7O4DpuBtnU3dk4dtipwAvMG2mZqOUTDcwSOJvA/iFWCn+2G1N2MBW7
-         qdCHkNWP1LvMxdF+5dg7pRXOH6T6fv73lyeSQ=
-Date: Tue, 24 Feb 2009 07:47:52 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Nathan Lynch <nathanl@austin.ibm.com>,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       mpm@selenic.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
-Message-ID: <20090224044752.GB3202@x200.localdomain>
-References: <20090217222319.GA10546@elte.hu> <1234909849.4816.9.camel@nimitz> <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain> <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz> <20090218231545.GA17524@elte.hu> <20090219190637.GA4846@x200.localdomain> <1235070714.26788.56.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235070714.26788.56.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 23 Feb 2009 23:41:26 -0500
+Date: Tue, 24 Feb 2009 13:39:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] cgroups: more documentation for remount and
+ release_agent
+Message-Id: <20090224133958.597e7788.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <49A35C91.6000904@cn.fujitsu.com>
+References: <49A35C91.6000904@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 11:11:54AM -0800, Dave Hansen wrote:
-> On Thu, 2009-02-19 at 22:06 +0300, Alexey Dobriyan wrote:
-> > Inotify isn't supported yet? You do
-> > 
-> >         if (!list_empty(&inode->inotify_watches))
-> >                 return -E;
-> > 
-> > without hooking into inotify syscalls.
-> > 
-> > ptrace(2) isn't supported -- look at struct task_struct::ptraced and
-> > friends.
-> > 
-> > And so on.
-> > 
-> > System call (or whatever) does something with some piece of kernel
-> > internals. We look at this "something" when walking data structures
-> > and
-> > abort if it's scary enough.
-> > 
-> > Please, show at least one counter-example.
+On Tue, 24 Feb 2009 10:33:53 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> This won't remove cpuacct from the mounted hierachy:
+>  # mount -t cgroup -o cpu,cpuacct xxx /mnt
+>  # mount -o remount,cpu /mnt
 > 
-> Alexey, I agree with you here.  I've been fighting myself internally
-> about these two somewhat opposing approaches.  Of *course* we can
-> determine the "checkpointability" at sys_checkpoint() time by checking
-> all the various bits of state.
+> Because for this usage mount(8) will append the new options to the original
+> options.
 > 
-> The problem that I think Ingo is trying to address here is that doing it
-> then makes it hard to figure out _when_ you went wrong.  That's the
-> single most critical piece of finding out how to go address it.
+> And this will get you right:
+>  # mount [-t cgroup] -o remount,cpu xxx /mnt
 > 
-> I see where you are coming from.  Ingo's suggestion has the *huge*
-> downside that we've got to go muck with a lot of generic code and hook
-> into all the things we don't support.
+> Also document how to specify or change release_agent.
 > 
-> I think what I posted is a decent compromise.  It gets you those
-> warnings at runtime and is a one-way trip for any given process.  But,
-> it does detect in certain cases (fork() and unshare(FILES)) when it is
-> safe to make the trip back to the "I'm checkpointable" state again.
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-"Checkpointable" is not even per-process property.
+Seems nice!
+Thank you.
+Reviewd-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Imagine, set of SAs (struct xfrm_state) and SPDs (struct xfrm_policy).
-They are a) per-netns, b) persistent.
+> ---
+>  Documentation/cgroups/cgroups.txt |   20 ++++++++++++++++++--
+>  1 files changed, 18 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
+> index 93feb84..df295c6 100644
+> --- a/Documentation/cgroups/cgroups.txt
+> +++ b/Documentation/cgroups/cgroups.txt
+> @@ -333,12 +333,23 @@ The "xxx" is not interpreted by the cgroup code, but will appear in
+>  
+>  To mount a cgroup hierarchy with just the cpuset and numtasks
+>  subsystems, type:
+> -# mount -t cgroup -o cpuset,numtasks hier1 /dev/cgroup
+> +# mount -t cgroup -o cpuset,memory hier1 /dev/cgroup
+>  
+>  To change the set of subsystems bound to a mounted hierarchy, just
+>  remount with different options:
+> +# mount -o remount,cpuset,ns hier1 /dev/cgroup
+>  
+> -# mount -o remount,cpuset,ns  /dev/cgroup
+> +Now memory is removed from the hierarchy and ns is added.
+> +
+> +Note this will add ns to the hierarchy but won't remove memory or
+> +cpuset, because the new options are appended to the old ones:
+> +# mount -o remount,ns /dev/cgroup
+> +
+> +To Specify a hierarchy's release_agent:
+> +# mount -t cgroup -o cpuset,release_agent="/sbin/cpuset_release_agent" \
+> +  xxx /dev/cgroup
+> +
+> +Note that specifying 'release_agent' more than once will return failure.
+>  
+>  Note that changing the set of subsystems is currently only supported
+>  when the hierarchy consists of a single (root) cgroup. Supporting
+> @@ -349,6 +360,11 @@ Then under /dev/cgroup you can find a tree that corresponds to the
+>  tree of the cgroups in the system. For instance, /dev/cgroup
+>  is the cgroup that holds the whole system.
+>  
+> +If you want to change the value of release_agent:
+> +# echo "/sbin/new_release_agent" > /dev/cgroup/release_agent
+> +
+> +It can also be changed via remount.
+> +
+>  If you want to create a new cgroup under /dev/cgroup:
+>  # cd /dev/cgroup
+>  # mkdir my_cgroup
+> -- 
+> 1.5.4.rc3
+> 
+> 
 
-You can hook into socketcalls to mark process as uncheckpointable,
-but since SAs and SPDs are persistent, original process already exited.
-You're going to walk every process with same netns as SA adder and mark
-it as uncheckpointable. Definitely doable, but ugly, isn't it?
-
-Same for iptable rules.
-
-"Checkpointable" is container property, OK?
