@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758315AbZBXQVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbZBXQYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758315AbZBXQVy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 11:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZBXQVp
+	id S1758425AbZBXQYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 11:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZBXQYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 11:21:45 -0500
-Received: from mail-fx0-f167.google.com ([209.85.220.167]:34375 "EHLO
-	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752534AbZBXQVp (ORCPT
+	Tue, 24 Feb 2009 11:24:41 -0500
+Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:40142 "HELO
+	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754843AbZBXQYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 11:21:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=JRqs6L9ucJynsVnUQFRnu7l2uvGmWq27Mp9MyxRZDMPvc8fXfOjjY/qpjMlGQVL7sy
-         5WTW0lxqBEjeOdqpdV8bO+y3iD7CuSl6MZRg0846zJjeBJFYPKc+Ub9ZFPI1VPiRlR54
-         SivaatCyPKt6GyrLiq3eIx/TX/NvdWJ9Hyeak=
-Message-ID: <49A41E90.8090304@gmail.com>
-Date: Tue, 24 Feb 2009 17:21:36 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090218 SUSE/3.0b2-1.1 Thunderbird/3.0b2
+	Tue, 24 Feb 2009 11:24:40 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=i62QWQt+OpmRXhKw2//7e3ABJiSRLZzBjJNw2NrA/qP+32lmM6JxvBTYg1VzEXXKQELcxi3u7AqQPgCO5PS6pfBCUcRMFJNmSDr/1WnljG/JIMySuiwVG7jWOLyCTfWC;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: luis6674@yahoo.com
+Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
+Date: Tue, 24 Feb 2009 08:24:31 -0800
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
+Cc: Eric Anholt <eric@anholt.net>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <819821.83409.qm@web53303.mail.re2.yahoo.com>
+In-Reply-To: <819821.83409.qm@web53303.mail.re2.yahoo.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, kenchen@google.com,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: broken do_each_pid_{thread,task}
-References: <494581D7.6000203@gmail.com> <m1wse29roy.fsf@frodo.ebiederm.org> <20081215104716.GB11106@redhat.com> <20081215170937.GA24080@redhat.com> <49A3F48E.5030008@gmail.com> <20090224154936.GA13837@redhat.com>
-In-Reply-To: <20090224154936.GA13837@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902240824.32155.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24.2.2009 16:49, Oleg Nesterov wrote:
-> But why do you dislike it? Yes, the implementation of pid_for_each_task()
-> is not simple. Partly because hlist_for_each_entry_rcu() is ugly and
-> imho should be fixed (see btw http://marc.info/?t=120879441200004).
+On Tuesday, February 24, 2009 5:50:34 am Alberto Gonzalez wrote:
+> --- On Tue, 2/24/09, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > I really wish I could do more, but learning to compile
+> >
+> > a custom kernel for
+> >
+> > > my hardware and do a git bisect is something I just
+> >
+> > can't afford now. If
+> >
+> > > relevant people try to reproduce it but can't, and
+> >
+> > say only possible
+> >
+> > > solution would be for me to bisect it I guess I could
+> >
+> > try to give it a go
+> >
+> > > when I get some spare time.
+> >
+> > Fair enough. Reporting a problem is always very
+> > appreciated.
+> >
+> > Pinging Eric and Jesse ;)
 >
-> But with this patch the callers become simpler, we can just do
+> Thank you Nick.
 >
-> 	pid_for_each_task(pid, type, task)
-> 		do_something(task);
+> Since Arch Linux is not popular among kernel developers I just tested
+> Fedora 10 Live-CD (KDE) and I can reproduce the exact same problem, even if
+> Fedora 10 has kernel 2.6.27 and for me the problem appeared in .28 (but I
+> guess Fedora adds many patches, so probably the "guilty" commit was
+> backported to 2.6.27.5-117-FC10-i686).
 >
-> instead of
->
-> 	 do_each_pid_task(pid, type, task) {
-> 	 	do_something(task);
-> 	 } while_each_pid_task(pid, type, task);
->
-> and we can use break/continue safely.
+> Steps:
+> - Boot into Fedora 10 Live CD (obviously, into the default graphical mode)
+> - Install Powertop (yum install powertop) and run it
+> - I get about 60 wakeups per second from i915@pci.... leaving the system
+> idle - Switch to console and back to X. The wakeups are gone.
 
-I like what it does, not much how. Anyway I was thinking about 
-hlist_for_each_entry_rcu_param or alike (which would take additional 
-parameters for 3 `for' expressions to add to standard hlist for each 
-ones), but I think it would be less readable than this:
+Ah ok, it sounds like you're getting vblank interrupts at startup time, but 
+once you VT switch the kernel figures out that you don't need them, so it 
+disables them.  I think this is a bug in the 2D driver; it has an ioctl it 
+uses when doing modesetting which doubles as a "disabling the irq is ok" 
+signal, but we call it at a time when the corresponding pipe is off, so the 
+kernel ignores the call.
 
->>> +#define pid_for_each_task(pid, type, p)	\
->>> +	for (p = (pid) ? (void*)(pid)->tasks[type].first : NULL;	\
->>> +	     rcu_dereference(p)&&   ({					\
->>> +		prefetch(((struct hlist_node*)p)->next);		\
->>> +		p = hlist_entry((void*)p, typeof(*p), pids[type].node);	\
->>> +		1; });							\
->>> +	     p = ((type) != PIDTYPE_PID) ?				\
->>> +		(void*)(p)->pids[type].node.next : NULL)
->>> +
->
-> Really, is this too bad?
+Can you file a bug for this at bugs.freedesktop.org?  Is it easy for you to 
+rebuild & test xf86-video-intel driver patches?
 
-Well, it still can be worse :).
-
-Ok, could you repost with commit log and proper CCs or merge anywhere to 
-pull from?
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
