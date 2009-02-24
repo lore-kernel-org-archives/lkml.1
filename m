@@ -1,163 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761367AbZBXXh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761046AbZBXXs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761367AbZBXXh0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 18:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbZBXXhJ
+	id S1761046AbZBXXs3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 18:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbZBXXsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 18:37:09 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:19936 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756731AbZBXXhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 18:37:07 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: etienne <etienne.basset@numericable.fr>
-Subject: Re: [PATCH][SMACK] add a socket_post_accept hook to fix netlabel issues with labeled TCP servers V1
-Date: Tue, 24 Feb 2009 18:36:59 -0500
-User-Agent: KMail/1.11.0 (Linux/2.6.27-gentoo-r8; KDE/4.2.0; i686; ; )
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM <linux-security-module@vger.kernel.org>
-References: <fa.eUdEnVYPYgnfwD9aw1dVY6gL1+E@ifi.uio.no> <200902241738.08877.paul.moore@hp.com> <49A47BEF.5030507@numericable.fr>
-In-Reply-To: <49A47BEF.5030507@numericable.fr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Feb 2009 18:48:21 -0500
+Received: from cmpxchg.org ([85.214.51.133]:41819 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752100AbZBXXsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 18:48:20 -0500
+Date: Wed, 25 Feb 2009 00:49:49 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hpa@zytor.com, mingo@redhat.com, tj@kernel.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/percpu] bootmem: clean up arch-specific bootmem wrapping
+Message-ID: <20090224234949.GA1778@cmpxchg.org>
+References: <tip-c132937556f56ee4b831ef4b23f1846e05fde102@kernel.org> <20090224214638.GA2049@cmpxchg.org> <20090224214932.GC12601@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902241836.59679.paul.moore@hp.com>
+In-Reply-To: <20090224214932.GC12601@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009 05:59:59 pm etienne wrote:
-> Paul Moore wrote:
-> > On Tuesday 24 February 2009 05:20:42 pm etienne wrote:
-> >> Paul Moore wrote:
-> >>> On Tuesday 24 February 2009 04:28:24 pm etienne wrote:
-> >>>>  /**
-> >>>> + * smack_socket_post_access - post access check
-> >>>> + * @sock: the socket
-> >>>> + * @newsock : the grafted sock
-> >>>> + *
-> >>>> + * we have to match client IP against smack_host_label()
-> >>>> + */
-> >>>> +static void  smack_socket_post_accept(struct socket *sock, struct
-> >>>> socket *newsock) +{
-> >>>> +	char *hostsp;
-> >>>> +	struct sockaddr_storage address;
-> >>>> +	struct sockaddr_in *sin;
-> >>>> +	struct sockaddr_in6 *sin6;
-> >>>> +	struct in6_addr *addr6;
-> >>>> +	struct socket_smack *ssp = newsock->sk->sk_security;
-> >>>> +	int len;
-> >>>> +
-> >>>> +	if (sock->sk == NULL)
-> >>>> +		return;
-> >>>> +
-> >>>> +	/* sockets can listen on both IPv4 & IPv6,
-> >>>> +	   and fallback to V4 if client is V4 */
-> >>>> +	if  (newsock->sk->sk_family != AF_INET && newsock->sk->sk_family !=
-> >>>> AF_INET6) +		return;
-> >>>> +
-> >>>> +	/* get the client IP address **/
-> >>>> +	newsock->ops->getname(newsock, (struct sockaddr *)&address, &len,
-> >>>> 2); +
-> >>>> +	switch (newsock->sk->sk_family) {
-> >>>> +	case AF_INET:
-> >>>> +		sin = (struct sockaddr_in *)&address;
-> >>>> +		break;
-> >>>> +	case AF_INET6:
-> >>>> +		sin6  = (struct sockaddr_in6 *)&address;
-> >>>> +		addr6 = &sin6->sin6_addr;
-> >>>> +		/* if a V4 client connects to a V6 listening server,
-> >>>> +		 * we will get a IPV6_ADDR_MAPPED mapped address here
-> >>>> +		 * we have to handle this case too
-> >>>> +		 * the test below is ipv6_addr_type()== IPV6_ADDR_MAPPED
-> >>>> +		 * without the requirement to have IPv6 compiled in
-> >>>> +		 */
-> >>>> +		if ((addr6->s6_addr32[0] | addr6->s6_addr32[1]) == 0 &&
-> >>>> +				addr6->s6_addr32[2] == htonl(0x0000ffff)) {
-> >>>> +			__be32 addr = sin6->sin6_addr.s6_addr32[3];
-> >>>> +			__be16 port = sin6->sin6_port;
-> >>>> +			sin = (struct sockaddr_in *)&address;
-> >>>> +			sin->sin_family = AF_INET;
-> >>>> +			sin->sin_port = port;
-> >>>> +			sin->sin_addr.s_addr = addr;
-> >>>> +		} else {
-> >>>> +			/* standard IPv6, we'll send unlabeled */
-> >>>> +			smack_netlabel(newsock->sk, SMACK_UNLABELED_SOCKET);
-> >>>> +			return;
-> >>>> +		}
-> >>>> +		break;
-> >>>> +	default:
-> >>>> +		/** not possible to be there **/
-> >>>> +		return;
-> >>>> +	}
-> >>>> +	/* so, is there a label for the source IP **/
-> >>>> +	hostsp = smack_host_label(sin);
-> >>>> +
-> >>>> +	if (hostsp == NULL) {
-> >>>> +		if (ssp->smk_labeled != SMACK_CIPSO_SOCKET)
-> >>>> +			smack_netlabel(newsock->sk, SMACK_CIPSO_SOCKET);
-> >>>> +		return;
-> >>>> +	}
-> >>>> +	if (ssp->smk_labeled != SMACK_UNLABELED_SOCKET)
-> >>>> +		smack_netlabel(newsock->sk, SMACK_UNLABELED_SOCKET);
-> >>>> +	return;
-> >>>> +}
-> >>>
-> >>> NAK, you can't ignore return values like that.
-> >>>
-> >>> I'm sorry I didn't get a chance to respond to your email from this
-> >>> morning, but the problem with the post_accept() hook is that you can't
-> >>> fail in this hook.  There has been a _lot_ of discussion about this
-> >>> over the past couple of years on the LSM list.  You should check the
-> >>> archives for all the details but the main problem is that the
-> >>> post_accept() hook is too late to deny the incoming connection so you
-> >>> can't reject the connection at that point in any sane manner.
-> >>
-> >> well, i don't want to reject the connection here :)
-> >>
-> >>> I think I'm going to draft a patch to remove the post_accept()
-> >>> hook since no one in-tree is using it and it's existence seems to cause
-> >>> more problems than it solves.
-> >>>
-> >>> Now, I understand that your patch doesn't actually enforce any access
-> >>> controls but it does call smack_netlabel() in several places and that
-> >>> function can fail
-> >>
-> >> The smack_netlabel(newsock->sk, SMACK_CIPSO_SOCKET) can failed, but has
-> >> no interest in this function (because the socket has already be
-> >> SMACK_CIPSO_SOCKET labeled by the policy) I can remove it.
-> >>
-> >> but smack_netlabel(SMACK_UNLABELED_SOCKET) cannot fail, and that's what
-> >> i'm interested in could this make the patch acceptable?
-> >
-> > Please elaborate a bit more on how you would intend a user to configure
-> > and make use of this.  Also, in what cases would you remove the NetLabel
-> > from a socket?  What cases would you keep it?
->
-> well, i think it is simple : let's say i want to run a "smack-labelled
-> server" (apache, vsftpd, ...) clients connect from internet,  so the server
-> admin/user  will want to add a "0.0.0.0/0 @" entry in netlabel that will
-> _fail_ because the server will send back "labeled" packets.
+On Tue, Feb 24, 2009 at 10:49:32PM +0100, Ingo Molnar wrote:
+> 
+> * Johannes Weiner <hannes@cmpxchg.org> wrote:
+> 
+> > On Tue, Feb 24, 2009 at 08:23:03PM +0000, Tejun Heo wrote:
+> > > Author:     Tejun Heo <tj@kernel.org>
+> > > AuthorDate: Tue, 24 Feb 2009 11:57:20 +0900
+> > > Commit:     Tejun Heo <tj@kernel.org>
+> > > CommitDate: Tue, 24 Feb 2009 11:57:20 +0900
+> > > 
+> > > bootmem: clean up arch-specific bootmem wrapping
+> > > 
+> > > Impact: cleaner and consistent bootmem wrapping
+> > > 
+> > > By setting CONFIG_HAVE_ARCH_BOOTMEM_NODE, archs can define
+> > > arch-specific wrappers for bootmem allocation.  However, this is done
+> > > a bit strangely in that only the high level convenience macros can be
+> > > changed while lower level, but still exported, interface functions
+> > > can't be wrapped.  This not only is messy but also leads to strange
+> > > situation where alloc_bootmem() does what the arch wants it to do but
+> > > the equivalent __alloc_bootmem() call doesn't although they should be
+> > > able to be used interchangeably.
+> > > 
+> > > This patch updates bootmem such that archs can override / wrap the
+> > > backend function - alloc_bootmem_core() instead of the highlevel
+> > > interface functions to allow simpler and consistent wrapping.  Also,
+> > > HAVE_ARCH_BOOTMEM_NODE is renamed to HAVE_ARCH_BOOTMEM.
+> > > 
+> > > Signed-off-by: Tejun Heo <tj@kernel.org>
+> > > Cc: Johannes Weiner <hannes@saeurebad.de>
+> > 
+> > What does this message mean?  That the patch was commited to 
+> > the -tip tree?
+> 
+> yes.
+> 
+> > Well, why not... oh, right, it is broken ;-)
+> 
+> In your reply you pointed out a change that was not adequately 
+> declared plus an opportunity for a cleanup - is that what you 
+> mean by breakage?
 
-I had to go back and look at the address based labeling patches, I had somehow 
-forgotten that the single label support in Smack can only be used for removing 
-labels, not adding them.  With that in mind your approach should work although 
-you will still get really bizarre behavior in the following case:
+No, when the patch was submitted for review, I pointed out the change
+in semantics and gathered from Tejun's reaction that this wasn't done
+intentionally.  So the problem is the change itself, not the missing
+declaration.
 
- * Service not running at the ambient label
- * Only address based label loaded into Smack is "0.0.0.0/0 @" (everything
-   unlabeled)
- * Client connects to service using labeled networking
+>From the original mail:
 
-If you and Casey can live with labeled connection suddenly becoming unlabeled 
-(I doubt the remote host will deal with it very gracefully) then go for it.
+	Johannes Weiner wrote:
+	> This won't suffice as reserve_bootmem() doesn't use
+	> alloc_bootmem_core(), so now you effectively removed the
+	> node-0 restriction for reserve_bootmem() on this
+	> configuration.
 
--- 
-paul moore
-linux @ hp
+	Ah... right.  :-(
 
+I just wrote again because I didn't understand why Tejun acknowledged
+the error in the patch and then it went into -tip anyway.
+
+The other part of my email was just suggestions for a cleanup, I
+wasn't referring to that when I said 'broken' - sorry if that is how
+it came over.
