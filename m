@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZBXGsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZBXGvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbZBXGsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 01:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZBXGsd
+	id S1756045AbZBXGvX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 01:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZBXGvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 01:48:33 -0500
-Received: from straum.hexapodia.org ([64.81.70.185]:23458 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbZBXGsc (ORCPT
+	Tue, 24 Feb 2009 01:51:14 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54726 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753883AbZBXGvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 01:48:32 -0500
-Date: Mon, 23 Feb 2009 22:48:30 -0800
-From: Andy Isaacson <adi@hexapodia.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "lenb@kernel.org" <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       mjg@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       rui.zhang@intel.com, airlied@redhat.com
-Subject: Re: [Linux 2.6.29-rc6] [drm:i915_set_status_page] *ERROR* can not ioremap virtual address for G33 hw status page
-Message-ID: <20090224064830.GA12600@hexapodia.org>
-References: <8db1092f0902230646o78a07a09t920ad65369b5a20d@mail.gmail.com> <1235419343.4816.27.camel@gaiman> <200902232230.29501.rjw@sisk.pl> <8db1092f0902231340k7c7d0fd1me49302f2efd03491@mail.gmail.com> <86802c440902231701q1e169a67oa12bd84ac0e4c7aa@mail.gmail.com> <20090224032304.GA26344@hexapodia.org> <86802c440902232150m2b22e3cfg8993193f8867dfbf@mail.gmail.com>
-Mime-Version: 1.0
+	Tue, 24 Feb 2009 01:51:14 -0500
+Date: Tue, 24 Feb 2009 01:51:12 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, kyle@redhat.com, roland@redhat.com,
+       aoliva@redhat.com
+Subject: [PATCH/RFC] powerpc: avoid generating .eh_frame sections with
+	gcc-4.4
+Message-ID: <20090224065112.GA6690@bombadil.infradead.org>
+Reply-To: kyle@infradead.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440902232150m2b22e3cfg8993193f8867dfbf@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 09:50:03PM -0800, Yinghai Lu wrote:
-> > reg 0, base: 0GB, range: 32GB, type WB
-> > reg 1, base: 3584MB, range: 512MB, type UC
-> > reg 2, base: 2012MB, range: 4MB, type UC
-> > reg 3, base: 2016MB, range: 32MB, type UC
-> 
-> the BIOS is so sick
-> according to MTRR, it said:
-> [0,2012M) is WB
-> [2048M, 3.5G) is WB too
-> [4G, 32G) is WB
-> 
-> but according to e820: about [0,2g) is RAM...
-> 
-> really not how to workaround in BIOS.
-> 
-> please check if you have some new BIOS?
+From: Kyle McMartin <kyle@redhat.com>
 
-That was with bios A11.  There is an A12 available on dell.com, I'll try
-installing it tomorrow...
+On ppc64 (at least) gcc-4.4 is defaulting to generating .eh_frame
+sections, which are, for the kernel, fairly pointless. Additionally, on
+ppc64 this generates a relocation format which the kernel module loader
+does not currently support (R_PPC64_REL32.)
 
--andy
+Alexandre Oliva verifies that -fno-dwarf2-cfi-asm prevents this
+.eh_frame section from being generated.
+
+These seem to be used for unwinding, but it doesn't look like we
+currently use them anywhere. (In fact, we explicitly dump them in the
+x86_64 linker script.)
+
+If these .eh_frame sections are eventually used, adding a per-arch
+CONFIG_WANT_UNWIND check would be trivial.
+
+(This was reported against Fedora, which appears to be the only distro
+doing any building against gcc-4.4 at present: RH bz#486545.)
+
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+Cc: roland@redhat.com
+Cc: aoliva@redhat.com
+
+---
+diff --git a/Makefile b/Makefile
+index df6ce3e..d66a512 100644
+--- a/Makefile
++++ b/Makefile
+@@ -566,6 +566,11 @@ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
+ # disable pointer signed / unsigned warnings in gcc 4.0
+ KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+ 
++# gcc-4.4 defaults to generating .eh_frame sections, but we aren't
++# interested in those currently. additionally, it causes issues on some
++# architectures.
++KBUILD_CFLAGS += $(call cc-option,-fno-dwarf2-cfi-asm)
++
+ # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
+ # But warn user when we do so
+ warn-assign = \
