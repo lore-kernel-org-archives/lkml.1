@@ -1,88 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZBXK3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZBXKa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbZBXK3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 05:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZBXK3q
+	id S1756162AbZBXKa3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 05:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbZBXKaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 05:29:46 -0500
-Received: from www.tglx.de ([62.245.132.106]:44999 "EHLO www.tglx.de"
+	Tue, 24 Feb 2009 05:30:15 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58538 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752301AbZBXK3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 05:29:44 -0500
-Date: Tue, 24 Feb 2009 11:29:28 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Announce] 2.6.29-rc6-rt2
-In-Reply-To: <1235437021.4462.25.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902241120320.3523@localhost.localdomain>
-References: <1235437021.4462.25.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754354AbZBXKaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 05:30:13 -0500
+Date: Tue, 24 Feb 2009 21:29:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for February 24
+Message-Id: <20090224212949.0dacb59f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Feb_2009_21_29_49_+1100_qR6SpcO5iHWf3iFE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Feb 2009, Fernando Lopez-Lezcano wrote:
+--Signature=_Tue__24_Feb_2009_21_29_49_+1100_qR6SpcO5iHWf3iFE
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Some feedback, just tried it in Fedora 9...
-> 
-> (BTW, in Fedora 9 'uname -r' adds a "-tip" component at the end of the
-> uname string which messes up loading modules, etc, and it is not
-> anywhere else to be seen - where is that coming from??)
+Hi all,
 
-My bad. Forgot to remove the localversion-tip file.
+Changes since 20090220:
 
-> 
-> Boots fine but does not last long:
-> 
-> ------------[ cut here ]------------
-> WARNING: at lib/list_debug.c:30 __list_add+0x44/0x5c()
-> Hardware name: P5K/EPU
-> list_add corruption. prev->next should be next (f6042ab0), but was
-> (null). (prev=f415a670).
-> Modules linked in: fuse ip6table_filter ip6_tables iptable_raw
-> xt_comment xt_recent xt_policy ipt_ULOG ipt_TTL ipt_ttl ipt_REDIRECT
-> ipt_NETMAP ipt_MASQUERADE ipt_LOG ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah
-> ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp
-> nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda ts_kmp
-> nf_conntrack_amanda nf_conntrack_tftp nf_conntrack_sip
-> nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre
-> nf_conntrack_netlink nf_conntrack_netbios_ns nf_conntrack_irc
-> nf_conntrack_h323 nf_conntrack_ftp xt_tcpmss xt_pkttype xt_physdev
-> xt_owner xt_NFQUEUE xt_NFLOG nfnetlink_log xt_multiport xt_MARK xt_mark
-> xt_mac xt_limit xt_length xt_iprange xt_helper xt_hashlimit xt_DSCP
-> xt_dscp xt_dccp xt_CONNMARK xt_connmark xt_CLASSIFY iptable_nat nf_nat
-> iptable_mangle nfnetlink autofs4 coretemp w83627ehf hwmon_vid hwmon nfs
-> lockd nfs_acl auth_rpcgss sunrpc cpufreq_ondemand acpi_cpufreq
-> dm_multipath radeon drm ipv6 snd_hda_codec_realtek snd_hda_intel
-> snd_hda_codec snd_hwdep snd_ice1712 snd_ice17xx_ak4xxx snd_ak4xxx_adda
-> pcspkr snd_cs8427 snd_ac97_codec serio_raw i2c_i801 ac97_bus snd_i2c
-> i2c_core iTCO_wdt ohci1394 snd_mpu401_uart iTCO_vendor_support
-> snd_rawmidi snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq
-> snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm joydev snd_timer sky2
-> snd soundcore snd_page_alloc [last unloaded: microcode]
-> Pid: 5844, comm: slogin Not tainted
-> 2.6.29-0.0.rc6.rt2.1.rc6.fc9.ccrma.i686.rtPAE-tip #1
-> Call Trace:
->  [<c0438765>] warn_slowpath+0x71/0xa8
->  [<c048183a>] ? cpupri_set+0xdd/0xfb
->  [<c042ace7>] ? update_curr+0x15f/0x167
->  [<c0429dbd>] ? resched_task+0x33/0x6b
->  [<c042ace7>] ? update_curr+0x15f/0x167
->  [<c0543b28>] __list_add+0x44/0x5c
->  [<c0440ef1>] internal_add_timer+0x88/0x8c
+Dropped trees (temporary):
+	acpi
+	cpufreq
+	cifs
 
-Can you try to enable the following config options:
+The net-current tree gained a build failure which needed a commit
+reverted.
 
-CONFIG_DEBUG_OBJECTS
-CONFIG_DEBUG_OBJECTS_FREE
-CONFIG_DEBUG_OBJECTS_TIMERS
-CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT
+The x86 tree gained a conflict against Linus' tree.
 
-Thanks,
+The i2c tree gained a conflict against the galak tree.
 
-	tglx
+The acpi tree gained a build failure so I dropped it for today.
 
+The net tree lost a conflict.
+
+The cpufreq tree gained a build failure so I dropped it for today.
+
+The cifs tree gained a build failure so I dropped it for today.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+[master]: created 37dc84b: "Revert "netns: fix double free at netns creatio=
+n""
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/mach-at91/gpio.c
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+CONFLICT (rename/modify): Merge conflict in arch/arm/plat-pxa/dma.c
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/elf.h
+CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in x86/auto=
+-x86-next and modified in HEAD. Version HEAD of arch/x86/mach-default/setup=
+.c left in tree.
+$ git rm -f arch/x86/mach-default/setup.c
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+CONFLICT (content): Merge conflict in arch/x86/Kconfig
+Merging genirq/auto-genirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-mpc.c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+$ git reset --hard HEAD^
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (delete/modify): drivers/net/wireless/orinoco/orinoco.c deleted in=
+ net/master and modified in HEAD. Version HEAD of drivers/net/wireless/orin=
+oco/orinoco.c left in tree.
+$ git rm -f drivers/net/wireless/orinoco/orinoco.c
+Applying: orinoco merge fixup
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/ath9k/main.c
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
+Merging cpufreq/next
+$ git reset --hard HEAD^
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (delete/modify): arch/x86/include/asm/es7000/apic.h deleted in HEA=
+D and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/es7000=
+/apic.h left in tree.
+CONFLICT (delete/modify): arch/x86/include/asm/numaq/apic.h deleted in HEAD=
+ and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/numaq/a=
+pic.h left in tree.
+CONFLICT (content): Merge conflict in drivers/hid/hid-core.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134-c=
+ore.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134.h
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+CONFLICT (content): Merge conflict in kernel/module.c
+$ git rm -f arch/x86/include/asm/es7000/apic.h
+$ git rm -f arch/x86/include/asm/numaq/apic.h
+Applying: rr: fixup for cpumask:remove-address-of-CPU_MASK_ALL
+Merging cifs/master
+$ git reset --hard HEAD^
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Tue__24_Feb_2009_21_29_49_+1100_qR6SpcO5iHWf3iFE
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmjzB0ACgkQjjKRsyhoI8yyPwCgvsDelgTtZL5vow3PPVe9thXD
+4LUAn2eF3pwZJtl0cninEv5n95nPRqzF
+=Y5R0
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__24_Feb_2009_21_29_49_+1100_qR6SpcO5iHWf3iFE--
