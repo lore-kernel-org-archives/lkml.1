@@ -1,133 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbZBXPvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZBXPwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757957AbZBXPvj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 10:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZBXPv2
+	id S1758227AbZBXPwi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 10:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZBXPw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 10:51:28 -0500
-Received: from mail.suse.de ([195.135.220.2]:42454 "EHLO mx1.suse.de"
+	Tue, 24 Feb 2009 10:52:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36783 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbZBXPv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 10:51:27 -0500
-Date: Tue, 24 Feb 2009 16:51:20 +0100
-From: Jan Kara <jack@suse.cz>
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       linuxppc-dev@ozlabs.org, linux-ext4@vger.kernel.org,
-       Jan Kara <jack@ucw.cz>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Nelson <markn@au1.ibm.com>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-Message-ID: <20090224155119.GC22108@duck.suse.cz>
-References: <49A2705D.9030008@in.ibm.com> <20090223021320.11019d64.akpm@linux-foundation.org> <18850.31567.212454.514549@cargo.ozlabs.ibm.com> <20090223155116.GB5764@atrey.karlin.mff.cuni.cz> <49A395ED.5030607@in.ibm.com>
+	id S1753516AbZBXPw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 10:52:29 -0500
+Date: Tue, 24 Feb 2009 16:49:36 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, kenchen@google.com,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: broken do_each_pid_{thread,task}
+Message-ID: <20090224154936.GA13837@redhat.com>
+References: <494581D7.6000203@gmail.com> <m1wse29roy.fsf@frodo.ebiederm.org> <20081215104716.GB11106@redhat.com> <20081215170937.GA24080@redhat.com> <49A3F48E.5030008@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A395ED.5030607@in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <49A3F48E.5030008@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+On 02/24, Jiri Slaby wrote:
+>
+> On 15.12.2008 18:09, Oleg Nesterov wrote:
+>> On 12/15, Oleg Nesterov wrote:
+>>> On 12/14, Eric W. Biederman wrote:
+>>>> Although seeing the unexpected corner case it gets us into I think it would
+>>>> be good to reconsider this test.
+>>
+>> So. I can't decide whether this patch is cleanup or the further
+>> uglification, but if anyone likes it I will be happy to send it.
+>
+> FWIW I don't like the patch :)
 
-On Tue 24-02-09 12:08:37, Sachin P. Sant wrote:
-> Jan Kara wrote:
->>   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
->> somehow got beyond end of the page referenced by bh->b_data. So it means
->> that le16_to_cpu(entry->e_value_offs) + size > page_size. But
->> ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
->> particular checks whether e_value_offs + e_value_size isn't greater than
->> bh->b_size. So I see no way how memcpy can get beyond end of the page.
->>   Sachin, is the problem reproducible? If yes, can you send us contents
->>   
-> Yes, i am able to recreate this problem easily. As i had mentioned if the
-> earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
-> i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
-> without any problem.
->
->> of the page just before the faulting address (i.e., for current fault it
->> would be 0xc00000003f370000-0xc00000003f37ffff). As far as I can
->> remember powerpc monitor could dump it.
->>   
-> Here is the page dump. This time it crashed while accessing address
-> 0xc00000002d670000.
-  Thanks for the dump.
+Well, I agree, it is not very nice ;)
 
-> Unable to handle kernel paging request for data at address 0xc0000
-> 0002d670000
-> Faulting instruction address: 0xc000000000039574
-> cpu 0x1: Vector: 300 (Data Access) at [c00000004288b0b0]
->    pc: c000000000039574: .memcpy+0x74/0x244
->    lr: c0000000001b497c: .ext3_xattr_get+0x288/0x2f4
->    sp: c00000004288b330
->   msr: 8000000000009032
->
-> 1:mon> d 0xc00000002d660000
-> ............................... <SNIP> ...............................
->
-> c00000002d66efd0 0000000000000000 0000000000000000  |................|
-> c00000002d66efe0 0000000000000000 0000000000000000  |................|
-> c00000002d66eff0 0000000000000000 0000000000000000  |................|
-> c00000002d66f000 000002ea00040000 01000000e200d20a  |................|
-> c00000002d66f010 0000000000000000 0000000000000000  |................|
-> c00000002d66f020 0706e40f00000000 1b000000e200d20a  |................|
-> c00000002d66f030 73656c696e757800 0000000000000000  |selinux.........|
-> c00000002d66f040 0000000000000000 0000000000000000  |................|
-> c00000002d66f050 0000000000000000 0000000000000000  |................|
-> c00000002d66f060 0000000000000000 0000000000000000  |................|
->
-> ............................... <SNIP> ...............................
->
-> c00000002d66ff60 0000000000000000 0000000000000000  |................|
-> c00000002d66ff70 0000000000000000 0000000000000000  |................|
-> c00000002d66ff80 0000000000000000 0000000000000000  |................|
-> c00000002d66ff90 0000000000000000 0000000000000000  |................|
-> c00000002d66ffa0 0000000000000000 0000000000000000  |................|
-> c00000002d66ffb0 0000000000000000 0000000000000000  |................|
-> c00000002d66ffc0 0000000000000000 0000000000000000  |................|
-> c00000002d66ffd0 0000000000000000 0000000000000000  |................|
-> c00000002d66ffe0 0000000073797374 656d5f753a6f626a  |....system_u:obj|
-> c00000002d66fff0 6563745f723a7573 725f743a73300000  |ect_r:usr_t:s0..|
-> c00000002d670000 **************** ****************  |                |
-> 1:mon> r
-> R00 = 000000000000e40f   R16 = 000000000000005d
-> R01 = c00000004288b330   R17 = 0000000000000000
-> R02 = c0000000009f59b8   R18 = 00000000fffbfe9e
-> R03 = c000000044aa34a0   R19 = 0000000010042638
-> R04 = c00000002d66fff4   R20 = 0000000010041610
-> R05 = 0000000000000003   R21 = 00000000000000ff
-> R06 = 0000000000000000   R22 = 0000000000000006
-> R07 = 0000000000000001   R23 = c0000000007d27c1
-> R08 = 723a7573725f743a   R24 = c00000002c0cd758
-> R09 = 3a6f626a6563745f   R25 = c000000044aa3488
-> R10 = c00000000017b43c   R26 = c00000002c0cd6f0
-> R11 = c00000002d66f020   R27 = c00000002c0cd860
-> R12 = d0000000023c14b0   R28 = c00000002c0b0840
-> R13 = c000000000a93680   R29 = 000000000000001b
-> R14 = 00000000000041ed   R30 = c0000000009880b0
-> R15 = 0000000010040000   R31 = ffffffffffffffde
-> pc  = c000000000039574 .memcpy+0x74/0x244
-> lr  = c0000000001b497c .ext3_xattr_get+0x288/0x2f4
-> msr = 8000000000009032   cr  = 4400044b
-> ctr = 0000000000000000   xer = 0000000020000001   trap =  300
-> dar = c00000002d670000   dsisr = 40000000
-> 1:mon> zr
->
->>   BTW, I suppose you use 4KB blocksize on the filesystem, right?
->>   
-> Yes.
->
-> dumpe2fs /dev/sda3 | grep -i "block size" dumpe2fs 1.39 (29-May-2006)
-> Block size:               4096
-  OK. The xattr block causing oops is completely correct. To me it seems
-more like some problem in powerpc memcpy() (I saw there went some changes
-into in in the end of December) - we call it to copy 27 bytes from
-address 0xc00000002d66ffe4 (which is one byte before end of the page).
-Could some of the powerpc guys have a look whether this could be the case?
-I'm not quite fluent in the powerpc assembly so it would take me ages ;).
+But why do you dislike it? Yes, the implementation of pid_for_each_task()
+is not simple. Partly because hlist_for_each_entry_rcu() is ugly and
+imho should be fixed (see btw http://marc.info/?t=120879441200004).
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+But with this patch the callers become simpler, we can just do
+
+	pid_for_each_task(pid, type, task)
+		do_something(task);
+
+instead of
+
+	 do_each_pid_task(pid, type, task) {
+	 	do_something(task);
+	 } while_each_pid_task(pid, type, task);
+
+and we can use break/continue safely.
+
+> Otherwise I'll add at least a big warning about using break/cont
+> statements inside the loop.
+
+Agreed, this would be nice.
+
+>> +#define pid_for_each_task(pid, type, p)	\
+>> +	for (p = (pid) ? (void*)(pid)->tasks[type].first : NULL;	\
+>> +	     rcu_dereference(p)&&  ({					\
+>> +		prefetch(((struct hlist_node*)p)->next);		\
+>> +		p = hlist_entry((void*)p, typeof(*p), pids[type].node);	\
+>> +		1; });							\
+>> +	     p = ((type) != PIDTYPE_PID) ?				\
+>> +		(void*)(p)->pids[type].node.next : NULL)
+>> +
+
+Really, is this too bad?
+
+Oleg.
+
