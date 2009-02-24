@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbZBXNKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbZBXNMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbZBXNKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 08:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbZBXNKJ
+	id S1757080AbZBXNMv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 08:12:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbZBXNMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 08:10:09 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:61484 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754232AbZBXNKI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 08:10:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Q661WvDnBDI2jLQCU3oLpPk0h3VfMeFVVZ4+r6HQl1cbf3O6EEymwsW1mE8rs+Wk0K
-         GCWs+F54QBn/2I+UTEtixSD6DZxxhReGCGPdb84KtgGRIoT4b8xDgrw/3CkJbSRe4vlZ
-         hFJwhp4X4ME4s/4ProCceq7lTWfthskJc1vaw=
-MIME-Version: 1.0
-In-Reply-To: <20090223213749.GA945@us.ibm.com>
-References: <d95d44a20902220437m2fb7af08y8c71fe275fe06a57@mail.gmail.com>
-	 <20090223213749.GA945@us.ibm.com>
-Date: Tue, 24 Feb 2009 21:10:05 +0800
-Message-ID: <d95d44a20902240510i16ae5785ob11b900daf7fe019@mail.gmail.com>
-Subject: Re: [RFC] [PATCH] cgroup: accounting and limitation of disk quota
-From: anqin <anqin.qin@gmail.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>, menage@google.com
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Rolando Martins <rolando.martins@gmail.com>,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 24 Feb 2009 08:12:43 -0500
+Received: from mga02.intel.com ([134.134.136.20]:5584 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753128AbZBXNMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 08:12:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,259,1233561600"; 
+   d="scan'208";a="492638751"
+Date: Tue, 24 Feb 2009 14:12:34 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com
+Subject: [patch] x86, ptrace: remove CONFIG guards around declarations
+Message-ID: <20090224141234.A26125@sedona.ch.intel.com>
+Mime-Version: 1.0
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for so many valuable comment and advices.
+Remove unnecessary CONFIG guards around type declarations and macro
+definitions.
 
-I will fix the patch and provide more valuable development. :)
 
+Reported-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-Thanks again,
+Index: ftrace/arch/x86/include/asm/ptrace-abi.h
+===================================================================
+--- ftrace.orig/arch/x86/include/asm/ptrace-abi.h
++++ ftrace/arch/x86/include/asm/ptrace-abi.h
+@@ -80,8 +80,6 @@
+ 
+ #define PTRACE_SINGLEBLOCK	33	/* resume execution until next branch */
+ 
+-#ifdef CONFIG_X86_PTRACE_BTS
+-
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ 
+@@ -140,6 +138,5 @@ struct ptrace_bts_config {
+    BTS records are read from oldest to newest.
+    Returns number of BTS records drained.
+ */
+-#endif /* CONFIG_X86_PTRACE_BTS */
+ 
+ #endif /* _ASM_X86_PTRACE_ABI_H */
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-Anqin
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-On Tue, Feb 24, 2009 at 5:37 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> Quoting anqin (anqin.qin@gmail.com):
->> The patch presents a cgroup subsystem to control the usage of disk quota.
->>
->> The subsystem for disk quota (disk_cgroup, to be brief) does accounting
->> of inode and block allocated by ext3/ext2 filesystem. Simarily as
->> filesystem quota, the disk_cgroup can do limitation but without needing
->> to open filesytem quota options (e.g. usrquota,grpquota in /etc/fstab).
->>
->> The simple usage of disk_cgroup is as follows:
->>
->> # mount -t cgroup cgroup /mnt/cgrp
->> # lxc-execute -n lxc-template.conf /bin/bash
->> # ls /mnt/cgrp/11457/           // <--  11457 is the pid of bash
->> ...
->> disk.stat
->> disk.usage_in_inode
->> disk.usage_in_block
->> disk.max_usage_in_inode
->> disk.max_usage_in_block
->> disk.limit_in_inode
->> disk.limit_in_inode
->> ...
->>
->> # echo  3 > /mnt/cgrp/11457/disk.max_usage_in_block
->>
->> # touch /tmp/mytestfile1
->> # touch /tmp/mytestfile2
->> # touch /tmp/mytestfile3
->> # touch /tmp/mytestfile4
->> touch: cannot touch `/tmp/mytestfile4': Disk quota exceeded
->>
->> The disk_cgroup is easily extended to manage complex objects
->> of filesystem.
->>
->> Signed-off-by: An Qin <anqin.qin@gmail.com>
->
-> It's probably worth sending this to linux-fsdevel as well as the
-> ext2 and ext3 maintainers and lists (see MAINTAINERS - at
-> least linux-ext4@vger.kernel.org).
->
->> +static struct cgroup_subsys_state *disk_cgroup_create(
->> +                     struct cgroup_subsys *ss, struct cgroup *cont)
->> +{
->> +     struct disk_cgroup *disk;
->> +
->> +     if (!capable(CAP_SYS_ADMIN))
->> +             return ERR_PTR(-EPERM);
->
-> On the whole it is preferred to let the cgroup uid permissions
-> handle access control, and not check CAP_SYS_ADMIN for cgroup
-> creation.
->
->> +     if (!cgroup_is_descendant(cont))
->> +             return ERR_PTR(-EPERM);
->> +
->> +     disk = kzalloc(sizeof(struct disk_cgroup), GFP_KERNEL);
->
-> So you are setting all the limits to 0, with 0 meaning unlimited, at
-> cgroup create?  What do you think about copying the parent cgroup's
-> limits?
->
->> --- linux-2.6.28.5/kernel/Makefile    2009-02-13 01:51:15.000000000 +0800
->> +++ linux-2.6.28.5-cgroup-disk-quota/kernel/Makefile  2009-02-19
->> 06:52:04.000000000 +0800
->> @@ -55,6 +55,7 @@ obj-$(CONFIG_COMPAT) += compat.o
->>  obj-$(CONFIG_CGROUPS) += cgroup.o
->>  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
->>  obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
->> +obj-$(CONFIG_CGROUP_FREEZER) += cgroup_disk.o
->
-> I don't think you wanted to put this under _FREEZER :)
->
->>  obj-$(CONFIG_CPUSETS) += cpuset.o
->>  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
->>  obj-$(CONFIG_UTS_NS) += utsname.o
->
-> per-container quota has been mentioned before as a desireable
-> feature so thanks for working on this.
->
-> -serge
->
