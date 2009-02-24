@@ -1,102 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZBXB4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZBXCDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbZBXB4l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 20:56:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZBXB4c
+	id S1755799AbZBXCDu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 21:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZBXCDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 20:56:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65291 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753704AbZBXB4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 20:56:31 -0500
-Message-ID: <49A353BD.40000@cn.fujitsu.com>
-Date: Tue, 24 Feb 2009 09:56:13 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 23 Feb 2009 21:03:42 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:54109 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbZBXCDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 21:03:41 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:user-agent:from:x-system-of-record;
+	b=KeSwroPtrtPA8jR9EeqnmmhK4sSh7EH0RqxStZDdK73Eqr4yNZTG2NWWmntBsmX0T
+	c0X05qioWErvSpP+DVY9w==
+Date: Mon, 23 Feb 2009 18:03:04 -0800
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Performance regression in write() syscall
+Message-ID: <20090224020304.GA4496@google.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, Eric Anholt <eric@anholt.net>
-Subject: Re: [Bug #12419] possible circular locking dependency on i915 dma
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.CDG.IrzoJB@chimera>
-In-Reply-To: <vP9hdyF4fL.A.CDG.IrzoJB@chimera>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: sqazi@google.com (Salman Qazi)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki said the following on 2009-2-24 5:48:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12419
-> Subject		: possible circular locking dependency on i915 dma
-> Submitter	: Wang Chen <wangchen@cn.fujitsu.com>
-> Date		: 2009-01-08 14:11 (47 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=546b0974c39657017407c86fe79811100b60700d
-> References	: http://marc.info/?l=linux-kernel&m=123142399720125&w=4
-> 
+While the introduction of __copy_from_user_nocache (see commit:
+0812a579c92fefa57506821fa08e90f47cb6dbdd) may have been an improvement
+for sufficiently large writes, there is evidence to show that it is
+deterimental for small writes.  Unixbench's fstime test gives the
+following results for 256 byte writes with MAX_BLOCK of 2000:
+    
+    2.6.29-rc6 ( 5 samples, each in KB/sec ):
+    283750, 295200, 294500, 293000, 293300
+    
+    2.6.29-rc6 + this patch (5 samples, each in KB/sec):
+    313050, 3106750, 293350, 306300, 307900
 
-not changed.
+    2.6.18
+    395700, 342000, 399100, 366050, 359850
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.29-rc6-default #165
--------------------------------------------------------
-X/3940 is trying to acquire lock:
- (&mm->mmap_sem){----}, at: [<c0168e97>] might_fault+0x42/0x7e
+    See w_test() in src/fstime.c in unixbench version 4.1.0.  Basically, the above test
+    consists of counting how much we can write in this manner:
 
-but task is already holding lock:
- (&dev->struct_mutex){--..}, at: [<eeb76fed>] i915_cmdbuffer+0xf4/0x411 [i915]
+    alarm(10);
+    while (!sigalarm) {
+            for (f_blocks = 0; f_blocks < 2000; ++f_blocks) {
+                   write(f, buf, 256);
+            }
+            lseek(f, 0L, 0);
+    }
 
-which lock already depends on the new lock.
+I realised that there are other components to the write syscall regression
+that are not addressed here.  I will send another email shortly stating the
+source of another one.
 
-
-the existing dependency chain (in reverse order) is:
-
--> #2 (&dev->struct_mutex){--..}:
-       [<c013791a>] validate_chain+0x8be/0xbb5
-       [<c0138280>] __lock_acquire+0x66f/0x6f9
-       [<c0138365>] lock_acquire+0x5b/0x77
-       [<c02e56fe>] mutex_lock_nested+0xdb/0x244
-       [<eeb5b03e>] drm_vm_open+0x25/0x37 [drm]
-       [<c011a8b3>] dup_mm+0x247/0x2f2
-       [<c011b312>] copy_process+0x98c/0xfeb
-       [<c011bac7>] do_fork+0x120/0x29c
-       [<c01016be>] sys_clone+0x25/0x2a
-       [<c0102cdd>] sysenter_do_call+0x12/0x31
-       [<ffffffff>] 0xffffffff
-
--> #1 (&mm->mmap_sem/1){--..}:
-       [<c013791a>] validate_chain+0x8be/0xbb5
-       [<c0138280>] __lock_acquire+0x66f/0x6f9
-       [<c0138365>] lock_acquire+0x5b/0x77
-       [<c012e6f6>] down_write_nested+0x32/0x4f
-       [<c011a711>] dup_mm+0xa5/0x2f2
-       [<c011b312>] copy_process+0x98c/0xfeb
-       [<c011bac7>] do_fork+0x120/0x29c
-       [<c01016be>] sys_clone+0x25/0x2a
-       [<c0102cdd>] sysenter_do_call+0x12/0x31
-       [<ffffffff>] 0xffffffff
-
--> #0 (&mm->mmap_sem){----}:
-       [<c0137625>] validate_chain+0x5c9/0xbb5
-       [<c0138280>] __lock_acquire+0x66f/0x6f9
-       [<c0138365>] lock_acquire+0x5b/0x77
-       [<c0168eb4>] might_fault+0x5f/0x7e
-       [<eeb76d0a>] i915_emit_box+0x1d/0x20c [i915]
-       [<eeb7705e>] i915_cmdbuffer+0x165/0x411 [i915]
-       [<eeb5685b>] drm_ioctl+0x1a6/0x21b [drm]
-       [<c0182b29>] vfs_ioctl+0x3d/0x50
-       [<c0183029>] do_vfs_ioctl+0x41b/0x483
-       [<c01830d1>] sys_ioctl+0x40/0x5a
-       [<c0102cdd>] sysenter_do_call+0x12/0x31
-       [<ffffffff>] 0xffffffff
-
+Signed-off-by: Salman Qazi <sqazi@google.com>
+---
+diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
+index 84210c4..efe7315 100644
+--- a/arch/x86/include/asm/uaccess_64.h
++++ b/arch/x86/include/asm/uaccess_64.h
+@@ -192,14 +192,20 @@ static inline int __copy_from_user_nocache(void *dst, const void __user *src,
+ 					   unsigned size)
+ {
+ 	might_sleep();
+-	return __copy_user_nocache(dst, src, size, 1);
++	if (likely(size >= PAGE_SIZE))
++		return __copy_user_nocache(dst, src, size, 1);
++	else
++		return __copy_from_user(dst, src, size);
+ }
+ 
+ static inline int __copy_from_user_inatomic_nocache(void *dst,
+ 						    const void __user *src,
+ 						    unsigned size)
+ {
+-	return __copy_user_nocache(dst, src, size, 0);
++	if (likely(size >= PAGE_SIZE))
++		return __copy_user_nocache(dst, src, size, 0);
++	else
++		return __copy_from_user_inatomic(dst, src, size);
+ }
+ 
+ unsigned long
