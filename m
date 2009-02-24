@@ -1,55 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbZBXW4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbZBXW7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761236AbZBXW4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 17:56:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZBXW4R
+	id S1760662AbZBXW7s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 17:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZBXW7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 17:56:17 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50580 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754487AbZBXW4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 17:56:16 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tino Keitel <tino.keitel@gmx.de>
-Subject: Re: Suspend regression with 2.6.29-rc
-Date: Tue, 24 Feb 2009 23:55:49 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <20090224190850.GA27800@dose.home.local>
-In-Reply-To: <20090224190850.GA27800@dose.home.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Feb 2009 17:59:39 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59716 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100AbZBXW7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 17:59:39 -0500
+Date: Tue, 24 Feb 2009 22:59:30 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: dri-devel@lists.sf.net, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>
+Subject: Re: [REGRESSION] i915 VT switch with AIGLX causes X lock up
+Message-ID: <20090224225930.GA3745@silver.sucs.org>
+References: <20090221153822.GA4571@silver.sucs.org> <20090223223226.GA23763@silver.sucs.org> <200902240844.09424.jbarnes@virtuousgeek.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902242355.50212.rjw@sisk.pl>
+In-Reply-To: <200902240844.09424.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009, Tino Keitel wrote:
-> Hi,
-> 
-> with 2.6.28, I have sporadic suspend failures with suspend to RAM on my
-> Mac mini core duo (Intel Core Duo, i945 chipset and graphics).  I
-> traced it down to the DRM driver: without X and DRM unloaded, I had
-> more than 200 suspens in a row without any failure.
-> 
-> With 2.6.29-rc6-00029-gf7e603a, even with DRM unloaded the computer
-> hangs at suspend time after some attempts.  I also tried other
-> 2.6.29-rc kernels, and all had unstable suspend behaviour.  I can't
-> give any further details, as the console is dark and I have no serial
-> console.  Any hints what I might try except for bisecting?
+On Tue, Feb 24, 2009 at 08:44:09AM -0800, Jesse Barnes wrote:
+> Can you get a backtrace of the hung process, maybe by logging in from another 
+> machine and using gdb on the Xorg process?
 
-Well, this most likely is a result of the recent PCI PM core changes, but
-it's hard to say which of them exactly is responsible in this particular case.
+(Done via sleep 30s; gdb.sh where gdb.sh contained the following:
+gdb -batch-silent \
+-ex 'set logging overwrite on' \
+-ex "set logging file /tmp/gdb.log" \
+-ex 'set logging on' \
+-ex 'handle SIG33 pass nostop noprint' \
+-ex 'set pagination 0' \
+-ex 'run' \
+-ex 'backtrace full' \
+-ex 'info registers' \
+-ex 'thread apply all backtrace' \
+-ex 'quit' \
+-p `pidof X` < /dev/null
+< /dev/null
 
-Please open a bug at bugzilla.kernel.org with a CC to me and put your system
-information in there (the output of 'lspci -vv', /proc/iomem, /proc/interrupts,
-boot log).
+Xorg never seems happy after the above finishes and always wedged itself
+after the script ran)
 
-Also please try to reproduce the problem in the minimal configuration
-(init=/bin/bash, /proc and /sys mounted manually).
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+[Thread debugging using libthread_db enabled]
+[New Thread 0xb7ccea30 (LWP 2972)]
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
+(no debugging symbols found)
 
-Thanks,
-Rafael
+Program received signal SIGUSR1, User defined signal 1.
+[Switching to Thread 0xb7ccea30 (LWP 2972)]
+0xb7fe8424 in __kernel_vsyscall ()
+#0  0xb7fe8424 in __kernel_vsyscall ()
+No symbol table info available.
+#1  0xb7e3984d in select () from /lib/tls/i686/cmov/libc.so.6
+No symbol table info available.
+#2  0x081b22e5 in WaitForSomething ()
+No symbol table info available.
+#3  0x0808d69d in Dispatch ()
+No symbol table info available.
+#4  0x0807471b in main ()
+No symbol table info available.
+eax            0xfffffdfe	-514
+ecx            0x820a240	136356416
+edx            0x0	0
+ebx            0x100	256
+esp            0xbf902cc0	0xbf902cc0
+ebp            0xbf902f58	0xbf902f58
+esi            0x0	0
+edi            0xbf902f40	-1081069760
+eip            0xb7fe8424	0xb7fe8424 <__kernel_vsyscall+16>
+eflags         0x3246	[ PF ZF IF #12 #13 ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x33	51
+
+Thread 1 (Thread 0xb7ccea30 (LWP 2972)):
+#0  0xb7fe8424 in __kernel_vsyscall ()
+#1  0xb7e3984d in select () from /lib/tls/i686/cmov/libc.so.6
+#2  0x081b22e5 in WaitForSomething ()
+#3  0x0808d69d in Dispatch ()
+#4  0x0807471b in main ()
+The program is running.  Exit anyway? (y or n) [answered Y; input not from terminal]
+
+-- 
+Sitsofe | http://sucs.org/~sits/
