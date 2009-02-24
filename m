@@ -1,87 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZBXJDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZBXJSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbZBXJDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 04:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbZBXJDQ
+	id S1755231AbZBXJSo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 04:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbZBXJS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 04:03:16 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:44424 "HELO
+	Tue, 24 Feb 2009 04:18:28 -0500
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:44745 "HELO
 	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753573AbZBXJDO (ORCPT
+	by vger.kernel.org with SMTP id S1754107AbZBXJS1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 04:03:14 -0500
+	Tue, 24 Feb 2009 04:18:27 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=M0SxJCQaNxp7N8keqinEmcB1DzWQq7vmjNkLzjDBYS7prErFlHH+Cp+2wV1P/tNpy4D4S324YfeebTdeTLe6WOcDro1XjRXhZBMJrAwCn3NodlRFNzhIHLSV4G+DbS9LLP8yqxLCkehUA5+XZg6kWYxHHpu1oYEovl8UF360Co8=  ;
-X-YMail-OSG: a9Djz8UVM1kz0FHwFXkStxp7ZRtwqzJWMzKAPFD0TV9VEJ9NQWJ9OLz5IxjcRSLizBlS3u8Mf4KsuYPhGvqvkypbYrnrqUi8U2r0O.rt9eE7tX7CZnepaMZR4BZprhk.5_fpTPo4P1sDr8jx0l3yg_yuzgoV5sFFdTy1ACxtgJDWduY0W78XDgZ513CB8A--
+  b=ocDcAEE39MrDhtJYmwtubXKI3v5jVPPSoa97wsp01W+XltSJbQSbstiY/iqt8tWwxiRd0GR5+eIyTTRUrjodO53qSl12ED/dvD8Ik0p2NiRGBsakUgxzCU64JfPIIbbjLcB8q/nA8/0d5C0wnJhNoVaB99KYSSWJ0b8ySZZCDIY=  ;
+X-YMail-OSG: ZViY1pMVM1nUEs62FfK7fJby5S0Nh5SfxOpJaX46nxYqhDw3lF2ok0_NWHL8hkQmUdIr12uxedRWuAGGys_gL8FZNx4bJkix5y5fbYx.aptQea0rvAwAOaLhcuuenBKT47Mw0kn6qgFBtoKgCG9d5G1JpF2IWcOKEl3zN2cQZZrnL8EBO29BoQCG1UGgZQ--
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Performance regression in write() syscall
-Date: Tue, 24 Feb 2009 20:02:36 +1100
+To: sidc7 <siddhartha.chhabra@gmail.com>
+Subject: Re: Copy on write and page initialization
+Date: Tue, 24 Feb 2009 20:17:46 +1100
 User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Salman Qazi <sqazi@google.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>
-References: <20090224020304.GA4496@google.com> <200902241510.33911.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0902232021310.3111@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902232021310.3111@localhost.localdomain>
+Cc: linux-kernel@vger.kernel.org
+References: <22175803.post@talk.nabble.com>
+In-Reply-To: <22175803.post@talk.nabble.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902242002.37555.nickpiggin@yahoo.com.au>
+Message-Id: <200902242017.46605.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009 15:28:54 Linus Torvalds wrote:
-> On Tue, 24 Feb 2009, Nick Piggin wrote:
-> > What does unixbench's fstime test do? If it is just writing to the
-> > pagecache, then this would be unexpected.
+On Tuesday 24 February 2009 15:50:05 sidc7 wrote:
+> Hi,
 >
-> Hmm. Not necessarily. Even just plain writes may be slowed down, since the
-> nontemporal loads and stores are generally slower than the normal case. So
+> As far as I understand, Linux uses the COW optimization so parent and child
+> process share the same address space, till one of them writes to it, at
 
-Well it does nontemporal stores only, ie. store into the pagecache without
-doubling the cache footprint (source is possibly already in cache if we're
-write(2)ing it anyway).
-
-But yes I could see if it it fills up store queue and starts going
-synchronous, then for sizes < CPU cache size, it will probably go slower.
-On the other hand, for cached writes they still have to be sent back
-to RAM at some point, but maybe that can be pipelined with other things.
+The "address space" is not shared. Ie. the logical memory space is
+separate, but it happens that the actual virtual->physical mappings
+can be shared due to COW, yes.
 
 
-> it does make some kind of sense to try to avoid the noncached versions for
-> small writes - because small writes tend to be for temp-files.
+> which point the kernel creates a copy of the page written to. This is done
+> through the function do_wp_page which in turn calls cow_user_page.
 
-I don't see the significance of a temp file. If the pagecache is truncated,
-then the cachelines remain dirty and so you can't avoid an eventual store
-back to RAM? 
+Yes.
 
 
-> I don't know if PAGE_SIZE is the right thing to test, and I also don't
-> know if this is necessarily the best place to test it in, but I don't
-> think it's necessarily wrong to do something like this.
+> I created a simple program, where the child and parent process write to a
+> variable differently. I have instrumented the kernel at cow_user_page. On
+> inserting the kprobe module and running the fork program, I do not get a
+> call to cow_user_page. I had several questions:
+> 1. Does this mean that the kernel is not doing COW optimization?
 
-No, but I think it should be in arch code, and the "_nocache" suffix
-should just be a hint to the architecture that the destination is not
-so likely to be used.
+It means it is not breaking COW where you expect.
 
 
-> In fact, I think we might also just check alignment. Doing the nontemporal
-> crud makes little sense for a non-8-byte-aligned destination, since it
-> will have to do the alignment stores cached anyway - and mixing them
-> across a cacheline is just crazy.
+> 2. Is COW enabled by default, if not, how do we turn it on?
 
-That is exactly the kind of thing that could probably be better optimised
-in arch code IMO.
+It is.
 
-It would have been nice to have had some numbers to justify
-0812a579c92fefa57506821fa08e90f47cb6dbdd in the first place, so you have
-a point of reference to see what happens to your speed-up-case when you
-change things like this. Sigh.
+
+> 3. Any other point in the kernel, where cow is done, other than
+> cow_user_page?
+
+If one process exits before the other writes to it, that condition
+will be noticed in do_wp_fault and a copy can be avoided. The kernel
+would still be doing the COW optimisation without ever actually
+making a copy.
+
+
+> Regarding page initialization, if I understand it correctly, the kernel
+> calls get_zeroed_page when it has to allocated a zeroed page, once again in
+> my kernel module, I have probes the kernel at get_zeroed_page, but get no
+> calls, even on running the system for a long time, any other place where
+> the kernel gets zeroed pages to return the applications ?
+
+No, it doesn't look like it calls get_zeroed_page for userspace memory
+allocation. Try alloc_zeroed_user_highpage_movable, alloc_page_vma etc.
 
