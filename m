@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759256AbZBXR1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbZBXR2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759256AbZBXR1t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758320AbZBXR1R
+	id S1759147AbZBXR2N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759261AbZBXR1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:27:17 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:43867 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759377AbZBXR1Q (ORCPT
+	Tue, 24 Feb 2009 12:27:22 -0500
+Received: from host64.cybernetics.com ([98.174.209.230]:2194 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759006AbZBXR1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:27:16 -0500
-Date: Tue, 24 Feb 2009 12:17:57 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 03/19] Do not check NUMA node ID when the caller knows
- the node is valid
-In-Reply-To: <1235477835-14500-4-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0902241215460.32227@qirst.com>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235477835-14500-4-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 24 Feb 2009 12:27:21 -0500
+Message-ID: <49A42DF7.8080309@cybernetics.com>
+Date: Tue, 24 Feb 2009 12:27:19 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/6] [2.6.29] epoll: remember the event if epoll_wait returns
+ -EFAULT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is certainly reducing the number of branches that are inlined into
-the kernel code.
+If epoll_wait returns -EFAULT, the event that was being returned when
+the fault was encountered will be forgotten.  This is not a big deal
+since EFAULT will happen only if a buggy userspace program passes in a
+bad address, in which case what happens later usually doesn't matter.
+However, it is easy to remember the event for later, and this patch
+makes a simple change to do that.
 
+Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
+---
 
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+This patch is against 2.6.29-rc6; however, it doesn't need to go
+into 2.6.29.  Use the -mm version instead if applying after the other
+patches in -mm.
 
+--- a/fs/eventpoll.c	2009-02-20 16:34:02.000000000 -0500
++++ b/fs/eventpoll.c	2009-02-20 16:36:25.000000000 -0500
+@@ -974,8 +974,6 @@ static int ep_send_events(struct eventpo
+ 	for (eventcnt = 0; !list_empty(&txlist) && eventcnt < maxevents;) {
+ 		epi = list_first_entry(&txlist, struct epitem, rdllink);
+ 
+-		list_del_init(&epi->rdllink);
+-
+ 		/*
+ 		 * Get the ready file event set. We can safely use the file
+ 		 * because we are holding the "mtx" and this will guarantee
+@@ -1000,6 +998,9 @@ static int ep_send_events(struct eventpo
+ 				epi->event.events &= EP_PRIVATE_BITS;
+ 			eventcnt++;
+ 		}
++
++		list_del_init(&epi->rdllink); /* remove from txlist */
++
+ 		/*
+ 		 * At this point, noone can insert into ep->rdllist besides
+ 		 * us. The epoll_ctl() callers are locked out by us holding
 
