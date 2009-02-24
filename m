@@ -1,62 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbZBXT3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbZBXTfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbZBXT3b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZBXT3V
+	id S1758695AbZBXTfI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZBXTez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:29:21 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:56016 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753344AbZBXT3V (ORCPT
+	Tue, 24 Feb 2009 14:34:55 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:33580 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753748AbZBXTey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:29:21 -0500
-Message-ID: <49A44A86.2030409@nortel.com>
-Date: Tue, 24 Feb 2009 13:29:10 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Andi Kleen <andi@firstfloor.org>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: RT scheduling and a way to make a process hang, unkillable
-References: <20090216120213.GB3925@linux.vnet.ibm.com>	 <1234787082.30178.3.camel@laptop>	 <20090216131440.GC3925@linux.vnet.ibm.com>	 <20090216132014.GD3925@linux.vnet.ibm.com> <4999BC0C.1010304@fatooh.org>	 <20090217050033.GA10409@linux.vnet.ibm.com>	 <20090217101542.GB15989@linux.vnet.ibm.com>	 <1234869339.4744.77.camel@laptop>	 <20090223114541.GD31277@linux.vnet.ibm.com>	 <1235390396.4645.87.camel@laptop>	 <20090224091849.GA18693@linux.vnet.ibm.com>	 <874oyj4yiz.fsf@basil.nowhere.org> <1235493365.4645.2061.camel@laptop>
-In-Reply-To: <1235493365.4645.2061.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Feb 2009 19:29:13.0892 (UTC) FILETIME=[2CF02640:01C996B6]
+	Tue, 24 Feb 2009 14:34:54 -0500
+Message-Id: <20090224193344.638329210@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 24 Feb 2009 14:33:44 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH 0/4][RFC] event tracer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2009-02-24 at 16:58 +0100, Andi Kleen wrote:
->> Dhaval Giani <dhaval@linux.vnet.ibm.com> writes:
->>>  		new->euid = euid;
->>> Index: linux-2.6/include/asm-generic/errno.h
->>> ===================================================================
->>> --- linux-2.6.orig/include/asm-generic/errno.h
->>> +++ linux-2.6/include/asm-generic/errno.h
->>> @@ -106,4 +106,6 @@
->>>  #define	EOWNERDEAD	130	/* Owner died */
->>>  #define	ENOTRECOVERABLE	131	/* State not recoverable */
->>>  
->>> +#define ENOTIME		132	/* No time available to run process */
->> It's normally not a good idea to add new errnos, because old glibc's
->> strerror()s won't know about it.
->>
->> There are also so many around that you surely will find an existing
->> one which sounds appropiate.
-> 
-> Feel free to suggest one, I've read over all these error thingies
-> several times and non really stood out.
-> 
-> We tried ENOSPC, but people thought that weird too.
 
-What about EDQUOT, as in "the user you're trying to become has no quota".
+This is still RFC, do not pull.
 
-Chris
+This patch set gives the ability to add a format string and args to
+a trace point declaration. Then it gives a tracer an opportunity to
+override the header macro and use the default trace format to trace
+the object.
+
+For example (and used in this patch series), the sched tracepoint
+declarations are moved from include/trace/sched.h to
+include/trace/sched_event_types.h, and instead of using the macro
+DECLARE_TRACE we use DECLARE_TRACE_FMT. The first three arguments
+are the same, but it adds 2 more arguments. A printf format and
+arguments.
+
+The new trace/sched.h file contains:
+
+  #include <linux/sched.h>
+  #include <linux/tracepoint.h>
+
+  #include <trace/sched_event_types.h>
+
+The sched_event_types.h file has:
+
+ DECLARE_TRACE_FMT(sched_kthread_stop,
+        TPPROTO(struct task_struct *t),
+                  TPARGS(t),
+                   "task %s:%d", TPARGS(t->comm, t->pid));
+
+The tracepoint.h defines DECLARE_TRACE_FMT as:
+
+ #define DECLARE_TRACE_FMT(name, proto, args, fmt, fmt_args) \
+        DECLARE_TRACE(name, TPPROTO(proto), TPARGS(args))
+
+
+But in kernel/trace/events.c we have:
+
+ /* trace/<type>.h here */
+ #include <trace/sched.h>
+
+ #include "trace_events.h"
+
+ /* trace/<type>_event_types.h here */
+ #include <trace/sched_event_types.h>
+
+The trace_events.h redefines the DECLARE_TRACE_FMT and makes a hook
+for to automate adding event points.
+
+To add event points, convert to the DECLARE_TRACE_FMT, add your default
+printf format, and then add to events.c, the <type>.h and <type>_event_types.h
+as described. Then your trace points will appear in the event tracer.
+
+Next I'll convert the rest of the tracepoints that are already defined
+to this format.
+
+
+The following patches are in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: rfc/event_tracer
+
+
+Steven Rostedt (4):
+      tracing: add event trace infrastructure
+      tracing: add DECLARE_TRACE_FMT to tracepoint.h
+      tracing: add schedule events to event trace
+      tracing: make event directory structure
+
+----
+ include/asm-generic/vmlinux.lds.h |   11 +-
+ include/linux/tracepoint.h        |    3 +
+ include/trace/sched.h             |   49 +-----
+ include/trace/sched_event_types.h |   74 +++++++
+ kernel/trace/Kconfig              |    9 +
+ kernel/trace/Makefile             |    2 +
+ kernel/trace/events.c             |   13 ++
+ kernel/trace/trace_events.c       |  407 +++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_events.h       |   52 +++++
+ 9 files changed, 571 insertions(+), 49 deletions(-)
+-- 
