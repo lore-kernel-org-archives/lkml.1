@@ -1,69 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbZBXQo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbZBXQph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbZBXQo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 11:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZBXQoS
+	id S1758737AbZBXQph (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 11:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZBXQp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 11:44:18 -0500
-Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:40683 "HELO
-	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754786AbZBXQoS (ORCPT
+	Tue, 24 Feb 2009 11:45:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42089 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751274AbZBXQp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 11:44:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=ZouMjn0CaK6TcUasjRfn+w7H1Xt0voLyz6ui/NH8kP8DyqBdjN9E08mSG9jtzSxcolWUy0uzfMaI2dEOKHhQw+7t/EObFy/nyHRy0eYtSpXc1om6pBaUsvNdzYb+CnJe;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: [REGRESSION] i915 VT switch with AIGLX causes X lock up
-Date: Tue, 24 Feb 2009 08:44:09 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: dri-devel@lists.sf.net, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>
-References: <20090221153822.GA4571@silver.sucs.org> <20090223223226.GA23763@silver.sucs.org>
-In-Reply-To: <20090223223226.GA23763@silver.sucs.org>
+	Tue, 24 Feb 2009 11:45:27 -0500
+Date: Tue, 24 Feb 2009 08:45:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: George Rapp <george.rapp@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Anvin <hpa@zytor.com>, Dave Airlie <airlied@gmail.com>
+Subject: Re: pci 0000:01:00.0: BAR 0: can't allocate resource
+In-Reply-To: <f1f3dd8f0902240542m58aa6adfn3fc09cee162636a1@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0902240753550.3111@localhost.localdomain>
+References: <f1f3dd8f0902221910n2722b024pe3ec8748fd3aed5b@mail.gmail.com>  <alpine.LFD.2.00.0902221941510.3111@localhost.localdomain> <f1f3dd8f0902240542m58aa6adfn3fc09cee162636a1@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902240844.09424.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, February 23, 2009 2:32:26 pm Sitsofe Wheeler wrote:
-> On Sat, Feb 21, 2009 at 03:38:22PM +0000, Sitsofe Wheeler wrote:
-> > With 2.6.29rc5 and xorg-server 2:1.4.1~git20080131-1ubuntu9.2 switching
-> > to a VT after starting compiz causes X to nearly lock up.
-> >
-> > Steps to reproduce:
-> > 1. Start X
-> > 2. Run compiz
-> > 3. Switch to VT1 via ctrl-alt-f1
-> > 4. Switch back to X via ctrl-alt-f7
-> >
-> > The result is that X will remain displaying a black screen from then on
-> > (the mouse cursor is visible and still moves). Switching to a VT after
-> > this locks up the keyboard. When compiz is not running this bug does not
-> > occur. I am not using kernel mode setting and booting with nomodesetting
-> > made no difference. This problem was not present in 2.6.28. The problem
-> > is reproducible every time.
-> >
-> > Graphics card is an i915 in an EeePC 900:
-> >
-> > 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile
-> > 915GM/GMS/910GML Express Graphics Controller [8086:2592] (rev 04)
-> >
-> > This might be http://bugzilla.kernel.org/show_bug.cgi?id=12264 but I
-> > can't reopen that bug and this bug might turn out to be different. Might
-> > also be related to
-> > http://marc.info/?l=linux-kernel&m=123499984611624&w=2 .
->
-> Still here in 2.6.29-rc6.
 
-Can you get a backtrace of the hung process, maybe by logging in from another 
-machine and using gdb on the Xorg process?
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+On Tue, 24 Feb 2009, George Rapp wrote:
+> 
+> [root@newbackend ~]# cat /proc/iomem
+> ...
+> d8000000-e7ffffff : PCI Bus 0000:01
+>   d8000000-d801ffff : 0000:01:00.0
+
+Ok, that's the large prefetchable PCI bridge window we would _want_ to fit 
+into. And it even has something from your video card in it. In fact, I 
+think it's the expansion ROM (which is not actually enabled, but the 
+resource has been allocated for it).
+
+> e8000000-efffffff : 0000:00:00.0
+
+This is the AGP window, I think.
+
+> f0000000-f1ffffff : PCI Bus 0000:01
+>   f1000000-f100ffff : 0000:01:00.0
+
+And this is the non-prefetchable PCI bridge window, and has the 
+non-prefetchable video card resource in it.
+
+But the odd thing is that prefetchable bridge window:
+
+	d8000000-e7ffffff : PCI Bus 0000:01
+	  d8000000-d801ffff : 0000:01:00.0
+
+because the thing you _want_ to fit into it is this:
+
+	pci 0000:01:00.0: BAR 0: can't allocate mem resource [0xe0000000-0xe7ffffff]
+
+and quite frankly, it should fit perfectly fine. I'm not seeing at all why 
+it can't just allocate it. Why can't we not just put it in that exact 
+range: 0xe0000000-0xe7ffffff.
+
+But there are other odd things there too. Your dmesg contains one 
+tantalizing clue about the setup the BIOS used that I hadn't noticed 
+before:
+
+	pci 0000:01:00.0: reg 10 32bit mmio: [0xd0000000-0xdfffffff]
+	pci 0000:01:00.0: reg 14 io port: [0x9000-0x90ff]
+	pci 0000:01:00.0: reg 18 32bit mmio: [0xf1000000-0xf100ffff]
+	pci 0000:01:00.0: reg 30 32bit mmio: [0x000000-0x01ffff]
+	pci 0000:01:00.0: supports D1 D2
+
+an the odd clue is that [0xd0000000-0xdfffffff]. It's the same BAR, when 
+probed for initial values. And the _size_ is different. At that initial 
+probe, the PCI bridge windows are set up by the BIOS (and we actually try 
+to keep them, so they stay the same after PCI probing) as
+
+	pci 0000:00:01.0: bridge io port: [0x9000-0x9fff]
+	pci 0000:00:01.0: bridge 32bit mmio: [0xf0000000-0xf1ffffff]
+	pci 0000:00:01.0: bridge 32bit mmio pref: [0xd8000000-0xe7ffffff]
+
+and the _initial_ problem at that point is that we cannot reconcile the 
+original video device BAR mapping (0xd0000000-0xdfffffff) with the PCI 
+bridge window (0xd8000000-0xe7ffffff) since they overlap in invalid ways.
+
+So at that point, the size of that thing is actually bigger (256M) than we 
+think it's later (128M), and because it doesn't fit anywhere, we say "the 
+BIOS setup must be crap, we need to re-allocate that resource". And with 
+that bigger size, it really _is_ impossible to allocate.
+
+Then at the later point, when we try to re-allocate space for it, we fail, 
+but then we print out the failure and seem to think it's just 128MB in 
+size:
+
+	BAR 0: can't allocate mem resource [0xe0000000-0xe7ffffff]
+
+(The difference in starting point is unimportant - it comes from the 
+resource code having tried different starting points and failed to find 
+one that satisfies us).
+
+I wonder why the heck the sizes don't match. It also looks like the BIOS 
+had set the card originally at 0xd0000000, which isn't even inside the 
+bridge window. That PCI bridge is:
+
+	00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge (rev 03) (prog-if 00 [Normal decode])
+
+which says "normal decode", but knowing intel bridges they probably say 
+that, and then they are subtractive decode after all, so the damn thing 
+probably _works_ even if it's outside the bridge window.
+
+Your machine is a mess. Has graphics _ever_ worked for you under Linux on 
+that thing (not counting VESA or other braindead modes that use the 
+legacy VGA apertures)?
+
+Very odd. The 256MB size would explain why we can't seem to allocate it. 
+But why do we print out the size as being 128M? And why did the BIOS do 
+that crazy initial setup?
+
+George, what happens if you ask Linux to just re-allocate all BIOS PCI bus 
+window information by passing in the kernel command line
+
+	pci=assign-busses
+
+(and perhaps also "pci=norom", but try with just the assign-busses thing 
+first).
+
+			Linus
