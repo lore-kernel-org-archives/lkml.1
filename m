@@ -1,99 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbZBXTvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760099AbZBXTxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759888AbZBXTvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZBXTvO
+	id S1760099AbZBXTxN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 14:53:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZBXTw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:51:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34911 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753765AbZBXTvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:51:14 -0500
-Message-ID: <49A44F0F.4060105@kernel.org>
-Date: Tue, 24 Feb 2009 11:48:31 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 24 Feb 2009 14:52:58 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:40655 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754440AbZBXTw6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 14:52:58 -0500
+Message-ID: <49A44FEB.6000803@cosmosbay.com>
+Date: Tue, 24 Feb 2009 20:52:11 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andy Isaacson <adi@hexapodia.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "lenb@kernel.org" <lenb@kernel.org>, mjg@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, rui.zhang@intel.com,
-       airlied@redhat.com
-Subject: Re: [Linux 2.6.29-rc6] [drm:i915_set_status_page] *ERROR* can not
- ioremap virtual address for G33 hw status page
-References: <8db1092f0902230646o78a07a09t920ad65369b5a20d@mail.gmail.com> <1235419343.4816.27.camel@gaiman> <200902232230.29501.rjw@sisk.pl> <8db1092f0902231340k7c7d0fd1me49302f2efd03491@mail.gmail.com> <86802c440902231701q1e169a67oa12bd84ac0e4c7aa@mail.gmail.com> <20090224032304.GA26344@hexapodia.org> <86802c440902232150m2b22e3cfg8993193f8867dfbf@mail.gmail.com> <20090224194432.GB28772@elte.hu>
-In-Reply-To: <20090224194432.GB28772@elte.hu>
+To: Tony Battersby <tonyb@cybernetics.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] [2.6.29] epoll: fix for epoll_wait sometimes returning
+ events on closed fds
+References: <49A42DDE.8060605@cybernetics.com> <49A4387D.2020801@cosmosbay.com> <49A43FF0.2070703@cybernetics.com>
+In-Reply-To: <49A43FF0.2070703@cybernetics.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 24 Feb 2009 20:52:12 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> On Mon, Feb 23, 2009 at 7:23 PM, Andy Isaacson <adi@hexapodia.org> wrote:
->>> On Mon, Feb 23, 2009 at 05:01:10PM -0800, Yinghai Lu wrote:
->>>> CONFIG_MTRR=y
->>>> CONFIG_MTRR_SANITIZER=y
->>>> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
->>>> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
->>>>
->>>> should help mtrr ones.
->>>>
->>>> please post bootlog with those option set.
->>> Doesn't help here (Dell E6400).
->>>
->>> [    0.000000] Initializing cgroup subsys cpuset
->>> [    0.000000] Initializing cgroup subsys cpu
->>> [    0.000000] Linux version 2.6.29-rc6-dirty (adi@cvp-loaner-01) (gcc version 4.3.2 (Ubuntu 4.3.2-1ubuntu12) ) #14 SMP Mon Feb 23 19:05:31 PST 2009
->>> [    0.000000] Command line: root=/dev/sda1 ro
->>> [    0.000000] KERNEL supported cpus:
->>> [    0.000000]   Intel GenuineIntel
->>> [    0.000000]   AMD AuthenticAMD
->>> [    0.000000]   Centaur CentaurHauls
->>> [    0.000000] BIOS-provided physical RAM map:
->>> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f000 (usable)
->>> [    0.000000]  BIOS-e820: 000000000009f000 - 00000000000a0000 (reserved)
->>> [    0.000000]  BIOS-e820: 0000000000100000 - 000000007d04d400 (usable)
->>> [    0.000000]  BIOS-e820: 000000007d04d400 - 000000007d04f400 (ACPI NVS)
->>> [    0.000000]  BIOS-e820: 000000007d04f400 - 0000000080000000 (reserved)
->>> [    0.000000]  BIOS-e820: 00000000f8000000 - 00000000fc000000 (reserved)
->>> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
->>> [    0.000000]  BIOS-e820: 00000000fed18000 - 00000000fed1c000 (reserved)
->>> [    0.000000]  BIOS-e820: 00000000fed20000 - 00000000fed90000 (reserved)
->>> [    0.000000]  BIOS-e820: 00000000feda0000 - 00000000feda6000 (reserved)
->>> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
->>> [    0.000000]  BIOS-e820: 00000000ffe60000 - 0000000100000000 (reserved)
->>> [    0.000000] DMI 2.4 present.
->>> [    0.000000] last_pfn = 0x7d04d max_arch_pfn = 0x100000000
->>> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
->>> [    0.000000] original variable MTRRs
->>> [    0.000000] reg 0, base: 0GB, range: 32GB, type WB
->>> [    0.000000] reg 1, base: 3584MB, range: 512MB, type UC
->>> [    0.000000] reg 2, base: 2012MB, range: 4MB, type UC
->>> [    0.000000] reg 3, base: 2016MB, range: 32MB, type UC
->> the BIOS is so sick
->> according to MTRR, it said:
->> [0,2012M) is WB
->> [2048M, 3.5G) is WB too
->> [4G, 32G) is WB
+Tony Battersby a écrit :
+> Eric Dumazet wrote:
+>> Your patch may solve part of the problem. In your programs, maybe you
+>> have one thread doing all epoll_wait() and close() syscalls, but what
+>> of other programs ?
 >>
->> but according to e820: about [0,2g) is RAM...
+>> What prevents a thread doing close(fd) right after an other thread
+>> got this fd from epoll_wait() ?
+>> Nothing, and application may strangely react.
 >>
->> really not how to workaround in BIOS.
+>> The moment you have several threads doing read()/write()/close() syscalls
+>> on the same fd at the same time, you obviously get problems, not
+>> only with epoll.
+>>
+>> In a typical epoll driven application, with a pool of N worker threads all doing :
+>>
+>> while (1) {
+>> 	fd = epoll_wait(epoll_fd);
+>> 	work_on_fd(fd); /* possibly calling close(fd); */
+>> }
+>>
+>> Then, you must be prepared to get a *false* event, ie an fd that another worker
+>> already closed (and eventually reopened)
+>>
+>>
+>>
+>>   
+> Yes, I agree that userspace threads do need synchronization to prevent
+> one thread from stomping on another thread's data.  If userspace can't
+> prove that close() returned before the call to epoll_wait(), then
+> epoll_wait() may legitimately return an event on a closed fd.  That's
+> why my test program did close() and then epoll_wait() from the same
+> thread - to prove that they were serialized.
 > 
-> I suspect the box was tested with other OSs and limped along 
-> there. Should we perhaps clear non-sensical MTRR entries?
-> 
+> I am not actually using epoll in any of my programs right now; I was
+> just investigating a bug reported to me by another programmer at my
+> company.  So my test program isn't intented to reflect anything other
+> than a way to reproduce the problem reliably.  However, I can imagine
+> that a network program might want to spawn separate rx/tx threads on the
+> same socket, in which case it might make sense to have separate threads
+> accessing the same file descriptor.  As you say, the two threads would
+> have to use proper locking, but that is purely a userspace issue that
+> kernel developers need not worry about.  So I am only concerned with the
+> case that userspace can prove that close() and epoll_wait() were
+> properly serialized, and epoll_wait() still returned an event on the
+> closed fd.
 
-according to e820 to update MTRR?
+I believe Davide already said that close() meant the real close, not
+the file descriptor freeing. 
 
-in the previous discussion, some SMI region that is not stated in e820 could still need to be covered by MTRR with WB
+And current documentations clearly states it, maybe your man page is too old ?
 
-YH
+---
+
+Q6  Will closing a file descriptor cause it to be removed from all epoll sets automatically?
+
+A6  Yes,  but  be  aware  of  the  following  point.   A  file descriptor is a reference to an open file description (see
+    open(2)).  Whenever a descriptor is duplicated via dup(2), dup2(2), fcntl(2) F_DUPFD, or fork(2), a new file descriptor  referring  to  the same open file description is created.  An open file description continues to exist until all
+    file descriptors referring to it have been closed.  A file descriptor is removed from an epoll set only after all the
+    file  descriptors  referring to the underlying open file description have been closed (or before if the descriptor is
+    explicitly removed using epoll_ctl() EPOLL_CTL_DEL).  This means that even after a file descriptor that is part of an
+    epoll set has been closed, events may be reported for that file descriptor if other file descriptors referring to the
+    same underlying file description remain open.
+
+
+
