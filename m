@@ -1,86 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZBXDoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbZBXDz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZBXDoz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 22:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZBXDoq
+	id S1753921AbZBXDz3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 22:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZBXDzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 22:44:46 -0500
-Received: from exchtp08.via.com.tw ([61.66.243.7]:36025 "EHLO
-	exchtp08.via.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbZBXDop (ORCPT
+	Mon, 23 Feb 2009 22:55:17 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:60551 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664AbZBXDzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 22:44:45 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 23 Feb 2009 22:55:16 -0500
+Message-Id: <200902240354.n1O3sous011760@www262.sakura.ne.jp>
+Subject: Re: [Bug #12409] NULL pointer dereference at get_stats()
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: rjw@sisk.pl
+Cc: kernel-testers@vger.kernel.org, frederik.deweerdt@xprog.eu,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: mmotm 2009-02-20-15-52 uploaded (via-sdmmc)
-Date: Tue, 24 Feb 2009 11:44:35 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB808AFECA1@exchtp03.taipei.via.com.tw>
-In-Reply-To: <499F869C.9000208@oracle.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: mmotm 2009-02-20-15-52 uploaded (via-sdmmc)
-Thread-Index: AcmT3x++xOik6NM9SLK1/HNbrlCT7gCUmXPA
-From: <JosephChan@via.com.tw>
-To: <randy.dunlap@oracle.com>, <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 24 Feb 2009 03:44:36.0283 (UTC) FILETIME=[367358B0:01C99632]
+Content-Transfer-Encoding: 7bit
+Date: Tue, 24 Feb 2009 12:54:50 +0900
+References: <HFSEX4uppGO.A.JSG.2yzoJB@chimera> <LLno3yT_fnC.A.jjH.nzzoJB@chimera>
+In-Reply-To: <LLno3yT_fnC.A.jjH.nzzoJB@chimera>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 24022009 #1657228, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n1O3j3wM029215
 
-Randy,
-
-Weâ€™ve fixed this is v5 patch. Thanks.
-I will send out  this patch later.
-
-
-Andrew,
-
-Any comment on this? Should I send the whole v5 patch to linux-kernel mail-list? Or just patch for this issue? Thanks.
-
-BRs,
-Joseph
-
-> -----Original Message-----
-> From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
-> Sent: Saturday, February 21, 2009 12:44 PM
-> To: linux-kernel@vger.kernel.org
-> Cc: Andrew Morton; Joseph Chan
-> Subject: Re: mmotm 2009-02-20-15-52 uploaded (via-sdmmc)
+Rafael J. Wysocki wrote:
 > 
-> akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-02-20-15-52 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://git.zen-sources.org/zen/mmotm.git
-> > 
-> > It contains the following patches against 2.6.29-rc5:
-> > 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12409
+> Subject		: NULL pointer dereference at get_stats()
+> Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+> Date		: 2008-12-30 12:53 (56 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123064167008695&w=4
+> Handled-By	: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
 > 
-> > via-sdmmc-via-msp-card-reader-driver-support.patch
-> 
-> 
-> when CONFIG_PM=n:
-> 
-> drivers/mmc/host/via-sdmmc.c:336: error: 'struct 
-> via_crdr_chip' has no member named 'pm_pcictrl_reg'
-> drivers/mmc/host/via-sdmmc.c:355: error: 'struct 
-> via_crdr_chip' has no member named 'pm_pcictrl_reg'
-> drivers/mmc/host/via-sdmmc.c:372: error: 'struct 
-> via_crdr_chip' has no member named 'pm_sdhc_reg'
-> drivers/mmc/host/via-sdmmc.c:392: error: 'struct 
-> via_crdr_chip' has no member named 'pm_sdhc_reg'
-> 
-> --
-> ~Randy
-> 
-> 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+I couldn't reproduce this problem in native and KVM environments.
+This problem seems to be VMware specific and priority is low.
+Alok Kataria queued this problem.
+Thus, this problem has not yet solved but mainline kernels don't need to wait
+for this problem.
