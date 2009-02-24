@@ -1,396 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759615AbZBXT7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbZBXUAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759615AbZBXT7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 14:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZBXT7H
+	id S1759976AbZBXUAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 15:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZBXUA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 14:59:07 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:61341 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754582AbZBXT7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 14:59:06 -0500
-Message-ID: <49A451C3.4000602@oracle.com>
-Date: Tue, 24 Feb 2009 12:00:03 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 24 Feb 2009 15:00:29 -0500
+Received: from smtp6-g21.free.fr ([212.27.42.6]:47276 "EHLO smtp6-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751784AbZBXUA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 15:00:28 -0500
+From: Philippe Grenard <philippe.grenard@laposte.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
+Date: Tue, 24 Feb 2009 21:00:51 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-acpi2-phiphi; KDE/4.2.0; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       John Stoffel <john@stoffel.org>
+References: <200902131944.56634.philippe.grenard@laposte.net> <200902211121.46292.philippe.grenard@laposte.net> <49A0C693.6000407@zytor.com>
+In-Reply-To: <49A0C693.6000407@zytor.com>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/6] Rewrite MSI-HOWTO
-References: <1235410082-5016-1-git-send-email-matthew@wil.cx> <1235410082-5016-2-git-send-email-matthew@wil.cx>
-In-Reply-To: <1235410082-5016-2-git-send-email-matthew@wil.cx>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.49A45183.0025:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200902242100.51410.philippe.grenard@laposte.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> From: Matthew Wilcox <willy@linux.intel.com>
-> 
-> I didn't find the previous version very useful, so I rewrote it.
-> 
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> ---
->  Documentation/PCI/MSI-HOWTO.txt |  756 ++++++++++++++-------------------------
->  1 files changed, 275 insertions(+), 481 deletions(-)
-> 
-> diff --git a/Documentation/PCI/MSI-HOWTO.txt b/Documentation/PCI/MSI-HOWTO.txt
-> index 256defd..f1b9f09 100644
-> --- a/Documentation/PCI/MSI-HOWTO.txt
-> +++ b/Documentation/PCI/MSI-HOWTO.txt
-> @@ -4,506 +4,300 @@
->  	Revised Feb 12, 2004 by Martine Silbermann
->  		email: Martine.Silbermann@hp.com
->  	Revised Jun 25, 2004 by Tom L Nguyen
-> +	Revised Jul  9, 2008 by Matthew Wilcox <willy@linux.intel.com>
-> +		Copyright 2003, 2008 Intel Corporation
->  
->  1. About this guide
->  
+On Sunday 22 February 2009 04:29:23 H. Peter Anvin wrote:
+> Philippe Grenard wrote:
+> > On Friday 20 February 2009 22:58:30 Ingo Molnar wrote:
+> >> * Philippe Grenard <philippe.grenard@laposte.net> wrote:
+> >>> dc1e35c6e95e8923cf1d3510438b63c600fee1e2 is first bad commit
+> >>> commit dc1e35c6e95e8923cf1d3510438b63c600fee1e2
+> >>> Author: Suresh Siddha <suresh.b.siddha@intel.com>
+> >>> Date:   Tue Jul 29 10:29:19 2008 -0700
+> >>>
+> >>>     x86, xsave: enable xsave/xrstor on cpus with xsave support
+> >>
+> >> [...]
+> >>
+> >>> A bit of googling gave me this :
+> >>> http://lkml.org/lkml/2009/1/19/161
+> >>> which exactly corresponds to my problem with 2.6.28 !
+> >>>
+> >>> A "solution" proposed was to try to check the bios setting
+> >>> "cpuid value limit" and disable it if enabled. This did help
+> >>> me to boot 2.6.28 or previously failing kernel compiled during
+> >>> git-bisect, but gave me the "random freeze" any way....
+> >>
+> >> Note that the workaround for that BIOS bug is already in the
+> >> latest upstream kernel, i.e. in 2.6.29-rc5.
+> >>
+> >> Could you please try -rc5, whether it works out of box?
+> >>
+> >> If you still see freezes, could you try the "nofxsr" boot
+> >> option? That will turn off the new FPU code both in the hw and
+> >> in the kernel.
+> >>
+> >> 	Ingo
+> >
+> > Hello Ingo, thanks for your reply,
+> >
+> > I've tried to boot 2.6.29-rc5 with both "Max CPUID Value" Enabled and
+> > Disabled, and tried for both case the "nofxsr" option without better
+> > result...
+> >
+> > As I said before, I use the default dsdt table : can this be a problem
+> > too ?
+>
+> OK, this is a completely different problem then.  Any way you could do a
+> "git bisect" to track down the exact place where this broke?
+>
+> 	-hpa
 
-[deletia]
+Ok, so I have news for my problem!
+After trying a minimalist config file which gave me a working system, I tried to 
+add some missing features such as ACPI, and so on.
 
-> -5.2.1 API pci_enable_msi
-> +This guide describes the basics of Message Signaled Interrupts (MSIs),
-> +the advantages of using MSI over traditional interrupt mechanisms, how
-> +to change your driver to use MSI or MSI-X and some basic diagnostics to
-> +try if a device doesn't support MSIs.
-> +
-> +
-> +2. What are MSIs?
-> +
-> +A Message Signalled Interrupt is a write from the device to a special
+I finally have reduced the problem to this : 
+with 
+CONFIG_ACPI_PROCESSOR=m
+CONFIG_ACPI_THERMAL=m
+as the sole difference, the kernel *without* these 2 modules will run with no 
+problem at all, but when enabled, the kernel will freeze just after boot.
 
-Consistent spelling, please.
+I would gladly try to bisect this since this works with 2.6.27.
+The problem is that I had some other problem which prevented me to boot 2.6.28 
+(even if this other problem has been identified now) so I would maybe need to 
+patch some files to get working kernel to bisect this new ACPI problem, but 
+that is far from my limited knowledge.... I would need some hints for this...
 
-> +address which causes an interrupt to be received by the CPU.
-> +
-> +The MSI capability was first specified in PCI 2.2 and was later enhanced
-> +in PCI 3.0 to allow each interrupt to be masked individually.  The MSI-X
-> +capability was also introduced with PCI 3.0.  It supports more interrupts
-> +per device than MSI and allows interrupts to be independently configured.
-> +
-> +Devices may support both MSI and MSI-X, but only one can be enabled at
-> +a time.
-> +
-> +
-> +3. Why use MSIs?
-> +
-> +There are three reasons why using MSIs can give an advantage over
-> +traditional pin-based interrupts.
-> +
-> +Pin-based PCI interrupts are often shared amongst several devices.
-> +To support this, the kernel must call each interrupt handler associated
-> +with an interrupt which leads to reduced performance for the system as
+Should I maybe open a new thread for this issue? does this problem has already 
+been known ?
 
-   with an interrupt,
+I also use to "reply all". Please tell me if this is a bother.
 
-> +a whole.  MSIs are never shared, so this problem cannot arise.
-> +
-> +When a device writes data to memory, then raises a pin-based interrupt,
-> +it is possible that the interrupt may arrive before all the data has
-> +arrived in memory (this becomes more likely with devices behind PCI-PCI
-> +bridges).  In order to ensure that all the data has arrived in memory,
-> +the interrupt handler must read a register on the device which raised
-> +the interrupt.  PCI transaction ordering rules require that all the data
-> +arrives in memory before the value can be returned from the register.
-> +Using MSIs avoids this problem as the interrupt-generating write cannot
-> +pass the data writes, so by the time the interrupt is raised, the driver
-> +knows that all the data has arrived in memory.
-> +
-> +PCI devices can only support a single pin-based interrupt per function.
-> +Often drivers have to query the device to find out what event has
-> +occurred, slowing down interrupt handling for the common case.  With
-> +MSIs, a device can support more interrupts, allowing each interrupt
-> +to be specialised to a different purpose.  One possible design gives
-> +infrequent conditions (such as errors) their own interrupt which allows
-> +the driver to handle the normal interrupt handling path more efficiently.
-> +Other possible designs include giving one interrupt to each packet queue
-> +in a network card or each port in a storage controller.
-> +
-> +
-> +4. How to use MSIs
-> +
-> +PCI devices are initialised to use pin-based interrupts.  The device
-> +driver has to set up the device to use MSI or MSI-X.  Not all machines
-> +support MSIs correctly, and for those machines, the APIs described below
-> +will simply fail and the device will continue to use pin-based interrupts.
-> +
-> +4.1 Include kernel support for MSIs
-> +
-> +To support MSI or MSI-X, the kernel must be built with the CONFIG_PCI_MSI
-> +option enabled.  This option is only available on some architectures,
-> +and it may depend on some other options also being set.  For example,
-> +on x86, you must also enable X86_UP_APIC or SMP in order to see the
-> +CONFIG_PCI_MSI option.
-> +
-> +4.2 Using MSI
-> +
-> +Most of the hard work is done for the driver in the PCI layer.  It simply
-> +has to request that the PCI layer set up the MSI capability for this
-> +device.
-> +
-> +4.2.1 pci_enable_msi
->  
->  int pci_enable_msi(struct pci_dev *dev)
->  
+Philippe
 
-[deletia]
 
-> +A successful call will allocate ONE interrupt to the device, regardless
-> +of how many MSIs the device supports.  The device will be switched from
-> +pin-based interrupt mode to MSI mode.  The dev->irq number is changed
-> +to a new number which represents the message signaled interrupt.
-> +This function should be called before the driver calls request_irq()
-> +since enabling MSIs disables the pin-based IRQ and the driver will not
-> +receive interrupts on the old interrupt.
->  
-> -5.2.2 API pci_disable_msi
-> +4.2.2 pci_disable_msi
-
-[deletia]
-
-> +This function should be used to undo the effect of pci_enable_msi().
-> +Calling it restores dev->irq to the pin-based interrupt number and frees
-> +the previously allocated message signaled interrupt(s).  The interrupt
-> +may subsequently be assigned to another device, so drivers should not
-> +cache the value of dev->irq.
->  
-> -This API enables a device driver to request the PCI subsystem
-> -to enable MSI-X messages on its hardware device. Depending on
-> -the availability of PCI vectors resources, the PCI subsystem enables
-> -either all or none of the requested vectors.
-> +A device driver must always call free_irq() on the interrupt(s)
-> +for which it has called request_irq() before calling this function.
-> +Failure to do so will result in a BUG_ON(), the device will be left with
-> +MSI enabled and will leak its vector.
->  
-> -Argument 'dev' points to the device (pci_dev) structure.
-> +4.3 Using MSI-X
->  
-> -Argument 'entries' is a pointer to an array of msix_entry structs.
-> -The number of entries is indicated in argument 'nvec'.
-> -struct msix_entry is defined in /driver/pci/msi.h:
-> +The MSI-X capability is much more flexible than the MSI capability.
-> +It supports up to 2048 interrupts, each of which can be separately
-> +assigned.  To support this flexibility, drivers must use an array of
-> +`struct msix_entry':
->  
->  struct msix_entry {
->  	u16 	vector; /* kernel uses to write alloc vector */
->  	u16	entry; /* driver uses to specify entry */
->  };
->  
-
-[deletia]
-
-> +This allows for the device to use these interrupts in a sparse fashion;
-> +for example it could use interrupts 3 and 1027 and allocate only a
-> +two-element array.  The driver is expected to fill in the 'entry' value
-> +in each element of the array to indicate which entries it wants the kernel
-> +to assign interrupts for.  It is invalid to fill in two entries with the
-> +same number.
-> +
-> +4.3.1 pci_enable_msix
-> +
-> +int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
-> +
-> +Calling this function asks the PCI subsystem to allocate 'nvec' MSIs.
-> +The 'entries' argument is a pointer to an array of msix_entry structs
-> +which should be at least 'nvec' entries in size.  On success, the
-> +function will return 0 and the device will have been switched into
-> +MSI-X interrupt mode.  The 'vector' elements in each entry will have
-> +been filled in with the interrupt number.  The driver should then call
-> +request_irq() for each 'vector' that it decides to use.
-> +
-> +If this function returns a negative number, it indicates an error and
-> +the driver should not attempt to allocate any more MSI-X interrupts for
-> +this device.  If it returns a positive number, it indicates the maximum
-> +number of interrupt vectors that could have been allocated.
-> +
-> +This function, in contrast with pci_enable_msi(), does not adjust
-> +dev->irq.  The device will not generate interrupts for this interrupt
-> +number once MSI-X is enabled.  The device driver is responsible for
-> +keeping track of the interrupts assigned to the MSI-X vectors so it can
-> +free them again later.
-> +
-> +Device drivers should normally call this function once per device
-> +during the initialization phase.
-
-Consistent isation/ization (or ised/ized), please.
-
-> +
-> +4.3.2 pci_disable_msix
->  
->  void pci_disable_msix(struct pci_dev *dev)
->  
-
-[deletia]
-
-> +This API should be used to undo the effect of pci_enable_msix().  It frees
-> +the previously allocated message signaled interrupts.  The interrupts may
-> +subsequently be assigned to another device, so drivers should not cache
-> +the value of the 'vector' elements over a call to pci_disable_msix().
-> +
-> +A device driver must always call free_irq() on the interrupt(s)
-> +for which it has called request_irq() before calling this function.
-> +Failure to do so will result in a BUG_ON(), the device will be left with
-> +MSI enabled and will leak its vector.
-> +
-> +4.3.3 The MSI-X Table
-> +
-> +The MSI-X capability specifies a BAR and offset within that BAR for the
-> +MSI-X Table.  This address is mapped by the PCI subsystem, and should not
-> +be accessed directly by the device driver.  If the driver wishes to
-> +mask or unmask an interrupt, it should call disable_irq() / enable_irq().
-> +
-> +4.4 Handling devices implementing both MSI and MSI-X capabilities
-> +
-> +If a device implements both MSI and MSI-X capabilities, it can
-> +run in either MSI mode or MSI-X mode but not both simultaneously.
-> +This is a requirement of the PCI spec, and it is enforced by the
-> +PCI layer.  Calling pci_enable_msi() when MSI-X is already enabled or
-> +pci_enable_msix() when MSI is already enabled will result in an error.
-> +If a device driver wishes to switch between MSI and MSI-X at runtime,
-> +it must first quiesce the device, then switch it back to pin-interrupt
-> +mode, before calling pci_enable_msi() or pci_enable_msix() and resuming
-> +operation.  This is not expected to be a common operation but may be
-> +useful for debugging or testing during development.
-> +
-> +4.5 Considerations when using MSIs
-> +
-> +4.5.1 Choosing between MSI-X and MSI
-> +
-> +If your device supports both MSI-X and MSI capabilities, you should use
-> +the MSI-X facilities in preference to the MSI facilities.  As mentioned
-> +above, MSI-X supports any number of interrupts between 1 and 2048.
-> +In constrast, MSI is restricted to a maximum of 32 interrupts (and
-> +must be a power of two).  In addition, the MSI interrupt vectors must
-> +be allocated consecutively, so the system may not be able to allocate
-> +as many vectors for MSI as it could for MSI-X.  On some platforms, MSI
-> +interrupts must all be targetted at the same set of CPUs whereas MSI-X
-> +interrupts can all be targetted at different CPUs.
-> +
-> +4.5.2 Spinlocks
-> +
-> +Most device drivers have a per-device spinlock which is taken in the
-> +interrupt handler.  With pin-based interrupts or a single MSI, it is not
-> +necessary to disable interrupts (Linux guarantees the same interrupt will
-> +not be re-entered).  If a device uses multiple interrupts, the driver
-> +must disable interrupts while the lock is held.  If the device sends
-> +a different interrupt, the driver will deadlock trying to recursively
-> +acquire the spinlock.
-> +
-> +There are two solutions.  The first is to take the
-> +lock with spin_lock_irqsave() or spin_lock_irq() (see
-> +Documentation/DocBook/kernel-locking).  The second is to specify
-> +IRQF_DISABLED to request_irq() so that the kernel runs the entire
-> +interrupt routine with interrupts disabled.
-> +
-> +If your MSI interrupt routine does not hold the lock for the whole time
-> +it is running, the first solution may be best.  The second solution is
-> +normally preferred as it avoids making two transitions from interrupt
-> +disabled to enabled and back again.
-> +
-> +4.6 How to tell whether MSI/MSI-X is enabled on a device
-> +
-> +Using lspci -v (as root) will show some devices with "Message Signalled
-
-Oh gosh, does lspci misspell it?
-
-> +Interrupts" and others with "MSI-X".  Each of these capabilities have an
-
-                                         Each ..................... has an
-
-> +'Enable' flag which will be followed with either "+" (enabled) or "-"
-> +(disabled).
-> +
-> +
-> +5. MSI quirks
-> +
-> +Several PCI chipsets or devices are known not to support MSIs.
-> +The PCI stack provides three ways to disable MSIs:
-> +
-> +1. globally
-> +2. on all devices behind a specific bridge
-> +3. on a single device
-> +
-> +5.1. Disabling MSIs globally
-> +
-> +Some host chipsets simply don't support MSIs properly.  If we're
-> +lucky, the manufacturer knows this and has indicated it in the ACPI
-> +FADT table.  In this case, Linux will automatically disable MSIs.
-> +Some boards don't include this information in the table and so we have
-> +to detect them ourselves.  The complete list of these is found near the
-> +quirk_disable_all_msi() function in drivers/pci/quirks.c.
-> +
-> +If you have a board which has problems with MSIs, you can pass pci=nomsi
-> +on the kernel command line to disable MSIs on all devices.  It would be
-> +in your best interests to report the problem to linux-pci@vger.kernel.org
-> +including a full lspci -v so we can add the quirks to the kernel.
-
-   I would say      "lspci -v" ...
-
-> +
-> +5.2. Disabling MSIs below a bridge
-> +
-> +Some PCI bridges are not able to route MSIs between busses properly.
-> +In this case, MSIs must be disabled on all devices behind the bridge.
-> +
-> +Some bridges allow you to enable MSIs by changing some bits in their
-> +PCI configuration space (especially the Hypertransport chipsets such
-> +as the nVidia nForce and Serverworks HT2000).  As with host chipsets,
-> +Linux mostly knows about them and automatically enables MSIs if it can.
-> +If you have a bridge which Linux doesn't yet know about, you can enable
-> +MSIs in configuration space using whatever method you know works, then
-> +enable MSIs on that bridge by doing:
-> +
-> +       echo 1 > /sys/bus/pci/devices/$bridge/msi_bus
-> +
-> +where $bridge is the PCI address of the bridge you've enabled (eg
-> +0000:00:0e.0).
-> +
-> +To disable MSIs, echo 0 instead of 1.  Changing this value should be
-> +done with caution as it can break interrupt handling for all devices
-> +below this bridge.
-> +
-> +Again, please notify linux-pci@vger.kernel.org of any bridges that need
-> +special handling.
-> +
-> +5.3. Disabling MSIs on a single device
-> +
-> +Some devices are known to have faulty MSI implementations.  Usually this
-> +is handled in the individual device driver but occasionally it's necessary
-> +to handle this with a quirk.  Some drivers have an option to disable MSIs;
-> +this is deprecated.
-> +
-> +5.4. Finding why MSIs are disabled on a device
-> +
-> +From the above three sections, you can see that there are many reasons
-> +why MSIs may not be enabled for a given device.  Your first step should
-> +be to examine your dmesg carefully to determine whether MSIs are enabled
-> +for your machine.  You should also check your .config to be sure you
-> +have enabled CONFIG_PCI_MSI.
-> +
-> +Then, lspci -t gives the list of bridges above a device.  Reading
-
-         "lspci -t"
-
-> +/sys/bus/pci/devices/*/msi_bus will tell you whether MSI are enabled (1)
-> +or disabled (0).  If 0 is found in any of the msi_bus files belonging
-> +to bridges between the PCI root and the device, MSIs are disabled.
-> +
-> +It is also worth checking whether the device driver supports MSIs.
-> +
-
-Unneeded ending blank line (nit).
-
--- 
-~Randy
