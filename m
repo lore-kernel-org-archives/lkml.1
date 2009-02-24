@@ -1,96 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZBXDYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZBXDaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbZBXDYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 22:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZBXDYB
+	id S1753459AbZBXDaO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 22:30:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbZBXD37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 22:24:01 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:46451 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751412AbZBXDYA (ORCPT
+	Mon, 23 Feb 2009 22:29:59 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:58879 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbZBXD36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 22:24:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TBs2nsNIi8VHDnNI7YzL05PJdANh6x9RJDoWXiLwlnmDQB490RC0BRpIcBRHahDARg47EmqZo2LBSujDKMtp2Qg/E32QO6Gf9cIMfADHuzNcSuv2FhXUbEfXJ30Ne/EAVNt3Dcb4XdRdw11ozxkX/y3rbIjIUvZN1ALt7vCJPSo=  ;
-X-YMail-OSG: 7mT2w2AVM1lsYZgYNX3lJud_8QhokD5Nrph0zUB7NPgL1_WIZLjdEQMNVMuVRPWs0UKyI9_zTMhlnArlO4uZwGJVh_IJpmeDXK.MRCqFX1q4KbfgOXmIa8XPhp6v8G_79OjGDzFo_RS6MiZu5CS7XbtFrzMA_IEOp9xdiVJizFVdFw50PNeJD9HKe8zOuXn.N9K9FQRWwqac2sa6pLsjIEsLBvLdOiqnsOmtm6H2MMLL
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Date: Tue, 24 Feb 2009 14:23:19 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, stable@kernel.org,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-References: <20090220140157.GA12799@elte.hu> <20090223193351.GA11921@elte.hu> <20090223204359.GT6751@linux.vnet.ibm.com>
-In-Reply-To: <20090223204359.GT6751@linux.vnet.ibm.com>
+	Mon, 23 Feb 2009 22:29:58 -0500
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200902221837.49396.rjw@sisk.pl> <200902231203.09082.rjw@sisk.pl>
+	<m18wnx41h5.fsf@fess.ebiederm.org> <200902232239.05926.rjw@sisk.pl>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 23 Feb 2009 19:30:16 -0800
+In-Reply-To: <200902232239.05926.rjw@sisk.pl> (Rafael J. Wysocki's message of "Mon\, 23 Feb 2009 22\:39\:04 +0100")
+Message-ID: <m1iqn01ph3.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902241423.21091.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: rjw@sisk.pl, tglx@linutronix.de, jbarnes@virtuousgeek.org, lenb@kernel.org, linux-pm@lists.linux-foundation.org, jeremy@goop.org, benh@kernel.crashing.org, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Rafael J. Wysocki" <rjw@sisk.pl>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009 07:43:59 Paul E. McKenney wrote:
-> On Mon, Feb 23, 2009 at 08:33:51PM +0100, Ingo Molnar wrote:
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > On Mon, 23 Feb 2009 08:17:26 -0800 "Paul E. McKenney" 
-<paulmck@linux.vnet.ibm.com> wrote:
-> > > > On Tue, Feb 24, 2009 at 12:29:36AM +1100, Nick Piggin wrote:
-> > > > > On Monday 23 February 2009 16:17:09 Paul E. McKenney wrote:
-> > > > > > The boot CPU runs in the context of its idle thread during
-> > > > > > boot-up. During this time, idle_cpu(0) will always return
-> > > > > > nonzero, which will fool Classic and Hierarchical RCU into
-> > > > > > deciding that a large chunk of the boot-up sequence is a big long
-> > > > > > quiescent state.  This in turn causes RCU to prematurely end
-> > > > > > grace periods during this time.
-> > > > > >
-> > > > > > This patch creates a new global variable that is set to 1 just
-> > > > > > before the boot CPU first enters the scheduler, after which the
-> > > > > > idle task really is idle.
-> > > > >
-> > > > > Nice work all (btw. if this patch goes in rather than using
-> > > > > system_state, then please make the variable __read_mostly).
-> > > >
-> > > > Hmmm...  I misread this and made system_state be __read_mostly.  Let
-> > > > me know if this is bad, easy to fix if needed.
-> > >
-> > > Please don't use system_state.  The whole thing is just bad
-> > > design. It's a global variable, breaks encapsulation, creates
-> > > interactions etc. CS-101 stuff.
-> >
-> > ok, i've removed the patch - Paul, would you mind to re-send
-> > your original flag solution, with it marked __read_mostly and
-> > with the extern declarations put into a suitable header file?
-> >
-> > Paul, incidentally, this very minute i tracked down that the
-> > patch is also causing boot lockups in -tip testing. I havent yet
-> > fully debugged it, but a question comes immediately: if there's
-> > no grace periods during bootup, wont rcu_sync() & friends just
-> > hang indefinitely?
->
-> Ouch!!!  Indeed they would.
->
-> > More thought is needed.
->
-> One fix would be to sprinkle calls to rcu_qsctr_inc() through the
-> boot process.  But a much better approach would be for me to make
-> synchronize_rcu() check this same flag, and simply return if called
-> during early boot.  The rationale for this is that there is but a single
-> CPU during early boot, so tinyrcu.c's optimization can be used.  ;-)
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Well can you simply return if called if num_online_cpus() == 1, regardless
-of the state of boot?
-
-> Out of both paranoia and self defense, I would check num_online_cpus()
-> in my proposed call into RCU.  ;-)
+> On Monday 23 February 2009, Eric W. Biederman wrote:
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>> >> I don't know where in the state machine this is getting called but
+>> >> I would suggest doing this before we shutdown cpus.
+>> >
+>> > This is the plan.  In fact, I'm going to do this in the next patch after the
+>> > $subject one has been tested and found acceptable.
+>> 
+>> Good to hear.  Then let's please get a version of the irq disable that calls
+>> shutdown, so we can be certain we don't have hardware irqs in flight.
+>> 
+>> For the drivers it should not matter for clean cpu shutdown it will.
 >
-> Seem reasonable?  And does synchronize_sched() also need the UP-only
-> optimization?
+> OK, I will.
 
+My apologies I was wrong.  Calling shutdown is not safe.
+
+I just remembered that masking an ioapic from anywhere besides the
+irq handler can lock the ioapic state machine, and lead to non-recoverable
+interrupts.  It is rare but I have seen it happen.  I wanted to figure out
+how to migrate interrupts outside of interrupt context and this was what
+prevented me.  A suspend/resume cycle might be enough of a reset to
+get the ioapic out of that state but I don't know.
+
+The only safe way on x86 to shutdown a level triggered ioapic irq
+outside of irq context is for the driver to program the hardware to
+not generate an irq.
+
+Therefore doing anything with the irqs at the point where we are
+suspending them is a formality, and perhaps simply code that ensures
+in-flight irqs don't make it past a certain point.
+
+I believe we just need to call disable() and print a big nasty warning
+if any irq comes in after the suspend stage.
+
+Eric
