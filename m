@@ -1,130 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbZBXW7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760396AbZBXXAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760662AbZBXW7s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 17:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZBXW7j
+	id S1760396AbZBXXAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 18:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbZBXXAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 17:59:39 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59716 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbZBXW7j (ORCPT
+	Tue, 24 Feb 2009 18:00:11 -0500
+Received: from smtp1.tech.numericable.fr ([82.216.111.37]:37497 "EHLO
+	smtp1.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760393AbZBXXAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 17:59:39 -0500
-Date: Tue, 24 Feb 2009 22:59:30 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: dri-devel@lists.sf.net, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>
-Subject: Re: [REGRESSION] i915 VT switch with AIGLX causes X lock up
-Message-ID: <20090224225930.GA3745@silver.sucs.org>
-References: <20090221153822.GA4571@silver.sucs.org> <20090223223226.GA23763@silver.sucs.org> <200902240844.09424.jbarnes@virtuousgeek.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902240844.09424.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 24 Feb 2009 18:00:05 -0500
+Message-ID: <49A47BEF.5030507@numericable.fr>
+Date: Tue, 24 Feb 2009 23:59:59 +0100
+From: etienne <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Paul Moore <paul.moore@hp.com>
+CC: Casey Schaufler <casey@schaufler-ca.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM <linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH][SMACK] add a socket_post_accept hook to fix netlabel
+ issues with labeled TCP servers V1
+References: <fa.eUdEnVYPYgnfwD9aw1dVY6gL1+E@ifi.uio.no> <fa.BogfdiS32WCl3kqw5KFzeBPP0jc@ifi.uio.no> <49A472BA.8090805@numericable.fr> <200902241738.08877.paul.moore@hp.com>
+In-Reply-To: <200902241738.08877.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 08:44:09AM -0800, Jesse Barnes wrote:
-> Can you get a backtrace of the hung process, maybe by logging in from another 
-> machine and using gdb on the Xorg process?
+Paul Moore wrote:
+> On Tuesday 24 February 2009 05:20:42 pm etienne wrote:
+>> Paul Moore wrote:
+>>> On Tuesday 24 February 2009 04:28:24 pm etienne wrote:
+>>>>  /**
+>>>> + * smack_socket_post_access - post access check
+>>>> + * @sock: the socket
+>>>> + * @newsock : the grafted sock
+>>>> + *
+>>>> + * we have to match client IP against smack_host_label()
+>>>> + */
+>>>> +static void  smack_socket_post_accept(struct socket *sock, struct
+>>>> socket *newsock) +{
+>>>> +	char *hostsp;
+>>>> +	struct sockaddr_storage address;
+>>>> +	struct sockaddr_in *sin;
+>>>> +	struct sockaddr_in6 *sin6;
+>>>> +	struct in6_addr *addr6;
+>>>> +	struct socket_smack *ssp = newsock->sk->sk_security;
+>>>> +	int len;
+>>>> +
+>>>> +	if (sock->sk == NULL)
+>>>> +		return;
+>>>> +
+>>>> +	/* sockets can listen on both IPv4 & IPv6,
+>>>> +	   and fallback to V4 if client is V4 */
+>>>> +	if  (newsock->sk->sk_family != AF_INET && newsock->sk->sk_family !=
+>>>> AF_INET6) +		return;
+>>>> +
+>>>> +	/* get the client IP address **/
+>>>> +	newsock->ops->getname(newsock, (struct sockaddr *)&address, &len, 2);
+>>>> +
+>>>> +	switch (newsock->sk->sk_family) {
+>>>> +	case AF_INET:
+>>>> +		sin = (struct sockaddr_in *)&address;
+>>>> +		break;
+>>>> +	case AF_INET6:
+>>>> +		sin6  = (struct sockaddr_in6 *)&address;
+>>>> +		addr6 = &sin6->sin6_addr;
+>>>> +		/* if a V4 client connects to a V6 listening server,
+>>>> +		 * we will get a IPV6_ADDR_MAPPED mapped address here
+>>>> +		 * we have to handle this case too
+>>>> +		 * the test below is ipv6_addr_type()== IPV6_ADDR_MAPPED
+>>>> +		 * without the requirement to have IPv6 compiled in
+>>>> +		 */
+>>>> +		if ((addr6->s6_addr32[0] | addr6->s6_addr32[1]) == 0 &&
+>>>> +				addr6->s6_addr32[2] == htonl(0x0000ffff)) {
+>>>> +			__be32 addr = sin6->sin6_addr.s6_addr32[3];
+>>>> +			__be16 port = sin6->sin6_port;
+>>>> +			sin = (struct sockaddr_in *)&address;
+>>>> +			sin->sin_family = AF_INET;
+>>>> +			sin->sin_port = port;
+>>>> +			sin->sin_addr.s_addr = addr;
+>>>> +		} else {
+>>>> +			/* standard IPv6, we'll send unlabeled */
+>>>> +			smack_netlabel(newsock->sk, SMACK_UNLABELED_SOCKET);
+>>>> +			return;
+>>>> +		}
+>>>> +		break;
+>>>> +	default:
+>>>> +		/** not possible to be there **/
+>>>> +		return;
+>>>> +	}
+>>>> +	/* so, is there a label for the source IP **/
+>>>> +	hostsp = smack_host_label(sin);
+>>>> +
+>>>> +	if (hostsp == NULL) {
+>>>> +		if (ssp->smk_labeled != SMACK_CIPSO_SOCKET)
+>>>> +			smack_netlabel(newsock->sk, SMACK_CIPSO_SOCKET);
+>>>> +		return;
+>>>> +	}
+>>>> +	if (ssp->smk_labeled != SMACK_UNLABELED_SOCKET)
+>>>> +		smack_netlabel(newsock->sk, SMACK_UNLABELED_SOCKET);
+>>>> +	return;
+>>>> +}
+>>> NAK, you can't ignore return values like that.
+>>>
+>>> I'm sorry I didn't get a chance to respond to your email from this
+>>> morning, but the problem with the post_accept() hook is that you can't
+>>> fail in this hook.  There has been a _lot_ of discussion about this over
+>>> the past couple of years on the LSM list.  You should check the archives
+>>> for all the details but the main problem is that the post_accept() hook
+>>> is too late to deny the incoming connection so you can't reject the
+>>> connection at that point in any sane manner.
+>> well, i don't want to reject the connection here :)
+>>
+>>> I think I'm going to draft a patch to remove the post_accept()
+>>> hook since no one in-tree is using it and it's existence seems to cause
+>>> more problems than it solves.
+>>>
+>>> Now, I understand that your patch doesn't actually enforce any access
+>>> controls but it does call smack_netlabel() in several places and that
+>>> function can fail
+>> The smack_netlabel(newsock->sk, SMACK_CIPSO_SOCKET) can failed, but has no
+>> interest in this function (because the socket has already be
+>> SMACK_CIPSO_SOCKET labeled by the policy) I can remove it.
+>>
+>> but smack_netlabel(SMACK_UNLABELED_SOCKET) cannot fail, and that's what i'm
+>>  interested in could this make the patch acceptable?
+> 
+> Please elaborate a bit more on how you would intend a user to configure and 
+> make use of this.  Also, in what cases would you remove the NetLabel from a 
+> socket?  What cases would you keep it?
+> 
+well, i think it is simple : let's say i want to run a "smack-labelled server" (apache, vsftpd, ...) 
+clients connect from internet,  so the server admin/user  will want to add a "0.0.0.0/0 @" entry in netlabel
+that will _fail_ because the server will send back "labeled" packets.
 
-(Done via sleep 30s; gdb.sh where gdb.sh contained the following:
-gdb -batch-silent \
--ex 'set logging overwrite on' \
--ex "set logging file /tmp/gdb.log" \
--ex 'set logging on' \
--ex 'handle SIG33 pass nostop noprint' \
--ex 'set pagination 0' \
--ex 'run' \
--ex 'backtrace full' \
--ex 'info registers' \
--ex 'thread apply all backtrace' \
--ex 'quit' \
--p `pidof X` < /dev/null
-< /dev/null
+In this configuration, client IP matching the netlabel should receive packets unlabeled from server;
+it's the case for UDP today, not for TCP. I don't find it intuitive or coherent, but maybe i'm missing something
 
-Xorg never seems happy after the above finishes and always wedged itself
-after the script ran)
+client IPs that don't match the netlabel list should stay _labeled_, the postaccept wont remove it.
 
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-[Thread debugging using libthread_db enabled]
-[New Thread 0xb7ccea30 (LWP 2972)]
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-
-Program received signal SIGUSR1, User defined signal 1.
-[Switching to Thread 0xb7ccea30 (LWP 2972)]
-0xb7fe8424 in __kernel_vsyscall ()
-#0  0xb7fe8424 in __kernel_vsyscall ()
-No symbol table info available.
-#1  0xb7e3984d in select () from /lib/tls/i686/cmov/libc.so.6
-No symbol table info available.
-#2  0x081b22e5 in WaitForSomething ()
-No symbol table info available.
-#3  0x0808d69d in Dispatch ()
-No symbol table info available.
-#4  0x0807471b in main ()
-No symbol table info available.
-eax            0xfffffdfe	-514
-ecx            0x820a240	136356416
-edx            0x0	0
-ebx            0x100	256
-esp            0xbf902cc0	0xbf902cc0
-ebp            0xbf902f58	0xbf902f58
-esi            0x0	0
-edi            0xbf902f40	-1081069760
-eip            0xb7fe8424	0xb7fe8424 <__kernel_vsyscall+16>
-eflags         0x3246	[ PF ZF IF #12 #13 ]
-cs             0x73	115
-ss             0x7b	123
-ds             0x7b	123
-es             0x7b	123
-fs             0x0	0
-gs             0x33	51
-
-Thread 1 (Thread 0xb7ccea30 (LWP 2972)):
-#0  0xb7fe8424 in __kernel_vsyscall ()
-#1  0xb7e3984d in select () from /lib/tls/i686/cmov/libc.so.6
-#2  0x081b22e5 in WaitForSomething ()
-#3  0x0808d69d in Dispatch ()
-#4  0x0807471b in main ()
-The program is running.  Exit anyway? (y or n) [answered Y; input not from terminal]
-
--- 
-Sitsofe | http://sucs.org/~sits/
