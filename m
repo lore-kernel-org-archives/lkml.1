@@ -1,89 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbZBXNdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZBXNjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbZBXNdM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 08:33:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbZBXNc4
+	id S1757275AbZBXNjt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 08:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbZBXNjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 08:32:56 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:34973 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754565AbZBXNc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 08:32:56 -0500
-Date: Tue, 24 Feb 2009 13:32:53 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 11/20] Inline get_page_from_freelist() in the fast-path
-Message-ID: <20090224133253.GB26239@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-12-git-send-email-mel@csn.ul.ie> <200902240232.39140.nickpiggin@yahoo.com.au>
+	Tue, 24 Feb 2009 08:39:41 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50192 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754284AbZBXNjk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 08:39:40 -0500
+Date: Tue, 24 Feb 2009 14:35:05 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] physmap: Fix leak of memory returned by
+	parse_mtd_partitions
+Message-ID: <20090224133505.GJ21900@pengutronix.de>
+References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902240232.39140.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 13:46:44 up 6 days,  4:40, 30 users,  load average: 0.00, 0.06,
+	0.87
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 02:32:37AM +1100, Nick Piggin wrote:
-> On Monday 23 February 2009 10:17:20 Mel Gorman wrote:
-> > In the best-case scenario, use an inlined version of
-> > get_page_from_freelist(). This increases the size of the text but avoids
-> > time spent pushing arguments onto the stack.
-> 
-> I'm quite fond of inlining ;) But it can increase register pressure as
-> well as icache footprint as well. x86-64 isn't spilling a lot more
-> registers to stack after these changes, is it?
-> 
+Hi,
 
-I didn't actually check that closely so I don't know for sure. Is there a
-handier way of figuring it out than eyeballing the assembly? In the end
-I dropped the inline of this function anyway. It means the patches
-reduce rather than increase text size which is a bit more clear-cut.
+Sorry to reply to such an old thread, but...
 
-> Also,
-> 
-> 
-> > @@ -1780,8 +1791,8 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int
-> > order, if (!preferred_zone)
-> >  		return NULL;
-> >
-> > -	/* First allocation attempt */
-> > -	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
-> > +	/* First allocation attempt. Fastpath uses inlined version */
-> > +	page = __get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
-> >  			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET,
-> >  			preferred_zone, migratetype);
-> >  	if (unlikely(!page))
-> 
-> I think in a common case where there is background reclaim going on,
-> it will be quite common to fail this, won't it? (I haven't run
-> statistics though).
-> 
+On Wed, Nov 12, 2008 at 11:57:33PM +0900, Atsushi Nemoto wrote:
+> The mtd partition parser returns an allocated pointer array of
+> mtd_partition.  The caller must free it.  The array is used only for
+> add_mtd_partitions(), so free it just after the call.
 
-Good question. It would be common to fail when background reclaim has
-been kicked off for the first time but once we are over the low
-watermark, background reclaim will continue even though we are
-allocating pages. I recall that ther eis a profile likely/unlikely debug
-option. I dont' recall using it before but now might be a good time to
-fire it up.
+This patch breaks command line parsing support. With command line
+partition parsing the struct mtd_partition array is allocated, but only
+once. On my board with NAND and NOR (both with command line partition
+parsing) It fails badly in parse_cmdline_partitions() when the second
+device gets parsed.
 
-> In which case you will get extra icache footprint. What speedup does
-> it give in the cache-hot microbenchmark case?
+The following patch fixes it, but I don't know if this is
+the correct solution. Does anybody have more insights on this?
+
+Sascha
+
+diff --git a/drivers/mtd/cmdlinepart.c b/drivers/mtd/cmdlinepart.c
+index 50a3403..14c00dd 100644
+--- a/drivers/mtd/cmdlinepart.c
++++ b/drivers/mtd/cmdlinepart.c
+@@ -335,7 +335,13 @@ static int parse_cmdline_partitions(struct mtd_info *master,
+ 				}
+ 				offset += part->parts[i].size;
+ 			}
+-			*pparts = part->parts;
++
++			*pparts = kmalloc(sizeof (struct mtd_partition) * part->num_parts, GFP_KERNEL);
++			if (!*pparts)
++				return -ENOMEM;
++
++			memcpy(*pparts, part->parts, sizeof (struct mtd_partition) * part->num_parts);
++
+ 			return part->num_parts;
+ 		}
+ 	}
+
 > 
-
-I wasn't measuring with a microbenchmark at the time of writing so I don't
-know. I was going entirely by profile counts running kernbench and the
-time spent running the benchmark.
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
+>  drivers/mtd/maps/physmap.c |   17 ++++++++---------
+>  1 files changed, 8 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
+> index 7ca048d..cc26b41 100644
+> --- a/drivers/mtd/maps/physmap.c
+> +++ b/drivers/mtd/maps/physmap.c
+> @@ -29,7 +29,6 @@ struct physmap_flash_info {
+>  	struct map_info		map[MAX_RESOURCES];
+>  #ifdef CONFIG_MTD_PARTITIONS
+>  	int			nr_parts;
+> -	struct mtd_partition	*parts;
+>  #endif
+>  };
+>  
+> @@ -56,14 +55,10 @@ static int physmap_flash_remove(struct platform_device *dev)
+>  	for (i = 0; i < MAX_RESOURCES; i++) {
+>  		if (info->mtd[i] != NULL) {
+>  #ifdef CONFIG_MTD_PARTITIONS
+> -			if (info->nr_parts) {
+> +			if (info->nr_parts || physmap_data->nr_parts)
+>  				del_mtd_partitions(info->mtd[i]);
+> -				kfree(info->parts);
+> -			} else if (physmap_data->nr_parts) {
+> -				del_mtd_partitions(info->mtd[i]);
+> -			} else {
+> +			else
+>  				del_mtd_device(info->mtd[i]);
+> -			}
+>  #else
+>  			del_mtd_device(info->mtd[i]);
+>  #endif
+> @@ -86,6 +81,9 @@ static int physmap_flash_probe(struct platform_device *dev)
+>  	int err = 0;
+>  	int i;
+>  	int devices_found = 0;
+> +#ifdef CONFIG_MTD_PARTITIONS
+> +	struct mtd_partition *parts;
+> +#endif
+>  
+>  	physmap_data = dev->dev.platform_data;
+>  	if (physmap_data == NULL)
+> @@ -166,9 +164,10 @@ static int physmap_flash_probe(struct platform_device *dev)
+>  		goto err_out;
+>  
+>  #ifdef CONFIG_MTD_PARTITIONS
+> -	err = parse_mtd_partitions(info->cmtd, part_probe_types, &info->parts, 0);
+> +	err = parse_mtd_partitions(info->cmtd, part_probe_types, &parts, 0);
+>  	if (err > 0) {
+> -		add_mtd_partitions(info->cmtd, info->parts, err);
+> +		add_mtd_partitions(info->cmtd, parts, err);
+> +		kfree(parts);
+>  		return 0;
+>  	}
+>  
+> -- 
+> 1.5.6.3
+> 
+> ______________________________________________________
+> Linux MTD discussion mailing list
+> http://lists.infradead.org/mailman/listinfo/linux-mtd/
+> 
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
