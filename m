@@ -1,79 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbZBXVXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbZBXVXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbZBXVXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 16:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbZBXVXC
+	id S1760252AbZBXVXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 16:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbZBXVXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 16:23:02 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39629 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbZBXVXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 16:23:01 -0500
-Date: Tue, 24 Feb 2009 22:22:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tilman Schmidt <t.schmidt@phoenixsoftware.de>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [2.6.28.7] BUG: using smp_processor_id() in preemptible
-	[00000000] code: pageattr-test/207
-Message-ID: <20090224212241.GC1157@elte.hu>
-References: <49A2ECF5.80104@phoenixsoftware.de> <20090223151331.033e0bf5.akpm@linux-foundation.org> <49A343EE.20100@phoenixsoftware.de> <20090224083028.GA17355@elte.hu> <20090224004001.fc2246da.akpm@linux-foundation.org>
+	Tue, 24 Feb 2009 16:23:15 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:35310 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbZBXVXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 16:23:14 -0500
+Message-ID: <49A46562.7050906@oracle.com>
+Date: Tue, 24 Feb 2009 13:23:46 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224004001.fc2246da.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Joe Perches <joe@perches.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: List of 404 URLs in kernel .c and .h files
+References: <1235506239.2501.46.camel@localhost>
+In-Reply-To: <1235506239.2501.46.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49A4651D.0108:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Joe Perches wrote:
+> Any suggestions on what if anything should be done
+> to the sources with these dead links?
+> 
+> http://foo.com/bar/baz.html
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+That's just an example/dummy URL.
 
-> On Tue, 24 Feb 2009 09:30:28 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Tilman Schmidt <t.schmidt@phoenixsoftware.de> wrote:
-> > 
-> > > On Mon, 23 Feb 2009 15:13:31 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > A 2.6.28.6 -> 2.6.28.7 regressionlet.
-> > > > 
-> > > > This, I bet:
-> > > > 
-> > > > commit 2cf155b300c4839a7238b825c7c5f417e9d7cc68
-> > > > Author: Jeremy Fitzhardinge <jeremy@goop.org>
-> > > > Date:   Wed Feb 11 09:32:19 2009 -0800
-> > > > 
-> > > >     x86/cpa: make sure cpa is safe to call in lazy mmu mode
-> > > >     
-> > > >     commit 4f06b0436b2ddbd3b67b10e77098a6862787b3eb upstream.
-> > > 
-> > > Jackpot! Reverted that commit on 2.6.28.7, and the BUG messages are gone.
-> > 
-> > should be fixed by this as well:
-> > 
-> > d85cf93: x86/paravirt: make arch_flush_lazy_mmu/cpu disable preemption
-> > 
-> 
-> Yup, that patch got lost.
-> 
-> commit d85cf93da66977dbc645352be1b2084a659d8a0b
-> Author: Jeremy Fitzhardinge <jeremy@goop.org>
-> Date:   Thu Feb 12 10:02:56 2009 -0800
-> 
->     x86/paravirt: make arch_flush_lazy_mmu/cpu disable preemption
-> 
-> from Linus mainline is needed in 2.6.28.8, please.
+> http://openib.org/license.html
 
-agreed.
+maybe http://www.openib.org/software_license.htm
 
-	Ingo
+> http://pci-ids.ucw.cz/iii
+
+just use http://pci-ids.ucw.cz/
+
+> http://prism54.org/supported_cards.php
+
+maybe http://wireless.kernel.org/en/users/Drivers/p54
+
+> http://sourceforge.net/project/openipmi
+
+                        /projects/
+
+> http://www.ftdi.co.uk
+
+http://www.ftdichip.com/
+
+> http://www.highpoint-tech.com/BIOS
+
+Did the script truncate the URL?  I see:
+./drivers/ide/hpt366.c:15: * available from http://www.highpoint-tech.com/BIOS%20+%20Driver/.
+
+> http://www.kernel.org/log
+
+not a problem AFAICT.
+
+> http://www.lanana.org/docs/device-list/devices-2.6
+
+http://www.lanana.org/docs/device-list/devices-2.6+.txt
+
+another script glitch?
+
+> http://www.linuxjournal.com/article.php
+
+another script problem AFAICT.
+
+> http://www.national.com/pf/DP/DP83840.html
+
+http://www.national.com/opf/DP/DP83840A.html
+
+> http://www.nluug.nl/events/sane2000/papers.html
+
+http://www.sane.nl/events/sane2000/papers.html
+
+> http://www.siliconimaging.com/RGB
+
+another script glitch.
+
+> http://www.torque.net/sg
+> http://www.torque.net/sg/p/scsi-generic_long.txt
+> http://www.torque.net/sg/p/scsi-generic.txt
+> http://www.torque.net/sg/p/sg_v3_ho.html
+> http://www.torque.net/sg/sdebug26.html
+> http://www.torque.net/sg/sg_io.html
+
+http://sg.danny.cz/sg/
+
+
+-- 
+~Randy
