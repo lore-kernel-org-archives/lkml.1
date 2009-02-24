@@ -1,106 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZBXA36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbZBXAar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757965AbZBXA36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 19:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbZBXAW7
+	id S1759017AbZBXAar (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 19:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZBXAag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 19:22:59 -0500
-Received: from straum.hexapodia.org ([64.81.70.185]:5379 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758568AbZBXAW6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 19:22:58 -0500
-X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Feb 2009 19:22:57 EST
-Date: Mon, 23 Feb 2009 16:16:12 -0800
-From: Andy Isaacson <adi@hexapodia.org>
-To: Matthew Chapman <matthewc@cse.unsw.edu.au>
-Cc: Alexander Hofbauer <alex@derhofbauer.at>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: ALPS input driver problem with DualPoint on Dell E6400/E6500 [patch]
-Message-ID: <20090224001612.GA18077@hexapodia.org>
-References: <1227638742.5353.5.camel@mobian> <20081208141438.GA30462@cse.unsw.EDU.AU>
+	Mon, 23 Feb 2009 19:30:36 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:33262 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754000AbZBXAaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 19:30:35 -0500
+Subject: Re: [RFC][PATCH 3/5] check files for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090223234911.GB2590@us.ibm.com>
+References: <20090219182007.B4B47C1F@kernel>
+	 <20090219182009.1A3E8860@kernel>  <20090223234911.GB2590@us.ibm.com>
+Content-Type: text/plain
+Date: Mon, 23 Feb 2009 16:30:30 -0800
+Message-Id: <1235435430.26788.212.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081208141438.GA30462@cse.unsw.EDU.AU>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 09, 2008 at 01:14:38AM +1100, Matthew Chapman wrote:
-> Hi,
+On Mon, 2009-02-23 at 17:49 -0600, Serge E. Hallyn wrote:
+> Quoting Dave Hansen (dave@linux.vnet.ibm.com): 
+> > Introduce a files_struct counter to indicate whether a particular
+> > file_struct has ever contained a file which can not be
+> > checkpointed.  This flag is a one-way trip; once it is set, it may
+> > not be unset.
+> > 
+> > We assume at allocation that a new files_struct is clean and may
+> > be checkpointed.  However, as soon as it has had its files filled
+> > from its parent's, we check it for real in __scan_files_for_cr().
+> > At that point, we mark it if it contained any uncheckpointable
+> > files.
+> > 
+> > We also check each 'struct file' when it is installed in a fd
+> > slot.  This way, if anyone open()s or managed to dup() an
+> > unsuppored file, we can catch it.
 > 
-> Here's a patch that implements the 9-byte packet format, which solves
-> the problem for me.
-> 
-> Matt
+> So what is the point of tagging the files_struct counter and
+> making it a one-way trip?  Why not just check every file at
+> checkpoint time?
 
-Matt,
+We need both.
 
-Your patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=12577 for
-me.  Would you consider resending it to linux-input@ with your
-Signed-off-by?
+This allows us to tell where and when we went wrong.  Take a process
+that's been running for a month.  After 5 days it did something random
+to keep it from being checkpointed.  You're going to have forgotten all
+about it 25 days later.  This gives us an opportunity to spit into dmesg
+or just plain log it.  It also gives the app some ability to reflect and
+see what its uncheckpointable attributes are.  
 
-Thanks,
--andy
-
-> --- linux-2.6.27/drivers/input/mouse/alps.c	2008-12-09 00:31:48.000000000 +1100
-> +++ linux-2.6.27.alps/drivers/input/mouse/alps.c	2008-12-09 01:08:09.000000000 +1100
-> @@ -100,6 +100,19 @@
->  		return;
->  	}
->  
-> +	if ((packet[3] & 0xf) == 0xf) {
-> +		/* 9-byte packet format seen on some DualPoints */
-> +		/* handle relative update and then fall through for remainder */
-> +		input_report_rel(dev2, REL_X,
-> +			packet[4] ? packet[4] - ((packet[3] << 4) & 0x100) : 0);
-> +		input_report_rel(dev2, REL_Y,
-> +			packet[5] ? ((packet[3] << 3) & 0x100) - packet[5] : 0);
-> +		input_sync(dev2);
-> +		packet[3] = packet[6];
-> +		packet[4] = packet[7];
-> +		packet[5] = packet[8];
-> +	}
-> +
->  	if (priv->i->flags & ALPS_OLDPROTO) {
->  		left = packet[2] & 0x10;
->  		right = packet[2] & 0x08;
-> @@ -197,6 +210,21 @@
->  	if ((psmouse->packet[0] & priv->i->mask0) != priv->i->byte0)
->  		return PSMOUSE_BAD_DATA;
->  
-> +	if ((psmouse->pktcnt >= 4) && ((psmouse->packet[3] & 0xf) == 0xf))
-> +	{
-> +		/* 9-byte packet format seen on some DualPoints */
-> +		/* Bytes 7 - 9 should have 0 in the highest bit */
-> +		if ((psmouse->pktcnt >= 7) && (psmouse->pktcnt <= 9) &&
-> +		    (psmouse->packet[psmouse->pktcnt - 1] & 0x80))
-> +			return PSMOUSE_BAD_DATA;
-> +
-> +		if (psmouse->pktcnt == 9) {
-> +			alps_process_packet(psmouse);
-> +			return PSMOUSE_FULL_PACKET;
-> +		}
-> +		return PSMOUSE_GOOD_DATA;
-> +	}
-> +
->  	/* Bytes 2 - 6 should have 0 in the highest bit */
->  	if (psmouse->pktcnt >= 2 && psmouse->pktcnt <= 6 &&
->  	    (psmouse->packet[psmouse->pktcnt - 1] & 0x80))
-> --- linux-2.6.27/drivers/input/mouse/psmouse.h	2008-10-10 09:13:53.000000000 +1100
-> +++ linux-2.6.27.alps/drivers/input/mouse/psmouse.h	2008-11-06 02:32:45.000000000 +1100
-> @@ -42,7 +42,7 @@
->  	struct work_struct resync_work;
->  	char *vendor;
->  	char *name;
-> -	unsigned char packet[8];
-> +	unsigned char packet[9];
->  	unsigned char badbyte;
->  	unsigned char pktcnt;
->  	unsigned char pktsize;
+-- Dave
 
