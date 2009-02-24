@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZBXSaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbZBXShc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbZBXSaY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 13:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754923AbZBXSaJ
+	id S1754944AbZBXShc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 13:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZBXShU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 13:30:09 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57013 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755221AbZBXSaH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 13:30:07 -0500
-Date: Tue, 24 Feb 2009 19:29:42 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Cc: greg@kroah.com, s.hauer@pengutronix.de,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/3] platform_device: add init() exit() callbacks
-Message-ID: <20090224182942.GA12372@pengutronix.de>
-References: <20090224155731.28880.77132.stgit@Programuotojas>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090224155731.28880.77132.stgit@Programuotojas>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Tue, 24 Feb 2009 13:37:20 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:34029 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751652AbZBXShT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 13:37:19 -0500
+Date: Tue, 24 Feb 2009 19:37:08 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: Geert.Uytterhoeven@sonycom.com, Richard Zidlicky <rz@linux-m68k.org>,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Woodhouse <dwmw2@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+Message-ID: <20090224193708.5f8be86c@i1501.lan.towertech.it>
+In-Reply-To: <alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	<20090223160506.04e347c7@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 24 Feb 2009 18:56:03 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-On Tue, Feb 24, 2009 at 05:57:31PM +0200, Paulius Zaleckas wrote:
-> Some(many?) platform drivers needs board specific callbacks
-> to initialize/deinitialize(request/release) GPIO pins,
-> generic bus initialization, board specific configuration
-> and etc.
-Up to now I used clk_enable + clk_disable for this purpose in my code.
-Isn't that a nice alternative?  One pro of it is that you don't need to
-extend struct platform_device.
-
-> Currently this is done by passing pointers to such functions
-> through platform_data. It is common for such drivers to have
-> init()/exit() functions declared in platform_data structure.
 > 
-> Using platform_data for this purpose has some drawbacks:
-> 1. You have to write checks for platform_data and functions
->    pointers existance and ensure correct error path in every
->    platform driver.
-I don't consider this a real drawback.  Kernel code is full of these
-idioms.
+> On Mon, 23
+> > 
+> >  I'd start writing a working driver and then see how we should eventually
+> >  adapt the rtc subsystem to cope with your needs.
+> 
+> OK, so here's a first example: rtc-ps3.
+> 
+> Note that this single patch adds 100+ lines of code, while my previous patch
+> series removed 500+ lines of code, while solving the autoloading problem for
+> several ppc and m68k platforms.
 
-> 2. Since part of the code is in driver and another in board
->    specific code, usually you have to push this code through
->    different maintainers. This also adds some not necessary work
->    to ensure that adding changes to the board code, while changes
->    to the driver are still pending, will not break this board
->    compilation.
-I don't get this rationale.  Do you mean "As now all platform drivers
-have init() and exit() you don't need to break compilation when
-introducing them to the driver and the platform code."  This counts
-hardly as an argument.
+ This patch has a much cleaner approach, imho.
 
-> 3. In my case, I am adding support for new ARM CPU, this needs
->    to be done for some already existing drivers like serial 8250,
->    mtd physmap and etc. this becomes pain in the ...
-As far as I can see the 8250 driver doesn't currently support callbacks.
-What exactly do you mean here?
+> Converting all (ca. 20?) ppc and m68k RTC support code into individual RTC
+> class drivers would add ca. 100+ lines of code for each individual driver.
 
-Best regards
-Uwe
 
+
+ How different are all of those boards? It's simply a matter
+ of parameters and offsets? can we group them somehow?
+
+ 
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
