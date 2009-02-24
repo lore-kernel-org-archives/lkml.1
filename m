@@ -1,47 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbZBXBi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758148AbZBXBin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757998AbZBXBi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 20:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbZBXBiO
+	id S1758148AbZBXBin (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 20:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbZBXBiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 20:38:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43121 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757855AbZBXBiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 20:38:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kevin Shanahan <kmshanah@ucwb.org.au>
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-Date: Tue, 24 Feb 2009 02:37:43 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <HFSEX4uppGO.A.JSG.2yzoJB@chimera> <LLno3yT_fnC.A.-RH.ZzzoJB@chimera> <1235437183.4988.2.camel@kulgan.wumi.org.au>
-In-Reply-To: <1235437183.4988.2.camel@kulgan.wumi.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Mon, 23 Feb 2009 20:38:20 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53533 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756904AbZBXBiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 20:38:19 -0500
+Date: Tue, 24 Feb 2009 10:36:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       menage@google.com, containers@lists.linux-foundation.org
+Subject: Re: Question for remount
+Message-Id: <20090224103659.069e6b33.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <49A21044.40402@cn.fujitsu.com>
+References: <20090220190223.e8b4f6a8.kamezawa.hiroyu@jp.fujitsu.com>
+	<49A20976.2050301@cn.fujitsu.com>
+	<49A21044.40402@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902240237.44916.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009, Kevin Shanahan wrote:
-> On Mon, 2009-02-23 at 23:03 +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.27 and 2.6.28.
+On Mon, 23 Feb 2009 10:56:04 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> Li Zefan wrote:
+> >> 1. Documentation/cgroups/cgroup.txt says
+> >>    #mount -oremount,cpuset,ns /dev/cgroup
+> >>    But this should be
+> >>    #mount -tcgroup none /dev/cgroup -oremount,cpuset,ns
+> >>
 > > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> > be listed and let me know (either way).
+> > I agree. Actually I noticed this long ago.
+> > 
+> > Doing this won't remove cpuacct from the cgroup hierarchy:
+> > # mount -t cgroup -o cpu,cpuacct xxx /mnt
+> > # mount -o remount,cpu /mnt
+> > This will get you right:
+> > # mount [-t cgroup] -o remount,cpu xxx /mnt
+> > 
 > 
-> Yes, the problem should still be listed.
-> The bug is still present as recently as 2.6.29-rc5-00299-gadfafef.
+> How about this patch:
+> 
+> [PATCH] cgroups: fix documentation about remount
+> 
+> This won't remove cpuacct from the mounted hierachy:
+>  # mount -t cgroup -o cpu,cpuacct xxx /mnt
+>  # mount -o remount,cpu /mnt
+> 
+> Because for this usage mount(8) will append the new options to the current
+> options.
+> 
+> And this will get you right:
+>  # mount [-t cgroup] -o remount,cpu xxx /mnt
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  Documentation/cgroups/cgroups.txt |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
+> index 93feb84..5cbeab2 100644
+> --- a/Documentation/cgroups/cgroups.txt
+> +++ b/Documentation/cgroups/cgroups.txt
+> @@ -337,8 +337,13 @@ subsystems, type:
+>  
+>  To change the set of subsystems bound to a mounted hierarchy, just
+>  remount with different options:
+> +# mount -o remount,cpuset,ns hier1 /dev/cgroup
+>  
+> -# mount -o remount,cpuset,ns  /dev/cgroup
+> +Now numtasks is removed from the hierarchy and ns is added.
+> +
+> +Note this will add ns to the hierarchy but won't remove numtasks or
+> +cpuset:
+> +# mount -o remount,ns /dev/cgroup
+>  
 
-Thanks for the update.
+Just a question. What is "numtasks" here ? We have numtasks cgroup ?
 
-Rafael
+Thanks,
+-Kame
+
+
+
+
+>  Note that changing the set of subsystems is currently only supported
+>  when the hierarchy consists of a single (root) cgroup. Supporting
+> -- 
+> 1.5.4.rc3
+> 
+
