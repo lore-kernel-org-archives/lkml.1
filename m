@@ -1,134 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbZBXXDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbZBXXHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761186AbZBXXDN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 18:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759889AbZBXXC5
+	id S1760944AbZBXXHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 18:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbZBXXHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 18:02:57 -0500
-Received: from frost.carfax.org.uk ([212.13.194.111]:3936 "EHLO
-	frost.carfax.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757376AbZBXXCz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 18:02:55 -0500
-Date: Tue, 24 Feb 2009 23:02:49 +0000
-From: Hugo Mills <hugo-lkml@carfax.org.uk>
-To: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Chris Mason <chris.mason@oracle.com>
-Subject: btrfs: warn_slowpath in clean_tree_block and others
-Message-ID: <20090224230249.GA6859@vlad.carfax.org.uk>
-Mail-Followup-To: Hugo Mills <hugo-lkml@carfax.org.uk>,
-	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Chris Mason <chris.mason@oracle.com>
+	Tue, 24 Feb 2009 18:07:40 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50665 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753038AbZBXXHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 18:07:40 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
+Date: Wed, 25 Feb 2009 00:07:11 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200902221837.49396.rjw@sisk.pl> <200902242342.07721.rjw@sisk.pl> <alpine.LFD.2.00.0902241449221.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902241449221.3111@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7JfCtLOvnd9MIVvH"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-GPG-Fingerprint: 8C59 86C7 81F3 93FE BB02  DDB1 20AC B3BE 515C 238D
-X-GPG-Key: 515C238D
-X-Parrot: It is no more. It has joined the choir invisible.
-X-IRC-Nicks: darksatanic darkersatanic darkling darkthing
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-frost.carfax.org.uk-Spam-Score: 0.0 (/)
-X-frost.carfax.org.uk-Spam-Report: Spam detection software, running on the system "admin.kwak.bitfolk.com", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  This is essentially a repost of a mail I made last week,
-	to which I didn't get a reply. I'm getting huge numbers of kernel warnings
-	whilst using btrfs. They're all "warn_slowpath", and all seem to be in fs/btrfs/disk-io.c.
-	I've included one typical example at the end of this mail. [...] 
-	Content analysis details:   (0.0 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	_SUMMARY_
+Message-Id: <200902250007.13069.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 24 February 2009, Linus Torvalds wrote:
+> 
+> On Tue, 24 Feb 2009, Rafael J. Wysocki wrote:
+> >
+> > > The only safe way on x86 to shutdown a level triggered ioapic irq
+> > > outside of irq context is for the driver to program the hardware to
+> > > not generate an irq.
+> > 
+> > Well, that changes things quite a bit, because it means we can't change the
+> > suspend-resume sequence in a way we thought we could without fixing all
+> > drivers first, but this is exactly what we'd like to avoid by changing the
+> > core.
+> 
+> Calling "disable_irq()" is perfectly fine.
+> 
+> What is not possible on that broken IO-APIC (among other things) is to 
+> actually turn the interrupts off at the apic (ie the whole ->shutdown() 
+> thing). But that's not what we even want to do. What we care about is 
+> just disabling the interrupt from a drievr perspective.
+> 
+> IOW, the patches I have seen are fine, and all the comments from Eric are 
+> just confusion about what we want done.
 
---7JfCtLOvnd9MIVvH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Ah, OK.  Thanks for the explanation, I got confused too.
 
-   This is essentially a repost of a mail I made last week, to which I
-didn't get a reply.
+> WE DO NOT WANT TO TURN OFF THE IO-APIC. That may or may happen later, but 
+> that's totally unrelated to this whole "suspend_device_irq()" thing.
 
-   I'm getting huge numbers of kernel warnings whilst using
-btrfs. They're all "warn_slowpath", and all seem to be in
-fs/btrfs/disk-io.c. I've included one typical example at the end of
-this mail.
+Yeah.
 
-   Kernel versions are 2.6.29-rc2, -rc4 and -rc6.
-
-   If I do lots of writes to my btrfs filesystem (e.g. video
-encoding), I end up with a syslog in the tens-of-megabytes range. This
-makes logcheck an unhappy bunny...
-
-   I don't know if this behaviour is expected, and everyone using
-btrfs simply puts up with it for now, or if it's something unusual
-that needs investigating. On the chance that it's the latter, I'm
-reporting it here.
-
-   Hugo.
-
-Feb 23 21:45:42 vlad kernel: ------------[ cut here ]------------
-Feb 23 21:45:42 vlad kernel: WARNING: at fs/btrfs/disk-io.c:815 clean_tree_block+0x9d/0xbb [btrfs]()
-Feb 23 21:45:42 vlad kernel: Hardware name: System Product Name
-Feb 23 21:45:42 vlad kernel: Modules linked in: tun ext3 jbd btrfs zlib_deflate tcp_diag inet_diag kqemu cpufreq_userspace ipv6 nfsd nfs lockd nfs_acl auth_rpcgss sunrpc af_packet bridge stp llc xfs exportfs it87 hwmon_vid powernow_k8 sbp2 ieee1394 ide_generic ide_gd_mod ide_cd_mod pcspkr evdev k8temp hwmon i2c_viapro i2c_core button dm_mirror dm_region_hash dm_log dm_snapshot dm_mod raid1 md_mod usbhid usb_storage libusual sg sr_mod cdrom via82cxxx floppy via_rhine mii ehci_hcd uhci_hcd usbcore pata_via ide_pci_generic ide_core sd_mod thermal processor fan unix
-Feb 23 21:45:42 vlad kernel: Pid: 27034, comm: hdparm Tainted: G        W  2.6.29-rc4 #1
-Feb 23 21:45:42 vlad kernel: Call Trace:
-Feb 23 21:45:42 vlad kernel: [<ffffffff80228d7d>] warn_slowpath+0xd8/0x111
-Feb 23 21:45:42 vlad kernel: [<ffffffff80312f11>] radix_tree_insert+0xd7/0x19f
-Feb 23 21:45:42 vlad kernel: [<ffffffff8024d55d>] add_to_page_cache_locked+0x52/0x9e
-Feb 23 21:45:42 vlad kernel: [<ffffffff8024d5e9>] add_to_page_cache_lru+0x40/0x58
-Feb 23 21:45:42 vlad kernel: [<ffffffff8024dbd0>] find_or_create_page+0x62/0x88
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03f992a>] alloc_extent_buffer+0x268/0x2ec [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03e1b18>] clean_tree_block+0x9d/0xbb [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d5eaf>] btrfs_init_new_buffer+0x99/0xf3 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d849e>] btrfs_alloc_free_block+0x83/0x8c [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03cb2f8>] __btrfs_cow_block+0x1ff/0x87e [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03cc125>] btrfs_cow_block+0x1e7/0x1f6 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffff80251d9e>] __alloc_pages_internal+0xd2/0x3ec
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d0915>] btrfs_search_slot+0x36f/0x99b [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d14ee>] btrfs_insert_empty_items+0x7f/0x49d [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d825d>] __btrfs_alloc_reserved_extent+0x19f/0x2bb [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d83f0>] btrfs_alloc_extent+0x77/0xa2 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d847f>] btrfs_alloc_free_block+0x64/0x8c [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03cb2f8>] __btrfs_cow_block+0x1ff/0x87e [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d7532>] finish_current_insert+0x514/0x528 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03d7bf9>] del_pending_extents+0xa5/0x33d [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03cc125>] btrfs_cow_block+0x1e7/0x1f6 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03e436d>] btrfs_commit_tree_roots+0x53/0x1ba [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffff80403a3e>] schedule_timeout+0xa1/0xbc
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03e55dd>] btrfs_commit_transaction+0x322/0x6e5 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffff802385fb>] autoremove_wake_function+0x0/0x2e
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03e4809>] join_transaction+0x129/0x147 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffffa03c8788>] btrfs_sync_fs+0x70/0x78 [btrfs]
-Feb 23 21:45:42 vlad kernel: [<ffffffff8026f332>] sync_filesystems+0xa8/0xde
-Feb 23 21:45:42 vlad kernel: [<ffffffff80287256>] do_sync+0x25/0x50
-Feb 23 21:45:42 vlad kernel: [<ffffffff8028728f>] sys_sync+0xe/0x13
-Feb 23 21:45:42 vlad kernel: [<ffffffff8020b25b>] system_call_fastpath+0x16/0x1b
-Feb 23 21:45:42 vlad kernel: ---[ end trace a315082d564863a6 ]---
-
-
--- 
-=== Hugo Mills: hugo@... carfax.org.uk | darksatanic.net | lug.org.uk ===
-  PGP key: 515C238D from wwwkeys.eu.pgp.net or http://www.carfax.org.uk
-      --- Eighth Army Push Bottles Up Germans -- WWII newspaper ---      
-                     headline (possibly apocryphal)                      
-
---7JfCtLOvnd9MIVvH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQFJpHyZIKyzvlFcI40RApVLAJoDrHaA+9cebRyJDm+vhGqgEQGiMACguCV+
-znRCpat0ajek+ivXViQX5rg=
-=GsHM
------END PGP SIGNATURE-----
-
---7JfCtLOvnd9MIVvH--
+Rafael
