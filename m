@@ -1,318 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbZBXDKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbZBXDMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757628AbZBXDKB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 22:10:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZBXDJh
+	id S1756358AbZBXDMw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 22:12:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZBXDMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 22:09:37 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:44890 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756725AbZBXDJg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 22:09:36 -0500
-Date: Mon, 23 Feb 2009 21:09:33 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 4/4] mqueue namespace: adapt sysctl
-Message-ID: <20090224030933.GC11441@us.ibm.com>
-References: <20090224030347.GA10913@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224030347.GA10913@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 23 Feb 2009 22:12:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58402 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752132AbZBXDMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 22:12:40 -0500
+From: Tejun Heo <tj@kernel.org>
+To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 05/10] x86: update populate_extra_pte() and add populate_extra_pmd()
+Date: Tue, 24 Feb 2009 12:11:36 +0900
+Message-Id: <1235445101-7882-6-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1235445101-7882-1-git-send-email-tj@kernel.org>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Feb 2009 03:11:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Largely inspired from ipc/ipc_sysctl.c. This patch isolates the mqueue
-sysctl stuff in its own file.
+Impact: minor change to populate_extra_pte() and addition of pmd flavor
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Update populate_extra_pte() to return pointer to the pte_t for the
+specified address and add populate_extra_pmd() which only populates
+till the pmd and returns pointer to the pmd entry for the address.
+
+For 64bit, pud/pmd/pte fill functions are separated out from
+set_pte_vaddr[_pud]() and used for set_pte_vaddr[_pud]() and
+populate_extra_{pte|pmd}().
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/ipc_namespace.h |   14 +++++
- init/Kconfig                  |    6 ++
- ipc/Makefile                  |    1 +
- ipc/mq_sysctl.c               |  125 +++++++++++++++++++++++++++++++++++++++++
- ipc/mqueue.c                  |   65 +---------------------
- 5 files changed, 147 insertions(+), 64 deletions(-)
- create mode 100644 ipc/mq_sysctl.c
+ arch/x86/include/asm/pgtable.h |    3 +-
+ arch/x86/kernel/setup_percpu.c |    7 +++-
+ arch/x86/mm/init_32.c          |   13 +++++--
+ arch/x86/mm/init_64.c          |   75 ++++++++++++++++++++++++----------------
+ 4 files changed, 63 insertions(+), 35 deletions(-)
 
-diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
-index 3392d50..3bf40e2 100644
---- a/include/linux/ipc_namespace.h
-+++ b/include/linux/ipc_namespace.h
-@@ -128,4 +128,18 @@ static inline void put_ipc_ns(struct ipc_namespace *ns)
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index dd91c25..46312eb 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -402,7 +402,8 @@ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
+ 
+ /* Install a pte for a particular vaddr in kernel space. */
+ void set_pte_vaddr(unsigned long vaddr, pte_t pte);
+-void populate_extra_pte(unsigned long vaddr);
++pmd_t *populate_extra_pmd(unsigned long vaddr);
++pte_t *populate_extra_pte(unsigned long vaddr);
+ 
+ #ifdef CONFIG_X86_32
+ extern void native_pagetable_setup_start(pgd_t *base);
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 2dce435..671e652 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -41,6 +41,11 @@ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly = {
+ };
+ EXPORT_SYMBOL(__per_cpu_offset);
+ 
++static void __init pcpu4k_populate_pte(unsigned long addr)
++{
++	populate_extra_pte(addr);
++}
++
+ static inline void setup_percpu_segment(int cpu)
  {
- }
- #endif
-+
-+#ifdef CONFIG_POSIX_MQUEUE_SYSCTL
-+
-+struct ctl_table_header;
-+extern struct ctl_table_header *mq_register_sysctl_table(void);
-+
-+#else /* CONFIG_POSIX_MQUEUE_SYSCTL */
-+
-+static inline struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return NULL;
-+}
-+
-+#endif /* CONFIG_POSIX_MQUEUE_SYSCTL */
- #endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 2fd6518..d6a6c08 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -148,6 +148,12 @@ config POSIX_MQUEUE
+ #ifdef CONFIG_X86_32
+@@ -104,7 +109,7 @@ void __init setup_per_cpu_areas(void)
+ 		}
+ 	}
  
- 	  If unsure, say Y.
+-	pcpu_unit_size = pcpu_setup_static(populate_extra_pte, pages, size);
++	pcpu_unit_size = pcpu_setup_static(pcpu4k_populate_pte, pages, size);
  
-+config POSIX_MQUEUE_SYSCTL
-+	bool
-+	depends on POSIX_MQUEUE
-+	depends on SYSCTL
-+	default y
-+
- config BSD_PROCESS_ACCT
- 	bool "BSD Process Accounting"
- 	help
-diff --git a/ipc/Makefile b/ipc/Makefile
-index 65c3843..4e1955e 100644
---- a/ipc/Makefile
-+++ b/ipc/Makefile
-@@ -8,4 +8,5 @@ obj-$(CONFIG_SYSVIPC_SYSCTL) += ipc_sysctl.o
- obj_mq-$(CONFIG_COMPAT) += compat_mq.o
- obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
- obj-$(CONFIG_IPC_NS) += namespace.o
-+obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
+ 	free_bootmem(__pa(pages), pages_size);
  
-diff --git a/ipc/mq_sysctl.c b/ipc/mq_sysctl.c
-new file mode 100644
-index 0000000..81f01b7
---- /dev/null
-+++ b/ipc/mq_sysctl.c
-@@ -0,0 +1,125 @@
-+/*
-+ *  Copyright (C) 2007 IBM Corporation
-+ *
-+ *  Author: Cedric Le Goater <clg@fr.ibm.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License as
-+ *  published by the Free Software Foundation, version 2 of the
-+ *  License.
-+ */
-+
-+#include <linux/nsproxy.h>
-+#include <linux/ipc_namespace.h>
-+#include <linux/sysctl.h>
-+
-+/*
-+ * Define the ranges various user-specified maximum values can
-+ * be set to.
-+ */
-+#define MIN_MSGMAX	1		/* min value for msg_max */
-+#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
-+#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
-+#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
-+
-+static void *get_mq(ctl_table *table)
-+{
-+	char *which = table->data;
-+	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
-+	which = (which - (char *)&init_ipc_ns) + (char *)ipc_ns;
-+	return which;
-+}
-+
-+#ifdef CONFIG_PROC_FS
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-+	void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec(&mq_table, write, filp, buffer, lenp, ppos);
-+}
-+
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec_minmax(&mq_table, write, filp, buffer,
-+					lenp, ppos);
-+}
-+#else /* CONFIG_PROC_FS */
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-+	void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
-+
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
-+#endif /* CONFIG_PROC_FS */
-+
-+static int msg_max_limit_min = MIN_MSGMAX;
-+static int msg_max_limit_max = MAX_MSGMAX;
-+
-+static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
-+static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
-+
-+static ctl_table mq_sysctls[] = {
-+	{
-+		.procname	= "queues_max",
-+		.data		= &init_ipc_ns.mq_queues_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec,
-+	},
-+	{
-+		.procname	= "msg_max",
-+		.data		= &init_ipc_ns.mq_msg_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec_minmax,
-+		.extra1		= &msg_max_limit_min,
-+		.extra2		= &msg_max_limit_max,
-+	},
-+	{
-+		.procname	= "msgsize_max",
-+		.data		= &init_ipc_ns.mq_msgsize_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec_minmax,
-+		.extra1		= &msg_maxsize_limit_min,
-+		.extra2		= &msg_maxsize_limit_max,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_dir[] = {
-+	{
-+		.procname	= "mqueue",
-+		.mode		= 0555,
-+		.child		= mq_sysctls,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_root[] = {
-+	{
-+		.ctl_name	= CTL_FS,
-+		.procname	= "fs",
-+		.mode		= 0555,
-+		.child		= mq_sysctl_dir,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return register_sysctl_table(mq_sysctl_root);
-+}
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 1b169b7..61ff295 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -47,15 +47,6 @@
- #define STATE_PENDING	1
- #define STATE_READY	2
- 
--/*
-- * Define the ranges various user-specified maximum values can
-- * be set to.
-- */
--#define MIN_MSGMAX	1		/* min value for msg_max */
--#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
--#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
--#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
--
- struct ext_wait_queue {		/* queue of sleeping tasks */
- 	struct task_struct *task;
- 	struct list_head list;
-@@ -1269,60 +1260,6 @@ void mq_put_mnt(struct ipc_namespace *ns)
- 	mntput(ns->mq_mnt);
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 8b1a0ef..84a2688 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -137,14 +137,21 @@ static pte_t * __init one_page_table_init(pmd_t *pmd)
+ 	return pte_offset_kernel(pmd, 0);
  }
  
--static int msg_max_limit_min = MIN_MSGMAX;
--static int msg_max_limit_max = MAX_MSGMAX;
--
--static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
--static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
--
--static ctl_table mq_sysctls[] = {
--	{
--		.procname	= "queues_max",
--		.data		= &init_ipc_ns.mq_queues_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
--	},
--	{
--		.procname	= "msg_max",
--		.data		= &init_ipc_ns.mq_msg_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_max_limit_min,
--		.extra2		= &msg_max_limit_max,
--	},
--	{
--		.procname	= "msgsize_max",
--		.data		= &init_ipc_ns.mq_msgsize_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_maxsize_limit_min,
--		.extra2		= &msg_maxsize_limit_max,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_dir[] = {
--	{
--		.procname	= "mqueue",
--		.mode		= 0555,
--		.child		= mq_sysctls,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_root[] = {
--	{
--		.ctl_name	= CTL_FS,
--		.procname	= "fs",
--		.mode		= 0555,
--		.child		= mq_sysctl_dir,
--	},
--	{ .ctl_name = 0 }
--};
--
- static int __init init_mqueue_fs(void)
+-void __init populate_extra_pte(unsigned long vaddr)
++pmd_t * __init populate_extra_pmd(unsigned long vaddr)
  {
- 	int error;
-@@ -1334,7 +1271,7 @@ static int __init init_mqueue_fs(void)
- 		return -ENOMEM;
+ 	int pgd_idx = pgd_index(vaddr);
+ 	int pmd_idx = pmd_index(vaddr);
++
++	return one_md_table_init(swapper_pg_dir + pgd_idx) + pmd_idx;
++}
++
++pte_t * __init populate_extra_pte(unsigned long vaddr)
++{
++	int pte_idx = pte_index(vaddr);
+ 	pmd_t *pmd;
  
- 	/* ignore failues - they are not fatal */
--	mq_sysctl_table = register_sysctl_table(mq_sysctl_root);
-+	mq_sysctl_table = mq_register_sysctl_table();
+-	pmd = one_md_table_init(swapper_pg_dir + pgd_idx);
+-	one_page_table_init(pmd + pmd_idx);
++	pmd = populate_extra_pmd(vaddr);
++	return one_page_table_init(pmd) + pte_idx;
+ }
  
- 	error = register_filesystem(&mqueue_fs_type);
- 	if (error)
+ static pte_t *__init page_table_kmap_check(pte_t *pte, pmd_t *pmd,
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 7f91e2c..7d4e76d 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -168,34 +168,51 @@ static __ref void *spp_getpage(void)
+ 	return ptr;
+ }
+ 
+-void
+-set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte)
++static pud_t * __init fill_pud(pgd_t *pgd, unsigned long vaddr)
+ {
+-	pud_t *pud;
+-	pmd_t *pmd;
+-	pte_t *pte;
++	if (pgd_none(*pgd)) {
++		pud_t *pud = (pud_t *)spp_getpage();
++		pgd_populate(&init_mm, pgd, pud);
++		if (pud != pud_offset(pgd, 0))
++			printk(KERN_ERR "PAGETABLE BUG #00! %p <-> %p\n",
++			       pud, pud_offset(pgd, 0));
++	}
++	return pud_offset(pgd, vaddr);
++}
+ 
+-	pud = pud_page + pud_index(vaddr);
++static pmd_t * __init fill_pmd(pud_t *pud, unsigned long vaddr)
++{
+ 	if (pud_none(*pud)) {
+-		pmd = (pmd_t *) spp_getpage();
++		pmd_t *pmd = (pmd_t *) spp_getpage();
+ 		pud_populate(&init_mm, pud, pmd);
+-		if (pmd != pmd_offset(pud, 0)) {
++		if (pmd != pmd_offset(pud, 0))
+ 			printk(KERN_ERR "PAGETABLE BUG #01! %p <-> %p\n",
+-				pmd, pmd_offset(pud, 0));
+-			return;
+-		}
++			       pmd, pmd_offset(pud, 0));
+ 	}
+-	pmd = pmd_offset(pud, vaddr);
++	return pmd_offset(pud, vaddr);
++}
++
++static pte_t * __init fill_pte(pmd_t *pmd, unsigned long vaddr)
++{
+ 	if (pmd_none(*pmd)) {
+-		pte = (pte_t *) spp_getpage();
++		pte_t *pte = (pte_t *) spp_getpage();
+ 		pmd_populate_kernel(&init_mm, pmd, pte);
+-		if (pte != pte_offset_kernel(pmd, 0)) {
++		if (pte != pte_offset_kernel(pmd, 0))
+ 			printk(KERN_ERR "PAGETABLE BUG #02!\n");
+-			return;
+-		}
+ 	}
++	return pte_offset_kernel(pmd, vaddr);
++}
++
++void set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte)
++{
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *pte;
++
++	pud = pud_page + pud_index(vaddr);
++	pmd = fill_pmd(pud, vaddr);
++	pte = fill_pte(pmd, vaddr);
+ 
+-	pte = pte_offset_kernel(pmd, vaddr);
+ 	set_pte(pte, new_pte);
+ 
+ 	/*
+@@ -205,8 +222,7 @@ set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte)
+ 	__flush_tlb_one(vaddr);
+ }
+ 
+-void
+-set_pte_vaddr(unsigned long vaddr, pte_t pteval)
++void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
+ {
+ 	pgd_t *pgd;
+ 	pud_t *pud_page;
+@@ -223,23 +239,22 @@ set_pte_vaddr(unsigned long vaddr, pte_t pteval)
+ 	set_pte_vaddr_pud(pud_page, vaddr, pteval);
+ }
+ 
+-void __init populate_extra_pte(unsigned long vaddr)
++pmd_t * __init populate_extra_pmd(unsigned long vaddr)
+ {
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 
+ 	pgd = pgd_offset_k(vaddr);
+-	if (pgd_none(*pgd)) {
+-		pud = (pud_t *)spp_getpage();
+-		pgd_populate(&init_mm, pgd, pud);
+-		if (pud != pud_offset(pgd, 0)) {
+-			printk(KERN_ERR "PAGETABLE BUG #00! %p <-> %p\n",
+-			       pud, pud_offset(pgd, 0));
+-			return;
+-		}
+-	}
++	pud = fill_pud(pgd, vaddr);
++	return fill_pmd(pud, vaddr);
++}
++
++pte_t * __init populate_extra_pte(unsigned long vaddr)
++{
++	pmd_t *pmd;
+ 
+-	set_pte_vaddr_pud((pud_t *)pgd_page_vaddr(*pgd), vaddr, __pte(0));
++	pmd = populate_extra_pmd(vaddr);
++	return fill_pte(pmd, vaddr);
+ }
+ 
+ /*
 -- 
-1.5.4.3
+1.6.0.2
 
