@@ -1,77 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZBXOI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbZBXOMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939AbZBXOI4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 09:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbZBXOIr
+	id S1757429AbZBXOMt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 09:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbZBXOMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 09:08:47 -0500
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:39413 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754752AbZBXOIr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 09:08:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mpGRNlfHQrzy3paAn4rwS5/FsCHiItEZCKVEi5YFsZjq5h1TD1dqaKhjBB3sPLBKcU2KfODxDpY4xtcKffeYP74pq0QEKloJXtiZgN9JCNUMmmu/hF78C9tC/HUYlsDqiJ8cwDquRU5+537zXUGrcBSMQD1ry4FGwWw191lxJRE=  ;
-X-YMail-OSG: UsoahFkVM1kEuyc4crjBXSpoI_KVG_BrdnqmdOjpwo444UQ0jONdqRoHSpm5F.qQjEiLEptIW5N.B6OFRoi08UOdCBqgPStYLJoKA2nJ9mmHrqSlLVMtWoK2NdqGy6tvY79ct75iiK.o1QSiun53oDK208TbCOLhHGGt6by_M674W6VihZGlIqd7a1lRHA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 11/20] Inline get_page_from_freelist() in the fast-path
-Date: Wed, 25 Feb 2009 01:08:10 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <200902240232.39140.nickpiggin@yahoo.com.au> <20090224133253.GB26239@csn.ul.ie>
-In-Reply-To: <20090224133253.GB26239@csn.ul.ie>
+	Tue, 24 Feb 2009 09:12:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39465 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755537AbZBXOMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 09:12:40 -0500
+Date: Tue, 24 Feb 2009 15:12:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
+	allocation
+Message-ID: <20090224141217.GA17287@elte.hu>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org> <20090224124042.GA31295@elte.hu> <49A3F5C5.4060107@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902250108.11664.nickpiggin@yahoo.com.au>
+In-Reply-To: <49A3F5C5.4060107@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 February 2009 00:32:53 Mel Gorman wrote:
-> On Tue, Feb 24, 2009 at 02:32:37AM +1100, Nick Piggin wrote:
-> > On Monday 23 February 2009 10:17:20 Mel Gorman wrote:
-> > > In the best-case scenario, use an inlined version of
-> > > get_page_from_freelist(). This increases the size of the text but
-> > > avoids time spent pushing arguments onto the stack.
-> >
-> > I'm quite fond of inlining ;) But it can increase register pressure as
-> > well as icache footprint as well. x86-64 isn't spilling a lot more
-> > registers to stack after these changes, is it?
->
-> I didn't actually check that closely so I don't know for sure. Is there a
-> handier way of figuring it out than eyeballing the assembly? In the end
 
-I guess the 5 second check is to look at how much stack the function
-uses. OTOH I think gcc does do a reasonable job at register allocation.
+* Tejun Heo <tj@kernel.org> wrote:
 
+> What's missing is unification of static and dynamic accessors 
+> and thus the faster accessors - percpu_read() and friends - 
+> for dynamic ones. This will be the next round of patches.
 
-> I dropped the inline of this function anyway. It means the patches
-> reduce rather than increase text size which is a bit more clear-cut.
+Ok, good - we are in agreement then and i'll wait for those 
+patches.
 
-Cool, clear cut patches for round 1 should help to get things moving.
+And i think i finally decoded the real source of the disconnect
+:-)
 
+It's still about this restriction:
 
-> > In which case you will get extra icache footprint. What speedup does
-> > it give in the cache-hot microbenchmark case?
->
-> I wasn't measuring with a microbenchmark at the time of writing so I don't
-> know. I was going entirely by profile counts running kernbench and the
-> time spent running the benchmark.
++       /*
++        * If large page isn't supported, there's no benefit in doing
++        * this.  Also, embedding allocation doesn't play well with
++        * NUMA.
++        */
++       if (!cpu_has_pse || pcpu_need_numa())
++               return -EINVAL;
 
-OK. Well seeing as you have dropped this for the moment, let's not
-dwell on it ;)
+This is what makes no sense (why force the static percpu area 
+into 4K mappings on NUMA).
 
+You do it because i think you misunderstood my original 2MB TLB 
+static area suggestion. setup_pcpu_embed() does this now:
+
++       pcpue_ptr = pcpu_alloc_bootmem(0, num_possible_cpus() * pcpue_unit_size,
++                                      PAGE_SIZE);
+
+That is not NUMA-friendly indeed.
+
+What should be done instead is to up the unit size to 2MB as i 
+suggested, and to allocate 2MB sized and 2MB aligned 
+numa-correct area for each CPU, via bootmem.
+
+To quote my original mail:
+
+> > - allocate the static percpu area using bootmem-alloc, but
+> >   using a 2MB alignment parameter and a 2MB aligned size. Then
+> >   we can remap it to some convenient and undisturbed virtual
+> >   memory area, using 2MB TLBs. [*]
+
+I.e. each individual 2MB allocated largepage can then be 
+remapped as a 2MB TLB to the high (vmalloc) area. Followed by 
+ordinary 4K mappings for regular percpu_alloc() pages.
+
+( and the partial, unused pages within this initial chunk are 
+  returned to bootmem. )
+
+That will be NUMA-friendly and i suspect we should also use it 
+on SMP just to get that aspect of the code tested better.
+
+Do _not_ allocate the units together in one bootmem allocation 
+because that's not NUMA-friendly.
+
+Ok?
+
+	Ingo
