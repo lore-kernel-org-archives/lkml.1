@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbZBXXKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbZBXXWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbZBXXKk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 18:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZBXXKa
+	id S1760659AbZBXXWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 18:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbZBXXWC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 18:10:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33166 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbZBXXKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 18:10:30 -0500
-Date: Wed, 25 Feb 2009 00:09:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
-	suspend-resume
-Message-ID: <20090224230935.GA15165@elte.hu>
-References: <200902221837.49396.rjw@sisk.pl> <200902242342.07721.rjw@sisk.pl> <alpine.LFD.2.00.0902241449221.3111@localhost.localdomain> <200902250007.13069.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902250007.13069.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 24 Feb 2009 18:22:02 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59559 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbZBXXWB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 18:22:01 -0500
+Subject: Re: [RFC][PATCH] rwsem: rwsem_is_{read,write}_locked
+From: Peter Zijlstra <peterz@infradead.org>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: David Howells <dhowells@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1235512716.4645.2397.camel@laptop>
+References: <1235512716.4645.2397.camel@laptop>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 25 Feb 2009 00:21:28 +0100
+Message-Id: <1235517688.18955.7.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Tuesday 24 February 2009, Linus Torvalds wrote:
-> > 
-> > On Tue, 24 Feb 2009, Rafael J. Wysocki wrote:
-> > >
-> > > > The only safe way on x86 to shutdown a level triggered ioapic irq
-> > > > outside of irq context is for the driver to program the hardware to
-> > > > not generate an irq.
-> > > 
-> > > Well, that changes things quite a bit, because it means we can't change the
-> > > suspend-resume sequence in a way we thought we could without fixing all
-> > > drivers first, but this is exactly what we'd like to avoid by changing the
-> > > core.
-> > 
-> > Calling "disable_irq()" is perfectly fine.
-> > 
-> > What is not possible on that broken IO-APIC (among other 
-> > things) is to actually turn the interrupts off at the apic 
-> > (ie the whole ->shutdown() thing). But that's not what we 
-> > even want to do. What we care about is just disabling the 
-> > interrupt from a drievr perspective.
-> > 
-> > IOW, the patches I have seen are fine, and all the comments 
-> > from Eric are just confusion about what we want done.
+On Tue, 2009-02-24 at 22:58 +0100, Peter Zijlstra wrote:
+> Christoph requested an extended is_locked interface for rwsems. I think
+> the below ought to do, then again, I might have missed something.
 > 
-> Ah, OK.  Thanks for the explanation, I got confused too.
-> 
-> > WE DO NOT WANT TO TURN OFF THE IO-APIC. That may or may 
-> > happen later, but that's totally unrelated to this whole 
-> > "suspend_device_irq()" thing.
-> 
-> Yeah.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
 
-We definitely dont want to turn off x86 IO-APICs - the timer IRQ 
-goes via one of them.
+> +++ b/include/linux/rwsem.h
+> @@ -20,8 +20,24 @@ struct rw_semaphore;
+>  #include <linux/rwsem-spinlock.h> /* use a generic implementation */
+>  #else
+>  #include <asm/rwsem.h> /* use an arch-specific implementation */
+> +
+> +static inline int rwsem_is_locked(struct rw_semaphore *sem)
+> +{
+> +	return (sem->count != 0);
+> +}
+> +
+> +static inline int rwsem_is_write_locked(struct rw_semaphore *sem)
+> +{
+> +	return (sem->count & RWSEM_ACTIVE_MASK) == RWSEM_ACTIVE_MASK;
+> +}
 
-	Ingo
+OK, that's not right. Concurrent down_write() calls xadd
+RWSEM_ACTIVE_WRITE_BIAS, which has a 1 in that mask, so we're going to
+deviate an unspecified number.
+
+That one will make it roll over into (count & MASK) >= 0 which is the
+exact range readers use too, this might be a tad harder than hoped.
+
+Will ponder in the morning.
