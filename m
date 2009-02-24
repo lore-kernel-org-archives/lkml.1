@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760376AbZBXVNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZBXVRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760376AbZBXVNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 16:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbZBXVNj
+	id S1756818AbZBXVRf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 16:17:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZBXVRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 16:13:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60104 "EHLO hera.kernel.org"
+	Tue, 24 Feb 2009 16:17:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47318 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756714AbZBXVNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 16:13:39 -0500
-Message-ID: <49A462CB.30300@kernel.org>
-Date: Tue, 24 Feb 2009 13:12:43 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: tglx@linutronix.de, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
-Subject: [PATCH] x86: check range in reserve_early() -v2
+	id S1751467AbZBXVRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 16:17:23 -0500
+Date: Tue, 24 Feb 2009 22:16:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>, Yinghai Lu <yinghai@kernel.org>
+Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
+	allocation
+Message-ID: <20090224211659.GA3687@elte.hu>
 References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224201718.GE28772@elte.hu> <20090224205105.GA19460@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090224205105.GA19460@elte.hu>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: cleanup
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git 
+> > >   tj-percpu
 
-one 32-bit system reports:
+ok, but these seem to be genuinely yours.
 
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000001c000000 (usable)
- BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
-DMI 2.0 present.
-last_pfn = 0x1c000 max_arch_pfn = 0x100000
-kernel direct mapping tables up to 1c000000 @ 7000-c000
-..
-RAMDISK: 1bc69000 - 1bfef4fa
-..
-0MB HIGHMEM available.
-448MB LOWMEM available.
-  mapped low ram: 0 - 1c000000
-  low ram: 00000000 - 1c000000
-  bootmap 00002000 - 00005800
-(9 early reservations) ==> bootmem [0000000000 - 001c000000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
-  #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
-  #3 [0000400000 - 00009ed14c]    TEXT DATA BSS ==> [0000400000 - 00009ed14c]
-  #4 [001bc69000 - 001bfef4fa]          RAMDISK ==> [001bc69000 - 001bfef4fa]
-  #5 [00009ee000 - 00009f2000]    INIT_PG_TABLE ==> [00009ee000 - 00009f2000]
-  #6 [000009f400 - 0000100000]    BIOS reserved ==> [000009f400 - 0000100000]
-  #7 [0000007000 - 0000007000]          PGTABLE
-  #8 [0000002000 - 0000006000]          BOOTMAP ==> [0000002000 - 0000006000]
+one build failure:
 
-Notice the strange blank PGTABLE entry.
+ arch/x86/kernel/setup_percpu.c: In function ‘setup_per_cpu_areas’:
+ arch/x86/kernel/setup_percpu.c:442: error: ‘ptr’ undeclared (first use in this function)
+ arch/x86/kernel/setup_percpu.c:442: error: (Each undeclared identifier is reported only once
+ arch/x86/kernel/setup_percpu.c:442: error: for each function it appears in.)
 
-The reason is init_pg_table is big enough, and zero range is called
-with init_memory_mapping/reserve_early().
+one new warning:
 
-So try to check the range in reserve_early()
+ mm/percpu.c: In function ‘pcpu_map’:
+ mm/percpu.c:604: warning: unused variable ‘last’
 
-v2: fix the reversed compare
+and one tip:master merge impact due to API change:
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+ kernel/trace/trace_functions_graph.c: In function ‘graph_trace_close’:
+ kernel/trace/trace_functions_graph.c:836: error: implicit declaration of function ‘percpu_free’
 
----
- arch/x86/kernel/e820.c |    3 +++
- 1 file changed, 3 insertions(+)
+that's free_percpu() now, right?
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -858,6 +858,9 @@ void __init reserve_early_overlap_ok(u64
-  */
- void __init reserve_early(u64 start, u64 end, char *name)
- {
-+	if (start >= end)
-+		return;
-+
- 	drop_overlaps_that_are_ok(start, end);
- 	__reserve_early(start, end, name, 0);
- }
+Btw., why was this rename done? We generally standardize on 
+hierarchical names, going from the more general to the more 
+specific names, left to right. So we have 
+<subsystem>_<functionality>_<subtype> sort of names generally.
+
+	Ingo
