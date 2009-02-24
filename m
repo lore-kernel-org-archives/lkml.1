@@ -1,38 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760714AbZBXVp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbZBXVqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760714AbZBXVp4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 16:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbZBXVpr
+	id S1759514AbZBXVqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 16:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbZBXVqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 16:45:47 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52346 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756718AbZBXVpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 16:45:45 -0500
-Message-ID: <49A46A53.9060708@kernel.org>
-Date: Tue, 24 Feb 2009 13:44:51 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Thomas Jourdan <tjourdan@interfaceconcept.com>,
-       linux-kernel@vger.kernel.org, Huang Ying <ying.huang@intel.com>,
-       Peter Jones <pjones@redhat.com>
-Subject: Re: [BUG] dmi_scan_machine uses uninitialized address on x86 / EFI
-References: <342F93DAA55A4EE888FBD256CE6044F4@thje6600v> <49A462BD.7010205@zytor.com> <49A468E2.4040308@kernel.org> <49A469B5.7060601@zytor.com>
-In-Reply-To: <49A469B5.7060601@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 24 Feb 2009 16:46:35 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:64425 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756723AbZBXVqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 16:46:35 -0500
+Date: Tue, 24 Feb 2009 15:46:23 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Markus Metzger <markus.t.metzger@intel.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com, markus.t.metzger@gmail.com,
+       srostedt@redhat.com
+Subject: Re: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
+Message-ID: <20090224154623.0758d692@thinkcentre.lan>
+In-Reply-To: <20090224193622.GA26734@elte.hu>
+References: <20090119102653.A18774@sedona.ch.intel.com>
+ <20090224193622.GA26734@elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Pobox-Relay-ID: 99C09BAC-02BC-11DE-BA0D-B26E209B64D9-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Yinghai Lu wrote:
->> should be ok for 2.6.29
-> 
-> Got a feel for what the impact of deferring it to .30 would be?
-> 
-Not sure, wonder if someone try 2.6.29-rc6 on EFI 32/64 sytem...
+On Tue, 24 Feb 2009 20:36:22 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-YH
+> 
+> * Markus Metzger <markus.t.metzger@intel.com> wrote:
+> 
+> > Support hotplug cpus.
+> 
+> > +static int __cpuinit bts_hotcpu_handler(struct notifier_block *nfb,
+> > +				     unsigned long action, void *hcpu)
+> > +{
+> > +	unsigned int cpu = (unsigned long)hcpu;
+> > +
+> > +	mutex_lock(&bts_tracer_mutex);
+> 
+> This is buggy: CPU hotplug handlers must not sleep (they are 
+> called with irqs disabled)
+
+I don't think that is the case; the cpu notifier chains are "raw", not
+atomic, and the cpu hotplug core doesn't disable irqs while processing
+the chains afaict.  And there are several current examples of cpu
+hotplug callbacks performing sleeping operations (slab and slub,
+page_alloc, probably many others).
+
