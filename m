@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbZBXRdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbZBXRfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbZBXRdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbZBXRdU
+	id S1759576AbZBXRfy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:35:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbZBXRfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:33:20 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:41735 "EHLO
+	Tue, 24 Feb 2009 12:35:44 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:55113 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759421AbZBXRdT (ORCPT
+	with ESMTP id S1754584AbZBXRfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:33:19 -0500
-Date: Tue, 24 Feb 2009 12:24:28 -0500 (EST)
+	Tue, 24 Feb 2009 12:35:43 -0500
+Date: Tue, 24 Feb 2009 12:27:02 -0500 (EST)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
 To: Mel Gorman <mel@csn.ul.ie>
@@ -22,11 +22,11 @@ cc: Linux Memory Management List <linux-mm@kvack.org>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 06/19] Check only once if the zonelist is suitable for
- the allocation
-In-Reply-To: <1235477835-14500-7-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0902241220300.32227@qirst.com>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235477835-14500-7-git-send-email-mel@csn.ul.ie>
+Subject: Re: [PATCH 08/19] Simplify the check on whether cpusets are a factor
+ or not
+In-Reply-To: <1235477835-14500-9-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0902241226280.32227@qirst.com>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235477835-14500-9-git-send-email-mel@csn.ul.ie>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -36,13 +36,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tue, 24 Feb 2009, Mel Gorman wrote:
 
-> It is possible with __GFP_THISNODE that no zones are suitable. This
-> patch makes sure the check is only made once.
+> @@ -1420,8 +1429,8 @@ zonelist_scan:
+>  		if (NUMA_BUILD && zlc_active &&
+>  			!zlc_zone_worth_trying(zonelist, z, allowednodes))
+>  				continue;
+> -		if ((alloc_flags & ALLOC_CPUSET) &&
+> -			!cpuset_zone_allowed_softwall(zone, gfp_mask))
+> +		if (alloc_cpuset)
+> +			if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
+>  				goto try_next_zone;
 
-GFP_THISNODE is only a performance factor if SLAB is the slab allocator.
-The restart logic in __alloc_pages_internal() is mainly used by OOM
-processing.
+Hmmm... Why remove the && here? Looks more confusing to me.
 
-But the patch looks okay regardless...
-
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
