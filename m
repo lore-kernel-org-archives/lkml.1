@@ -1,316 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbZBXWDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbZBXWJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760886AbZBXWDV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 17:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZBXWDM
+	id S1760636AbZBXWJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 17:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZBXWJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 17:03:12 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:44702 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbZBXWDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 17:03:11 -0500
-Date: Tue, 24 Feb 2009 16:02:56 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Cedric Le Goater <clg@fr.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 4/4] mqueue namespace: adapt sysctl
-Message-ID: <20090224220256.GA31001@us.ibm.com>
+	Tue, 24 Feb 2009 17:09:04 -0500
+Received: from mail.gmx.net ([213.165.64.20]:34195 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753852AbZBXWJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 17:09:04 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+QjKRgC2WQKKzCYqlA9Eeyg3XCNU5/lMn4kVn2jV
+	KpWan1tXKMgHwd
+Date: Tue, 24 Feb 2009 23:09:00 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>, greg@kroah.com,
+       s.hauer@pengutronix.de, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/3] mxc: move serial driver init()/exit() to
+ platform_device
+In-Reply-To: <20090224172606.GA22390@n2100.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0902242302300.9200@axis700.grange>
+References: <20090224155737.28880.3945.stgit@Programuotojas>
+ <20090224172606.GA22390@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Largely inspired from ipc/ipc_sysctl.c. This patch isolates the mqueue
-sysctl stuff in its own file.
+On Tue, 24 Feb 2009, Russell King - ARM Linux wrote:
 
-Changelog:
-	Feb 24: comments from Alexey Dobriyan:
-		1. put proc handlers under CONFIG_PROC_SYSCTL and
-		   make them NULL otherwise.
-		2. remove & from proc_handler when assigned to
-		   ctl_table.
+> I really don't like this approach to controlling multiplex pins, which
+> is to setup the SoC pin configuration when the driver is being bound and
+> to remove it when the driver is unbound.
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+What do you think about the reasoning given by Sascha here: 
+http://marc.info/?l=linux-arm-kernel&m=123453175927569&w=2 which is power 
+saving?
+
+> 
+> Let's take the issue of a serial driver.
+> 
+> The outputs of a serial port have defined inactive levels - for TXD, RTS
+> and DTR, that's logic one.  If a driver is not loaded and you have a
+> peripheral connected to this port, you probably don't want them to see
+> a break level on TXD, or active RTS or DTR signal.
+> 
+> However, by hooking the SoC pin configuration into the binding and
+> unbinding of the driver, the state of the pins are indeterminent until
+> the driver is initialised.
+> 
+> I can think of other cases in hardware I've dealt with which required
+> careful handling of SSP signals to ensure that a flip-flop in a FPGA is
+> correctly set to ensure that left/right channels aren't swapped.
+> 
+> Basically, my point is that for 99.9% of the time, SoC pin configuration
+> is determined by the platform board layout, and the right place to set
+> this configuration up is in the board support file, just like we do on
+> PXA platforms.
+> 
+> For the 0.1% of cases where a board needs to manipulate the SoC pin
+> configuration depending on which drivers are loaded, doing so at driver
+> probe time _may_ make sense, but it feels all together cumbersome,
+> especially as unloading drivers has historically had question marks
+> over it.
+> 
+> Surely, for this 0.1% of cases, the right solution would be to have an
+> interface which allows a platform device to be unregistered, the SoC pin
+> mux settings changed by platform code, and the new device registered?
+> 
+> Finally, note that the approach of putting init/exit into struct
+> platform_device doesn't cater for all cases - we're still going to need
+> to have init/exit pointers in platform data for some platform devices,
+> such as MMC drivers, which have to pass parameters to those hooks.
+
+Thanks
+Guennadi
 ---
- include/linux/ipc_namespace.h |   14 +++++
- init/Kconfig                  |    6 ++
- ipc/Makefile                  |    1 +
- ipc/mq_sysctl.c               |  116 +++++++++++++++++++++++++++++++++++++++++
- ipc/mqueue.c                  |   65 +----------------------
- 5 files changed, 138 insertions(+), 64 deletions(-)
- create mode 100644 ipc/mq_sysctl.c
-
-diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
-index 3392d50..3bf40e2 100644
---- a/include/linux/ipc_namespace.h
-+++ b/include/linux/ipc_namespace.h
-@@ -128,4 +128,18 @@ static inline void put_ipc_ns(struct ipc_namespace *ns)
- {
- }
- #endif
-+
-+#ifdef CONFIG_POSIX_MQUEUE_SYSCTL
-+
-+struct ctl_table_header;
-+extern struct ctl_table_header *mq_register_sysctl_table(void);
-+
-+#else /* CONFIG_POSIX_MQUEUE_SYSCTL */
-+
-+static inline struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return NULL;
-+}
-+
-+#endif /* CONFIG_POSIX_MQUEUE_SYSCTL */
- #endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 53afa38..ee70d25 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -148,6 +148,12 @@ config POSIX_MQUEUE
- 
- 	  If unsure, say Y.
- 
-+config POSIX_MQUEUE_SYSCTL
-+	bool
-+	depends on POSIX_MQUEUE
-+	depends on SYSCTL
-+	default y
-+
- config BSD_PROCESS_ACCT
- 	bool "BSD Process Accounting"
- 	help
-diff --git a/ipc/Makefile b/ipc/Makefile
-index 65c3843..4e1955e 100644
---- a/ipc/Makefile
-+++ b/ipc/Makefile
-@@ -8,4 +8,5 @@ obj-$(CONFIG_SYSVIPC_SYSCTL) += ipc_sysctl.o
- obj_mq-$(CONFIG_COMPAT) += compat_mq.o
- obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
- obj-$(CONFIG_IPC_NS) += namespace.o
-+obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
- 
-diff --git a/ipc/mq_sysctl.c b/ipc/mq_sysctl.c
-new file mode 100644
-index 0000000..b542a1d
---- /dev/null
-+++ b/ipc/mq_sysctl.c
-@@ -0,0 +1,116 @@
-+/*
-+ *  Copyright (C) 2007 IBM Corporation
-+ *
-+ *  Author: Cedric Le Goater <clg@fr.ibm.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License as
-+ *  published by the Free Software Foundation, version 2 of the
-+ *  License.
-+ */
-+
-+#include <linux/nsproxy.h>
-+#include <linux/ipc_namespace.h>
-+#include <linux/sysctl.h>
-+
-+/*
-+ * Define the ranges various user-specified maximum values can
-+ * be set to.
-+ */
-+#define MIN_MSGMAX	1		/* min value for msg_max */
-+#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
-+#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
-+#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
-+
-+static void *get_mq(ctl_table *table)
-+{
-+	char *which = table->data;
-+	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
-+	which = (which - (char *)&init_ipc_ns) + (char *)ipc_ns;
-+	return which;
-+}
-+
-+#ifdef CONFIG_PROC_SYSCTL
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-+	void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec(&mq_table, write, filp, buffer, lenp, ppos);
-+}
-+
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec_minmax(&mq_table, write, filp, buffer,
-+					lenp, ppos);
-+}
-+#else
-+proc_handler *proc_mq_dointvec = NULL;
-+proc_handler *proc_mq_dointvec_minmax = NULL;
-+#endif
-+
-+static int msg_max_limit_min = MIN_MSGMAX;
-+static int msg_max_limit_max = MAX_MSGMAX;
-+
-+static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
-+static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
-+
-+static ctl_table mq_sysctls[] = {
-+	{
-+		.procname	= "queues_max",
-+		.data		= &init_ipc_ns.mq_queues_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_mq_dointvec,
-+	},
-+	{
-+		.procname	= "msg_max",
-+		.data		= &init_ipc_ns.mq_msg_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_mq_dointvec_minmax,
-+		.extra1		= &msg_max_limit_min,
-+		.extra2		= &msg_max_limit_max,
-+	},
-+	{
-+		.procname	= "msgsize_max",
-+		.data		= &init_ipc_ns.mq_msgsize_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_mq_dointvec_minmax,
-+		.extra1		= &msg_maxsize_limit_min,
-+		.extra2		= &msg_maxsize_limit_max,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_dir[] = {
-+	{
-+		.procname	= "mqueue",
-+		.mode		= 0555,
-+		.child		= mq_sysctls,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_root[] = {
-+	{
-+		.ctl_name	= CTL_FS,
-+		.procname	= "fs",
-+		.mode		= 0555,
-+		.child		= mq_sysctl_dir,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return register_sysctl_table(mq_sysctl_root);
-+}
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 3e016e9..7f10fde 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -47,15 +47,6 @@
- #define STATE_PENDING	1
- #define STATE_READY	2
- 
--/*
-- * Define the ranges various user-specified maximum values can
-- * be set to.
-- */
--#define MIN_MSGMAX	1		/* min value for msg_max */
--#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
--#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
--#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
--
- struct ext_wait_queue {		/* queue of sleeping tasks */
- 	struct task_struct *task;
- 	struct list_head list;
-@@ -1271,60 +1262,6 @@ void mq_put_mnt(struct ipc_namespace *ns)
- 	mntput(ns->mq_mnt);
- }
- 
--static int msg_max_limit_min = MIN_MSGMAX;
--static int msg_max_limit_max = MAX_MSGMAX;
--
--static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
--static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
--
--static ctl_table mq_sysctls[] = {
--	{
--		.procname	= "queues_max",
--		.data		= &init_ipc_ns.mq_queues_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
--	},
--	{
--		.procname	= "msg_max",
--		.data		= &init_ipc_ns.mq_msg_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_max_limit_min,
--		.extra2		= &msg_max_limit_max,
--	},
--	{
--		.procname	= "msgsize_max",
--		.data		= &init_ipc_ns.mq_msgsize_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_maxsize_limit_min,
--		.extra2		= &msg_maxsize_limit_max,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_dir[] = {
--	{
--		.procname	= "mqueue",
--		.mode		= 0555,
--		.child		= mq_sysctls,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_root[] = {
--	{
--		.ctl_name	= CTL_FS,
--		.procname	= "fs",
--		.mode		= 0555,
--		.child		= mq_sysctl_dir,
--	},
--	{ .ctl_name = 0 }
--};
--
- static int __init init_mqueue_fs(void)
- {
- 	int error;
-@@ -1336,7 +1273,7 @@ static int __init init_mqueue_fs(void)
- 		return -ENOMEM;
- 
- 	/* ignore failues - they are not fatal */
--	mq_sysctl_table = register_sysctl_table(mq_sysctl_root);
-+	mq_sysctl_table = mq_register_sysctl_table();
- 
- 	error = register_filesystem(&mqueue_fs_type);
- 	if (error)
--- 
-1.5.4.3
-
+Guennadi Liakhovetski
