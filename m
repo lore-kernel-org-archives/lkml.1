@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbZBXQYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbZBXQ1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758425AbZBXQYu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 11:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZBXQYl
+	id S1758314AbZBXQ1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 11:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZBXQ1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 11:24:41 -0500
-Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:40142 "HELO
-	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754843AbZBXQYk (ORCPT
+	Tue, 24 Feb 2009 11:27:20 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:46983 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbZBXQ1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 11:24:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=i62QWQt+OpmRXhKw2//7e3ABJiSRLZzBjJNw2NrA/qP+32lmM6JxvBTYg1VzEXXKQELcxi3u7AqQPgCO5PS6pfBCUcRMFJNmSDr/1WnljG/JIMySuiwVG7jWOLyCTfWC;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: luis6674@yahoo.com
-Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
-Date: Tue, 24 Feb 2009 08:24:31 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: Eric Anholt <eric@anholt.net>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <819821.83409.qm@web53303.mail.re2.yahoo.com>
-In-Reply-To: <819821.83409.qm@web53303.mail.re2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902240824.32155.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Tue, 24 Feb 2009 11:27:19 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: New filesystem for Linux kernel 
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: tomas@slax.org, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1LbycM-0007FV-Rg@pomaz-ex.szeredi.hu>
+References: <7558.1235374266@jrobl> <7769.1235374482@jrobl> <49A268A7.1010708@slax.org> <49A26ACC.90804@slax.org> <49A3AC14.2050107@slax.org> <E1Lbvpf-0006fF-Tg@pomaz-ex.szeredi.hu> <11287.1235481490@jrobl> <E1LbycM-0007FV-Rg@pomaz-ex.szeredi.hu>
+Date: Wed, 25 Feb 2009 01:26:59 +0900
+Message-ID: <15922.1235492819@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 24, 2009 5:50:34 am Alberto Gonzalez wrote:
-> --- On Tue, 2/24/09, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > I really wish I could do more, but learning to compile
-> >
-> > a custom kernel for
-> >
-> > > my hardware and do a git bisect is something I just
-> >
-> > can't afford now. If
-> >
-> > > relevant people try to reproduce it but can't, and
-> >
-> > say only possible
-> >
-> > > solution would be for me to bisect it I guess I could
-> >
-> > try to give it a go
-> >
-> > > when I get some spare time.
-> >
-> > Fair enough. Reporting a problem is always very
-> > appreciated.
-> >
-> > Pinging Eric and Jesse ;)
->
-> Thank you Nick.
->
-> Since Arch Linux is not popular among kernel developers I just tested
-> Fedora 10 Live-CD (KDE) and I can reproduce the exact same problem, even if
-> Fedora 10 has kernel 2.6.27 and for me the problem appeared in .28 (but I
-> guess Fedora adds many patches, so probably the "guilty" commit was
-> backported to 2.6.27.5-117-FC10-i686).
->
-> Steps:
-> - Boot into Fedora 10 Live CD (obviously, into the default graphical mode)
-> - Install Powertop (yum install powertop) and run it
-> - I get about 60 wakeups per second from i915@pci.... leaving the system
-> idle - Switch to console and back to X. The wakeups are gone.
 
-Ah ok, it sounds like you're getting vblank interrupts at startup time, but 
-once you VT switch the kernel figures out that you don't need them, so it 
-disables them.  I think this is a bug in the 2D driver; it has an ioctl it 
-uses when doing modesetting which doubles as a "disabling the irq is ok" 
-signal, but we call it at a time when the corresponding pipe is off, so the 
-kernel ignores the call.
+Miklos Szeredi:
+> It's always easier to review something with less features, even if
+> that feature set is too little for real world use.
 
-Can you file a bug for this at bugs.freedesktop.org?  Is it easy for you to 
-rebuild & test xf86-video-intel driver patches?
+Generally I agree with you.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+> The simplest version is with all branches read-only.  That gets rid of
+> a _huge_ amount of complexity, yet it's still useful in some
+> situations.  It also deals with a lot of the basic infrastucture
+> needed for stacking.
+
+If you really think it is a better way to get merged into mainline, then
+I'll try implement such version.
+
+
+> And that's when one starts thinking about whether unioning is really
+> the right solution.  Instead this could be implemented with a special
+> filesystem format that only contains deltas to the data, metatata and
+> directory tree.  It would be much more space efficient, could easily
+> handle renames, hard links etc, without all the hacks that
+> unionfs/aufs does.
+
+It sounds like an ODF (on disk format) version of unionfs (while it
+seems to be inactive).
+At implementing, I don't think it easier to maintain delta of filedata
+and metadata. Since aufs has a writable branch in it, it is better and
+easier to maintain data in a branch fs.
+If you think there should not be any writable branch in aufs, and all
+"write" goes to a new filesystem format, then it is equivalent to a
+writable branch, isn't it?
+If you say "just a part of write" goes to a new fs, then I don't think
+we can support several essential features, for instance mmap.
+
+
+J. R. Okajima
