@@ -1,76 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZBXOgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbZBXOiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbZBXOgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 09:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbZBXOgE
+	id S1757867AbZBXOiP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 09:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbZBXOh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 09:36:04 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:57375 "EHLO smtp.mba.ocn.ne.jp"
+	Tue, 24 Feb 2009 09:37:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45901 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754950AbZBXOgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 09:36:01 -0500
-Date: Tue, 24 Feb 2009 23:36:00 +0900 (JST)
-Message-Id: <20090224.233600.27954115.anemo@mba.ocn.ne.jp>
-To: s.hauer@pengutronix.de
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org, vapier.adi@gmail.com
-Subject: Re: [PATCH] physmap: Fix leak of memory returned by
- parse_mtd_partitions
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20090224133505.GJ21900@pengutronix.de>
-References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
-	<20090224133505.GJ21900@pengutronix.de>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1755330AbZBXOh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 09:37:58 -0500
+Message-ID: <49A40624.4000100@kernel.org>
+Date: Tue, 24 Feb 2009 23:37:24 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk	allocation
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org> <20090224124042.GA31295@elte.hu> <49A3F5C5.4060107@kernel.org> <20090224141217.GA17287@elte.hu>
+In-Reply-To: <20090224141217.GA17287@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Feb 2009 14:37:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Feb 2009 14:35:05 +0100, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> On Wed, Nov 12, 2008 at 11:57:33PM +0900, Atsushi Nemoto wrote:
-> > The mtd partition parser returns an allocated pointer array of
-> > mtd_partition.  The caller must free it.  The array is used only for
-> > add_mtd_partitions(), so free it just after the call.
+Hello, Ingo.
+
+Ingo Molnar wrote:
+> * Tejun Heo <tj@kernel.org> wrote:
 > 
-> This patch breaks command line parsing support. With command line
-> partition parsing the struct mtd_partition array is allocated, but only
-> once. On my board with NAND and NOR (both with command line partition
-> parsing) It fails badly in parse_cmdline_partitions() when the second
-> device gets parsed.
+>> What's missing is unification of static and dynamic accessors 
+>> and thus the faster accessors - percpu_read() and friends - 
+>> for dynamic ones. This will be the next round of patches.
 > 
-> The following patch fixes it, but I don't know if this is
-> the correct solution. Does anybody have more insights on this?
+> Ok, good - we are in agreement then and i'll wait for those 
+> patches.
 
-Do your NAND and NOR have same mtd-id?  The cmdlinepart allocates
-mtd_partition aray for each mtd-id.  So usually another array will be
-returned for NAND and NOR.
+Whooray!
 
-The physmap patch has another bug and fixes are on the way mainline:
+> And i think i finally decoded the real source of the disconnect
+> :-)
+> 
+> It's still about this restriction:
+> 
+> +       /*
+> +        * If large page isn't supported, there's no benefit in doing
+> +        * this.  Also, embedding allocation doesn't play well with
+> +        * NUMA.
+> +        */
+> +       if (!cpu_has_pse || pcpu_need_numa())
+> +               return -EINVAL;
+> 
+> This is what makes no sense (why force the static percpu area 
+> into 4K mappings on NUMA).
 
-http://git.infradead.org/mtd-2.6.git?a=commit;h=e480814f138cd5d78a8efe397756ba6b6518fdb6
+No, the first allocator tried is remap allocator which will do the 2MB
+remapping thing if NUMA.  If not, it gives its way to embedding
+allocator which only kicks in for pse && !numa.  The 4k thing is just
+the last resort.  We might as well kill it and make it
 
-But this seems not enough, as you wrote.  If multiple mtd have same
-mtd-id, bad things can happen.  And more seriously, if I load physmap
-driver _again_ after unload, cmdlinepart will return a freed pointer
-on the second time.
+ if (numa)
+	do remap
+ else
+	do embed
+ panic if failed
 
-Hmm, little memory leak is less serious than crash.  Now I start
-thinking reverting the commit 176bf2e0 will be best for 2.6.29
-release.
+The 4k thing is the final fallback for cases where pse isn't
+supported.
 
-I'm not sure for long term solutions.
+> You do it because i think you misunderstood my original 2MB TLB 
+> static area suggestion. setup_pcpu_embed() does this now:
+> 
+> +       pcpue_ptr = pcpu_alloc_bootmem(0, num_possible_cpus() * pcpue_unit_size,
+> +                                      PAGE_SIZE);
+> 
+> That is not NUMA-friendly indeed.
 
-A) make all parsers return kmalloc-ed mtd_partition array each time
-   and fix memory leak in each driver
+NUMA uses 2MB remapping.  Non-NUMA uses embedding.  If you're annoyed
+about the embedding allocator, we can drop it but given that most of
+the machines in the wild are non-NUMA and the code to do the trick is
+quite simple, I think it justifies its existence.
 
-B) make all parsers return mtd_partition array allocated only once,
-   and fix drivers which free the mtd_partition array.
+> What should be done instead is to up the unit size to 2MB as i 
+> suggested, and to allocate 2MB sized and 2MB aligned 
+> numa-correct area for each CPU, via bootmem.
 
-David, how do you think?
+YES, the posted code does EXACTLY that for NUMA!!!!
 
----
-Atsushi Nemoto
+> To quote my original mail:
+> 
+>>> - allocate the static percpu area using bootmem-alloc, but
+>>>   using a 2MB alignment parameter and a 2MB aligned size. Then
+>>>   we can remap it to some convenient and undisturbed virtual
+>>>   memory area, using 2MB TLBs. [*]
+> 
+> I.e. each individual 2MB allocated largepage can then be 
+> remapped as a 2MB TLB to the high (vmalloc) area. Followed by 
+> ordinary 4K mappings for regular percpu_alloc() pages.
+> 
+> ( and the partial, unused pages within this initial chunk are 
+>   returned to bootmem. )
+
+I did understand that the first time around.
+
+> That will be NUMA-friendly and i suspect we should also use it 
+> on SMP just to get that aspect of the code tested better.
+
+For testing coverage, we can make a debug parameter or something but
+think about it.  The embedding allocator is ~100 lines of well
+commented code which is dropped once init is complete and it always
+saves a 2MB TLB entry for all the non-NUMA machines out there.  It is
+a very low cost optimization for >90% of machines out there.
+
+> Do _not_ allocate the units together in one bootmem allocation 
+> because that's not NUMA-friendly.
+
+Again, it doesn't do that for NUMA.
+
+-- 
+tejun
