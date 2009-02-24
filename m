@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbZBXN6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbZBXN6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757801AbZBXN6h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 08:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZBXN60
+	id S1758069AbZBXN6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 08:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbZBXN6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 08:58:26 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:3262 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230AbZBXN60 (ORCPT
+	Tue, 24 Feb 2009 08:58:36 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:43814 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757120AbZBXN6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 08:58:26 -0500
-Date: Tue, 24 Feb 2009 08:58:17 -0500
-From: Bob Copeland <me@bobcopeland.com>
-To: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090224135817.GB6019@hash.localnet>
-References: <49A13E91.1090601@gmail.com> <20090222122036.GC5538@silver.sucs.org> <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com> <49A321BA.2040500@gmail.com> <49A326A4.8090103@gmail.com> <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Feb 2009 08:58:35 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: New filesystem for Linux kernel 
+To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, tomas@slax.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <49A3FA10.4090801@turknet.net.tr>
+References: <7558.1235374266@jrobl> <7769.1235374482@jrobl> <49A268A7.1010708@slax.org> <49A26ACC.90804@slax.org> <49A3AC14.2050107@slax.org> <E1Lbvpf-0006fF-Tg@pomaz-ex.szeredi.hu> <11287.1235481490@jrobl> <49A3FA10.4090801@turknet.net.tr>
+Date: Tue, 24 Feb 2009 22:57:40 +0900
+Message-ID: <12063.1235483860@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 01:08:03AM +0200, Nick Kossifidis wrote:
-> He does an extra check...
-> 
-> 	/*
-> 	 * Given the use of a self-linked tail be very sure that the hw is
-> 	 * done with this descriptor; the hw may have done this descriptor
-> 	 * once and picked it up again...make sure the hw has moved on.
-> 	 */
-> 	if ((ands->ds_rxstatus1&AR_Done) == 0 && OS_REG_READ(ah, AR_RXDP) == pa)
-> 		return HAL_EINPROGRESS;
 
-Sounds like we definitely need that.  If the hw uses up all the dma buffers
-in one go, there's a good chance we can send the skb to mac80211 while
-the hardware is still using it.  I guess an easy way to test would be to
-set the max rx buffers to 3 or so and watch the fireworks.
+Tarkan Erimer:
+> I think there is a misunderstanding or confusion about merging the code 
+> into the mainline. You needn't to drop some functionality/features to 
+> make your code small and to make it reviewed by mergers. You have to 
+> separate (Core FS functions, features etc.) your code into small pieces. 
+> So that, mergers will look, for first, your core FS functionality code 
+> to see that it *_breaks_* or *_touches_* any _*other areas of the 
+> kernel*_. If everything goes well, your main Core FS functionality code 
+> will be merged into the mainline. After that, you can send your 
+> feature/functionality codes one by one.
 
--- 
-Bob Copeland %% www.bobcopeland.com
+Tarkan, thank you for your advise.
+Actually I broke functions and files into small pieces. Additionally I
+applied CONFIG_AUFS_* conditions in fs/aufs/Makefile. When you review
+aufs source files, I'd suggest you to read in this order.
 
+aufs-y := module.o sbinfo.o super.o branch.o xino.o sysaufs.o opts.o \
+	wkq.o vfsub.o dcsub.o \
+	cpup.o whout.o plink.o wbr_policy.o \
+	dinfo.o dentry.o \
+	finfo.o file.o f_op.o \
+	dir.o vdir.o \
+	iinfo.o inode.o i_op.o i_op_add.o i_op_del.o i_op_ren.o \
+	ioctl.o
+aufs-$(CONFIG_SYSFS) += sysfs.o
+aufs-$(CONFIG_AUFS_BDEV_LOOP) += loop.o
+aufs-$(CONFIG_AUFS_HINOTIFY) += hinotify.o
+aufs-$(CONFIG_AUFS_DEBUG) += debug.o
+aufs-$(CONFIG_AUFS_MAGIC_SYSRQ) += sysrq.o
+
+If I am still misunderstanding, please let me know.
+
+Thank you
+J. R. Okajima
