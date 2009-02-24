@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZBXLYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbZBXL0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbZBXLYo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 06:24:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZBXLY0
+	id S1756229AbZBXL0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 06:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZBXL0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 06:24:26 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:27888 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754181AbZBXLYZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 06:24:25 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=zsUAdVHqgLzdr0typPzfht8rFRnkP4JCH3waoX/pyRZNSVD5o3kDXn9xJdlx6qykHk9VQAZee/PQrbhim/lHmrQkXqvhvooB9kif1tdVmUUn5D0X0lFSqjgLeBYZy4mwYlMHFHdDyl+0HQHFQ4PJ9vLaIcy9iPSXwilEJN11gBI=  ;
-X-YMail-OSG: ARaLpIwVM1kXaltPmdFhHEAHtk3OcsXV7C7j7cd.LQtMyRFz_XK87oGl8Aj24Lu_OjqlCcvo7dXEjgkCv7MNpB81YBBCfaidv..U6ZCNxp9vdGD4UuQm6wj.OBUx7.SEldXxAIGUR87_EyOVXGa0eRudKOHlnMZApLzcYEwkLCUJfETSOLpzCTzhpxl.pZQlptzTTb.I993kYAXy_ArFSdauxr0-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: luis6674@yahoo.com
-Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
-Date: Tue, 24 Feb 2009 22:23:38 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <37338.58465.qm@web53304.mail.re2.yahoo.com>
-In-Reply-To: <37338.58465.qm@web53304.mail.re2.yahoo.com>
+	Tue, 24 Feb 2009 06:26:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55004 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751371AbZBXL0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 06:26:03 -0500
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kyle McMartin <kyle@infradead.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, kyle@redhat.com, roland@redhat.com
+Subject: Re: [PATCH/RFC] powerpc: avoid generating .eh_frame sections with gcc-4.4
+References: <20090224065112.GA6690@bombadil.infradead.org>
+	<20090224084034.GA11847@uranus.ravnborg.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Free thinker, does not speak for Red Hat
+		or its Operating System Tools Group
+Date: Tue, 24 Feb 2009 08:25:35 -0300
+In-Reply-To: <20090224084034.GA11847@uranus.ravnborg.org> (Sam Ravnborg's message of "Tue\, 24 Feb 2009 09\:40\:34 +0100")
+Message-ID: <orprh8oz4g.fsf@livre.oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902242223.39069.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009 21:53:44 Alberto Gonzalez wrote:
-> --- On Mon, 2/23/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > The following bug entry is on the current list of known
-> > regressions
-> > introduced between 2.6.27 and 2.6.28.  Please verify if it
-> > still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry	:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=12337
-> > Subject		: ~100 extra wakeups reported by powertop
-> > Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
-> > Date		: 2008-12-31 12:25 (55 days old)
->
-> Still present, yes.
+On Feb 24, 2009, Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Any chance you could bisect it?
+> On Tue, Feb 24, 2009 at 01:51:12AM -0500, Kyle McMartin wrote:
+>> From: Kyle McMartin <kyle@redhat.com>
+>> 
+>> On ppc64 (at least) gcc-4.4 is defaulting to generating .eh_frame
+>> sections, which are, for the kernel, fairly pointless. Additionally, on
+>> ppc64 this generates a relocation format which the kernel module loader
+>> does not currently support (R_PPC64_REL32.)
+>> 
+>> Alexandre Oliva verifies that -fno-dwarf2-cfi-asm prevents this
+>> .eh_frame section from being generated.
+>> 
+>> These seem to be used for unwinding, but it doesn't look like we
+>> currently use them anywhere. (In fact, we explicitly dump them in the
+>> x86_64 linker script.)
 
+> A grep for "eh_frame" shows too many hits in the kernel to convince
+> me this is true.
+
+I don't know whether .eh_frame is used for anything in the kernel.  It
+doesn't matter, as far as the patch is concerned.
+
+What the flag above does is to restore the .eh_frame behavior from GCC
+4.3, in which, when compiling with -g, rather than using .cfi assembler
+directives, GCC emitted .debug_frame and (when needed) .eh_frame itself.
+
+The "when needed" is key.  The assembler doesn't know which of these to
+emit, so it emits both in response to .cfi directives.  It's also
+possible that the assembler selects more efficient relocations than GCC.
+Regardless, it's precisely the presence of new relocations in .eh_frame
+that caused the reported problem.
+
+This flag will just restore the .eh_frame that you had with earlier
+versions of GCC, so that you don't have to cope with the enlarged and
+possibly modified one that the combination of new GCC and new binutils
+generates when compiling with -g.  It will thus still serve whatever
+purpose it did before.
+
+I hope this helps,
+
+-- 
+Alexandre Oliva           http://www.lsd.ic.unicamp.br/~oliva/
+You must be the change you wish to see in the world. -- Gandhi
+Be Free! -- http://FSFLA.org/   FSF Latin America board member
+Free Software Evangelist      Red Hat Brazil Compiler Engineer
