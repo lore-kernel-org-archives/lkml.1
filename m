@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755763AbZBXCYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbZBXC1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755763AbZBXCYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 21:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZBXCYJ
+	id S1756306AbZBXC1o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 21:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZBXC1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 21:24:09 -0500
-Received: from n6b.bullet.sp1.yahoo.com ([69.147.64.163]:36228 "HELO
-	n6b.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752296AbZBXCYI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 21:24:08 -0500
-X-yahoo-newman-spamcop: yes
-X-Yahoo-Newman-Id: 328626.62470.bm@omp424.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=BYvot1wT/Z75CHiFOi1qy9Z9lIQsT+IrHQzXHS276BjgtOwmWqPBarIiry+6OQ8edCCoCbvEcBGOe7h+7E/hk+k5DzVi53zb4L0abGSSCnaRPLMnKiRsjkBrAkqeFu2L7gFtNwZkXtlCgRB7nOFxRvP5trU6Rd7LConEq8+6zfk=  ;
-X-YMail-OSG: HoZQCeMVM1naxuItpfI88Je8v6BZEQ0O5oTgPWMnmasrsWravqBtK87qb7c.fy17w93pmxFG7r3PJH2Rd02hnjEFsC2KSvWEOFXWobPFcnoCDAU8Tu2IiWGGG2D9pUes.PKboUktQlwcRsMrn5gx6x9r
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.29-rc3-git 1/2] regulator: twl4030 regulators
-Date: Mon, 23 Feb 2009 18:22:27 -0800
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200902081037.06645.david-b@pacbell.net> <200902231443.16334.david-b@pacbell.net> <20090224005536.GC3601@sirena.org.uk>
-In-Reply-To: <20090224005536.GC3601@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902231822.27422.david-b@pacbell.net>
+	Mon, 23 Feb 2009 21:27:36 -0500
+Received: from ozlabs.org ([203.10.76.45]:33717 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754336AbZBXC1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 21:27:36 -0500
+To: David Miller <davem@davemloft.net>
+CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 24 Feb 2009 13:26:45 +1100
+Subject: [PATCH] net: Fix build without CONFIG_NET_NS
+Message-Id: <20090224022734.1766BDDE1D@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 February 2009, Mark Brown wrote:
-> > > Yeah, I kind of agree.  To avoid confusion from changing the names I'd
-> > > be tempted to go for something like "regulator driver constraints" but
-> > > it's not desparately nice.
-> 
-> > Hence my suggestion:  {regulator,machine,consumer} constraints,
-> > going from bottom up.  They aren't driver constraints; they
-> > are hardware constraints:  regulators can't supply arbitrary
-> > voltages.
-> 
-> Trouble is that the term regulator gets very overloaded and causes
-> confusion.
+Commit 486a87f1e5624096bd1c09e9e716239597d48dca broke build without
+CONFIG_NET_NS due to calling net_alloc_generic() always while defining
+it inside an #ifdef CONFIG_NET_NS block. This moves the function
+definition out of that block.
 
-That's why one of the *first* jobs in architecture is to
-ensure the terminology doesn't easily overload ... there's
-always trouble when it isn't.  Despite early groans from
-peanut galleries about "language lawyering" and "wanting
-to code in C not English", etc.  ;)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Thing is, there's already overloading here.  Two types
-of regulator -- "struct regulator_dev" wrapping hardware,
-and the "struct regulator" is a client/consumer handle.
-(And thus confusing to me, since it sounds like the more
-fundamental concept, but instead it's a few layers up.)
+ net/core/net_namespace.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-If you're concerned about overloading terminology, then
-best to address it sooner than later.  I've noticed you
-using the "consumer", "machine", and "regulator" terms
-more or less like I suggested, and those make sense; but
-the current struct names don't encourage that usage.  It's
-possible to adjust usage before changing names in "C".
-Thankfully, in Linux global name struct changes are not
-rejected out of hand.
-
-
-> There's also fun and games to be had with accuracy once you 
-> start looking too closely at the discrete voltages.
-
-Yes; the patch I sent is explicitly making those available.
-
-But I ignored issues like "+/- 3% accurate output" for LDOs
-(or switchers) ... if anyone really needs to address them,
-patches will be needed.  For now I only care that a 3.1 Volt
-output can match both MMC_VDD_30_31 and MMC_VDD_31_32! ;)
-
-- Dave
-
-
-
+--- linux-work.orig/net/core/net_namespace.c	2009-02-24 13:20:42.000000000 +1100
++++ linux-work/net/core/net_namespace.c	2009-02-24 13:24:19.000000000 +1100
+@@ -63,10 +63,6 @@ out_undo:
+ 	goto out;
+ }
+ 
+-#ifdef CONFIG_NET_NS
+-static struct kmem_cache *net_cachep;
+-static struct workqueue_struct *netns_wq;
+-
+ static struct net_generic *net_alloc_generic(void)
+ {
+ 	struct net_generic *ng;
+@@ -80,6 +76,10 @@ static struct net_generic *net_alloc_gen
+ 	return ng;
+ }
+ 
++#ifdef CONFIG_NET_NS
++static struct kmem_cache *net_cachep;
++static struct workqueue_struct *netns_wq;
++
+ static struct net *net_alloc(void)
+ {
+ 	struct net *net = NULL;
+@@ -218,7 +218,7 @@ static int __init net_ns_init(void)
+ 	netns_wq = create_singlethread_workqueue("netns");
+ 	if (!netns_wq)
+ 		panic("Could not create netns workq");
+-#endif
++#endif /* CONFIG_NET_NS */
+ 
+ 	ng = net_alloc_generic();
+ 	if (!ng)
