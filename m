@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZBXGr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZBXGsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZBXGr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 01:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZBXGrN
+	id S1755966AbZBXGsl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 01:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZBXGsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 01:47:13 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38774
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751476AbZBXGrM (ORCPT
+	Tue, 24 Feb 2009 01:48:33 -0500
+Received: from straum.hexapodia.org ([64.81.70.185]:23458 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbZBXGsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 01:47:12 -0500
-Date: Mon, 23 Feb 2009 22:46:52 -0800 (PST)
-Message-Id: <20090223.224652.121864647.davem@davemloft.net>
-To: jeff.chua.linux@gmail.com
-Cc: ilpo.jarvinen@helsinki.fi, herbert@gondor.apana.org.au, rjw@sisk.pl,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <b6a2187b0902232240m6f2347efs84639bb59a19269e@mail.gmail.com>
-References: <Pine.LNX.4.64.0902212042420.20526@wrl-59.cs.helsinki.fi>
-	<20090221.235308.172360407.davem@davemloft.net>
-	<b6a2187b0902232240m6f2347efs84639bb59a19269e@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 24 Feb 2009 01:48:32 -0500
+Date: Mon, 23 Feb 2009 22:48:30 -0800
+From: Andy Isaacson <adi@hexapodia.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "lenb@kernel.org" <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       mjg@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       rui.zhang@intel.com, airlied@redhat.com
+Subject: Re: [Linux 2.6.29-rc6] [drm:i915_set_status_page] *ERROR* can not ioremap virtual address for G33 hw status page
+Message-ID: <20090224064830.GA12600@hexapodia.org>
+References: <8db1092f0902230646o78a07a09t920ad65369b5a20d@mail.gmail.com> <1235419343.4816.27.camel@gaiman> <200902232230.29501.rjw@sisk.pl> <8db1092f0902231340k7c7d0fd1me49302f2efd03491@mail.gmail.com> <86802c440902231701q1e169a67oa12bd84ac0e4c7aa@mail.gmail.com> <20090224032304.GA26344@hexapodia.org> <86802c440902232150m2b22e3cfg8993193f8867dfbf@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440902232150m2b22e3cfg8993193f8867dfbf@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-Date: Tue, 24 Feb 2009 14:40:30 +0800
-
-> On Sun, Feb 22, 2009 at 3:53 PM, David Miller <davem@davemloft.net> wrote:
+On Mon, Feb 23, 2009 at 09:50:03PM -0800, Yinghai Lu wrote:
+> > reg 0, base: 0GB, range: 32GB, type WB
+> > reg 1, base: 3584MB, range: 512MB, type UC
+> > reg 2, base: 2012MB, range: 4MB, type UC
+> > reg 3, base: 2016MB, range: 32MB, type UC
 > 
-> > Sure, but I'll give Herbert one more chance :-)
-> >
-> > Applied to net-next-2.6
+> the BIOS is so sick
+> according to MTRR, it said:
+> [0,2012M) is WB
+> [2048M, 3.5G) is WB too
+> [4G, 32G) is WB
 > 
-> I see that this is already in linux-2.6.29-rc6. Tested and working fine.
+> but according to e820: about [0,2g) is RAM...
+> 
+> really not how to workaround in BIOS.
+> 
+> please check if you have some new BIOS?
 
-Actually, it isn't.
+That was with bios A11.  There is an A12 available on dell.com, I'll try
+installing it tomorrow...
 
-Herbert's change is in net-next-2.6 which will show up in linux-next
-rather than Linus's 2.6.29-rcX tree.
+-andy
