@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbZBXMSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbZBXMSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbZBXMSV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 07:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZBXMRQ
+	id S1756499AbZBXMSi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 07:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbZBXMRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 07:17:16 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:39058 "EHLO gir.skynet.ie"
+	Tue, 24 Feb 2009 07:17:17 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:39074 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753198AbZBXMRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753417AbZBXMRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Feb 2009 07:17:13 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
@@ -20,9 +20,9 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 03/19] Do not check NUMA node ID when the caller knows the node is valid
-Date: Tue, 24 Feb 2009 12:16:59 +0000
-Message-Id: <1235477835-14500-4-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 04/19] Convert gfp_zone() to use a table of precalculated values
+Date: Tue, 24 Feb 2009 12:17:00 +0000
+Message-Id: <1235477835-14500-5-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
 References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
@@ -30,336 +30,155 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Callers of alloc_pages_node() can optionally specify -1 as a node to mean
-"allocate from the current node". However, a number of the callers in fast
-paths know for a fact their node is valid. To avoid a comparison and branch,
-this patch adds alloc_pages_exact_node() that only checks the nid with
-VM_BUG_ON(). Callers that know their node is valid are then converted.
+Every page allocation uses gfp_zone() to calcuate what the highest zone
+allowed by a combination of GFP flags is. This is a large number of branches
+to have in a fast path. This patch replaces the branches with a lookup
+table that is calculated at boot-time and stored in the read-mostly section
+so it can be shared. This requires __GFP_MOVABLE to be redefined but it's
+debatable as to whether it should be considered a zone modifier or not.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- arch/ia64/hp/common/sba_iommu.c   |    2 +-
- arch/ia64/kernel/mca.c            |    3 +--
- arch/ia64/kernel/uncached.c       |    3 ++-
- arch/ia64/sn/pci/pci_dma.c        |    3 ++-
- arch/powerpc/platforms/cell/ras.c |    2 +-
- arch/x86/kvm/vmx.c                |    2 +-
- drivers/misc/sgi-gru/grufile.c    |    2 +-
- drivers/misc/sgi-xp/xpc_uv.c      |    2 +-
- include/linux/gfp.h               |    9 +++++++++
- include/linux/mm.h                |    1 -
- kernel/profile.c                  |    8 ++++----
- mm/filemap.c                      |    2 +-
- mm/hugetlb.c                      |    4 ++--
- mm/mempolicy.c                    |    2 +-
- mm/migrate.c                      |    2 +-
- mm/slab.c                         |    4 ++--
- mm/slob.c                         |    4 ++--
- mm/vmalloc.c                      |    1 -
- 18 files changed, 32 insertions(+), 24 deletions(-)
+ include/linux/gfp.h |   28 +++++++++++-----------------
+ init/main.c         |    1 +
+ mm/page_alloc.c     |   36 +++++++++++++++++++++++++++++++++++-
+ 3 files changed, 47 insertions(+), 18 deletions(-)
 
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 6d5e6c5..66a3257 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -1116,7 +1116,7 @@ sba_alloc_coherent (struct device *dev, size_t size, dma_addr_t *dma_handle, gfp
- #ifdef CONFIG_NUMA
- 	{
- 		struct page *page;
--		page = alloc_pages_node(ioc->node == MAX_NUMNODES ?
-+		page = alloc_pages_exact_node(ioc->node == MAX_NUMNODES ?
- 		                        numa_node_id() : ioc->node, flags,
- 		                        get_order(size));
- 
-diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
-index bab1de2..2e614bd 100644
---- a/arch/ia64/kernel/mca.c
-+++ b/arch/ia64/kernel/mca.c
-@@ -1829,8 +1829,7 @@ ia64_mca_cpu_init(void *cpu_data)
- 			data = mca_bootmem();
- 			first_time = 0;
- 		} else
--			data = page_address(alloc_pages_node(numa_node_id(),
--					GFP_KERNEL, get_order(sz)));
-+			data = __get_free_pages(GFP_KERNEL, get_order(sz));
- 		if (!data)
- 			panic("Could not allocate MCA memory for cpu %d\n",
- 					cpu);
-diff --git a/arch/ia64/kernel/uncached.c b/arch/ia64/kernel/uncached.c
-index 8eff8c1..6ba72ab 100644
---- a/arch/ia64/kernel/uncached.c
-+++ b/arch/ia64/kernel/uncached.c
-@@ -98,7 +98,8 @@ static int uncached_add_chunk(struct uncached_pool *uc_pool, int nid)
- 
- 	/* attempt to allocate a granule's worth of cached memory pages */
- 
--	page = alloc_pages_node(nid, GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
-+	page = alloc_pages_exact_node(nid,
-+				GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
- 				IA64_GRANULE_SHIFT-PAGE_SHIFT);
- 	if (!page) {
- 		mutex_unlock(&uc_pool->add_chunk_mutex);
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index 863f501..2aa52de 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -91,7 +91,8 @@ void *sn_dma_alloc_coherent(struct device *dev, size_t size,
- 	 */
- 	node = pcibus_to_node(pdev->bus);
- 	if (likely(node >=0)) {
--		struct page *p = alloc_pages_node(node, flags, get_order(size));
-+		struct page *p = alloc_pages_exact_node(node,
-+						flags, get_order(size));
- 
- 		if (likely(p))
- 			cpuaddr = page_address(p);
-diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
-index 5f961c4..16ba671 100644
---- a/arch/powerpc/platforms/cell/ras.c
-+++ b/arch/powerpc/platforms/cell/ras.c
-@@ -122,7 +122,7 @@ static int __init cbe_ptcal_enable_on_node(int nid, int order)
- 
- 	area->nid = nid;
- 	area->order = order;
--	area->pages = alloc_pages_node(area->nid, GFP_KERNEL, area->order);
-+	area->pages = alloc_pages_exact_node(area->nid, GFP_KERNEL, area->order);
- 
- 	if (!area->pages)
- 		goto out_free_area;
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 7611af5..cca119a 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1244,7 +1244,7 @@ static struct vmcs *alloc_vmcs_cpu(int cpu)
- 	struct page *pages;
- 	struct vmcs *vmcs;
- 
--	pages = alloc_pages_node(node, GFP_KERNEL, vmcs_config.order);
-+	pages = alloc_pages_exact_node(node, GFP_KERNEL, vmcs_config.order);
- 	if (!pages)
- 		return NULL;
- 	vmcs = page_address(pages);
-diff --git a/drivers/misc/sgi-gru/grufile.c b/drivers/misc/sgi-gru/grufile.c
-index 6509838..52d4160 100644
---- a/drivers/misc/sgi-gru/grufile.c
-+++ b/drivers/misc/sgi-gru/grufile.c
-@@ -309,7 +309,7 @@ static int gru_init_tables(unsigned long gru_base_paddr, void *gru_base_vaddr)
- 		pnode = uv_node_to_pnode(nid);
- 		if (gru_base[bid])
- 			continue;
--		page = alloc_pages_node(nid, GFP_KERNEL, order);
-+		page = alloc_pages_exact_node(nid, GFP_KERNEL, order);
- 		if (!page)
- 			goto fail;
- 		gru_base[bid] = page_address(page);
-diff --git a/drivers/misc/sgi-xp/xpc_uv.c b/drivers/misc/sgi-xp/xpc_uv.c
-index 29c0502..0563350 100644
---- a/drivers/misc/sgi-xp/xpc_uv.c
-+++ b/drivers/misc/sgi-xp/xpc_uv.c
-@@ -184,7 +184,7 @@ xpc_create_gru_mq_uv(unsigned int mq_size, int cpu, char *irq_name,
- 	mq->mmr_blade = uv_cpu_to_blade_id(cpu);
- 
- 	nid = cpu_to_node(cpu);
--	page = alloc_pages_node(nid, GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
-+	page = alloc_pages_exact_node(nid, GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
- 				pg_order);
- 	if (page == NULL) {
- 		dev_err(xpc_part, "xpc_create_gru_mq_uv() failed to alloc %d "
 diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 8736047..59eb093 100644
+index 59eb093..581f8a9 100644
 --- a/include/linux/gfp.h
 +++ b/include/linux/gfp.h
-@@ -4,6 +4,7 @@
- #include <linux/mmzone.h>
- #include <linux/stddef.h>
- #include <linux/linkage.h>
-+#include <linux/mmdebug.h>
+@@ -16,6 +16,10 @@ struct vm_area_struct;
+  * Do not put any conditional on these. If necessary modify the definitions
+  * without the underscores and use the consistently. The definitions here may
+  * be used in bit comparisons.
++ *
++ * Note that __GFP_MOVABLE uses the next available bit but it is not
++ * a zone modifier. It uses the fourth bit so that the calculation of
++ * gfp_zone() can use a table rather than a series of comparisons
+  */
+ #define __GFP_DMA	((__force gfp_t)0x01u)
+ #define __GFP_HIGHMEM	((__force gfp_t)0x02u)
+@@ -50,7 +54,7 @@ struct vm_area_struct;
+ #define __GFP_HARDWALL   ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
+ #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
+ #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
+-#define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
++#define __GFP_MOVABLE	((__force gfp_t)0x08u)  /* Page is movable */
  
- struct vm_area_struct;
+ #define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
+ #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+@@ -77,6 +81,9 @@ struct vm_area_struct;
+ #define GFP_THISNODE	((__force gfp_t)0)
+ #endif
  
-@@ -188,6 +189,14 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
- 	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
++/* This is a mask of all modifiers affecting gfp_zonemask() */
++#define GFP_ZONEMASK (__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32 | __GFP_MOVABLE)
++
+ /* This mask makes up all the page movable related flags */
+ #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
+ 
+@@ -112,24 +119,11 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
+ 		((gfp_flags & __GFP_RECLAIMABLE) != 0);
  }
  
-+static inline struct page *alloc_pages_exact_node(int nid, gfp_t gfp_mask,
-+						unsigned int order)
-+{
-+	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
-+
-+	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
-+}
-+
- #ifdef CONFIG_NUMA
- extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
- 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 7dc04ff..954e945 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -7,7 +7,6 @@
- 
- #include <linux/gfp.h>
- #include <linux/list.h>
--#include <linux/mmdebug.h>
- #include <linux/mmzone.h>
- #include <linux/rbtree.h>
- #include <linux/prio_tree.h>
-diff --git a/kernel/profile.c b/kernel/profile.c
-index 7724e04..62e08db 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -371,7 +371,7 @@ static int __cpuinit profile_cpu_callback(struct notifier_block *info,
- 		node = cpu_to_node(cpu);
- 		per_cpu(cpu_profile_flip, cpu) = 0;
- 		if (!per_cpu(cpu_profile_hits, cpu)[1]) {
--			page = alloc_pages_node(node,
-+			page = alloc_pages_exact_node(node,
- 					GFP_KERNEL | __GFP_ZERO,
- 					0);
- 			if (!page)
-@@ -379,7 +379,7 @@ static int __cpuinit profile_cpu_callback(struct notifier_block *info,
- 			per_cpu(cpu_profile_hits, cpu)[1] = page_address(page);
- 		}
- 		if (!per_cpu(cpu_profile_hits, cpu)[0]) {
--			page = alloc_pages_node(node,
-+			page = alloc_pages_exact_node(node,
- 					GFP_KERNEL | __GFP_ZERO,
- 					0);
- 			if (!page)
-@@ -570,14 +570,14 @@ static int create_hash_tables(void)
- 		int node = cpu_to_node(cpu);
- 		struct page *page;
- 
--		page = alloc_pages_node(node,
-+		page = alloc_pages_exact_node(node,
- 				GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
- 				0);
- 		if (!page)
- 			goto out_cleanup;
- 		per_cpu(cpu_profile_hits, cpu)[1]
- 				= (struct profile_hit *)page_address(page);
--		page = alloc_pages_node(node,
-+		page = alloc_pages_exact_node(node,
- 				GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
- 				0);
- 		if (!page)
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 23acefe..2523d95 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -519,7 +519,7 @@ struct page *__page_cache_alloc(gfp_t gfp)
++extern int gfp_zone_table[GFP_ZONEMASK];
++void init_gfp_zone_table(void);
+ static inline enum zone_type gfp_zone(gfp_t flags)
  {
- 	if (cpuset_do_page_mem_spread()) {
- 		int n = cpuset_mem_spread_node();
--		return alloc_pages_node(n, gfp, 0);
-+		return alloc_pages_exact_node(n, gfp, 0);
- 	}
- 	return alloc_pages(gfp, 0);
- }
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 107da3d..1e99997 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -630,7 +630,7 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
- 	if (h->order >= MAX_ORDER)
- 		return NULL;
- 
--	page = alloc_pages_node(nid,
-+	page = alloc_pages_exact_node(nid,
- 		htlb_alloc_mask|__GFP_COMP|__GFP_THISNODE|
- 						__GFP_REPEAT|__GFP_NOWARN,
- 		huge_page_order(h));
-@@ -649,7 +649,7 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
-  * Use a helper variable to find the next node and then
-  * copy it back to hugetlb_next_nid afterwards:
-  * otherwise there's a window in which a racer might
-- * pass invalid nid MAX_NUMNODES to alloc_pages_node.
-+ * pass invalid nid MAX_NUMNODES to alloc_pages_exact_node.
-  * But we don't need to use a spin_lock here: it really
-  * doesn't matter if occasionally a racer chooses the
-  * same nid as we do.  Move nid forward in the mask even
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 3eb4a6f..341fbca 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -767,7 +767,7 @@ static void migrate_page_add(struct page *page, struct list_head *pagelist,
- 
- static struct page *new_node_page(struct page *page, unsigned long node, int **x)
- {
--	return alloc_pages_node(node, GFP_HIGHUSER_MOVABLE, 0);
-+	return alloc_pages_exact_node(node, GFP_HIGHUSER_MOVABLE, 0);
+-#ifdef CONFIG_ZONE_DMA
+-	if (flags & __GFP_DMA)
+-		return ZONE_DMA;
+-#endif
+-#ifdef CONFIG_ZONE_DMA32
+-	if (flags & __GFP_DMA32)
+-		return ZONE_DMA32;
+-#endif
+-	if ((flags & (__GFP_HIGHMEM | __GFP_MOVABLE)) ==
+-			(__GFP_HIGHMEM | __GFP_MOVABLE))
+-		return ZONE_MOVABLE;
+-#ifdef CONFIG_HIGHMEM
+-	if (flags & __GFP_HIGHMEM)
+-		return ZONE_HIGHMEM;
+-#endif
+-	return ZONE_NORMAL;
++	return gfp_zone_table[flags & GFP_ZONEMASK];
  }
  
  /*
-diff --git a/mm/migrate.c b/mm/migrate.c
-index a9eff3f..6bda9c2 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -802,7 +802,7 @@ static struct page *new_page_node(struct page *p, unsigned long private,
+diff --git a/init/main.c b/init/main.c
+index 8442094..08a5663 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -573,6 +573,7 @@ asmlinkage void __init start_kernel(void)
+ 	 * fragile until we cpu_idle() for the first time.
+ 	 */
+ 	preempt_disable();
++	init_gfp_zone_table();
+ 	build_all_zonelists();
+ 	page_alloc_init();
+ 	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index c3842f8..7cc4932 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -70,6 +70,7 @@ EXPORT_SYMBOL(node_states);
+ unsigned long totalram_pages __read_mostly;
+ unsigned long totalreserve_pages __read_mostly;
+ unsigned long highest_memmap_pfn __read_mostly;
++int gfp_zone_table[GFP_ZONEMASK] __read_mostly;
+ int percpu_pagelist_fraction;
  
- 	*result = &pm->status;
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+@@ -4373,7 +4374,7 @@ static void setup_per_zone_inactive_ratio(void)
+  * 8192MB:	11584k
+  * 16384MB:	16384k
+  */
+-static int __init init_per_zone_pages_min(void)
++static int init_per_zone_pages_min(void)
+ {
+ 	unsigned long lowmem_kbytes;
  
--	return alloc_pages_node(pm->node,
-+	return alloc_pages_exact_node(pm->node,
- 				GFP_HIGHUSER_MOVABLE | GFP_THISNODE, 0);
+@@ -4391,6 +4392,39 @@ static int __init init_per_zone_pages_min(void)
  }
+ module_init(init_per_zone_pages_min)
  
-diff --git a/mm/slab.c b/mm/slab.c
-index 4d00855..e7f1ded 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -1680,7 +1680,7 @@ static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
- 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
- 		flags |= __GFP_RECLAIMABLE;
- 
--	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
-+	page = alloc_pages_exact_node(nodeid, flags, cachep->gfporder);
- 	if (!page)
- 		return NULL;
- 
-@@ -3210,7 +3210,7 @@ retry:
- 		if (local_flags & __GFP_WAIT)
- 			local_irq_enable();
- 		kmem_flagcheck(cache, flags);
--		obj = kmem_getpages(cache, local_flags, -1);
-+		obj = kmem_getpages(cache, local_flags, numa_node_id());
- 		if (local_flags & __GFP_WAIT)
- 			local_irq_disable();
- 		if (obj) {
-diff --git a/mm/slob.c b/mm/slob.c
-index 52bc8a2..d646a4c 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -46,7 +46,7 @@
-  * NUMA support in SLOB is fairly simplistic, pushing most of the real
-  * logic down to the page allocator, and simply doing the node accounting
-  * on the upper levels. In the event that a node id is explicitly
-- * provided, alloc_pages_node() with the specified node id is used
-+ * provided, alloc_pages_exact_node() with the specified node id is used
-  * instead. The common case (or when the node id isn't explicitly provided)
-  * will default to the current node, as per numa_node_id().
-  *
-@@ -236,7 +236,7 @@ static void *slob_new_page(gfp_t gfp, int order, int node)
- 
- #ifdef CONFIG_NUMA
- 	if (node != -1)
--		page = alloc_pages_node(node, gfp, order);
-+		page = alloc_pages_exact_node(node, gfp, order);
- 	else
- #endif
- 		page = alloc_pages(gfp, order);
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 75f49d3..76fab2d 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -1322,7 +1322,6 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
- 			page = alloc_page(gfp_mask);
- 		else
- 			page = alloc_pages_node(node, gfp_mask, 0);
--
- 		if (unlikely(!page)) {
- 			/* Successfully allocated i pages, free them in __vunmap() */
- 			area->nr_pages = i;
++static inline int __init gfp_flags_to_zone(gfp_t flags)
++{
++#ifdef CONFIG_ZONE_DMA
++	if (flags & __GFP_DMA)
++		return ZONE_DMA;
++#endif
++#ifdef CONFIG_ZONE_DMA32
++	if (flags & __GFP_DMA32)
++		return ZONE_DMA32;
++#endif
++	if ((flags & (__GFP_HIGHMEM | __GFP_MOVABLE)) ==
++			(__GFP_HIGHMEM | __GFP_MOVABLE))
++		return ZONE_MOVABLE;
++#ifdef CONFIG_HIGHMEM
++	if (flags & __GFP_HIGHMEM)
++		return ZONE_HIGHMEM;
++#endif
++	return ZONE_NORMAL;
++}
++
++/*
++ * For each possible combination of zone modifier flags, we calculate
++ * what zone it should be using. This consumes a cache line in most
++ * cases but avoids a number of branches in the allocator fast path
++ */
++void __init init_gfp_zone_table(void)
++{
++	gfp_t gfp_flags;
++
++	for (gfp_flags = 0; gfp_flags < GFP_ZONEMASK; gfp_flags++)
++		gfp_zone_table[gfp_flags] = gfp_flags_to_zone(gfp_flags);
++}
++
+ /*
+  * min_free_kbytes_sysctl_handler - just a wrapper around proc_dointvec() so 
+  *	that we can call two helper functions whenever min_free_kbytes
 -- 
 1.5.6.5
 
