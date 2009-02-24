@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbZBXMSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbZBXMTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbZBXMSz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 07:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZBXMRR
+	id S1757467AbZBXMTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 07:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbZBXMRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 07:17:17 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:39084 "EHLO gir.skynet.ie"
+	Tue, 24 Feb 2009 07:17:18 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:39096 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753565AbZBXMRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753985AbZBXMRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Feb 2009 07:17:14 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
@@ -20,9 +20,9 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 05/19] Re-sort GFP flags and fix whitespace alignment for easier reading.
-Date: Tue, 24 Feb 2009 12:17:01 +0000
-Message-Id: <1235477835-14500-6-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 06/19] Check only once if the zonelist is suitable for the allocation
+Date: Tue, 24 Feb 2009 12:17:02 +0000
+Message-Id: <1235477835-14500-7-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
 References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
@@ -30,43 +30,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resort the GFP flags after __GFP_MOVABLE got redefined so how the bits
-are used are a bit cleared.
+It is possible with __GFP_THISNODE that no zones are suitable. This
+patch makes sure the check is only made once.
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- include/linux/gfp.h |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ mm/page_alloc.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 581f8a9..8f7d176 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -25,6 +25,8 @@ struct vm_area_struct;
- #define __GFP_HIGHMEM	((__force gfp_t)0x02u)
- #define __GFP_DMA32	((__force gfp_t)0x04u)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 7cc4932..99fd538 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1487,9 +1487,8 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 	if (should_fail_alloc_page(gfp_mask, order))
+ 		return NULL;
  
-+#define __GFP_MOVABLE	((__force gfp_t)0x08u)  /* Page is movable */
-+
- /*
-  * Action modifiers - doesn't change the zoning
-  *
-@@ -50,11 +52,10 @@ struct vm_area_struct;
- #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* See above */
- #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
- #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
--#define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
--#define __GFP_HARDWALL   ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
--#define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
-+#define __GFP_NOMEMALLOC  ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
-+#define __GFP_HARDWALL    ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
-+#define __GFP_THISNODE	  ((__force gfp_t)0x40000u) /* No fallback, no policies */
- #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
--#define __GFP_MOVABLE	((__force gfp_t)0x08u)  /* Page is movable */
+-restart:
+-	z = zonelist->_zonerefs;  /* the list of zones suitable for gfp_mask */
+-
++	/* the list of zones suitable for gfp_mask */
++	z = zonelist->_zonerefs;
+ 	if (unlikely(!z->zone)) {
+ 		/*
+ 		 * Happens if we have an empty zonelist as a result of
+@@ -1498,6 +1497,7 @@ restart:
+ 		return NULL;
+ 	}
  
- #define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
++restart:
+ 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
+ 			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
+ 	if (page)
 -- 
 1.5.6.5
 
