@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbZBXWAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZBXWBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbZBXWAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 17:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbZBXWAT
+	id S1760914AbZBXWBU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 17:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbZBXWBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 17:00:19 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56549 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753852AbZBXWAS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 17:00:18 -0500
-Date: Tue, 24 Feb 2009 13:59:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andy Isaacson <adi@hexapodia.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "lenb@kernel.org" <lenb@kernel.org>, mjg@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, rui.zhang@intel.com
-Subject: Re: [Linux 2.6.29-rc6] [drm:i915_set_status_page] *ERROR* can not
- ioremap virtual address for G33 hw status page
-In-Reply-To: <1235511845.20084.2.camel@optimus>
-Message-ID: <alpine.LFD.2.00.0902241354220.3111@localhost.localdomain>
-References: <8db1092f0902230646o78a07a09t920ad65369b5a20d@mail.gmail.com>  <1235419343.4816.27.camel@gaiman> <200902232230.29501.rjw@sisk.pl>  <8db1092f0902231340k7c7d0fd1me49302f2efd03491@mail.gmail.com>  <86802c440902231701q1e169a67oa12bd84ac0e4c7aa@mail.gmail.com>
-  <20090224032304.GA26344@hexapodia.org>  <86802c440902232150m2b22e3cfg8993193f8867dfbf@mail.gmail.com>  <20090224194432.GB28772@elte.hu> <49A44F0F.4060105@kernel.org>  <20090224213907.GA12601@elte.hu> <1235511845.20084.2.camel@optimus>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 24 Feb 2009 17:01:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43031 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753543AbZBXWBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 17:01:09 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux-kernel@vger.kernel.org
+Subject: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 video_open
+Date: Tue, 24 Feb 2009 17:00:55 -0500
+User-Agent: KMail/1.11.0 (Linux/2.6.27.18-171.2.28.fc10.x86_64; KDE/4.2.0; x86_64; ; )
+Cc: Mike Krufky <mkrufky@linuxtv.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902241700.56099.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Mark Jenks
+https://www.redhat.com/mailman/private/video4linux-list/2009-January/msg00041.html
+
+The Hauppauge WinTV HVR-1800 tv tuner card has both digital and analog
+abilities, both of which are supported by v4l/dvb under 2.6.27.y. The analog
+side also features a hardware mpeg2 encoder. The HVR-1250 tv tuner card
+has both digital and analog abilities, but analog isn't currently supported
+under any kernel. These cards both utilize the cx23885 driver, but with
+slightly different usage. When the code paths for each card is executed,
+they wind up poking a cx23885_devlist, which contains devices from both
+of the cards, and access attempts are made to portions of 'struct
+cx23885_dev' that aren't valid for that device. Simply add some extra
+checks before trying to access these structs.
+
+More gory details:
+  http://article.gmane.org/gmane.linux.drivers.dvb/46630
+
+This was triggering on my own system at home w/both cards in it, and
+no longer happens with this patch included.
+
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
+
+---
+
+ drivers/media/video/cx23885/cx23885-417.c   |    2 +-
+ drivers/media/video/cx23885/cx23885-video.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/video/cx23885/cx23885-417.c b/drivers/media/video/cx23885/cx23885-417.c
+index 7b0e8c0..19154b6 100644
+--- a/drivers/media/video/cx23885/cx23885-417.c
++++ b/drivers/media/video/cx23885/cx23885-417.c
+@@ -1585,7 +1585,7 @@ static int mpeg_open(struct inode *inode, struct file *file)
+ 
+ 	list_for_each(list, &cx23885_devlist) {
+ 		h = list_entry(list, struct cx23885_dev, devlist);
+-		if (h->v4l_device->minor == minor) {
++		if (h->v4l_device && h->v4l_device->minor == minor) {
+ 			dev = h;
+ 			break;
+ 		}
+diff --git a/drivers/media/video/cx23885/cx23885-video.c b/drivers/media/video/cx23885/cx23885-video.c
+index 6047c78..a2b5a0c 100644
+--- a/drivers/media/video/cx23885/cx23885-video.c
++++ b/drivers/media/video/cx23885/cx23885-video.c
+@@ -733,7 +733,7 @@ static int video_open(struct inode *inode, struct file *file)
+ 
+ 	list_for_each(list, &cx23885_devlist) {
+ 		h = list_entry(list, struct cx23885_dev, devlist);
+-		if (h->video_dev->minor == minor) {
++		if (h->video_dev && h->video_dev->minor == minor) {
+ 			dev  = h;
+ 			type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+ 		}
 
 
-On Wed, 25 Feb 2009, Dave Airlie wrote:
-> > 
-> > The other question is, why did the ioremap_wc() fail? Why doesnt 
-> > it fall back to UC transparently?
->
-> I'm sort of worried the drivers are going to end up doing, which at
-> the moment is the only option that will work.
-> 
-> blah = ioremap_wc();
-> if (!blah)
-> 	blah = ioremap_nocache();
-> 
-> which seems pointless so this is a good point, where is the fallback?
-
-I agree.
-
-We should not fail the ioremap_wc(), we should just fall back to nocache, 
-(possibly with a warning). In fact I thought we did exactly that, but 
-maybe it only happens in certain directions.
-
-			Linus
+-- 
+Jarod Wilson
+jarod@redhat.com
