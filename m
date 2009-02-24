@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZBXRwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759577AbZBXRxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbZBXRwZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:52:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbZBXRwP
+	id S1759577AbZBXRxT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbZBXRxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:52:15 -0500
-Received: from www.tglx.de ([62.245.132.106]:58826 "EHLO www.tglx.de"
+	Tue, 24 Feb 2009 12:53:05 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44305 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754340AbZBXRwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:52:15 -0500
-Date: Tue, 24 Feb 2009 18:51:25 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [Announce] 2.6.29-rc6-rt2
-In-Reply-To: <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1758067AbZBXRxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 12:53:04 -0500
+Date: Tue, 24 Feb 2009 17:53:00 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 10/19] Calculate the preferred zone for allocation only
+	once
+Message-ID: <20090224175300.GC5333@csn.ul.ie>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235477835-14500-11-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0902241229450.32227@qirst.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902241229450.32227@qirst.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series. It contains only one new patch:
- 
-  - fix the nf_conntrack bug, which was reported by various folks
+On Tue, Feb 24, 2009 at 12:31:41PM -0500, Christoph Lameter wrote:
+> On Tue, 24 Feb 2009, Mel Gorman wrote:
+> 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 6f26944..074f9a6 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1399,24 +1399,19 @@ static void zlc_mark_zone_full(struct zonelist *zonelist, struct zoneref *z)
+> >   */
+> >  static struct page *
+> >  get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+> > -		struct zonelist *zonelist, int high_zoneidx, int alloc_flags)
+> > +		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
+> > +		struct zone *preferred_zone)
+> >  {
+> 
+> This gets into a quite a number of parameters now. Pass a structure like in
+> vmscan.c?
 
-Download locations:
- 
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
-  
-Information on the RT patch can be found at:
+I considered it, but thought that multiple offsets into structures might
+exceed the cost of pushing the parameters onto the stack. I never
+actually looked at the generated assembly though to make a proper
+assessment.
 
-   http://rt.wiki.kernel.org/index.php/Main_Page
+> Or simplify things to be able to run get_page_from_freelist with
+> less parameters? The number of parameters seem to be too high for a
+> fastpath function.
+> 
 
-to build the 2.6.29-rc6-rt3 tree, the following patches should be
-applied:
+Which is why I ended up inlining get_page_from_freelist() in V1. It's a rock
+and a hard place basically. Passing parameters is expensive, but calculating
+the information multiple times is too.
 
-  http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc6.tar.bz2
-  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc6-rt3.bz2
-  
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-      tglx
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
