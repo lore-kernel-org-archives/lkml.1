@@ -1,62 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbZBXQ1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758474AbZBXQaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314AbZBXQ1b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 11:27:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZBXQ1U
+	id S1758474AbZBXQaW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 11:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbZBXQaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 11:27:20 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:46983 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbZBXQ1T (ORCPT
+	Tue, 24 Feb 2009 11:30:06 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:37545 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754021AbZBXQaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 11:27:19 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: New filesystem for Linux kernel 
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: tomas@slax.org, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <E1LbycM-0007FV-Rg@pomaz-ex.szeredi.hu>
-References: <7558.1235374266@jrobl> <7769.1235374482@jrobl> <49A268A7.1010708@slax.org> <49A26ACC.90804@slax.org> <49A3AC14.2050107@slax.org> <E1Lbvpf-0006fF-Tg@pomaz-ex.szeredi.hu> <11287.1235481490@jrobl> <E1LbycM-0007FV-Rg@pomaz-ex.szeredi.hu>
-Date: Wed, 25 Feb 2009 01:26:59 +0900
-Message-ID: <15922.1235492819@jrobl>
+	Tue, 24 Feb 2009 11:30:04 -0500
+X-Auth-Info: yiN4NMyBRpkI5Q1t045wykJfL/yUgxTz2bfgYrewAUo=
+Message-ID: <49A42087.8050503@grandegger.com>
+Date: Tue, 24 Feb 2009 17:29:59 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Patrick McHardy <kaber@trash.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
+References: <1235070082-7069-1-git-send-email-wg@grandegger.com> <1235070082-7069-2-git-send-email-wg@grandegger.com> <1235070082-7069-3-git-send-email-wg@grandegger.com> <1235070082-7069-4-git-send-email-wg@grandegger.com> <499E7B9B.6030603@trash.net> <49A01932.4090004@grandegger.com> <49A272A3.5040405@trash.net> <49A2B949.7060909@grandegger.com> <49A3C023.90001@trash.net>
+In-Reply-To: <49A3C023.90001@trash.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Patrick McHardy wrote:
+> Wolfgang Grandegger wrote:
+>>>> 1. Set and get CAN device properties like bit-rate and controller mode.
+>>>> 2. Show CAN bus state (active, error-passive or bus-off).
+>>>> 3. Get device constants like clock frequency and bit-timing parameters.
+>>>> 4. Dump CAN device statistics.
+>>>> 5. Trigger device restart if CAN bus-off state has been detected.
+>>>>
+>>>> Not sure yet, if the interface if good for all purposes. Especially
+>>>> point 5. might be better handled by an IOCTL.
+>>> The first points sound pretty regular. The last one - just triggering
+>>> it is no problem of course, but since I don't know how the detection
+>>> works, I can't really tell whether its suitable.
+>>
+>> CAN errors and state changes might be delivered as CAN error messages to
+>> the receiving socket/application, like normal messages. When the
+>> application realizes the state change to CAN bus-off, it may want to
+>> trigger a bus-off recovery (controller restart). The CAN controller HW
+>> enters bus-off, when too much errors occurred on the bus. No more
+>> messages can then be sent of received and therefore the driver calls
+>> netif_carrier_off(). Is there already an interface for the user to
+>> restart? An appropriate IOCTL request would be a simply option, but they
+>> are generally deprecated, AFAIK. Using netlink would be more cumbersome,
+>> as with SYSFS.
+> 
+> You could consider triggering the restart automatically, similar
+> to the netdev watchdog. In fact, you could simply use that one.
 
-Miklos Szeredi:
-> It's always easier to review something with less features, even if
-> that feature set is too little for real world use.
+Automatic restart is already support by this patch series but we do not
+use the watchdog, because it would trigger on normal transmit timeouts
+as well. But maybe we can suppress them by fiddling with the watchdog's
+timeout value.
 
-Generally I agree with you.
+> If you really want to trigger this from userspace, setting the
+> device DOWN and UP again seems like the most appropriate way to
+> me (even though not very nice to use from an application POV).
+
+That's an option, but it might be a bit heavy, though.
+
+>>>> And we need a user space
+>>>> tool, e.g. canconfig, to handle the user requests and communicate with
+>>>> the kernel side.
+>>> Thats pretty standard :)
+>>
+>> For the iproute2 utility "ip", mainliy a netlink_can.c would be
+>> required. But a dedicated tool for CAN seems more appropriate to me.
+> 
+> I don't know the CAN specifics. One goal of the rtnl_link API
+> was to reduce to amount of userspace tools for link configuration
+> though, so please only create a new tool if there's really a good
+> reason. From my POV it would be preferrable to have link configuration
+> in iproute for direct use by users and possibly also support in
+> libnl for use by other applications.
+
+OK, it also depends on what we would like the tool finally to perform,
+apart from setting and getting device properties. On idea is to move the
+rather heavy calculation of bit-timing parameters out of the kernel to
+the user-space configuration tool.
+
+Wolfgang.
 
 
-> The simplest version is with all branches read-only.  That gets rid of
-> a _huge_ amount of complexity, yet it's still useful in some
-> situations.  It also deals with a lot of the basic infrastucture
-> needed for stacking.
-
-If you really think it is a better way to get merged into mainline, then
-I'll try implement such version.
-
-
-> And that's when one starts thinking about whether unioning is really
-> the right solution.  Instead this could be implemented with a special
-> filesystem format that only contains deltas to the data, metatata and
-> directory tree.  It would be much more space efficient, could easily
-> handle renames, hard links etc, without all the hacks that
-> unionfs/aufs does.
-
-It sounds like an ODF (on disk format) version of unionfs (while it
-seems to be inactive).
-At implementing, I don't think it easier to maintain delta of filedata
-and metadata. Since aufs has a writable branch in it, it is better and
-easier to maintain data in a branch fs.
-If you think there should not be any writable branch in aufs, and all
-"write" goes to a new filesystem format, then it is equivalent to a
-writable branch, isn't it?
-If you say "just a part of write" goes to a new fs, then I don't think
-we can support several essential features, for instance mmap.
-
-
-J. R. Okajima
