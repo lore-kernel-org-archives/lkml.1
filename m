@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZBXBp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbZBXBtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbZBXBp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 20:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZBXBpO
+	id S1755397AbZBXBtT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 20:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZBXBtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 20:45:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43177 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752973AbZBXBpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 20:45:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [Bug #12491] i915 lockdep warning
-Date: Tue, 24 Feb 2009 02:44:59 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Bob Copeland" <me@bobcopeland.com>,
-       "Brandeburg\, Jesse" <jesse.brandeburg@intel.com>,
-       "Roland Dreier" <rolandd@cisco.com>
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.8rF.0qzoJB@chimera> <adabpssvcn9.fsf@cisco.com>
-In-Reply-To: <adabpssvcn9.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 23 Feb 2009 20:49:10 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42723 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbZBXBtJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 20:49:09 -0500
+Date: Tue, 24 Feb 2009 10:47:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       menage@google.com, containers@lists.linux-foundation.org
+Subject: Re: Question for remount
+Message-Id: <20090224104751.4767a3a1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <49A35048.3000304@cn.fujitsu.com>
+References: <20090220190223.e8b4f6a8.kamezawa.hiroyu@jp.fujitsu.com>
+	<49A20976.2050301@cn.fujitsu.com>
+	<49A21044.40402@cn.fujitsu.com>
+	<20090224103659.069e6b33.kamezawa.hiroyu@jp.fujitsu.com>
+	<49A35048.3000304@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902240245.00489.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009, Roland Dreier wrote:
->  > Patch		: http://marc.info/?l=linux-kernel&m=123378709730700&w=2
+On Tue, 24 Feb 2009 09:41:28 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> >>  To change the set of subsystems bound to a mounted hierarchy, just
+> >>  remount with different options:
+> >> +# mount -o remount,cpuset,ns hier1 /dev/cgroup
+> >>  
+> >> -# mount -o remount,cpuset,ns  /dev/cgroup
+> >> +Now numtasks is removed from the hierarchy and ns is added.
+> >> +
+> >> +Note this will add ns to the hierarchy but won't remove numtasks or
+> >> +cpuset:
+> >> +# mount -o remount,ns /dev/cgroup
+> >>  
+> > 
+> > Just a question. What is "numtasks" here ? We have numtasks cgroup ?
+> > 
 > 
-> this patch is upstream now as a35f2e2b so I think we can close this one.
+> No, I guess that's a proposed but not implemented cgroup subsystem. :)
+> And I can change it to an existing one.
+> 
+O.K. thanks.
 
-Thanks, closed.
+BTW, how about writing this kind of text in explicit way ?
++Note: this will add ns to the hierarchy but won't remove numtasks or
++cpuset because new options is appended to old options. If you want to
++override, please use.....
 
-Rafael
+-Kame
+
