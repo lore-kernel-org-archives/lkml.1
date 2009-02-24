@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbZBXVD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbZBXVNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759629AbZBXVD7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 16:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZBXVDu
+	id S1759749AbZBXVNS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 16:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbZBXVND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 16:03:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55583 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432AbZBXVDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 16:03:50 -0500
-Message-ID: <49A46081.9080008@kernel.org>
-Date: Tue, 24 Feb 2009 13:02:57 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 24 Feb 2009 16:13:03 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44699 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756932AbZBXVNB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 16:13:01 -0500
+Message-ID: <49A462BD.7010205@zytor.com>
+Date: Tue, 24 Feb 2009 13:12:29 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
-       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       jeremy@goop.org, cpw@sgi.com, nickpiggin@yahoo.com.au,
-       ink@jurassic.park.msu.ru
-Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk	allocation
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224201718.GE28772@elte.hu> <20090224205105.GA19460@elte.hu>
-In-Reply-To: <20090224205105.GA19460@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Thomas Jourdan <tjourdan@interfaceconcept.com>
+CC: linux-kernel@vger.kernel.org, Huang Ying <ying.huang@intel.com>,
+       Peter Jones <pjones@redhat.com>, Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [BUG] dmi_scan_machine uses uninitialized address on x86 / EFI
+References: <342F93DAA55A4EE888FBD256CE6044F4@thje6600v>
+In-Reply-To: <342F93DAA55A4EE888FBD256CE6044F4@thje6600v>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+Thomas Jourdan wrote:
 > 
->>>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git 
->>>   tj-percpu
->> ok, i pulled it into tip:core/percpu (one conflict resolution 
->> done - please double check it), and exposed it to -tip testing 
->> briefly.
->>
->> Six x86 test-systems failed ;-) One of them had this panic:
->>
->> Scan SMP from ffff880000000000 for 1024 bytes.
->> Scan SMP from ffff88000009fc00 for 1024 bytes.
->> Scan SMP from ffff8800000f0000 for 65536 bytes.
->> found SMP MP-table at [ffff8800000fe680] fe680
->> PANIC: early exception 0  rip   :                 error   cr2       
->> PANIC: early exception 0  rip   :                 error   cr2   
+> On x86/EFI platforms, if efi_enabled is true, the dmi_scan_machine function
+> fails, even if valid DMI table is present. In the setup_arch function,
+> efi_init is called after dmi_scan_machine. But this is efi_init which will
+> initialize the smbios address, needed by dmi_scan_machine.
 > 
-> Ah, spoke too soon. Bisection gave this commit from Yinghai:
-> 
-> dc07da5: x86: check range in reserve_early()
+> This leads to dmi_scan_machine ioremapping physical address 0, instead of
+> the address provided by the EFI system table. The following patch fixes the
+> problem.
 > 
 
-arh...
+Hi Thomas,
 
-should be
+What is the concrete manifestation of the bug (i.e. how critical is it?)
+ We are late in the 2.6.29-rc cycle, and this patch seems to have some
+risk associated with it.
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index e858268..b114499 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -858,6 +858,9 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
-  */
- void __init reserve_early(u64 start, u64 end, char *name)
- {
-+	if (start >= end)
-+		return;
-+
- 	drop_overlaps_that_are_ok(start, end);
- 	__reserve_early(start, end, name, 0);
- }
+Huang, Peter, Yinghai: any opinions?
 
+	-hpa
 
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
