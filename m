@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbZBXQ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758440AbZBXRFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758551AbZBXQ7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 11:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZBXQ7F
+	id S1758440AbZBXRFH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:05:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZBXREz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 11:59:05 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:36747 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbZBXQ7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 11:59:03 -0500
-Subject: Re: Another Performance Regression in write() syscall
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Salman Qazi <sqazi@google.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <200902241947.53180.nickpiggin@yahoo.com.au>
-References: <20090224060558.GA14812@google.com>
-	 <1235456745.26788.237.camel@nimitz>
-	 <200902241947.53180.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 24 Feb 2009 08:58:52 -0800
-Message-Id: <1235494732.26788.256.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Feb 2009 12:04:55 -0500
+Received: from web53302.mail.re2.yahoo.com ([206.190.49.92]:47116 "HELO
+	web53302.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754522AbZBXREy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 12:04:54 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=Qr3xS6K7uuE/HXF/UKQ0IbaRFyNc0/5M9Ygkg2bzqI+qc0N4WTt4SfeAFIQqDelpOkVnVvXf6uUTdfUZZsuFeBcafjMD/0rqpXNzgkEwBdTQdcmWyhOAzGV+VT9yYrkOer/CIr4x//h3Jx31UA4UNcElfD6S6+L+jZvhkjdvRSE=;
+X-YMail-OSG: 54mAJZ8VM1ljsfA2dkxL_g_hhGUefrYQJqsYQpBqdC1koq0p7pJZdjCZHq_GGsyELAzKflq8S2lsqZhkuAjurwlWMStrvUm7hjclw.BPH5unzuspfk113L2_BpmW8nxyCevXCPHgOYsRG0oHRkJKjcqILKdwcVWONRuDwzfdez3ZwpRWOCnpJq9XZFxIivKQW8mV5asUD0j4WXHycg0yNZg-
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Tue, 24 Feb 2009 09:04:52 -0800 (PST)
+From: Alberto Gonzalez <luis6674@yahoo.com>
+Reply-To: luis6674@yahoo.com
+Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Eric Anholt <eric@anholt.net>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <200902240824.32155.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <405946.86220.qm@web53302.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-24 at 19:47 +1100, Nick Piggin wrote:
-> On Tuesday 24 February 2009 17:25:45 Dave Hansen wrote:
-> > On Mon, 2009-02-23 at 22:05 -0800, Salman Qazi wrote:
-> > > Analysis of profile data has led us to believe that the commit
-> > > 3d733633a633065729c9e4e254b2e5442c00ef7e has caused a performance
-> > > regression.  This commit provides for tracking of writers so that read
-> > > only bind mounts function correctly.
-> > >
-> > > We can verify this regression by applying the following patch to
-> > > partially disable the above-mentioned commit and then running the fstime
-> > > component of Unixbench.  The settings used were 256 byte writes with
-> > > MAX_BLOCK of 2000.
-> >
-> > I'm a bit surprised that write() is what is regressing.  Unless I
-> > screwed up, we do all the expensive accounting at open()/close() time.
-> > Is this a test that gets run in parallel on multiple cpus?
+
+
+
+--- On Tue, 2/24/09, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> > Steps:
+> > - Boot into Fedora 10 Live CD (obviously, into the
+> default graphical mode)
+> > - Install Powertop (yum install powertop) and run it
+> > - I get about 60 wakeups per second from i915@pci....
+> leaving the system
+> > idle - Switch to console and back to X. The wakeups
+> are gone.
 > 
-> Don't forget touch_atime...
+> Ah ok, it sounds like you're getting vblank interrupts
+> at startup time, but 
+> once you VT switch the kernel figures out that you
+> don't need them, so it 
+> disables them.  I think this is a bug in the 2D driver; it
+> has an ioctl it 
+> uses when doing modesetting which doubles as a
+> "disabling the irq is ok" 
+> signal, but we call it at a time when the corresponding
+> pipe is off, so the 
+> kernel ignores the call.
 
-Yeah, that's a good point.  Are we sure that's what is happening here,
-though?  That's one thing a profile would hopefully help with.
+Yes, that's what E. Anholt supposed too.
 
-> Still, open/close isn't unimportant either.
-
-Yeah, that's true.  But, what I noticed was that all of the other
-open/close activity masked out any overhead from mnt_want/drop_write()
-since a big chunk of the overhead was just going and bringing the
-vfsmount pieces into the cache.
-
-> > Could you take a look at Nick's patches to speed this stuff up?
-> >
-> > 	http://thread.gmane.org/gmane.linux.file-systems/28186
-> >
-> > We may need to dust those off, although I'm still a bit worried about
-> > the complexities of open-coding all the barriers.
 > 
-> I really need to do something about trying to push them upstream again
-> actually because we've got them in SLES11 tree.
+> Can you file a bug for this at bugs.freedesktop.org? Is it
+> easy for you to 
+> rebuild & test xf86-video-intel driver patches?
 
-Were the patches that you integrated any different from the ones you
-posted a few months ago?
+I filed the report:
+http://bugs.freedesktop.org/show_bug.cgi?id=20296
 
--- Dave
+Sure, I guess I can manage to patch the Intel driver and test it. I'm using 2.4.3 now, so maybe one thing I could do first is to try 2.5.x.
+> 
+> Thanks,
+> -- 
+> Jesse Barnes, Intel Open Source Technology Center
 
+Thanks,
+Alberto.
+
+
+      
