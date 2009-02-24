@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbZBXSqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbZBXSwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757907AbZBXSqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 13:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZBXSqV
+	id S1757532AbZBXSwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 13:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZBXSwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 13:46:21 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34355 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752396AbZBXSqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 13:46:20 -0500
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX18Vyks2t9wV0u5qx2yYwUz2oSJckgDficJDWGwG2s
-	kdyHFwIQndtPdG
-Message-ID: <49A4406F.2010407@gmx.de>
-Date: Tue, 24 Feb 2009 19:46:07 +0100
-From: Helge Deller <deller@gmx.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Tue, 24 Feb 2009 13:52:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34911 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751471AbZBXSwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 13:52:09 -0500
+Date: Tue, 24 Feb 2009 19:52:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perfcounters/powerpc: Make exclude_kernel bit work on
+	Apple G5 processors
+Message-ID: <20090224185200.GA23109@elte.hu>
+References: <18851.20328.847510.730956@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
-       Kyle McMartin <kyle@mcmartin.ca>, David Woodhouse <dwmw2@infradead.org>,
-       Richard Zidlicky <rz@linux-m68k.org>, linux-parisc@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dann frazier <dannf@dannf.org>
-Subject: Re: [PATCH/RFC 0/5] Generic RTC class driver
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18851.20328.847510.730956@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> I've been looking into problems with auto-loading the RTC driver on PPC (more
-> specifically on PS3):
->   - The recent "rtc-ppc" RTC class driver is not autoloaded by udev because
->     it's an old style platform driver that contains its own platform device.
->   - The alternative old "genrtc" driver is autoloaded on non-udev systems only
->     because it contains the module alias char-major-10-135. However, it's not
->     a new-style RTC class driver.
-> 
-> Fortunately there already exists a generic RTC class driver: "rtc-parisc".
-> Despite it's name, it's platform-independent, as it's build on top of the RTC
-> abstraction used by "genrtc".
-> 
-> This patch series
->   - adds a missing module alias to rtc-parisc,
->   - renames rtc-parisc to rtc-generic,
->   - converts the architectures that currently have CONFIG_GEN_RTC enabled in
->     their defconfig (m68k, parisc, powerpc) to rtc-generic,
->   - removes the obsolete rtc-ppc driver,
->   - removes the old genrtc driver.
->   
-> Note that genrtc may be used on other archictectures as well: at least alpha
-> has the required infrastructure ([gs]et_rtc_time()). The Kconfig rules allow
-> genrtc to be enabled on several others (cris, h8300, mn10300, um, x86, xtensa).
-> 
-> Furthermore genrtc and rtc-generic are not 100% userspace compatible:
->   - /dev/rtc provided by genrtc uses a misc character device (10:135),
->   - /dev/rtc provided by rtc-generic uses a dynamic character device.
->   
-> So perhaps we don't want to kill gen-rtc yet?
-> 
-> Any comments are welcomed!
 
-Hi Geert,
-FYI, I didn't followed any discussions or changes around the RTC drivers for parisc,
-but Dann Frazier did some work on the parisc RTC driver as well.
-His patches were merged (not upstream yet!) in Kyle's "rtc-parisc" branch at:
-http://git.kernel.org/?p=linux/kernel/git/kyle/parisc-2.6.git;a=shortlog;h=rtc-parisc
+* Paul Mackerras <paulus@samba.org> wrote:
 
-Not sure if they conflict (or are in sync) with your patches...
+> Currently, setting hw_event.exclude_kernel does nothing on the PPC970
+> variants used in Apple G5 machines, because they have the HV (hypervisor)
+> bit in the MSR forced to 1, so as far as the PMU is concerned, the
+> kernel runs in hypervisor mode.  Thus we have to use the MMCR0_FCHV
+> (freeze counters in hypervisor mode) bit rather than the MMCR0_FCS
+> (freeze counters in supervisor mode) bit.
+> 
+> This checks the MSR.HV bit at startup, and if it is set, we set the
+> freeze_counters_kernel variable to MMCR0_FCHV (it was initialized to
+> MMCR0_FCS).  We then use that whenever we need to exclude kernel events.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> Ingo, please pull this from my perfcounters.git tree master branch at:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git master
+> 
+>  arch/powerpc/kernel/perf_counter.c |   23 ++++++++++++++++++-----
+>  1 files changed, 18 insertions(+), 5 deletions(-)
 
-Helge
+pulled, thanks Paul!
+
+	Ingo
