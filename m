@@ -1,102 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZBXMlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZBXMmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbZBXMlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 07:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZBXMlH
+	id S1756872AbZBXMmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 07:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZBXMmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 07:41:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35893 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752585AbZBXMlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 07:41:05 -0500
-Date: Tue, 24 Feb 2009 13:40:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
-Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
-	allocation
-Message-ID: <20090224124042.GA31295@elte.hu>
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224095708.GA20739@elte.hu> <49A3DE76.5010606@kernel.org>
+	Tue, 24 Feb 2009 07:42:03 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3993 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbZBXMmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 07:42:01 -0500
+Date: Tue, 24 Feb 2009 12:41:56 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc3-git 1/2] regulator: twl4030 regulators
+Message-ID: <20090224124154.GA30130@sirena.org.uk>
+References: <200902081037.06645.david-b@pacbell.net> <200902231443.16334.david-b@pacbell.net> <20090224005536.GC3601@sirena.org.uk> <200902231803.50059.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A3DE76.5010606@kernel.org>
+In-Reply-To: <200902231803.50059.david-b@pacbell.net>
+X-Cookie: This sentence no verb.
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 23, 2009 at 06:03:49PM -0800, David Brownell wrote:
+> On Monday 23 February 2009, Mark Brown wrote:
 
-* Tejun Heo <tj@kernel.org> wrote:
+> > The change to add voltage range constraints if none were supplied is a
+> > noticable policy change from the existing framework standard - it allows
+> > machines to enable voltage changes without specifying what the valid
+> > values are. 
 
-> Hello, Ingo.
-> 
-> Ingo Molnar wrote:
-> > Hm, i think there still must be some basic misunderstanding 
-> > somewhere here. Let me describe the design i described in the 
-> > previous mail in more detail.
-> > 
-> > In one of your changelogs you state:
-> > 
-> > |    On NUMA, embedding allocator can't be used as different 
-> > |    units can't be made to fall in the correct NUMA nodes.
-> > 
-> > This is a direct consequence of the unit/chunk abstraction,
-> 
-> Not at all.  That's an optimization for !NUMA.  The remap 
-> allocator is what can be done on NUMA.  Chunking or not 
-> doesn't make any difference in this regard.  The only 
-> difference between chunking and not chunking is whether 
-> separately allocated percpu offsets have more or less holes 
-> inbetween them, which is irrelevant for all purposes.
+> "Whatever the hardware handles" *is* a specification.
 
-It's not an optimization, it's a pessimisation :)
+> And there's no more assurance it's right than any
+> other specification would be ... except that, as a
 
-Please read what i wrote to you. We want the percpu static and 
-dynamic areas to be _one and the same thing_. (With just the 
-different that static allocations have a handy compile-time 
-offset shortcut - but the access is still the same.)
+You're right that we can't guarantee that users get everything correct,
+the goal is more to ensure that some machine specific checks have been
+done and that the regulator API won't go off by itself and start doing
+things since it has no idea at all what's supportable.
 
-Right now, with your latest code we still have this:
+> rule, hardware designers like to avoid assemblies
+> subject to trivial misconfiguration mistakes (like
+> firing up a 2.5V-max rail at 5V).
 
-   * Use this to get to a cpu's version of the per-cpu object
-   * dynamically allocated. Non-atomic access to the current  CPU's
-   * version should probably be combined with get_cpu()/put_cpu().
-   */
-  #define per_cpu_ptr(ptr, cpu)   SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
+The issue is what happens when software starts changing the
+configuration, for static configurations it doesn't make any difference.
 
-This slows down per_cpu_ptr() and makes the dynamic percpu case 
-a second-class citizen because most actual usages are for the 
-current CPU, still have to go via the per_cpu_offset() 
-indirection.
+> > I'm not convinced that this is a good idea in the first 
+> > place and it will result in the opposite behaviour to the current core
+> > code (which should end up erroring out in constraint checking at runtime).
 
-I.e. we have things like:
+> Well, if you really dislike it so much, that can
+> easily be removed.  Got any comments on the
+> framework patch I sent?  I'll take that as the
+> first one, even though it's a different thread.
 
-        const int cpu = get_cpu();
-
-        u8 *scratch = *per_cpu_ptr(ipcomp_scratches, cpu);
-
-Instead of a straight:
-
-        u8 *scratch = *this_cpu_ptr(ipcomp_scratches);
-
-We cannot do that optimization due to the NUMA and SMP 
-assymetry. If NUMA and SMP had the same linear structure, as i 
-suggested we do, we could do it.
-
-Currently you rely on per_cpu_offset() indirection basically as 
-a soft-TLB entry covering all dynamic allocations. That sucks.
-
-Ok?
-
-	Ingo
+Yes, I wanted to sleep on it.  I'll reply at some point today.
