@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbZBXMZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757810AbZBXM0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbZBXMZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 07:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZBXMZO
+	id S1757810AbZBXM0l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 07:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZBXM0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 07:25:14 -0500
-Received: from web53309.mail.re2.yahoo.com ([206.190.49.99]:38802 "HELO
-	web53309.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751852AbZBXMZN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 07:25:13 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=Q1dGdWAKxAqbIfR2kRfOb4Q7ZpgNJ/owd/gtJgstqYSg+UMmav2Z3DdYueBUgcKVBismROmc1ioqrPGefFv/Sji3f8Gjef5mF7ONyHFE0/Jb+nr/C+B8j8Rfn1Te0HsGTo+xE4VYJqe3OyTCtWJtdIZMTB4sErsq3GyRpb2dofE=;
-X-YMail-OSG: h_rZEPUVM1nccfpqmTHv968wVMiVNICuy5JOks9LfsYNHgcHCf63jJ70RudOOHR7sTRKOGAT6Mt5c29qdXNi6d0eFT4KcB4.thAR0Nl8K2zGt76sC20FcfGnFBqHOPICBTrWftjHiMmuWlleZ6zbpjifDWbW0IyYyPARoztQqG5Sy87UPFvQcCsA_sA9Buj.gj9D6h_xlvjxuPjR
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Tue, 24 Feb 2009 04:25:11 -0800 (PST)
-From: Alberto Gonzalez <luis6674@yahoo.com>
-Reply-To: luis6674@yahoo.com
-Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <200902242223.39069.nickpiggin@yahoo.com.au>
+	Tue, 24 Feb 2009 07:26:32 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:38881 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752925AbZBXM0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 07:26:32 -0500
+Date: Tue, 24 Feb 2009 13:26:41 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: ext4 fs question
+Message-ID: <20090224122641.GA4752@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <77208.42754.qm@web53309.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 24 Feb 2009 13:26:27 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Tue, 2/24/09, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+Hello,
 
-> > > Bug-Entry	:
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=12337
-> > > Subject		: ~100 extra wakeups reported by
-> powertop
-> > > Submitter	: Alberto Gonzalez
-> <luis6674@yahoo.com>
-> > > Date		: 2008-12-31 12:25 (55 days old)
-> >
-> > Still present, yes.
-> 
-> Any chance you could bisect it?
+is someone able to estimate how risky is to use ext4 fs without journal?
 
-Well, if you look at the report you'd notice that:
+I would like to use ext4 fs on my new shiny SSD where journal writes eat MLC
+erase cycles.
 
-- I'm using a released, stable, distro (Arch Linux, basically vanilla) kernel. I hardly know how to compile one, let alone bisect it.
-- I first had the problem on my 5+ year old Pentium 4 with equally old Intel graphics (845G chipset). I thought it would be hardware specific. But now I got a new Core 2 Duo with new Intel graphics (G45 chipset), moved to 64bit, and still have the exact same problem and exact same workaround. So I really don't believe anymore it's something hardware specific and should be quite general to anyone using Intel graphics. I hoped someone with much better knowledge could reproduce it and investigate it better.
-
-On the report, Eric Anholt mentioned a likely cause and said that Jesse Barnes had looked into a similar issue before. I cc'd him (jbarnes) on last week reminder, but got no reply.
-
-I really wish I could do more, but learning to compile a custom kernel for my hardware and do a git bisect is something I just can't afford now. If relevant people try to reproduce it but can't, and say only possible solution would be for me to bisect it I guess I could try to give it a go when I get some spare time.
-
-Thanks,
-Alberto.
-
-
-      
+-- 
+Luká¹ Hejtmánek
