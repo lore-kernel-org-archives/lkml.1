@@ -1,112 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760298AbZBXRj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbZBXRkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760298AbZBXRj2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 12:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757319AbZBXRjP
+	id S1759892AbZBXRkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 12:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbZBXRkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 12:39:15 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:5795 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760189AbZBXRjO (ORCPT
+	Tue, 24 Feb 2009 12:40:19 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:45034 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757936AbZBXRkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 12:39:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wBGo3tIU5u+iryZJIfHF48PaYlyXA7DsXY2M443lwZc389DZ7IAwe+4QB85nC4/w/R
-         CGJ/ptTlkyhRmoYOCzohlp9RVgUvaoI8+gwKE5PYCqSJYIKxVPpNyQPdh1t0oeHcLubt
-         YVWt1K+QboEMKUTawk1SHMeMVSdTiBlMvDPpc=
-Date: Tue, 24 Feb 2009 18:39:09 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 0/3] tracing/ftrace: ftrace_bprintk
-Message-ID: <20090224173908.GF5765@nowhere>
-References: <20090224051618.GA5142@nowhere> <20090224171718.GA3189@redhat.com> <20090224172530.GD14553@elte.hu>
+	Tue, 24 Feb 2009 12:40:17 -0500
+Date: Tue, 24 Feb 2009 12:31:41 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 10/19] Calculate the preferred zone for allocation only
+ once
+In-Reply-To: <1235477835-14500-11-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0902241229450.32227@qirst.com>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235477835-14500-11-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224172530.GD14553@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 06:25:30PM +0100, Ingo Molnar wrote:
-> 
-> * Jason Baron <jbaron@redhat.com> wrote:
-> 
-> > On Tue, Feb 24, 2009 at 06:16:18AM +0100, Frederic Weisbecker wrote:
-> > > Hi,
-> > > 
-> > > These three patches are part of a patchset posted by Lai Jiangshan in december 2008.
-> > > They introduce a binary version of ftrace_printk() called ftrace_bprintk()
-> > > 
-> > > While having the same goal: print a generic message entry into the ring buffer,
-> > > their approaches are very different.
-> > > 
-> > > - ftrace_printk() does the formatting job on tracing time, insert the whole resulting string
-> > >   into the ring buffer, and then the string is printed on output time without a lot of modifications.
-> > > 
-> > > - ftrace_bprintk() does no formatting on tracing time. Instead, it looks at the format string
-> > >   to find the types and the numbers of the arguments and directly stores them as-is into the
-> > >   ring-buffer. Then the format string is stored into the ring-buffer too, but only by its address,
-> > >   it is not copied. Then on output time only, the final string is formatted and sent to the user.
-> > >   This gives a result about as fast as a traditional tracer with fixed fields types, except that
-> > >   we can print random types and numbers of fields here.
-> > > 
-> > > 
-> > > The first patch adds the generic support for binary formatting.
-> > > The second adds the support for binary print types on ftrace
-> > > and the last introduces ftrace_bprintk() which supports safely the modules
-> > > by listening on the module loading/unloading notifier to keep track of
-> > > unwanted freed format strings.
-> > > 
-> > > Lai Jiangshan (3):
-> > >       add binary printf
-> > >       ftrace: infrastructure for supporting binary record
-> > >       ftrace: add ftrace_bprintk()
-> > > 
-> > 
-> > hi,
-> > 
-> > this seems like a really valuable feature....I'm just 
-> > wondering about a couple of things....
-> > 
-> > If the 'brpintk tracer' in trace/trace_bprintk.c is just being 
-> > used to set an enabled flag for printing out these binary 
-> > records, then are we better off with just an option flag in 
-> > the 'trace_options' file?
-> > 
-> > Second, can we somehow combine ftrace_printk() and 
-> > ftrace_bprintk(), so that a developer can just use one 
-> > interface? Perhaps, ftrace_printk calls ftrace_bprintk if 
-> > binary option flag is set, otherwise, it just outputs things 
-> > normally.
-> 
-> Well, ftrace_bprintk() seems to be a worthy and transparent 
-> replacement for ftrace_printk() to me. I.e. lets just use this 
-> as the new implementation for ftrace_printk().
-> 
-> Would there be any downsides of doing so? I dont see any.
-> 
-> 	Ingo
+On Tue, 24 Feb 2009, Mel Gorman wrote:
 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 6f26944..074f9a6 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1399,24 +1399,19 @@ static void zlc_mark_zone_full(struct zonelist *zonelist, struct zoneref *z)
+>   */
+>  static struct page *
+>  get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+> -		struct zonelist *zonelist, int high_zoneidx, int alloc_flags)
+> +		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
+> +		struct zone *preferred_zone)
+>  {
 
-That's what I think too.
-For now I posted Lai's patchset, but my purpose is to replace the old 
-ftrace_printk by this new one. Once it is merged on -tip I'll start
-iterating around to improve it and replace ftrace_printk.
-
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+This gets into a quite a number of parameters now. Pass a structure like in
+vmscan.c? Or simplify things to be able to run get_page_from_freelist with
+less parameters? The number of parameters seem to be too high for a
+fastpath function.
 
