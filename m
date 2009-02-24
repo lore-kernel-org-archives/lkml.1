@@ -1,96 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbZBXL3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZBXL31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752803AbZBXL3L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 06:29:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZBXL25
+	id S1756600AbZBXL31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 06:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbZBXL3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 06:28:57 -0500
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:37174 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbZBXL24 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 06:28:56 -0500
-Subject: Re: debugging threaded apps running under a clone(CLONE_NEWPID)
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <49A3C314.6010806@fr.ibm.com>
-References: <499EE0D1.1010001@fr.ibm.com>
-	 <20090223182153.GD13151@us.ibm.com>  <49A3C314.6010806@fr.ibm.com>
-Content-Type: text/plain
-Date: Tue, 24 Feb 2009 12:28:52 +0100
-Message-Id: <1235474932.12827.62.camel@bahia>
+	Tue, 24 Feb 2009 06:29:13 -0500
+Received: from cmpxchg.org ([85.214.51.133]:33927 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756322AbZBXL3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 06:29:10 -0500
+Date: Tue, 24 Feb 2009 12:30:44 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
+Subject: Re: [PATCH 02/10] bootmem: clean up arch-specific bootmem wrapping
+Message-ID: <20090224113044.GA2060@cmpxchg.org>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <1235445101-7882-3-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235445101-7882-3-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-24 at 10:51 +0100, Cedric Le Goater wrote:
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+On Tue, Feb 24, 2009 at 12:11:33PM +0900, Tejun Heo wrote:
+> Impact: cleaner and consistent bootmem wrapping
+> 
+> By setting CONFIG_HAVE_ARCH_BOOTMEM_NODE, archs can define
+> arch-specific wrappers for bootmem allocation.  However, this is done
+> a bit strangely in that only the high level convenience macros can be
+> changed while lower level, but still exported, interface functions
+> can't be wrapped.  This not only is messy but also leads to strange
+> situation where alloc_bootmem() does what the arch wants it to do but
+> the equivalent __alloc_bootmem() call doesn't although they should be
+> able to be used interchangeably.
+> 
+> This patch updates bootmem such that archs can override / wrap the
+> backend function - alloc_bootmem_core() instead of the highlevel
+> interface functions to allow simpler and consistent wrapping.  Also,
+> HAVE_ARCH_BOOTMEM_NODE is renamed to HAVE_ARCH_BOOTMEM.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Johannes Weiner <hannes@saeurebad.de>
 > ---
->  fs/proc/base.c |   19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
+>  arch/avr32/Kconfig               |    2 +-
+>  arch/x86/Kconfig                 |    2 +-
+>  arch/x86/include/asm/mmzone_32.h |   43 ++++---------------------------------
+>  include/linux/bootmem.h          |   10 +++-----
+>  mm/bootmem.c                     |   14 +++++++++--
+>  5 files changed, 22 insertions(+), 49 deletions(-)
 > 
-> Index: 2.6.27-mcr.git/fs/proc/base.c
-> ===================================================================
-> --- 2.6.27-mcr.git.orig/fs/proc/base.c
-> +++ 2.6.27-mcr.git/fs/proc/base.c
-> @@ -2444,6 +2444,23 @@ static int proc_tgid_io_accounting(struc
+> diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+> index b189680..05fe305 100644
+> --- a/arch/avr32/Kconfig
+> +++ b/arch/avr32/Kconfig
+> @@ -181,7 +181,7 @@ source "kernel/Kconfig.preempt"
+>  config QUICKLIST
+>  	def_bool y
+>  
+> -config HAVE_ARCH_BOOTMEM_NODE
+> +config HAVE_ARCH_BOOTMEM
+>  	def_bool n
+>  
+>  config ARCH_HAVE_MEMORY_PRESENT
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index d3f6ead..6fd3b23 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1111,7 +1111,7 @@ config NODES_SHIFT
+>  	  Specify the maximum number of NUMA Nodes available on the target
+>  	  system.  Increases memory reserved to accomodate various tables.
+>  
+> -config HAVE_ARCH_BOOTMEM_NODE
+> +config HAVE_ARCH_BOOTMEM
+>  	def_bool y
+>  	depends on X86_32 && NUMA
+>  
+> diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
+> index 07f1af4..1e0fa9e 100644
+> --- a/arch/x86/include/asm/mmzone_32.h
+> +++ b/arch/x86/include/asm/mmzone_32.h
+> @@ -93,45 +93,12 @@ static inline int pfn_valid(int pfn)
+>  #endif /* CONFIG_DISCONTIGMEM */
+>  
+>  #ifdef CONFIG_NEED_MULTIPLE_NODES
+> -
+> -/*
+> - * Following are macros that are specific to this numa platform.
+> - */
+> -#define reserve_bootmem(addr, size, flags) \
+> -	reserve_bootmem_node(NODE_DATA(0), (addr), (size), (flags))
+> -#define alloc_bootmem(x) \
+> -	__alloc_bootmem_node(NODE_DATA(0), (x), SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
+> -#define alloc_bootmem_nopanic(x) \
+> -	__alloc_bootmem_node_nopanic(NODE_DATA(0), (x), SMP_CACHE_BYTES, \
+> -				__pa(MAX_DMA_ADDRESS))
+> -#define alloc_bootmem_low(x) \
+> -	__alloc_bootmem_node(NODE_DATA(0), (x), SMP_CACHE_BYTES, 0)
+> -#define alloc_bootmem_pages(x) \
+> -	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
+> -#define alloc_bootmem_pages_nopanic(x) \
+> -	__alloc_bootmem_node_nopanic(NODE_DATA(0), (x), PAGE_SIZE, \
+> -				__pa(MAX_DMA_ADDRESS))
+> -#define alloc_bootmem_low_pages(x) \
+> -	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE, 0)
+> -#define alloc_bootmem_node(pgdat, x)					\
+> -({									\
+> -	struct pglist_data  __maybe_unused			\
+> -				*__alloc_bootmem_node__pgdat = (pgdat);	\
+> -	__alloc_bootmem_node(NODE_DATA(0), (x), SMP_CACHE_BYTES,	\
+> -						__pa(MAX_DMA_ADDRESS));	\
+> -})
+> -#define alloc_bootmem_pages_node(pgdat, x)				\
+> -({									\
+> -	struct pglist_data  __maybe_unused			\
+> -				*__alloc_bootmem_node__pgdat = (pgdat);	\
+> -	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE,		\
+> -						__pa(MAX_DMA_ADDRESS));	\
+> -})
+> -#define alloc_bootmem_low_pages_node(pgdat, x)				\
+> +/* always use node 0 for bootmem on this numa platform */
+> +#define alloc_bootmem_core(__bdata, size, align, goal, limit)		\
+>  ({									\
+> -	struct pglist_data  __maybe_unused			\
+> -				*__alloc_bootmem_node__pgdat = (pgdat);	\
+> -	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE, 0);		\
+> +	bootmem_data_t __maybe_unused *	__abm_bdata_dummy = (__bdata);	\
+> +	__alloc_bootmem_core(NODE_DATA(0)->bdata,			\
+> +			     (size), (align), (goal), (limit));		\
+>  })
+>  #endif /* CONFIG_NEED_MULTIPLE_NODES */
+
+This won't suffice as reserve_bootmem() doesn't use
+alloc_bootmem_core(), so now you effectively removed the node-0
+restriction for reserve_bootmem() on this configuration.
+
+I wonder why this setup wants to register several bootmem nodes but
+only use node 0, anyway.  Does someone remember? :)
+
+> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+> index 95837bf..3a87f93 100644
+> --- a/include/linux/bootmem.h
+> +++ b/include/linux/bootmem.h
+> @@ -69,10 +69,9 @@ extern int reserve_bootmem_node(pg_data_t *pgdat,
+>  				 unsigned long physaddr,
+>  				 unsigned long size,
+>  				 int flags);
+> -#ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+> -extern int reserve_bootmem(unsigned long addr, unsigned long size, int flags);
+> -#endif
+> -
+> +extern int reserve_bootmem(unsigned long addr,
+> +			   unsigned long size,
+> +			   int flags);
+>  extern void *__alloc_bootmem_nopanic(unsigned long size,
+>  			     unsigned long align,
+>  			     unsigned long goal);
+> @@ -94,7 +93,7 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
+>  				      unsigned long size,
+>  				      unsigned long align,
+>  				      unsigned long goal);
+> -#ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+> +
+>  #define alloc_bootmem(x) \
+>  	__alloc_bootmem(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
+>  #define alloc_bootmem_nopanic(x) \
+> @@ -113,7 +112,6 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
+>  	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
+>  #define alloc_bootmem_low_pages_node(pgdat, x) \
+>  	__alloc_bootmem_low_node(pgdat, x, PAGE_SIZE, 0)
+> -#endif /* !CONFIG_HAVE_ARCH_BOOTMEM_NODE */
+>  
+>  extern int reserve_bootmem_generic(unsigned long addr, unsigned long size,
+>  				   int flags);
+> diff --git a/mm/bootmem.c b/mm/bootmem.c
+> index 51a0ccf..d7140c0 100644
+> --- a/mm/bootmem.c
+> +++ b/mm/bootmem.c
+> @@ -37,6 +37,16 @@ static struct list_head bdata_list __initdata = LIST_HEAD_INIT(bdata_list);
+>  
+>  static int bootmem_debug;
+>  
+> +/*
+> + * If an arch needs to apply workarounds to bootmem allocation, it can
+> + * set CONFIG_HAVE_ARCH_BOOTMEM and define a wrapper around
+> + * __alloc_bootmem_core().
+> + */
+> +#ifndef CONFIG_HAVE_ARCH_BOOTMEM
+> +#define alloc_bootmem_core(bdata, size, align, goal, limit)		\
+> +	__alloc_bootmem_core((bdata), (size), (align), (goal), (limit))
+> +#endif
+> +
+>  static int __init bootmem_debug_setup(char *buf)
+>  {
+>  	bootmem_debug = 1;
+> @@ -382,7 +392,6 @@ int __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+>  	return mark_bootmem_node(pgdat->bdata, start, end, 1, flags);
 >  }
->  #endif /* CONFIG_TASK_IO_ACCOUNTING */
-> 
-> +static int proc_pid_vpids(struct task_struct *task, char *buffer)
-> +{
-> +	struct pid_namespace *pid_ns = task->nsproxy->pid_ns;
-> +
+>  
+> -#ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+>  /**
+>   * reserve_bootmem - mark a page range as usable
+>   * @addr: starting address of the range
+> @@ -403,7 +412,6 @@ int __init reserve_bootmem(unsigned long addr, unsigned long size,
+>  
+>  	return mark_bootmem(start, end, 1, flags);
+>  }
+> -#endif /* !CONFIG_HAVE_ARCH_BOOTMEM_NODE */
+>  
+>  static unsigned long align_idx(struct bootmem_data *bdata, unsigned long idx,
+>  			unsigned long step)
+> @@ -428,7 +436,7 @@ static unsigned long align_off(struct bootmem_data *bdata, unsigned long off,
+>  	return ALIGN(base + off, align) - base;
+>  }
+>  
+> -static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
+> +static void * __init __alloc_bootmem_core(struct bootmem_data *bdata,
+>  				unsigned long size, unsigned long align,
+>  				unsigned long goal, unsigned long limit)
 
-This breaks if task is a zombie...
+static but you refer to it in arch/x86/include/mmzone_32.h.
 
-> +	return sprintf(buffer, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n",
-> +		       task_pid_nr_ns(task, pid_ns), // pid
-> +		       task_pid_nr(task),
-> +		       task_tgid_nr_ns(task, pid_ns), // tgid
-> +		       task_tgid_nr(task),
-> +		       task_tgid_nr_ns(task->real_parent, pid_ns), // ppid
-> +		       task_tgid_nr(task->real_parent),
-> +		       task_pgrp_nr_ns(task, pid_ns), // pgid
-> +		       task_pgrp_nr(task),
-> +		       task_session_nr_ns(task, pid_ns), // sid
-> +		       task_session_nr(task));
-> +}
-> +
->  /*
->   * Thread groups
->   */
-> @@ -2519,6 +2536,7 @@ static const struct pid_entry tgid_base_
->  #ifdef CONFIG_TASK_IO_ACCOUNTING
->  	INF("io",	S_IRUGO, tgid_io_accounting),
->  #endif
-> +	INF("vpids",	S_IRUGO, pid_vpids),
->  };
-> 
->  static int proc_tgid_base_readdir(struct file * filp,
-> @@ -2854,6 +2872,7 @@ static const struct pid_entry tid_base_s
->  #ifdef CONFIG_TASK_IO_ACCOUNTING
->  	INF("io",	S_IRUGO, tid_io_accounting),
->  #endif
-> +	INF("vpids",	S_IRUGO, pid_vpids),
->  };
-> 
->  static int proc_tid_base_readdir(struct file * filp,
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
--- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
-
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
-
+	Hannes
