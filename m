@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZBXPwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbZBXPwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbZBXPwi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 10:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZBXPw3
+	id S1758489AbZBXPwv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 10:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbZBXPwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 10:52:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36783 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbZBXPw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 10:52:29 -0500
-Date: Tue, 24 Feb 2009 16:49:36 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, kenchen@google.com,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: broken do_each_pid_{thread,task}
-Message-ID: <20090224154936.GA13837@redhat.com>
-References: <494581D7.6000203@gmail.com> <m1wse29roy.fsf@frodo.ebiederm.org> <20081215104716.GB11106@redhat.com> <20081215170937.GA24080@redhat.com> <49A3F48E.5030008@gmail.com>
+	Tue, 24 Feb 2009 10:52:39 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:41810 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758229AbZBXPwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 10:52:38 -0500
+Date: Tue, 24 Feb 2009 09:43:51 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, hpa@zytor.com,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       mpm@selenic.com, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org
+Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
+Message-ID: <20090224154351.GD17294@us.ibm.com>
+References: <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain> <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz> <20090218231545.GA17524@elte.hu> <20090219190637.GA4846@x200.localdomain> <1235070714.26788.56.camel@nimitz> <20090224044752.GB3202@x200.localdomain> <1235452285.26788.226.camel@nimitz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A3F48E.5030008@gmail.com>
+In-Reply-To: <1235452285.26788.226.camel@nimitz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24, Jiri Slaby wrote:
->
-> On 15.12.2008 18:09, Oleg Nesterov wrote:
->> On 12/15, Oleg Nesterov wrote:
->>> On 12/14, Eric W. Biederman wrote:
->>>> Although seeing the unexpected corner case it gets us into I think it would
->>>> be good to reconsider this test.
->>
->> So. I can't decide whether this patch is cleanup or the further
->> uglification, but if anyone likes it I will be happy to send it.
->
-> FWIW I don't like the patch :)
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Tue, 2009-02-24 at 07:47 +0300, Alexey Dobriyan wrote:
+> > > I think what I posted is a decent compromise.  It gets you those
+> > > warnings at runtime and is a one-way trip for any given process.  But,
+> > > it does detect in certain cases (fork() and unshare(FILES)) when it is
+> > > safe to make the trip back to the "I'm checkpointable" state again.
+> > 
+> > "Checkpointable" is not even per-process property.
+> > 
+> > Imagine, set of SAs (struct xfrm_state) and SPDs (struct xfrm_policy).
+> > They are a) per-netns, b) persistent.
+> > 
+> > You can hook into socketcalls to mark process as uncheckpointable,
+> > but since SAs and SPDs are persistent, original process already exited.
+> > You're going to walk every process with same netns as SA adder and mark
+> > it as uncheckpointable. Definitely doable, but ugly, isn't it?
+> > 
+> > Same for iptable rules.
+> > 
+> > "Checkpointable" is container property, OK?
+> 
+> Ideally, I completely agree.
+> 
+> But, we don't currently have a concept of a true container in the
+> kernel.  Do you have any suggestions for any current objects that we
+> could use in its place for a while?
 
-Well, I agree, it is not very nice ;)
+I think the main point is that it makes the concept of marking a task as
+uncheckpointable unworkable.  So at sys_checkpoint() time or when we cat
+/proc/$$/checkpointable, we can check for all of the uncheckpointable
+state of both $$ and its container (including whether $$ is a container
+init).  But we can't expect that (to use Alexey's example) when one task
+in a netns does a certain sys_socketcall, all tasks in the container
+will be marked uncheckpointable.  Or at least we don't want to.
 
-But why do you dislike it? Yes, the implementation of pid_for_each_task()
-is not simple. Partly because hlist_for_each_entry_rcu() is ugly and
-imho should be fixed (see btw http://marc.info/?t=120879441200004).
+Which means task->uncheckpointable can't be the big stick which I think
+you were hoping it would be.
 
-But with this patch the callers become simpler, we can just do
-
-	pid_for_each_task(pid, type, task)
-		do_something(task);
-
-instead of
-
-	 do_each_pid_task(pid, type, task) {
-	 	do_something(task);
-	 } while_each_pid_task(pid, type, task);
-
-and we can use break/continue safely.
-
-> Otherwise I'll add at least a big warning about using break/cont
-> statements inside the loop.
-
-Agreed, this would be nice.
-
->> +#define pid_for_each_task(pid, type, p)	\
->> +	for (p = (pid) ? (void*)(pid)->tasks[type].first : NULL;	\
->> +	     rcu_dereference(p)&&  ({					\
->> +		prefetch(((struct hlist_node*)p)->next);		\
->> +		p = hlist_entry((void*)p, typeof(*p), pids[type].node);	\
->> +		1; });							\
->> +	     p = ((type) != PIDTYPE_PID) ?				\
->> +		(void*)(p)->pids[type].node.next : NULL)
->> +
-
-Really, is this too bad?
-
-Oleg.
-
+-serge
