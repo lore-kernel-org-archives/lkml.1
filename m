@@ -1,87 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbZBXFrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZBXFr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbZBXFrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 00:47:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZBXFre
+	id S1755955AbZBXFr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 00:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZBXFrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 00:47:34 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:60402 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbZBXFrd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 00:47:33 -0500
-Date: Tue, 24 Feb 2009 06:47:25 +0100
-From: Nico Schottelius <nico-linux-20090213@schottelius.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>,
-       Nico Schottelius <nico-linux-20090213@schottelius.org>
-Subject: Re: [Bug #12705] X200: Brightness broken since
-	2.6.29-rc4-58-g4c098bc
-Message-ID: <20090224054725.GB27085@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090213@schottelius.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.C1D.HpzoJB@chimera>
+	Tue, 24 Feb 2009 00:47:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57705 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753656AbZBXFri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 00:47:38 -0500
+Message-ID: <49A389F7.9030002@kernel.org>
+Date: Tue, 24 Feb 2009 14:47:35 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="IiVenqGWf+H9Y6IX"
-Content-Disposition: inline
-In-Reply-To: <vP9hdyF4fL.A.C1D.HpzoJB@chimera>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc4-ikn-00001-gd5b5623 x86_64)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, jeremy@goop.org, cpw@sgi.com, mingo@elte.hu,
+       tony.luck@intel.com
+Subject: Re: [PATCH 09/10] percpu: implement new dynamic percpu allocator
+References: <1234958676-27618-1-git-send-email-tj@kernel.org> <200902192221.52835.rusty@rustcorp.com.au> <499E1D01.2040408@kernel.org> <200902241326.23605.rusty@rustcorp.com.au>
+In-Reply-To: <200902241326.23605.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Feb 2009 05:47:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Rusty.
 
---IiVenqGWf+H9Y6IX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Rusty Russell wrote:
+> On Friday 20 February 2009 13:31:21 Tejun Heo wrote:
+>>>    One question.  Are you thinking that to be defined by every SMP arch
+>>> long-term?
+>> Yeap, definitely.
+> 
+> Excellent.  That opens some really nice stuff.
 
-Still existing.
+Yeap, I think it'll be pretty interesting.
 
-Rafael J. Wysocki [Mon, Feb 23, 2009 at 10:48:13PM +0100]:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->=20
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
->=20
->=20
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D12705
-> Subject		: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-> Submitter	: Nico Schottelius <nico-linux-20090213@schottelius.org>
-> Date		: 2009-02-13 9:33 (11 days old)
-> References	: http://marc.info/?l=3Dlinux-kernel&m=3D123451768406825&w=3D4
-> Handled-By	: Len Brown <lenb@kernel.org>
->=20
->=20
+>>> Because there are benefits in having &<percpuvar> == valid
+>>> percpuptr, such as passing them around as parameters.  If so, IA64
+>>> will want a dedicated per-cpu area for statics (tho it can probably
+>>> just map it somehow, but it has to be 64k).
+>> Hmmm...  Don't have much idea about ia64 and its magic 64k.  Can it
+>> somehow be used for the first chunk?
+> 
+> Yes, but I think that chunk must not be handed out for dynamic allocations
+> but kept in reserve for modules.
+> 
+> IA64 uses a pinned TLB entry to map this cpu's 64k at __phys_per_cpu_start.
+> See __ia64_per_cpu_var() in arch/ia64/include/asm/percpu.h.  This means they
+> can also optimize cpu_local_* and read_cpuvar (or whatever it's called now).
+> IIUC IA64 needs this region internally, using it for percpu vars is a bonus.
 
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
+I'll take a look.
 
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+>>> These pseudo-constants seem like a really weird thing to do to me.
+>> I explained this in the reply to Andrew's comment.  It's
+>> non-really-constant-but-should-be-considered-so-by-users thing.  Is it
+>> too weird?  Even if I add comment explaning it?
+> 
+> It's weird; I'd make them __read_mostly and be done with it.
 
---IiVenqGWf+H9Y6IX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Already dropped.  It seems I was the only one liking it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+>> Hmmm... the reverse mapping can be piggy backed on vmalloc by adding a
+>> private pointer to the vm_struct but rbtree isn't too difficult to use
+>> so I just did it directly.  Nick, what do you think about adding
+>> private field to vm_struct and providing a reverse map function?
+> 
+> Naah, just walk the arrays to do the mapping.  Cuts a heap of code, and
+> we can optimize when someone complains :)
+> 
+> Walking arrays is cache friendly, too.
 
-iEYEARECAAYFAkmjie0ACgkQuL75KpiFGIz7bQCeOJFfVEU9+LzWtgg69wAF9xlq
-ghsAoN0c2IWl+/kEmDhrcwGR6SSeLTUL
-=DmnR
------END PGP SIGNATURE-----
+It won't make much difference cache line wise here as it needs to
+dereference anyway.  It will cut less than a hundred lines of code
+comments included.  Given the not-so-large amount of reduced
+complexity, I'm a little bit reluctant to cut the code but please feel
+free to submit a patch to kill it if you think it's really necessary.
 
---IiVenqGWf+H9Y6IX--
+>> As for the sl*b allocation thing, can you please explain in more
+>> detail or point me to the patches / threads?
+> 
+> lkml from 2008-05-30:
+> 
+> Message-Id: <20080530040021.800522644@sgi.com>:
+> Subject: [patch 32/41] cpu alloc: Use in slub
+> And:
+> Subject: [patch 33/41] cpu alloc: Remove slub fields
+> Subject: [patch 34/41] cpu alloc: Page allocator conversion
+
+I'll read them.  Thanks.
+
+>> Thanks.  :-)
+> 
+> Don't thank me: you're doing all the work!
+> Rusty.
+
+Heh... I'm just being coward.  I keep thanks around so that I can
+remove it when I wanna curse.  :-P
+
+-- 
+tejun
