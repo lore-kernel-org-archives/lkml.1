@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbZBXMXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbZBXMXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757824AbZBXMXH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 07:23:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbZBXMR0
+	id S1756236AbZBXMXb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 07:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbZBXMR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 07:17:26 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:39074 "EHLO gir.skynet.ie"
+	Tue, 24 Feb 2009 07:17:27 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:39221 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754901AbZBXMRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 07:17:22 -0500
+	id S1753985AbZBXMRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 07:17:23 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -20,9 +20,9 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 17/19] Do not setup zonelist cache when there is only one node
-Date: Tue, 24 Feb 2009 12:17:13 +0000
-Message-Id: <1235477835-14500-18-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 18/19] Do not check for compound pages during the page allocator sanity checks
+Date: Tue, 24 Feb 2009 12:17:14 +0000
+Message-Id: <1235477835-14500-19-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
 References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
@@ -30,40 +30,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a zonelist cache which is used to track zones that are not in
-the allowed cpuset or found to be recently full. This is to reduce cache
-footprint on large machines. On smaller machines, it just incurs cost
-for no gain. This patch only uses the zonelist cache when there are NUMA
-nodes.
+A number of sanity checks are made on each page allocation and free
+including that the page count is zero. page_count() checks for
+compound pages and checks the count of the head page if true. However,
+in these paths, we do not care if the page is compound or not as the
+count of each tail page should also be zero.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+This patch makes two changes to the use of page_count() in the free path. It
+converts one check of page_count() to a VM_BUG_ON() as the count should
+have been unconditionally checked earlier in the free path. It also avoids
+checking for compound pages.
+
+[mel@csn.ul.ie: Wrote changelog]
+Signed-off-by: Nick Piggin <nickpiggin@yahoo.com.au>
 ---
- mm/page_alloc.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+ mm/page_alloc.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 73cf205..e598da8 100644
+index e598da8..8a8db71 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -1483,9 +1483,15 @@ this_zone_full:
- 			zlc_mark_zone_full(zonelist, z);
- try_next_zone:
- 		if (NUMA_BUILD && !did_zlc_setup) {
--			/* we do zlc_setup after the first zone is tried */
--			allowednodes = zlc_setup(zonelist, alloc_flags);
--			zlc_active = 1;
-+			/*
-+			 * we do zlc_setup after the first zone is tried
-+			 * but only if there are multiple nodes to make
-+			 * it worthwhile
-+			 */
-+			if (num_online_nodes() > 1) {
-+				allowednodes = zlc_setup(zonelist, alloc_flags);
-+				zlc_active = 1;
-+			}
- 			did_zlc_setup = 1;
- 		}
+@@ -426,7 +426,7 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
+ 		return 0;
+ 
+ 	if (PageBuddy(buddy) && page_order(buddy) == order) {
+-		BUG_ON(page_count(buddy) != 0);
++		VM_BUG_ON(page_count(buddy) != 0);
+ 		return 1;
  	}
+ 	return 0;
+@@ -503,7 +503,7 @@ static inline int free_pages_check(struct page *page)
+ {
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+-		(page_count(page) != 0)  |
++		(atomic_read(&page->_count) != 0) |
+ 		(page->flags & PAGE_FLAGS_CHECK_AT_FREE))) {
+ 		bad_page(page);
+ 		return 1;
+@@ -648,7 +648,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+ {
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+-		(page_count(page) != 0)  |
++		(atomic_read(&page->_count) != 0)  |
+ 		(page->flags & PAGE_FLAGS_CHECK_AT_PREP))) {
+ 		bad_page(page);
+ 		return 1;
 -- 
 1.5.6.5
 
