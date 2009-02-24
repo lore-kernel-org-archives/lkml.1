@@ -1,126 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZBXBdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbZBXBd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbZBXBdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 20:33:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZBXBdb
+	id S1757630AbZBXBd7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 20:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZBXBdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 20:33:31 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63412 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbZBXBda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 20:33:30 -0500
-Message-ID: <49A34E72.1040609@cn.fujitsu.com>
-Date: Tue, 24 Feb 2009 09:33:38 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Paul Menage <menage@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org
-Subject: Re: Question for remount
-References: <20090220190223.e8b4f6a8.kamezawa.hiroyu@jp.fujitsu.com>	<6599ad830902200822u6d453340me718bacac3925040@mail.gmail.com>	<d7928a87d8c1bf661e3a3b64db9fa988.squirrel@webmail-b.css.fujitsu.com>	<49A20ACE.7020309@cn.fujitsu.com> <20090224085724.4cc1b3b2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090224085724.4cc1b3b2.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Mon, 23 Feb 2009 20:33:45 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42013 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752318AbZBXBdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Feb 2009 20:33:44 -0500
+Date: Tue, 24 Feb 2009 10:32:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH 04/20] Convert gfp_zone() to use a table of
+ precalculated value
+Message-Id: <20090224103226.e9e2766f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090223164047.GO6740@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
+	<1235344649-18265-5-git-send-email-mel@csn.ul.ie>
+	<alpine.DEB.1.10.0902231003090.7298@qirst.com>
+	<200902240241.48575.nickpiggin@yahoo.com.au>
+	<alpine.DEB.1.10.0902231042440.7790@qirst.com>
+	<20090223164047.GO6740@csn.ul.ie>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Mon, 23 Feb 2009 10:32:46 +0800
-> Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
->> KAMEZAWA Hiroyuki wrote:
->>> Paul Menage さんは書きました：
->>>> On Fri, Feb 20, 2009 at 2:02 AM, KAMEZAWA Hiroyuki
->>>> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>>>> 2. /proc/mounts information of release_agent should be updated....
->>>>>   when it's overwritten directly.
->>>> Yes, definitely. But shouldn't that happen already?
->>>> cgroup_show_options() reports the current value of
->>>> root->release_agent_path in /proc/mounts. Is it possible that mount is
->>>> actually storing/retrieving this information in /etc/mtab, which
->>>> doesn't get updated?
->>>>
->>> Ah, you're right. /proc/mounts is updated but /etc/mtab is not updated.
->>> Hmm..from man mount(1), /etc/mtab is not synchronized with /proc/mounts.
->>> Do we need to allow release_agent override at remount ?
->>>
->> Since we've allowed this behavior, I think we shouldn't disallow it to
->> supprise users?
->>
-> In a bit different stroy, it already surprises a user (me).
-> for example)
-> 
+On Mon, 23 Feb 2009 16:40:47 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-I think what may surprise people is the following mount will append opts
-to the original opts.
-
-> #mount -t cgroup none /cgroups -ocpu,release_agent=hogehoge
-> #mount -oremount,cpuacct /cgroups,release_agent=xxxx
-> => remount fails. because the option "release_agent" appears twice.
+> On Mon, Feb 23, 2009 at 10:43:20AM -0500, Christoph Lameter wrote:
+> > On Tue, 24 Feb 2009, Nick Piggin wrote:
+> > 
+> > > > Are you sure that this is a benefit? Jumps are forward and pretty short
+> > > > and the compiler is optimizing a branch away in the current code.
+> > >
+> > > Pretty easy to mispredict there, though, especially as you can tend
+> > > to get allocations interleaved between kernel and movable (or simply
+> > > if the branch predictor is cold there are a lot of branches on x86-64).
+> > >
+> > > I would be interested to know if there is a measured improvement.
 > 
-> #mount -t cgroup none /cgroups -ocpu,release_agent=hogehoge
-> #mount -t cgroup none /cgroups -oremount,cpuacct /cgroups,release_agent=xxxx
-> => remount success.
+> Not in kernbench at least, but that is no surprise. It's a small
+> percentage of the overall cost. It'll appear in the noise for anything
+> other than micro-benchmarks.
 > 
-> At least, updating documentation to notice this is necessary I think.
+> > > It
+> > > adds an extra dcache line to the footprint, but OTOH the instructions
+> > > you quote is more than one icache line, and presumably Mel's code will
+> > > be a lot shorter.
+> > 
+> 
+> Yes, it's an index lookup of a shared read-only cache line versus a lot
+> of code with branches to mispredict. I wasn't happy with the cache line
+> consumption but it was the first obvious alternative.
+> 
+> > Maybe we can come up with a version of gfp_zone that has no branches and
+> > no lookup?
+> > 
+> 
+> Ideally, yes, but I didn't spot any obvious way of figuring it out at
+> compile time then or now. Suggestions?
 > 
 
-How about this:
 
-[PATCH] cgroups: more documentation for remount and release_agent
+Assume
+  ZONE_DMA=0
+  ZONE_DMA32=1
+  ZONE_NORMAL=2
+  ZONE_HIGHMEM=3
+  ZONE_MOVABLE=4
 
-This won't remove cpuacct from the mounted hierachy:
- # mount -t cgroup -o cpu,cpuacct xxx /mnt
- # mount -o remount,cpu /mnt
+#define __GFP_DMA       ((__force gfp_t)0x01u)
+#define __GFP_DMA32     ((__force gfp_t)0x02u)
+#define __GFP_HIGHMEM   ((__force gfp_t)0x04u)
+#define __GFP_MOVABLE   ((__force gfp_t)0x08u)
 
-Because for this usage mount(8) will append the new options to the original
-options.
+#define GFP_MAGIC (0400030102) ) #depends on config.
 
-And this will get you right:
- # mount [-t cgroup] -o remount,cpu xxx /mnt
+gfp_zone(mask) = ((GFP_MAGIC >> ((mask & 0xf)*3) & 0x7)
 
-Also document how to specify and change release_agent.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
-diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
-index 93feb84..824277d 100644
---- a/Documentation/cgroups/cgroups.txt
-+++ b/Documentation/cgroups/cgroups.txt
-@@ -337,8 +337,19 @@ subsystems, type:
- 
- To change the set of subsystems bound to a mounted hierarchy, just
- remount with different options:
-+# mount -o remount,cpuset,ns hier1 /dev/cgroup
- 
--# mount -o remount,cpuset,ns  /dev/cgroup
-+Now numtasks is removed from the hierarchy and ns is added.
-+
-+Note this will add ns to the hierarchy but won't remove numtasks or
-+cpuset:
-+# mount -o remount,ns /dev/cgroup
-+
-+To Specify a hierarchy's release_agent:
-+# mount -t cgroup -o cpuset,release_agent="/sbin/cpuset_release_agent" \
-+  xxx /dev/cgroup
-+
-+Note that specifying 'release_agent' more than once will return failure.
- 
- Note that changing the set of subsystems is currently only supported
- when the hierarchy consists of a single (root) cgroup. Supporting
-@@ -349,6 +360,11 @@ Then under /dev/cgroup you can find a tree that corresponds to the
- tree of the cgroups in the system. For instance, /dev/cgroup
- is the cgroup that holds the whole system.
- 
-+If you want to change the value of release_agent:
-+# echo "/sbin/new_release_agent" > /dev/cgroup/release_agent
-+
-+It can also be changed via remount.
-+
- If you want to create a new cgroup under /dev/cgroup:
- # cd /dev/cgroup
- # mkdir my_cgroup
+Thx
+-Kame
+
+
+
 
