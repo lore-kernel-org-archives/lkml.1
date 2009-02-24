@@ -1,107 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbZBXNBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZBXNCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbZBXNBB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 08:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZBXNAi
+	id S1757410AbZBXNCB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 08:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbZBXNBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 08:00:38 -0500
-Received: from mail-in-04.arcor-online.net ([151.189.21.44]:33151 "EHLO
-	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754433AbZBXNAf (ORCPT
+	Tue, 24 Feb 2009 08:01:50 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:34145 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754850AbZBXNBt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 08:00:35 -0500
-X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-07.arcor-online.net 12C673CA1C0
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
-To: Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Reply-To: 7eggert@gmx.de
-Date: Tue, 24 Feb 2009 14:00:27 +0100
-References: <c6GC9-3l7-11@gated-at.bofh.it> <c6GLN-3xO-31@gated-at.bofh.it> <c6IDT-6AZ-9@gated-at.bofh.it> <c6INu-6Ol-1@gated-at.bofh.it> <c6MR7-54s-3@gated-at.bofh.it> <c6ZbG-hF-13@gated-at.bofh.it> <c729F-5gF-21@gated-at.bofh.it> <c73S1-8dJ-19@gated-at.bofh.it> <c7mrC-4YD-3@gated-at.bofh.it> <c7mBk-5b2-23@gated-at.bofh.it> <c8Xp3-3TH-3@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Tue, 24 Feb 2009 08:01:49 -0500
+Message-ID: <49A3EF96.3090603@nokia.com>
+Date: Tue, 24 Feb 2009 15:01:10 +0200
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Lbwtf-0001Zc-Uq@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+To: David Brownell <david-b@pacbell.net>
+CC: Kyungmin Park <kyungmin.park@samsung.com>, Kim Kyuwon <chammoru@gmail.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
+       =?x-windows-949?Q?=B1=E8=B1=D4?= =?x-windows-949?Q?=BF=F8?= 
+	<q1.kim@samsung.com>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>
+Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when
+ resuming
+References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com> <9c9fda240902230426s2003d208xebeb6630c61b3bec@mail.gmail.com> <49A2A8ED.20208@nokia.com> <200902231023.49653.david-b@pacbell.net>
+In-Reply-To: <200902231023.49653.david-b@pacbell.net>
+Content-Type: text/plain; charset=ks_c_5601-1987; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Feb 2009 13:01:29.0788 (UTC) FILETIME=[027397C0:01C99680]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Thu, Feb 19, 2009 at 11:11:54AM -0800, Dave Hansen wrote:
->> On Thu, 2009-02-19 at 22:06 +0300, Alexey Dobriyan wrote:
-
->> Alexey, I agree with you here.  I've been fighting myself internally
->> about these two somewhat opposing approaches.  Of *course* we can
->> determine the "checkpointability" at sys_checkpoint() time by checking
->> all the various bits of state.
->> 
->> The problem that I think Ingo is trying to address here is that doing it
->> then makes it hard to figure out _when_ you went wrong.  That's the
->> single most critical piece of finding out how to go address it.
->> 
->> I see where you are coming from.  Ingo's suggestion has the *huge*
->> downside that we've got to go muck with a lot of generic code and hook
->> into all the things we don't support.
->> 
->> I think what I posted is a decent compromise.  It gets you those
->> warnings at runtime and is a one-way trip for any given process.  But,
->> it does detect in certain cases (fork() and unshare(FILES)) when it is
->> safe to make the trip back to the "I'm checkpointable" state again.
+David Brownell wrote:
+> On Monday 23 February 2009, Adrian Hunter wrote:
+>> Also, you will need the following patch if you actually want the power
+>> to go off.
 > 
-> "Checkpointable" is not even per-process property.
-> 
-> Imagine, set of SAs (struct xfrm_state) and SPDs (struct xfrm_policy).
-> They are a) per-netns, b) persistent.
-> 
-> You can hook into socketcalls to mark process as uncheckpointable,
-> but since SAs and SPDs are persistent, original process already exited.
-> You're going to walk every process with same netns as SA adder and mark
-> it as uncheckpointable. Definitely doable, but ugly, isn't it?
-> 
-> Same for iptable rules.
-> 
-> "Checkpointable" is container property, OK?
+> Current GIT already has a patch supporting power-off for
+> MMC2; tested on SDP and some custom hardware.  So this
+> patch won't apply.
 
-IMO: Everything around the process may change as long as you can do the same
-using 'kill -STOP $PID; ...; kill -CONT $PID;'. E.g. changing iptables rules
-can be done to a normal process, so this should not prevent checkpointing
-(unless you checkpoint iptables, but don't do that then?).
+Sorry, hadn't noticed that.
 
-BTW1: I might want to checkpoint something like seti@home. It will connect
-to a server from time to time, and send/receive a packet. If having opened
-a socket once in a lifetime would prevent checkpointing, this won't be
-possible. I see the benefit of the one-way-flag forcing to make all
-syscalls be checkpointable, but this won't work on sockets.
+> Are you sure that's needed for MMC1?  The led showing MMC1
+> power did go off correctly (when using MMC2 for root), and
+> the MMC1 regulator entry in sysfs agreed MMC1 was off.  So
+> I thought this was only an issue for MMC2 (and presumably
+> MMC3, though I don't have a board using it.)
 
-Therefore I think you need something inbetween. Some syscalls (etc.) are not
-supported, so just make the process be uncheckpointable. But some syscalls
-will enter and leave non-checkpointable states by design, they need at least
-counters.
+Yes, if you never switch to 1.8V, then MMC1 is not affected.
 
-Maybe you'll want to let the application decide if it's OK to be checkpointed
-on some conditions, too. The Seti client might know how to handle broken
-connections, and doing duplicate transfers or skipping them is expected, too.
-So the Seti client might declare the socket to be checkpointable, instead of
-making the do-the-checkpoint application wait until it's closed.
+However, for dual-voltage cards, if the MMC1 voltage is
+switched to 1.8V, then the offending code will leave the
+power on, when it should be off i.e. omap_mmc_switch_opcond()
+turns the power on, but we are trying to power off.
 
-BTW2: There is the problem of invalidating checkpoints, too. If a browser did
-a HTTP PUT, you don't want to restore the checkpoint where it was just about
-to start the PUT request. The application should be able to signal this to
-a checkpointing daemon. There will be a race, so having a signal "Invalidate
-checkpoints" won't work, but if the application sends a stable hash value,
-the duplicate can be detected. (Off cause you'd say "don't do that then" for
-browsers, but it's just an example. Off cause 2, the checkpoint daemon is
-only needed for advanced setups, a simple "checkpoint $povray --store jobfile"
-should just work.)
+If you initialise correctly (as Kim Kyuwon's patch does)
+then the offending code is not necessary, so it should
+just be removed.
 
+I would still like the other two issues I raised considered.
+They were:
+	1.  'host' can be NULL in omap_mmc_suspend() / omap_mmc_resume()
+	2. wait for SDBP bit
 
+> I agree that code removed by this patch is ugly and worth
+> removing if it's not actually needed for MMC1.
+
+Here is a patch against current OMAP tree.
+
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Date: Tue, 24 Feb 2009 14:48:16 +0200
+Subject: [PATCH] OMAP: HSMMC: do not re-power when powering off MMC
+
+Remove code that turns MMC1 power back on after it
+has been powered off (when the voltage is 1.8V).
+
+The offending code is not necessary because the
+host controller bus voltage is initialized to
+3V when probing or resuming.  Note that MMC powers up
+with the highest voltage available (see mmc_power_up())
+which will be 3V also.
+
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+---
+ drivers/mmc/host/omap_hsmmc.c |   17 -----------------
+ 1 files changed, 0 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index c0d5420..43cec98 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -486,9 +486,6 @@ static int omap_mmc_switch_opcond(struct mmc_omap_host *host, int vdd)
+ 	u32 reg_val = 0;
+ 	int ret;
+ 
+-	if (host->id != OMAP_MMC1_DEVID)
+-		return 0;
+-
+ 	/* Disable the clocks */
+ 	clk_disable(host->fclk);
+ 	clk_disable(host->iclk);
+@@ -787,20 +784,6 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 	switch (ios->power_mode) {
+ 	case MMC_POWER_OFF:
+ 		mmc_slot(host).set_power(host->dev, host->slot_id, 0, 0);
+-		/*
+-		 * Reset interface voltage to 3V if it's 1.8V now;
+-		 * only relevant on MMC-1, the others always use 1.8V.
+-		 *
+-		 * REVISIT: If we are able to detect cards after unplugging
+-		 * a 1.8V card, this code should not be needed.
+-		 */
+-		if (host->id != OMAP_MMC1_DEVID)
+-			break;
+-		if (!(OMAP_HSMMC_READ(host->base, HCTL) & SDVSDET)) {
+-			int vdd = fls(host->mmc->ocr_avail) - 1;
+-			if (omap_mmc_switch_opcond(host, vdd) != 0)
+-				host->mmc->ios.vdd = vdd;
+-		}
+ 		break;
+ 	case MMC_POWER_UP:
+ 		mmc_slot(host).set_power(host->dev, host->slot_id, 1, ios->vdd);
+-- 
+1.5.6.3
