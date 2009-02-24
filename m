@@ -1,89 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbZBXACy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZBXAK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbZBXACy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Feb 2009 19:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZBXACq
+	id S1755517AbZBXAK2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Feb 2009 19:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZBXAKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Feb 2009 19:02:46 -0500
-Received: from el-out-1112.google.com ([209.85.162.179]:39642 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbZBXACp convert rfc822-to-8bit (ORCPT
+	Mon, 23 Feb 2009 19:10:19 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:31036 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbZBXAKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Feb 2009 19:02:45 -0500
+	Mon, 23 Feb 2009 19:10:17 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:content-type:
+	content-transfer-encoding:x-system-of-record;
+	b=ELKBgLH+3iVrZf44dD1jXnQMOIHXcCQmKRUbsJOgqSY5lEdrFNGkWSpnchmSZIthw
+	FNUJy5cbQrSq13rfzU+3g==
 MIME-Version: 1.0
-In-Reply-To: <200902240053.11164.rjw@sisk.pl>
-References: <200902192215.18365.rjw@sisk.pl> <200902212120.37684.rjw@sisk.pl>
-	 <d6200be20902231513h31661a95n63407b5194b56d51@mail.gmail.com>
-	 <200902240053.11164.rjw@sisk.pl>
-Date: Mon, 23 Feb 2009 16:02:42 -0800
-Message-ID: <d6200be20902231602h5c69ead3s5f3f206497f1b19e@mail.gmail.com>
-Subject: Re: [RFD] Automatic suspend
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Date: Mon, 23 Feb 2009 16:10:10 -0800
+Message-ID: <5df78e1d0902231610u3193b11w90de9e5f62b945b@mail.gmail.com>
+Subject: [RFC PATCH] Resubmit the patch to add mmap support to the unified 
+	trace buffer
+From: Jiaying Zhang <jiayingz@google.com>
+To: linux-kernel@vger.kernel.org, Steven Rostedt <srostedt@redhat.com>,
+       Michael Rubin <mrubin@google.com>, Martin Bligh <mbligh@google.com>,
+       Michael Davidson <md@google.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 3:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 24 February 2009, Arve Hjønnevåg wrote:
->> On Sat, Feb 21, 2009 at 12:20 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Saturday 21 February 2009, Arve Hjønnevåg wrote:
->> >> On Sat, Feb 21, 2009 at 1:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> > On Saturday 21 February 2009, Arve Hjønnevåg wrote:
->> >> >> On Fri, Feb 20, 2009 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >> > On Saturday 21 February 2009, Arve Hjønnevåg wrote:
->> >> >> >> On Fri, Feb 20, 2009 at 7:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
->> >> >> >> >> On Fri, Feb 20, 2009 at 2:49 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >> >> >> > On Friday 20 February 2009, Arve Hjønnevåg wrote:
->> >> >> >> >> >> On Thu, Feb 19, 2009 at 2:08 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
->> > [--snip--]
->> >> >> > The idea is to have both /sys/power/state and /sys/power/sleep at the same
->> >> >> > time, where /sys/power/state will work just like it does right now.  Sure,
->> >> >> > there must be mutual exclusion between the two, but that's a matter of
->> >> >> > implementation IMO.
->> >> >>
->> >> >> If you want to only prevent suspend though one interface, you have to
->> >> >> also pass information to the driver about its suspend hook is being
->> >> >> called so it can conditionally return -EBUSY. The wakelock interface
->> >> >> requires less code in each driver.
->> >> >
->> >> > Well, I don't think so.  Moreover, it requires you to spread wakelocks all
->> >> > over the place if you don't use the timeouted ones which, let's face it, is
->> >> > hardly acceptable.
->> >>
->> >> Your method does not reduce the number of places that has to be
->> >> modified. Any component where we add a wakelock, you have to add a
->> >> suspend handler to abort suspend when we would have held a wakelock.
->> >
->> > Well, maybe not, but it doesn't introduce entirely new API for device drivers.
->> > Instead, it extends the existing interfaces which I think is more appropriate.
->>
->> The existing interfaces require polling. I don't think extending these
->> interfaces to make the polling faster is a better solution than adding
->> an interface to avoid polling.
->>
->> Also, with your solution, how would you modify evdev.c to prevent
->> suspend while the event queue is not empty. This code does not have
->> any suspend hooks and the queue is not tied to any thread.
->
-> Well, why do you need to modify evdev.c in the first place?
+Hi Steve,
 
-It is the only code that knows that there are unprocessed input events.
+I sent you a patch that adds the mmap support to the unified trace buffer
+a couple of months ago. You mentioned that you had modified the trace buffer
+code to move some of the meta data into the front of a buffer page. I realized
+that now I can simply record the page offset in the buffer header with your
+change, so here comes my modified patch.
 
--- 
-Arve Hjønnevåg
+(You also mentioned last time that you were working on adding the splice_read
+support in the unified trace buffer. I think that would be a really nice feature
+to include and would like to try it when the feature is ready. On the
+other hand,
+I guess it might be more convenient for users if unified trace buffer supports
+both mmap and splice_read, because not many people are familiar with splice_read
+interface.)
+
+The following patch adds the mmap support to the unified trace buffer.
+It includes an API that maps a page offset to a physical page in the
+trace buffer,
+APIs that export the offset of the current produced/consumed data, and an
+API to advance the consumed data pointer.
+
+Signed-off-by: Jiaying Zhang <jiayingz@google.com>
+
+Index: git-linux/include/linux/ring_buffer.h
+===================================================================
+--- git-linux.orig/include/linux/ring_buffer.h  2009-02-19
+14:47:10.000000000 -0800
++++ git-linux/include/linux/ring_buffer.h       2009-02-19
+14:49:00.000000000 -0800
+@@ -5,6 +5,7 @@
+ #include <linux/seq_file.h>
+
+ struct ring_buffer;
++struct ring_buffer_per_cpu;
+ struct ring_buffer_iter;
+
+ /*
+@@ -110,6 +111,10 @@
+
+ int ring_buffer_empty(struct ring_buffer *buffer);
+ int ring_buffer_empty_cpu(struct ring_buffer *buffer, int cpu);
++int ring_buffer_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer);
++
++struct ring_buffer_per_cpu *ring_buffer_cpu(struct ring_buffer *buffer,
++                                               int cpu);
+
+ void ring_buffer_record_disable(struct ring_buffer *buffer);
+ void ring_buffer_record_enable(struct ring_buffer *buffer);
+@@ -137,4 +142,10 @@
+       RB_FL_OVERWRITE         = 1 << 0,
+ };
+
++struct page *ring_buffer_get_page(struct ring_buffer_per_cpu *cpu_buffer,
++               pgoff_t pgoff);
++void ring_buffer_advance_reader(struct ring_buffer_per_cpu *cpu_buffer,
++               int count_in);
++u32 ring_buffer_get_produced(struct ring_buffer_per_cpu *cpu_buffer);
++u32 ring_buffer_get_consumed(struct ring_buffer_per_cpu *cpu_buffer);
+ #endif /* _LINUX_RING_BUFFER_H */
+Index: git-linux/kernel/trace/ring_buffer.c
+===================================================================
+--- git-linux.orig/kernel/trace/ring_buffer.c   2009-02-19
+14:47:10.000000000 -0800
++++ git-linux/kernel/trace/ring_buffer.c        2009-02-19
+14:47:47.000000000 -0800
+@@ -216,6 +216,7 @@
+ struct buffer_page {
+       local_t          write;         /* index for next write */
+       unsigned         read;          /* index for next read */
++       unsigned         pgoff;         /* page offset inside cpu_buffer */
+       struct list_head list;          /* list of free pages */
+       struct buffer_data_page *page;  /* Actual data page */
+ };
+@@ -288,6 +289,11 @@
+       u64                             read_stamp;
+ };
+
++struct ring_buffer_per_cpu *ring_buffer_cpu(struct ring_buffer
+*buffer, int cpu)
++{
++       return buffer->buffers[cpu];
++}
++
+ /* buffer may be either ring_buffer or ring_buffer_per_cpu */
+ #define RB_WARN_ON(buffer, cond)                               \
+       ({                                                      \
+@@ -348,6 +354,7 @@
+               if (!addr)
+                       goto free_pages;
+               bpage->page = (void *)addr;
++               bpage->pgoff = i;
+               rb_init_page(bpage->page);
+       }
+
+@@ -394,11 +401,12 @@
+       if (!addr)
+               goto fail_free_reader;
+       bpage->page = (void *)addr;
++       bpage->pgoff = buffer->pages - 1;
+       rb_init_page(bpage->page);
+
+       INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
+
+-       ret = rb_allocate_pages(cpu_buffer, buffer->pages);
++       ret = rb_allocate_pages(cpu_buffer, buffer->pages - 1);
+       if (ret < 0)
+               goto fail_free_reader;
+
+@@ -1450,6 +1458,11 @@
+                 head->read == rb_page_commit(commit)));
+ }
+
++int ring_buffer_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer)
++{
++       return rb_per_cpu_empty(cpu_buffer);
++}
++
+ /**
+ * ring_buffer_record_disable - stop all writes into the buffer
+ * @buffer: The ring buffer to stop writes to.
+@@ -1812,6 +1825,66 @@
+       cpu_buffer->reader_page->read += length;
+ }
+
++u32 ring_buffer_get_produced(struct ring_buffer_per_cpu *cpu_buffer)
++{
++       struct buffer_page *reader;
++
++       reader = rb_get_reader_page(cpu_buffer);
++       if (!reader)
++               return 0;
++       return reader->pgoff * PAGE_SIZE +
++               offsetof(struct buffer_data_page, data) +
++               rb_page_commit(reader);
++}
++
++u32 ring_buffer_get_consumed(struct ring_buffer_per_cpu *cpu_buffer)
++{
++       struct buffer_page *reader;
++
++       reader = rb_get_reader_page(cpu_buffer);
++       if (!reader)
++               return 0;
++       return reader->pgoff * PAGE_SIZE +
++               offsetof(struct buffer_data_page, data) + reader->read;
++}
++
++void ring_buffer_advance_reader(struct ring_buffer_per_cpu *cpu_buffer,
++               int count)
++{
++       unsigned long flags;
++       struct buffer_page *reader;
++
++       spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++       __raw_spin_lock(&cpu_buffer->lock);
++       reader = cpu_buffer->reader_page;
++       reader->read += count;
++       __raw_spin_unlock(&cpu_buffer->lock);
++       spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
++}
++
++struct page *ring_buffer_get_page(struct ring_buffer_per_cpu *cpu_buffer,
++               pgoff_t pgoff)
++{
++       struct page *page;
++       struct buffer_page *bpage;
++
++       if (cpu_buffer->reader_page->pgoff == pgoff)
++               bpage = cpu_buffer->reader_page;
++       else
++               list_for_each_entry(bpage, &cpu_buffer->pages, list)
++                       if (bpage->pgoff == pgoff)
++                               break;
++       if (bpage->pgoff != pgoff) {
++               printk(KERN_WARNING
++                       "error: fail to find a page with offset %lu\n", pgoff);
++               return NULL;
++       }
++       page = virt_to_page(bpage->page);
++       if (!page)
++               printk(KERN_WARNING "error: fail to vmalloc page\n");
++       return page;
++}
++
+ static void rb_advance_iter(struct ring_buffer_iter *iter)
+ {
+       struct ring_buffer *buffer;
