@@ -1,157 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZBXKOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZBXK3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbZBXKOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 05:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZBXKOG
+	id S1755476AbZBXK3x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 05:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZBXK3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 05:14:06 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:49320 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbZBXKOC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 05:14:02 -0500
-Date: Tue, 24 Feb 2009 11:13:02 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>
-Message-ID: <20090224101302.GC7894@enneenne.com>
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-	Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-	Kay Sievers <kay.sievers@vrfy.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Michael Kerrisk <mtk.manpages@gmail.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	John Stultz <johnstul@us.ibm.com>
-References: <1234274752-29847-1-git-send-email-giometti@linux.it> <1234274752-29847-2-git-send-email-giometti@linux.it> <20090222203933.GA18914@elte.hu> <49A1BC28.9020402@zytor.com> <20090223065801.GA16621@elte.hu>
+	Tue, 24 Feb 2009 05:29:46 -0500
+Received: from www.tglx.de ([62.245.132.106]:44999 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752301AbZBXK3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 05:29:44 -0500
+Date: Tue, 24 Feb 2009 11:29:28 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Announce] 2.6.29-rc6-rt2
+In-Reply-To: <1235437021.4462.25.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0902241120320.3523@localhost.localdomain>
+References: <1235437021.4462.25.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090223065801.GA16621@elte.hu>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/1] LinuxPPS core support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 07:58:01AM +0100, Ingo Molnar wrote:
-> 
-> * H. Peter Anvin <hpa@zytor.com> wrote:
-> 
-> > Ingo Molnar wrote:
-> > >>
-> > >> Common use is the combination of the NTPD as userland program 
-> > >> with a GPS receiver as PPS source to obtain a wallclock-time 
-> > >> with sub-millisecond synchronisation to UTC.
-> > > 
-> > > Hm. I was looking at this stuff with the prospect of adding it 
-> > > to the timer tree, but i'm really struggling with a few 
-> > > fundamental questions.
-> > > 
-> > > The most basic one is: why do we need this?
-> > > 
-> > > The main purpose of your current patchset seems to be to deliver 
-> > > interrupt timestamps to user-space, where it will in essence be 
-> > > used to feed new adjtimex adjustments via ntpd.
-> > > 
-> > > I.e. the whole thing comes around in a circle in the end, but 
-> > > via user-space, where jitter will only increase.
-> > > 
-> > > Why not cut out the jittery middle man and add some intelligent 
-> > > API to register PPS interrupt sources straight with the NTP 
-> > > code, and let those IRQ timestamps be fed _directly_ into our 
-> > > time adjustment code?
-> > > 
-> > 
-> > Well, let's be fair here... the kernel-user space time model 
-> > involving ntpd has been very carefully developed over a period 
-> > of over a decade. It's known to work.  The userspace 
-> > involvement isn't just about feeding the data to the local 
-> > clock, but also -- or perhaps primarily so -- to keep the 
-> > timing inside ntpd calibrated, as that is the time that will 
-> > be provided to the outside world.
-> 
-> Sure thing, the policy bits should still be done by user-space - 
-> something does have to know that there's a PPS device on the 
-> serial, parallel or any other port, and has to configure set up 
-> the actual parameters as well, etc.
-> 
-> What i'm pointing out is that there's no technical benefit from 
-> passing the _timestamps_ through user-space and from not 
-> coupling the NTP code with the PPS edges.
-> 
-> Nor has it really been designed into NTP that way. We already 
-> have all the traditional PPS parameters in the NTP syscall 
-> interface:
-> 
-> include/linux/timex.h:
-> 
-> struct timex {
-> [...]
->         long ppsfreq;           /* pps frequency (scaled ppm) (ro) */
->         long jitter;            /* pps jitter (us) (ro) */
->         int shift;              /* interval duration (s) (shift) (ro) */
->         long stabil;            /* pps stability (scaled ppm) (ro) */
->         long jitcnt;            /* jitter limit exceeded (ro) */
->         long calcnt;            /* calibration intervals (ro) */
->         long errcnt;            /* calibration errors (ro) */
->         long stbcnt;            /* stability limit exceeded (ro) */
-> 
-> (these are the bits to query the state of kernel-side PPS 
-> support.)
-> 
-> and we have the bits to enable a PPS line disciple, etc., etc. 
-> We might need some extensions, but since the PPS device will be 
-> handled by the kernel anyway and the NTP adjustments are done in 
-> the kernel too, there's no strong reason to route the actual 
-> timestamps via user-space. In fact, doing so obviously increases 
-> jitter and slows down NTP convergence.
+On Mon, 23 Feb 2009, Fernando Lopez-Lezcano wrote:
 
-Precise time settings can be done in both kernel and user
-spaces. RFC2783 specifies an API that can be used to fetch PPS
-timestamps from a PPS source, then these timestamps can be processed
-by an userland consumer (NTPD in most cases) to set up system time.
+> Some feedback, just tried it in Fedora 9...
+> 
+> (BTW, in Fedora 9 'uname -r' adds a "-tip" component at the end of the
+> uname string which messes up loading modules, etc, and it is not
+> anywhere else to be seen - where is that coming from??)
 
-Again the RFC2783 specifies a way to manage some kernel consumers
-which can do the same jobs in kernel land, but all these stuff are
-declared as "optional".
+My bad. Forgot to remove the localversion-tip file.
 
-I agree with you that passing timestamps to userland may increase
-jitter and slow down NTP convergence but LinuxPPS is a way to have at
-least one "precise" time setting tool! :) However, as far as I know,
-the NTPD algorith should take in account such jitters (I'm sorry but I
-cannot be more precise since I'm not a NTPD guru), in fact if these
-timestamps are taken "as soon as" possible inside the IRQ handling
-chain the NTP convergence speed up several times.
+> 
+> Boots fine but does not last long:
+> 
+> ------------[ cut here ]------------
+> WARNING: at lib/list_debug.c:30 __list_add+0x44/0x5c()
+> Hardware name: P5K/EPU
+> list_add corruption. prev->next should be next (f6042ab0), but was
+> (null). (prev=f415a670).
+> Modules linked in: fuse ip6table_filter ip6_tables iptable_raw
+> xt_comment xt_recent xt_policy ipt_ULOG ipt_TTL ipt_ttl ipt_REDIRECT
+> ipt_NETMAP ipt_MASQUERADE ipt_LOG ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah
+> ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp
+> nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda ts_kmp
+> nf_conntrack_amanda nf_conntrack_tftp nf_conntrack_sip
+> nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre
+> nf_conntrack_netlink nf_conntrack_netbios_ns nf_conntrack_irc
+> nf_conntrack_h323 nf_conntrack_ftp xt_tcpmss xt_pkttype xt_physdev
+> xt_owner xt_NFQUEUE xt_NFLOG nfnetlink_log xt_multiport xt_MARK xt_mark
+> xt_mac xt_limit xt_length xt_iprange xt_helper xt_hashlimit xt_DSCP
+> xt_dscp xt_dccp xt_CONNMARK xt_connmark xt_CLASSIFY iptable_nat nf_nat
+> iptable_mangle nfnetlink autofs4 coretemp w83627ehf hwmon_vid hwmon nfs
+> lockd nfs_acl auth_rpcgss sunrpc cpufreq_ondemand acpi_cpufreq
+> dm_multipath radeon drm ipv6 snd_hda_codec_realtek snd_hda_intel
+> snd_hda_codec snd_hwdep snd_ice1712 snd_ice17xx_ak4xxx snd_ak4xxx_adda
+> pcspkr snd_cs8427 snd_ac97_codec serio_raw i2c_i801 ac97_bus snd_i2c
+> i2c_core iTCO_wdt ohci1394 snd_mpu401_uart iTCO_vendor_support
+> snd_rawmidi snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq
+> snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm joydev snd_timer sky2
+> snd soundcore snd_page_alloc [last unloaded: microcode]
+> Pid: 5844, comm: slogin Not tainted
+> 2.6.29-0.0.rc6.rt2.1.rc6.fc9.ccrma.i686.rtPAE-tip #1
+> Call Trace:
+>  [<c0438765>] warn_slowpath+0x71/0xa8
+>  [<c048183a>] ? cpupri_set+0xdd/0xfb
+>  [<c042ace7>] ? update_curr+0x15f/0x167
+>  [<c0429dbd>] ? resched_task+0x33/0x6b
+>  [<c042ace7>] ? update_curr+0x15f/0x167
+>  [<c0543b28>] __list_add+0x44/0x5c
+>  [<c0440ef1>] internal_add_timer+0x88/0x8c
 
-In any case, if we wish adding a more performance tool in kernel space
-we can just do it as RFC2783 says and (maybe) managing it with the
-struct above.
+Can you try to enable the following config options:
 
-Ciao,
+CONFIG_DEBUG_OBJECTS
+CONFIG_DEBUG_OBJECTS_FREE
+CONFIG_DEBUG_OBJECTS_TIMERS
+CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT
 
-Rodolfo
+Thanks,
 
--- 
+	tglx
 
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
