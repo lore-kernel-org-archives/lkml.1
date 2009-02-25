@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762388AbZBYVdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761946AbZBYVfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762388AbZBYVdB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:33:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbZBYVcv
+	id S1761946AbZBYVfF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbZBYVez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:32:51 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:35640 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752892AbZBYVcv (ORCPT
+	Wed, 25 Feb 2009 16:34:55 -0500
+Received: from web39802.mail.mud.yahoo.com ([209.191.106.63]:21247 "HELO
+	web39802.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757372AbZBYVey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:32:51 -0500
-Date: Wed, 25 Feb 2009 16:23:14 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemcheck: Disable SLUB and SLAB debugging when kmemcheck
-  is enabled
-In-Reply-To: <19f34abd0902251117h7a4a6e9ao34e972110d8b40a1@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0902251622460.13795@qirst.com>
-References: <1235381712.6216.22.camel@penberg-laptop>  <alpine.DEB.1.10.0902231039580.7298@qirst.com>  <1235410406.6216.69.camel@penberg-laptop> <19f34abd0902251117h7a4a6e9ao34e972110d8b40a1@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 25 Feb 2009 16:34:54 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=6hjRAEYqM31T40z1A7gIYAWlWKKb8jalOYNniR2kmzKNAjZ+hkRL3o6JJ7A3c8D11362HqMQJif8aXxxQvtKso6WI/Ne137pQOgxiSfn7DAiL6AFcSSALgfx0gDaPU8NLhdw7ijQ2s8unp5Xkz7QUA36dJ+omvDoNpH8qt99Foc=;
+X-YMail-OSG: w7wO3L8VM1kjzOBQKNcLF8WitT71nNu59rU3nNp2qyLxvvEAsoYeDqonevYFbkIRsZPEbpktGuLLOzF_vQaXC.gl.oZTnJaPG8pWSinM1cL8O7_gxKdT.7uV2YurN7r45ItR4uMO_QmFK9m6fm1bykq74Mev4bVIw3dx7MCMaohRMTDKtC90KtfaqVVjMw--
+X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.260.1
+Date: Wed, 25 Feb 2009 13:34:52 -0800 (PST)
+From: Vinay Venkataraghavan <raghavanvinay@yahoo.com>
+Subject: Page protection flags in linux on an x86 platform
+To: linux kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <257438.40011.qm@web39802.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, Vegard Nossum wrote:
 
-> Can you rethink whether SLUB_DEBUG or SLUB_DEBUG_ON is the one we
-> really want to depend on !KMEMCHECK, and either submit a new patch or
-> convince me that this is sufficient?
 
-!SLUB_DEBUG_ON is the right thing to depend on.
 
+
+Folks,
+
+I am trying to port some PPC code to x86 based linux. My question is that I am need to create some page mappings using remap_pfn_range. In the code for the PPC,
+the protection flags being specified are:
+
+__pgprot(_PAGE_NO_CACHE | _PAGE_GUARDED);
+
+But it looks like these do not exist when linux is compiled for the x86 architecture. 
+
+What are the relevant protection flags to achieve the same for the x86 architecture. 
+
+Thanks for any help.
+
+- Vinay
+
+
+      
