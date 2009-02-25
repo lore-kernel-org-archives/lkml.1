@@ -1,99 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbZBYLOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762486AbZBYLTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762734AbZBYLOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 06:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762080AbZBYLOc
+	id S1762486AbZBYLTm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 06:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760846AbZBYLTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 06:14:32 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:13526
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758132AbZBYLOb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 06:14:31 -0500
-X-BigFish: VPS-21(zz1432R98dR1805M936fK873fnzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KFMCJT-02-6L2-01
-Date: Wed, 25 Feb 2009 12:14:19 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@redhat.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 15/16] dma-debug: x86 architecture bindings
-Message-ID: <20090225111419.GL8751@amd.com>
-References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com> <1232376423-11067-16-git-send-email-joerg.roedel@amd.com> <20090222155050W.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 25 Feb 2009 06:19:32 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36527 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752835AbZBYLTc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 06:19:32 -0500
+Date: Wed, 25 Feb 2009 16:50:03 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 2/2] Add per-cgroup CPU controller statistics
+Message-ID: <20090225112003.GD4008@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20090225105730.GA4008@in.ibm.com> <20090225105920.GC4008@in.ibm.com> <1235559850.4645.3210.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090222155050W.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 25 Feb 2009 11:14:19.0321 (UTC) FILETIME=[3401F290:01C9973A]
+In-Reply-To: <1235559850.4645.3210.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 03:50:46PM +0900, FUJITA Tomonori wrote:
-> On Mon, 19 Jan 2009 15:47:02 +0100
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > Impact: make use of DMA-API debugging code in x86
+On Wed, Feb 25, 2009 at 12:04:10PM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-02-25 at 16:29 +0530, Bharata B Rao wrote:
+> > From: Balaji Rao <balajirrao@gmail.com>
 > > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/Kconfig                   |    1 +
-> >  arch/x86/include/asm/dma-mapping.h |   45 +++++++++++++++++++++++++++++++----
-> >  arch/x86/kernel/pci-dma.c          |    6 ++++
-> >  3 files changed, 46 insertions(+), 6 deletions(-)
+> > sched: Add cpu controller statistics
+> > 
+> > Add per-cgroup cpu controller statistics like system time and user time
+> > consumed by groups of tasks.
 > 
-> (snip)
-> 
-> >  static inline int
-> > @@ -79,9 +86,13 @@ dma_map_sg(struct device *hwdev, struct scatterlist *sg,
-> >  	   int nents, enum dma_data_direction dir)
-> >  {
-> >  	struct dma_map_ops *ops = get_dma_ops(hwdev);
-> > +	int ents;
+> Do we want this unconditionally?
+
+Not sure if I understand you correctly here, but we are collecting
+stats only when CONFIG_CGROUP_SCHED.
+
+Or do you mean we need a config option to enable stats collection ?
+If so, we have memory controller already providing stats unconditionally.
+
 > >  
-> >  	BUG_ON(!valid_dma_direction(dir));
-> > -	return ops->map_sg(hwdev, sg, nents, dir, NULL);
-> > +	ents = ops->map_sg(hwdev, sg, nents, dir, NULL);
-> > +	debug_dma_map_sg(hwdev, sg, ents, dir);
+> > +#ifdef CONFIG_CGROUP_SCHED
+> > +static void account_task_group_time(struct task_struct *p,
+> > +			enum cpu_cgroup_stat_index idx, int val)
+> > +{
+> > +	struct task_group *tg = task_group(p);
+> > +
+> > +	if (likely(tg->stat))
+> > +		percpu_counter_add(&tg->stat->cpustat[idx], val);
+> > +}
+> > +#else
+> > +#define account_task_group_time(x, y, z)	{ 0; }
 > 
-> The way to handle dma_map_sg and dma_unmap_sg looks wrong.
-> 
-> ents could be smaller than nents here with IOMMU implementations that
-> merge several sg entries into one.
-> 
-> 
-> > +	return ents;
-> >  }
-> >  
-> >  static inline void
-> > @@ -91,6 +102,7 @@ dma_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nents,
-> >  	struct dma_map_ops *ops = get_dma_ops(hwdev);
-> >  
-> >  	BUG_ON(!valid_dma_direction(dir));
-> > +	debug_dma_unmap_sg(hwdev, sg, nents, dir);
-> 
-> Here the nents is the same one you passed into dma_map_sg call. It is
-> not the value returned from dma_map_sg (see DMA-mapping.txt).
-> 
-> So we call check_unmap for entries that we didn't call add_dma_entry
-> for on dma_map_sg. These entries are not initialized so we could get any
-> kinds of warnings from check_unmap.
+> inline please, so we get argument validation.
 
-Ah, you are right. I mis-read the documentation. I will fix this in the
-next release.
+Actually wanted to inline, but one of the arguments (cpu_cgroup_stat_index)
+is defined only CONFIG_CGROUP_SCHED. Hence didn't want argument
+validation here.
 
-Joerg
+> > +
+> > +	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
+> > +		percpu_counter_init(&tg->stat->cpustat[i], 0);
+> 
+> percpu_counter_init() can fail with -ENOMEM.
 
+Ok, will fix.
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+Thanks for your review, Peter.
 
+Regards,
+Bharata.
