@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbZBYElB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbZBYEl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759567AbZBYElB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 23:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZBYEkv
+	id S1759863AbZBYEl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 23:41:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbZBYElO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 23:40:51 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:48226 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850AbZBYEku (ORCPT
+	Tue, 24 Feb 2009 23:41:14 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:20171 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755656AbZBYElM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 23:40:50 -0500
-Date: Tue, 24 Feb 2009 20:42:52 -0800 (PST)
+	Tue, 24 Feb 2009 23:41:12 -0500
+Date: Tue, 24 Feb 2009 20:43:16 -0800 (PST)
 From: Justin Chen <jchen@hpdst41.cup.hp.com>
-Message-Id: <200902250442.UAA12563@hpdst41.cup.hp.com>
+Message-Id: <200902250443.UAA12576@hpdst41.cup.hp.com>
 To: linux-arch@vger.kernel.org
-Subject: [PATCH 02/15] bitops: Change the bitmap index from int to unsigned long [arm]
-Cc: ben-linux@fluff.org, bjorn.helgaas@hp.com, dan.j.williams@intel.com,
-       justin.chen@hp.com, kernel@pengutronix.de, kernel@wantstofly.org,
-       linux-kernel@vger.kernel.org, linux@maxim.org.za, mcuos.com@gmail.com
+Subject: [PATCH 03/15] bitops: Change the bitmap index from int to unsigned long [avr32]
+Cc: bjorn.helgaas@hp.com, hskinnemoen@atmel.com, justin.chen@hp.com,
+       linux-kernel@vger.kernel.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -25,144 +24,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the index to unsigned long in all bitops for [arm]
+Change the index to unsigned long in all bitops for [arv32]
 
 Signed-off-by: Justin Chen <justin.chen@hp.com>
 Reviewed-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 ---
- arch/arm/include/asm/bitops.h |   36 ++++++++++++++++++------------------
- arch/arm/lib/changebit.S      |    2 +-
- arch/arm/lib/clearbit.S       |    2 +-
- arch/arm/lib/setbit.S         |    2 +-
- 4 files changed, 24 insertions(+), 21 deletions(-)
-diff -Nru a/arch/arm/include/asm/bitops.h b/arch/arm/include/asm/bitops.h
---- a/arch/arm/include/asm/bitops.h	2009-02-22 20:19:40.000000000 -0800
-+++ b/arch/arm/include/asm/bitops.h	2009-02-24 13:33:52.000000000 -0800
-@@ -34,7 +34,7 @@
-  *
-  * First, the atomic bitops. These use native endian.
+ arch/avr32/include/asm/bitops.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+diff -Nru a/arch/avr32/include/asm/bitops.h b/arch/avr32/include/asm/bitops.h
+--- a/arch/avr32/include/asm/bitops.h	2009-02-13 15:31:30.000000000 -0800
++++ b/arch/avr32/include/asm/bitops.h	2009-02-15 18:19:39.769603522 -0800
+@@ -32,7 +32,7 @@
+  * Note that @nr may be almost arbitrarily large; this function is not
+  * restricted to acting on a single-word quantity.
   */
--static inline void ____atomic_set_bit(unsigned int bit, volatile unsigned long *p)
-+static inline void ____atomic_set_bit(unsigned long bit, volatile unsigned long *p)
+-static inline void set_bit(int nr, volatile void * addr)
++static inline void set_bit(unsigned long nr, volatile void * addr)
  {
- 	unsigned long flags;
- 	unsigned long mask = 1UL << (bit & 31);
-@@ -46,7 +46,7 @@
- 	raw_local_irq_restore(flags);
- }
- 
--static inline void ____atomic_clear_bit(unsigned int bit, volatile unsigned long *p)
-+static inline void ____atomic_clear_bit(unsigned long bit, volatile unsigned long *p)
- {
- 	unsigned long flags;
- 	unsigned long mask = 1UL << (bit & 31);
-@@ -58,7 +58,7 @@
- 	raw_local_irq_restore(flags);
- }
- 
--static inline void ____atomic_change_bit(unsigned int bit, volatile unsigned long *p)
-+static inline void ____atomic_change_bit(unsigned long bit, volatile unsigned long *p)
- {
- 	unsigned long flags;
- 	unsigned long mask = 1UL << (bit & 31);
+ 	unsigned long *p = ((unsigned long *)addr) + nr / BITS_PER_LONG;
+ 	unsigned long tmp;
 @@ -71,7 +71,7 @@
- }
- 
- static inline int
--____atomic_test_and_set_bit(unsigned int bit, volatile unsigned long *p)
-+____atomic_test_and_set_bit(unsigned long bit, volatile unsigned long *p)
+  * you should call smp_mb__before_clear_bit() and/or smp_mb__after_clear_bit()
+  * in order to ensure changes are visible on other processors.
+  */
+-static inline void clear_bit(int nr, volatile void * addr)
++static inline void clear_bit(unsigned long nr, volatile void * addr)
  {
- 	unsigned long flags;
- 	unsigned int res;
-@@ -88,7 +88,7 @@
- }
- 
- static inline int
--____atomic_test_and_clear_bit(unsigned int bit, volatile unsigned long *p)
-+____atomic_test_and_clear_bit(unsigned long bit, volatile unsigned long *p)
+ 	unsigned long *p = ((unsigned long *)addr) + nr / BITS_PER_LONG;
+ 	unsigned long tmp;
+@@ -109,7 +109,7 @@
+  * Note that @nr may be almost arbitrarily large; this function is not
+  * restricted to acting on a single-word quantity.
+  */
+-static inline void change_bit(int nr, volatile void * addr)
++static inline void change_bit(unsigned long nr, volatile void * addr)
  {
- 	unsigned long flags;
- 	unsigned int res;
-@@ -105,7 +105,7 @@
- }
- 
- static inline int
--____atomic_test_and_change_bit(unsigned int bit, volatile unsigned long *p)
-+____atomic_test_and_change_bit(unsigned long bit, volatile unsigned long *p)
+ 	unsigned long *p = ((unsigned long *)addr) + nr / BITS_PER_LONG;
+ 	unsigned long mask = 1UL << (nr % BITS_PER_LONG);
+@@ -134,7 +134,7 @@
+  * This operation is atomic and cannot be reordered.
+  * It also implies a memory barrier.
+  */
+-static inline int test_and_set_bit(int nr, volatile void * addr)
++static inline int test_and_set_bit(unsigned long nr, volatile void * addr)
  {
- 	unsigned long flags;
- 	unsigned int res;
-@@ -151,12 +151,12 @@
- /*
-  * Little endian assembly bitops.  nr = 0 -> byte 0 bit 0.
+ 	unsigned long *p = ((unsigned long *)addr) + nr / BITS_PER_LONG;
+ 	unsigned long mask = 1UL << (nr % BITS_PER_LONG);
+@@ -174,7 +174,7 @@
+  * This operation is atomic and cannot be reordered.
+  * It also implies a memory barrier.
   */
--extern void _set_bit_le(int nr, volatile unsigned long * p);
--extern void _clear_bit_le(int nr, volatile unsigned long * p);
--extern void _change_bit_le(int nr, volatile unsigned long * p);
--extern int _test_and_set_bit_le(int nr, volatile unsigned long * p);
--extern int _test_and_clear_bit_le(int nr, volatile unsigned long * p);
--extern int _test_and_change_bit_le(int nr, volatile unsigned long * p);
-+extern void _set_bit_le(unsigned long nr, volatile unsigned long * p);
-+extern void _clear_bit_le(unsigned long nr, volatile unsigned long * p);
-+extern void _change_bit_le(unsigned long nr, volatile unsigned long * p);
-+extern int _test_and_set_bit_le(unsigned long nr, volatile unsigned long * p);
-+extern int _test_and_clear_bit_le(unsigned long nr, volatile unsigned long * p);
-+extern int _test_and_change_bit_le(unsigned long nr, volatile unsigned long * p);
- extern int _find_first_zero_bit_le(const void * p, unsigned size);
- extern int _find_next_zero_bit_le(const void * p, int size, int offset);
- extern int _find_first_bit_le(const unsigned long *p, unsigned size);
-@@ -165,12 +165,12 @@
- /*
-  * Big endian assembly bitops.  nr = 0 -> byte 3 bit 0.
+-static inline int test_and_clear_bit(int nr, volatile void * addr)
++static inline int test_and_clear_bit(unsigned long nr, volatile void * addr)
+ {
+ 	unsigned long *p = ((unsigned long *)addr) + nr / BITS_PER_LONG;
+ 	unsigned long mask = 1UL << (nr % BITS_PER_LONG);
+@@ -215,7 +215,7 @@
+  * This operation is atomic and cannot be reordered.
+  * It also implies a memory barrier.
   */
--extern void _set_bit_be(int nr, volatile unsigned long * p);
--extern void _clear_bit_be(int nr, volatile unsigned long * p);
--extern void _change_bit_be(int nr, volatile unsigned long * p);
--extern int _test_and_set_bit_be(int nr, volatile unsigned long * p);
--extern int _test_and_clear_bit_be(int nr, volatile unsigned long * p);
--extern int _test_and_change_bit_be(int nr, volatile unsigned long * p);
-+extern void _set_bit_be(unsigned long nr, volatile unsigned long * p);
-+extern void _clear_bit_be(unsigned long nr, volatile unsigned long * p);
-+extern void _change_bit_be(unsigned long nr, volatile unsigned long * p);
-+extern int _test_and_set_bit_be(unsigned long nr, volatile unsigned long * p);
-+extern int _test_and_clear_bit_be(unsigned long nr, volatile unsigned long * p);
-+extern int _test_and_change_bit_be(unsigned long nr, volatile unsigned long * p);
- extern int _find_first_zero_bit_be(const void * p, unsigned size);
- extern int _find_next_zero_bit_be(const void * p, int size, int offset);
- extern int _find_first_bit_be(const unsigned long *p, unsigned size);
-diff -Nru a/arch/arm/lib/changebit.S b/arch/arm/lib/changebit.S
---- orig/arch/arm/lib/changebit.S	2009-02-22 20:19:40.000000000 -0800
-+++ new/arch/arm/lib/changebit.S	2009-02-24 13:29:19.000000000 -0800
-@@ -13,7 +13,7 @@
-                 .text
- 
- /* Purpose  : Function to change a bit
-- * Prototype: int change_bit(int bit, void *addr)
-+ * Prototype: int change_bit(unsigned long bit, void *addr)
-  */
- ENTRY(_change_bit_be)
- 		eor	r0, r0, #0x18		@ big endian byte ordering
-diff -Nru a/arch/arm/lib/clearbit.S b/arch/arm/lib/clearbit.S
---- orig/arch/arm/lib/clearbit.S	2009-02-22 20:19:40.000000000 -0800
-+++ new/arch/arm/lib/clearbit.S	2009-02-24 13:29:19.000000000 -0800
-@@ -14,7 +14,7 @@
- 
- /*
-  * Purpose  : Function to clear a bit
-- * Prototype: int clear_bit(int bit, void *addr)
-+ * Prototype: int clear_bit(unsigned long bit, void *addr)
-  */
- ENTRY(_clear_bit_be)
- 		eor	r0, r0, #0x18		@ big endian byte ordering
-diff -Nru a/arch/arm/lib/setbit.S b/arch/arm/lib/setbit.S
---- orig/arch/arm/lib/setbit.S	2009-02-22 20:19:40.000000000 -0800
-+++ new/arch/arm/lib/setbit.S	2009-02-24 13:29:19.000000000 -0800
-@@ -14,7 +14,7 @@
- 
- /*
-  * Purpose  : Function to set a bit
-- * Prototype: int set_bit(int bit, void *addr)
-+ * Prototype: int set_bit(unsigned long bit, void *addr)
-  */
- ENTRY(_set_bit_be)
- 		eor	r0, r0, #0x18		@ big endian byte ordering
+-static inline int test_and_change_bit(int nr, volatile void * addr)
++static inline int test_and_change_bit(unsigned long nr, volatile void * addr)
+ {
+ 	unsigned long *p = ((unsigned long *)addr) + nr / BITS_PER_LONG;
+ 	unsigned long mask = 1UL << (nr % BITS_PER_LONG);
