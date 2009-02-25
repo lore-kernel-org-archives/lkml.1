@@ -1,155 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbZBYHJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbZBYHMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbZBYHJU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 02:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZBYHJL
+	id S1758114AbZBYHMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 02:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbZBYHMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 02:09:11 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60726 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751736AbZBYHJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 02:09:10 -0500
-Message-ID: <49A4EEA0.3010309@cn.fujitsu.com>
-Date: Wed, 25 Feb 2009 15:09:20 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 25 Feb 2009 02:12:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41507 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbZBYHMj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 02:12:39 -0500
+Message-ID: <49A4EE85.5000907@zytor.com>
+Date: Tue, 24 Feb 2009 23:08:53 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] use CSS ID in swap_cgroup for saving memory
-References: <20090225152617.df4eeb35.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090225152617.df4eeb35.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII
+To: Kyle McMartin <kyle@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [rfc] headers_check cleanups break the whole world
+References: <20090225032553.GD6690@bombadil.infradead.org> <20090225065632.GB21903@elte.hu> <20090225070511.GG6690@bombadil.infradead.org>
+In-Reply-To: <20090225070511.GG6690@bombadil.infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  static inline
-> -struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
-> +unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
->  {
->  	return NULL;
+Kyle McMartin wrote:
+> 
+> Yeah, sorry, I should have been clearer, libcap does stupid
+> #define _LINUX_TYPES_H_
+> typedef unsigned int __u32;
+> #include <linux/header.h>
+> 
+> Which is just horribly broken when it's included early in a file and
+> then we try to #include <asm/sigcontext.h> (and doesn't get the rest
+> of those types since it now includes <linux/types.h> instead of
+> <asm/types.h>) (coreutils was doing this.)
+> 
+> The real case is something like using the dvb headers, which legitimately
+> is trying to include both <sys/*.h> and then <linux/dvb/*.h> and expecting
+> it to work.
+> 
+> The footnote in the prior mail was really just an example of why not
+> having just the plain __u32 et al types in their own header.
+> 
 
-return 0;
+Because <linux/types.h> should work just fine once we get rid of the
+__KERNEL_STRICT_NAMES idiocy?
 
->  }
->  
->  static inline
-> -struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
-> +unsigned short lookup_swap_cgroup(swp_entry_t ent)
->  {
->  	return NULL;
+FWIW, Arnd Bergmann has been working on exactly this cleanup.
 
-return 0;
+	-hpa
 
->  }
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-> @@ -1265,12 +1286,20 @@ int mem_cgroup_cache_charge(struct page 
->  
->  	if (do_swap_account && !ret && PageSwapCache(page)) {
->  		swp_entry_t ent = {.val = page_private(page)};
-> +		unsigned short id;
->  		/* avoid double counting */
-> -		mem = swap_cgroup_record(ent, NULL);
-> +		id = swap_cgroup_record(ent, 0);
-> +		rcu_read_lock();
-> +		mem = mem_cgroup_lookup(id);
->  		if (mem) {
-> +			/*
-> +			 * Recorded ID can be obsolete. We avoid calling
-> +			 * css_tryget()
-> +			 */
->  			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
->  			mem_cgroup_put(mem);
->  		}
-> +		rcu_read_unlock();
->  	}
->  	return ret;
->  }
-> @@ -1335,13 +1364,21 @@ void mem_cgroup_commit_charge_swapin(str
->  	 */
->  	if (do_swap_account && PageSwapCache(page)) {
->  		swp_entry_t ent = {.val = page_private(page)};
-> +		unsigned short id;
->  		struct mem_cgroup *memcg;
-> -		memcg = swap_cgroup_record(ent, NULL);
-> +
-> +		id = swap_cgroup_record(ent, 0);
-> +		rcu_read_lock();
-> +		memcg = mem_cgroup_lookup(id);
->  		if (memcg) {
-> +			/*
-> +			 * This recorded memcg can be obsolete one. So, avoid
-> +			 * calling css_tryget
-> +			 */
->  			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
->  			mem_cgroup_put(memcg);
->  		}
-> -
-> +		rcu_read_unlock();
->  	}
->  	/* add this page(page_cgroup) to the LRU we want. */
->  
-> @@ -1462,7 +1499,7 @@ void mem_cgroup_uncharge_swapcache(struc
->  					MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
->  	/* record memcg information */
->  	if (do_swap_account && memcg) {
-> -		swap_cgroup_record(ent, memcg);
-> +		swap_cgroup_record(ent, css_id(&memcg->css));
->  		mem_cgroup_get(memcg);
->  	}
->  	if (memcg)
-> @@ -1477,15 +1514,22 @@ void mem_cgroup_uncharge_swapcache(struc
->  void mem_cgroup_uncharge_swap(swp_entry_t ent)
->  {
->  	struct mem_cgroup *memcg;
-> +	unsigned short id;
->  
->  	if (!do_swap_account)
->  		return;
->  
-> -	memcg = swap_cgroup_record(ent, NULL);
-> +	id = swap_cgroup_record(ent, 0);
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_lookup(id);
->  	if (memcg) {
-> +		/*
-> +		 * This memcg can be obsolete one. We avoid calling css_tryget
-> +		 */
->  		res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
->  		mem_cgroup_put(memcg);
->  	}
-> +	rcu_read_unlock();
-
-can we have a common function for the above 3 pieces of code?
-
->  }
->  #endif
->  
-> Index: mmotm-2.6.29-Feb24/mm/page_cgroup.c
-> ===================================================================
-> --- mmotm-2.6.29-Feb24.orig/mm/page_cgroup.c
-> +++ mmotm-2.6.29-Feb24/mm/page_cgroup.c
-> @@ -290,7 +290,7 @@ struct swap_cgroup_ctrl swap_cgroup_ctrl
->   * cgroup rather than pointer.
->   */
-
-this comment should be updated/removed:
-
-/*
- * This 8bytes seems big..maybe we can reduce this when we can use "id" for
- * cgroup rather than pointer.
- */
-
->  struct swap_cgroup {
-> -	struct mem_cgroup	*val;
-> +	unsigned short		id;
->  };
->  #define SC_PER_PAGE	(PAGE_SIZE/sizeof(struct swap_cgroup))
->  #define SC_POS_MASK	(SC_PER_PAGE - 1)
