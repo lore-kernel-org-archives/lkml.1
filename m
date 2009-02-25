@@ -1,311 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbZBYUo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbZBYUrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762103AbZBYUo5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 15:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761204AbZBYUon
+	id S1760641AbZBYUrz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 15:47:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755620AbZBYUrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 15:44:43 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:16591 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755708AbZBYUol (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 15:44:41 -0500
-Message-ID: <49A5ADB3.2010709@hp.com>
-Date: Wed, 25 Feb 2009 15:44:35 -0500
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Feb 2009 15:47:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33571 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754988AbZBYUrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 15:47:46 -0500
+Date: Wed, 25 Feb 2009 21:44:54 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] forget_original_parent: split out the un-ptrace
+	part
+Message-ID: <20090225204454.GA11842@redhat.com>
+References: <20090211211216.GA16847@redhat.com> <20090220022746.8852CFC2F7@magilla.sf.frob.com> <20090223164632.GA16294@redhat.com> <20090225003408.1DA81FC380@magilla.sf.frob.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Andrey Borzenkov <arvidjaar@mail.ru>,
-       Vladislav Yasevich <vladislav.yasevich@hp.com>,
-       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       Valdis.Kletnieks@vt.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       bonding-devel@lists.sourceforge.net,
-       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?= =?ISO-8859-1?Q?=F3n=22?= 
-	<jamagallon@ono.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jay Vosburgh <fubar@us.ibm.com>
-Subject: [PATCH v2] bonding: move IPv6 support into a separate kernel module
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225003408.1DA81FC380@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Possible fix v2 for bonding IPv6 regression reported by Andrey Borzenkov, added 
-automatic loading of bonding_ipv6]
+On 02/24, Roland McGrath wrote:
+>
+> > > --- a/kernel/ptrace.c
+> > > +++ b/kernel/ptrace.c
+> > > @@ -534,7 +534,7 @@ repeat:
+> > >  		 * Set the ptrace bit in the process ptrace flags.
+> > >  		 * Then link us on our parent's ptraced list.
+> > >  		 */
+> > > -		if (!ret) {
+> > > +		if (!ret && !(current->real_parent->flags & PF_EXITING)) {
+> > >  			current->ptrace |= PT_PTRACED;
+> >
+> > Yes sure.
+> >
+> > But this means exit_ptrace() must always take tasklist, otherwise we
+> > don't have the necessary barriers.
+>
+> Really?
+>
+> 	exit_signals(tsk);  /* sets PF_EXITING */
+> 	/*
+> 	 * tsk->flags are checked in the futex code to protect against
+> 	 * an exiting task cleaning up the robust pi futexes.
+> 	 */
+> 	smp_mb();
+>
+> This is an exactly analogous use, isn't it?  So exit_ptrace() just has to
+> follow this same existing barrier.  Right?
 
-This patch moves the IPv6 bonding code into a separate kernel module
-called bonding_ipv6 if either bonding or IPv6 are built as modules.
-If both are built into the kernel then this is as well.  Bonding_ipv6.ko
-registers an "send_unsol_na" function pointer for the unsolicited
-advertisement function to be called on a failover - the default action
-is to do nothing.  The notifier callbacks are now registered in this
-module and not in the base bonding module.
+Yes, we do have the barrier between "flags |= PF_EXITING" and
+"if (list_empty(ptraced))" in exit_ptrace(), but it is not enough.
 
-Also, have the IPv6 address notifier request that the bonding_ipv6
-module be loaded when an IFF_MASTER device is first brought-up.
-This avoids users from having to do this explicitly with modprobe.
+Because the exiting ->real_parent can both set PF_EXITING and return
+from exit_ptrace() (without taking tasklist because it sees ->ptraced
+is empty) right after the child checks ->real_parent->flags & PF_EXITING.
+
+I am still thinking what can we do here (and btw my apologies for delay,
+some stupid reasons distract me).
+
+> > But from the _pure theoretical_ pov, it is not correct to assume that
+> > list_empty(&tracer->ptraced) == T means that current can not be used
+> > somehow as tracee->parent. Another subthread can release a dead tracee.
+>
+> I don't follow how that's relevant.  If list_empty(), then it was empty or
+> is becoming empty.  It can't then become nonempty again (because the thread
+> doing the check is the only one that adds to that list).  That's all we're
+> assuming.
+>
+> > For example, list_empty(&tracer->ptraced) == T doesn't mean that the
+> > STOREs to this task_struct are finished, list_del_init(->ptrace_entry)
+> > can still be in progress.
+>
+> Sure, but so what?  The check is to verify that some new list_del* (and
+> related cleanup work, of course) doesn't need to be *started*.
+
+Well. I am starting to regret I mentioned this "problem" ;) Because even
+if I am right (it is very possible I am not), this all is _absolutely_
+theoretical. Let me try again to explain what I meant.
+
+First of all, in theory write_lock_irq() does not imply rcu_read_lock().
+
+Now let's suppose that the exiting task T does exit_ptrace(), sees the
+empty ->ptraced list, and then can do release_task()->call_rcu(put_task_struct)
+without taking the tasklist_lock on this path.
+
+Let's also suppose that we race with another sub-thread which reaps
+a zombie tracee and does __ptrace_unlink()->list_del_init(ptrace_entry).
+__list_del does 1) next->prev = prev and 2) prev->next = next.
+
+Let's suppose 2 is completed, but 1 is not.
+
+T checks list_empty(->ptraced) and sees head->next == head. It proceeds
+and calls call_rcu(put_task_struct).
+
+Since (in theory!) we do not have rcu_read_lock(), it is possible that
+task_struct is already freed when 1 write to the memory.
 
 
-Signed-off-by: Brian Haley <brian.haley@hp.com>
----
-  Documentation/networking/bonding.txt |    3 ++
-  drivers/net/bonding/Makefile         |    5 ++-
-  drivers/net/bonding/bond_ipv6.c      |   13 +++++++-
-  drivers/net/bonding/bond_main.c      |   52 ++++++++++++++++++++++++++++++---
-  drivers/net/bonding/bonding.h        |    9 +++--
-  net/ipv6/addrconf.c                  |    6 ++++++
-  6 files changed, 75 insertions(+), 13 deletions(-)
+But actually I meant that this is not really safe "in general". Let's
+suppose we change __ptrace_unlink() so that it does, say,
+BUG_ON(child->parent->exit_state != 0) before untracing. Yes, sure,
+this is ugly, but correct. Or BUG_ON(!child->parent->signal), or
+whatever else.
 
-diff --git a/Documentation/networking/bonding.txt 
-b/Documentation/networking/bonding.txt
-index 5ede747..c8b1c1f 100644
---- a/Documentation/networking/bonding.txt
-+++ b/Documentation/networking/bonding.txt
-@@ -603,6 +603,9 @@ num_unsol_na
-  	affects only the active-backup mode.  This option was added for
-  	bonding version 3.4.0.
+But this is only correct because T takes tasklist before it actually
+starts to "destroy" itself.
 
-+	In order to get this functionality, you will need to load the
-+	Bonding IPv6 module with 'modprobe bonding_ipv6'.
-+
-  primary
 
-  	A string (eth0, eth2, etc) specifying which slave is the
-diff --git a/drivers/net/bonding/Makefile b/drivers/net/bonding/Makefile
-index 6f9c6fa..d4f6338 100644
---- a/drivers/net/bonding/Makefile
-+++ b/drivers/net/bonding/Makefile
-@@ -6,6 +6,7 @@ obj-$(CONFIG_BONDING) += bonding.o
+In short, my point is: even if exit_ptrace() sees list_empty(->ptraced),
+it is possible that the just-untraced tracee "looks" at us and expects
+that the former tracer is "alive" enough.
 
-  bonding-objs := bond_main.o bond_3ad.o bond_alb.o bond_sysfs.o
-
--ipv6-$(subst m,y,$(CONFIG_IPV6)) += bond_ipv6.o
--bonding-objs += $(ipv6-y)
-+# build bonding_ipv6 as module whenever either IPv6 or Bonding is a module
-+obj-$(subst y,$(CONFIG_BONDING),$(CONFIG_IPV6)) += bonding_ipv6.o
-+bonding_ipv6-y := bond_ipv6.o
-
-diff --git a/drivers/net/bonding/bond_ipv6.c b/drivers/net/bonding/bond_ipv6.c
-index 0d73bf5..2f10514 100644
---- a/drivers/net/bonding/bond_ipv6.c
-+++ b/drivers/net/bonding/bond_ipv6.c
-@@ -20,6 +20,9 @@
-   *
-   */
-
-+#include <linux/module.h>
-+#include <linux/init.h>
-+
-  #include <linux/types.h>
-  #include <linux/if_vlan.h>
-  #include <net/ipv6.h>
-@@ -204,13 +207,19 @@ static struct notifier_block bond_inet6addr_notifier = {
-  	.notifier_call = bond_inet6addr_event,
-  };
-
--void bond_register_ipv6_notifier(void)
-+static int __init bonding_ipv6_init(void)
-  {
-+	bond_register_ipv6_na(bond_send_unsolicited_na);
-  	register_inet6addr_notifier(&bond_inet6addr_notifier);
-+	return 0;
-  }
-
--void bond_unregister_ipv6_notifier(void)
-+static void __exit bonding_ipv6_exit(void)
-  {
-  	unregister_inet6addr_notifier(&bond_inet6addr_notifier);
-+	bond_unregister_ipv6_na();
-  }
-
-+module_init(bonding_ipv6_init)
-+module_exit(bonding_ipv6_exit)
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index 2c96b93..ff61add 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -149,6 +149,12 @@ static const char * const version =
-  	DRV_DESCRIPTION ": v" DRV_VERSION " (" DRV_RELDATE ")\n";
-
-  LIST_HEAD(bond_dev_list);
-+EXPORT_SYMBOL(bond_dev_list);
-+
-+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+static DEFINE_SPINLOCK(bond_v6_na_lock);
-+#endif
-+static void (*bond_send_unsol_na)(struct bonding *bond);
-
-  #ifdef CONFIG_PROC_FS
-  static struct proc_dir_entry *bond_proc_dir = NULL;
-@@ -1201,6 +1207,8 @@ void bond_change_active_slave(struct bonding *bond, struct 
-slave *new_active)
-  		}
-
-  		if (new_active) {
-+			void (*send_unsol_na)(struct bonding *bond);
-+
-  			bond_set_slave_active_flags(new_active);
-
-  			if (bond->params.fail_over_mac)
-@@ -1211,7 +1219,11 @@ void bond_change_active_slave(struct bonding *bond, 
-struct slave *new_active)
-  			bond_send_gratuitous_arp(bond);
-
-  			bond->send_unsol_na = bond->params.num_unsol_na;
--			bond_send_unsolicited_na(bond);
-+			rcu_read_lock();
-+			send_unsol_na = rcu_dereference(bond_send_unsol_na);
-+			if (send_unsol_na)
-+				send_unsol_na(bond);
-+			rcu_read_unlock();
-
-  			write_unlock_bh(&bond->curr_slave_lock);
-  			read_unlock(&bond->lock);
-@@ -2464,8 +2476,14 @@ void bond_mii_monitor(struct work_struct *work)
-  	}
-
-  	if (bond->send_unsol_na) {
-+		void (*send_unsol_na)(struct bonding *bond);
-+
-  		read_lock(&bond->curr_slave_lock);
--		bond_send_unsolicited_na(bond);
-+		rcu_read_lock();
-+		send_unsol_na = rcu_dereference(bond_send_unsol_na);
-+		if (send_unsol_na)
-+			send_unsol_na(bond);
-+		rcu_read_unlock();
-  		read_unlock(&bond->curr_slave_lock);
-  	}
-
-@@ -3165,8 +3183,14 @@ void bond_activebackup_arp_mon(struct work_struct *work)
-  	}
-
-  	if (bond->send_unsol_na) {
-+		void (*send_unsol_na)(struct bonding *bond);
-+
-  		read_lock(&bond->curr_slave_lock);
--		bond_send_unsolicited_na(bond);
-+		rcu_read_lock();
-+		send_unsol_na = rcu_dereference(bond_send_unsol_na);
-+		if (send_unsol_na)
-+			send_unsol_na(bond);
-+		rcu_read_unlock();
-  		read_unlock(&bond->curr_slave_lock);
-  	}
-
-@@ -5203,6 +5227,26 @@ out_rtnl:
-  	return res;
-  }
-
-+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+void bond_register_ipv6_na(void (*send_unsol_na) (struct bonding *bond))
-+{
-+	spin_lock_bh(&bond_v6_na_lock);
-+	rcu_assign_pointer(bond_send_unsol_na, send_unsol_na);
-+	spin_unlock_bh(&bond_v6_na_lock);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL_GPL(bond_register_ipv6_na);
-+
-+void bond_unregister_ipv6_na(void)
-+{
-+	spin_lock_bh(&bond_v6_na_lock);
-+	rcu_assign_pointer(bond_send_unsol_na, NULL);
-+	spin_unlock_bh(&bond_v6_na_lock);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL(bond_unregister_ipv6_na);
-+#endif
-+
-  static int __init bonding_init(void)
-  {
-  	int i;
-@@ -5234,7 +5278,6 @@ static int __init bonding_init(void)
-
-  	register_netdevice_notifier(&bond_netdev_notifier);
-  	register_inetaddr_notifier(&bond_inetaddr_notifier);
--	bond_register_ipv6_notifier();
-
-  	goto out;
-  err:
-@@ -5257,7 +5300,6 @@ static void __exit bonding_exit(void)
-  {
-  	unregister_netdevice_notifier(&bond_netdev_notifier);
-  	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
--	bond_unregister_ipv6_notifier();
-
-  	bond_destroy_sysfs();
-
-diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
-index ca849d2..9e5e092 100644
---- a/drivers/net/bonding/bonding.h
-+++ b/drivers/net/bonding/bonding.h
-@@ -23,15 +23,13 @@
-  #include "bond_3ad.h"
-  #include "bond_alb.h"
-
--#define DRV_VERSION	"3.5.0"
--#define DRV_RELDATE	"November 4, 2008"
-+#define DRV_VERSION	"3.6.0"
-+#define DRV_RELDATE	"February 20, 2009"
-  #define DRV_NAME	"bonding"
-  #define DRV_DESCRIPTION	"Ethernet Channel Bonding Driver"
-
-  #define BOND_MAX_ARP_TARGETS	16
-
--extern struct list_head bond_dev_list;
--
-  #define IS_UP(dev)					   \
-  	      ((((dev)->flags & IFF_UP) == IFF_UP)	&& \
-  	       netif_running(dev)			&& \
-@@ -360,6 +358,9 @@ extern struct rw_semaphore bonding_rwsem;
-  void bond_send_unsolicited_na(struct bonding *bond);
-  void bond_register_ipv6_notifier(void);
-  void bond_unregister_ipv6_notifier(void);
-+
-+void bond_register_ipv6_na(void (*send_unsol_na) (struct bonding *bond));
-+void bond_unregister_ipv6_na(void);
-  #else
-  static inline void bond_send_unsolicited_na(struct bonding *bond)
-  {
-diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
-index f8f76d6..ec24e0e 100644
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -59,6 +59,7 @@
-  #include <linux/delay.h>
-  #include <linux/notifier.h>
-  #include <linux/string.h>
-+#include <linux/kmod.h>
-
-  #include <net/net_namespace.h>
-  #include <net/sock.h>
-@@ -2452,6 +2453,7 @@ static int addrconf_notify(struct notifier_block *this, 
-unsigned long event,
-  	struct inet6_dev *idev = __in6_dev_get(dev);
-  	int run_pending = 0;
-  	int err;
-+	static int bond_ipv6 = 0;
-
-  	switch(event) {
-  	case NETDEV_REGISTER:
-@@ -2519,6 +2521,10 @@ static int addrconf_notify(struct notifier_block *this, 
-unsigned long event,
-  			break;
-
-  		default:
-+			if ((dev->flags & IFF_MASTER) && !bond_ipv6) {
-+				request_module("bonding_ipv6");
-+				bond_ipv6 = 1;
-+			}
-  			addrconf_dev_config(dev);
-  			break;
-  		}
--- 
-1.5.4.3
+Oleg.
 
