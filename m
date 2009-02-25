@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbZBYTqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbZBYTrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759819AbZBYTqj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 14:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZBYTqb
+	id S1760033AbZBYTrh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 14:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbZBYTr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 14:46:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50926 "EHLO mx1.redhat.com"
+	Wed, 25 Feb 2009 14:47:27 -0500
+Received: from ns2.suse.de ([195.135.220.15]:45575 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756855AbZBYTqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 14:46:30 -0500
+	id S1757023AbZBYTr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 14:47:26 -0500
+Date: Wed, 25 Feb 2009 11:40:13 -0800
+From: Greg KH <gregkh@suse.de>
+To: Frank Seidel <fseidel@suse.de>
+Cc: Thiago Galesi <thiagogalesi@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-crypto@vger.kernel.org, Frank Seidel <frank@f-seidel.de>,
+       akpm@linux-foundation.org, "David S. Miller" <davem@davemloft.net>,
+       nhorman@tuxdriver.com, lho@amcc.com, kaber@trash.net,
+       darrenrjenkins@gmail.com
+Subject: Re: [PATCH][trivial] crypto: tcrypt - reduce stack size
+Message-ID: <20090225194013.GB6193@suse.de>
+References: <49A54C23.8090209@suse.de> <20090225142000.GA4136@gondor.apana.org.au> <49A55499.6090700@suse.de> <82ecf08e0902250629n6a190165u557c21b0ebe797d5@mail.gmail.com> <49A556E3.1000309@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Evans <scarybeasts@gmail.com>,
-       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
-       Eugene Teo <eugene@redhat.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] copy_process: fix CLONE_PARENT && ->exit_signal
-	interaction
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 25 February 2009 20:02:11 +0100 <20090225190211.GA7445@redhat.com>
-References: <20090225190211.GA7445@redhat.com>
-Emacs: no job too big... no job.
-Message-Id: <20090225193927.1ED25FC3DA@magilla.sf.frob.com>
-Date: Wed, 25 Feb 2009 11:39:27 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <49A556E3.1000309@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I think I said before, I don't really know what the actual use case is
-for CLONE_PARENT without CLONE_THREAD.  So it's easy to approve changing
-its behavior, but I do vaguely worry about who expected what behavior before.
+On Wed, Feb 25, 2009 at 03:34:11PM +0100, Frank Seidel wrote:
+> Thiago Galesi wrote:
+> > If you write static char output[1024]; (even inside a function) it's
+> > not allocated on the stack.
+> 
+> Oh, yes i misunderstood Herbert, sorry. But anyway isn't
+> it preferred to kmalloc such arrays?
+> Greg, i thought it was you who told me so, is that right?
 
-Just for readability, I would prefer that you just change the first line
-above that sets p->exit_signal initially.  i.e. (but with some comments):
+Generally, yes, it is preferred.  But if it can be static, that's fine
+too.
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index a66fbde..f56793b 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1184,7 +1184,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	p->parent_exec_id = p->self_exec_id;
- 
- 	/* ok, now we should be set up.. */
--	p->exit_signal = (clone_flags & CLONE_THREAD) ? -1 : (clone_flags & CSIGNAL);
-+	p->exit_signal = ((clone_flags & CLONE_THREAD) ? -1 :
-+			  (clone_flags & CLONE_PARENT) ?
-+			  current->group_leader->exit_signal :
-+			  (clone_flags & CSIGNAL));
- 	p->pdeath_signal = 0;
- 	p->exit_state = 0;
- 
+thanks,
 
-
-Thanks,
-Roland
+greg k-h
