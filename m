@@ -1,341 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbZBYIQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbZBYIVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761347AbZBYIQW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 03:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760589AbZBYIPy
+	id S1760756AbZBYIVm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 03:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZBYIVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 03:15:54 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:56897 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755525AbZBYIPw (ORCPT
+	Wed, 25 Feb 2009 03:21:33 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58496 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbZBYIVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 03:15:52 -0500
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 25 Feb 2009 00:16:20 -0800
-Message-ID: <m18wnvq6cr.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: gregkh@suse.de, akpm@linux-foundation.org, jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org, htejun@gmail.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Greg Kroah-Hartman <gregkh@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH] sysfs: Don't block indefinitely for unmapped files. 
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Wed, 25 Feb 2009 03:21:33 -0500
+Subject: Re: [PATCH] sched: fix unfairness when upgrade weight
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: miaox@cn.fujitsu.com
+Cc: Ingo Molnar <mingo@elte.hu>, Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <49A4F401.30503@cn.fujitsu.com>
+References: <49A4F401.30503@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 09:20:53 +0100
+Message-Id: <1235550053.4645.3035.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-02-25 at 15:32 +0800, Miao Xie wrote:
 
-This patch modifies sysfs bin files so that we can remove
-the bin file while they are still mapped.  When the kobject
-is removed we unmap the bin file and arrange for future
-accesses to the mapping to receive SIGBUS.
+> This patch fixes this bug by tuning the vruntime of weight-upgraded
+> sched entities, just like waking up a task. the new vruntime will be
+>     cfs_rq->min_vruntime + sched_vslice();
 
-Implementing this prevents a nasty DOS when pci devices are
-hot plugged and unplugged.  Where if any of their resources
-were mmaped the kernel could not free up their pci resources
-or release their pci data structures.
+I really don't like that.
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- fs/sysfs/bin.c   |  183 ++++++++++++++++++++++++++++++++++++++++++++++++++----
- fs/sysfs/dir.c   |    1 +
- fs/sysfs/sysfs.h |    2 +
- 3 files changed, 174 insertions(+), 12 deletions(-)
+Better would be to scale with min_vruntime, which would at least
+approximate the lag somewhat.
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index f2c478c..f02a3c7 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -21,15 +21,28 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/mutex.h>
-+#include <linux/mm.h>
- 
- #include <asm/uaccess.h>
- 
- #include "sysfs.h"
- 
-+/*
-+ * There's one bin_buffer for each open file.
-+ *
-+ * filp->private_data points to bin_buffer and
-+ * sysfs_dirent->s_bin_attr.buffers points to a the bin_buffer s
-+ * sysfs_dirent->s_bin_attr.buffers is protected by sysfs_bin_lock
-+ */
-+static DEFINE_MUTEX(sysfs_bin_lock);
-+
- struct bin_buffer {
--	struct mutex	mutex;
--	void		*buffer;
--	int		mmapped;
-+	struct mutex			mutex;
-+	void				*buffer;
-+	int				mmapped;
-+	struct vm_operations_struct 	*vm_ops;
-+	struct file			*file;
-+	struct hlist_node		list;
- };
- 
- static int
-@@ -168,29 +181,148 @@ out_free:
- 	return count;
- }
- 
-+static void bin_vma_open(struct vm_area_struct *vma)
-+{
-+	struct file *file = vma->vm_file;
-+	struct bin_buffer *bb = file->private_data;
-+	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
-+
-+	if (!bb->vm_ops || !bb->vm_ops->open)
-+		return;
-+
-+	if (!sysfs_get_active_two(attr_sd))
-+		return;
-+
-+	bb->vm_ops->open(vma);
-+
-+	sysfs_put_active_two(attr_sd);
-+}
-+
-+static void bin_vma_close(struct vm_area_struct *vma)
-+{
-+	struct file *file = vma->vm_file;
-+	struct bin_buffer *bb = file->private_data;
-+	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
-+
-+	if (!bb->vm_ops || !bb->vm_ops->close)
-+		return;
-+
-+	if (!sysfs_get_active_two(attr_sd))
-+		return;
-+
-+	bb->vm_ops->close(vma);
-+
-+	sysfs_put_active_two(attr_sd);
-+}
-+
-+static int bin_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	struct file *file = vma->vm_file;
-+	struct bin_buffer *bb = file->private_data;
-+	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
-+	int ret;
-+
-+	if (!bb->vm_ops || !bb->vm_ops->fault)
-+		return VM_FAULT_SIGBUS;
-+
-+	if (!sysfs_get_active_two(attr_sd))
-+		return VM_FAULT_SIGBUS;
-+
-+	ret = bb->vm_ops->fault(vma, vmf);
-+
-+	sysfs_put_active_two(attr_sd);
-+	return ret;
-+}
-+
-+static int bin_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-+{
-+	struct file *file = vma->vm_file;
-+	struct bin_buffer *bb = file->private_data;
-+	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
-+	int ret;
-+
-+	if (!bb->vm_ops || !bb->vm_ops->page_mkwrite)
-+		return -EINVAL;
-+
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -EINVAL;
-+
-+	ret = bb->vm_ops->page_mkwrite(vma, page);
-+
-+	sysfs_put_active_two(attr_sd);
-+	return ret;
-+}
-+
-+static int bin_access(struct vm_area_struct *vma, unsigned long addr,
-+		  void *buf, int len, int write)
-+{
-+	struct file *file = vma->vm_file;
-+	struct bin_buffer *bb = file->private_data;
-+	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
-+	int ret;
-+
-+	if (!bb->vm_ops || !bb->vm_ops->access)
-+		return -EINVAL;
-+
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -EINVAL;
-+
-+	ret = bb->vm_ops->access(vma, addr, buf, len, write);
-+
-+	sysfs_put_active_two(attr_sd);
-+	return ret;
-+}
-+
-+static struct vm_operations_struct bin_vm_ops = {
-+	.open		= bin_vma_open,
-+	.close		= bin_vma_close,
-+	.fault		= bin_fault,
-+	.page_mkwrite	= bin_page_mkwrite,
-+	.access		= bin_access,
-+};
-+
- static int mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	struct bin_buffer *bb = file->private_data;
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_bin_attr.bin_attr;
- 	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
-+	struct vm_operations_struct *vm_ops;
- 	int rc;
- 
- 	mutex_lock(&bb->mutex);
- 
- 	/* need attr_sd for attr, its parent for kobj */
-+	rc = -ENODEV;
- 	if (!sysfs_get_active_two(attr_sd))
--		return -ENODEV;
-+		goto out_unlock;
- 
- 	rc = -EINVAL;
--	if (attr->mmap)
--		rc = attr->mmap(kobj, attr, vma);
-+	if (!attr->mmap)
-+		goto out_put;
- 
--	if (rc == 0 && !bb->mmapped)
--		bb->mmapped = 1;
--	else
--		sysfs_put_active_two(attr_sd);
-+	rc = attr->mmap(kobj, attr, vma);
-+	vm_ops = vma->vm_ops;
-+	vma->vm_ops = &bin_vm_ops;
-+	if (rc)
-+		goto out_put;
-+
-+	rc = -EINVAL;
-+	if (bb->mmapped && bb->vm_ops != vma->vm_ops)
-+		goto out_put;
- 
-+#ifdef CONFIG_NUMA
-+	rc = -EINVAL;
-+	if (vm_ops && ((vm_ops->set_policy || vm_ops->get_policy || vm_ops->migrate)))
-+		goto out_put;
-+#endif
-+
-+	rc = 0;
-+	bb->mmapped = 1;
-+	bb->vm_ops = vm_ops;
-+out_put:
-+	sysfs_put_active_two(attr_sd);
-+out_unlock:
- 	mutex_unlock(&bb->mutex);
- 
- 	return rc;
-@@ -223,8 +355,13 @@ static int open(struct inode * inode, struct file * file)
- 		goto err_out;
- 
- 	mutex_init(&bb->mutex);
-+	bb->file = file;
- 	file->private_data = bb;
- 
-+	mutex_lock(&sysfs_bin_lock);
-+	hlist_add_head(&bb->list, &attr_sd->s_bin_attr.buffers);
-+	mutex_unlock(&sysfs_bin_lock);
-+
- 	/* open succeeded, put active references */
- 	sysfs_put_active_two(attr_sd);
- 	return 0;
-@@ -240,8 +377,10 @@ static int release(struct inode * inode, struct file * file)
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_buffer *bb = file->private_data;
- 
--	if (bb->mmapped)
--		sysfs_put_active_two(attr_sd);
-+	mutex_lock(&sysfs_bin_lock);
-+	hlist_del(&bb->list);
-+	mutex_unlock(&sysfs_bin_lock);
-+
- 	kfree(bb->buffer);
- 	kfree(bb);
- 	return 0;
-@@ -256,6 +395,26 @@ const struct file_operations bin_fops = {
- 	.release	= release,
- };
- 
-+
-+void unmap_bin_file(struct sysfs_dirent *attr_sd)
-+{
-+	struct bin_buffer *bb;
-+	struct hlist_node *tmp;
-+
-+	if (sysfs_type(attr_sd) != SYSFS_KOBJ_BIN_ATTR)
-+		return;
-+
-+	mutex_lock(&sysfs_bin_lock);
-+
-+	hlist_for_each_entry(bb, tmp, &attr_sd->s_bin_attr.buffers, list) {
-+		struct inode *inode = bb->file->f_path.dentry->d_inode;
-+
-+		unmap_mapping_range(inode->i_mapping, 0, 0, 1);
-+	}
-+
-+	mutex_unlock(&sysfs_bin_lock);
-+}
-+
- /**
-  *	sysfs_create_bin_file - create binary file for object.
-  *	@kobj:	object.
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 82d3b79..5dcea0d 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -581,6 +581,7 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
- 
- 		sysfs_drop_dentry(sd);
- 		sysfs_deactivate(sd);
-+		unmap_bin_file(sd);
- 		sysfs_put(sd);
- 	}
- }
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 93c6d6b..bee5344 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -28,6 +28,7 @@ struct sysfs_elem_attr {
- 
- struct sysfs_elem_bin_attr {
- 	struct bin_attribute	*bin_attr;
-+	struct hlist_head	buffers;
- };
- 
- /*
-@@ -163,6 +164,7 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
-  * bin.c
-  */
- extern const struct file_operations bin_fops;
-+void unmap_bin_file(struct sysfs_dirent *attr_sd);
- 
- /*
-  * symlink.c
--- 
-1.6.1.2.350.g88cc
+Best is to compute the actual lag, but that might just not be worth the
+extra overhead.
+
+http://programming.kicks-ass.net/kernel-patches/sched-avg_vruntime/
+
+
+> ---
+>  kernel/sched.c      |   16 +++++++++-------
+>  kernel/sched_fair.c |    9 +++++++++
+>  2 files changed, 18 insertions(+), 7 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 410eec4..26e6d33 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -5096,12 +5096,8 @@ void set_user_nice(struct task_struct *p, long nice)
+>  
+>  	if (on_rq) {
+>  		enqueue_task(rq, p, 0);
+> -		/*
+> -		 * If the task increased its priority or is running and
+> -		 * lowered its priority, then reschedule its CPU:
+> -		 */
+> -		if (delta < 0 || (delta > 0 && task_running(rq, p)))
+> -			resched_task(rq->curr);
+> +		p->sched_class->prio_changed(rq, p, old_prio,
+> +						task_running(rq, p));
+>  	}
+>  out_unlock:
+>  	task_rq_unlock(rq, &flags);
+> @@ -8929,16 +8925,22 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares)
+>  {
+>  	struct cfs_rq *cfs_rq = se->cfs_rq;
+>  	int on_rq;
+> +	unsigned long old_weight;
+>  
+>  	on_rq = se->on_rq;
+>  	if (on_rq)
+>  		dequeue_entity(cfs_rq, se, 0);
+>  
+> +	old_weight = se->load.weight;
+>  	se->load.weight = shares;
+>  	se->load.inv_weight = 0;
+>  
+> -	if (on_rq)
+> +	if (on_rq) {
+> +		if (se->load.weight > old_weight)
+> +			se->vruntime = cfs_rq->min_vruntime
+> +						+ sched_vslice(cfs_rq, se);
+>  		enqueue_entity(cfs_rq, se, 0);
+> +	}
+>  }
+>  
+>  static void set_se_shares(struct sched_entity *se, unsigned long shares)
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 0566f2a..34d4d11 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -1690,6 +1690,15 @@ static void task_new_fair(struct rq *rq, struct task_struct *p)
+>  static void prio_changed_fair(struct rq *rq, struct task_struct *p,
+>  			      int oldprio, int running)
+>  {
+> +	struct cfs_rq *cfs_rq = task_cfs_rq(p);
+> +	struct sched_entity *se = &p->se;
+> +	int on_rq = se->on_rq;
+> +
+> +	if (p->prio < oldprio && on_rq) {
+> +		dequeue_entity(cfs_rq, se, 0);
+> +		se->vruntime = cfs_rq->min_vruntime + sched_vslice(cfs_rq, se);
+> +		enqueue_entity(cfs_rq, se, 0);
+> +	}
+
+we very likely just enqueued the thing, and now we dequeue/enqueue
+again.. not very nice.
+
+>  	/*
+>  	 * Reschedule if we are currently running on this runqueue and
+>  	 * our priority decreased, or if we are not currently running on
 
