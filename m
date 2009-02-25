@@ -1,104 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZBYNYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZBYN0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbZBYNYD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 08:24:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZBYNXx
+	id S1756042AbZBYN0n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 08:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZBYN0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 08:23:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58869 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753865AbZBYNXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 08:23:52 -0500
-Date: Wed, 25 Feb 2009 14:23:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
-	suspend-resume
-Message-ID: <20090225132325.GB30206@elte.hu>
-References: <200902221837.49396.rjw@sisk.pl> <200902250007.13069.rjw@sisk.pl> <20090224230935.GA15165@elte.hu> <200902250029.16107.rjw@sisk.pl>
+	Wed, 25 Feb 2009 08:26:33 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:63445 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753416AbZBYN0c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 08:26:32 -0500
+Date: Wed, 25 Feb 2009 14:26:28 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: compress - Add pcomp interface
+In-Reply-To: <20090225025605.GA30920@gondor.apana.org.au>
+Message-ID: <alpine.LRH.2.00.0902251425570.4063@vixen.sonytel.be>
+References: <20090114031613.GA7429@gondor.apana.org.au> <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be> <20090115030526.GA27726@gondor.apana.org.au> <alpine.LRH.2.00.0902051703150.4290@vixen.sonytel.be> <20090210061822.GA19774@gondor.apana.org.au>
+ <alpine.LRH.2.00.0902121613580.29413@vixen.sonytel.be> <20090219040847.GA973@gondor.apana.org.au> <alpine.LRH.2.00.0902191005110.27630@vixen.sonytel.be> <20090219104250.GA9633@gondor.apana.org.au> <alpine.LRH.2.00.0902231822080.22762@vixen.sonytel.be>
+ <20090225025605.GA30920@gondor.apana.org.au>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902250029.16107.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Wednesday 25 February 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > On Tuesday 24 February 2009, Linus Torvalds wrote:
-> > > > 
-> > > > On Tue, 24 Feb 2009, Rafael J. Wysocki wrote:
-> > > > >
-> > > > > > The only safe way on x86 to shutdown a level triggered ioapic irq
-> > > > > > outside of irq context is for the driver to program the hardware to
-> > > > > > not generate an irq.
-> > > > > 
-> > > > > Well, that changes things quite a bit, because it means we can't change the
-> > > > > suspend-resume sequence in a way we thought we could without fixing all
-> > > > > drivers first, but this is exactly what we'd like to avoid by changing the
-> > > > > core.
-> > > > 
-> > > > Calling "disable_irq()" is perfectly fine.
-> > > > 
-> > > > What is not possible on that broken IO-APIC (among other 
-> > > > things) is to actually turn the interrupts off at the apic 
-> > > > (ie the whole ->shutdown() thing). But that's not what we 
-> > > > even want to do. What we care about is just disabling the 
-> > > > interrupt from a drievr perspective.
-> > > > 
-> > > > IOW, the patches I have seen are fine, and all the comments 
-> > > > from Eric are just confusion about what we want done.
-> > > 
-> > > Ah, OK.  Thanks for the explanation, I got confused too.
-> > > 
-> > > > WE DO NOT WANT TO TURN OFF THE IO-APIC. That may or may 
-> > > > happen later, but that's totally unrelated to this whole 
-> > > > "suspend_device_irq()" thing.
-> > > 
-> > > Yeah.
-> > 
-> > We definitely dont want to turn off x86 IO-APICs - the timer IRQ 
-> > goes via one of them.
+On Wed, 25 Feb 2009, Herbert Xu wrote:
+> On Mon, Feb 23, 2009 at 06:32:19PM +0100, Geert Uytterhoeven wrote:
+> >
+> > Is the below (on top of my last patch series) what you have in mind?
 > 
-> No, we don't.  At least not at this point.
+> Looks great to me!
+
+OK.
+
+> > Notes:
+> >   - I had to drop the `const' from the `params' pointers of
+> >     pcomp_alg.{,de}compress_setup().
+> >     Trying to make nla_parse() take const nlattr structures instead seems to
+> >     open a big can of worms...
 > 
-> BTW, appended is the current (3rd) version of the $subject patch with some
-> of your comments taken into account.  In particular, I did the following:
-> - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
-> - fixed interrupt.h so that their headers are at a better place
-> - made enable_irq() clear IRQ_SUSPENDED
-> - made device_power_down() and device_power_up() call
->   suspend_device_irqs() and resume_device_irqs(), respectively, which
->   simplified the callers quite a bit (it changed the Xen code ordering, though,
->   but I _think_ it still should work).
+> I don't think that's a big deal.
 > 
-> Please have a look.
+> >   - I should add a dependency of CONFIG_CRYPTO_ZLIB on CONFIG_NET (due to the
+> >     need for nla_parse()). However, I don't like that.
+> 
+> Dave has OKed it for the attribute stuff to be moved into lib.
+> So if you want to tackle that then be my guest :) Otherwise I'll
+> look into moving it.
 
-Looks good, thanks Rafael!
+I already have a patch for that. I'll fold the netlink parsing into the
+original series and will resubmit.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+With kind regards,
 
-	Ingo
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
