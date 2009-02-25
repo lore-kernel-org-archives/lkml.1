@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZBYTbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbZBYTeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZBYTbN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 14:31:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759183AbZBYTay
+	id S1759268AbZBYTeo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 14:34:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbZBYTef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 14:30:54 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38965
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756961AbZBYTaw (ORCPT
+	Wed, 25 Feb 2009 14:34:35 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:32986 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756855AbZBYTee (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 14:30:52 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: Documentation:Update the INDEX of the documents
-Date: Wed, 25 Feb 2009 13:30:48 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
-Cc: Yang Hongyang <yanghy@cn.fujitsu.com>, netdev@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org,
-       mtk.manpages@gmail.com, rdunlap@xenotime.net
-References: <49A4F06B.6030205@cn.fujitsu.com> <20090225145950.GJ7064@mit.edu>
-In-Reply-To: <20090225145950.GJ7064@mit.edu>
+	Wed, 25 Feb 2009 14:34:34 -0500
+Message-ID: <22210028.post@talk.nabble.com>
+Date: Wed, 25 Feb 2009 11:34:29 -0800 (PST)
+From: anitemp <marathe.aniruddha@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.x kernel debugging over ethernet (without serial connection)
+ and reboot
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902251330.49640.rob@landley.net>
+X-Nabble-From: marathe.aniruddha@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 February 2009 08:59:50 Theodore Tso wrote:
-> On Wed, Feb 25, 2009 at 03:16:59PM +0800, Yang Hongyang wrote:
-> > There are so many 00-INDEX file that are missing description of the
-> > current files in the dir.  Such as 00-INDEX in
-> > Documentation/x86/,Documentation/networking/,Documentation/ and so
-> > on.
-> >
-> > It's a large amount of work for someone to go through all these
-> > documents and make summaries.
-> >
-> > I'm willing to do some of the work but if someone else pick these
-> > up(especially the authors of these new files) it will be a great
-> > help.^_^
->
-> Before you embark on this large amount of work, we should probably ask
-> a question first --- how useful are the 00-INDEX files?  I don't find
-> them particularly interesting, given that my normal way of finding
-> documentation in the Documentation directory is:
->
-> find . -type f | xargs grep <keyword>
->
-> Or, if I have a git tree of the Linux sources handy:
->
-> git grep <keyword> -- Documentation
->
-> If folks do find the 00-INDEX files useful, my suggestion would be to
-> make a way of automatically extracting them from the individual files
-> and/or directories, and then making the 00-INDEX files to be
-> automatically generated.
 
-I have a script that automatically generates html indexes from them for 
-http://kernel.org/doc/Documentation which is at least a use. :)
+Hi,
 
-I'd be happy to generate those html indexes from something else, but there 
-isn't an obvious reliable source of single line comments in the files 
-themselves.  For a lot of 'em you can take the first nonblank line and ignore 
-things like the trailing colon in unshare.txt, and maybe you could even 
-automatically ignore things like the sentence fragment at the end of kref.txt.
+I am trying to debug my USB Gadget driver. I have two machines connected to
+the LAN and the driver is running on one of them. However, there is no
+serial or ethernet null-modem connection between them.
 
-But what do you do about the first like of IRQ-affinity.txt being 
-"ChangeLog:", or hw_random.txt starting with "Introduction:"?  (And of course 
-logo.gif isn't a text file.  And we haven't even gotten to the 
-subdirectories...)
+At some point in time, the kernel freezes due to my buggy driver (I am
+suspecting unreleased lock) In this situation I need to be able to reboot
+the frozen host remotely from the other host.
 
-Rob
+I searched on the net and on the forum but did not find material which would
+serve this purpose, although I found a few useful tutorials on KGDB in
+general.
+
+Please let me know if there any way of doing this.
+
+Thanks for your time!
+
+-Aniruddha
+-- 
+View this message in context: http://www.nabble.com/2.6.x-kernel-debugging-over-ethernet-%28without-serial-connection%29-and-reboot-tp22210028p22210028.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
+
