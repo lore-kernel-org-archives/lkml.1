@@ -1,46 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbZBYJdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761100AbZBYJfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbZBYJdn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZBYJdc
+	id S1761100AbZBYJfR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:35:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZBYJfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:33:32 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:39541 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757913AbZBYJdb (ORCPT
+	Wed, 25 Feb 2009 04:35:00 -0500
+Received: from mailout3.samsung.com ([203.254.224.33]:24108 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbZBYJe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:33:31 -0500
-Message-ID: <49A51061.2040300@davidnewall.com>
-Date: Wed, 25 Feb 2009 20:03:21 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Tomas M <tomas@slax.org>
-CC: "David P. Quigley" <dpquigl@tycho.nsa.gov>, Theodore Tso <tytso@mit.edu>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New filesystem for Linux kernel
-References: <7558.1235374266@jrobl> <7769.1235374482@jrobl>	 <49A268A7.1010708@slax.org> <49A26ACC.90804@slax.org>	 <49A3AC14.2050107@slax.org>  <20090224141548.GB5482@mit.edu> <1235488695.15148.49.camel@moss-terrapins.epoch.ncsc.mil> <49A4F3EC.7060005@slax.org>
-In-Reply-To: <49A4F3EC.7060005@slax.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Feb 2009 04:34:57 -0500
+Date: Wed, 25 Feb 2009 18:34:40 +0900
+From: Kyungmin Park <kmpark@infradead.org>
+Subject: [PATCH] LED key trigger support
+To: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Cc: dmitry.torokhov@gmail.com, soni.trilok@gmail.com, rpurdie@rpsys.net
+Message-id: <20090225093440.GA5414@july>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-OriginalArrivalTime: 25 Feb 2009 09:34:47.0888 (UTC)
+ FILETIME=[4CC19500:01C9972C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas M wrote:
-> In general, I need an union filesystem and I do not care if that is unionfs or aufs.
+When key button is pressed or released, it turns on or off LED.
 
-Agreed. Well said.
+It's depends on input notifier support patch.
 
-> I wish aufs to be mainlined; because the code simply works, since its initial release, for many years.
-
-Perhaps; but consider Okajima-san's rationale, "Aufs2 is a refined
-version of old aufs1: - to be reviewed easily and widely. - to make the
-source files simpler and smaller by dropping several original
-features."  Do note assume the code being proposed is the same as, or of
-the same quality as, that from AUFS1.
-
-
-If we really believe in choice, then unless AUFS2 obviously breaks
-things, it's hard to argue against it's inclusion.  Thus can
-best-of-breed emerge.
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 1b2a491..256f883 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -248,4 +248,11 @@ config LEDS_TRIGGER_DEFAULT_ON
+ 	  This allows LEDs to be initialised in the ON state.
+ 	  If unsure, say Y.
+ 
++config LEDS_TRIGGER_KEY
++	tristate "LED Key input Trigger"
++	depends on LEDS_TRIGGERS
++	help
++	  This allows LEDs to be controlled by key input.
++	  If unsure, say Y.
++
+ endif # NEW_LEDS
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index 89526ad..f31417d 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -34,3 +34,4 @@ obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
+ obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
+ obj-$(CONFIG_LEDS_TRIGGER_BACKLIGHT)	+= ledtrig-backlight.o
+ obj-$(CONFIG_LEDS_TRIGGER_DEFAULT_ON)	+= ledtrig-default-on.o
++obj-$(CONFIG_LEDS_TRIGGER_KEY)		+= ledtrig-key.o
+diff --git a/drivers/leds/ledtrig-key.c b/drivers/leds/ledtrig-key.c
+new file mode 100644
+index 0000000..2e62663
+--- /dev/null
++++ b/drivers/leds/ledtrig-key.c
+@@ -0,0 +1,93 @@
++/*
++ * LED key trigger
++ *
++ * Copyright (C) 2009 Samsung Electronics
++ * Kyungmin Park <kyungmin.park@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/leds.h>
++#include <linux/input.h>
++#include "leds.h"
++
++struct key_trigger_notifier {
++	struct led_classdev	*led;
++	struct notifier_block	notifier;
++};
++
++static int key_notifier_callback(struct notifier_block *nb,
++				unsigned long event, void *data)
++{
++	struct key_trigger_notifier *kn = container_of(nb,
++					struct key_trigger_notifier, notifier);
++	struct led_classdev *led = kn->led;
++	unsigned int *key_value = (unsigned int *) data;
++
++	/* In case of touchscreen, just skip it */
++	if (*key_value == BTN_TOUCH)
++		return 0;
++
++	led_set_brightness(led, event);
++	return 0;
++
++}
++
++static void key_led_activate(struct led_classdev *led)
++{
++	struct key_trigger_notifier *kn;
++	int ret;
++
++	kn = kzalloc(sizeof(struct key_trigger_notifier), GFP_KERNEL);
++	if (!kn) {
++		dev_err(led->dev, "unable to allocatate key trigger\n");
++		return;
++	}
++
++	led->trigger_data = kn;
++
++	kn->led = led;
++	kn->notifier.notifier_call = key_notifier_callback;
++
++	ret = input_register_client(&kn->notifier);
++	if (ret)
++		dev_err(led->dev, "unable to register key trigger\n");
++}
++
++static void key_led_deactivate(struct led_classdev *led)
++{
++	struct key_trigger_notifier *kn = led->trigger_data;
++
++	if (kn) {
++		input_unregister_client(&kn->notifier);
++		kfree(kn);
++	}
++}
++
++static struct led_trigger key_led_trigger = {
++	.name		= "key",
++	.activate	= key_led_activate,
++	.deactivate	= key_led_deactivate,
++};
++
++static int __init key_led_trigger_init(void)
++{
++	return led_trigger_register(&key_led_trigger);
++}
++
++static void __exit key_led_trigger_exit(void)
++{
++	led_trigger_unregister(&key_led_trigger);
++}
++
++module_init(key_led_trigger_init);
++module_exit(key_led_trigger_exit);
++
++MODULE_AUTHOR("Kyungmin Park <kyungmin.park@samsung.com>");
++MODULE_DESCRIPTION("Key LED trigger");
++MODULE_LICENSE("GPL");
