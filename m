@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763854AbZBYXM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763956AbZBYXNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763854AbZBYXM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 18:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761973AbZBYXMj
+	id S1763956AbZBYXNW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 18:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763553AbZBYXMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 18:12:39 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41000 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757121AbZBYXMh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 18:12:37 -0500
-Message-ID: <49A5CF2E.6050306@zytor.com>
-Date: Wed, 25 Feb 2009 15:07:26 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Feb 2009 18:12:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58730 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762979AbZBYXMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 18:12:40 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.29-rc6: Reported regressions from 2.6.28
+Date: Thu, 26 Feb 2009 00:12:17 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: "Adam J. Richter" <adam@yggdrasil.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <20090224071550.GA10436@elte.hu>
+In-Reply-To: <20090224071550.GA10436@elte.hu>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Kyle McMartin <kyle@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH] Make exported headers use strict posix types
-References: <20090225032553.GD6690@bombadil.infradead.org> <49A4F051.3000706@zytor.com> <20090225072202.GI6690@bombadil.infradead.org> <200902251917.49017.arnd@arndb.de> <20090225201131.GA26110@uranus.ravnborg.org>
-In-Reply-To: <20090225201131.GA26110@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902260012.19083.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->>
->> This is my previous patch, ported to today's git. It's my last day
->> before my vacation, so I can't do the usual testing etc. on it.
->> Hopefully somebody else can take care of this.
+On Tuesday 24 February 2009, Ingo Molnar wrote:
 > 
-> I hesitate to put it in kbuild.git... Any better place?
+> (note, the standalone mail of this bug entry did not make it out 
+> for some reason.)
+
+Hm, strange.  I certainly received it from one of the lists.
+
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12760
+> > Subject		: 2.6.29-rc5 hanging at boot when CONFIG_LOCK_STAT=y
+> > Submitter	: Adam J. Richter <adam@yggdrasil.com>
+> > Date		: 2009-02-16 6:50 (8 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123476768023893&w=4
+> > Handled-By	: Ingo Molnar <mingo@elte.hu>
+> 
+> Here we came to the conclusion that this is some LILO bug with a 
+> too large BSS section - that's one thing that CONFIG_LOCK_STAT 
+> causes. Under Grub the same kernel image boots fine. So unless 
+> Adam has new data that contradicts this i think we can close 
+> this bug.
 
-I'll put it in tip:core/headers-fixes.
+Thanks, closed.
 
-	-hpa
+Rafael
