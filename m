@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763412AbZBYXIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbZBYXIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763412AbZBYXIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 18:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762306AbZBYXIE
+	id S1763100AbZBYXIm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 18:08:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760712AbZBYXI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 18:08:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58687 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761045AbZBYXIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 18:08:02 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nico Schottelius <nico-linux-20090213@schottelius.org>
-Subject: Re: [Bug #12705] X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-Date: Thu, 26 Feb 2009 00:07:59 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.C1D.HpzoJB@chimera> <20090224054725.GB27085@denkbrett.schottelius.org>
-In-Reply-To: <20090224054725.GB27085@denkbrett.schottelius.org>
+	Wed, 25 Feb 2009 18:08:29 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:59228 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760508AbZBYXI1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 18:08:27 -0500
+From: Hannes Eder <hannes@hanneseder.net>
+Subject: [PATCH 0/5] drivers/isdn: fix sparse warnings
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 26 Feb 2009 00:08:20 +0100
+Message-ID: <20090225230737.5377.31370.stgit@localhost.localdomain>
+User-Agent: StGit/0.14.3.348.gcb02
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902260007.59851.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 February 2009, Nico Schottelius wrote:
-> Still existing.
+The following series fixes some sparse warnings in drivers/isdn.
 
-Thanks for the update.
+---
 
-> Rafael J. Wysocki [Mon, Feb 23, 2009 at 10:48:13PM +0100]:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12705
-> > Subject		: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-> > Submitter	: Nico Schottelius <nico-linux-20090213@schottelius.org>
-> > Date		: 2009-02-13 9:33 (11 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123451768406825&w=4
-> > Handled-By	: Len Brown <lenb@kernel.org>
+Hannes Eder (5):
+      drivers/isdn/hardware/eicon: fix sparse warnings: Should it be static?
+      drivers/isdn/hardware/icon: fix sparse warning: cast truncates bits
+      drivers/isdn/hisax: fix sparse warning: Should it be static?
+      drivers/isdn/act2000: fix sparse warning: symbol shadows an earlier one
+      drivers/isdn/capi: fix sparse warning: context imbalance
 
-Rafael
+
+ drivers/isdn/act2000/act2000_isa.c    |    6 +--
+ drivers/isdn/capi/kcapi_proc.c        |    2 +
+ drivers/isdn/hardware/eicon/debug.c   |    2 -
+ drivers/isdn/hardware/eicon/message.c |   70 ++++++++++++++++++++++-----------
+ drivers/isdn/hisax/callc.c            |    1 
+ drivers/isdn/hisax/config.c           |    6 ---
+ drivers/isdn/hisax/hfcscard.c         |    2 -
+ drivers/isdn/hisax/hisax.h            |    9 ++++
+ drivers/isdn/hisax/isdnl1.c           |    4 +-
+ drivers/isdn/hisax/sedlbauer.c        |    2 -
+ drivers/isdn/hisax/teles0.c           |    2 -
+ drivers/isdn/hisax/teles3.c           |    1 
+ 12 files changed, 63 insertions(+), 44 deletions(-)
