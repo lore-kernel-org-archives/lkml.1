@@ -1,74 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbZBYImS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbZBYIzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760859AbZBYImS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 03:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZBYImB
+	id S1760589AbZBYIzz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 03:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZBYIzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 03:42:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35916 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbZBYImA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 03:42:00 -0500
-Date: Wed, 25 Feb 2009 09:40:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
-Message-ID: <20090225084000.GB9322@elte.hu>
-References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org> <20090224194548.3effb746.akpm@linux-foundation.org> <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com> <20090224203308.8d623e0b.akpm@linux-foundation.org> <20090225081118.GC15303@elte.hu> <20090225002852.5ef5b869.akpm@linux-foundation.org>
+	Wed, 25 Feb 2009 03:55:45 -0500
+Received: from ns2.gothnet.se ([82.193.160.251]:29151 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751634AbZBYIzo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 03:55:44 -0500
+Message-ID: <49A5074F.8060307@shipmail.org>
+Date: Wed, 25 Feb 2009 09:54:39 +0100
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
+Organization: VMware
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090225002852.5ef5b869.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Eric Anholt <eric@anholt.net>
+CC: Peter Zijlstra <peterz@infradead.org>, Wang Chen <wangchen@cn.fujitsu.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and	struct_mutex.
+References: <1234918786-854-1-git-send-email-eric@anholt.net>	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org>	 <1235082372.4612.665.camel@laptop>  <1235095484.2636.39.camel@gaiman>	 <1235115406.4736.4.camel@laptop> <1235549745.5213.4.camel@gaiman>
+In-Reply-To: <1235549745.5213.4.camel@gaiman>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Anholt wrote:
+> On Fri, 2009-02-20 at 08:36 +0100, Peter Zijlstra wrote:
+>   
+>> On Thu, 2009-02-19 at 18:04 -0800, Eric Anholt wrote:
+>>     
+>>> On Thu, 2009-02-19 at 23:26 +0100, Peter Zijlstra wrote:
+>>>       
+>>>> On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
+>>>>         
+>>>>>  
+>>>>> It looks to me like the driver preferred locking order is
+>>>>>
+>>>>> object_mutex (which happens to be the device global struct_mutex)
+>>>>>   mmap_sem
+>>>>>      offset_mutex.
+>>>>>
+>>>>> So if one could avoid using the struct_mutex for object bookkeeping (A 
+>>>>> separate lock) then
+>>>>> vm_open() and vm_close() would adhere to that locking order as well, 
+>>>>> simply by not taking the struct_mutex at all.
+>>>>>
+>>>>> So only fault() remains, in which that locking order is reversed. 
+>>>>> Personally I think the trylock ->reschedule->retry method with proper 
+>>>>> commenting is a good solution. It will be the _only_ place where locking 
+>>>>> order is reversed and it is done in a deadlock-safe manner. Note that 
+>>>>> fault() doesn't really fail, but requests a retry from user-space with 
+>>>>> rescheduling to give the process holding the struct_mutex time to 
+>>>>> release it.
+>>>>>           
+>>>> It doesn't do the reschedule -- need_resched() will check if the current
+>>>> task was marked to be scheduled away, furthermore yield based locking
+>>>> sucks chunks.
+>>>>         
+>> Imagine what would happen if your faulting task was the highest RT prio
+>> task in the system, you'd end up with a life-lock.
+>>
+>>     
+>>>> What's so very difficult about pulling the copy_*_user() out from under
+>>>> the locks?
+>>>>         
+>>> That we're expecting the data movement to occur while holding device
+>>> state in place.  For example, we write data through the GTT most of the
+>>> time so we:
+>>>
+>>> lock struct_mutex
+>>> pin the object to the GTT
+>>> flushing caches as needed
+>>> copy_from_user
+>>> unpin object
+>>> unlock struct_mutex
+>>>       
+>> So you cannot drop the lock once you've pinned the dst object?
+>>
+>>     
+>>> If I'm to pull the copy_from_user out, that means I have to:
+>>>
+>>> alloc temporary storage
+>>> for each block of temp storage size:
+>>> 	copy_from_user
+>>> 	lock struct_mutex
+>>> 	pin the object to the GTT
+>>> 	flush caches as needed
+>>> 	memcpy
+>>> 	unpin object
+>>> 	unlock struct_mutex
+>>>
+>>> At this point of introducing our third copy of the user's data in our
+>>> hottest path, we should probably ditch the pwrite path entirely and go
+>>> to user mapping of the objects for performance.  Requiring user mapping
+>>> (which has significant overhead) cuts the likelihood of moving from
+>>> user-space object caching to kernel object caching in the future, which
+>>> has the potential of saving steaming piles of memory.
+>>>       
+>> Or you could get_user_pages() to fault the user pages and pin them, and
+>> then do pagefault_disable() and use copy_from_user_inatomic or such, and
+>> release the pages again.
+>>     
+>
+> I started poking at this today, since the get_user_pages sounded like
+> the solution.  Only then I noticed: when we unbind an existing object,
+> we have to unmap_mapping_range to clear the clients' mappings to it in
+> the GTT, which needs to happen while the struct lock (protecting the gtt
+> structure and the gtt to object mappings) is held.  So for fault we have
+> mmap_sem held to struct mutex taken for poking at the gtt structure, and
+> for unbind we have struct mutex held to mmap_sem taken to clear
+> mappings.
+>
+>   
+I don't think the mmap_sem is taken during unmap_mapping_rage() ?
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+/Thomas
 
-> But we don't do that, because userspace is hard, because we 
-> don't have a delivery process.  But nobody has even tried! 
-> [...]
 
-Actually, you can do it right now, with the current model:
 
-  echo raw > /debug/tracing/trace_options
-  echo bin > /debug/tracing/trace_options
 
-Reality is that rarely does anyone use it because obviously 
-self-sufficient kernel instrumentation is very convenient to 
-kernel developers, to testers and to bugreporters alike. 
-(Processing kernel details in user-space is also often slower 
-and duplicates code that the kernel already has like symbol 
-lookups.)
 
-_Maybe_ some of it (but certainly not all) could be done via 
-klibc - but that got nacked. If you can convince Linus to take 
-klibc and to allow a userspace 'halo' of utilities that are 
-intimate with kernel details into the kernel proper then maybe 
-we could start providing such tools in the kernel proper.
-
-	Ingo
