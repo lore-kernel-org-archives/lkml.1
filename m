@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762804AbZBYWou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762964AbZBYWpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762804AbZBYWou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbZBYWoj
+	id S1762964AbZBYWpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759899AbZBYWpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:44:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43005 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761511AbZBYWoi (ORCPT
+	Wed, 25 Feb 2009 17:45:01 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52395 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759345AbZBYWpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:44:38 -0500
-Date: Wed, 25 Feb 2009 16:47:51 -0600
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Evans <scarybeasts@gmail.com>,
-       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
-       Eugene Teo <eugene@redhat.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] exit_notify: kill the wrong capable(CAP_KILL) check
-Message-ID: <20090225224751.GA2062@hallyn.com>
-References: <20090225190218.GA7453@redhat.com> <20090225194140.D6F6EFC3DA@magilla.sf.frob.com> <20090225215356.GA1442@hallyn.com> <20090225220324.GA14667@redhat.com> <20090225221415.GA1751@hallyn.com> <20090225223234.GA16156@redhat.com>
-MIME-Version: 1.0
+	Wed, 25 Feb 2009 17:45:00 -0500
+Date: Wed, 25 Feb 2009 22:41:15 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Justin Chen <jchen@hpdst41.cup.hp.com>
+Cc: linux-arch@vger.kernel.org, ben-linux@fluff.org, bjorn.helgaas@hp.com,
+       dan.j.williams@intel.com, justin.chen@hp.com, kernel@pengutronix.de,
+       kernel@wantstofly.org, linux-kernel@vger.kernel.org, linux@maxim.org.za,
+       mcuos.com@gmail.com
+Subject: Re: [PATCH 02/15] bitops: Change the bitmap index from int to unsigned long [arm]
+Message-ID: <20090225224115.GD18712@flint.arm.linux.org.uk>
+Mail-Followup-To: Justin Chen <jchen@hpdst41.cup.hp.com>,
+	linux-arch@vger.kernel.org, ben-linux@fluff.org,
+	bjorn.helgaas@hp.com, dan.j.williams@intel.com, justin.chen@hp.com,
+	kernel@pengutronix.de, kernel@wantstofly.org,
+	linux-kernel@vger.kernel.org, linux@maxim.org.za,
+	mcuos.com@gmail.com
+References: <200902250442.UAA12563@hpdst41.cup.hp.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090225223234.GA16156@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200902250442.UAA12563@hpdst41.cup.hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@redhat.com):
-> On 02/25, Serge E. Hallyn wrote:
-> >
-> > Quoting Oleg Nesterov (oleg@redhat.com):
-> > > On 02/25, Serge E. Hallyn wrote:
-> > > Can't understand... Why do you think CAP_KILL makes things better?
-> > >
-> > > Actually, how can it make any difference in this case?
-> >
-> > Well the check by itself isn't quite right - it seems to me it
-> > should also check whether tsk->euid == parent->uid.  But letting
-> > an unprivileged task send SIGSTOP to a privileged one bc of
-> > some fluke in the task hierarchy doesn't seem right.
+On Tue, Feb 24, 2009 at 08:42:52PM -0800, Justin Chen wrote:
+> Change the index to unsigned long in all bitops for [arm]
 > 
-> I think you misread this CAP_KILL check.
-> 
-> It does not restrict the unprivileged task to send the signal. Instead,
-> if the exiting task has CAP_KILL, we bypass other security checks.
+> Signed-off-by: Justin Chen <justin.chen@hp.com>
+> Reviewed-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-?  If the exiting task does not have CAP_KILL, we set the signal to
-SIGCHILD (which is deemed safe).
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Or, I'm completely misreading...
-
--serge
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
