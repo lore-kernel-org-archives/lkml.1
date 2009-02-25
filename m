@@ -1,225 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759831AbZBYC71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbZBYDYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759831AbZBYC71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 21:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZBYC6A
+	id S1757772AbZBYDYt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 22:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZBYDYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 21:58:00 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46341 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754037AbZBYC56 (ORCPT
+	Tue, 24 Feb 2009 22:24:38 -0500
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:27590 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754006AbZBYDYh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 21:57:58 -0500
-Message-Id: <20090225025754.033529552@goodmis.org>
-References: <20090225025608.956691460@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 24 Feb 2009 21:56:11 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/4] tracing: add schedule events to event trace
-Content-Disposition: inline; filename=0003-tracing-add-schedule-events-to-event-trace.patch
+	Tue, 24 Feb 2009 22:24:37 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PSttQF31+xR/exDMyj+kWCuHAY8L2DFHtoujuFR+I3NxDvraXQQ3SPKCUWp37oN2Ybrss5DdT6VVXjSux7fKCKKyTKKCInqhIQn0OG3h5X/njpG3455IK1JgHcEErOsddXXhd4BEuvz5eRp7G7Zg9/0zzWPphnny9naaT8r66ZU=  ;
+X-YMail-OSG: 9Itj5cIVM1muzzb3UpjWnkwWIU6Ts57bzOD_CZYYvRgg88Mczh9Vtsg7ldqj_lcGMNJ41PvMG7PpYWY0zT9erKcQ5ZC29s3UOX3Ic4910iMxDcFSTpZ9Obm0slpqyfcKJPQz8.duVZlQzh4K1Rz63jKG.8SJuQX2Wqos64yt4wCkqP39Kv9hJWDnhDujLg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Performance regression in write() syscall
+Date: Wed, 25 Feb 2009 14:23:57 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Salman Qazi <sqazi@google.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>
+References: <20090224020304.GA4496@google.com> <200902242002.37555.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0902240744500.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902240744500.3111@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902251423.58861.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Wednesday 25 February 2009 02:52:34 Linus Torvalds wrote:
+> On Tue, 24 Feb 2009, Nick Piggin wrote:
+> > > it does make some kind of sense to try to avoid the noncached versions
+> > > for small writes - because small writes tend to be for temp-files.
+> >
+> > I don't see the significance of a temp file. If the pagecache is
+> > truncated, then the cachelines remain dirty and so you can't avoid an
+> > eventual store back to RAM?
+>
+> No, because many small files end up being used as scratch-pads (think
+> shell script sequences etc), and get read back immediately again. Doing
+> non-temporal stores might just be bad simply because trying to play games
+> with caching may simply do the wrong thing.
 
-This patch changes the trace/sched.h to use the DECLARE_TRACE_FMT
-such that they are automatically registered with the event tracer.
+OK, for that angle it could make sense. Although as has been noted earlier,
+at this point of the copy, we don't have much idea about the length of the
+write passed into the vfs (and obviously will never know the higher level
+intention of userspace).
 
-And it also adds the tracing sched headers to kernel/trace/events.c
+I don't know if we can say a 1 page write is nontemporal, but anything
+smaller is temporal. And having these kinds of behavioural cutoffs I
+would worry will create strange performance boundary conditions in code.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/trace/sched.h             |   49 +------------------------
- include/trace/sched_event_types.h |   72 +++++++++++++++++++++++++++++++++++++
- kernel/trace/Makefile             |    1 +
- kernel/trace/events.c             |   13 +++++++
- 4 files changed, 87 insertions(+), 48 deletions(-)
- create mode 100644 include/trace/sched_event_types.h
- create mode 100644 kernel/trace/events.c
 
-diff --git a/include/trace/sched.h b/include/trace/sched.h
-index 0d81098..4e372a1 100644
---- a/include/trace/sched.h
-+++ b/include/trace/sched.h
-@@ -4,53 +4,6 @@
- #include <linux/sched.h>
- #include <linux/tracepoint.h>
- 
--DECLARE_TRACE(sched_kthread_stop,
--	TPPROTO(struct task_struct *t),
--		TPARGS(t));
--
--DECLARE_TRACE(sched_kthread_stop_ret,
--	TPPROTO(int ret),
--		TPARGS(ret));
--
--DECLARE_TRACE(sched_wait_task,
--	TPPROTO(struct rq *rq, struct task_struct *p),
--		TPARGS(rq, p));
--
--DECLARE_TRACE(sched_wakeup,
--	TPPROTO(struct rq *rq, struct task_struct *p, int success),
--		TPARGS(rq, p, success));
--
--DECLARE_TRACE(sched_wakeup_new,
--	TPPROTO(struct rq *rq, struct task_struct *p, int success),
--		TPARGS(rq, p, success));
--
--DECLARE_TRACE(sched_switch,
--	TPPROTO(struct rq *rq, struct task_struct *prev,
--		struct task_struct *next),
--		TPARGS(rq, prev, next));
--
--DECLARE_TRACE(sched_migrate_task,
--	TPPROTO(struct task_struct *p, int orig_cpu, int dest_cpu),
--		TPARGS(p, orig_cpu, dest_cpu));
--
--DECLARE_TRACE(sched_process_free,
--	TPPROTO(struct task_struct *p),
--		TPARGS(p));
--
--DECLARE_TRACE(sched_process_exit,
--	TPPROTO(struct task_struct *p),
--		TPARGS(p));
--
--DECLARE_TRACE(sched_process_wait,
--	TPPROTO(struct pid *pid),
--		TPARGS(pid));
--
--DECLARE_TRACE(sched_process_fork,
--	TPPROTO(struct task_struct *parent, struct task_struct *child),
--		TPARGS(parent, child));
--
--DECLARE_TRACE(sched_signal_send,
--	TPPROTO(int sig, struct task_struct *p),
--		TPARGS(sig, p));
-+#include <trace/sched_event_types.h>
- 
- #endif
-diff --git a/include/trace/sched_event_types.h b/include/trace/sched_event_types.h
-new file mode 100644
-index 0000000..a4f6629
---- /dev/null
-+++ b/include/trace/sched_event_types.h
-@@ -0,0 +1,72 @@
-+
-+/* use <trace/sched.h> instead */
-+#ifndef DEFINE_TRACE_FMT
-+# error Do not include this file directly.
-+# error Unless you know what you are doing.
-+#endif
-+
-+DEFINE_TRACE_FMT(sched_kthread_stop,
-+	TPPROTO(struct task_struct *t),
-+	TPARGS(t),
-+	TPFMT("task %s:%d", t->comm, t->pid));
-+
-+DEFINE_TRACE_FMT(sched_kthread_stop_ret,
-+	TPPROTO(int ret),
-+	TPARGS(ret),
-+	TPFMT("ret=%d", ret));
-+
-+DEFINE_TRACE_FMT(sched_wait_task,
-+	TPPROTO(struct rq *rq, struct task_struct *p),
-+	TPARGS(rq, p),
-+	TPFMT("task %s:%d", p->comm, p->pid));
-+
-+DEFINE_TRACE_FMT(sched_wakeup,
-+	TPPROTO(struct rq *rq, struct task_struct *p, int success),
-+	TPARGS(rq, p, success),
-+	TPFMT("task %s:%d %s",
-+	      p->comm, p->pid, success?"succeeded":"failed"));
-+
-+DEFINE_TRACE_FMT(sched_wakeup_new,
-+	TPPROTO(struct rq *rq, struct task_struct *p, int success),
-+	TPARGS(rq, p, success),
-+	TPFMT("task %s:%d",
-+	      p->comm, p->pid, success?"succeeded":"failed"));
-+
-+DEFINE_TRACE_FMT(sched_switch,
-+	TPPROTO(struct rq *rq, struct task_struct *prev,
-+		struct task_struct *next),
-+	TPARGS(rq, prev, next),
-+	TPFMT("task %s:%d ==> %s:%d",
-+	      prev->comm, prev->pid, next->comm, next->pid));
-+
-+DEFINE_TRACE_FMT(sched_migrate_task,
-+	TPPROTO(struct task_struct *p, int orig_cpu, int dest_cpu),
-+	TPARGS(p, orig_cpu, dest_cpu),
-+	TPFMT("task %s:%d from: %d  to: %d",
-+	      p->comm, p->pid, orig_cpu, dest_cpu));
-+
-+DEFINE_TRACE_FMT(sched_process_free,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p),
-+	TPFMT("task %s:%d", p->comm, p->pid));
-+
-+DEFINE_TRACE_FMT(sched_process_exit,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p),
-+	TPFMT("task %s:%d", p->comm, p->pid));
-+
-+DEFINE_TRACE_FMT(sched_process_wait,
-+	TPPROTO(struct pid *pid),
-+	TPARGS(pid),
-+	TPFMT("pid %d", pid));
-+
-+DEFINE_TRACE_FMT(sched_process_fork,
-+	TPPROTO(struct task_struct *parent, struct task_struct *child),
-+	TPARGS(parent, child),
-+	TPFMT("parent %s:%d  child %s:%d",
-+	      parent->comm, parent->pid, child->comm, child->pid));
-+
-+DEFINE_TRACE_FMT(sched_signal_send,
-+	TPPROTO(int sig, struct task_struct *p),
-+	TPARGS(sig, p),
-+	TPFMT("sig: %d   task %s:%d", sig, p->comm, p->pid));
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index c736356..664b6c0 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -39,5 +39,6 @@ obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
- obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
- obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
- obj-$(CONFIG_EVENT_TRACER) += trace_events.o
-+obj-$(CONFIG_EVENT_TRACER) += events.o
- 
- libftrace-y := ftrace.o
-diff --git a/kernel/trace/events.c b/kernel/trace/events.c
-new file mode 100644
-index 0000000..38c89ee
---- /dev/null
-+++ b/kernel/trace/events.c
-@@ -0,0 +1,13 @@
-+/*
-+ * This is the place to register all trace points as events.
-+ * Include the trace/<type>.h at the top.
-+ * Include the trace/<type>_event_types.h at the bottom.
-+ */
-+
-+/* trace/<type>.h here */
-+#include <trace/sched.h>
-+
-+#include "trace_events.h"
-+
-+/* trace/<type>_event_types.h here */
-+#include <trace/sched_event_types.h>
--- 
-1.5.6.5
+> > > I don't know if PAGE_SIZE is the right thing to test, and I also don't
+> > > know if this is necessarily the best place to test it in, but I don't
+> > > think it's necessarily wrong to do something like this.
+> >
+> > No, but I think it should be in arch code, and the "_nocache" suffix
+> > should just be a hint to the architecture that the destination is not
+> > so likely to be used.
+>
+> Yes. Especially since arch code is likely to need various arch-specific
+> checks anyway (like the x86 code does about aligning the destination).
+>
+> > It would have been nice to have had some numbers to justify
+> > 0812a579c92fefa57506821fa08e90f47cb6dbdd in the first place, so you have
+> > a point of reference to see what happens to your speed-up-case when you
+> > change things like this. Sigh.
+>
+> Well, there were no performance numbers for that commit, since it didn't
+> actually tie it into anything, but I'm pretty sure we saw several
+> performance numbers for the change.
+>
+> Yes, and they are in the commit logs. See "x86: cache pollution aware
+> __copy_from_user_ll()", commit c22ce143d15eb288543fe9873e1c5ac1c01b69a1.
+>
+> But notice how that is iozone numbers. Very much about _big_ writes.
 
--- 
+Yeah I see, thanks.
+
