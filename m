@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbZBYBXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbZBYB0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757356AbZBYBXO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 20:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZBYBW6
+	id S1757729AbZBYB0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 20:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbZBYB0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 20:22:58 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39790 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754582AbZBYBW5 (ORCPT
+	Tue, 24 Feb 2009 20:26:08 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:39194 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754959AbZBYB0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 20:22:57 -0500
-Message-ID: <49A49D2B.8050701@zytor.com>
-Date: Tue, 24 Feb 2009 17:21:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 24 Feb 2009 20:26:06 -0500
+From: Mark Nelson <markn@au1.ibm.com>
+Organization: IBM
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+Date: Wed, 25 Feb 2009 12:27:38 +1100
+User-Agent: KMail/1.9.9
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Paul Mackerras <paulus@samba.org>, Jan Kara <jack@ucw.cz>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+References: <49A2705D.9030008@in.ibm.com> <18850.31567.212454.514549@cargo.ozlabs.ibm.com> <alpine.LRH.2.00.0902241857170.544@vixen.sonytel.be>
+In-Reply-To: <alpine.LRH.2.00.0902241857170.544@vixen.sonytel.be>
 MIME-Version: 1.0
-To: Tim Abbott <tabbott@MIT.EDU>
-CC: linux-kernel@vger.kernel.org, Anders Kaseorg <andersk@MIT.EDU>,
-       Jeff Arnold <jbarnold@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH v2 2/4] x86: Add an option to compile with -ffunction-sections
- -fdata-sections
-References: <1235521315-3424-1-git-send-email-tabbott@mit.edu> <1235521315-3424-2-git-send-email-tabbott@mit.edu> <1235521315-3424-3-git-send-email-tabbott@mit.edu>
-In-Reply-To: <1235521315-3424-3-git-send-email-tabbott@mit.edu>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902251227.38741.markn@au1.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Abbott wrote:
-> From: Waseem Daher <wdaher@mit.edu>
+On Wed, 25 Feb 2009 05:01:59 am Geert Uytterhoeven wrote:
+> On Mon, 23 Feb 2009, Paul Mackerras wrote:
+> > Andrew Morton writes:
+> > > It looks like we died in ext3_xattr_block_get():
+> > > 
+> > > 		memcpy(buffer, bh->b_data + le16_to_cpu(entry->e_value_offs),
+> > > 		       size);
+> > > 
+> > > Perhaps entry->e_value_offs is no good.  I wonder if the filesystem is
+> > > corrupted and this snuck through the defenses.
+> > > 
+> > > I also wonder if there is enough info in that trace for a ppc person to
+> > > be able to determine whether the faulting address is in the source or
+> > > destination of the memcpy() (please)?
+> > 
+> > It appears to have faulted on a load, implicating the source.  The
+> > address being referenced (0xc00000003f380000) doesn't look
+> > outlandish.  I wonder if this kernel has CONFIG_DEBUG_PAGEALLOC turned
+> > on, and what page size is selected?
 > 
-> This patch makes it possible to link and boot an x86 kernel with
-> -ffunction-sections and -fdata-sections enabled.
+> I'm seeing a similar thing on PS3, but not in ext3. During early userspace
+> setup (udevd), it crashes accessing a 0xc00* address in:
 > 
-> Modpost currently warns whenever it sees a section with a name
-> matching [.][0-9]+$ because they are often caused by section flag
-> mismatch errors.  When compiling with -ffunction-sections
-> -fdata-sections, gcc places various classes of local symbols in
-> sections with names such as .rodata.__func__.12345, causing these
-> warnings to be printed spuriously.  The simplest fix is to disable the
-> warning when CONFIG_FUNCTION_DATA_SECTIONS is enabled.
+> | NIP setup+0x20/0x130
+> | LR copy_user_page+0x18/0x6c
+> | Call trace:
+> | do_wp_page+0x5b4/0x89c
+> | do_page_fault+0x3a8/0x58c
+> | handle_page_fault+0x20/0x5c
 > 
+> I have CONFIG_DEBUG_PAGEALLOC=y. If I disable it, the system boots fine.
+> 
+> If needed, I can probably bisect this tomorrow. It definitely didn't happen in
+> 2.6.29-rc5.
 
-This is a pretty critical set of warnings, that often represent real
-bugs.  I don't think it's acceptable to lose them.  However, you already
-have (prior in the sequence) changed those section names to not conflict
-with the automatically generated ones, so it seems to me that this
-should be fixable without too much pain.
+No need to bisect - it was 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556, my
+commit that "optimised" 64bit memcpy() for Power6 and Cell.
 
-	-hpa
+The bug was in -rc1, but if your copies were 8-byte aligned with respect
+to the source the problem wouldn't have been seen... Could this have
+been why you didn't see it in -rc5?
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+I'll work on a fix now.
 
+Thanks!
+
+Mark
