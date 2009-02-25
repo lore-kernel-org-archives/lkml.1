@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762166AbZBYKAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761982AbZBYKEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762166AbZBYKAa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 05:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760325AbZBYKAR
+	id S1761982AbZBYKEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 05:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbZBYKEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 05:00:17 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58777 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759091AbZBYKAP (ORCPT
+	Wed, 25 Feb 2009 05:04:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45846 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753290AbZBYKEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 05:00:15 -0500
-Date: Wed, 25 Feb 2009 11:00:13 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, Richard Zidlicky <rz@linux-m68k.org>,
-       linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
-In-Reply-To: <1235514727.18632.93.camel@macbook.infradead.org>
-Message-ID: <alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090220170454.04382e9e@i1501.lan.towertech.it> <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be> <1235511327.18632.73.camel@macbook.infradead.org>
- <20090224231154.60ba18d6@i1501.lan.towertech.it> <1235514727.18632.93.camel@macbook.infradead.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Feb 2009 05:04:44 -0500
+Date: Wed, 25 Feb 2009 02:02:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+Message-Id: <20090225020254.97be7715.akpm@linux-foundation.org>
+In-Reply-To: <20090225095623.GB12352@elte.hu>
+References: <20090225025753.798204550@goodmis.org>
+	<20090224194548.3effb746.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
+	<20090224203308.8d623e0b.akpm@linux-foundation.org>
+	<20090225081118.GC15303@elte.hu>
+	<20090225002852.5ef5b869.akpm@linux-foundation.org>
+	<84144f020902250100k41e55dd7w8a9c8d2ca96908ea@mail.gmail.com>
+	<20090225012250.db68e480.akpm@linux-foundation.org>
+	<1235554387.3849.30.camel@penberg-laptop>
+	<20090225014442.7b7b7726.akpm@linux-foundation.org>
+	<20090225095623.GB12352@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, David Woodhouse wrote:
-> On Tue, 2009-02-24 at 23:11 +0100, Alessandro Zummo wrote:
-> > On Wed, 25 Feb 2009 06:35:27 +0900
-> > David Woodhouse <dwmw2@infradead.org> wrote:
-> > 
-> > > > So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
-> > > > mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
-> > > > RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
-> > > 
-> > > That's the ideal... although did we get NTP sync working again yet?
-> > 
-> >  not yet. we're close but I've been very busy :(
-> 
-> I know the feeling.
-> 
-> Once that's working, we can convert individual PPC platforms over,
-> removing the routines from the ppc_md and creating a generic RTC driver
-> instead. PA Electra is already like that -- because it wasn't a
-> regression there to have broken NTP sync. But the others need to wait.
+On Wed, 25 Feb 2009 10:56:23 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-I didn't know NTP was broken with RTC class drivers?
+> Since the concept of a kernel tracing facility being 
+> self-sufficient and being easy to use is an integral and key 
+> concept to ftrace, dont you see why people take your suggestions 
+> as a dismissal of the ftrace concept?
 
-So we should actually keep on using genrtc instead of rtc-ppc/rtc-generic for
-now? ;-)
+Nothing I've suggested in any way makes ftrace hard to use.
 
-With kind regards,
+If you guys had gone this way, you would not have screwed it up as much
+as you're suggesting.
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+You're being unserious, and this is going nowhere.
