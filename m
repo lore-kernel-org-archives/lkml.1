@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbZBYJC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbZBYJE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761246AbZBYJC0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbZBYJCF
+	id S1761329AbZBYJE7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbZBYJEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:02:05 -0500
-Received: from mga03.intel.com ([143.182.124.21]:20746 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752979AbZBYJCC convert rfc822-to-8bit (ORCPT
+	Wed, 25 Feb 2009 04:04:42 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:23127 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757141AbZBYJEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:02:02 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,264,1233561600"; 
-   d="scan'208";a="114179583"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Nathan Lynch <ntl@pobox.com>, Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "srostedt@redhat.com" <srostedt@redhat.com>
-Date: Wed, 25 Feb 2009 09:01:50 +0000
-Subject: RE: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
-Thread-Topic: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
-Thread-Index: AcmWyWNMrn0D4Y0iSmCKeD3WP/LL7wAXORRQ
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A4C1E88@irsmsx504.ger.corp.intel.com>
-References: <20090119102653.A18774@sedona.ch.intel.com>
- <20090224193622.GA26734@elte.hu> <20090224154623.0758d692@thinkcentre.lan>
-In-Reply-To: <20090224154623.0758d692@thinkcentre.lan>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 25 Feb 2009 04:04:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=qowid2r/9Nltk7aCiURl+QM7EZDUAokiIyhFpLOopXZunuLTaNm6yV5gwQWnztEtKG
+         eS0E8MbNopFhztgbg/3ueN4HdglpEV3a5t4bqu3dt9uMRDxdBqWpj9j2TS3scLPPC+qK
+         kxT/Nrw1vd7kgMOfS0z9Ggv6EBz4csMjUhBJg=
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Date: Wed, 25 Feb 2009 10:04:37 +0100
+Message-ID: <81b0412b0902250104q53f38343o303e980c1446ed3e@mail.gmail.com>
+Subject: [PATCH] Use a format string for linux_banner
+From: Alex Riesen <raa.lkml@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, trivial@kernel.org
+Content-Type: multipart/mixed; boundary=0015174bdf286cdff10463ba864b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Nathan Lynch [mailto:ntl@pobox.com]
->Sent: Tuesday, February 24, 2009 10:46 PM
->To: Ingo Molnar
->Cc: Metzger, Markus T; linux-kernel@vger.kernel.org; tglx@linutronix.de; hpa@zytor.com;
->markus.t.metzger@gmail.com; srostedt@redhat.com
->Subject: Re: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
->
->On Tue, 24 Feb 2009 20:36:22 +0100
->Ingo Molnar <mingo@elte.hu> wrote:
->
->>
->> * Markus Metzger <markus.t.metzger@intel.com> wrote:
->>
->> > Support hotplug cpus.
->>
->> > +static int __cpuinit bts_hotcpu_handler(struct notifier_block *nfb,
->> > +				     unsigned long action, void *hcpu)
->> > +{
->> > +	unsigned int cpu = (unsigned long)hcpu;
->> > +
->> > +	mutex_lock(&bts_tracer_mutex);
->>
->> This is buggy: CPU hotplug handlers must not sleep (they are
->> called with irqs disabled)
->
->I don't think that is the case; the cpu notifier chains are "raw", not
->atomic, and the cpu hotplug core doesn't disable irqs while processing
->the chains afaict.  And there are several current examples of cpu
->hotplug callbacks performing sleeping operations (slab and slub,
->page_alloc, probably many others).
+--0015174bdf286cdff10463ba864b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The hotplug code uses mutexes around raw_notifier_call_chain() calls in
-all but one case:
-  For CPU_STARTING_FROZEN, the caller has interrupts disabled.
+There is no format specifiers left in the linux_banner,
+and gcc complains seeing the printk.
 
-I guess I could check the notification reason before grabbing the lock
-in the handler.
+Signed-off-by: Alex Riesen <raa.lkml@gmail.com>
+---
+ init/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+--0015174bdf286cdff10463ba864b
+Content-Type: application/octet-stream; 
+	name="0001-Use-a-format-for-linux_banner.diff"
+Content-Disposition: attachment; 
+	filename="0001-Use-a-format-for-linux_banner.diff"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_frls5aej0
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+RnJvbSBlN2I0NGM0YzFkN2QwZjE4MmYwMTAwYjBkYzMxYzIwZmIzZGZlOGVhIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBBbGV4IFJpZXNlbiA8cmFhLmxrbWxAZ21haWwuY29tPgpEYXRl
+OiBXZWQsIDI1IEZlYiAyMDA5IDA5OjUzOjE1ICswMTAwClN1YmplY3Q6IFtQQVRDSF0gVXNlIGEg
+Zm9ybWF0IHN0cmluZyBmb3IgbGludXhfYmFubmVyCgpUaGVyZSBpcyBubyBmb3JtYXQgc3BlY2lm
+aWVycyBsZWZ0IGluIHRoZSBsaW51eF9iYW5uZXIsCmFuZCBnY2MgY29tcGxhaW5zIHNlZWluZyB0
+aGUgcHJpbnRrLgoKU2lnbmVkLW9mZi1ieTogQWxleCBSaWVzZW4gPHJhYS5sa21sQGdtYWlsLmNv
+bT4KLS0tCiBpbml0L21haW4uYyB8ICAgIDIgKy0KIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRp
+b25zKCspLCAxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2luaXQvbWFpbi5jIGIvaW5pdC9t
+YWluLmMKaW5kZXggODQ0MjA5NC4uNzhmYzBkOCAxMDA2NDQKLS0tIGEvaW5pdC9tYWluLmMKKysr
+IGIvaW5pdC9tYWluLmMKQEAgLTU1NCw3ICs1NTQsNyBAQCBhc21saW5rYWdlIHZvaWQgX19pbml0
+IHN0YXJ0X2tlcm5lbCh2b2lkKQogCWJvb3RfY3B1X2luaXQoKTsKIAlwYWdlX2FkZHJlc3NfaW5p
+dCgpOwogCXByaW50ayhLRVJOX05PVElDRSk7Ci0JcHJpbnRrKGxpbnV4X2Jhbm5lcik7CisJcHJp
+bnRrKCIlcyIsIGxpbnV4X2Jhbm5lcik7CiAJc2V0dXBfYXJjaCgmY29tbWFuZF9saW5lKTsKIAlt
+bV9pbml0X293bmVyKCZpbml0X21tLCAmaW5pdF90YXNrKTsKIAlzZXR1cF9jb21tYW5kX2xpbmUo
+Y29tbWFuZF9saW5lKTsKLS0gCjEuNi4yLnJjMS40Ni5nYjNlYzg0ZgoK
+--0015174bdf286cdff10463ba864b--
