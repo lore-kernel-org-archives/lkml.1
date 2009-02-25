@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZBYTpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbZBYTqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZBYTpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 14:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZBYTp2
+	id S1759819AbZBYTqj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 14:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZBYTqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 14:45:28 -0500
-Received: from kroah.org ([198.145.64.141]:49205 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756855AbZBYTp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 14:45:28 -0500
-Date: Wed, 25 Feb 2009 11:28:10 -0800
-From: Greg KH <greg@kroah.com>
-To: Alex Buell <alex.buell@munted.org.uk>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Unused modules in 2.6.x
-Message-ID: <20090225192810.GA6150@kroah.com>
-References: <20090225175249.30e47b85@lithium.local.net>
+	Wed, 25 Feb 2009 14:46:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50926 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756855AbZBYTqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 14:46:30 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090225175249.30e47b85@lithium.local.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Evans <scarybeasts@gmail.com>,
+       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
+       Eugene Teo <eugene@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] copy_process: fix CLONE_PARENT && ->exit_signal
+	interaction
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 25 February 2009 20:02:11 +0100 <20090225190211.GA7445@redhat.com>
+References: <20090225190211.GA7445@redhat.com>
+Emacs: no job too big... no job.
+Message-Id: <20090225193927.1ED25FC3DA@magilla.sf.frob.com>
+Date: Wed, 25 Feb 2009 11:39:27 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 05:52:49PM +0000, Alex Buell wrote:
-> Hi,
-> 
-> Perhaps I missed something when the 2.6.x kernels got started a few
-> years back, but why is it not possible for unused modules to be
-> automatically unloaded anymore i.e with rmmod -a? I remember being able
-> to do that with the 2.2.x and 2.4.x series a long time ago.
+As I think I said before, I don't really know what the actual use case is
+for CLONE_PARENT without CLONE_THREAD.  So it's easy to approve changing
+its behavior, but I do vaguely worry about who expected what behavior before.
 
-Because if you do that, lots of modules that were being "used" by the
-system would get unloaded (usb host controllers, network drivers, etc.)
+Just for readability, I would prefer that you just change the first line
+above that sets p->exit_signal initially.  i.e. (but with some comments):
 
-So it makes sense not to do that anymore.  See the linux-kernel archives
-about 6 years ago for details if you are curious about this historical
-issue (hint, it could burn you very badly even in 2.2 and 2.4...)
+diff --git a/kernel/fork.c b/kernel/fork.c
+index a66fbde..f56793b 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1184,7 +1184,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	p->parent_exec_id = p->self_exec_id;
+ 
+ 	/* ok, now we should be set up.. */
+-	p->exit_signal = (clone_flags & CLONE_THREAD) ? -1 : (clone_flags & CSIGNAL);
++	p->exit_signal = ((clone_flags & CLONE_THREAD) ? -1 :
++			  (clone_flags & CLONE_PARENT) ?
++			  current->group_leader->exit_signal :
++			  (clone_flags & CSIGNAL));
+ 	p->pdeath_signal = 0;
+ 	p->exit_state = 0;
+ 
 
-good luck,
 
-greg k-h
+Thanks,
+Roland
