@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762486AbZBYLTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbZBYLUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762486AbZBYLTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 06:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760846AbZBYLTc
+	id S1762746AbZBYLUJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 06:20:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761060AbZBYLTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 06:19:32 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36527 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752835AbZBYLTc (ORCPT
+	Wed, 25 Feb 2009 06:19:54 -0500
+Received: from p-mail2.rd.francetelecom.com ([195.101.245.16]:4954 "EHLO
+	p-mail2.rd.francetelecom.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760846AbZBYLTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 06:19:32 -0500
-Date: Wed, 25 Feb 2009 16:50:03 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 2/2] Add per-cgroup CPU controller statistics
-Message-ID: <20090225112003.GD4008@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090225105730.GA4008@in.ibm.com> <20090225105920.GC4008@in.ibm.com> <1235559850.4645.3210.camel@laptop>
+	Wed, 25 Feb 2009 06:19:54 -0500
+Message-ID: <49A51B4D.5070903@Free.fr>
+Date: Wed, 25 Feb 2009 11:19:57 +0100
+From: Eric Valette <Eric.Valette@Free.fr>
+Reply-To: Eric.Valette@Free.fr
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235559850.4645.3210.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: airlied@gmail.com
+CC: linux-kernel@vger.kernel.org
+Subject: Some user feedback on recent Intel chipset and 2.6.29 KMS 
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 25 Feb 2009 10:19:40.0864 (UTC) FILETIME=[91E51C00:01C99732]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 12:04:10PM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-02-25 at 16:29 +0530, Bharata B Rao wrote:
-> > From: Balaji Rao <balajirrao@gmail.com>
-> > 
-> > sched: Add cpu controller statistics
-> > 
-> > Add per-cgroup cpu controller statistics like system time and user time
-> > consumed by groups of tasks.
-> 
-> Do we want this unconditionally?
+Hi,
 
-Not sure if I understand you correctly here, but we are collecting
-stats only when CONFIG_CGROUP_SCHED.
+Thanks for the nice work: for the first time (starting with
+2.6.29-rc6-git1), I managed to remove the vesa framebuffer in favor of
+intel's ones.  Recent X server (1.5.99.902 + git intel driver and git
+drm) also comes up correctly and detects the KMS.
 
-Or do you mean we need a config option to enable stats collection ?
-If so, we have memory controller already providing stats unconditionally.
+This amilo xi 3650 is a transportable SLI enabled laptop with Nvidia
+GeForce 9600M GT & Mobile Intel® GM45 Express Chipset. By defaut the
+Intel card is active. I can force using one or other in the bios but
+expects one day I will be able to be able to dynamically switch like on
+vista.
 
-> >  
-> > +#ifdef CONFIG_CGROUP_SCHED
-> > +static void account_task_group_time(struct task_struct *p,
-> > +			enum cpu_cgroup_stat_index idx, int val)
-> > +{
-> > +	struct task_group *tg = task_group(p);
-> > +
-> > +	if (likely(tg->stat))
-> > +		percpu_counter_add(&tg->stat->cpustat[idx], val);
-> > +}
-> > +#else
-> > +#define account_task_group_time(x, y, z)	{ 0; }
-> 
-> inline please, so we get argument validation.
+However there are still some problem with drm, Xorg, suspend/resume:
 
-Actually wanted to inline, but one of the arguments (cpu_cgroup_stat_index)
-is defined only CONFIG_CGROUP_SCHED. Hence didn't want argument
-validation here.
+   1. The X server needs interrupts (mouse or keyboard) to redraw things
+      (e.g if I do apt-get update in a konsole, I see it freeeze but if
+      I move the mouse I get the complete output instantly. Same thing
+      when I start a new application, I have to hit shift or move mouse.
+      The same user land setting with 2.6.28.7 behaves correctly,
+   2. I have a lot of problem with suspend to ram: when console comes up
+      but with a cyan background and then X comes up completely garbled
+      although I can distinguish some shadow of the windows and a
+      konsole is still active if I enter init 0. Sometimes it purely
+      freeze. If I switch back to tty (when I can), and restart kdm,
+      then it starts only in 800x600 mode. Using krandrtray to put it
+      back at 1920x1080, it simply freezes.
 
-> > +
-> > +	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
-> > +		percpu_counter_init(&tg->stat->cpustat[i], 0);
-> 
-> percpu_counter_init() can fail with -ENOMEM.
+If I can help testing anything, providing traces (dmesg, config, lspci,
+xorg config) let me know.
 
-Ok, will fix.
+PS: CC me if anwering to the list I'm not suscribed.
 
-Thanks for your review, Peter.
-
-Regards,
-Bharata.
+-- eric
