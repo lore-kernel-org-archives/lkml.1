@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbZBYVD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761516AbZBYVE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760822AbZBYVD6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbZBYVDu
+	id S1761516AbZBYVE2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZBYVEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:03:50 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:40771 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755282AbZBYVDt (ORCPT
+	Wed, 25 Feb 2009 16:04:16 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:64596 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756330AbZBYVEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:03:49 -0500
-Date: Wed, 25 Feb 2009 15:03:36 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 4/4] keys: make procfiles per-user-namespace
-Message-ID: <20090225210336.GA20086@us.ibm.com>
-References: <20090223204041.GA31626@us.ibm.com> <20090109225313.GB15599@us.ibm.com> <20090109225208.GA15252@us.ibm.com> <5296.1234522990@redhat.com> <16728.1235565664@redhat.com>
+	Wed, 25 Feb 2009 16:04:15 -0500
+X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Feb 2009 16:04:15 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=MbKkROh62SIg68vIZMu+7udkNFYVKMmuly5GwnJ/4PTEQzNUa17dXiEteXSQ0Ucp1S
+         vsuXpCE98q0kIXcijI+in5M/nVvtLIOZSgxKSBcvgD3Ig6aiNRStRNSCN1tEf5fab4Bm
+         qah6JkNYni2Kb0RwJ5VPZCmLGUeiWkxtLkSEQ=
+Date: Wed, 25 Feb 2009 23:59:20 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [RFC] introduce pr_cont macro
+Message-ID: <20090225205920.GA22091@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <16728.1235565664@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
-> 
-> > > Hmmm...  I wonder if we can do better by making the file position indicate
-> > > the key ID rather than being a count of the number of keys read.  It might
-> > > make this cleaner.
-> > 
-> > file position?  as in the result of lseek(fd, 0, SEEK_CUR)?
-> > 
-> > I don't understand what you're suggesting.
-> 
-> Currently the file position on /proc/keys indicates the number of keys that
-> have been read.  It is incremented by 1 for each key read, irrespective of the
-> length of the line that was read for that key.
-> 
-> We could, instead, map file positions to key IDs, and skip any file positions
-> that don't actually map to an extant key.
+We cover all log-levels by pr_... macros except
+KERN_CONT one. Add it for convenience.
 
-So you want users to be able to mmap the file and lseek to a particular
-spot?  Is that bc you have users with so many keys that
-	grep keyid /proc/keys
-becomes slow?
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
 
-Or am I still misunderstanding?
+I think start printing with some pr_... macro
+and continue with printk(KERN_CONT ...) look
+not that clear -- better to continue with
+same pr_... slogan. Thoughts? I hope I didn't
+miss anything.
 
-Meanwhile, do you have any objections to these 4 patches?  :)
+ include/linux/kernel.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-thanks,
--serge
+Index: linux-2.6.git/include/linux/kernel.h
+===================================================================
+--- linux-2.6.git.orig/include/linux/kernel.h
++++ linux-2.6.git/include/linux/kernel.h
+@@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
+         printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
+ #define pr_info(fmt, ...) \
+         printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_cont(fmt, ...) \
++        printk(KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+ 
+ /* If you are writing a driver, please use dev_dbg instead */
+ #if defined(DEBUG)
