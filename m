@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761739AbZBYMM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbZBYMhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761739AbZBYMM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 07:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZBYMMT
+	id S1753957AbZBYMhE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 07:37:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZBYMgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 07:12:19 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:42415 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbZBYMMS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 07:12:18 -0500
-From: Mark Nelson <markn@au1.ibm.com>
-Organization: IBM
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-Date: Wed, 25 Feb 2009 23:13:40 +1100
-User-Agent: KMail/1.9.9
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linuxppc-dev@ozlabs.org, Jan Kara <jack@suse.cz>,
-       Jan Kara <jack@ucw.cz>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       benh@kernel.crashing.org
-References: <49A2705D.9030008@in.ibm.com> <200902251752.56514.markn@au1.ibm.com> <49A526A6.70509@in.ibm.com>
-In-Reply-To: <49A526A6.70509@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902252313.40670.markn@au1.ibm.com>
+	Wed, 25 Feb 2009 07:36:53 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47090 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751783AbZBYMgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 07:36:52 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200902250451.UAA12851@hpdst41.cup.hp.com>
+References: <200902250451.UAA12851@hpdst41.cup.hp.com>
+To: Justin Chen <jchen@hpdst41.cup.hp.com>
+Cc: dhowells@redhat.com, linux-arch@vger.kernel.org, bjorn.helgaas@hp.com,
+       justin.chen@hp.com, linux-kernel@vger.kernel.org,
+       yasutake.koichi@jp.panasonic.com
+Subject: Re: [PATCH 09/15] bitops: Change the bitmap index from int to unsigned long [mn10300]
+Date: Wed, 25 Feb 2009 12:34:43 +0000
+Message-ID: <14255.1235565283@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 10:08:22 pm Sachin P. Sant wrote:
-> Mark Nelson wrote:
-> > Hi Sanchin and Geert,
-> >
-> > Does the patch below fix the problems you're seeing? If it does I'll send
-> > a properly written up and formatted patch to linuxppc-dev (as well as
-> > another one to fix the same problem in copy_tofrom_user()).
-> >   
-> This patch fixes the issue at my side. I tried booting the system few times
-> and every single time it came up clean.
+Justin Chen <jchen@hpdst41.cup.hp.com> wrote:
 
-Good to hear. Thanks for testing Sanchin!
+> Change the index to unsigned long in all bitops for [mn10300]
+> 
+> Signed-off-by: Justin Chen <justin.chen@hp.com>
+> Reviewed-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Mark
+Acked-by: David Howells <dhowells@redhat.com>
