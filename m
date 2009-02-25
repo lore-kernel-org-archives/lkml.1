@@ -1,217 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbZBYHdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbZBYHeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760573AbZBYHdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 02:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZBYHdg
+	id S1760713AbZBYHeZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 02:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbZBYHeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 02:33:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42051 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751274AbZBYHdf (ORCPT
+	Wed, 25 Feb 2009 02:34:15 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:58062 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754500AbZBYHeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 02:33:35 -0500
-Subject: Re: [PATCH 0/16] DMA-API debugging facility v3
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, iommu@lists.linux-foundation.org,
-       johannes@sipsolutions.net
-In-Reply-To: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
-References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain
-Date: Wed, 25 Feb 2009 16:33:19 +0900
-Message-Id: <1235547199.519.36.camel@macbook.infradead.org>
+	Wed, 25 Feb 2009 02:34:14 -0500
+Date: Wed, 25 Feb 2009 07:34:05 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Matthew Wilcox <willy@linux.intel.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] Rewrite MSI-HOWTO
+Message-ID: <20090225073405.GB1442@silver.sucs.org>
+References: <1235410082-5016-1-git-send-email-matthew@wil.cx> <1235410082-5016-2-git-send-email-matthew@wil.cx> <49A451C3.4000602@oracle.com> <20090224202808.GG25248@linux.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090224202808.GG25248@linux.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Where we complain about a discrepancy between unmap/sync and the
-original mapping, it can sometimes be useful to see the backtrace of the
-code which _mapped_ the region originally.
+On Tue, Feb 24, 2009 at 12:28:08PM -0800, Matthew Wilcox wrote:
+> 
+> > Consistent isation/ization (or ised/ized), please.
+> 
+> The Shorter OED is quite amusing on this point.  It lists 'Initialise' as a
+> variant, but in the main definition under 'Initialize', the example it
+> gives of the computer usage uses 'initialise'.  I can only conclude that
+> a foolish consistency is the hobgoblin of little minds ;-)
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
----
-Untested. Builds though. Thanks Johannes for pointing me at an example.
+A lot depends on whether you are writing English or American. In the UK
+both endings (ise and ize) are used, so it can be quite legal to see
+both in the same sentence depending on the word, writer and publication.
+I believe in American, ize has been standardized (ha) upon.
+http://www.askoxford.com/asktheexperts/faq/aboutspelling/ize?view=uk .
+I've checked the "big" OED online and it actually didn't find anything
+for initialise. Looking for initialize found a match but the only
+reference to initialise there was in reference to the initialising the
+letters of words of words (and someone who was an initialist).  Here's a
+quote from the OED entry for initialize.
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 9c1a498..79542db 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -26,6 +26,7 @@
- #include <linux/types.h>
- #include <linux/sched.h>
- #include <linux/list.h>
-+#include <linux/stacktrace.h>
- #include <linux/slab.h>
- 
- #define HASH_SIZE       256
-@@ -39,6 +40,8 @@ enum {
- 	dma_debug_coherent,
- };
- 
-+#define DMA_DEBUG_STACKTRACE_ENTRIES 5
-+
- struct dma_debug_entry {
- 	struct list_head list;
- 	struct device    *dev;
-@@ -47,6 +50,10 @@ struct dma_debug_entry {
- 	u64              dev_addr;
- 	u64              size;
- 	int              direction;
-+#ifdef CONFIG_STACKTRACE
-+	struct stack_trace stacktrace;
-+	unsigned long	 st_entries[DMA_DEBUG_STACKTRACE_ENTRIES];
-+#endif
- };
- 
- struct hash_bucket {
-@@ -106,13 +113,24 @@ static const char *dir2name[4] = { "DMA_BIDIRECTIONAL", "DMA_TO_DEVICE",
-  *                    system log than the user configured. This variable is
-  *                    writeable via debugfs.
-  */
--#define err_printk(dev, format, arg...) do {			\
-+static inline void dump_entry_trace(struct dma_debug_entry *entry)
-+{
-+#ifdef CONFIG_STACKTRACE 
-+	if (entry) {
-+		printk(KERN_WARNING "Mapped at:\n");
-+		print_stack_trace(&entry->stacktrace, 0);
-+	}
-+#endif
-+}
-+
-+#define err_printk(dev, entry, format, arg...) do {		\
- 		error_count += 1;				\
- 		if (show_all_errors || show_num_errors > 0) {	\
- 			WARN(1, "%s %s: " format,		\
- 			     dev_driver_string(dev),		\
- 			     dev_name(dev) , ## arg);		\
- 		}						\
-+		dump_entry_trace(entry);			\
- 		if (!show_all_errors && show_num_errors > 0)	\
- 			show_num_errors -= 1;			\
- 	} while (0);
-@@ -258,6 +276,12 @@ static struct dma_debug_entry *dma_entry_alloc(void)
- 	list_del(&entry->list);
- 	memset(entry, 0, sizeof(*entry));
- 
-+#ifdef CONFIG_STACKTRACE
-+	entry->stacktrace.max_entries = DMA_DEBUG_STACKTRACE_ENTRIES;
-+	entry->stacktrace.entries = entry->st_entries;
-+	entry->stacktrace.skip = 1;
-+	save_stack_trace(&entry->stacktrace);
-+#endif
- 	num_free_entries -= 1;
- 	if (num_free_entries < min_free_entries)
- 		min_free_entries = num_free_entries;
-@@ -455,7 +479,7 @@ static void check_unmap(struct dma_debug_entry *ref)
- 	entry = hash_bucket_find(bucket, ref);
- 
- 	if (!entry) {
--		err_printk(ref->dev, "DMA-API: device driver tries "
-+		err_printk(ref->dev, NULL, "DMA-API: device driver tries "
- 			   "to free DMA memory it has not allocated "
- 			   "[device address=0x%016llx] [size=%llu bytes]\n",
- 			   ref->dev_addr, ref->size);
-@@ -463,7 +487,7 @@ static void check_unmap(struct dma_debug_entry *ref)
- 	}
- 
- 	if (ref->size != entry->size) {
--		err_printk(ref->dev, "DMA-API: device driver frees "
-+		err_printk(ref->dev, entry, "DMA-API: device driver frees "
- 			   "DMA memory with different size "
- 			   "[device address=0x%016llx] [map size=%llu bytes] "
- 			   "[unmap size=%llu bytes]\n",
-@@ -471,7 +495,7 @@ static void check_unmap(struct dma_debug_entry *ref)
- 	}
- 
- 	if (ref->type != entry->type) {
--		err_printk(ref->dev, "DMA-API: device driver frees "
-+		err_printk(ref->dev, entry, "DMA-API: device driver frees "
- 			   "DMA memory with wrong function "
- 			   "[device address=0x%016llx] [size=%llu bytes] "
- 			   "[mapped as %s] [unmapped as %s]\n",
-@@ -479,7 +503,7 @@ static void check_unmap(struct dma_debug_entry *ref)
- 			   type2name[entry->type], type2name[ref->type]);
- 	} else if ((entry->type == dma_debug_coherent) &&
- 		   (ref->paddr != entry->paddr)) {
--		err_printk(ref->dev, "DMA-API: device driver frees "
-+		err_printk(ref->dev, entry, "DMA-API: device driver frees "
- 			   "DMA memory with different CPU address "
- 			   "[device address=0x%016llx] [size=%llu bytes] "
- 			   "[cpu alloc address=%p] [cpu free address=%p]",
-@@ -492,7 +516,7 @@ static void check_unmap(struct dma_debug_entry *ref)
- 	 * DMA API don't handle this properly, so check for it here
- 	 */
- 	if (ref->direction != entry->direction) {
--		err_printk(ref->dev, "DMA-API: device driver frees "
-+		err_printk(ref->dev, entry, "DMA-API: device driver frees "
- 			   "DMA memory with different direction "
- 			   "[device address=0x%016llx] [size=%llu bytes] "
- 			   "[mapped with %s] [unmapped with %s]\n",
-@@ -511,8 +535,8 @@ out:
- static void check_for_stack(struct device *dev, void *addr)
- {
- 	if (object_is_on_stack(addr))
--		err_printk(dev, "DMA-API: device driver maps memory from stack"
--				" [addr=%p]\n", addr);
-+		err_printk(dev, NULL, "DMA-API: device driver maps memory from"
-+				"stack [addr=%p]\n", addr);
- }
- 
- static void check_sync(struct device *dev, dma_addr_t addr,
-@@ -533,7 +557,7 @@ static void check_sync(struct device *dev, dma_addr_t addr,
- 	entry = hash_bucket_find(bucket, &ref);
- 
- 	if (!entry) {
--		err_printk(dev, "DMA-API: device driver tries "
-+		err_printk(dev, NULL, "DMA-API: device driver tries "
- 				"to sync DMA memory it has not allocated "
- 				"[device address=0x%016llx] [size=%llu bytes]\n",
- 				addr, size);
-@@ -541,7 +565,7 @@ static void check_sync(struct device *dev, dma_addr_t addr,
- 	}
- 
- 	if ((offset + size) > entry->size) {
--		err_printk(dev, "DMA-API: device driver syncs"
-+		err_printk(dev, entry, "DMA-API: device driver syncs"
- 				" DMA memory outside allocated range "
- 				"[device address=0x%016llx] "
- 				"[allocation size=%llu bytes] [sync offset=%llu] "
-@@ -550,7 +574,7 @@ static void check_sync(struct device *dev, dma_addr_t addr,
- 	}
- 
- 	if (direction != entry->direction) {
--		err_printk(dev, "DMA-API: device driver syncs "
-+		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"DMA memory with different direction "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
-@@ -564,7 +588,7 @@ static void check_sync(struct device *dev, dma_addr_t addr,
- 
- 	if (to_cpu && !(entry->direction == DMA_FROM_DEVICE) &&
- 		      !(direction == DMA_TO_DEVICE))
--		err_printk(dev, "DMA-API: device driver syncs "
-+		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"device read-only DMA memory for cpu "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
-@@ -574,7 +598,7 @@ static void check_sync(struct device *dev, dma_addr_t addr,
- 
- 	if (!to_cpu && !(entry->direction == DMA_TO_DEVICE) &&
- 		       !(direction == DMA_FROM_DEVICE))
--		err_printk(dev, "DMA-API: device driver syncs "
-+		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"device write-only DMA memory to device "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
+"2. trans. (Computers.) To set to the value, or put in the condition,
+appropriate to the start of an operation.        
+	Const. to.
+1957 D. D. MCCRACKEN Digital Computer Programming xi. 146
+[Instructions] 18 and 19 initialize the address of the instruction with
+which numbers are brought in from temporary storage.  1961 N. CHAPIN
+Programming Computers for Business   Applic. vii. 188 The failure..to
+initialize the switch would produce errors. 1963 P. M.  SHERMAN
+Programming & Coding..."
+
+Correcting UK usage of ize/ise is a dicey business. Generally the best
+course of action seems to be "don't worry about it".
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Sitsofe | http://sucs.org/~sits/
