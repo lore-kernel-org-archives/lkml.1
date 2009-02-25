@@ -1,311 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761064AbZBYJpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761459AbZBYJrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761064AbZBYJpi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbZBYJpa
+	id S1761459AbZBYJrT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZBYJrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:45:30 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:37345 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754546AbZBYJp2 (ORCPT
+	Wed, 25 Feb 2009 04:47:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42466 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752960AbZBYJrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:45:28 -0500
-Date: Wed, 25 Feb 2009 02:45:25 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, r-woodruff2@ti.com,
-       Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
-In-Reply-To: <20090214113640.GB17965@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0902250239210.32378@utopia.booyaka.com>
-References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk> <20090209141156.GB16626@n2100.arm.linux.org.uk>
- <alpine.DEB.2.00.0902122345160.14667@utopia.booyaka.com> <20090214112325.GA17965@n2100.arm.linux.org.uk> <20090214113640.GB17965@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Feb 2009 04:47:02 -0500
+Date: Wed, 25 Feb 2009 01:44:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+Message-Id: <20090225014442.7b7b7726.akpm@linux-foundation.org>
+In-Reply-To: <1235554387.3849.30.camel@penberg-laptop>
+References: <20090225025608.956691460@goodmis.org>
+	<20090225025753.798204550@goodmis.org>
+	<20090224194548.3effb746.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
+	<20090224203308.8d623e0b.akpm@linux-foundation.org>
+	<20090225081118.GC15303@elte.hu>
+	<20090225002852.5ef5b869.akpm@linux-foundation.org>
+	<84144f020902250100k41e55dd7w8a9c8d2ca96908ea@mail.gmail.com>
+	<20090225012250.db68e480.akpm@linux-foundation.org>
+	<1235554387.3849.30.camel@penberg-laptop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Russell,
+On Wed, 25 Feb 2009 11:33:07 +0200 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-On Sat, 14 Feb 2009, Russell King - ARM Linux wrote:
-
-> On Sat, Feb 14, 2009 at 11:23:25AM +0000, Russell King - ARM Linux wrote:
-> > There's also a second issue - the comments before omap2_divisor_to_clksel()
-> > indicate that this function returns 0xffffffff on error.  Unfortunately,
-> > this is not so, it actually returns zero on error.  Moreover, we test
-> > the result of the function against ~0, so we'll never deal with the error
-> > case.  This really should be fixed so that we return the right value for
-> > the error case.  (Further comments on this in a follow up.)
+> Hi Andrew,
 > 
-> The thing I don't like about this is that we have several functions looking
-> up clksel_rate entries, some of which return 0 on error and others ~0 on
-> error.
+> On Wed, 2009-02-25 at 01:22 -0800, Andrew Morton wrote:
+> > irqsoff latency trace v1.1.5 on 2.6.26-rc8
+> > --------------------------------------------------------------------
+> >  latency: 97 us, #3/3, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+> >     -----------------
+> >     | task: swapper-0 (uid:0 nice:0 policy:0 rt_prio:0)
+> >     -----------------
+> >  => started at: apic_timer_interrupt
+> >  => ended at:   do_softirq
 > 
-> This is very prone to mistakes - and is probably why the original problem
-> has occurred.  I'd much prefer to fix the underlying confusion rather
-> than letting it persist, by making all these lookup functions return the
-> clksel_rate pointer or NULL.
+> <the header seems broken here, should have # at the beginning of the line>
 > 
-> Not only does that avoid the question about whether the function returns
-> 0 or ~0 on error, but it also gets rid of the horrible return-through-pointer
-> style of _omap2_clksel_get_src_field() which itself is error prone.
-> (The kernel has had a few cases where this kind of thing has lead to
-> uninitialized use, so avoiding this where it's easy to do so makes
-> sense.)
+> > 
+> > #                _------=> CPU#
+> > #               / _-----=> irqs-off
+> > #              | / _----=> need-resched
+> > #              || / _---=> hardirq/softirq
+> > #              ||| / _--=> preempt-depth
+> > #              |||| /
+> > #              |||||     delay
+> > #  cmd     pid ||||| time  |   caller
+> > #     \   /    |||||   \   |   /
+> >   <idle>-0     0d..1    0us+: trace_hardirqs_off_thunk (apic_timer_interrupt)
+> >   <idle>-0     0d.s.   97us : __do_softirq (do_softirq)
+> >   <idle>-0     0d.s1   98us : trace_hardirqs_on (do_softirq)
+> > 
+> > your time starts now.
 > 
-> One final point:
+> Well, what do you want to know? The first thing to do here is to:
 > 
->         if (parent_div > 0)
->                 clk->rate /= parent_div;
+> $ grep -v "#" trace 
+>   <idle>-0     0d..1    0us+: trace_hardirqs_off_thunk (apic_timer_interrupt)
+>   <idle>-0     0d.s.   97us : __do_softirq (do_softirq)
+>   <idle>-0     0d.s1   98us : trace_hardirqs_on (do_softirq)
 > 
-> seems to be impossible to be false - the old code used div == 0 in the
-> tables as the end of table sentinel, and if it is encountered, 
-> _omap2_clksel_get_src_field (and the newer omap2_clksel_lookup_parent)
-> causes failure to occur.  Also, since parent_div is unsigned, the only
-> case where the above statement is false is when div == 0.  So, the code
-> can be further simplified to:
-> 
->  	/* CLKSEL clocks follow their parents' rates, divided by a divisor */
->  	clk->rate = new_parent->rate / clkr->div;
-> 
-> Agreed?
+> after which you have access to the raw data. This particular trace seems
+> to be somewhat hard to parse (because not all fields are whitespace
+> delimited) but I can assure you that any format I rely on is not.
 
-Agreed on both points -- a few comments on the patch:
+yes, but now you need to think about how this interface would have been
+designed if we'd decided to access it with something smarter than
+`cat'.
 
-> diff -u a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-> --- a/arch/arm/mach-omap2/clock.c
-> +++ b/arch/arm/mach-omap2/clock.c
-> @@ -596,23 +596,24 @@
->  }
->  
->  /**
-> - * omap2_clksel_to_divisor() - turn clksel field value into integer divider
-> + * omap2_clksel_lookup_field() - lookup clksel_rate for clksel field value
->   * @clk: OMAP struct clk to use
->   * @field_val: register field value to find
->   *
->   * Given a struct clk of a rate-selectable clksel clock, and a register field
-> - * value to search for, find the corresponding clock divisor.  The register
-> + * value to search for, find the corresponding clksel_rate entry.  The register
->   * field value should be pre-masked and shifted down so the LSB is at bit 0
-> - * before calling.  Returns 0 on error
-> + * before calling.  Returns NULL on error.
->   */
-> -u32 omap2_clksel_to_divisor(struct clk *clk, u32 field_val)
-> +static const
-> +struct clksel_rate *omap2_clksel_lookup_field(struct clk *clk, u32 field_val)
->  {
->  	const struct clksel *clks;
->  	const struct clksel_rate *clkr;
->  
->  	clks = omap2_get_clksel_by_parent(clk, clk->parent);
->  	if (!clks)
-> -		return 0;
-> +		return NULL;
->  
->  	for (clkr = clks->rates; clkr->div; clkr++) {
->  		if ((clkr->flags & cpu_mask) && (clkr->val == field_val))
-> @@ -623,22 +624,22 @@
->  		printk(KERN_ERR "clock: Could not find fieldval %d for "
->  		       "clock %s parent %s\n", field_val, clk->name,
->  		       clk->parent->name);
-> -		return 0;
-> +		return NULL;
->  	}
->  
-> -	return clkr->div;
-> +	return clkr;
->  }
->  
->  /**
-> - * omap2_divisor_to_clksel() - turn clksel integer divisor into a field value
-> + * omap2_clksel_lookup_divisor() - lookup clksel_rate for integer divisor
->   * @clk: OMAP struct clk to use
->   * @div: integer divisor to search for
->   *
-> - * Given a struct clk of a rate-selectable clksel clock, and a clock divisor,
-> - * find the corresponding register field value.  The return register value is
-> - * the value before left-shifting.  Returns ~0 on error
-> + * Given a struct clk of a rate-selectable clksel clock and a clock divisor,
-> + * find the corresponding clksel_rate entry.  Returns NULL on error.
->   */
-> -u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
-> +static const
-> +struct clksel_rate *omap2_clksel_lookup_divisor(struct clk *clk, u32 div)
->  {
->  	const struct clksel *clks;
->  	const struct clksel_rate *clkr;
-> @@ -648,7 +649,7 @@
->  
->  	clks = omap2_get_clksel_by_parent(clk, clk->parent);
->  	if (!clks)
-> -		return ~0;
-> +		return NULL;
->  
->  	for (clkr = clks->rates; clkr->div; clkr++) {
->  		if ((clkr->flags & cpu_mask) && (clkr->div == div))
-> @@ -659,10 +660,10 @@
->  		printk(KERN_ERR "clock: Could not find divisor %d for "
->  		       "clock %s parent %s\n", div, clk->name,
->  		       clk->parent->name);
-> -		return ~0;
-> +		return NULL;
->  	}
->  
-> -	return clkr->val;
-> +	return clkr;
->  }
->  
->  /**
-> @@ -673,6 +674,7 @@
->   */
->  u32 omap2_clksel_get_divisor(struct clk *clk)
->  {
-> +	const struct clksel_rate *clkr;
->  	u32 v;
->  
->  	if (!clk->clksel_mask)
-> @@ -681,11 +683,14 @@
->  	v = __raw_readl(clk->clksel_reg) & clk->clksel_mask;
->  	v >>= __ffs(clk->clksel_mask);
->  
-> -	return omap2_clksel_to_divisor(clk, v);
-> +	clkr = omap2_clksel_lookup_field(clk, v);
-> +
-> +	return clkr ? clkr->val : 0;
->  }
->  
->  int omap2_clksel_set_rate(struct clk *clk, unsigned long rate)
->  {
-> +	const struct clksel_rate *clkr;
->  	u32 v, field_val, validrate, new_div = 0;
->  
->  	if (!clk->clksel_mask)
-> @@ -695,17 +700,17 @@
->  	if (validrate != rate)
->  		return -EINVAL;
->  
-> -	field_val = omap2_divisor_to_clksel(clk, new_div);
-> -	if (field_val == ~0)
-> +	clkr = omap2_clksel_lookup_divisor(clk, new_div);
-> +	if (!clkr)
->  		return -EINVAL;
->  
->  	v = __raw_readl(clk->clksel_reg);
->  	v &= ~clk->clksel_mask;
-> -	v |= field_val << __ffs(clk->clksel_mask);
-> +	v |= clkr->val << __ffs(clk->clksel_mask);
->  	__raw_writel(v, clk->clksel_reg);
->  	v = __raw_readl(clk->clksel_reg); /* OCP barrier */
->  
-> -	clk->rate = clk->parent->rate / new_div;
-> +	clk->rate = clk->parent->rate / clkr->div;
->  
->  	_omap2xxx_clk_commit(clk);
->  
-> @@ -733,18 +738,18 @@
->  }
->  
->  /*
-> - * Converts encoded control register address into a full address
-> - * On error, the return value (parent_div) will be 0.
-> + * Given a struct clk of a rate-selectable clksel clock and a parent clock,
-> + * find the default clksel_rate entry.  Returns NULL on error.
->   */
-> -static u32 _omap2_clksel_get_src_field(struct clk *src_clk, struct clk *clk,
-> -				       u32 *field_val)
-> +static const
-> +struct clksel_rate *omap2_clksel_lookup_parent(struct clk *clk, struct clk *parent)
->  {
->  	const struct clksel *clks;
->  	const struct clksel_rate *clkr;
->  
-> -	clks = omap2_get_clksel_by_parent(clk, src_clk);
-> +	clks = omap2_get_clksel_by_parent(clk, parent);
->  	if (!clks)
-> -		return 0;
-> +		return NULL;
->  
->  	for (clkr = clks->rates; clkr->div; clkr++) {
->  		if (clkr->flags & cpu_mask && clkr->flags & DEFAULT_RATE)
-> @@ -755,20 +760,19 @@
->  		printk(KERN_ERR "clock: Could not find default rate for "
->  		       "clock %s parent %s\n", clk->name,
->  		       src_clk->parent->name);
-> -		return 0;
-> +		return NULL;
->  	}
->  
->  	/* Should never happen.  Add a clksel mask to the struct clk. */
->  	WARN_ON(clk->clksel_mask == 0);
->  
-> -	*field_val = clkr->val;
-> -
-> -	return clkr->div;
-> +	return NULL;
+I mean, look at it.  All the multi-space column lining upping, the
+unnecessary "us" annotation, the strange symbol(symbol) thing, etc. 
+Plus it would have been more self-describing.  Right now, your parser
+has to either assume that the second character of "0d..1" is
+"irqs-off", or it has to learn how to follow ascii art lines.
 
-This should return clkr.
+Plus...  it's all English-only.
 
->  }
->  
->  int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
->  {
-> -	u32 field_val, v, parent_div;
-> +	const struct clksel_rate *clkr;
-> +	u32 v;
->  
->  	if (clk->flags & CONFIG_PARTICIPANT)
->  		return -EINVAL;
-> @@ -776,8 +780,8 @@
->  	if (!clk->clksel)
->  		return -EINVAL;
->  
-> -	parent_div = _omap2_clksel_get_src_field(new_parent, clk, &field_val);
-> -	if (!parent_div)
-> +	clkr = omap2_clksel_lookup_parent(clk, new_parent);
-> +	if (!clkr)
->  		return -EINVAL;
->  
->  	if (clk->usecount > 0)
-> @@ -786,7 +790,7 @@
->  	/* Set new source value (previous dividers if any in effect) */
->  	v = __raw_readl(clk->clksel_reg);
->  	v &= ~clk->clksel_mask;
-> -	v |= field_val << __ffs(clk->clksel_mask);
-> +	v |= clkr->val << __ffs(clk->clksel_mask);
->  	__raw_writel(v, clk->clksel_reg);
->  	v = __raw_readl(clk->clksel_reg);    /* OCP barrier */
->  
-> @@ -800,8 +804,8 @@
->  	/* CLKSEL clocks follow their parents' rates, divided by a divisor */
->  	clk->rate = new_parent->rate;
->  
-> -	if (parent_div > 0)
-> -		clk->rate /= parent_div;
-> +	if (clkr->div > 0)
-> +		clk->rate /= clkr->div;
+> So if you're arguing against specific ftrace plugins, go ahead (you
+> probably have a fair point there). But please don't dismiss the while
+> _concept_ of ftrace because of them.
 
-The conditional can be removed, per your second point above.
+Where on earth did that come from?
 
->  
->  	pr_debug("clock: set parent of %s to %s (new rate %ld)\n",
->  		 clk->name, clk->parent->name, clk->rate);
-> diff -u a/arch/arm/mach-omap2/clock.h b/arch/arm/mach-omap2/clock.h
-> --- a/arch/arm/mach-omap2/clock.h
-> +++ b/arch/arm/mach-omap2/clock.h
-> @@ -42,8 +42,6 @@ void omap2_init_clksel_parent(struct clk *clk);
->  u32 omap2_clksel_get_divisor(struct clk *clk);
->  u32 omap2_clksel_round_rate_div(struct clk *clk, unsigned long target_rate,
->  				u32 *new_div);
-> -u32 omap2_clksel_to_divisor(struct clk *clk, u32 field_val);
-> -u32 omap2_divisor_to_clksel(struct clk *clk, u32 div);
->  unsigned long omap2_fixed_divisor_recalc(struct clk *clk);
->  long omap2_clksel_round_rate(struct clk *clk, unsigned long target_rate);
->  int omap2_clksel_set_rate(struct clk *clk, unsigned long rate);
-> 
+What I'm arguing against is putting English-only pretty-printers and
+pretty-parsers on wrong side of int 80.  That's all.
 
-
-- Paul
