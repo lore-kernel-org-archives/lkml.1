@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbZBYBot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbZBYBqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757618AbZBYBot (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 20:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZBYBok
+	id S1758043AbZBYBqY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 20:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbZBYBqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 20:44:40 -0500
-Received: from outbound-mail-128.bluehost.com ([67.222.38.28]:56167 "HELO
-	outbound-mail-128.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751856AbZBYBok (ORCPT
+	Tue, 24 Feb 2009 20:46:14 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:65471 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752098AbZBYBqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 20:44:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=pjxIoJrp5PUgBv80MTzhQajWekodTvJqcRqwKErw5CVWiswoBeoHtAvwxm0erzoZb7bRiQvsW75dkKpklPCe1lYUw8O9JAqiZBjjZ9setxEGaefDv1A5gOe8GHSudi+0;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Kyle McMartin <kyle@infradead.org>
-Subject: Re: [PATCH] drm: edid revision 0 is valid
-Date: Tue, 24 Feb 2009 17:44:30 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: airlied@redhat.com, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, marko.ristola@kolumbus.fi
-References: <20090225013153.GC6690@bombadil.infradead.org>
-In-Reply-To: <20090225013153.GC6690@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 24 Feb 2009 20:46:13 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhQFADMtpElMQWXi/2dsb2JhbACBbtYDhBEG
+Date: Tue, 24 Feb 2009 20:46:09 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/4][RFC] event tracer
+Message-ID: <20090225014609.GA18250@Krystal>
+References: <20090224193344.638329210@goodmis.org> <1235504556.4645.2252.camel@laptop> <alpine.DEB.2.00.0902241706260.12697@gandalf.stny.rr.com> <49A473ED.4010001@redhat.com> <alpine.DEB.2.00.0902241731020.12697@gandalf.stny.rr.com> <20090225010111.GB16396@Krystal> <alpine.DEB.2.00.0902242012360.12697@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902241744.30556.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <alpine.DEB.2.00.0902242012360.12697@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:45:45 up 3 days, 17:19,  2 users,  load average: 0.48, 0.56,
+	0.43
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 24, 2009 5:31:53 pm Kyle McMartin wrote:
-> From: Kyle McMartin <kyle@redhat.com>
->
-> edid->revision == 0 should be valid (at least, so the error message
-> indicates. :) and wikipedia seems to indicate that EDID 1.0 existed.
->
-> We can dump the entire check, since edid->revision is a u8, so
-> it can't ever be less than 0.
->
-> Marko reports in RH bz#476735 that his monitor claims to be
-> EDID 1.0, and therefore hits the check and is stuck at 800x600 because
-> of it.
->
-> Reported-by: Marko Ristola <marko.ristola@kolumbus.fi>
-> Signed-off-by: Kyle McMartin <kyle@redhat.com>
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Tue, 24 Feb 2009, Mathieu Desnoyers wrote:
+> 
+> > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > 
+> > > On Tue, 24 Feb 2009, Masami Hiramatsu wrote:
+> > > > > 
+> > > > > #undef TPFMT
+> > > > > #define TPFMT(fmt, args...) \
+> > > > > 	"(%s)" fmt "\n", #call, ##args
+> > > > > 
+> > > > > and then I could do
+> > > > > 
+> > > > > 	event_printk(fmt);
+> > > > 
+> > > > Why don't you do as below? :)
+> > > > 	event_printk_line("(" #call ")" ##fmtandargs);
+> > > 
+> > > Still need to sneak that "\n" in ;-)
+> > > 
+> > 
+> > Why do you need the \n ? Having all event format strings ending with \0
+> > should be enough to tell event_printk to generate a \n each time it
+> > encounters a format string \0. Doing so would save 1 byte per format
+> > string.
+> 
+> Because currently event_printk uses a generic function that acts pretty 
+> much like ftrace_printk.
+> 
+> I like having fmt and args separate. This way, we can add more stuff to 
+> the end if we ever want to. For now it's a '\n'. We can deal with 
+> those extra bytes.
+> 
 
-Heh, yeah this makes the code correct *and* match the message.  Thanks.
+Ah ok, given you need it as a separator too, that makes sense.
 
-Acked-by: Jesse Barnes <jbarnes@virtuousgek.org>
+Mathieu
+
+> -- Steve
+> 
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
