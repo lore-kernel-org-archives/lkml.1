@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbZBYPVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763726AbZBYPTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762179AbZBYPVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 10:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760435AbZBYPJm
+	id S1763726AbZBYPTt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 10:19:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760345AbZBYPJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 10:09:42 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:46792 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760157AbZBYPJQ (ORCPT
+	Wed, 25 Feb 2009 10:09:35 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:38260 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759895AbZBYPIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 10:09:16 -0500
-Message-Id: <20090225150827.607883184@de.ibm.com>
+	Wed, 25 Feb 2009 10:08:54 -0500
+Message-Id: <20090225150830.567708847@de.ibm.com>
 References: <20090225150622.529143164@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 25 Feb 2009 16:06:25 +0100
+Date: Wed, 25 Feb 2009 16:06:35 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch/s390 03/46] page fault: invoke oom-killer
-Content-Disposition: inline; filename=102-oom.diff
+Subject: [patch/s390 13/46] hvc_iucv: Update and add missing kernel messages
+Content-Disposition: inline; filename=112-hvc_iucv-msg.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 
-s390 arch backend for 1c0fe6e3bda0464728c23c8d84aa47567e8b716c
-"mm: invoke oom-killer from page fault".
+If the hvc_iucv= kernel parameter specifies a value that is not
+valid, display an error message.
+Minor changes to existing kernel messages.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/mm/fault.c |   28 ++--------------------------
- 1 file changed, 2 insertions(+), 26 deletions(-)
+ drivers/char/hvc_iucv.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Index: quilt-2.6/arch/s390/mm/fault.c
+Index: quilt-2.6/drivers/char/hvc_iucv.c
 ===================================================================
---- quilt-2.6.orig/arch/s390/mm/fault.c
-+++ quilt-2.6/arch/s390/mm/fault.c
-@@ -200,29 +200,6 @@ static void do_low_address(struct pt_reg
- 	do_no_context(regs, error_code, 0);
- }
+--- quilt-2.6.orig/drivers/char/hvc_iucv.c
++++ quilt-2.6/drivers/char/hvc_iucv.c
+@@ -885,7 +885,7 @@ static int __init hvc_iucv_init(void)
+ 	unsigned int i;
  
--/*
-- * We ran out of memory, or some other thing happened to us that made
-- * us unable to handle the page fault gracefully.
-- */
--static int do_out_of_memory(struct pt_regs *regs, unsigned long error_code,
--			    unsigned long address)
--{
--	struct task_struct *tsk = current;
--	struct mm_struct *mm = tsk->mm;
--
--	up_read(&mm->mmap_sem);
--	if (is_global_init(tsk)) {
--		yield();
--		down_read(&mm->mmap_sem);
--		return 1;
--	}
--	printk("VM: killing process %s\n", tsk->comm);
--	if (regs->psw.mask & PSW_MASK_PSTATE)
--		do_group_exit(SIGKILL);
--	do_no_context(regs, error_code, address);
--	return 0;
--}
--
- static void do_sigbus(struct pt_regs *regs, unsigned long error_code,
- 		      unsigned long address)
- {
-@@ -367,7 +344,6 @@ good_area:
- 			goto bad_area;
+ 	if (!MACHINE_IS_VM) {
+-		pr_info("The z/VM IUCV HVC device driver cannot "
++		pr_notice("The z/VM IUCV HVC device driver cannot "
+ 			   "be used without z/VM\n");
+ 		return -ENODEV;
  	}
+@@ -893,8 +893,11 @@ static int __init hvc_iucv_init(void)
+ 	if (!hvc_iucv_devices)
+ 		return -ENODEV;
  
--survive:
- 	if (is_vm_hugetlb_page(vma))
- 		address &= HPAGE_MASK;
- 	/*
-@@ -378,8 +354,8 @@ survive:
- 	fault = handle_mm_fault(mm, vma, address, write);
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
- 		if (fault & VM_FAULT_OOM) {
--			if (do_out_of_memory(regs, error_code, address))
--				goto survive;
-+			up_read(&mm->mmap_sem);
-+			pagefault_out_of_memory();
- 			return;
- 		} else if (fault & VM_FAULT_SIGBUS) {
- 			do_sigbus(regs, error_code, address);
+-	if (hvc_iucv_devices > MAX_HVC_IUCV_LINES)
++	if (hvc_iucv_devices > MAX_HVC_IUCV_LINES) {
++		pr_err("%lu is not a valid value for the hvc_iucv= "
++			"kernel parameter\n", hvc_iucv_devices);
+ 		return -EINVAL;
++	}
+ 
+ 	hvc_iucv_buffer_cache = kmem_cache_create(KMSG_COMPONENT,
+ 					   sizeof(struct iucv_tty_buffer),
 
 -- 
 blue skies,
