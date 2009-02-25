@@ -1,113 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbZBYNHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZBYNIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbZBYNHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 08:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZBYNHc
+	id S1756386AbZBYNIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 08:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbZBYNIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 08:07:32 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46620 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbZBYNHc (ORCPT
+	Wed, 25 Feb 2009 08:08:14 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:65024 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbZBYNIN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 08:07:32 -0500
-Date: Wed, 25 Feb 2009 08:07:29 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/4] tracing: make event directory structure
-In-Reply-To: <20090225065948.GA5200@nowhere>
-Message-ID: <alpine.DEB.2.00.0902250803070.12697@gandalf.stny.rr.com>
-References: <20090225025608.956691460@goodmis.org> <20090225025754.297578658@goodmis.org> <20090225065948.GA5200@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 25 Feb 2009 08:08:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=ix/pol/wvjoTk0IpoIb3e/3r6M1UU1QoZYJd9qLFhnqE2NX4vJVlMuibSxARoT4fGJ
+         0nkM+AKC04DwX/C7aDKOEi6NWl+LxbBjX/Fz3vSEyFmWS4qzisT0hp8S6EUOrll2BP32
+         +sOiHk+fRbFSC0y9j393a7dJQTgzv3ls9ljFE=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <87397bdf0902250503v2c9ac230od5c807f0b7d2e5f6@mail.gmail.com>
+References: <87397bdf0902250503v2c9ac230od5c807f0b7d2e5f6@mail.gmail.com>
+Date: Wed, 25 Feb 2009 21:08:11 +0800
+Message-ID: <87397bdf0902250508u70fc4b55g323479840a0ea1bf@mail.gmail.com>
+Subject: module buid issue with kbuild
+From: des <desperatephilosopher@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+I have an issue building my kernel modules, generally the makefile
+should look like:
 
+obj-m = my_mod.o
+my_mod-objs := $(the_obj_file_list)
 
-On Wed, 25 Feb 2009, Frederic Weisbecker wrote:
+if I list the obj files explicitly like
+the_obj_file_list := a/obj1.o b/obj2.o c/obj3.o, it seems fine
 
-> On Tue, Feb 24, 2009 at 09:56:12PM -0500, Steven Rostedt wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > This patch adds the directory /debug/tracing/events/ that will contain
-> > all the registered trace points.
-> > 
-> >  # ls /debug/tracing/events/
-> > sched_kthread_stop      sched_process_fork  sched_switch
-> > sched_kthread_stop_ret  sched_process_free  sched_wait_task
-> > sched_migrate_task      sched_process_wait  sched_wakeup
-> > sched_process_exit      sched_signal_send   sched_wakeup_new
-> > 
-> >  # ls /debug/tracing/events/sched_switch/
-> > enable
-> > 
-> >  # cat /debug/tracing/events/sched_switch/enable
-> > 1
-> > 
-> >  # cat /debug/tracing/set_event
-> > sched_switch
-> 
-> 
-> Do you plan to add other things inside these events directory?
+Sometime there are too many obj files to add, so I want make to search
+it automatically, so I use:
+#find each of the .c files
+mods := $(sort $(dir $(shell find . -name '*.c' -print)))
+sources := $(wildcard $(addsuffix *.c,$(mods)))
+#make the obj file list
+objects := $(subst .c,.o,$(sources))
+#remove the prefixing ./
+myobjects := $(subst ./,,$(objects))
 
-That's actually the plan. We might want to trigger a stack trace or 
-something on that event. The idea will be to add attributes to each 
-individual event, and it should be pretty easy to implement since each 
-event has its own structure.
+obj-m = my_mod.o
+my_mod-objs := $(myobjects)
+$(myobjects) should be exactly the same as $(the_obj_file_list) above,
+I printed them in the makefile.
 
-> I mean, if you plan to only put an enable file on each of 
-them, > it would be better to have just one file:
-> 
-> cat /debug/tracing/events/sched_switch
-> 1
-> 
->  
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > ---
-> >  kernel/trace/trace_events.c |  137 +++++++++++++++++++++++++++++++++++++++++--
-> >  kernel/trace/trace_events.h |    7 ++-
-> >  2 files changed, 137 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> > index 05bc80e..3bcb9df 100644
-> > --- a/kernel/trace/trace_events.c
-> > +++ b/kernel/trace/trace_events.c
-> > @@ -12,6 +12,11 @@
-> >  
-> >  #include "trace_events.h"
-> >  
-> > +#define events_for_each(event)						\
-> > +	for (event = __start_ftrace_events;				\
-> > +	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
-> > +	     event++)
-> > +
-> 
-> 
-> The name for_each_events seems to me more intuitive, but it's just
-> a matter of taste.
+Unfortunately this does not work, it gives error messages below:
+make[2]: *** No rule to make target
+`/home/user/workingdir/scripts/bin2c.s', needed by
+`/home/user/workingdir/scripts/bin2c.o'.  Stop.
 
-I like that better too. But I was trying to be more consistent with the 
-kernel. "list_for_each", "hlist_for_each".
+Obviously bin2c is not in my working dir, it is in the kbuild directory.
 
-But come to think about it, we do have "for_each_cpu_mask". Hmm?
+I wonder if there is any way at all to avoid to write the full obj
+list, it's really annoying.
 
-But it is local to the file. Not something to worry about now ;-)
-
--- Steve
-
+Thanks a lot.
+If you reply this post, please also CC to this address.
