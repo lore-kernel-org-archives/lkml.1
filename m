@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761305AbZBYQFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbZBYQJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761305AbZBYQFl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 11:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZBYQFc
+	id S1760302AbZBYQJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 11:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZBYQJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 11:05:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52794 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752011AbZBYQFb (ORCPT
+	Wed, 25 Feb 2009 11:09:04 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:34407 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752675AbZBYQJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 11:05:31 -0500
-Date: Wed, 25 Feb 2009 08:04:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Salman Qazi <sqazi@google.com>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to
- __copy_from_user_*nocache()
-In-Reply-To: <20090225072503.GD21903@elte.hu>
-Message-ID: <alpine.LFD.2.00.0902250753030.3111@localhost.localdomain>
-References: <20090224020304.GA4496@google.com> <200902242002.37555.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0902240744500.3111@localhost.localdomain> <200902251423.58861.nickpiggin@yahoo.com.au> <20090225072503.GD21903@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 25 Feb 2009 11:09:03 -0500
+Date: Wed, 25 Feb 2009 17:08:54 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Frank Seidel <frank@f-seidel.de>
+cc: Frank Seidel <fseidel@suse.de>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, nhorman@tuxdriver.com,
+       lho@amcc.com, kaber@trash.net, darrenrjenkins@gmail.com
+Subject: Re: [PATCHv3][trivial] crypto: tcrypt - reduce stack size
+In-Reply-To: <alpine.LRH.2.00.0902251657431.15476@vixen.sonytel.be>
+Message-ID: <alpine.LRH.2.00.0902251706580.15476@vixen.sonytel.be>
+References: <49A54C23.8090209@suse.de> <49A5549F.4070304@suse.de> <49A55B5A.70705@suse.de> <alpine.LRH.2.00.0902251604430.15476@vixen.sonytel.be> <49A56A2B.4040305@f-seidel.de> <alpine.LRH.2.00.0902251657431.15476@vixen.sonytel.be>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 25 Feb 2009, Ingo Molnar wrote:
+On Wed, 25 Feb 2009, Geert Uytterhoeven wrote:
+> On Wed, 25 Feb 2009, Frank Seidel wrote:
+> > Geert Uytterhoeven wrote:
+> > > BTW, why are you using printk(KERN_INFO "..."), and not pr_info("...")?
+> > 
+> > Without special reason. Is pr_info preferred?
 > 
-> The main artifact would be the unaligned edges around a bigger 
-> write. In particular the tail portion of a big write will be 
-> cached.
+> It's shorter.
+> 
+> Especially `pr_err' fits in the space of `printk', so you don't have to split
+> lines that become to long due to adding the KERN_*.
 
-.. but I don't really agree that this is a problem.
+I sent it out too soon...
 
-Sure, it's "wrong", but does it actually matter? No. Is it worth adding 
-complexity to existing interfaces for? I think not.
+Other advantages:
+  - The pr_*() calls use pr_fmt(), so you can set default prefixes (like
+    __FILE__, __function, __LINE) at one place at the top of your driver source
+    file.
+  - pr_debug() is automatically left out if DEBUG is not defined (unless
+    CONFIG_DYNAMIC_PRINTK_DEBUG is set).
 
-In general, I think that software should not mess with nontemporal stores. 
-The thing is, software almost never knows enough about the CPU cache to 
-make an intelligent choice.
+With kind regards,
 
-So I didn't want to apply the nocache patches in the first place, but the 
-performance numbers were pretty clear. I'll take "real numbers" over my 
-personal dislikes any day. But now we have real numbers going the other 
-way for small writes, and a patch to fix that.
+Geert Uytterhoeven
+Software Architect
 
-But we have no amount of real numbers for the edge cases, and I don't 
-think they matter. In fact, I don't think they _can_ matter, because it is 
-inevitably always going to be an issue of "which CPU and which memory 
-subsystem".
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-In other words, there is no "right" answer. There is no "perfect". But 
-there is "we can fix the real numbers".
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-At the same time, we also do know:
- - caches work
- - CPU designers will continue to worry about the normal (cached) case, 
-   and will do reasonable things with cache replacement.
- - ergo: w should always consider the cached case to be the _normal_ mode, 
-   and it's the nontempral loads/stores that need to explain themselves.
-
-So I do think we should just apply the simple patch. Not make a big deal 
-out of it. We have numbers. We use cached memory copies for everything 
-else. It's always "safe".
-
-And we pretty much know that the only time we will ever really care about 
-the nontemporal case is with big writes - where the "edge effects" 
-essentially become total noise. 
-
-		Linus
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
