@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZBYMvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbZBYMyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbZBYMvf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 07:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZBYMv1
+	id S1755014AbZBYMyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 07:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZBYMyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 07:51:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59337 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Feb 2009 07:54:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58322 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752793AbZBYMv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 07:51:26 -0500
-Date: Wed, 25 Feb 2009 13:51:08 +0100
+	id S1752665AbZBYMyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 07:54:36 -0500
+Date: Wed, 25 Feb 2009 13:54:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Johannes Weiner <hannes@cmpxchg.org>, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/percpu] bootmem: clean up arch-specific bootmem
-	wrapping
-Message-ID: <20090225125108.GE26273@elte.hu>
-References: <tip-c132937556f56ee4b831ef4b23f1846e05fde102@kernel.org> <20090224214638.GA2049@cmpxchg.org> <20090224214932.GC12601@elte.hu> <20090224234949.GA1778@cmpxchg.org> <49A4ACAE.4020104@kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Tejun Heo <tj@kernel.org>, Yinghai Lu <yinghai@kernel.org>,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, jeremy@goop.org, cpw@sgi.com, nickpiggin@yahoo.com.au,
+       ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk
+	allocation
+Message-ID: <20090225125415.GF26273@elte.hu>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224205105.GA19460@elte.hu> <20090224211659.GA3687@elte.hu> <200902251710.27205.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <49A4ACAE.4020104@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200902251710.27205.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,19 +39,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Tejun Heo <tj@kernel.org> wrote:
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> Hello,
+> On Wednesday 25 February 2009 07:46:59 Ingo Molnar wrote:
+> >  kernel/trace/trace_functions_graph.c: In function ‘graph_trace_close’:
+> >  kernel/trace/trace_functions_graph.c:836: error: implicit declaration of function ‘percpu_free’
+> > 
+> > that's free_percpu() now, right?
+> > 
+> > Btw., why was this rename done? We generally standardize on 
+> > hierarchical names, going from the more general to the more 
+> > specific names, left to right.
 > 
-> Johannes Weiner wrote:
-> > No, when the patch was submitted for review, I pointed out the change
-> > in semantics and gathered from Tejun's reaction that this wasn't done
-> > intentionally.  So the problem is the change itself, not the missing
-> > declaration.
-> 
-> Yeah, I should have regenerated the tree.  Sorry about that.
+> Agreed, but we had both, doing identical things, and 
+> free_percpu outnumbered percpu_free by a significant factor 
+> (about 40 to 5 IIRC).
 
-Queueing up a fix is still worth having of course. That will 
-also more fairly document Johannes's review efforts.
+40 places to rename => peanuts! :-)
+
+> Simple pragmatism, and it matches alloc_percpu.
+
+it also matches other allocator mis-namings in mm/*.c.
+I concur.
 
 	Ingo
