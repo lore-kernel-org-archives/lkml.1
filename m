@@ -1,109 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbZBYOGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZBYOK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758066AbZBYOGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 09:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZBYOGj
+	id S1756907AbZBYOK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 09:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZBYOKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 09:06:39 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:36893 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbZBYOGi (ORCPT
+	Wed, 25 Feb 2009 09:10:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40728 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbZBYOKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 09:06:38 -0500
-Date: Wed, 25 Feb 2009 09:06:23 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org,
-       Frank Seidel <frank@f-seidel.de>, akpm@linux-foundation.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, lho@amcc.com, kaber@trash.net,
-       darrenrjenkins@gmail.com
-Subject: Re: [PATCH][trivial] crypto: tcrypt - reduce stack size
-Message-ID: <20090225140623.GC16150@hmsreliant.think-freely.org>
-References: <49A54C23.8090209@suse.de>
+	Wed, 25 Feb 2009 09:10:12 -0500
+Date: Wed, 25 Feb 2009 09:10:07 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Theodore Tso <tytso@mit.edu>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+In-Reply-To: <20090225133740.GF7064@mit.edu>
+Message-ID: <alpine.DEB.2.00.0902250909330.12697@gandalf.stny.rr.com>
+References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org> <20090224194548.3effb746.akpm@linux-foundation.org> <20090225133740.GF7064@mit.edu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A54C23.8090209@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 02:48:19PM +0100, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
-> 
-> Applying kernel janitors todos (printk calls need KERN_*
-> constants on linebeginnings, reduce stack footprint where
-> possible) to tcrypts test_hash_speed (where stacks
-> memory footprint was very high (on i386 1184 bytes to
-> 292 now).
-> 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> ---
->  
->  	if (IS_ERR(tfm)) {
-> -		printk("failed to load transform for %s: %ld\n", algo,
-> +		printk(KERN_ERR "failed to load transform for %s: %ld\n", algo,
->  		       PTR_ERR(tfm));
-> +		kfree(output);
->  		return;
-Its just a stylistic nit, but I think I'd rather see this be a goto to the kfree
-at the end of the function.  You can move the out label down to just the kfree,
-and rename the current out usage to out_free_tfm.  I think if you're going to
-add the kfree at the bottom, you might as well make use of it for all cases.
 
-If you change that, I'll ack this.
+On Wed, 25 Feb 2009, Theodore Tso wrote:
 
-Thanks & Regards
-Neil
-
->  	}
->  
->  	desc.tfm = tfm;
->  	desc.flags = 0;
->  
-> -	if (crypto_hash_digestsize(tfm) > sizeof(output)) {
-> -		printk("digestsize(%u) > outputbuffer(%zu)\n",
-> -		       crypto_hash_digestsize(tfm), sizeof(output));
-> +	if (crypto_hash_digestsize(tfm) > output_size) {
-> +		printk(KERN_ERR "digestsize(%u) > outputbuffer(%zu)\n",
-> +		       crypto_hash_digestsize(tfm), output_size);
->  		goto out;
->  	}
->  
-> @@ -427,12 +435,14 @@ static void test_hash_speed(const char *
->  
->  	for (i = 0; speed[i].blen != 0; i++) {
->  		if (speed[i].blen > TVMEMSIZE * PAGE_SIZE) {
-> -			printk("template (%u) too big for tvmem (%lu)\n",
-> +			printk(KERN_ERR
-> +			       "template (%u) too big for tvmem (%lu)\n",
->  			       speed[i].blen, TVMEMSIZE * PAGE_SIZE);
->  			goto out;
->  		}
->  
-> -		printk("test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
-> +		printk(KERN_INFO "test%3u "
-> +		       "(%5u byte blocks,%5u bytes per update,%4u updates): ",
->  		       i, speed[i].blen, speed[i].plen, speed[i].blen / speed[i].plen);
->  
->  		if (sec)
-> @@ -443,13 +453,14 @@ static void test_hash_speed(const char *
->  					       speed[i].plen, output);
->  
->  		if (ret) {
-> -			printk("hashing failed ret=%d\n", ret);
-> +			printk(KERN_ERR "hashing failed ret=%d\n", ret);
->  			break;
->  		}
->  	}
->  
->  out:
->  	crypto_free_hash(tfm);
-> +	kfree(output);
->  }
->  
->  static void test_available(void)
+> On Tue, Feb 24, 2009 at 07:45:48PM -0800, Andrew Morton wrote:
+> > echo sched_wakeup > /debug/tracing/set_event
+> > echo sched_wakeup > /debug/tracing/clear_event
+> > echo 1 > /debug/tracing/clear_all_events
 > 
+> >From a usability point of view, I'd prefer this as well.  It's only
+> two extra files, but it means that filenames in /deb/tracing is
+> self-documenting, which is a good thing.  Otherwise, it's really not
+> obvious that "echo !event > /debug/tracing/set_event" will disable the
+> event, and it's *especially* not obvious "echo > /debug/tracing/set_event"
+> will disable all events.
+> 
+> It's also a tad bit too easy to typo "echo > /debug/tracing/set_event"
+> by editing command history, and hitting return a bit too soon after
+> clearing out the previous event name but before you manage to type the
+> new event name.
+
+OK, then I guess I can add a clear_event file. And to clear all events 
+simply do:
+
+ # cat set_event > clear_event
+
+-- Steve
+
