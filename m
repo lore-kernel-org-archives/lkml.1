@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbZBYJBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbZBYJC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760358AbZBYJBM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbZBYJA5
+	id S1761246AbZBYJC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbZBYJCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:00:57 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:62915 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752979AbZBYJA4 convert rfc822-to-8bit (ORCPT
+	Wed, 25 Feb 2009 04:02:05 -0500
+Received: from mga03.intel.com ([143.182.124.21]:20746 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752979AbZBYJCC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:00:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=dpoaj8mFF9Wi24QMK1eRJFIfwWErtjaaThbXzl5u3XWl1KHQ36TDZDsjYoWbrL7xev
-         QsRiklvMP4q8dxIN1wHeNkbWtYAwnRzIKBOdLPz5M1YcaJ47+H7mknIG+1Tatomi0NhU
-         4N1/4gSa7l+HuxuBSqHlJ4eoB1VKtqNi1/lI8=
+	Wed, 25 Feb 2009 04:02:02 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,264,1233561600"; 
+   d="scan'208";a="114179583"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Nathan Lynch <ntl@pobox.com>, Ingo Molnar <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "srostedt@redhat.com" <srostedt@redhat.com>
+Date: Wed, 25 Feb 2009 09:01:50 +0000
+Subject: RE: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
+Thread-Topic: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
+Thread-Index: AcmWyWNMrn0D4Y0iSmCKeD3WP/LL7wAXORRQ
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A4C1E88@irsmsx504.ger.corp.intel.com>
+References: <20090119102653.A18774@sedona.ch.intel.com>
+ <20090224193622.GA26734@elte.hu> <20090224154623.0758d692@thinkcentre.lan>
+In-Reply-To: <20090224154623.0758d692@thinkcentre.lan>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <20090225002852.5ef5b869.akpm@linux-foundation.org>
-References: <20090225025608.956691460@goodmis.org>
-	 <20090225025753.798204550@goodmis.org>
-	 <20090224194548.3effb746.akpm@linux-foundation.org>
-	 <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
-	 <20090224203308.8d623e0b.akpm@linux-foundation.org>
-	 <20090225081118.GC15303@elte.hu>
-	 <20090225002852.5ef5b869.akpm@linux-foundation.org>
-Date: Wed, 25 Feb 2009 11:00:53 +0200
-X-Google-Sender-Auth: e15fea1a18c18c52
-Message-ID: <84144f020902250100k41e55dd7w8a9c8d2ca96908ea@mail.gmail.com>
-Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+>-----Original Message-----
+>From: Nathan Lynch [mailto:ntl@pobox.com]
+>Sent: Tuesday, February 24, 2009 10:46 PM
+>To: Ingo Molnar
+>Cc: Metzger, Markus T; linux-kernel@vger.kernel.org; tglx@linutronix.de; hpa@zytor.com;
+>markus.t.metzger@gmail.com; srostedt@redhat.com
+>Subject: Re: [patch 1/6] x86, ftrace, hw-branch-tracer: support hotplug cpus
+>
+>On Tue, 24 Feb 2009 20:36:22 +0100
+>Ingo Molnar <mingo@elte.hu> wrote:
+>
+>>
+>> * Markus Metzger <markus.t.metzger@intel.com> wrote:
+>>
+>> > Support hotplug cpus.
+>>
+>> > +static int __cpuinit bts_hotcpu_handler(struct notifier_block *nfb,
+>> > +				     unsigned long action, void *hcpu)
+>> > +{
+>> > +	unsigned int cpu = (unsigned long)hcpu;
+>> > +
+>> > +	mutex_lock(&bts_tracer_mutex);
+>>
+>> This is buggy: CPU hotplug handlers must not sleep (they are
+>> called with irqs disabled)
+>
+>I don't think that is the case; the cpu notifier chains are "raw", not
+>atomic, and the cpu hotplug core doesn't disable irqs while processing
+>the chains afaict.  And there are several current examples of cpu
+>hotplug callbacks performing sleeping operations (slab and slub,
+>page_alloc, probably many others).
 
-On Wed, Feb 25, 2009 at 10:28 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> A better approach would be to design simple, robust kernel interfaces
-> which make sense and which aren't made all complex by putting the user
-> interface in kernel space.  And to maintain corresponding userspace
-> tools which manipulate and present the IO from those kernel interfaces.
+The hotplug code uses mutexes around raw_notifier_call_chain() calls in
+all but one case:
+  For CPU_STARTING_FROZEN, the caller has interrupts disabled.
 
-We did this for kmemtrace and quite frankly, I usually end up spending
-more time figuring out how to export the data from a virtual machine
-than actually analyzing the results. What makes ftrace so cool is the
-fact that it has almost zero-overhead for setup and that the
-text-based data format plays well with simple scripting tools
-available everywhere.
+I guess I could check the notification reason before grabbing the lock
+in the handler.
 
-                                     Pekka
+regards,
+markus.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
