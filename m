@@ -1,143 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZBYBTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbZBYBXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbZBYBTf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 20:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBYBTY
+	id S1757356AbZBYBXO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 20:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZBYBW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 20:19:24 -0500
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:37842 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbZBYBTX (ORCPT
+	Tue, 24 Feb 2009 20:22:58 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39790 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754582AbZBYBW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 20:19:23 -0500
-From: Mark Nelson <markn@au1.ibm.com>
-Organization: IBM
-To: Jan Kara <jack@suse.cz>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-Date: Wed, 25 Feb 2009 12:20:49 +1100
-User-Agent: KMail/1.9.9
-Cc: "Sachin P. Sant" <sachinp@in.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       linuxppc-dev@ozlabs.org, linux-ext4@vger.kernel.org,
-       Jan Kara <jack@ucw.cz>, linux-kernel <linux-kernel@vger.kernel.org>,
-       benh@kernel.crashing.org
-References: <49A2705D.9030008@in.ibm.com> <49A395ED.5030607@in.ibm.com> <20090224155119.GC22108@duck.suse.cz>
-In-Reply-To: <20090224155119.GC22108@duck.suse.cz>
+	Tue, 24 Feb 2009 20:22:57 -0500
+Message-ID: <49A49D2B.8050701@zytor.com>
+Date: Tue, 24 Feb 2009 17:21:47 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Tim Abbott <tabbott@MIT.EDU>
+CC: linux-kernel@vger.kernel.org, Anders Kaseorg <andersk@MIT.EDU>,
+       Jeff Arnold <jbarnold@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH v2 2/4] x86: Add an option to compile with -ffunction-sections
+ -fdata-sections
+References: <1235521315-3424-1-git-send-email-tabbott@mit.edu> <1235521315-3424-2-git-send-email-tabbott@mit.edu> <1235521315-3424-3-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1235521315-3424-3-git-send-email-tabbott@mit.edu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902251220.49265.markn@au1.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 02:51:20 am Jan Kara wrote:
->   Hello,
+Tim Abbott wrote:
+> From: Waseem Daher <wdaher@mit.edu>
 > 
-> On Tue 24-02-09 12:08:37, Sachin P. Sant wrote:
-> > Jan Kara wrote:
-> >>   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
-> >> somehow got beyond end of the page referenced by bh->b_data. So it means
-> >> that le16_to_cpu(entry->e_value_offs) + size > page_size. But
-> >> ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
-> >> particular checks whether e_value_offs + e_value_size isn't greater than
-> >> bh->b_size. So I see no way how memcpy can get beyond end of the page.
-> >>   Sachin, is the problem reproducible? If yes, can you send us contents
-> >>   
-> > Yes, i am able to recreate this problem easily. As i had mentioned if the
-> > earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
-> > i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
-> > without any problem.
-> >
-> >> of the page just before the faulting address (i.e., for current fault it
-> >> would be 0xc00000003f370000-0xc00000003f37ffff). As far as I can
-> >> remember powerpc monitor could dump it.
-> >>   
-> > Here is the page dump. This time it crashed while accessing address
-> > 0xc00000002d670000.
->   Thanks for the dump.
+> This patch makes it possible to link and boot an x86 kernel with
+> -ffunction-sections and -fdata-sections enabled.
 > 
-> > Unable to handle kernel paging request for data at address 0xc0000
-> > 0002d670000
-> > Faulting instruction address: 0xc000000000039574
-> > cpu 0x1: Vector: 300 (Data Access) at [c00000004288b0b0]
-> >    pc: c000000000039574: .memcpy+0x74/0x244
-> >    lr: c0000000001b497c: .ext3_xattr_get+0x288/0x2f4
-> >    sp: c00000004288b330
-> >   msr: 8000000000009032
-> >
-> > 1:mon> d 0xc00000002d660000
-> > ............................... <SNIP> ...............................
-> >
-> > c00000002d66efd0 0000000000000000 0000000000000000  |................|
-> > c00000002d66efe0 0000000000000000 0000000000000000  |................|
-> > c00000002d66eff0 0000000000000000 0000000000000000  |................|
-> > c00000002d66f000 000002ea00040000 01000000e200d20a  |................|
-> > c00000002d66f010 0000000000000000 0000000000000000  |................|
-> > c00000002d66f020 0706e40f00000000 1b000000e200d20a  |................|
-> > c00000002d66f030 73656c696e757800 0000000000000000  |selinux.........|
-> > c00000002d66f040 0000000000000000 0000000000000000  |................|
-> > c00000002d66f050 0000000000000000 0000000000000000  |................|
-> > c00000002d66f060 0000000000000000 0000000000000000  |................|
-> >
-> > ............................... <SNIP> ...............................
-> >
-> > c00000002d66ff60 0000000000000000 0000000000000000  |................|
-> > c00000002d66ff70 0000000000000000 0000000000000000  |................|
-> > c00000002d66ff80 0000000000000000 0000000000000000  |................|
-> > c00000002d66ff90 0000000000000000 0000000000000000  |................|
-> > c00000002d66ffa0 0000000000000000 0000000000000000  |................|
-> > c00000002d66ffb0 0000000000000000 0000000000000000  |................|
-> > c00000002d66ffc0 0000000000000000 0000000000000000  |................|
-> > c00000002d66ffd0 0000000000000000 0000000000000000  |................|
-> > c00000002d66ffe0 0000000073797374 656d5f753a6f626a  |....system_u:obj|
-> > c00000002d66fff0 6563745f723a7573 725f743a73300000  |ect_r:usr_t:s0..|
-> > c00000002d670000 **************** ****************  |                |
-> > 1:mon> r
-> > R00 = 000000000000e40f   R16 = 000000000000005d
-> > R01 = c00000004288b330   R17 = 0000000000000000
-> > R02 = c0000000009f59b8   R18 = 00000000fffbfe9e
-> > R03 = c000000044aa34a0   R19 = 0000000010042638
-> > R04 = c00000002d66fff4   R20 = 0000000010041610
-> > R05 = 0000000000000003   R21 = 00000000000000ff
-> > R06 = 0000000000000000   R22 = 0000000000000006
-> > R07 = 0000000000000001   R23 = c0000000007d27c1
-> > R08 = 723a7573725f743a   R24 = c00000002c0cd758
-> > R09 = 3a6f626a6563745f   R25 = c000000044aa3488
-> > R10 = c00000000017b43c   R26 = c00000002c0cd6f0
-> > R11 = c00000002d66f020   R27 = c00000002c0cd860
-> > R12 = d0000000023c14b0   R28 = c00000002c0b0840
-> > R13 = c000000000a93680   R29 = 000000000000001b
-> > R14 = 00000000000041ed   R30 = c0000000009880b0
-> > R15 = 0000000010040000   R31 = ffffffffffffffde
-> > pc  = c000000000039574 .memcpy+0x74/0x244
-> > lr  = c0000000001b497c .ext3_xattr_get+0x288/0x2f4
-> > msr = 8000000000009032   cr  = 4400044b
-> > ctr = 0000000000000000   xer = 0000000020000001   trap =  300
-> > dar = c00000002d670000   dsisr = 40000000
-> > 1:mon> zr
-> >
-> >>   BTW, I suppose you use 4KB blocksize on the filesystem, right?
-> >>   
-> > Yes.
-> >
-> > dumpe2fs /dev/sda3 | grep -i "block size" dumpe2fs 1.39 (29-May-2006)
-> > Block size:               4096
->   OK. The xattr block causing oops is completely correct. To me it seems
-> more like some problem in powerpc memcpy() (I saw there went some changes
-> into in in the end of December) - we call it to copy 27 bytes from
-> address 0xc00000002d66ffe4 (which is one byte before end of the page).
-> Could some of the powerpc guys have a look whether this could be the case?
-> I'm not quite fluent in the powerpc assembly so it would take me ages ;).
+> Modpost currently warns whenever it sees a section with a name
+> matching [.][0-9]+$ because they are often caused by section flag
+> mismatch errors.  When compiling with -ffunction-sections
+> -fdata-sections, gcc places various classes of local symbols in
+> sections with names such as .rodata.__func__.12345, causing these
+> warnings to be printed spuriously.  The simplest fix is to disable the
+> warning when CONFIG_FUNCTION_DATA_SECTIONS is enabled.
+> 
 
-You're right - it's a problem with the 64bit powerpc memcpy(). And the brown
-paper bag is all mine (commit 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556). On
-Power6 and Cell we're doing a load double that goes beyond the source size
-we were given to copy. I'll see if I can find a nice way of fixing this up,
-if not then I'll ask Ben to revert.
+This is a pretty critical set of warnings, that often represent real
+bugs.  I don't think it's acceptable to lose them.  However, you already
+have (prior in the sequence) changed those section names to not conflict
+with the automatically generated ones, so it seems to me that this
+should be fixable without too much pain.
 
-Sorry about the goose chase!
+	-hpa
 
-Mark
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
