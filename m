@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbZBYG20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759856AbZBYG2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbZBYG20 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 01:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbZBYG2N
+	id S1759856AbZBYG2o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 01:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbZBYG2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 01:28:13 -0500
-Received: from smtp7.tech.numericable.fr ([82.216.111.43]:52355 "EHLO
-	smtp7.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752844AbZBYG2L (ORCPT
+	Wed, 25 Feb 2009 01:28:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36293 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753006AbZBYG2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 01:28:11 -0500
-Message-ID: <49A4E4F6.5010404@numericable.fr>
-Date: Wed, 25 Feb 2009 07:28:06 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Feb 2009 01:28:15 -0500
+Message-ID: <49A4E425.5030204@zytor.com>
+Date: Tue, 24 Feb 2009 22:24:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: Paul Moore <paul.moore@hp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH][SMACK] add a socket_post_accept hook to fix netlabel
- issues with labeled TCP servers V1
-References: <fa.eUdEnVYPYgnfwD9aw1dVY6gL1+E@ifi.uio.no> <200902241738.08877.paul.moore@hp.com> <49A47BEF.5030507@numericable.fr> <200902241836.59679.paul.moore@hp.com> <49A4BAC8.30708@schaufler-ca.com>
-In-Reply-To: <49A4BAC8.30708@schaufler-ca.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kyle McMartin <kyle@infradead.org>
+CC: mingo@redhat.com, dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [rfc] headers_check cleanups break the whole world
+References: <20090225032553.GD6690@bombadil.infradead.org>
+In-Reply-To: <20090225032553.GD6690@bombadil.infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> Paul Moore wrote:
->> ...
->>> well, i think it is simple : let's say i want to run a "smack-labelled
->>> server" (apache, vsftpd, ...) clients connect from internet,  so the server
->>> admin/user  will want to add a "0.0.0.0/0 @" entry in netlabel that will
->>> _fail_ because the server will send back "labeled" packets.
->>>     
->> I had to go back and look at the address based labeling patches, I had somehow 
->> forgotten that the single label support in Smack can only be used for removing 
->> labels, not adding them.  With that in mind your approach should work although 
->> you will still get really bizarre behavior in the following case:
->>
->>  * Service not running at the ambient label
->>  * Only address based label loaded into Smack is "0.0.0.0/0 @" (everything
->>    unlabeled)
->>  * Client connects to service using labeled networking
->>
->> If you and Casey can live with labeled connection suddenly becoming unlabeled 
->> (I doubt the remote host will deal with it very gracefully) then go for it.
->>   
+Kyle McMartin wrote:
 > 
-> The case where the netlabel entry "0.0.0.0/0 @" has been added
-> will unfortunately be a very common case because it say that while
-> the local machine does MAC the world as a whole does not. It also
-> means that the admin does not understand the implication that
-> local networking will no longer enforce MAC controls, or that for
-> some bizarre reason that it what he wants. In either case it is
-> very unlikely that he expects to connect to another system that
-> speaks CIPSO. For that reason I expect that the "bizarre behavior"
-> of labeled hosts to be quite rare.
+> The reason for this is you cannot intermix glibc header <sys/*.h>
+> includes with <linux/*.h> includes for most things without defining the
+> __KERNEL_STRICT_NAMES guard. If you fail to define this, you end up
+> with multiple definitions of things like dev_t.
 > 
-> I think that it might be necessary to introduce mechanism to specify
-> labeled hosts in addition to unlabeled hosts. That way one could
-> specify:
->     0.0.0.0/0       @
->     127.0.0.1       CIPSO
->     192.168.1.103   CIPSO
+> Software was able to get by, because things that used the headers, dvb for
+> example were not getting <linux/types.h> into the include chain, because
+> they were using <asm/types.h> directly.
 > 
-yes, i guess it makes a lot of sense; the corp network can be labeled
-but internet will stay  unlabeled 
+> I propose we invert that logic, so the presumable libc that makes use of
+> the <linux/types.h> header can just define that it wants these types.
+> (test __KERNEL__ as well so the kernel doesn't need a pointless
+> #define.)
+> 
 
+The Right Thing[TM] here is to change the exported headers so that
+*only* the __kernel* names are exported, and then remove the
+non-__KERNEL_STRICT_NAMES version of <linux/types.h>.  The *only* libc
+for which non-__KERNEL_STRICT_NAMES ever made sense was for the
+long-since-obsolete libc5.
 
-> and let everyone except the local host be unlabeled while the local
-> host enforces Real MAC policy.
+This, by the way, is not frivolous work.  The work that has been done in
+this area already has smoked out a number of bugs where exported headers
+were using user space types, which meant they were using the *WRONG
+TYPES* on glibc.  Completely.
+
+> If this isn't tenable, how about moving the {,__}[su]{8,16,32,64}
+> integer types into their own header, so we can avoid this mess ever
+> occuring in the future. I'm sure the janitors can have a field day with
+> that... :)
 > 
-> I personally find it reprehensible that the attitude that network
-> communications ought to be exempt from access controls is so
-> pervasive, but I bend to the will of the people. The interest in
-> Smack since the introduction of the web ("@") label has grown
-> dramatically.
-> 
-> I am still reviewing and verifying these patches, which look
-> fine so far, but I know better than to let my eyes make the
-> call when I have computers that are so much better at finding
-> software flaws.
-> 
-> Thank you again for the work and reviews. I am working on my
-> end. Really.
-> 
-> 
-> 
+> That said, who exactly is the userspace consumer for those
+> 	typedef __kernel_dev_t	dev_t;
+> defines? Can we just include them all in #ifdef __KERNEL__? 
+
+That is exactly what we should do.
+
+For what it's worth, not even klibc uses these types.
+
+	-hpa	
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
