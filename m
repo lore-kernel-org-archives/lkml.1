@@ -1,66 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761173AbZBYJII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbZBYJIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761173AbZBYJII (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761009AbZBYJHl
+	id S1761520AbZBYJIh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760060AbZBYJIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:07:41 -0500
-Received: from host2.bln.innominate.com ([77.245.32.75]:51829 "EHLO
-	home.innominate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760519AbZBYJHj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:07:39 -0500
-Date: Wed, 25 Feb 2009 10:07:35 +0100
-From: Christian Hohnstaedt <chohnstaedt@innominate.com>
-To: Karl Hiramoto <karl@hiramoto.org>
-Cc: linux-crypto@vger.kernel.org, chohnstaedt@innominate.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: ixp4xx_crypto panic with fragmented packets in scatterlist
-Message-ID: <20090225090735.GA6283@elara.bln.innominate.local>
-References: <49A2E421.5050806@hiramoto.org> <49A3F3FA.1000801@hiramoto.org>
+	Wed, 25 Feb 2009 04:08:18 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63306 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756976AbZBYJIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 04:08:16 -0500
+Message-ID: <49A50A36.8000305@cn.fujitsu.com>
+Date: Wed, 25 Feb 2009 17:07:02 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A3F3FA.1000801@hiramoto.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org>
+In-Reply-To: <20090225025753.798204550@goodmis.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 02:19:54PM +0100, Karl Hiramoto wrote:
-> The latest thing i found is  kernel BUG at lib/scatterlist.c:26!
-> 
-> ping -s 1800  host in a IPSec tunnel.  Setup is   802.1Q VLAN  --> 
-> ixp4xx_eth  --> IPSec Tunnel
-> 
-> trace with   some   debug printk's  i added.    printk("%s:%d  
-> values",__func__, __LINE__);
-> 
-> 
-> [42949542.170000] esp_output:142 skb->len=1828 data_len=328 clen=1832 alen=0 blksize=8  skb=c7a5cb40 data=c79ba054
-> [42949542.180000] esp_output:168 skb=c7a5cb40 data=c79ba054 clone=0
-> [42949542.180000] __skb_to_sgvec:2430 skb=c7a5cb40 data=c79ba030 sg=c78a0324 off=36 len=1832
-> [42949542.190000] __skb_to_sgvec:2477 list=c795a0c0 start=1536  end=1868 list->len=332 offset=1536
-> [42949542.200000] __skb_to_sgvec:2430 skb=c795a0c0 data=c6d8f048 sg=c78a0338 off=0 len=332
-> [42949542.210000] __skb_to_sgvec:2484 len==0 elt=2
-> [42949542.210000] esp_output:218 skb=c7a5cb40 data=c79ba030
-> [42949542.220000] esp_output:228 skb=c7a5cb40 data=c79ba030
-> [42949542.230000] ablk_perform:897 ivsize=8 nbytes=1840
-> [42949542.230000] ablk_perform:919 dst=NULL src=c78a0278
-> [42949542.240000] count_sg:757 i=0 nbytes=1840 sg=c78a0278  sg_next(sg)=c78a028c
-> [42949542.240000] count_sg:758 len=1508 sg_is_last(sg)=0
-> [42949542.250000] count_sg:757 i=1 nbytes=332 sg=c78a028c  sg_next(sg)=c78a02a0
-> [42949542.250000] count_sg:758 len=0 sg_is_last(sg)=0
-> [42949542.260000] kernel BUG at lib/scatterlist.c:26!
-> [42949542.260000] Unable to handle kernel NULL pointer dereference at virtual address 00000000
+a very nice infrastructure!
 
-This differs from the issue you mentioned first.
-The first one was in "dma_cache_maint".
+Two comments about format:
 
-Are you sure, your printk()s don't have any side effect ?
+Steven Rostedt 写道:
+> From: Steven Rostedt <srostedt@redhat.com>
+> +#undef TPFMT
+> +#define TPFMT(fmt, args...)	fmt "\n", ##args
 
-Christian
+Where is other TPFMT's definition?
+I think TPFMT should be defined in tracepoint.h, because trace/<type>.h
+uses it.
 
--- 
-The decline of the Roman Empire can be traced to the fact that, lacking
-zero, they were unable to return from their C programs.
+> +#define DEFINE_TRACE_FMT(call, proto, args, fmt)			\
+> +static void ftrace_event_##call(proto)					\
+> +{									\
+> +	event_trace_printk(_RET_IP_, "(" #call ") " fmt);		\
+> +}									\
+> +									\
+> +static int ftrace_reg_event_##call(void)				\
+> +{									\
+> +	int ret;							\
+> +									\
+> +	ret = register_trace_##call(ftrace_event_##call);		\
+> +	if (!ret)							\
+> +		pr_info("event trace: Could not activate trace point "	\
+> +			"probe to " #call);				\
+> +	return ret;							\
+> +}									\
+> +									\
+> +static void ftrace_unreg_event_##call(void)				\
+> +{									\
+> +	unregister_trace_##call(ftrace_event_##call);			\
+> +}									\
+> +									\
+> +static struct ftrace_event_call __used					\
+> +__attribute__((section("_ftrace_events"))) event_##call = {		\
+> +	.name 			= #call,				\
+> +	.regfunc		= ftrace_reg_event_##call,		\
+> +	.unregfunc		= ftrace_unreg_event_##call,		\
+> +}
+> +
+> +void event_trace_printk(unsigned long ip, const char *fmt, ...);
+
+add format checking here:
+__attribute__ ((format (printf, 2, 3)))
+
+If user does not use this infrastructure(he uses trace/<type>.h only),
+this checking is not work, so I think we can add format checking
+in DEFINE_TRACE_FMT in tracepoint.h
+
+--------example:
+
+static inline void  __tp_check_format(const char *fmt, ...)
+		__attribute__ ((format (printf, 1, 2)));
+static inline void __tp_check_format(const char *fmt, ...) {}
+
+#define DECLARE_TRACE_FORMAT_CHECK(name, proto, fmt, fmt_args...)	\
+static inline void ftrace_event_check_format_##name(proto)		\
+{									\
+	__tp_check_format(fmt, ##fmt_args);				\
+}
+
+#define DEFINE_TRACE_FMT(name, proto, args, fmt)			\
+	DECLARE_TRACE_FORMAT_CHECK(name, TPPROTO(proto), fmt)		\
+	DECLARE_TRACE(name, TPPROTO(proto), TPARGS(args))
+
+---------
+
+Thanks, Lai
+
