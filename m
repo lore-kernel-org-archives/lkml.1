@@ -1,141 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbZBYWQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbZBYWRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762892AbZBYWQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZBYWQN
+	id S1762953AbZBYWRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZBYWRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:16:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49629 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755599AbZBYWQM (ORCPT
+	Wed, 25 Feb 2009 17:17:21 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:44223 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752485AbZBYWRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:16:12 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] make CALLER_ADDRx overwriteable
-Date: Wed, 25 Feb 2009 23:16:09 +0100
-Message-Id: <1235600169-26912-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Wed, 25 Feb 2009 17:17:20 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap8EAMdMpUlMQWWY/2dsb2JhbACBb9cYhBEG
+Date: Wed, 25 Feb 2009 17:12:10 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com
+Subject: Re: [PATCH] new irq tracer
+Message-ID: <20090225221210.GA20133@Krystal>
+References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com> <20090222123543.359C.A69D9226@jp.fujitsu.com> <49A5765C.2020001@redhat.com> <20090225165747.GC3123@redhat.com> <20090225173412.GA14269@Krystal> <alpine.DEB.2.00.0902251250110.12697@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902251250110.12697@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:10:43 up 4 days, 13:44,  2 users,  load average: 0.40, 0.19,
+	0.19
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current definition of CALLER_ADDRx isn't suitable for all platforms.
-E.g. for ARM __builtin_return_address(N) doesn't work for N > 0 and
-AFAIK for powerpc there are no frame pointers needed to have a working
-__builtin_return_address.  This patch allows defining the CALLER_ADDRx
-macros in <asm/ftrace.h> and let these take precedence.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> 
+> On Wed, 25 Feb 2009, Mathieu Desnoyers wrote:
+> 
+> > * Jason Baron (jbaron@redhat.com) wrote:
+> > > On Wed, Feb 25, 2009 at 11:48:28AM -0500, Masami Hiramatsu wrote:
+> > > > KOSAKI Motohiro wrote:
+> > > > >>  /**
+> > > > >>   * handle_IRQ_event - irq action chain handler
+> > > > >>   * @irq:	the interrupt number
+> > > > >> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+> > > > >>  		local_irq_enable_in_hardirq();
+> > > > >>  
+> > > > >>  	do {
+> > > > >> +		trace_irq_entry(irq);
+> > > > >>  		ret = action->handler(irq, action->dev_id);
+> > > > >> +		trace_irq_exit(irq, ret);
+> > > > >>  		if (ret == IRQ_HANDLED)
+> > > > >>  			status |= action->flags;
+> > > > >>  		retval |= ret;
+> > > > > 
+> > > > > Nobdy want unnecessary redundant tracepoint.
+> > > > > Please discuss with mathieu, and merge his tracepoint.
+> > > > 
+> > > > Hmm, from the viewpoint of trouble shooting, the place of LTTng's tracepoint
+> > > > is enough. However, from the same viewpoint, it should pass irq-number
+> > > > to irq-exit event too, because we may lost some previous events by buffer-overflow
+> > > > etc.
+> > > > 
+> > > >          trace_irq_entry(irq, NULL);
+> > > >          ret = _handle_IRQ_event(irq, action);
+> > > >          trace_irq_exit(irq, ret);
+> > > >                         ^^^^
+> > > > 
+> > > 
+> > > the lttng tracepoints wrap the calls to _handle_IRQ_event in 3
+> > > different places. So the above suggested irq tracepoint provides the
+> > > same information with 4 less tracepoints in the code. So I believe its
+> > > simpler - plus we can understand which action handlers are handling the
+> > > interrupt.
+> > > 
+> > 
+> > The main thing I dislike about only tracing action->handler() calls is
+> > that you are not tracing an IRQ per se, but rather the invocation of a
+> > given handler within the interrupt. For instance, it would be difficult
+> > to calculate the maximum interrupt latency for a given interrupt line,
+> > because you don't have the "real" irq entry/exit events, just the
+> > individual handler() calls.
+> 
+> Then use the function_graph tracer.
+> 
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
-Hello,
+Sadly, the function tracer cannot be enabled on production systems.
+Therefore it's not a usable solution in the context where I need this.
 
-[I resent because vger blocked my mail saying: "Wrong MIME labeling on
-8-bit character texts."  Steven didn't get it either.  I don't know
-what's wrong, so I put the patch back into git and format-patch'd it.  I
-hope this one makes it through.  Sorry if you got it twice.]
+Mathieu
 
-I think I don't break any architecture with this patch:
+>  # echo smp_apic_timer_interrupt > /debug/tracing/set_ftrace_filter 
+>  # echo __irqentry_text_start >> /debug/tracing/set_ftrace_filter
+>  # echo function_graph > /debug/tracing/current_tracer 
+>  # cat /debug/tracing/trace
+> 
+> # tracer: function_graph
+> #
+> # CPU  DURATION                  FUNCTION CALLS
+> # |     |   |                     |   |   |   |
+>  ------------------------------------------
+>  1)  kblockd-4012  =>    <idle>-0   
+>  ------------------------------------------
+> 
+>  1)   ==========> |
+>  1) + 35.783 us   |  smp_apic_timer_interrupt();
+>  ------------------------------------------
+>  2)  kstop/2-4013  =>    <idle>-0   
+>  ------------------------------------------
+> 
+>  2)   ==========> |
+>  2) + 13.819 us   |  smp_apic_timer_interrupt();
+>  ------------------------------------------
+>  3)  kstop/3-4014  =>    <idle>-0   
+>  ------------------------------------------
+> 
+>  3)   ==========> |
+>  3) + 24.919 us   |  __irqentry_text_start();
+>  ------------------------------------------
+>  0)  kstop/0-4011  =>    <idle>-0   
+>  ------------------------------------------
+> 
+>  0)   ==========> |
+>  0) + 24.444 us   |  smp_apic_timer_interrupt();
+>  ------------------------------------------
+>  1)    <idle>-0    =>   bash-3899   
+>  ------------------------------------------
+> 
+>  1)   ==========> |
+>  1) + 13.642 us   |  smp_apic_timer_interrupt();
+>  2)   ==========> |
+>  2) + 15.014 us   |  smp_apic_timer_interrupt();
+>  3)   ==========> |
+>  3) + 31.004 us   |  smp_apic_timer_interrupt();
+>  ------------------------------------------
+>  0)    <idle>-0    =>   sshd-3892   
+>  ------------------------------------------
+> 
+>  0)   ==========> |
+>  0) + 15.655 us   |  __irqentry_text_start();
+>  0)   ==========> |
+>  0) + 37.722 us   |  __irqentry_text_start();
+>  ------------------------------------------
+>  0)   sshd-3892    =>    <idle>-0   
+>  ------------------------------------------
+> 
+>  0)   ==========> |
+>  0) + 26.139 us   |  __irqentry_text_start();
+>  3)   ==========> |
+>  3) + 27.240 us   |  __irqentry_text_start();
+>  3)   ==========> |
+>  3) + 21.987 us   |  __irqentry_text_start();
+> 
+> 
+> And there you have your latencies ;-)
+> 
+> With Jasons added trace points, we could add the to the event tracer
+> and those would show up as comments here.
+> 
+> -- Steve
+> 
+> 
+> 
+> > 
+> > But I agree that knowing which handler is called is important.
+> > 
+> > How about this compromise :
+> > 
+> > trace_irq_entry(irq, action)
+> >   _handle_IRQ_event()
+> >     for each action  {
+> >       trace_irq_handler(action, ret);
+> >       ret = action->handler(irq, action->dev_id);
+> >       ...
+> >     }
+> > trace_irq_exit(action_ret);
+> > 
+> > Would that give you the information you need ?
+> > 
+> > Here trace_irq_handler would be passed the _current_ action invoked and
+> > the _previous_ action return value. Note that we should initialize
+> > irqreturn_t ret to some initial value if we do this. That should keep
+> > the tracing overhead minimal.
+> > 
+> 
 
-	$ for arch in $(ls arch/); do if test ! -d arch/$arch; then continue; fi; test -f arch/$arch/include/asm/ftrace.h || test -f include/asm-$arch/ftrace.h || { echo -n "$arch: "; git grep FTRACE arch/$arch | wc -l; } done
-	alpha: 0
-	avr32: 0
-	blackfin: 0
-	cris: 0
-	frv: 0
-	h8300: 0
-	m32r: 0
-	m68k: 0
-	m68knommu: 0
-	mips: 0
-	mn10300: 0
-	parisc: 0
-	um: 0
-	xtensa: 0
-
-So all archs that don't have <asm/ftrace.h> seem not to use FTRACE.
-
-Best regards
-Uwe
-
- include/linux/ftrace.h |   41 +++++++++++++++++++++--------------------
- 1 files changed, 21 insertions(+), 20 deletions(-)
-
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 847bb3c..9d8d362 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -11,6 +11,8 @@
- #include <linux/bitops.h>
- #include <linux/sched.h>
- 
-+#include <asm/ftrace.h>
-+
- #ifdef CONFIG_FUNCTION_TRACER
- 
- extern int ftrace_enabled;
-@@ -103,8 +105,6 @@ struct ftrace_func_command {
- };
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
--/* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
--#include <asm/ftrace.h>
- 
- int ftrace_arch_code_modify_prepare(void);
- int ftrace_arch_code_modify_post_process(void);
-@@ -282,24 +282,25 @@ static inline void __ftrace_enabled_restore(int enabled)
- #endif
- }
- 
--#ifdef CONFIG_FRAME_POINTER
--/* TODO: need to fix this for ARM */
--# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
--# define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
--# define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
--# define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
--# define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
--# define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
--# define CALLER_ADDR6 ((unsigned long)__builtin_return_address(6))
--#else
--# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
--# define CALLER_ADDR1 0UL
--# define CALLER_ADDR2 0UL
--# define CALLER_ADDR3 0UL
--# define CALLER_ADDR4 0UL
--# define CALLER_ADDR5 0UL
--# define CALLER_ADDR6 0UL
--#endif
-+#ifndef CALLER_ADDR0
-+# ifdef CONFIG_FRAME_POINTER
-+#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-+#  define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-+#  define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-+#  define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
-+#  define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
-+#  define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
-+#  define CALLER_ADDR6 ((unsigned long)__builtin_return_address(6))
-+# else
-+#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-+#  define CALLER_ADDR1 0UL
-+#  define CALLER_ADDR2 0UL
-+#  define CALLER_ADDR3 0UL
-+#  define CALLER_ADDR4 0UL
-+#  define CALLER_ADDR5 0UL
-+#  define CALLER_ADDR6 0UL
-+# endif
-+#endif /* ifndef CALLER_ADDR0 */
- 
- #ifdef CONFIG_IRQSOFF_TRACER
-   extern void time_hardirqs_on(unsigned long a0, unsigned long a1);
 -- 
-tg: (db50eec..) t/ftrace/make_CALLER_ADDRx_overwriteable (depends on: tip/master)
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
