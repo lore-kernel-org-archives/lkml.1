@@ -1,45 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbZBYHOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbZBYHPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbZBYHOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 02:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZBYHOE
+	id S1759773AbZBYHPg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 02:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZBYHPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 02:14:04 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33998 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751736AbZBYHOB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 02:14:01 -0500
-Date: Wed, 25 Feb 2009 02:13:47 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [rfc] headers_check cleanups break the whole world
-Message-ID: <20090225071347.GH6690@bombadil.infradead.org>
-References: <20090225032553.GD6690@bombadil.infradead.org> <20090225065632.GB21903@elte.hu> <20090225070511.GG6690@bombadil.infradead.org> <49A4EE85.5000907@zytor.com>
+	Wed, 25 Feb 2009 02:15:24 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53217 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751540AbZBYHPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 02:15:23 -0500
+Message-ID: <49A4F06B.6030205@cn.fujitsu.com>
+Date: Wed, 25 Feb 2009 15:16:59 +0800
+From: Yang Hongyang <yanghy@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A4EE85.5000907@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-doc@vger.kernel.org, mtk.manpages@gmail.com, rdunlap@xenotime.net
+Subject: Documentation:Update the INDEX of the documents
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 11:08:53PM -0800, H. Peter Anvin wrote:
-> Because <linux/types.h> should work just fine once we get rid of the
-> __KERNEL_STRICT_NAMES idiocy?
-> 
-> FWIW, Arnd Bergmann has been working on exactly this cleanup.
-> 
+There are so many 00-INDEX file that are missing description of the current files in the dir.
+Such as 00-INDEX in Documentation/x86/,Documentation/networking/,Documentation/
+and so on.
 
-Ah good, I was about to cook a patch, then I realized there's probably
-quite a mess of userspace things depending on, say, sector_t and such.
+It's a large amount of work for someone to go through all these documents and 
+make summaries.
 
-This is a pretty ugly problem, all things considered. :/
+I'm willing to do some of the work but if someone else pick these up(especially the authors
+of these new files) it will be a great help.^_^
 
-regards, Kyle
+-- 
+Regards
+Yang Hongyang
