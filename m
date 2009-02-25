@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760333AbZBYWfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbZBYWgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760333AbZBYWfp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZBYWfe
+	id S1761904AbZBYWgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbZBYWf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:35:34 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:61410 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751334AbZBYWfe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:35:34 -0500
-X-Greylist: delayed 377 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Feb 2009 17:35:33 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KRoagR1OkZNATPGYMbR5MWxJoICy4FlfYz4xHerHUQpECv48LnNVIn7KDpvHD5LoH3
-         0PX+VpzRmn6opRAHRazk+pOy7cxWy7st3965Kx5o6McqCTBVDzUBHah60Zg+IJFCrut8
-         8D/BiOpvd3r5Vh+Ifan/eN/Tg8OxL9mfjEZ3o=
+	Wed, 25 Feb 2009 17:35:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56079 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756236AbZBYWf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 17:35:57 -0500
+Date: Wed, 25 Feb 2009 23:32:34 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Evans <scarybeasts@gmail.com>,
+       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
+       Eugene Teo <eugene@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] exit_notify: kill the wrong capable(CAP_KILL) check
+Message-ID: <20090225223234.GA16156@redhat.com>
+References: <20090225190218.GA7453@redhat.com> <20090225194140.D6F6EFC3DA@magilla.sf.frob.com> <20090225215356.GA1442@hallyn.com> <20090225220324.GA14667@redhat.com> <20090225221415.GA1751@hallyn.com>
 MIME-Version: 1.0
-In-Reply-To: <20090225.140136.74121676.davem@davemloft.net>
-References: <49A549EE.7020202@gmail.com> <20090225170901.GA26634@coraid.com>
-	 <20090225.140136.74121676.davem@davemloft.net>
-Date: Wed, 25 Feb 2009 23:29:13 +0100
-Message-ID: <25e057c00902251429x296a5bfcjfd3d90b7989017f1@mail.gmail.com>
-Subject: Re: [PATCH] aoe: error printed 1 too early
-From: roel kluin <roel.kluin@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225221415.GA1751@hallyn.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/25 David Miller <davem@davemloft.net>:
-> From: Ed Cashin <ecashin@coraid.com>
-> Date: Wed, 25 Feb 2009 12:09:02 -0500
+On 02/25, Serge E. Hallyn wrote:
 >
->> Sounds like a good catch.  Did you find it because you saw the "cannot
->> free skb" message?
+> Quoting Oleg Nesterov (oleg@redhat.com):
+> > On 02/25, Serge E. Hallyn wrote:
+> > >
+> > > Quoting Roland McGrath (roland@redhat.com):
+> > > > > I can't understand why exit_notify() checks capable(CAP_KILL), but this
+> > > > > looks just wrong.
+> > > >
+> > > > I don't know either why it's there.  My guess is that it was not actually
+> > > > thought out specifically, just a "unless capable" exception added when the
+> > > > security-motivated exclusions (exec_id stuff) were added.
+> > > >
+> > > > I can't think of any reason not to drop this check.
+> > >
+> > > Because of the following test?
+> > >
+> > > #include <stdio.h>
+> > > #include <sched.h>
+> > > #include <signal.h>
+> > > #include <stdlib.h>
+> > >
+> > > int childfn(void *data)
+> > > {
+> > > 	printf("hi there, i'm the child\n");
+> > > 	sleep(10);
+> > > 	exit(0);
+> > > }
+> > >
+> > > int main()
+> > > {
+> > > 	int stacksize = 4*getpagesize();
+> > > 	void *stack, *stacktop;
+> > >
+> > > 	stack = malloc(stacksize);
+> > > 	stacktop = stack + stacksize;
+> > >
+> > > 	int p = clone(childfn, stacktop, CLONE_PARENT|SIGSTOP, NULL);
+> > > 	exit(0);
+> > > }
+> >
+> > Can't understand... Why do you think CAP_KILL makes things better?
+> >
+> > Actually, how can it make any difference in this case?
 >
-> He's finding these by looking for them in the code, not by
-> actually triggering the condition.
->
+> Well the check by itself isn't quite right - it seems to me it
+> should also check whether tsk->euid == parent->uid.  But letting
+> an unprivileged task send SIGSTOP to a privileged one bc of
+> some fluke in the task hierarchy doesn't seem right.
 
-Actually I made all functions a single line and then run some
-bash scripts that parses pseudocode like:
+I think you misread this CAP_KILL check.
 
-echo "INFO: \7 reaches \9 - 1 after loop"
-bli "	
-	if \((${npz}[&|][&|])?
-		--($w) $em?[<=] ($K|$w|$d)
-		((&&|\|\|)$(nestedcode "()"))?\)
-	(\{
-		($(nestedcode "{}"))*
-		break ;
-	\}|
-		break ;
-	)
-	$ccode
-	(
-		$Q(\7 [=$em]= \9|\7 (>=|<) \9)
-	|
-		return \7 ;
-	)
-	"
+It does not restrict the unprivileged task to send the signal. Instead,
+if the exiting task has CAP_KILL, we bypass other security checks.
 
-This gives me a match like:
-  while(...) {
-    if (--i < 0)
-      break;
-    ...
-  }
-  ...
-  if (i != 0)
-    ...
-which is wrong since i reaches -1.
+Oleg.
+
