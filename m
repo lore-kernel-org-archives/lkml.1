@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbZBYJ6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbZBYJ66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbZBYJ6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758554AbZBYJ6b
+	id S1759508AbZBYJ66 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761453AbZBYJ6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:58:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50404 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757853AbZBYJ6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:58:30 -0500
-Date: Wed, 25 Feb 2009 10:58:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Subject: Re: [tip:tracing/hw-branch-tracing] tracing/hw-branch-tracing:
-	convert bts-tracer mutex to a spinlock
-Message-ID: <20090225095814.GC12352@elte.hu>
-References: <tip-2d542cf34264ac92e9e7ac55c0b096b066d569d2@kernel.org> <928CFBE8E7CB0040959E56B4EA41A77E4A4C1EF6@irsmsx504.ger.corp.intel.com>
+	Wed, 25 Feb 2009 04:58:34 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:52680 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759761AbZBYJ6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 04:58:32 -0500
+Date: Wed, 25 Feb 2009 15:28:09 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andy Green <andy@openmoko.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] mmc: During unsafe resume, select the right volatge for
+	the card
+Message-ID: <20090225095806.GB3217@fedora.yogi>
+References: <20090209132806.GD3278@fedora.yogi> <20090218212515.6bae1bf6@mjolnir.ossman.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A4C1EF6@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <20090218212515.6bae1bf6@mjolnir.ossman.eu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
-
-> > static void trace_bts_prepare(struct trace_iterator *iter)
-> > {
-> >-	mutex_lock(&bts_tracer_mutex);
-> >+	spin_lock(&bts_tracer_lock);
-> >
-> > 	on_each_cpu(trace_bts_cpu, iter->tr, 1);
-> >
-> >-	mutex_unlock(&bts_tracer_mutex);
-> >+	spin_unlock(&bts_tracer_lock);
-> > }
+On Wed, Feb 18, 2009 at 09:25:15PM +0100, Pierre Ossman wrote:
+> On Mon, 9 Feb 2009 18:58:08 +0530
+> Balaji Rao <balajirrao@openmoko.org> wrote:
 > 
-> Whereas start/stop are relatively fast, the above operation is 
-> rather expensive. Would it make sense to use 
-> schedule_on_each_cpu() instead of on_each_cpu()?
+> > When mmc_power_up is called during unsafe resume, host->ocr should be
+> > used instead of host->ocr_avail.
+> > 
+> > Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+> > Cc: Andy Green <andy@openmoko.com>
+> > Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
+> > ---
+> 
+> Hmm... This is a bit hackish and changes the previously known behaviour
+> of mmc_power_up(). We probably need to refactor things and have some
+> other explicit call from the resume path.
+> 
 
-it's perfectly fine to do that on_each_cpu() under the spinlock. 
-schedule_on_each_cpu() would likely be more expensive - and for 
-no good reason.
+Hi Pierre,
 
-	Ingo
+Here's a simpler patch. How does this look ? 
+
+Thanks,
+Balaji
+
+---
+During mmc unsafe resume, choose the right voltage for the card after
+powerup.
+
+Although this has not seen to cause trouble, it's the wrong behaviour.
+ 
+Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+Cc: Andy Green <andy@openmoko.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
+
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 3ad7f87..1e8de16 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -881,6 +881,7 @@ int mmc_resume_host(struct mmc_host *host)
+ 	mmc_bus_get(host);
+ 	if (host->bus_ops && !host->bus_dead) {
+ 		mmc_power_up(host);
++		mmc_select_voltage(host, host->ocr);
+ 		BUG_ON(!host->bus_ops->resume);
+ 		host->bus_ops->resume(host);
+ 	}
