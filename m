@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbZBYX4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZBYX5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760797AbZBYX4b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 18:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZBYX4W
+	id S1761541AbZBYX5l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 18:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZBYX5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 18:56:22 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:31176 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753502AbZBYX4V (ORCPT
+	Wed, 25 Feb 2009 18:57:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43657 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754119AbZBYX5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 18:56:21 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
-	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
-	<49A5D76A.3010301@zytor.com>
-Date: Wed, 25 Feb 2009 18:55:42 -0500
-In-Reply-To: <49A5D76A.3010301@zytor.com> (H. Peter Anvin's message of "Wed\, 25 Feb 2009 15\:42\:34 -0800")
-Message-ID: <yq11vtmhy0x.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49A5DA82.0082:SCFSTAT928724,ss=1,fgs=0
+	Wed, 25 Feb 2009 18:57:32 -0500
+Date: Wed, 25 Feb 2009 15:56:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
+       fweisbec@gmail.com, srostedt@redhat.com
+Subject: Re: [PATCH 1/4] uaccess: add copy_word_from_user
+Message-Id: <20090225155648.acb93cff.akpm@linux-foundation.org>
+In-Reply-To: <20090225203427.382137706@goodmis.org>
+References: <20090225203007.582030664@goodmis.org>
+	<20090225203427.382137706@goodmis.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
+btw,
 
->> Because of 63-sector legacy problems a bunch of ATA vendors will
->> initially ship 512/4096 drives that are not naturally aligned.
->> I.e. logical sector 63 will be aligned on a 4KB hardware sector
->> boundary to overcome the misaligned default partitioning.
->> 
+On Wed, 25 Feb 2009 15:30:08 -0500
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-hpa> I was under the impression Vista didn't do this?  Is there any way
-hpa> to force these drives into a sane mode (at the expense of a total
-hpa> data loss)?
+> +int copy_word_from_user(void *to, const void __user *from,
+> +			unsigned int copy, unsigned int read,
+> +			unsigned int *copied, int skip)
 
-Modern Windows aligns the first partition on a 1 MB boundary.
+You presently have this not-exported-to-modules.  Was that deliberate?
 
-As far as disks go, initially the plan was to have "legacy" branded
-drives with 63-sector alignment.  But I think that has been abandoned in
-favor of instant one-time formatting.  I.e. you can pick your poison
-*once* and that formatting will be done in constant time.  Any
-subsequent changes to blocking and alignment will require a real
-low-level format.
+There are arguments either way.  Lately we've tended to take the
+position that a whole interface either is or is not wholly exported. 
+The uaccess functions are exported, so this one should be as well.
 
-That's all fine and dandy if you go down and buy a drive a Fry's and
-you're the first to use it.  But we don't have that luxury on systems
-that come preinstalled with Windows.  In that case we have to deal with
-whatever the OEM decided during manufacturing.
+We can of course do that later on, when there's a user - I have no
+particular preference personally.
 
-IOW, we have to deal with all the possible configurations.
+<looks at probe_kernel_read and probe_kernel_write>
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+These are really part of the uaccess interface too.  I don't see a need
+for both lib/uaccess.c and mm/maccess.c?
+
+probe_kernel_read() and probe_kernel_write() are EXPORT_SYMBOL_GPL,
+whereas the rest of the uaccess interface is EXPORT_SYMBOL.  Ho hum.
+
