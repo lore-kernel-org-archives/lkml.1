@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZBYSel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbZBYShD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbZBYSel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 13:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbZBYSeb
+	id S1756816AbZBYShD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 13:37:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbZBYSgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 13:34:31 -0500
-Received: from www17.your-server.de ([213.133.104.17]:58933 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751632AbZBYSeb (ORCPT
+	Wed, 25 Feb 2009 13:36:52 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:45719 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754772AbZBYSgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 13:34:31 -0500
-Subject: Re: [Announce] 2.6.29-rc6-rt3
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
-	 <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
-	 <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
-	 <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
+	Wed, 25 Feb 2009 13:36:51 -0500
+Subject: Re: btrfs: warn_slowpath in clean_tree_block and others
+From: Chris Mason <chris.mason@oracle.com>
+To: Hugo Mills <hugo-lkml@carfax.org.uk>
+Cc: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090224230249.GA6859@vlad.carfax.org.uk>
+References: <20090224230249.GA6859@vlad.carfax.org.uk>
 Content-Type: text/plain
-Date: Wed, 25 Feb 2009 20:34:04 +0100
-Message-Id: <1235590444.3907.5.camel@localhost.localdomain>
+Date: Wed, 25 Feb 2009 13:36:26 -0500
+Message-Id: <1235586986.32346.48.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.49A58FAE.0141:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, den 24.02.2009, 18:57 +0100 schrieb Thomas Gleixner:
-> We are pleased to announce the next update to our new preempt-rt
-> series. It contains only one new patch:
->   
->   - fix the nf_conntrack bug, which was reported by various folks
+On Tue, 2009-02-24 at 23:02 +0000, Hugo Mills wrote:
+> This is essentially a repost of a mail I made last week, to which I
+> didn't get a reply.
 > 
-> Download locations:
->  
->     http://rt.et.redhat.com/download/
->     http://www.kernel.org/pub/linux/kernel/projects/rt/
->   
-> Information on the RT patch can be found at:
-> 
->     http://rt.wiki.kernel.org/index.php/Main_Page
-> 
-> to build the 2.6.29-rc6-rt3 tree, the following patches should be
-> applied:
-> 
->   http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc6.tar.bz2
->   http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc6-rt3.bz2
->   
-> The broken out patches are also available at the same download
-> locations.
-> 
-> Enjoy !
-> 
->       tglx
 
-Hi,
+Sorry I missed replying to this one last week, thanks for resending.
 
-Should suspend&resume to ram work with this patchset applied?
+>    I'm getting huge numbers of kernel warnings whilst using
+> btrfs. They're all "warn_slowpath", and all seem to be in
+> fs/btrfs/disk-io.c. I've included one typical example at the end of
+> this mail.
+> 
+>    Kernel versions are 2.6.29-rc2, -rc4 and -rc6.
+> 
 
-greets
-thomas
+The warnings look like i386, exactly what hardware is this?  Is your
+kernel compiled for SMP or UP?
+
+The warning you're getting is that clean_tree_block expects this block
+to be locked, and giving out a warning because it is showing up as
+unlocked.
+
+So, hopefully you're on a UP kernel and my test for a locked spinlock is
+broken in that config.
+
+-chris
 
 
