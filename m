@@ -1,200 +1,452 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZBYFwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbZBYGS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZBYFwA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 00:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZBYFvt
+	id S1755610AbZBYGS4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 01:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZBYGSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 00:51:49 -0500
-Received: from mga09.intel.com ([134.134.136.24]:23702 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751589AbZBYFvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 00:51:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,263,1233561600"; 
-   d="scan'208";a="389563059"
-Subject: Re: [RFC v1] hand off skb list to other cpu to submit to upper
-	layer
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, jesse.brandeburg@intel.com
-In-Reply-To: <20090224211859.0ee8c632@nehalam>
-References: <1235525270.2604.483.camel@ymzhang>
-	 <20090224181153.06aa1fbd@nehalam> <1235529343.2604.499.camel@ymzhang>
-	 <20090224211859.0ee8c632@nehalam>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 25 Feb 2009 13:51:26 +0800
-Message-Id: <1235541086.2604.524.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Wed, 25 Feb 2009 01:18:47 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:7815 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbZBYGSq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 01:18:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:cc:date:subject;
+        b=HN0YIatVvLgMQGtpMLElqQwyz5UOHyMkwQgwGdTAl7xXdsz03odDQEx1tYWb9Kjfup
+         O3G5xsy3fFeU8jE10ahx2ukmjZWbjiW8+FrO6kxL6xKua10djZK2naMwoTfO5XMA5965
+         itUryeQbGLVoEezkFojWeSeZnhOzeMq0KH5D4=
+Message-ID: <49a4e2c1.0508d00a.21e6.2eea@mx.google.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Date: Wed, 25 Feb 2009 03:22:28 +0100
+Subject: [PATCH 1/2] tracing/core: introduce per cpu tracing files
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-24 at 21:18 -0800, Stephen Hemminger wrote:
-> On Wed, 25 Feb 2009 10:35:43 +0800
-> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
-> 
-> > On Tue, 2009-02-24 at 18:11 -0800, Stephen Hemminger wrote:
-> > > On Wed, 25 Feb 2009 09:27:49 +0800
-> > > "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
-> > > 
-> > > > ﻿Subject: hand off skb list to other cpu to submit to upper layer
-> > > > From: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> > > > 
-> > > > Recently, I am investigating an ip_forward performance issue with 10G IXGBE NIC.
-> > > > I start the testing on 2 machines. Every machine has 2 10G NICs. The 1st one seconds
-> > > > packets by pktgen. The 2nd receives the packets from one NIC and forwards them out
-> > > > from the 2nd NIC. As NICs supports multi-queue, I bind the queues to different logical
-> > > > cpu of different physical cpu while considering cache sharing carefully.
-> > > > 
-> > > > Comparing with sending speed on the 1st machine, the forward speed is not good, only
-> > > > about 60% of sending speed. As a matter of fact, IXGBE driver starts NAPI when interrupt
-> > > > arrives. When ip_forward=1, receiver collects a packet and forwards it out immediately.
-> > > > So although IXGBE collects packets with NAPI, the forwarding really has much impact on
-> > > > collection. As IXGBE runs very fast, it drops packets quickly. The better way for
-> > > > receiving cpu is doing nothing than just collecting packets.
-> > > > 
-> > > > Currently kernel has backlog to support a similar capability, but process_backlog still
-> > > > runs on the receiving cpu. I enhance backlog by adding a new input_pkt_alien_queue to
-> > > > softnet_data. Receving cpu collects packets and link them into skb list, then delivers
-> > > > the list to the ﻿input_pkt_alien_queue of other cpu. process_backlog picks up the skb list
-> > > > from ﻿input_pkt_alien_queue when ﻿input_pkt_queue is empty.
-> > > > 
-> > > > NIC driver could use this capability like below step in NAPI RX cleanup function.
-> > > > 1) Initiate a local var struct sk_buff_head skb_head;
-> > > > 2) In the packet collection loop, just calls netif_rx_queue or __skb_queue_tail(skb_head, skb)
-> > > > to add skb to the list;
-> > > > 3) Before exiting, calls raise_netif_irq to submit the skb list to specific cpu.
-> > > > 
-> > > > Enlarge /proc/sys/net/core/netdev_max_backlog and netdev_budget before testing.
-> > > > 
-> > > > I tested my patch on top of 2.6.28.5. The improvement is about 43%.
-> > > > 
-> > > > Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> > > > 
-> > > You can't safely put packets on another CPU queue without adding a spinlock.
-> > ﻿input_pkt_alien_queue is a struct sk_buff_head which has a spinlock. We use
-> > that lock to protect the queue.
-> 
-> I was reading netif_rx_queue() and you have it using __skb_queue_tail() which
-> has no locking. 
-Sorry, I need add some comments to function netif_rx_queue.
+Impact: split up tracing output per cpu
 
-Parameter skb_queue is point to a local var, or NULL. If it points to a local var,
-just like ﻿function ixgbe_clean_rx_irq of IXGBE, so we needn't protect it when
-﻿using __skb_queue_tail to add new skb. If ﻿skb_queue is point to NULL, below
+Currently, on the tracing debugfs directory, three files are available to the user
+to let him extracting the trace output:
 
-skb_queue = &queue->input_pkt_queue;
+- trace is an iterator through the ring-buffer. It's a reader but not a consumer
+  It doesn't block when no more traces are available.
+- trace pretty similar to the former, except that it adds more informations such as
+  prempt count, irq flag, ...
+- trace_pipe is a reader and a consumer, it will also block waiting for traces if necessary (heh,
+  yes it's a pipe).
 
-make it points to the local input_pkt_queue which is protected by local_irq_save.
+The traces coming from different cpus are curretly mixed up inside these files. Sometimes it
+messes up the informations, sometimes it's useful, depending on what does the tracer capture.
 
-> > > And if you add the spinlock, you drop the performance back down for your
-> > > device and all the other devices.
-> > My testing shows 43% improvement. As multi-core machines are becoming
-> > popular, we can allocate some core for packet collection only.
-> > 
-> > I use the spinlock carefully. The deliver cpu locks it only when ﻿input_pkt_queue
-> > is empty, and just merges the list to ﻿input_pkt_queue. Later skb dequeue needn't
-> > hold the spinlock. In the other hand, the original receving cpu dispatches a batch
-> > of skb (64 packets with IXGBE default) when holding the lock once.
-> > 
-> > >  Also, you will end up reordering
-> > > packets which hurts single stream TCP performance.
-> > Would you like to elaborate the scenario? Does your speaking mean multi-queue
-> > also hurts ﻿single stream TCP performance when we bind multi-queue(interrupt) to
-> > different cpu?
-> > 
-> > > 
-> > > Is this all because the hardware doesn't do MSI-X
-> > IXGBE supports MSI-X and I enables it when testing. ﻿ The receiver has 16 multi-queue,
-> > so 16 irq numbers. I bind 2 irq numbers per logical cpu of one physical cpu.
-> > 
-> > >  or are you testing only
-> > > a single flow. 
-> > What does a single flow mean here? One sender? I do start one sender for testing because
-> > I couldn't get enough hardware.
-> 
-> Multiple receive queues only have an performance gain if the packets are being
-> sent with different SRC/DST address pairs. That is how the hardware is supposed
-> to break them into queues.
-Thanks for your explanation.
+The tracing_cpumask file is useful to filter the output and select only the traces captured a custom
+defined set of cpus. But still it is not enough powerful to extract at the same time one trace buffer
+per cpu.
 
-> 
-> Reordering is what happens when packts that are sent as [ 0, 1, 2, 3, 4 ]
-> get received as [ 0, 1, 4, 3, 2 ] because your receive processing happened on different
-> CPU's. You really need to test this with some program like 'iperf' to see the effect
-> it has on TCP. Older Juniper routers used to have hardware that did this and it
-> caused it caused performance loss. Do some google searches and you will see
-> it is a active research topic about whether reordering is okay or not. Existing
-> multiqueue is safe because it doesn't reorder inside a single flow; it only
-> changes order between flows:  [ A1, A2, B1, B2] => [ A1, B1, A2, B2 ]
-Thanks. Your explanation is very clear. My patch might cause reorder, but very rarely,
-because reorder only happens when there is a failover in function raise_netif_irq. perhaps
-I need replace the failover with just packet dropping?
+So this patch creates a new directory inside /debug/tracing (provided you have a debugfs mountpoint on /debug).
+Inside this directory, you will now find one trace_pipe file, one trace file and one latency_trace file
+per cpu.
+Which means if you have two cpus, you will have:
 
-I will try iperf.
+latency_trace0
+latency_trace1
+trace0
+trace1
+trace_pipe0
+trace_pipe1
 
-> 
-> Isn't this a problem:
-> > +int netif_rx_queue(struct sk_buff *skb, struct sk_buff_head *skb_queue)
-> >  {
-> >  	struct softnet_data *queue;
-> >  	unsigned long flags;
-> > +	int this_cpu;
-> >  
-> >  	/* if netpoll wants it, pretend we never saw it */
-> >  	if (netpoll_rx(skb))
-> > @@ -1943,24 +1946,31 @@ int netif_rx(struct sk_buff *skb)
-> >  	if (!skb->tstamp.tv64)
-> >  		net_timestamp(skb);
-> >  
-> > +	if (skb_queue)
-> > +		this_cpu = 0;
-> > +	else
-> > +		this_cpu = 1;
-> 
-> Why bother with a special boolean? and instead just test for skb_queue != NULL
-Var this_cpu is used for ﻿napi_schedule late. Although the logical has no problem,
-this_cpu seems confused. Let me check if there is a better way for late napi_schedule.
+And of course, reading these files will have the same effect than with the usual tracing files, except that
+you will only see the traces from the given cpu.
+The original all-in-one cpu trace file are still available on their original place.
 
-> 
-> > +
-> >  	/*
-> >  	 * The code is rearranged so that the path is the most
-> >  	 * short when CPU is congested, but is still operating.
-> >  	 */
-> >  	local_irq_save(flags);
-> > +
-> >  	queue = &__get_cpu_var(softnet_data);
-> > +	if (!skb_queue)
-> > +		skb_queue = &queue->input_pkt_queue;
-﻿When ﻿skb_queue is NULL, we redirect it to ﻿queue->input_pkt_queue.
+Until now, only one consumer was allowed on trace_pipe to avoid racy consuming on the ring-buffer.
+Now the approach changed a bit, you can have only one consumer per cpu.
+Which means you are allowed to read concurrently trace_pipe0 and trace_pipe1
+But you can't have two readers on trace_pipe0 or trace_pipe1.
 
-> 
-> >  
-> >  	__get_cpu_var(netdev_rx_stat).total++;
-> > -	if (queue->input_pkt_queue.qlen <= netdev_max_backlog) {
-> > -		if (queue->input_pkt_queue.qlen) {
-> > -enqueue:
-> > -			__skb_queue_tail(&queue->input_pkt_queue, skb);
-> > -			local_irq_restore(flags);
-> > -			return NET_RX_SUCCESS;
-> > +
-> > +	if (skb_queue->qlen <= netdev_max_backlog) {
-> > +		if (!skb_queue->qlen && this_cpu) {
-> > +			napi_schedule(&queue->backlog);
-> >  		}
-> 
-> Won't this break if skb_queue is NULL (non NAPI case)?
-So skb_queue isn't NULL here.
+Following the same logic, if there is one reader on the common trace_pipe, you can not have at the same time
+another reader on trace_pipe0 or in trace_pipe1. Because in trace_pipe is already a consumer in all cpu buffers
+in essence.
 
-Another idea is just to delete function ﻿netif_rx_queue. Drivers could use
-﻿__skb_queue_tail directly. The difference ﻿netif_rx_queue has a queue length
-checking while ﻿﻿__skb_queue_tail hasn't. But mostly ﻿skb_queue is far smaller than
-﻿queue->input_pkt_queue.qlen and ﻿queue->input_pkt_alien_queue.qlen.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/trace.c |  178 +++++++++++++++++++++++++++++++++++++++++++-------
+ kernel/trace/trace.h |    3 +
+ 2 files changed, 156 insertions(+), 25 deletions(-)
 
-Yanmin
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 10173a0..48cb5f4 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -98,6 +98,9 @@ static inline void ftrace_enable_cpu(void)
+ 
+ static cpumask_var_t __read_mostly	tracing_buffer_mask;
+ 
++/* Define which cpu buffers are currently read in trace_pipe */
++static cpumask_var_t			tracing_reader_cpumask;
++
+ #define for_each_tracing_cpu(cpu)	\
+ 	for_each_cpu(cpu, tracing_buffer_mask)
+ 
+@@ -1195,10 +1198,24 @@ __find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts)
+ {
+ 	struct ring_buffer *buffer = iter->tr->buffer;
+ 	struct trace_entry *ent, *next = NULL;
++	int cpu_file = iter->cpu_file;
+ 	u64 next_ts = 0, ts;
+ 	int next_cpu = -1;
+ 	int cpu;
+ 
++	/*
++	 * If we are in a per_cpu trace file, don't bother by iterating over
++	 * all cpu and peek directly.
++	 */
++	if (cpu_file > TRACE_PIPE_ALL_CPU) {
++		if (ring_buffer_empty_cpu(buffer, cpu_file))
++			return NULL;
++		ent = peek_next_entry(iter, cpu_file, ent_ts);
++		if (ent_cpu)
++			*ent_cpu = cpu_file;
++
++		return ent;
++	}
++
+ 	for_each_tracing_cpu(cpu) {
+ 
+ 		if (ring_buffer_empty_cpu(buffer, cpu))
+@@ -1279,6 +1296,7 @@ static void *s_next(struct seq_file *m, void *v, loff_t *pos)
+ static void *s_start(struct seq_file *m, loff_t *pos)
+ {
+ 	struct trace_iterator *iter = m->private;
++	int cpu_file = iter->cpu_file;
+ 	void *p = NULL;
+ 	loff_t l = 0;
+ 	int cpu;
+@@ -1299,9 +1317,12 @@ static void *s_start(struct seq_file *m, loff_t *pos)
+ 
+ 		ftrace_disable_cpu();
+ 
+-		for_each_tracing_cpu(cpu) {
+-			ring_buffer_iter_reset(iter->buffer_iter[cpu]);
+-		}
++		if (cpu_file == TRACE_PIPE_ALL_CPU) {
++			for_each_tracing_cpu(cpu)
++				ring_buffer_iter_reset(iter->buffer_iter[cpu]);
++		} else
++			ring_buffer_iter_reset(iter->buffer_iter[cpu_file]);
++
+ 
+ 		ftrace_enable_cpu();
+ 
+@@ -1653,6 +1674,7 @@ static struct seq_operations tracer_seq_ops = {
+ static struct trace_iterator *
+ __tracing_open(struct inode *inode, struct file *file, int *ret)
+ {
++	long cpu_file = (long) inode->i_private;
+ 	struct trace_iterator *iter;
+ 	struct seq_file *m;
+ 	int cpu;
+@@ -1672,9 +1694,10 @@ __tracing_open(struct inode *inode, struct file *file, int *ret)
+ 	if (current_trace && current_trace->print_max)
+ 		iter->tr = &max_tr;
+ 	else
+-		iter->tr = inode->i_private;
++		iter->tr = &global_trace;
+ 	iter->trace = current_trace;
+ 	iter->pos = -1;
++	iter->cpu_file = cpu_file;
+ 
+ 	/* Notify the tracer early; before we stop tracing. */
+ 	if (iter->trace && iter->trace->open)
+@@ -1684,14 +1707,22 @@ __tracing_open(struct inode *inode, struct file *file, int *ret)
+ 	if (ring_buffer_overruns(iter->tr->buffer))
+ 		iter->iter_flags |= TRACE_FILE_ANNOTATE;
+ 
++	if (iter->cpu_file == TRACE_PIPE_ALL_CPU) {
++		for_each_tracing_cpu(cpu) {
+ 
+-	for_each_tracing_cpu(cpu) {
++			iter->buffer_iter[cpu] =
++				ring_buffer_read_start(iter->tr->buffer, cpu);
+ 
++			if (!iter->buffer_iter[cpu])
++				goto fail_buffer;
++		}
++	} else {
++		cpu = iter->cpu_file;
+ 		iter->buffer_iter[cpu] =
+-			ring_buffer_read_start(iter->tr->buffer, cpu);
++				ring_buffer_read_start(iter->tr->buffer, cpu);
+ 
+ 		if (!iter->buffer_iter[cpu])
+-			goto fail_buffer;
++			goto fail;
+ 	}
+ 
+ 	/* TODO stop tracer */
+@@ -1715,6 +1746,7 @@ __tracing_open(struct inode *inode, struct file *file, int *ret)
+ 		if (iter->buffer_iter[cpu])
+ 			ring_buffer_read_finish(iter->buffer_iter[cpu]);
+ 	}
++fail:
+ 	mutex_unlock(&trace_types_lock);
+ 	kfree(iter);
+ 
+@@ -2325,54 +2357,77 @@ tracing_max_lat_write(struct file *filp, const char __user *ubuf,
+ 	return cnt;
+ }
+ 
+-static atomic_t tracing_reader;
+-
+ static int tracing_open_pipe(struct inode *inode, struct file *filp)
+ {
++	long cpu_file = (long) inode->i_private;
+ 	struct trace_iterator *iter;
++	int ret = 0;
+ 
+ 	if (tracing_disabled)
+ 		return -ENODEV;
+ 
+-	/* We only allow for reader of the pipe */
+-	if (atomic_inc_return(&tracing_reader) != 1) {
+-		atomic_dec(&tracing_reader);
+-		return -EBUSY;
++	mutex_lock(&trace_types_lock);
++
++	/* We only allow one reader per cpu */
++	if (cpu_file == TRACE_PIPE_ALL_CPU) {
++		if (!cpumask_empty(tracing_reader_cpumask)) {
++			ret = -EBUSY;
++			goto out;
++		}
++		cpumask_setall(tracing_reader_cpumask);
++	} else {
++		if (!cpumask_test_cpu(cpu_file, tracing_reader_cpumask))
++			cpumask_set_cpu(cpu_file, tracing_reader_cpumask);
++		else {
++			ret = -EBUSY;
++			goto out;
++		}
+ 	}
+ 
+ 	/* create a buffer to store the information to pass to userspace */
+ 	iter = kzalloc(sizeof(*iter), GFP_KERNEL);
+-	if (!iter)
+-		return -ENOMEM;
++	if (!iter) {
++		ret = -ENOMEM;
++		goto out;
++	}
+ 
+ 	if (!alloc_cpumask_var(&iter->started, GFP_KERNEL)) {
+ 		kfree(iter);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto out;
+ 	}
+ 
+-	mutex_lock(&trace_types_lock);
+-
+ 	/* trace pipe does not show start of buffer */
+ 	cpumask_setall(iter->started);
+ 
++	iter->cpu_file = cpu_file;
+ 	iter->tr = &global_trace;
+ 	iter->trace = current_trace;
+ 	filp->private_data = iter;
+ 
+ 	if (iter->trace->pipe_open)
+ 		iter->trace->pipe_open(iter);
+-	mutex_unlock(&trace_types_lock);
+ 
+-	return 0;
++out:
++	mutex_unlock(&trace_types_lock);
++	return ret;
+ }
+ 
+ static int tracing_release_pipe(struct inode *inode, struct file *file)
+ {
+ 	struct trace_iterator *iter = file->private_data;
+ 
++	mutex_lock(&trace_types_lock);
++
++	if (iter->cpu_file == TRACE_PIPE_ALL_CPU)
++		cpumask_clear(tracing_reader_cpumask);
++	else
++		cpumask_clear_cpu(iter->cpu_file, tracing_reader_cpumask);
++
++	mutex_unlock(&trace_types_lock);
++
+ 	free_cpumask_var(iter->started);
+ 	kfree(iter);
+-	atomic_dec(&tracing_reader);
+ 
+ 	return 0;
+ }
+@@ -2911,6 +2966,68 @@ struct dentry *tracing_init_dentry(void)
+ 	return d_tracer;
+ }
+ 
++static struct dentry *d_percpu;
++
++struct dentry *tracing_dentry_percpu(void)
++{
++	static int once;
++	struct dentry *d_tracer;
++
++	if (d_percpu)
++		return d_percpu;
++
++	d_tracer = tracing_init_dentry();
++
++	if (!d_tracer)
++		return NULL;
++
++	d_percpu = debugfs_create_dir("per_cpu", d_tracer);
++
++	if (!d_percpu && !once) {
++		once = 1;
++		pr_warning("Could not create debugfs directory 'per_cpu'\n");
++		return NULL;
++	}
++
++	return d_percpu;
++}
++
++static void tracing_init_debugfs_percpu(long cpu)
++{
++	struct dentry *d_percpu = tracing_dentry_percpu();
++	struct dentry *entry;
++	/* strlen(latency_trace) + MAX(log10(cpu)) + '\0' */
++	char filename[17];
++
++	if (cpu > 999 || cpu < 0)
++		return;
++
++	/* per cpu trace_pipe */
++	sprintf(filename, "trace_pipe%ld", cpu);
++
++	entry = debugfs_create_file(filename, 0444, d_percpu,
++				(void *) cpu, &tracing_pipe_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs '%s' entry\n", filename);
++
++	/* per cpu trace */
++	sprintf(filename, "trace%ld", cpu);
++
++	entry = debugfs_create_file(filename, 0444, d_percpu,
++				(void *) cpu, &tracing_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs '%s' entry\n", filename);
++
++
++	/* per cpu latency_trace */
++	sprintf(filename, "latency_trace%ld", cpu);
++
++	entry = debugfs_create_file(filename, 0444, d_percpu,
++				(void *) cpu, &tracing_lt_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs '%s' entry\n", filename);
++}
++
+ #ifdef CONFIG_FTRACE_SELFTEST
+ /* Let selftest have access to static functions in this file */
+ #include "trace_selftest.c"
+@@ -2920,6 +3037,7 @@ static __init int tracer_init_debugfs(void)
+ {
+ 	struct dentry *d_tracer;
+ 	struct dentry *entry;
++	int cpu;
+ 
+ 	d_tracer = tracing_init_dentry();
+ 
+@@ -2939,12 +3057,12 @@ static __init int tracer_init_debugfs(void)
+ 		pr_warning("Could not create debugfs 'tracing_cpumask' entry\n");
+ 
+ 	entry = debugfs_create_file("latency_trace", 0444, d_tracer,
+-				    &global_trace, &tracing_lt_fops);
++				(void *) TRACE_PIPE_ALL_CPU, &tracing_lt_fops);
+ 	if (!entry)
+ 		pr_warning("Could not create debugfs 'latency_trace' entry\n");
+ 
+ 	entry = debugfs_create_file("trace", 0444, d_tracer,
+-				    &global_trace, &tracing_fops);
++				 (void *) TRACE_PIPE_ALL_CPU, &tracing_fops);
+ 	if (!entry)
+ 		pr_warning("Could not create debugfs 'trace' entry\n");
+ 
+@@ -2975,8 +3093,8 @@ static __init int tracer_init_debugfs(void)
+ 	if (!entry)
+ 		pr_warning("Could not create debugfs 'README' entry\n");
+ 
+-	entry = debugfs_create_file("trace_pipe", 0644, d_tracer,
+-				    NULL, &tracing_pipe_fops);
++	entry = debugfs_create_file("trace_pipe", 0444, d_tracer,
++			(void *) TRACE_PIPE_ALL_CPU, &tracing_pipe_fops);
+ 	if (!entry)
+ 		pr_warning("Could not create debugfs "
+ 			   "'trace_pipe' entry\n");
+@@ -3004,6 +3122,10 @@ static __init int tracer_init_debugfs(void)
+ #ifdef CONFIG_SYSPROF_TRACER
+ 	init_tracer_sysprof_debugfs(d_tracer);
+ #endif
++
++	for_each_tracing_cpu(cpu)
++		tracing_init_debugfs_percpu(cpu);
++
+ 	return 0;
+ }
+ 
+@@ -3299,8 +3421,12 @@ __init static int tracer_alloc_buffers(void)
+ 	if (!alloc_cpumask_var(&tracing_cpumask, GFP_KERNEL))
+ 		goto out_free_buffer_mask;
+ 
++	if (!alloc_cpumask_var(&tracing_reader_cpumask, GFP_KERNEL))
++		goto out_free_tracing_cpumask;
++
+ 	cpumask_copy(tracing_buffer_mask, cpu_possible_mask);
+ 	cpumask_copy(tracing_cpumask, cpu_all_mask);
++	cpumask_clear(tracing_reader_cpumask);
+ 
+ 	/* TODO: make the number of buffers hot pluggable with CPUS */
+ 	global_trace.buffer = ring_buffer_alloc(trace_buf_size,
+@@ -3349,6 +3475,8 @@ __init static int tracer_alloc_buffers(void)
+ 	ret = 0;
+ 
+ out_free_cpumask:
++	free_cpumask_var(tracing_reader_cpumask);
++out_free_tracing_cpumask:
+ 	free_cpumask_var(tracing_cpumask);
+ out_free_buffer_mask:
+ 	free_cpumask_var(tracing_buffer_mask);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 45a2a1b..0a38bdf 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -407,6 +407,8 @@ struct trace_seq {
+ 	unsigned int		readpos;
+ };
+ 
++#define TRACE_PIPE_ALL_CPU	-1
++
+ /*
+  * Trace iterator - used by printout routines who present trace
+  * results to users and which routines might sleep, etc:
+@@ -416,6 +418,7 @@ struct trace_iterator {
+ 	struct tracer		*trace;
+ 	void			*private;
+ 	struct ring_buffer_iter	*buffer_iter[NR_CPUS];
++	int			cpu_file;
+ 
+ 	/* The below is zeroed out in pipe_read */
+ 	struct trace_seq	seq;
+-- 
+1.6.1
 
 
