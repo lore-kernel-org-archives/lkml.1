@@ -1,36 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbZBYQ7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbZBYQ72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758295AbZBYQ7M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 11:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZBYQ65
+	id S1761350AbZBYQ72 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 11:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbZBYQ7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 11:58:57 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37431 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752011AbZBYQ64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 11:58:56 -0500
-Date: Wed, 25 Feb 2009 11:57:47 -0500
-From: Jason Baron <jbaron@redhat.com>
+	Wed, 25 Feb 2009 11:59:01 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:40479 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754458AbZBYQ7A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 11:59:00 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAKcDpUlMQWWY/2dsb2JhbACBb9d1hBEG
+Date: Wed, 25 Feb 2009 11:58:49 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 To: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <peterz@infradead.org>,
+       Jason Baron <jbaron@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
        rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net, fweisbec@gmail.com, compudj@krystal.dyndns.org
+       acme@ghostprotocols.net, fweisbec@gmail.com
 Subject: Re: [PATCH] new irq tracer
-Message-ID: <20090225165747.GC3123@redhat.com>
+Message-ID: <20090225165849.GA13463@Krystal>
 References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com> <20090222123543.359C.A69D9226@jp.fujitsu.com> <49A5765C.2020001@redhat.com>
-MIME-Version: 1.0
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 In-Reply-To: <49A5765C.2020001@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:55:29 up 4 days,  8:29,  4 users,  load average: 0.16, 0.24,
+	0.31
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 11:48:28AM -0500, Masami Hiramatsu wrote:
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> 
+> 
 > KOSAKI Motohiro wrote:
 > >>  /**
 > >>   * handle_IRQ_event - irq action chain handler
@@ -60,12 +70,31 @@ On Wed, Feb 25, 2009 at 11:48:28AM -0500, Masami Hiramatsu wrote:
 >                         ^^^^
 > 
 
-the lttng tracepoints wrap the calls to _handle_IRQ_event in 3
-different places. So the above suggested irq tracepoint provides the
-same information with 4 less tracepoints in the code. So I believe its
-simpler - plus we can understand which action handlers are handling the
-interrupt.
+I seriously doubt we should consider a trace with missing events as
+"reliable". If your only argument is that when the buffers are not large
+enough we could lose events, then I think we should just hint people at
+doing the right thing, which is to tweak the tracer parameters (e.g.
+larger buffers) so they stop losing events.
 
-thanks,
+A trace with events lost is really a scenario close to a corrupted
+trace because we don't know which event has been lost, nor where. I
+don't think we should increase the event size to support that kind of
+broken scenario.
 
--Jason
+Mathieu
+
+> Thank you,
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
