@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763306AbZBYXTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763555AbZBYXU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763306AbZBYXTV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 18:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756653AbZBYXTF
+	id S1763555AbZBYXU3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 18:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756532AbZBYXUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 18:19:05 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:51767 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810AbZBYXTC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 18:19:02 -0500
-From: Mark Nelson <markn@au1.ibm.com>
-Organization: IBM
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-Date: Thu, 26 Feb 2009 10:20:34 +1100
-User-Agent: KMail/1.9.9
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Jan Kara <jack@ucw.cz>, Jan Kara <jack@suse.cz>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-References: <49A2705D.9030008@in.ibm.com> <alpine.LRH.2.00.0902251430410.4063@vixen.sonytel.be> <200902260945.41990.markn@au1.ibm.com>
-In-Reply-To: <200902260945.41990.markn@au1.ibm.com>
+	Wed, 25 Feb 2009 18:20:21 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53325 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759482AbZBYXUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 18:20:20 -0500
+Date: Thu, 26 Feb 2009 00:16:45 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Evans <scarybeasts@gmail.com>,
+       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
+       Eugene Teo <eugene@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] exit_notify: kill the wrong capable(CAP_KILL) check
+Message-ID: <20090225231645.GA17868@redhat.com>
+References: <20090225190218.GA7453@redhat.com> <20090225194140.D6F6EFC3DA@magilla.sf.frob.com> <20090225215356.GA1442@hallyn.com> <20090225220324.GA14667@redhat.com> <20090225221415.GA1751@hallyn.com> <20090225223234.GA16156@redhat.com> <20090225224751.GA2062@hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902261020.34325.markn@au1.ibm.com>
+In-Reply-To: <20090225224751.GA2062@hallyn.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009 09:45:41 am Mark Nelson wrote:
-> On Thu, 26 Feb 2009 12:31:20 am Geert Uytterhoeven wrote:
-> > On Wed, 25 Feb 2009, Mark Nelson wrote:
-> > > On Wed, 25 Feb 2009 08:50:46 pm Geert Uytterhoeven wrote:
-> > > > On Wed, 25 Feb 2009, Mark Nelson wrote:
-> > > > > On Tue, 24 Feb 2009 05:38:37 pm Sachin P. Sant wrote:
-> > > > > > Jan Kara wrote:
-> > > > > > >   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
-> > > > > > > somehow got beyond end of the page referenced by bh->b_data. So it means
-> > > > > > > that le16_to_cpu(entry->e_value_offs) + size > page_size. But
-> > > > > > > ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
-> > > > > > > particular checks whether e_value_offs + e_value_size isn't greater than
-> > > > > > > bh->b_size. So I see no way how memcpy can get beyond end of the page.
-> > > > > > >   Sachin, is the problem reproducible? If yes, can you send us contents
-> > > > > > >   
-> > > > > > Yes, i am able to recreate this problem easily. As i had mentioned if the
-> > > > > > earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
-> > > > > > i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
-> > > > > > without any problem.
-> > > > > 
-> > > > > Hi Sanchin and Geert,
-> > > > > 
-> > > > > Does the patch below fix the problems you're seeing? If it does I'll send
-> > > > > a properly written up and formatted patch to linuxppc-dev (as well as
-> > > > > another one to fix the same problem in copy_tofrom_user()).
-> > > > 
-> > > > Unfortunately not, now it crashes while accessing the memory pointed to by
-> > > > GPR16, in
-> > > > 
-> > > > NIP: copy_page_range+x0608/0x628
-> > > > LR:  dup_mm+0x2e4/0x428
-> > > > Trace: debug_table+0xcc70/0x1afe0 (unreliable)
-> > > > dup_mm+0x2e4/0x428
-> > > > copy_process+0x86c/0xf9c
-> > > > do_fork+0x188/0x39c
-> > > > sys_clone+0x58/0x70
-> > > > ppc_clone+0x8/0xc
-> > > > 
-> > > > However, after reverting 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556, I still see
-> > > > similar problems as above (crash in copy_page_range()).
-> > > > Which makes me think that
-> > > >   1. Your new patch fixes the problem introduced by 25d6e2d7,
-> > > >   2. There's still another issue than the one introduced by 25d6e2d7.
-> > > 
-> > > Does the following patch fix the errors you're seeing? (it applies the
-> > > same fix as the previous patch but this time to copy_tofrom_user, which
-> > > I updated in a4e22f02f5b6518c1484faea1f88d81802b9feac)
-> > 
-> > Thanks, but I still get crashes in copy_page_range().
-> > 
-> 
-> Hmmm... I'm out of ideas for the moment, but thanks for testing anyway!
-> 
-> Mark
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+On 02/25, Serge E. Hallyn wrote:
+>
+> Quoting Oleg Nesterov (oleg@redhat.com):
+> > On 02/25, Serge E. Hallyn wrote:
+> > >
+> > > Quoting Oleg Nesterov (oleg@redhat.com):
+> > > > On 02/25, Serge E. Hallyn wrote:
+> > > > Can't understand... Why do you think CAP_KILL makes things better?
+> > > >
+> > > > Actually, how can it make any difference in this case?
+> > >
+> > > Well the check by itself isn't quite right - it seems to me it
+> > > should also check whether tsk->euid == parent->uid.  But letting
+> > > an unprivileged task send SIGSTOP to a privileged one bc of
+> > > some fluke in the task hierarchy doesn't seem right.
+> >
+> > I think you misread this CAP_KILL check.
+> >
+> > It does not restrict the unprivileged task to send the signal. Instead,
+> > if the exiting task has CAP_KILL, we bypass other security checks.
+>
+> ?  If the exiting task does not have CAP_KILL,
 
-If you revert both 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556 and
-a4e22f02f5b6518c1484faea1f88d81802b9feac, does it help? You could also
-try to revert 57dda6ef5bd5b9e60410477ad29e654097e2cca1 just in case I
-need to keep wearing the brown paper bag for a bit longer :)
+_and_ (not "or") the execution domains for parent/chils are different,
 
-Thanks!
+> we set the signal to
+> SIGCHILD (which is deemed safe).
 
-Mark
+Yes. So why we should not set the signal to SIGCHLD if the task has
+CAP_KILL ?
+
+And again, the malicious application can exec the setuid binary before
+exit, in this case we never reset ->exit_signal (of course, unless
+that binary drops CAP_KILL).
+
+Oleg.
+
