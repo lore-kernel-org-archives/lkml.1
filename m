@@ -1,107 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761576AbZBYJgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbZBYJhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761576AbZBYJgp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZBYJgd
+	id S1759529AbZBYJhv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:37:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbZBYJhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:36:33 -0500
-Received: from caiajhbdcbef.dreamhost.com ([208.97.132.145]:59095 "EHLO
-	spunkymail-a10.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752336AbZBYJgc (ORCPT
+	Wed, 25 Feb 2009 04:37:43 -0500
+Received: from smtp06.msg.oleane.net ([62.161.4.6]:51846 "EHLO
+	smtp06.msg.oleane.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753549AbZBYJhm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:36:32 -0500
-Message-ID: <49A5110B.2050803@hiramoto.org>
-Date: Wed, 25 Feb 2009 10:36:11 +0100
-From: Karl Hiramoto <karl@hiramoto.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
+	Wed, 25 Feb 2009 04:37:42 -0500
+X-Oleane-Rep: REPA
+From: "Thomas Jourdan" <tjourdan@interfaceconcept.com>
+To: "'H. Peter Anvin'" <hpa@zytor.com>,
+       "'Thomas Jourdan'" <tjourdan@interfaceconcept.com>
+Cc: <linux-kernel@vger.kernel.org>, "'Huang Ying'" <ying.huang@intel.com>,
+       "'Peter Jones'" <pjones@redhat.com>,
+       "'Yinghai Lu'" <yinghai@kernel.org>
+Subject: RE: [BUG] dmi_scan_machine uses uninitialized address on x86 / EFI
+Date: Wed, 25 Feb 2009 13:28:04 +0100
+Message-ID: <ADD10563C03642F7BEE3C19170ADC11E@thje6600v>
 MIME-Version: 1.0
-To: Christian Hohnstaedt <chohnstaedt@innominate.com>
-Cc: linux-crypto@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: ixp4xx_crypto panic with fragmented packets in scatterlist
-References: <49A2E421.5050806@hiramoto.org> <49A3F3FA.1000801@hiramoto.org> <20090225090735.GA6283@elara.bln.innominate.local>
-In-Reply-To: <20090225090735.GA6283@elara.bln.innominate.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook CWS, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+In-Reply-To: <49A462BD.7010205@zytor.com>
+Importance: Normal
+X-Spam-Flag: NO
+X-PMX-Spam: Probability=15%
+X-PFSI-Info: PMX 5.5.2.365749, Antispam-Engine: 2.6.1.350677, Antispam-Data: 2009.2.25.91936 (no antivirus check)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Hohnstaedt wrote:
-> On Tue, Feb 24, 2009 at 02:19:54PM +0100, Karl Hiramoto wrote:
->   
->> The latest thing i found is  kernel BUG at lib/scatterlist.c:26!
->>
->> ping -s 1800  host in a IPSec tunnel.  Setup is   802.1Q VLAN  --> 
->> ixp4xx_eth  --> IPSec Tunnel
->>
->> trace with   some   debug printk's  i added.    printk("%s:%d  
->> values",__func__, __LINE__);
->>
->>
->> [42949542.170000] esp_output:142 skb->len=1828 data_len=328 clen=1832 alen=0 blksize=8  skb=c7a5cb40 data=c79ba054
->> [42949542.180000] esp_output:168 skb=c7a5cb40 data=c79ba054 clone=0
->> [42949542.180000] __skb_to_sgvec:2430 skb=c7a5cb40 data=c79ba030 sg=c78a0324 off=36 len=1832
->> [42949542.190000] __skb_to_sgvec:2477 list=c795a0c0 start=1536  end=1868 list->len=332 offset=1536
->> [42949542.200000] __skb_to_sgvec:2430 skb=c795a0c0 data=c6d8f048 sg=c78a0338 off=0 len=332
->> [42949542.210000] __skb_to_sgvec:2484 len==0 elt=2
->> [42949542.210000] esp_output:218 skb=c7a5cb40 data=c79ba030
->> [42949542.220000] esp_output:228 skb=c7a5cb40 data=c79ba030
->> [42949542.230000] ablk_perform:897 ivsize=8 nbytes=1840
->> [42949542.230000] ablk_perform:919 dst=NULL src=c78a0278
->> [42949542.240000] count_sg:757 i=0 nbytes=1840 sg=c78a0278  sg_next(sg)=c78a028c
->> [42949542.240000] count_sg:758 len=1508 sg_is_last(sg)=0
->> [42949542.250000] count_sg:757 i=1 nbytes=332 sg=c78a028c  sg_next(sg)=c78a02a0
->> [42949542.250000] count_sg:758 len=0 sg_is_last(sg)=0
->> [42949542.260000] kernel BUG at lib/scatterlist.c:26!
->> [42949542.260000] Unable to handle kernel NULL pointer dereference at virtual address 00000000
->>     
->
-> This differs from the issue you mentioned first.
-> The first one was in "dma_cache_maint".
->
->   
-When i turned on CONFIG_DEBUG_SG    i hit the BUG()      call in the
-scatterlist, instead of the dma_cache_maint..
+Hi guys
+
+The bug is not critical. Vanilla kernel works fine without the patch, except for the DMI sysfs stuffs.
+
+Without the patch, if CONFIG_DMI is enabled, I got the "DMI not present or invalid." error message on boot. Then later, if CONFIG_DMIID is enabled, DMI system identification informations won't be exported via sysfs to userspace. The /sys/class/dmi/id entry is not present.
+
+Regards,
+Thomas
+
+-----Message d'origine-----
+De : H. Peter Anvin [mailto:hpa@zytor.com]
+Envoyé : mar. 24 février 2009 22:12
+À : Thomas Jourdan
+Cc : linux-kernel@vger.kernel.org; Huang Ying; Peter Jones; Yinghai Lu
+Objet : Re: [BUG] dmi_scan_machine uses uninitialized address on x86 /
+EFI
 
 
-One thing i've found, is with fragmented packets    in crypto/eseqiv.c 
-eseqiv_chain()     scatterwalk_sg_chain(head, 2, sg);  is called  and 
-the BUG() occurs.
+Thomas Jourdan wrote:
+> 
+> On x86/EFI platforms, if efi_enabled is true, the dmi_scan_machine function
+> fails, even if valid DMI table is present. In the setup_arch function,
+> efi_init is called after dmi_scan_machine. But this is efi_init which will
+> initialize the smbios address, needed by dmi_scan_machine.
+> 
+> This leads to dmi_scan_machine ioremapping physical address 0, instead of
+> the address provided by the EFI system table. The following patch fixes the
+> problem.
+> 
+
+Hi Thomas,
+
+What is the concrete manifestation of the bug (i.e. how critical is it?)
+ We are late in the 2.6.29-rc cycle, and this patch seems to have some
+risk associated with it.
+
+Huang, Peter, Yinghai: any opinions?
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
 
-> Are you sure, your printk()s don't have any side effect ?
->
->   
-Don't think so, i tried taking them out  and had the same issue.  I'm
-using pr_debug so undefine debug and take them out..
+__________ Information NOD32 3887 (20090224) __________
 
-I've also reproduced the same issue.. in IPSec   transport and tunnel
-modes, with and without vlans, using  3des-cbc  or aes-cbc
+Ce message a ete verifie par NOD32 Antivirus System.
+http://www.nod32.com
 
-
-A simple config like below, and a ping -s 2000  will  create a IP
-fragment and cause the BUG()
-
-
-#!/usr/sbin/setkey -f
-
-flush;
-spdflush;
-
-add 192.168.10.51 192.168.10.54 esp 0x101 -E aes-cbc
-0x000102030405060708090a0b0c0d0e0f;
-add 192.168.10.54 192.168.10.51 esp 0x201 -E aes-cbc
-0x000102030405060708090a0b0c0d0e0f;
-
-spdadd 192.168.10.51 192.168.10.54 any -P out ipsec
-   esp/transport//require;
-
-
-
-
-
-
-Thanks,
-
-  Karl
 
