@@ -1,92 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761242AbZBYEva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbZBYEyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761242AbZBYEva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 23:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbZBYEuu
+	id S1760203AbZBYEyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 23:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZBYEyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 23:50:50 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:41605 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759826AbZBYEut (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 23:50:49 -0500
-Date: Tue, 24 Feb 2009 20:52:53 -0800 (PST)
-From: Justin Chen <jchen@hpdst41.cup.hp.com>
-Message-Id: <200902250452.UAA12910@hpdst41.cup.hp.com>
-To: linux-arch@vger.kernel.org
-Subject: [PATCH 15/15] bitops: Change the bitmap index from int to unsigned long [m32r]
-Cc: bjorn.helgaas@hp.com, justin.chen@hp.com, linux-kernel@vger.kernel.org,
-       takata@linux-m32r.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Feb 2009 23:54:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60654 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754747AbZBYEyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 23:54:01 -0500
+Message-ID: <49A4CE93.3070908@kernel.org>
+Date: Wed, 25 Feb 2009 13:52:35 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/percpu] bootmem: clean up arch-specific bootmem wrapping
+References: <tip-c132937556f56ee4b831ef4b23f1846e05fde102@kernel.org> <20090224214638.GA2049@cmpxchg.org> <20090224214932.GC12601@elte.hu> <20090224234949.GA1778@cmpxchg.org> <49A4ACAE.4020104@kernel.org> <20090225024316.GA1738@cmpxchg.org>
+In-Reply-To: <20090225024316.GA1738@cmpxchg.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Feb 2009 04:52:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the index to unsigned long in all bitops for [m32r]
+Commit c132937556f56ee4b831ef4b23f1846e05fde102 tried to clean up
+bootmem arch wrapper but it wasn't quite correct.  Before the commit,
+the followings were broken.
 
-Signed-off-by: Justin Chen <justin.chen@hp.com>
-Reviewed-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+* Low level interface functions prefixed with __ ignored arch
+  preference.
+
+* reserve_bootmem(...) can't be mapped into
+  reserve_bootmem_node(NODE_DATA(0)->bdata, ...) because the node is
+  not preference here.  The region specified MUST fall into the
+  specified region; otherwise, it will panic.
+
+After the commit,
+
+* If allocation fails for the arch preferred node, it should fallback
+  to whatever is available.  Instead, it simply failed allocation.
+
+There are too many internal details to allow generic wrapping and
+still keep things simple for archs.  Plus, all that arch wants is a
+way to prefer certain node over another.
+
+This patch drops the generic wrapping around alloc_bootmem_core() and
+add alloc_bootmem_core() instead.  If necessary, arch can define
+bootmem_arch_referred_node() macro or function which takes all
+allocation information and returns the preferred node.  bootmem
+generic code will always try the preferred node first and then
+fallback to other nodes as usual.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
 ---
- include/asm-m32r/bitops.h |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
-diff -Nru a/include/asm-m32r/bitops.h b/include/asm-m32r/bitops.h
---- a/include/asm-m32r/bitops.h	2009-02-13 15:31:30.000000000 -0800
-+++ b/include/asm-m32r/bitops.h	2009-02-15 18:19:39.793041022 -0800
-@@ -39,7 +39,7 @@
-  * Note that @nr may be almost arbitrarily large; this function is not
-  * restricted to acting on a single-word quantity.
-  */
--static __inline__ void set_bit(int nr, volatile void * addr)
-+static __inline__ void set_bit(unsigned long nr, volatile void *addr)
+It turns out reserve_bootmem() shouldn't be wrapped in the first
+place.  I hope I got it right this time.  Can you please review this
+one?  And I didn't think your comment was rude at all, no worries.
+
+Thanks.
+
+ arch/x86/include/asm/mmzone_32.h |    8 +-----
+ mm/bootmem.c                     |   45 ++++++++++++++++++++++++++-------------
+ 2 files changed, 32 insertions(+), 21 deletions(-)
+
+diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
+index eeacf67..ede6998 100644
+--- a/arch/x86/include/asm/mmzone_32.h
++++ b/arch/x86/include/asm/mmzone_32.h
+@@ -92,12 +92,8 @@ static inline int pfn_valid(int pfn)
+ 
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+ /* always use node 0 for bootmem on this numa platform */
+-#define alloc_bootmem_core(__bdata, size, align, goal, limit)		\
+-({									\
+-	bootmem_data_t __maybe_unused *	__abm_bdata_dummy = (__bdata);	\
+-	__alloc_bootmem_core(NODE_DATA(0)->bdata,			\
+-			     (size), (align), (goal), (limit));		\
+-})
++#define bootmem_arch_preferred_node(__bdata, size, align, goal, limit)	\
++	(NODE_DATA(0)->bdata)
+ #endif /* CONFIG_NEED_MULTIPLE_NODES */
+ 
+ #endif /* _ASM_X86_MMZONE_32_H */
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index d7140c0..daf9271 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -37,16 +37,6 @@ static struct list_head bdata_list __initdata = LIST_HEAD_INIT(bdata_list);
+ 
+ static int bootmem_debug;
+ 
+-/*
+- * If an arch needs to apply workarounds to bootmem allocation, it can
+- * set CONFIG_HAVE_ARCH_BOOTMEM and define a wrapper around
+- * __alloc_bootmem_core().
+- */
+-#ifndef CONFIG_HAVE_ARCH_BOOTMEM
+-#define alloc_bootmem_core(bdata, size, align, goal, limit)		\
+-	__alloc_bootmem_core((bdata), (size), (align), (goal), (limit))
+-#endif
+-
+ static int __init bootmem_debug_setup(char *buf)
  {
- 	__u32 mask;
- 	volatile __u32 *a = addr;
-@@ -75,7 +75,7 @@
-  * you should call smp_mb__before_clear_bit() and/or smp_mb__after_clear_bit()
-  * in order to ensure changes are visible on other processors.
-  */
--static __inline__ void clear_bit(int nr, volatile void * addr)
-+static __inline__ void clear_bit(unsigned long nr, volatile void *addr)
+ 	bootmem_debug = 1;
+@@ -436,9 +426,9 @@ static unsigned long align_off(struct bootmem_data *bdata, unsigned long off,
+ 	return ALIGN(base + off, align) - base;
+ }
+ 
+-static void * __init __alloc_bootmem_core(struct bootmem_data *bdata,
+-				unsigned long size, unsigned long align,
+-				unsigned long goal, unsigned long limit)
++static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
++					unsigned long size, unsigned long align,
++					unsigned long goal, unsigned long limit)
  {
- 	__u32 mask;
- 	volatile __u32 *a = addr;
-@@ -114,7 +114,7 @@
-  * Note that @nr may be almost arbitrarily large; this function is not
-  * restricted to acting on a single-word quantity.
-  */
--static __inline__ void change_bit(int nr, volatile void * addr)
-+static __inline__ void change_bit(unsigned long nr, volatile void *addr)
+ 	unsigned long fallback = 0;
+ 	unsigned long min, max, start, sidx, midx, step;
+@@ -538,17 +528,34 @@ find_block:
+ 	return NULL;
+ }
+ 
++static void * __init alloc_arch_preferred_bootmem(bootmem_data_t *bdata,
++					unsigned long size, unsigned long align,
++					unsigned long goal, unsigned long limit)
++{
++#ifdef CONFIG_HAVE_ARCH_BOOTMEM
++	bootmem_data_t *p_bdata;
++
++	p_bdata = bootmem_arch_preferred_node(bdata, size, align, goal, limit);
++	if (p_bdata)
++		return alloc_bootmem_core(p_bdata, size, align, goal, limit);
++#endif
++	return NULL;
++}
++
+ static void * __init ___alloc_bootmem_nopanic(unsigned long size,
+ 					unsigned long align,
+ 					unsigned long goal,
+ 					unsigned long limit)
  {
- 	__u32  mask;
- 	volatile __u32  *a = addr;
-@@ -148,7 +148,7 @@
-  * This operation is atomic and cannot be reordered.
-  * It also implies a memory barrier.
-  */
--static __inline__ int test_and_set_bit(int nr, volatile void * addr)
-+static __inline__ int test_and_set_bit(unsigned long nr, volatile void *addr)
+ 	bootmem_data_t *bdata;
++	void *region;
+ 
+ restart:
+-	list_for_each_entry(bdata, &bdata_list, list) {
+-		void *region;
++	region = alloc_arch_preferred_bootmem(NULL, size, align, goal, limit);
++	if (region)
++		return region;
+ 
++	list_for_each_entry(bdata, &bdata_list, list) {
+ 		if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
+ 			continue;
+ 		if (limit && bdata->node_min_pfn >= PFN_DOWN(limit))
+@@ -626,6 +633,10 @@ static void * __init ___alloc_bootmem_node(bootmem_data_t *bdata,
  {
- 	__u32 mask, oldbit;
- 	volatile __u32 *a = addr;
-@@ -183,7 +183,8 @@
-  * This operation is atomic and cannot be reordered.
-  * It also implies a memory barrier.
-  */
--static __inline__ int test_and_clear_bit(int nr, volatile void * addr)
-+static __inline__ int
-+test_and_clear_bit(unsigned long nr, volatile void *addr)
+ 	void *ptr;
+ 
++	ptr = alloc_arch_preferred_bootmem(bdata, size, align, goal, limit);
++	if (ptr)
++		return ptr;
++
+ 	ptr = alloc_bootmem_core(bdata, size, align, goal, limit);
+ 	if (ptr)
+ 		return ptr;
+@@ -682,6 +693,10 @@ void * __init __alloc_bootmem_node_nopanic(pg_data_t *pgdat, unsigned long size,
  {
- 	__u32 mask, oldbit;
- 	volatile __u32 *a = addr;
-@@ -220,7 +221,8 @@
-  * This operation is atomic and cannot be reordered.
-  * It also implies a memory barrier.
-  */
--static __inline__ int test_and_change_bit(int nr, volatile void * addr)
-+static __inline__ int
-+test_and_change_bit(unsigned long nr, volatile void *addr)
- {
- 	__u32 mask, oldbit;
- 	volatile __u32 *a = addr;
+ 	void *ptr;
+ 
++	ptr = alloc_arch_preferred_bootmem(pgdat->bdata, size, align, goal, 0);
++	if (ptr)
++		return ptr;
++
+ 	ptr = alloc_bootmem_core(pgdat->bdata, size, align, goal, 0);
+ 	if (ptr)
+ 		return ptr;
