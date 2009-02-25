@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbZBYVRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZBYVYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759041AbZBYVRe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZBYVRX
+	id S1758960AbZBYVYc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbZBYVYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:17:23 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:46659 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754867AbZBYVRX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:17:23 -0500
-Date: Wed, 25 Feb 2009 23:17:17 +0200
-From: Felipe Balbi <me@felipebalbi.com>
-To: david.hagood@gmail.com
-Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Odd behavior in musb_hdrc OTG if gadget drivers are modules
-Message-ID: <20090225211716.GD4639@gandalf>
-Reply-To: me@felipebalbi.com
-References: <6cc6e376b34fd371cf946c1660c97f6e.squirrel@localhost>
+	Wed, 25 Feb 2009 16:24:23 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56816 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751988AbZBYVYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 16:24:22 -0500
+Date: Wed, 25 Feb 2009 22:20:39 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Evans <scarybeasts@gmail.com>,
+       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
+       Eugene Teo <eugene@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] copy_process: fix CLONE_PARENT && ->exit_signal
+	interaction
+Message-ID: <20090225212039.GA11883@redhat.com>
+References: <20090225190211.GA7445@redhat.com> <20090225193927.1ED25FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902251156160.3111@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6cc6e376b34fd371cf946c1660c97f6e.squirrel@localhost>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+In-Reply-To: <alpine.LFD.2.00.0902251156160.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 03:46:28PM -0600, david.hagood@gmail.com wrote:
-> I've spend the day tracking down a weird behavior on a Beagleboard with
-> 2.6.29-rc2-omap1.
-> 
-> If you select the mode for the musb to operate in OnTheGo mode
-> (CONFIG_USB_MUSB_OTG), and if you compile the gadget drivers as modules,
-> the the USB port will NOT be brought up at system boot, even if it has a
-> USB mini-A cable plugged in (and thus should be in host mode, not gadget
-> mode).
-> 
-> If you then modprobe an appropriate gadget driver, then the interface will
-> be brought up in host mode.
+On 02/25, Linus Torvalds wrote:
+>
+> > As I think I said before, I don't really know what the actual use case is
+> > for CLONE_PARENT without CLONE_THREAD.  So it's easy to approve changing
+> > its behavior, but I do vaguely worry about who expected what behavior before.
+>
+> I think changing it is wrong.
 
-that's expected. When you have otg selected, you can only let musb work
-when it's fully functional on both roles ;-)
+Perhaps. As I said, I don't know what is the expected behaviour. And in fact
+I can't think of the "obviously good" behaviour.
 
-> If you DON'T modprobe a gadget driver, AND you attempt to force the port
-> to host mode by
->   echo host > /sys/devices/platform/musb_hdrc/mode
-> 
-> Then we get a kernel page fault trying to change modes, even though we are
-> changing to host mode, which should be valid.
-> 
-> It seems to me that either the port should be brought up in host mode if
-> no gadget drivers are loaded, and an attempt to switch to gadget mode
-> should fail if no driver is loaded, OR there should be a config options to
-> set what the default gadget driver is in the absence of one being loaded
-> by the system.
+> I can easily see somebody using CLONE_PARENT to get the correct getppid
+> semantics in the thread, and then setting the signal to zero to not make
+> the parent see the thread go away.
 
-not really, imagine what would happen, for example, if when you don't
-have a gadget driver loaded, the other side tries HNP...
+->exit_signal == 0 doesn't mean the thread silently goes away, it becomes
+a zombie (even if ->parent ignores SIGCHLD). We don't send the signal, but
+that is all.
 
--- 
-balbi
+And if ->parent execs, we reset ->exit_signal to SIGCHLD anyway.
+
+> So at the very least it should accept zero for "no signal".
+
+perhaps. I don't know. But I am not sure this is always right.
+
+> And quite
+> frankly, it would be good to try to see if there are other alternatives.
+
+Agreed. I thought about checking ->xxx_exec_id's in copy_process(),
+but doesn't look very nice...
+
+
+(can't resist... hopefully now it is clear this should have beeen discussed
+ outside of the closed lists from the very beginning ;)
+
+Oleg.
+
