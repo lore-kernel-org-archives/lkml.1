@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZBYSnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZBYSnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbZBYSnW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 13:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbZBYSnN
+	id S1758388AbZBYSnw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 13:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbZBYSnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 13:43:13 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:59207 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754166AbZBYSnN (ORCPT
+	Wed, 25 Feb 2009 13:43:41 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59037 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755123AbZBYSnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 13:43:13 -0500
-Date: Wed, 25 Feb 2009 13:33:07 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       penberg@cs.helsinki.fi, riel@redhat.com, kosaki.motohiro@jp.fujitsu.com,
-       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
-In-Reply-To: <20090225160124.GA31915@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0902251331340.24175@qirst.com>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-21-git-send-email-mel@csn.ul.ie> <20090223013723.1d8f11c1.akpm@linux-foundation.org> <20090223233030.GA26562@csn.ul.ie> <20090223155313.abd41881.akpm@linux-foundation.org>
- <20090224115126.GB25151@csn.ul.ie> <20090224160103.df238662.akpm@linux-foundation.org> <20090225160124.GA31915@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Feb 2009 13:43:40 -0500
+Subject: Re: [Announce] 2.6.29-rc6-rt3
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>
+In-Reply-To: <1235590444.3907.5.camel@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
+	 <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
+	 <1235590444.3907.5.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 19:43:19 +0100
+Message-Id: <1235587399.4645.3789.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, Mel Gorman wrote:
+On Wed, 2009-02-25 at 20:34 +0100, Thomas Meyer wrote:
+> Am Dienstag, den 24.02.2009, 18:57 +0100 schrieb Thomas Gleixner:
 
-> It'd impact it for sure. Due to the non-temporal stores, I'm surprised
-> there is any measurable impact from the patch.  This has likely been the
-> case since commit 0812a579c92fefa57506821fa08e90f47cb6dbdd. My reading of
-> this (someone correct/enlighten) is that even if the data was cache hot,
-> it is pushed out as a result of the non-temporal access.
+> >   http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc6.tar.bz2
+> >   http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc6-rt3.bz2
+> >   
 
-A nontemporal store simply does not set the used flag for the cacheline.
-So the cpu cache LRU will evict the cacheline sooner. Thats at least how
-it works on I64.
+> Should suspend&resume to ram work with this patchset applied?
+
+If it works for you without (plain .29-rc6), then it ought to work with.
 
