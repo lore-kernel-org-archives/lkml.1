@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763615AbZBYXxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763052AbZBYXys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763615AbZBYXxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 18:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbZBYXxa
+	id S1763052AbZBYXys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 18:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZBYXyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 18:53:30 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55672 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753115AbZBYXx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 18:53:29 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090225210336.GA20086@us.ibm.com>
-References: <20090225210336.GA20086@us.ibm.com> <20090223204041.GA31626@us.ibm.com> <20090109225313.GB15599@us.ibm.com> <20090109225208.GA15252@us.ibm.com> <5296.1234522990@redhat.com> <16728.1235565664@redhat.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: dhowells@redhat.com, lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 4/4] keys: make procfiles per-user-namespace
-Date: Wed, 25 Feb 2009 23:53:22 +0000
-Message-ID: <7386.1235606002@redhat.com>
+	Wed, 25 Feb 2009 18:54:36 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:34202 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753406AbZBYXyg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 18:54:36 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sandeen@redhat.com
+Subject: Re: ATA support for 4k sector size
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
+	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
+	<49A5D55A.9080402@zytor.com>
+Date: Wed, 25 Feb 2009 18:51:35 -0500
+In-Reply-To: <49A5D55A.9080402@zytor.com> (H. Peter Anvin's message of "Wed\, 25 Feb 2009 15\:33\:46 -0800")
+Message-ID: <yq163iyhy7s.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.49A5D98A.028E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn <serue@us.ibm.com> wrote:
+>>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
 
-> So you want users to be able to mmap the file and lseek to a particular
-> spot?
+hpa> I wish it was left to people like myself.  Realistically when it
+hpa> comes to disks with 4096-byte logical sectors it going to matter
+hpa> how the firmware chooses to expose it.
 
-mmap?  *blink*
+Well. In the short term ATA is going to emulate 512 (at a penalty for
+misaligned I/O).  SCSI is switching to 4KB wholesale.
 
-> Meanwhile, do you have any objections to these 4 patches?  :)
+I have a 4KB/4KB drive here that I have had fun booting from the last
+few days.
 
-Not really.  You can add my Acked-by.  It's just that mapping fpos to keyid
-might simplify the code.
 
-David
+hpa> Most likely, the universe will explode at this time, since very few
+hpa> bootloaders can deal with a sector size other than 512 bytes, and
+hpa> virtually every partition table format contains a sector size
+hpa> dependency, which also means you'll break any mechanical imaging
+hpa> solution.
+
+hpa> It's going to hurt :(
+
+Yep, it sucks :|
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
