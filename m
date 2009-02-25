@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbZBYHPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZBYHPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759773AbZBYHPg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 02:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZBYHPY
+	id S1755203AbZBYHPv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 02:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759765AbZBYHPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 02:15:24 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53217 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbZBYHPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 02:15:23 -0500
-Message-ID: <49A4F06B.6030205@cn.fujitsu.com>
-Date: Wed, 25 Feb 2009 15:16:59 +0800
-From: Yang Hongyang <yanghy@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-doc@vger.kernel.org, mtk.manpages@gmail.com, rdunlap@xenotime.net
-Subject: Documentation:Update the INDEX of the documents
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Feb 2009 02:15:36 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45613
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759661AbZBYHPf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 02:15:35 -0500
+Date: Tue, 24 Feb 2009 23:15:15 -0800 (PST)
+Message-Id: <20090224.231515.26547714.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are so many 00-INDEX file that are missing description of the current files in the dir.
-Such as 00-INDEX in Documentation/x86/,Documentation/networking/,Documentation/
-and so on.
 
-It's a large amount of work for someone to go through all these documents and 
-make summaries.
+Please pull to get this crash fix.
 
-I'm willing to do some of the work but if someone else pick these up(especially the authors
-of these new files) it will be a great help.^_^
+Thanks!
 
--- 
-Regards
-Yang Hongyang
+The following changes since commit 694593e3374a67d95ece6a275a1f181644c2c4d8:
+  Linus Torvalds (1):
+        Merge branch 'proc-linus' of git://git.kernel.org/.../adobriyan/proc
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+David S. Miller (1):
+      sparc64: Fix crashes in jbusmc_print_dimm()
+
+ arch/sparc/kernel/chmc.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
