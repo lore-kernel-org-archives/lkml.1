@@ -1,112 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762321AbZBYP5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762453AbZBYP6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762321AbZBYP5f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 10:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZBYP5W
+	id S1762453AbZBYP6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 10:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbZBYP6C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 10:57:22 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:47814 "EHLO mummy.ncsc.mil"
+	Wed, 25 Feb 2009 10:58:02 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45394 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757754AbZBYP5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 10:57:20 -0500
-Subject: Re: New filesystem for Linux kernel
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: hooanon05@yahoo.co.jp
-Cc: Theodore Tso <tytso@mit.edu>, Tomas M <tomas@slax.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <14799.1235490088@jrobl>
-References: <7558.1235374266@jrobl> <7769.1235374482@jrobl>
-	 <49A268A7.1010708@slax.org> <49A26ACC.90804@slax.org>
-	 <49A3AC14.2050107@slax.org> <20090224141548.GB5482@mit.edu>
-	 <1235488695.15148.49.camel@moss-terrapins.epoch.ncsc.mil>
-	 <14799.1235490088@jrobl>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 25 Feb 2009 10:53:34 -0500
-Message-Id: <1235577214.15148.77.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1755979AbZBYP6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 10:58:00 -0500
+Date: Wed, 25 Feb 2009 16:57:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+Message-ID: <20090225155709.GA12732@elte.hu>
+References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org> <20090224194548.3effb746.akpm@linux-foundation.org> <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com> <20090224203308.8d623e0b.akpm@linux-foundation.org> <20090225081118.GC15303@elte.hu> <20090225002852.5ef5b869.akpm@linux-foundation.org> <84144f020902250100k41e55dd7w8a9c8d2ca96908ea@mail.gmail.com> <20090225012250.db68e480.akpm@linux-foundation.org> <alpine.DEB.2.00.0902250923360.12697@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902250923360.12697@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-25 at 00:41 +0900, hooanon05@yahoo.co.jp wrote:
-> Hi David,
-> I'm glad if you remember me still.
-> 
-> "David P. Quigley":
-> > In reality though the debate isn't Unionfs vs AUFS2 because many of the
-> > kernel people including Christoph have voiced their opinion that they
-> > don't want to see a file system solution to union mounts. There have
-> > been patch sets trying to introduce union mounts and they seem to have
-> > gone quiet for a while as one of the main points of debate was how and
-> > where to do duplicate elimination.
-> 
-> As I wrote in aufs2 documents, UnionMount may eliminate some
-> duplication, but it won't be able to share branches.
-> ----------------------------------------------------------------------
-> UnionMount's approach will be able to small, but may be hard to share
-> branches between several UnionMount since the whiteout in it is
-> implemented in the inode on branch filesystem and always
-> shared. According to Bharata's post, readdir does not seems to be
-> finished yet.
-> ----------------------------------------------------------------------
-> 
-> Anyway, "kernel people including Christoph have voiced their opinion
-> that they don't want to see a file system solution to union mounts" is
-> very impotant. If it is true, I should ask its reason fist. Could you
-> tell me the source of this information? Url of mail archive or somthing?
 
-I'm having a hard time finding a long descriptive email from Christoph
-outlining why but from our original unionfs posting to lkml this was
-what I found. There have been subsequent comments from various people to
-this effect as well.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-http://marc.info/?l=linux-kernel&m=116833670823190&w=2
-
-"And unionfs is the wrong thing do use for this.  Unioning is a complex
-namespace operation and needs to be implemented in the VFS or at least
-needs a lot of help from the VFS.  Getting namespace cache coherency
-and especially locking right is impossible with out that."
-
-I'd suggest getting the VFS maintainers to chime in on your code. If
-their opinion on this has changed then you are in much better shape for
-getting AUFS2 merged.
-
+> > #                _------=> CPU#
+> > #               / _-----=> irqs-off
+> > #              | / _----=> need-resched
+> > #              || / _---=> hardirq/softirq
+> > #              ||| / _--=> preempt-depth
+> > #              |||| /
+> > #              |||||     delay
+> > #  cmd     pid ||||| time  |   caller
+> > #     \   /    |||||   \   |   /
+> >   <idle>-0     0d..1    0us+: trace_hardirqs_off_thunk (apic_timer_interrupt)
+> >   <idle>-0     0d.s.   97us : __do_softirq (do_softirq)
+> >   <idle>-0     0d.s1   98us : trace_hardirqs_on (do_softirq)
+[...]
+> > 
+> > your time starts now.
 > 
+> Note, that is a legacy format, that works great for the 
+> latency tracers. Those include (the example you used) irqsoff, 
+> the preempt off, wake up latencies. This gives us a nice 
+> listing of why we are hitting a latency. All other plugins 
+> generally use the trace file, although they could also use 
+> that file too.
 > 
-> > As far as review of AUFS2 goes I use to idle in a few freenode channels
-> > a while back and there was a discussion about AUFS2 the first time it
-> > hit LKML. The AUFS people tout that the unionfs dev team has
-> > incorporated some of their ideas into unionfs and that is true. However,
-> > one of the issues raised about AUFS back then was that they had all
-> > sorts of sorted hacks that were unacceptable for use in mainline. I
+> As for your English comment. I showed the header to my wife, 
+> and she had no idea what irqs-off means, nor need-resched, nor 
+> preempt-depth ;-) They are not quite English as they are 
+> technical terms. Most of the names are hard coded into the 
+> kernel too.
 > 
-> I am afraid you are confusing aufs1 and aufs2.
-> And I hope that such "unacceptable" things are dropped from aufs2.
+> Yeah, maybe that file (latency_trace) is a bit too much. I for 
+> one love it. It is great to load a kernel on some remote box, 
+> and run the irqs off latency tracer to see where the 
+> interrupts are disabled for the longest time. This format is 
+> really nice because it shows me when we are in an interrupt, 
+> or interrupts are disabled, and when the task should have been 
+> rescheduled.
+> 
+> This has help find places that we miss a preemption check too.
 
-I believe I am and since that is the case then aufs2 really needs a
-solid review before it is merged. Silence isn't tacit acceptance that
-the code is good to go. It usually means the people aren't looking at
-it. 
+Could we get that, as PeterZ has suggested, as a trace_option 
+column in the 'trace' file? It would be default off for 
+non-latency tracers, with latency tracing plugins turning it on 
+by default. Would that work?
 
-> 
-> 
-> > don't have my irc logs since I am at work and they are at home but I can
-> > try to dig up the specific problems when I get home later today.
-> 
-> Ok, I'll wait.
-
-This may sound like a copout but unfortunately it seems my logs were on
-my hard drive that died a few months back. Regardless though since you
-did a major rewrite for AUFS2 those comments could possibly no longer be
-valid. Regardless since there was a major rewrite since your last review
-several people should review the code base.
-
-> 
-> 
-> J. R. Okajima
-
-All that said good luck with this effort.
-
+	Ingo
