@@ -1,88 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761307AbZBYJvC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761607AbZBYJwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761307AbZBYJvC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:51:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbZBYJuv
+	id S1761607AbZBYJwt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZBYJwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:50:51 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58471 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755995AbZBYJuu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:50:50 -0500
-Date: Wed, 25 Feb 2009 10:50:46 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Mark Nelson <markn@au1.ibm.com>
-cc: "Sachin P. Sant" <sachinp@in.ibm.com>, Jan Kara <jack@ucw.cz>,
-       Jan Kara <jack@suse.cz>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-In-Reply-To: <200902251752.56514.markn@au1.ibm.com>
-Message-ID: <alpine.LRH.2.00.0902251018060.4063@vixen.sonytel.be>
-References: <49A2705D.9030008@in.ibm.com> <20090223155116.GB5764@atrey.karlin.mff.cuni.cz> <49A395ED.5030607@in.ibm.com> <200902251752.56514.markn@au1.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 25 Feb 2009 04:52:41 -0500
+Received: from mga14.intel.com ([143.182.124.37]:62186 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752093AbZBYJwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 04:52:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,264,1233561600"; 
+   d="scan'208";a="114192594"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-tip-commits@vger.kernel.org" 
+	<linux-tip-commits@vger.kernel.org>
+Date: Wed, 25 Feb 2009 09:51:25 +0000
+Subject: RE: [tip:tracing/hw-branch-tracing] tracing/hw-branch-tracing:
+ convert bts-tracer mutex to a spinlock
+Thread-Topic: [tip:tracing/hw-branch-tracing] tracing/hw-branch-tracing:
+ convert bts-tracer mutex to a spinlock
+Thread-Index: AcmXIhzEHIfpAEUoR2O5suSGqGrFFAACmY1A
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A4C1EF6@irsmsx504.ger.corp.intel.com>
+References: <tip-2d542cf34264ac92e9e7ac55c0b096b066d569d2@kernel.org>
+In-Reply-To: <tip-2d542cf34264ac92e9e7ac55c0b096b066d569d2@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n1P9qrwM009949
 
-On Wed, 25 Feb 2009, Mark Nelson wrote:
-> On Tue, 24 Feb 2009 05:38:37 pm Sachin P. Sant wrote:
-> > Jan Kara wrote:
-> > >   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
-> > > somehow got beyond end of the page referenced by bh->b_data. So it means
-> > > that le16_to_cpu(entry->e_value_offs) + size > page_size. But
-> > > ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
-> > > particular checks whether e_value_offs + e_value_size isn't greater than
-> > > bh->b_size. So I see no way how memcpy can get beyond end of the page.
-> > >   Sachin, is the problem reproducible? If yes, can you send us contents
-> > >   
-> > Yes, i am able to recreate this problem easily. As i had mentioned if the
-> > earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
-> > i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
-> > without any problem.
-> 
-> Hi Sanchin and Geert,
-> 
-> Does the patch below fix the problems you're seeing? If it does I'll send
-> a properly written up and formatted patch to linuxppc-dev (as well as
-> another one to fix the same problem in copy_tofrom_user()).
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Wednesday, February 25, 2009 9:21 AM
 
-Unfortunately not, now it crashes while accessing the memory pointed to by
-GPR16, in
 
-NIP: copy_page_range+x0608/0x628
-LR:  dup_mm+0x2e4/0x428
-Trace: debug_table+0xcc70/0x1afe0 (unreliable)
-dup_mm+0x2e4/0x428
-copy_process+0x86c/0xf9c
-do_fork+0x188/0x39c
-sys_clone+0x58/0x70
-ppc_clone+0x8/0xc
+>bts_hotcpu_handler() is called with irqs disabled, so using mutex_lock()
+>is a no-no.
+>
+>All the BTS codepaths here are atomic (they do not schedule), so using
+>a spinlock is the right solution.
 
-However, after reverting 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556, I still see
-similar problems as above (crash in copy_page_range()).
-Which makes me think that
-  1. Your new patch fixes the problem introduced by 25d6e2d7,
-  2. There's still another issue than the one introduced by 25d6e2d7.
+I introduced the lock to protect against a race between bts_trace_start/stop()
+and bts_hotcpu_handler().
 
-With kind regards,
+Assuming that the hw-branch-tracer is removed and at the same time a cpu
+comes online, we might be left with a disabled tracer but still trace
+that new cpu.
 
-Geert Uytterhoeven
-Software Architect
+I wonder whether a simple get/put_online_cpus() would suffice, i.e.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+static void bts_trace_start(struct trace_array *tr)
+{
+	get_online_cpus();
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+ 	on_each_cpu(bts_trace_start_cpu, NULL, 1);
+ 	trace_hw_branches_enabled = 1;
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+	put_online_cpus();
+}
+
+
+
+> static void trace_bts_prepare(struct trace_iterator *iter)
+> {
+>-	mutex_lock(&bts_tracer_mutex);
+>+	spin_lock(&bts_tracer_lock);
+>
+> 	on_each_cpu(trace_bts_cpu, iter->tr, 1);
+>
+>-	mutex_unlock(&bts_tracer_mutex);
+>+	spin_unlock(&bts_tracer_lock);
+> }
+
+Whereas start/stop are relatively fast, the above operation is rather
+expensive. Would it make sense to use schedule_on_each_cpu() instead
+of on_each_cpu()?
+
+regards,
+markus.
+
+---------------------------------------------------------------------Intel GmbHDornacher Strasse 185622 Feldkirchen/Muenchen GermanySitz der Gesellschaft: Feldkirchen bei MuenchenGeschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes SchwadererRegistergericht: Muenchen HRB 47456 Ust.-IdNr.VAT Registration No.: DE129385895Citibank Frankfurt (BLZ 502 109 00) 600119052
+This e-mail and any attachments may contain confidential material forthe sole use of the intended recipient(s). Any review or distributionby others is strictly prohibited. If you are not the intendedrecipient, please contact the sender and delete all copies.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
