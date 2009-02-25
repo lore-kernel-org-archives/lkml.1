@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbZBYSl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZBYSnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbZBYSl7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 13:41:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZBYSlv
+	id S1758054AbZBYSnW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 13:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbZBYSnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 13:41:51 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54881 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbZBYSlu (ORCPT
+	Wed, 25 Feb 2009 13:43:13 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:59207 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754166AbZBYSnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 13:41:50 -0500
-Subject: Re: [PATCH RESEND] sched_rt: don't start timer when rt bandwidth
- disabled
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <49A586FE.8070604@ct.jp.nec.com>
-References: <49A586FE.8070604@ct.jp.nec.com>
-Content-Type: text/plain
-Date: Wed, 25 Feb 2009 19:41:41 +0100
-Message-Id: <1235587301.4645.3786.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Feb 2009 13:43:13 -0500
+Date: Wed, 25 Feb 2009 13:33:07 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       penberg@cs.helsinki.fi, riel@redhat.com, kosaki.motohiro@jp.fujitsu.com,
+       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
+In-Reply-To: <20090225160124.GA31915@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0902251331340.24175@qirst.com>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-21-git-send-email-mel@csn.ul.ie> <20090223013723.1d8f11c1.akpm@linux-foundation.org> <20090223233030.GA26562@csn.ul.ie> <20090223155313.abd41881.akpm@linux-foundation.org>
+ <20090224115126.GB25151@csn.ul.ie> <20090224160103.df238662.akpm@linux-foundation.org> <20090225160124.GA31915@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Right, thanks for the reminder.
+On Wed, 25 Feb 2009, Mel Gorman wrote:
 
-On Wed, 2009-02-25 at 09:59 -0800, Hiroshi Shimamoto wrote:
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> 
-> Impact: fix incorrect condition check
-> 
-> No need to start rt bandwidth timer when rt bandwidth is disabled.
-> If this timer starts, it may stop at sched_rt_period_timer() on the first time.
-> 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> It'd impact it for sure. Due to the non-temporal stores, I'm surprised
+> there is any measurable impact from the patch.  This has likely been the
+> case since commit 0812a579c92fefa57506821fa08e90f47cb6dbdd. My reading of
+> this (someone correct/enlighten) is that even if the data was cache hot,
+> it is pushed out as a result of the non-temporal access.
 
-Yep, looks like a good catch, thanks!
-
-> ---
->  kernel/sched.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 4484f9c..9e49ac8 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -223,7 +223,7 @@ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
->  {
->  	ktime_t now;
->  
-> -	if (rt_bandwidth_enabled() && rt_b->rt_runtime == RUNTIME_INF)
-> +	if (!rt_bandwidth_enabled() || rt_b->rt_runtime == RUNTIME_INF)
->  		return;
->  
->  	if (hrtimer_active(&rt_b->rt_period_timer))
+A nontemporal store simply does not set the used flag for the cacheline.
+So the cpu cache LRU will evict the cacheline sooner. Thats at least how
+it works on I64.
 
