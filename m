@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbZBYJXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbZBYJYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbZBYJXG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:23:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZBYJWs
+	id S1760696AbZBYJYo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZBYJY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:22:48 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51561 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbZBYJWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:22:47 -0500
-Message-ID: <49A50D9D.2030400@cn.fujitsu.com>
-Date: Wed, 25 Feb 2009 17:21:33 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 25 Feb 2009 04:24:28 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:39536 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751986AbZBYJY1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 04:24:27 -0500
+Message-ID: <49A50E41.7040800@davidnewall.com>
+Date: Wed, 25 Feb 2009 19:54:17 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
-References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org>
-In-Reply-To: <20090225025753.798204550@goodmis.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+CC: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: List of 404 URLs in kernel .c and .h files
+References: <1235506239.2501.46.camel@localhost> <49A4A1D3.8070402@davidnewall.com> <20090225065701.GA1442@silver.sucs.org>
+In-Reply-To: <20090225065701.GA1442@silver.sucs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt 写道:
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  include/asm-generic/vmlinux.lds.h |   11 ++-
->  kernel/trace/Kconfig              |    9 ++
->  kernel/trace/Makefile             |    1 +
->  kernel/trace/trace_events.c       |  280 +++++++++++++++++++++++++++++++++++++
->  kernel/trace/trace_events.h       |   52 +++++++
->  5 files changed, 352 insertions(+), 1 deletions(-)
->  create mode 100644 kernel/trace/trace_events.c
->  create mode 100644 kernel/trace/trace_events.h
-> 
+Sitsofe Wheeler wrote:
+> On Wed, Feb 25, 2009 at 12:11:39PM +1030, David Newall wrote:
+>   
+>> Joe Perches wrote:
+>>     
+>>> Any suggestions on what if anything should be done
+>>> to the sources with these dead links?
+>>>       
+>> Unless you have a better reference, leave them.  Even if they 404, they
+>> still provide a good starting point to search.
+>>     
+>
+> Could they be turned in archive.org links (where possible)?
 
-Modules can not use this infrastructure,
-will it be implemented in future?
+What's the point?  Those links are there to refer you to something or
+other.  Changing links to somewhere which you know does not provide that
+something doesn't help.  It hinders.  It adds an extra step to the
+search process for people who want to find that something.
 
-Lai
 
+If you want to get rid of 404s, ask whoever owns those links for a
+current link.  If you get one, use that, otherwise leave the original
+one alone.  So I think.
