@@ -1,59 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbZBYPQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763235AbZBYPR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbZBYPQW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 10:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbZBYPJP
+	id S1763235AbZBYPR3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 10:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760218AbZBYPJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 10:09:15 -0500
-Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:16520
-	"EHLO WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756974AbZBYPIn (ORCPT
+	Wed, 25 Feb 2009 10:09:19 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:51226 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758133AbZBYPIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 10:08:43 -0500
-X-BigFish: VPS1(zzzzzzz32i65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KFMNE6-04-9OH-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-CC: Gerd Hoffmann <kraxel@redhat.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH] kvm x86: release time_page on vcpu destruction
-Date: Wed, 25 Feb 2009 16:08:31 +0100
-Message-ID: <1235574511-4571-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-X-OriginalArrivalTime: 25 Feb 2009 15:08:31.0823 (UTC) FILETIME=[EBF395F0:01C9975A]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Wed, 25 Feb 2009 10:08:45 -0500
+Message-Id: <20090225150839.317317892@de.ibm.com>
+References: <20090225150622.529143164@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 25 Feb 2009 16:07:06 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch/s390 44/46] use compiler builtin versions of strlen/strcpy/strcat
+Content-Disposition: inline; filename=143-string-builtin.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not releasing the time_page causes a leak of that page or the compound
-page it is situated in.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Use builtin variants if gcc 4 or newer is used to compile the kernel.
+Generates better code than the asm variants.
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- arch/x86/kvm/x86.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 8ca100a..a1ecec5 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -4159,6 +4159,11 @@ EXPORT_SYMBOL_GPL(kvm_put_guest_fpu);
+ arch/s390/include/asm/string.h |   12 ++++++++++++
+ arch/s390/lib/string.c         |   12 ++++++++++++
+ 2 files changed, 24 insertions(+)
+
+Index: quilt-2.6/arch/s390/include/asm/string.h
+===================================================================
+--- quilt-2.6.orig/arch/s390/include/asm/string.h
++++ quilt-2.6/arch/s390/include/asm/string.h
+@@ -84,6 +84,7 @@ static inline void *memscan(void *s, int
  
- void kvm_arch_vcpu_free(struct kvm_vcpu *vcpu)
+ static inline char *strcat(char *dst, const char *src)
  {
-+	if (vcpu->arch.time_page) {
-+		kvm_release_page_dirty(vcpu->arch.time_page);
-+		vcpu->arch.time_page = NULL;
-+	}
-+
- 	kvm_x86_ops->vcpu_free(vcpu);
++#if __GNUC__ < 4
+ 	register int r0 asm("0") = 0;
+ 	unsigned long dummy;
+ 	char *ret = dst;
+@@ -96,10 +97,14 @@ static inline char *strcat(char *dst, co
+ 		: "=&a" (dummy), "+a" (dst), "+a" (src)
+ 		: "d" (r0), "0" (0) : "cc", "memory" );
+ 	return ret;
++#else
++	return __builtin_strcat(dst, src);
++#endif
  }
  
--- 
-1.5.6.4
+ static inline char *strcpy(char *dst, const char *src)
+ {
++#if __GNUC__ < 4
+ 	register int r0 asm("0") = 0;
+ 	char *ret = dst;
+ 
+@@ -109,10 +114,14 @@ static inline char *strcpy(char *dst, co
+ 		: "+&a" (dst), "+&a" (src) : "d" (r0)
+ 		: "cc", "memory");
+ 	return ret;
++#else
++	return __builtin_strcpy(dst, src);
++#endif
+ }
+ 
+ static inline size_t strlen(const char *s)
+ {
++#if __GNUC__ < 4
+ 	register unsigned long r0 asm("0") = 0;
+ 	const char *tmp = s;
+ 
+@@ -121,6 +130,9 @@ static inline size_t strlen(const char *
+ 		"	jo	0b"
+ 		: "+d" (r0), "+a" (tmp) :  : "cc");
+ 	return r0 - (unsigned long) s;
++#else
++	return __builtin_strlen(s);
++#endif
+ }
+ 
+ static inline size_t strnlen(const char * s, size_t n)
+Index: quilt-2.6/arch/s390/lib/string.c
+===================================================================
+--- quilt-2.6.orig/arch/s390/lib/string.c
++++ quilt-2.6/arch/s390/lib/string.c
+@@ -44,7 +44,11 @@ static inline char *__strnend(const char
+  */
+ size_t strlen(const char *s)
+ {
++#if __GNUC__ < 4
+ 	return __strend(s) - s;
++#else
++	return __builtin_strlen(s);
++#endif
+ }
+ EXPORT_SYMBOL(strlen);
+ 
+@@ -70,6 +74,7 @@ EXPORT_SYMBOL(strnlen);
+  */
+ char *strcpy(char *dest, const char *src)
+ {
++#if __GNUC__ < 4
+ 	register int r0 asm("0") = 0;
+ 	char *ret = dest;
+ 
+@@ -78,6 +83,9 @@ char *strcpy(char *dest, const char *src
+ 		      : "+&a" (dest), "+&a" (src) : "d" (r0)
+ 		      : "cc", "memory" );
+ 	return ret;
++#else
++	return __builtin_strcpy(dest, src);
++#endif
+ }
+ EXPORT_SYMBOL(strcpy);
+ 
+@@ -132,6 +140,7 @@ EXPORT_SYMBOL(strncpy);
+  */
+ char *strcat(char *dest, const char *src)
+ {
++#if __GNUC__ < 4
+ 	register int r0 asm("0") = 0;
+ 	unsigned long dummy;
+ 	char *ret = dest;
+@@ -143,6 +152,9 @@ char *strcat(char *dest, const char *src
+ 		      : "=&a" (dummy), "+a" (dest), "+a" (src)
+ 		      : "d" (r0), "0" (0UL) : "cc", "memory" );
+ 	return ret;
++#else
++	return __builtin_strcat(dest, src);
++#endif
+ }
+ EXPORT_SYMBOL(strcat);
+ 
 
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
