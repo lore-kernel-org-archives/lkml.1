@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbZBYUlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761388AbZBYUlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760203AbZBYUlA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 15:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZBYUkq
+	id S1761388AbZBYUlm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 15:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbZBYUlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 15:40:46 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:64682 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755889AbZBYUkq (ORCPT
+	Wed, 25 Feb 2009 15:41:32 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55448 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754860AbZBYUlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 15:40:46 -0500
-X-Greylist: delayed 519 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Feb 2009 15:40:45 EST
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 6/8] decnet: fix sparse warnings: symbol shadows an earlier one
-To: netdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Wed, 25 Feb 2009 21:32:39 +0100
-Message-ID: <20090225203233.6251.92817.stgit@vmbox.hanneseder.net>
-In-Reply-To: <20090225203012.6251.32002.stgit@vmbox.hanneseder.net>
-References: <20090225203012.6251.32002.stgit@vmbox.hanneseder.net>
-User-Agent: StGit/0.14.3.348.gcb02
+	Wed, 25 Feb 2009 15:41:31 -0500
+Date: Wed, 25 Feb 2009 20:40:26 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Johannes Weiner <hannes@cmpxchg.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] mm: don't free swap slots on page deactivation
+In-Reply-To: <20090225192550.GA5645@cmpxchg.org>
+Message-ID: <Pine.LNX.4.64.0902252022460.19132@blonde.anvils>
+References: <20090225023830.GA1611@cmpxchg.org> <20090225192550.GA5645@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Remove redundant variable declarations, resp. rename
-inner scope variable.
+On Wed, 25 Feb 2009, Johannes Weiner wrote:
 
-Fix this sparse warnings:
-  net/decnet/af_decnet.c:1252:40: warning: symbol 'skb' shadows an earlier one
-  net/decnet/af_decnet.c:1223:24: originally declared here
-  net/decnet/af_decnet.c:1582:29: warning: symbol 'val' shadows an earlier one
-  net/decnet/af_decnet.c:1527:22: originally declared here
-  net/decnet/dn_dev.c:687:21: warning: symbol 'err' shadows an earlier one
-  net/decnet/dn_dev.c:670:13: originally declared here
-  net/decnet/sysctl_net_decnet.c:182:21: warning: symbol 'len' shadows an earlier one
-  net/decnet/sysctl_net_decnet.c:173:16: originally declared here
+> The pagevec_swap_free() at the end of shrink_active_list() was
+> introduced in 68a22394 "vmscan: free swap space on swap-in/activation"
+> when shrink_active_list() was still rotating referenced active pages.
+> 
+> In 7e9cd48 "vmscan: fix pagecache reclaim referenced bit check" this
+> was changed, the rotating removed but the pagevec_swap_free() after
+> the rotation loop was forgotten, applying now to the pagevec of the
+> deactivation loop instead.
+> 
+> Now swap space is freed for deactivated pages.  And only for those
+> that happen to be on the pagevec after the deactivation loop.
+> 
+> Complete 7e9cd48 and remove the rest of the swap freeing.
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: Rik van Riel <riel@redhat.com>
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- net/decnet/af_decnet.c         |   17 +++++++++--------
- net/decnet/dn_dev.c            |    1 -
- net/decnet/sysctl_net_decnet.c |    2 +-
- 3 files changed, 10 insertions(+), 10 deletions(-)
+Nice observation.  I was going to object that the original code was
+indifferent to whether it was freeing swap from active or inactive,
+they all got lumped into the same pvec.  But that was just an oversight
+in the original code: you're right that if it was our intention to free
+swap from inactive pages here (when vm_swap_full), then we'd be freeing
+it from them in the loop above (where the buffer_heads_over_limit
+pagevec_strip is done).
 
-diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index 12bf7d4..b66fb84 100644
---- a/net/decnet/af_decnet.c
-+++ b/net/decnet/af_decnet.c
-@@ -1246,11 +1246,12 @@ static int dn_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
- 
- 	case TIOCINQ:
- 		lock_sock(sk);
--		if ((skb = skb_peek(&scp->other_receive_queue)) != NULL) {
-+		skb = skb_peek(&scp->other_receive_queue);
-+		if (skb) {
- 			amount = skb->len;
- 		} else {
--			struct sk_buff *skb = sk->sk_receive_queue.next;
--			for(;;) {
-+			skb = sk->sk_receive_queue.next;
-+			for (;;) {
- 				if (skb ==
- 				    (struct sk_buff *)&sk->sk_receive_queue)
- 					break;
-@@ -1579,16 +1580,16 @@ static int __dn_getsockopt(struct socket *sock, int level,int optname, char __us
- 		default:
- #ifdef CONFIG_NETFILTER
- 		{
--			int val, len;
-+			int ret, len;
- 
- 			if(get_user(len, optlen))
- 				return -EFAULT;
- 
--			val = nf_getsockopt(sk, PF_DECnet, optname,
-+			ret = nf_getsockopt(sk, PF_DECnet, optname,
- 							optval, &len);
--			if (val >= 0)
--				val = put_user(len, optlen);
--			return val;
-+			if (ret >= 0)
-+				ret = put_user(len, optlen);
-+			return ret;
- 		}
- #endif
- 		case DSO_STREAM:
-diff --git a/net/decnet/dn_dev.c b/net/decnet/dn_dev.c
-index 5e21a2f..31c37ac 100644
---- a/net/decnet/dn_dev.c
-+++ b/net/decnet/dn_dev.c
-@@ -684,7 +684,6 @@ static int dn_nl_newaddr(struct sk_buff *skb, struct nlmsghdr *nlh, void *arg)
- 		return -ENODEV;
- 
- 	if ((dn_db = dev->dn_ptr) == NULL) {
--		int err;
- 		dn_db = dn_dev_create(dev, &err);
- 		if (!dn_db)
- 			return err;
-diff --git a/net/decnet/sysctl_net_decnet.c b/net/decnet/sysctl_net_decnet.c
-index 965397a..5bcd592 100644
---- a/net/decnet/sysctl_net_decnet.c
-+++ b/net/decnet/sysctl_net_decnet.c
-@@ -179,7 +179,7 @@ static int dn_node_address_handler(ctl_table *table, int write,
- 	}
- 
- 	if (write) {
--		int len = (*lenp < DN_ASCBUF_LEN) ? *lenp : (DN_ASCBUF_LEN-1);
-+		len = (*lenp < DN_ASCBUF_LEN) ? *lenp : (DN_ASCBUF_LEN-1);
- 
- 		if (copy_from_user(addr, buffer, len))
- 			return -EFAULT;
+Once upon a time (early 2007), testing an earlier incarnation of that
+code, I did find almost nothing being freed by that pagevec_swap_free
+anyway: other vm_swap_full frees were being effective, effective
+enough to render this one rather pointless, even when it was operating
+as intended.  But I never got around to checking on that in 2008's
+splitLRU patches, and a lot changed in between: I may be misleading.
 
+If Rik agrees (I think these do need his Ack), note that there are
+no other users of pagevec_swap_free, so you'd do well to remove it
+from mm/swap.c and include/linux/pagevec.h - I can well imagine us
+wanting to bring it back some time, but can easily look it up when
+and if we do need it again in the future.
+
+Hugh
+
+> ---
+>  mm/vmscan.c |    3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1303,9 +1303,6 @@ static void shrink_active_list(unsigned 
+>  	spin_unlock_irq(&zone->lru_lock);
+>  	if (buffer_heads_over_limit)
+>  		pagevec_strip(&pvec);
+> -	if (vm_swap_full())
+> -		pagevec_swap_free(&pvec);
+> -
+>  	pagevec_release(&pvec);
+>  }
+>  
