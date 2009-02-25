@@ -1,128 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbZBYIzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbZBYI7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbZBYIzz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 03:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZBYIzp
+	id S1760841AbZBYI7w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 03:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbZBYI7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 03:55:45 -0500
-Received: from ns2.gothnet.se ([82.193.160.251]:29151 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751634AbZBYIzo (ORCPT
+	Wed, 25 Feb 2009 03:59:43 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:23924 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752979AbZBYI7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 03:55:44 -0500
-Message-ID: <49A5074F.8060307@shipmail.org>
-Date: Wed, 25 Feb 2009 09:54:39 +0100
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-Organization: VMware
-User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
+	Wed, 25 Feb 2009 03:59:42 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ydRHhbNwG8KmHA29Xqh/D+5H6y2EJPn/RnzsA7kwXRrbk4fSPlhXsC2tGINKlW+TLmz/M1aMZuz2qYkAix3Q2PFKVAFEq0s5RiAU3hPsybi8aJreGVULShwqeBOLc2Vt7jSchtLOHMdUbashfsPO2rYpZ16S1Xf45PYDOGAfRMQ=  ;
+X-YMail-OSG: 8aafKZIVM1mC2KUfMnBXGl7kpfq1lTn94hKKsI4aIO1eTCEC0eJN0Jt8AR5sko5itzfVWJe55oWJu0P6MfaOF9eFdjytpxuzfVlhgYgZXYe7g0X0JkXa58BAP8JNFNqCbP4R324wEI_kUQ4hSkjtk0R4U.2oahkLI8zZJHLKnNA5f.GTAD.RhK3gDp5WQo0giV4XoC5dB.PogTV0RJzB4cGwbzK_o.dQick-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
+Date: Wed, 25 Feb 2009 19:59:05 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Salman Qazi <sqazi@google.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+References: <20090224020304.GA4496@google.com> <200902251909.42928.nickpiggin@yahoo.com.au> <20090225082958.GA9322@elte.hu>
+In-Reply-To: <20090225082958.GA9322@elte.hu>
 MIME-Version: 1.0
-To: Eric Anholt <eric@anholt.net>
-CC: Peter Zijlstra <peterz@infradead.org>, Wang Chen <wangchen@cn.fujitsu.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and	struct_mutex.
-References: <1234918786-854-1-git-send-email-eric@anholt.net>	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org>	 <1235082372.4612.665.camel@laptop>  <1235095484.2636.39.camel@gaiman>	 <1235115406.4736.4.camel@laptop> <1235549745.5213.4.camel@gaiman>
-In-Reply-To: <1235549745.5213.4.camel@gaiman>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Disposition: inline
+Message-Id: <200902251959.05853.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Anholt wrote:
-> On Fri, 2009-02-20 at 08:36 +0100, Peter Zijlstra wrote:
->   
->> On Thu, 2009-02-19 at 18:04 -0800, Eric Anholt wrote:
->>     
->>> On Thu, 2009-02-19 at 23:26 +0100, Peter Zijlstra wrote:
->>>       
->>>> On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
->>>>         
->>>>>  
->>>>> It looks to me like the driver preferred locking order is
->>>>>
->>>>> object_mutex (which happens to be the device global struct_mutex)
->>>>>   mmap_sem
->>>>>      offset_mutex.
->>>>>
->>>>> So if one could avoid using the struct_mutex for object bookkeeping (A 
->>>>> separate lock) then
->>>>> vm_open() and vm_close() would adhere to that locking order as well, 
->>>>> simply by not taking the struct_mutex at all.
->>>>>
->>>>> So only fault() remains, in which that locking order is reversed. 
->>>>> Personally I think the trylock ->reschedule->retry method with proper 
->>>>> commenting is a good solution. It will be the _only_ place where locking 
->>>>> order is reversed and it is done in a deadlock-safe manner. Note that 
->>>>> fault() doesn't really fail, but requests a retry from user-space with 
->>>>> rescheduling to give the process holding the struct_mutex time to 
->>>>> release it.
->>>>>           
->>>> It doesn't do the reschedule -- need_resched() will check if the current
->>>> task was marked to be scheduled away, furthermore yield based locking
->>>> sucks chunks.
->>>>         
->> Imagine what would happen if your faulting task was the highest RT prio
->> task in the system, you'd end up with a life-lock.
->>
->>     
->>>> What's so very difficult about pulling the copy_*_user() out from under
->>>> the locks?
->>>>         
->>> That we're expecting the data movement to occur while holding device
->>> state in place.  For example, we write data through the GTT most of the
->>> time so we:
->>>
->>> lock struct_mutex
->>> pin the object to the GTT
->>> flushing caches as needed
->>> copy_from_user
->>> unpin object
->>> unlock struct_mutex
->>>       
->> So you cannot drop the lock once you've pinned the dst object?
->>
->>     
->>> If I'm to pull the copy_from_user out, that means I have to:
->>>
->>> alloc temporary storage
->>> for each block of temp storage size:
->>> 	copy_from_user
->>> 	lock struct_mutex
->>> 	pin the object to the GTT
->>> 	flush caches as needed
->>> 	memcpy
->>> 	unpin object
->>> 	unlock struct_mutex
->>>
->>> At this point of introducing our third copy of the user's data in our
->>> hottest path, we should probably ditch the pwrite path entirely and go
->>> to user mapping of the objects for performance.  Requiring user mapping
->>> (which has significant overhead) cuts the likelihood of moving from
->>> user-space object caching to kernel object caching in the future, which
->>> has the potential of saving steaming piles of memory.
->>>       
->> Or you could get_user_pages() to fault the user pages and pin them, and
->> then do pagefault_disable() and use copy_from_user_inatomic or such, and
->> release the pages again.
->>     
+On Wednesday 25 February 2009 19:29:58 Ingo Molnar wrote:
+> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > On Wednesday 25 February 2009 18:25:03 Ingo Molnar wrote:
+> > > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > > On Wednesday 25 February 2009 02:52:34 Linus Torvalds wrote:
+> > > > > On Tue, 24 Feb 2009, Nick Piggin wrote:
+> > > > > > > it does make some kind of sense to try to avoid the noncached
+> > > > > > > versions for small writes - because small writes tend to be for
+> > > > > > > temp-files.
+> > > > > >
+> > > > > > I don't see the significance of a temp file. If the pagecache is
+> > > > > > truncated, then the cachelines remain dirty and so you can't
+> > > > > > avoid an eventual store back to RAM?
+> > > > >
+> > > > > No, because many small files end up being used as scratch-pads
+> > > > > (think shell script sequences etc), and get read back immediately
+> > > > > again. Doing non-temporal stores might just be bad simply because
+> > > > > trying to play games with caching may simply do the wrong thing.
+> > > >
+> > > > OK, for that angle it could make sense. Although as has been
+> > > > noted earlier, at this point of the copy, we don't have much
+> > > > idea about the length of the write passed into the vfs (and
+> > > > obviously will never know the higher level intention of
+> > > > userspace).
+> > > >
+> > > > I don't know if we can say a 1 page write is nontemporal, but
+> > > > anything smaller is temporal. And having these kinds of
+> > > > behavioural cutoffs I would worry will create strange
+> > > > performance boundary conditions in code.
+> > >
+> > > I agree in principle.
+> > >
+> > > The main artifact would be the unaligned edges around a bigger
+> > > write. In particular the tail portion of a big write will be
+> > > cached.
+> > >
+> > > For example if we write a 100,000 bytes file, we'll copy the
+> > > first 24 pages (98304 bytes) uncached, while the final 1696
+> > > bytes cached. But there is nothing that necessiates this
+> > > assymetry.
+> > >
+> > > For that reason it would be nice to pass down the total size of
+> > > the write to the assembly code. These are single-usage-site APIs
+> > > anyway so it should be easy.
+> > >
+> > > I.e. something like the patch below (untested). I've extended
+> > > the copy APIs to also pass down a 'total' size as well, and
+> > > check for that instead of the chunk 'len'. Note that it's
+> > > checked in the inlined portion so all the "total == len" special
+> > > cases will optimize out the new parameter completely.
+> >
+> > This does give more information, not exactly all (it could be
+> > a big total write with many smaller writes especially if the
+> > source is generated on the fly and will be in cache, or if the
+> > source is not in cache, then we would also want to do
+> > nontemporal loads from there etc etc).
 >
-> I started poking at this today, since the get_user_pages sounded like
-> the solution.  Only then I noticed: when we unbind an existing object,
-> we have to unmap_mapping_range to clear the clients' mappings to it in
-> the GTT, which needs to happen while the struct lock (protecting the gtt
-> structure and the gtt to object mappings) is held.  So for fault we have
-> mmap_sem held to struct mutex taken for poking at the gtt structure, and
-> for unbind we have struct mutex held to mmap_sem taken to clear
-> mappings.
+> A big total write with many smaller writes should already be
+> handled in this codepath, as long as it's properly iovec-ed.
+
+No I'm talking about this next case:
+
+> We can do little about user-space doing stupid things as doing a
+> big write as a series of many smaller-than-4K writes.
+
+Not necessarily smaller than 4K writes, but even as a series of 4K
+writes. It isn't stupid thing to do if the source memory is always
+in cache. But if you destination is unlikely to be used, then you
+still would want nontemporal stores.
+
+
+> > > This should express the 'large vs. small' question
+> > > adequately, with no artifacts. Agreed?
+> >
+> > Well, no artifacts, but it still has a boundary condition
+> > where one might cut from temporal to nontemporal behaviour.
+> >
+> > If it is a *really* important issue, maybe some flags should
+> > be incorporated into an extended API? It not, then I wonder if
+> > it is important enough to add such complexity for?
 >
->   
-I don't think the mmap_sem is taken during unmap_mapping_rage() ?
+> the iozone numbers in the old commits certainly are convincing.
 
-/Thomas
-
+Yes. The common case should be not touching the page again.
 
 
+> The new numbers from Salman are convincing too - and his fix
 
+I'm not exactly convinced. The boundary behaviour condition is a
+real negative. What I question is whether that benchmark is not
+doing something stupid. He is quoting the write(2)-only portion
+of the benchmark, so the speedup does not come from the app reading
+back results from cache. It comes from either overwriting the same
+dirty cachelines (a performance critical program should really
+avoid doing this if possible anyway); or the cached stores simply
+pipelining better with non-store operations (but in that case you
+probably still want non-temporal stores anyway because if your
+workload is doing any real work, you don't want to push its cache
+out with these stores).
+
+So, can we find something that is more realistic? Doesn't gcc
+create several stages of temporary files?
 
