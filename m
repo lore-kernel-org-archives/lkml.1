@@ -1,42 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761358AbZBYVkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762641AbZBYVkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761358AbZBYVkg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:40:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZBYVk1
+	id S1762641AbZBYVkw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZBYVk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:40:27 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:37706 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752132AbZBYVk0 (ORCPT
+	Wed, 25 Feb 2009 16:40:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45620 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752325AbZBYVk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:40:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=grWfDzDHY9p5rw7eRqghbaCuBTOGm7acn/uLlifPabguUdrwoSB0mmiGEp8b3aAuK0
-         uGQHHvB1mn8tRWNuHO9i1RVQrYYqTJzTVHP2WmYDWO1FyGuYZ9Noo+BDDYLUXwB+bObQ
-         DckizwWijWBlgtBEIaGpYT2OwcddE5Ef0/JQE=
-Date: Wed, 25 Feb 2009 22:40:19 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
+	Wed, 25 Feb 2009 16:40:27 -0500
+Date: Wed, 25 Feb 2009 13:39:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
+       fweisbec@gmail.com, srostedt@redhat.com
 Subject: Re: [PATCH 1/4] uaccess: add copy_word_from_user
-Message-ID: <20090225214018.GB5838@nowhere>
-References: <20090225203007.582030664@goodmis.org> <20090225203427.382137706@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-Id: <20090225133929.f67163e3.akpm@linux-foundation.org>
 In-Reply-To: <20090225203427.382137706@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20090225203007.582030664@goodmis.org>
+	<20090225203427.382137706@goodmis.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 03:30:08PM -0500, Steven Rostedt wrote:
+On Wed, 25 Feb 2009 15:30:08 -0500
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > From: Steven Rostedt <srostedt@redhat.com>
 > 
 > The ftrace utility reads space delimited words from user space.
@@ -48,14 +42,10 @@ On Wed, Feb 25, 2009 at 03:30:08PM -0500, Steven Rostedt wrote:
 > a new lib/uaccess.c file. This keeps the code in a single location
 > and may be optimized in the future.
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  include/linux/uaccess.h |    4 ++
->  lib/Makefile            |    3 +-
->  lib/uaccess.c           |  134 +++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 140 insertions(+), 1 deletions(-)
->  create mode 100644 lib/uaccess.c
-> 
+
+Does your code actually still need this?  It is unacceptble to just
+be more strict about userspace's write()s?
+
 > diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
 > index 6b58367..2d706d9 100644
 > --- a/include/linux/uaccess.h
@@ -92,7 +82,10 @@ On Wed, Feb 25, 2009 at 03:30:08PM -0500, Steven Rostedt wrote:
 > +/*
 > + * lib/uaccess.c
 > + * generic user access file.
-> + *
+
+That's a good place for it.  I wonder if we have other uaccess
+functions which should be moved here sometime.
+
 > + * started by Steven Rostedt
 > + *
 > + *  Copyright (C) 2009 Red Hat, Inc., Steven Rostedt <srostedt@redhat.com>
@@ -112,14 +105,6 @@ On Wed, Feb 25, 2009 at 03:30:08PM -0500, Steven Rostedt wrote:
 > + * @copied:  The number of bytes actually copied to @to
 > + * @skip:    If other than zero, will skip leading white space
 > + *
-
-
-Why not expand it to a copy_delimited_from_user() ?
-This way we could use any separator we want, not just spaces.
-We could use one more parameter for the separator and
-copy_work_from_user would be a wrapper above.
-
-
 > + * This reads from a user buffer, a space delimited word.
 > + * If skip is set, then it will trim all leading white space.
 > + * Then it will copy all non white space until @copy bytes have
@@ -131,7 +116,18 @@ copy_work_from_user would be a wrapper above.
 > + *
 > + * Returns:
 > + *  The number of bytes read from user space
-> + *
+
+Confused.
+
+Is this "the number of bytes which I copied into *to", or is it "the
+number of userspace bytes over which I advanced"?
+
+Hopefully the latter, because callers of copy_word_from_user() should
+be able to call this function multiple times to be able to parse "foo
+bar zot\0" into three separate words with three separate calls to
+copy_word_from_user().  It might be worth mentioning how callers should
+do this in the covering comment?
+
 > + *  -EAGAIN, if we copied a word successfully, but never hit
 > + *    ending white space. The number of bytes copied will be the same
 > + *    as @read. Note, if skip is set, and all we hit was white space
@@ -149,6 +145,11 @@ copy_work_from_user would be a wrapper above.
 > +			unsigned int copy, unsigned int read,
 > +			unsigned int *copied, int skip)
 > +{
+
+The uaccess functions are a bit confused about whether the `size' args
+are unsigned, unsigned long, etc.  They should be size_t.  unsigned is
+OK here.
+
 > +	unsigned int have_read = 0;
 > +	unsigned int have_copied = 0;
 > +	const char __user *user = from;
@@ -231,8 +232,9 @@ copy_work_from_user would be a wrapper above.
 > +
 > +	return ret;
 > +}
-> -- 
-> 1.5.6.5
-> 
-> -- 
+
+Sheer madness ;)
+
+Someone is going to want to extend the "isspace" to include other
+tokens.  We can fall off that bridge when we come to it.
 
