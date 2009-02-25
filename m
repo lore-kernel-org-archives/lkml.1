@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761388AbZBYUlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbZBYUm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761388AbZBYUlm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 15:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbZBYUlc
+	id S1761665AbZBYUm0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 15:42:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757451AbZBYUmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 15:41:32 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55448 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754860AbZBYUlb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 15:41:31 -0500
-Date: Wed, 25 Feb 2009 20:40:26 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Johannes Weiner <hannes@cmpxchg.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] mm: don't free swap slots on page deactivation
-In-Reply-To: <20090225192550.GA5645@cmpxchg.org>
-Message-ID: <Pine.LNX.4.64.0902252022460.19132@blonde.anvils>
-References: <20090225023830.GA1611@cmpxchg.org> <20090225192550.GA5645@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Feb 2009 15:42:18 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53773 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754988AbZBYUmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 15:42:17 -0500
+Subject: Re: ATI Radeon DIRECTCOLOR -> TRUECOLOR patch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Cc: jon@nerdgrounds.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20090225.035712.103590506.davem@davemloft.net>
+References: <49A52A73.2000406@nerdgrounds.com>
+	 <20090225.035712.103590506.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 07:42:04 +1100
+Message-Id: <1235594524.8805.326.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, Johannes Weiner wrote:
-
-> The pagevec_swap_free() at the end of shrink_active_list() was
-> introduced in 68a22394 "vmscan: free swap space on swap-in/activation"
-> when shrink_active_list() was still rotating referenced active pages.
+On Wed, 2009-02-25 at 03:57 -0800, David Miller wrote:
+> From: Jonathan Campbell <jon@nerdgrounds.com>
+> Date: Wed, 25 Feb 2009 03:24:35 -0800
 > 
-> In 7e9cd48 "vmscan: fix pagecache reclaim referenced bit check" this
-> was changed, the rotating removed but the pagevec_swap_free() after
-> the rotation loop was forgotten, applying now to the pagevec of the
-> deactivation loop instead.
+> [ Ben H. is the Radeon driver maintainer, as listed in
+>   linux/MAINTAINERS, you might want to CC: him ]
 > 
-> Now swap space is freed for deactivated pages.  And only for those
-> that happen to be on the pagevec after the deactivation loop.
+> > I don't know about you but when I ask the framebuffer to set up
+> > 16-bit or 32-bit RGB modes I expect a video mode to be set up with
+> > R, G, and B mapped linearly so that I can display images properly,
+> > not some odd "directcolor" mode that seems to serve no other purpose
+> > than to avoid a few shifts converting the fbcon palette to an RGB
+> > triplet.
 > 
-> Complete 7e9cd48 and remove the rest of the swap freeing.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Rik van Riel <riel@redhat.com>
+> It might be using DIRECTCOLOR for compatibility with openfirmware,
+> BOOTX, or similar on PowerPC.
 
-Nice observation.  I was going to object that the original code was
-indifferent to whether it was freeing swap from active or inactive,
-they all got lumped into the same pvec.  But that was just an oversight
-in the original code: you're right that if it was our intention to free
-swap from inactive pages here (when vm_swap_full), then we'd be freeing
-it from them in the loop above (where the buffer_heads_over_limit
-pagevec_strip is done).
+Hrm, the kernel fb layer does seem to do strange things with the palette
+for >8bpp stuff indeed. I'm not entirely sure why.
 
-Once upon a time (early 2007), testing an earlier incarnation of that
-code, I did find almost nothing being freed by that pagevec_swap_free
-anyway: other vm_swap_full frees were being effective, effective
-enough to render this one rather pointless, even when it was operating
-as intended.  But I never got around to checking on that in 2008's
-splitLRU patches, and a lot changed in between: I may be misleading.
+The problem if you switch to truecolor is that you remove the ability to
+set the gamma ramp completely which some apps use.
 
-If Rik agrees (I think these do need his Ack), note that there are
-no other users of pagevec_swap_free, so you'd do well to remove it
-from mm/swap.c and include/linux/pagevec.h - I can well imagine us
-wanting to bring it back some time, but can easily look it up when
-and if we do need it again in the future.
+Normally, I'd say it's the responsibility of your application, when it's
+displaying pictures, to set an appropriate cmap. If you don't like the
+one set by fbcon for displaying text, just set another one. Ie. You
+aren't -supposed- to mix graphics and fbcon text from an application...
+if you're going to blast to the fb, you should switch to KD_GRAPHICS (ie
+take ownership of the VT) and set a linear ramp yourself.
 
-Hugh
+Cheers,
+Ben.
 
-> ---
->  mm/vmscan.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1303,9 +1303,6 @@ static void shrink_active_list(unsigned 
->  	spin_unlock_irq(&zone->lru_lock);
->  	if (buffer_heads_over_limit)
->  		pagevec_strip(&pvec);
-> -	if (vm_swap_full())
-> -		pagevec_swap_free(&pvec);
-> -
->  	pagevec_release(&pvec);
->  }
->  
+
