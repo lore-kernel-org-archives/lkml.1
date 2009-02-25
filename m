@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbZBYP7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762136AbZBYQAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762278AbZBYP7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 10:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbZBYP7E
+	id S1762136AbZBYQAz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 11:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbZBYQAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 10:59:04 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:34172 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755402AbZBYP7B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 10:59:01 -0500
-Date: Wed, 25 Feb 2009 16:58:58 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Frank Seidel <frank@f-seidel.de>
-cc: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, nhorman@tuxdriver.com,
-       lho@amcc.com, kaber@trash.net, darrenrjenkins@gmail.com
-Subject: Re: [PATCHv3][trivial] crypto: tcrypt - reduce stack size
-In-Reply-To: <49A56A2B.4040305@f-seidel.de>
-Message-ID: <alpine.LRH.2.00.0902251657431.15476@vixen.sonytel.be>
-References: <49A54C23.8090209@suse.de> <49A5549F.4070304@suse.de> <49A55B5A.70705@suse.de> <alpine.LRH.2.00.0902251604430.15476@vixen.sonytel.be> <49A56A2B.4040305@f-seidel.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 25 Feb 2009 11:00:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43055 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755564AbZBYQAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 11:00:46 -0500
+Date: Wed, 25 Feb 2009 17:00:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, vegard.nossum@gmail.com, stable@kernel.org,
+       akpm@linux-foundation.org, npiggin@suse.de, penberg@cs.helsinki.fi
+Subject: Re: [PATCH] v4 Teach RCU that idle task is not quiscent state at
+	boot
+Message-ID: <20090225160024.GB12732@elte.hu>
+References: <20090223161611.GA9563@linux.vnet.ibm.com> <20090223204332.GA19861@linux.vnet.ibm.com> <20090225002937.GA23733@linux.vnet.ibm.com> <20090225141945.GA28455@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225141945.GA28455@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, Frank Seidel wrote:
-> Geert Uytterhoeven wrote:
-> > BTW, why are you using printk(KERN_INFO "..."), and not pr_info("...")?
-> 
-> Without special reason. Is pr_info preferred?
 
-It's shorter.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-Especially `pr_err' fits in the space of `printk', so you don't have to split
-lines that become to long due to adding the KERN_*.
+> +/* Internal to kernel, but needed by rcupreempt.h. */
+> +extern int rcu_idle_cpu_truthful;
 
-With kind regards,
+The name sucks a bit ;-) 'truthful' is an emotionally laden 
+statement and distracts from the technical purpose when reading 
+it ;)
 
-Geert Uytterhoeven
-Software Architect
+Same for:
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+> +extern void rcu_idle_now_means_idle(void);
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+Also, i'm wondering, is there really no way to avoid this quirk. 
+We almost got away without it for a long time.
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+This one:
+
+>  void rcu_check_callbacks(int cpu, int user)
+>  {
+>  	if (user ||
+> -	    (idle_cpu(cpu) && !in_softirq() &&
+> -				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+> +	    (idle_cpu(cpu) && rcu_idle_cpu_truthful &&
+> +	     !in_softirq() && hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+
+Is a hotpath called very often ...
+
+	Ingo
