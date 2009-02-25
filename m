@@ -1,112 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZBYCLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbZBYCMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbZBYCLV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 21:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZBYCLL
+	id S1758269AbZBYCMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 21:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbZBYCL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 21:11:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47769 "EHLO hera.kernel.org"
+	Tue, 24 Feb 2009 21:11:58 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:34225 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753645AbZBYCLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 21:11:11 -0500
-Message-ID: <49A4A8A5.7030400@kernel.org>
-Date: Wed, 25 Feb 2009 11:10:45 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
-       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       jeremy@goop.org, cpw@sgi.com, nickpiggin@yahoo.com.au,
-       ink@jurassic.park.msu.ru
-Subject: [PATCH x86/core/percpu 2/2] x86: convert cacheflush macros inline
- functions
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224201718.GE28772@elte.hu> <20090224205105.GA19460@elte.hu> <20090224211659.GA3687@elte.hu>
-In-Reply-To: <20090224211659.GA3687@elte.hu>
-X-Enigmail-Version: 0.95.7
+	id S1752340AbZBYCL5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 21:11:57 -0500
+Date: Tue, 24 Feb 2009 18:11:53 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, jesse.brandeburg@intel.com
+Subject: Re: [RFC v1] hand off skb list to other cpu to submit to upper
+ layer
+Message-ID: <20090224181153.06aa1fbd@nehalam>
+In-Reply-To: <1235525270.2604.483.camel@ymzhang>
+References: <1235525270.2604.483.camel@ymzhang>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.15.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Feb 2009 02:10:30 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+On Wed, 25 Feb 2009 09:27:49 +0800
+"Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
 
-Unused macro parameters cause spurious unused variable warnings.
-Convert all cacheflush macros to inline functions to avoid the
-warnings and achieve better type checking.
+> ﻿Subject: hand off skb list to other cpu to submit to upper layer
+> From: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> 
+> Recently, I am investigating an ip_forward performance issue with 10G IXGBE NIC.
+> I start the testing on 2 machines. Every machine has 2 10G NICs. The 1st one seconds
+> packets by pktgen. The 2nd receives the packets from one NIC and forwards them out
+> from the 2nd NIC. As NICs supports multi-queue, I bind the queues to different logical
+> cpu of different physical cpu while considering cache sharing carefully.
+> 
+> Comparing with sending speed on the 1st machine, the forward speed is not good, only
+> about 60% of sending speed. As a matter of fact, IXGBE driver starts NAPI when interrupt
+> arrives. When ip_forward=1, receiver collects a packet and forwards it out immediately.
+> So although IXGBE collects packets with NAPI, the forwarding really has much impact on
+> collection. As IXGBE runs very fast, it drops packets quickly. The better way for
+> receiving cpu is doing nothing than just collecting packets.
+> 
+> Currently kernel has backlog to support a similar capability, but process_backlog still
+> runs on the receiving cpu. I enhance backlog by adding a new input_pkt_alien_queue to
+> softnet_data. Receving cpu collects packets and link them into skb list, then delivers
+> the list to the ﻿input_pkt_alien_queue of other cpu. process_backlog picks up the skb list
+> from ﻿input_pkt_alien_queue when ﻿input_pkt_queue is empty.
+> 
+> NIC driver could use this capability like below step in NAPI RX cleanup function.
+> 1) Initiate a local var struct sk_buff_head skb_head;
+> 2) In the packet collection loop, just calls netif_rx_queue or __skb_queue_tail(skb_head, skb)
+> to add skb to the list;
+> 3) Before exiting, calls raise_netif_irq to submit the skb list to specific cpu.
+> 
+> Enlarge /proc/sys/net/core/netdev_max_backlog and netdev_budget before testing.
+> 
+> I tested my patch on top of 2.6.28.5. The improvement is about 43%.
+> 
+> Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> 
+> ---
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- arch/x86/include/asm/cacheflush.h |   53 +++++++++++++++++++++++++------------
- 1 files changed, 36 insertions(+), 17 deletions(-)
+You can't safely put packets on another CPU queue without adding a spinlock.
+And if you add the spinlock, you drop the performance back down for your
+device and all the other devices. Also, you will end up reordering
+packets which hurts single stream TCP performance.
 
-diff --git a/arch/x86/include/asm/cacheflush.h b/arch/x86/include/asm/cacheflush.h
-index 2f84665..5b301b7 100644
---- a/arch/x86/include/asm/cacheflush.h
-+++ b/arch/x86/include/asm/cacheflush.h
-@@ -5,24 +5,43 @@
- #include <linux/mm.h>
- 
- /* Caches aren't brain-dead on the intel. */
--#define flush_cache_all()			do { } while (0)
--#define flush_cache_mm(mm)			do { } while (0)
--#define flush_cache_dup_mm(mm)			do { } while (0)
--#define flush_cache_range(vma, start, end)	do { } while (0)
--#define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
--#define flush_dcache_page(page)			do { } while (0)
--#define flush_dcache_mmap_lock(mapping)		do { } while (0)
--#define flush_dcache_mmap_unlock(mapping)	do { } while (0)
--#define flush_icache_range(start, end)		do { } while (0)
--#define flush_icache_page(vma, pg)		do { } while (0)
--#define flush_icache_user_range(vma, pg, adr, len)	do { } while (0)
--#define flush_cache_vmap(start, end)		do { } while (0)
--#define flush_cache_vunmap(start, end)		do { } while (0)
-+static inline void flush_cache_all(void) { }
-+static inline void flush_cache_mm(struct mm_struct *mm) { }
-+static inline void flush_cache_dup_mm(struct mm_struct *mm) { }
-+static inline void flush_cache_range(struct vm_area_struct *vma,
-+				     unsigned long start, unsigned long end) { }
-+static inline void flush_cache_page(struct vm_area_struct *vma,
-+				    unsigned long vmaddr, unsigned long pfn) { }
-+static inline void flush_dcache_page(struct page *page) { }
-+static inline void flush_dcache_mmap_lock(struct address_space *mapping) { }
-+static inline void flush_dcache_mmap_unlock(struct address_space *mapping) { }
-+static inline void flush_icache_range(unsigned long start,
-+				      unsigned long end) { }
-+static inline void flush_icache_page(struct vm_area_struct *vma,
-+				     struct page *page) { }
-+static inline void flush_icache_user_range(struct vm_area_struct *vma,
-+					   struct page *page,
-+					   unsigned long addr,
-+					   unsigned long len) { }
-+static inline void flush_cache_vmap(unsigned long start, unsigned long end) { }
-+static inline void flush_cache_vunmap(unsigned long start,
-+				      unsigned long end) { }
- 
--#define copy_to_user_page(vma, page, vaddr, dst, src, len)	\
--	memcpy((dst), (src), (len))
--#define copy_from_user_page(vma, page, vaddr, dst, src, len)	\
--	memcpy((dst), (src), (len))
-+static inline void copy_to_user_page(struct vm_area_struct *vma,
-+				     struct page *page, unsigned long vaddr,
-+				     void *dst, const void *src,
-+				     unsigned long len)
-+{
-+	memcpy(dst, src, len);
-+}
-+
-+static inline void copy_from_user_page(struct vm_area_struct *vma,
-+				       struct page *page, unsigned long vaddr,
-+				       void *dst, const void *src,
-+				       unsigned long len)
-+{
-+	memcpy(dst, src, len);
-+}
- 
- #define PG_non_WB				PG_arch_1
- PAGEFLAG(NonWB, non_WB)
--- 
-1.6.0.2
-
+Is this all because the hardware doesn't do MSI-X or are you testing only
+a single flow. 
