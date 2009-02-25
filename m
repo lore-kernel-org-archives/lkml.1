@@ -1,54 +1,519 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbZBYSQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbZBYSTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757825AbZBYSQi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 13:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZBYSQ0
+	id S1756427AbZBYSTq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 13:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZBYSTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 13:16:26 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:55470 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbZBYSQZ (ORCPT
+	Wed, 25 Feb 2009 13:19:37 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:51122 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbZBYSTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 13:16:25 -0500
-Date: Wed, 25 Feb 2009 20:16:12 +0200
-From: Felipe Balbi <me@felipebalbi.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH] usb: musb: - kill the compile warning
-Message-ID: <20090225181611.GL31792@frodo>
-Reply-To: me@felipebalbi.com
-References: <1233915810-18616-1-git-send-email-cooloney@kernel.org>
+	Wed, 25 Feb 2009 13:19:34 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kyle McMartin <kyle@infradead.org>
+Subject: [PATCH] Make exported headers use strict posix types
+Date: Wed, 25 Feb 2009 19:17:47 +0100
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+References: <20090225032553.GD6690@bombadil.infradead.org> <49A4F051.3000706@zytor.com> <20090225072202.GI6690@bombadil.infradead.org>
+In-Reply-To: <20090225072202.GI6690@bombadil.infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1233915810-18616-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+Message-Id: <200902251917.49017.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+9yIvIRbHfjSPt1f/1wzICRuHe0NEUx3DA0Vo
+ E4wc5luGRFKqPRevqEl1sfEGWzGLbBdrDglLKtZ1Q+E5rk9Kvm
+ b5CIY6n08cqgWxeLzxZyA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 06:23:30PM +0800, Bryan Wu wrote:
-> drivers/usb/musb/musb_core.c:1433: warning: assignment makes pointer
-> from integer without a cast
-> 	hw_ep->target_regs = musb_read_target_reg_base(i, mbase);
-> 
-> static inline u16 musb_read_target_reg_base(u8 i, void __iomem *mbase);
-> 
-> this is a common bug, but a bug still ?  mbase is a 32/64 bit pointer,
-> but we return a u16 to assign to a pointer ?  seems odd :)
-> 
-> So return right pointer in the stub.
-> 
-> Cc: Mike Frysinger <vapier.adi@gmail.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+A number of standard posix types are used in exported headers, which
+is not allowed if __STRICT_KERNEL_NAMES is defined. In order to
+get rid of the non-__STRICT_KERNEL_NAMES part and to make sane headers
+the default, we have to change them all to safe types.
 
-any new version coming ??
+There are also still some leftovers in reiserfs_fs.h, elfcore.h
+and coda.h, but these files have not compiled in user space for
+a long time.
 
--- 
-balbi
+This leaves out the various integer types (u_int32_t, uint32_t, u32,
+uint and the signed and 8/16/64 bit variants thereof), which we may
+want to do in an automated script instead.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+On Wednesday 25 February 2009, Kyle McMartin wrote:
+> On Tue, Feb 24, 2009 at 11:16:33PM -0800, H. Peter Anvin wrote:
+> > Not all that bad, actually.
+> > 
+> > This is the last patch I've seen on the subject:
+> > 
+> > http://marc.info/?i=200902051707.55457.arnd@arndb.de
+> > 
+> 
+> Ah, excellent. I must have missed it (looks like Arnd didn't send it to
+> linux-arch@ as well. :)
+
+This is my previous patch, ported to today's git. It's my last day
+before my vacation, so I can't do the usual testing etc. on it.
+Hopefully somebody else can take care of this.
+
+	Arnd <><
+
+diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
+index b847741..4d3e483 100644
+--- a/include/asm-generic/fcntl.h
++++ b/include/asm-generic/fcntl.h
+@@ -117,9 +117,9 @@
+ struct flock {
+ 	short	l_type;
+ 	short	l_whence;
+-	off_t	l_start;
+-	off_t	l_len;
+-	pid_t	l_pid;
++	__kernel_off_t	l_start;
++	__kernel_off_t	l_len;
++	__kernel_pid_t	l_pid;
+ 	__ARCH_FLOCK_PAD
+ };
+ #endif
+@@ -140,9 +140,9 @@ struct flock {
+ struct flock64 {
+ 	short  l_type;
+ 	short  l_whence;
+-	loff_t l_start;
+-	loff_t l_len;
+-	pid_t  l_pid;
++	__kernel_loff_t l_start;
++	__kernel_loff_t l_len;
++	__kernel_pid_t  l_pid;
+ 	__ARCH_FLOCK64_PAD
+ };
+ #endif
+diff --git a/include/asm-generic/siginfo.h b/include/asm-generic/siginfo.h
+index 9695701..35f75a3 100644
+--- a/include/asm-generic/siginfo.h
++++ b/include/asm-generic/siginfo.h
+@@ -23,7 +23,7 @@ typedef union sigval {
+ #endif
+ 
+ #ifndef __ARCH_SI_UID_T
+-#define __ARCH_SI_UID_T	uid_t
++#define __ARCH_SI_UID_T	__kernel_uid_t
+ #endif
+ 
+ /*
+@@ -47,13 +47,13 @@ typedef struct siginfo {
+ 
+ 		/* kill() */
+ 		struct {
+-			pid_t _pid;		/* sender's pid */
++			__kernel_pid_t _pid;	/* sender's pid */
+ 			__ARCH_SI_UID_T _uid;	/* sender's uid */
+ 		} _kill;
+ 
+ 		/* POSIX.1b timers */
+ 		struct {
+-			timer_t _tid;		/* timer id */
++			__kernel_timer_t _tid;	/* timer id */
+ 			int _overrun;		/* overrun count */
+ 			char _pad[sizeof( __ARCH_SI_UID_T) - sizeof(int)];
+ 			sigval_t _sigval;	/* same as below */
+@@ -62,18 +62,18 @@ typedef struct siginfo {
+ 
+ 		/* POSIX.1b signals */
+ 		struct {
+-			pid_t _pid;		/* sender's pid */
++			__kernel_pid_t _pid;	/* sender's pid */
+ 			__ARCH_SI_UID_T _uid;	/* sender's uid */
+ 			sigval_t _sigval;
+ 		} _rt;
+ 
+ 		/* SIGCHLD */
+ 		struct {
+-			pid_t _pid;		/* which child */
++			__kernel_pid_t _pid;	/* which child */
+ 			__ARCH_SI_UID_T _uid;	/* sender's uid */
+ 			int _status;		/* exit code */
+-			clock_t _utime;
+-			clock_t _stime;
++			__kernel_clock_t _utime;
++			__kernel_clock_t _stime;
+ 		} _sigchld;
+ 
+ 		/* SIGILL, SIGFPE, SIGSEGV, SIGBUS */
+diff --git a/include/linux/agpgart.h b/include/linux/agpgart.h
+index 110c600..f6778ec 100644
+--- a/include/linux/agpgart.h
++++ b/include/linux/agpgart.h
+@@ -77,20 +77,20 @@ typedef struct _agp_setup {
+  * The "prot" down below needs still a "sleep" flag somehow ...
+  */
+ typedef struct _agp_segment {
+-	off_t pg_start;		/* starting page to populate    */
+-	size_t pg_count;	/* number of pages              */
+-	int prot;		/* prot flags for mmap          */
++	__kernel_off_t pg_start;	/* starting page to populate    */
++	__kernel_size_t pg_count;	/* number of pages              */
++	int prot;			/* prot flags for mmap          */
+ } agp_segment;
+ 
+ typedef struct _agp_region {
+-	pid_t pid;		/* pid of process               */
+-	size_t seg_count;	/* number of segments           */
++	__kernel_pid_t pid;		/* pid of process       */
++	__kernel_size_t seg_count;	/* number of segments   */
+ 	struct _agp_segment *seg_list;
+ } agp_region;
+ 
+ typedef struct _agp_allocate {
+ 	int key;		/* tag of allocation            */
+-	size_t pg_count;	/* number of pages              */
++	__kernel_size_t pg_count;/* number of pages             */
+ 	__u32 type;		/* 0 == normal, other devspec   */
+    	__u32 physical;         /* device specific (some devices  
+ 				 * need a phys address of the     
+@@ -100,7 +100,7 @@ typedef struct _agp_allocate {
+ 
+ typedef struct _agp_bind {
+ 	int key;		/* tag of allocation            */
+-	off_t pg_start;		/* starting page to populate    */
++	__kernel_off_t pg_start;/* starting page to populate    */
+ } agp_bind;
+ 
+ typedef struct _agp_unbind {
+diff --git a/include/linux/cn_proc.h b/include/linux/cn_proc.h
+index 1c86d65..b8125b2 100644
+--- a/include/linux/cn_proc.h
++++ b/include/linux/cn_proc.h
+@@ -65,20 +65,20 @@ struct proc_event {
+ 		} ack;
+ 
+ 		struct fork_proc_event {
+-			pid_t parent_pid;
+-			pid_t parent_tgid;
+-			pid_t child_pid;
+-			pid_t child_tgid;
++			__kernel_pid_t parent_pid;
++			__kernel_pid_t parent_tgid;
++			__kernel_pid_t child_pid;
++			__kernel_pid_t child_tgid;
+ 		} fork;
+ 
+ 		struct exec_proc_event {
+-			pid_t process_pid;
+-			pid_t process_tgid;
++			__kernel_pid_t process_pid;
++			__kernel_pid_t process_tgid;
+ 		} exec;
+ 
+ 		struct id_proc_event {
+-			pid_t process_pid;
+-			pid_t process_tgid;
++			__kernel_pid_t process_pid;
++			__kernel_pid_t process_tgid;
+ 			union {
+ 				__u32 ruid; /* task uid */
+ 				__u32 rgid; /* task gid */
+@@ -90,8 +90,8 @@ struct proc_event {
+ 		} id;
+ 
+ 		struct exit_proc_event {
+-			pid_t process_pid;
+-			pid_t process_tgid;
++			__kernel_pid_t process_pid;
++			__kernel_pid_t process_tgid;
+ 			__u32 exit_code, exit_signal;
+ 		} exit;
+ 	} event_data;
+diff --git a/include/linux/coda_psdev.h b/include/linux/coda_psdev.h
+index 07ae8f8..ebdc055 100644
+--- a/include/linux/coda_psdev.h
++++ b/include/linux/coda_psdev.h
+@@ -6,6 +6,7 @@
+ #define CODA_PSDEV_MAJOR 67
+ #define MAX_CODADEVS  5	   /* how many do we allow */
+ 
++#ifdef __KERNEL__
+ struct kstatfs;
+ 
+ /* communication pending/processing queues */
+@@ -89,4 +90,5 @@ struct upc_req {
+ 
+ extern struct venus_comm coda_comms[];
+ 
++#endif /* __KERNEL__ */
+ #endif
+diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
+index 0999271..f6dcc29 100644
+--- a/include/linux/compiler-gcc4.h
++++ b/include/linux/compiler-gcc4.h
+@@ -4,7 +4,7 @@
+ 
+ /* GCC 4.1.[01] miscompiles __weak */
+ #if __GNUC_MINOR__ == 1 && __GNUC_PATCHLEVEL__ <= 1
+-# error Your version of gcc miscompiles the __weak directive
++// # error Your version of gcc miscompiles the __weak directive
+ #endif
+ 
+ #define __used			__attribute__((__used__))
+diff --git a/include/linux/cyclades.h b/include/linux/cyclades.h
+index d06fbf2..788850b 100644
+--- a/include/linux/cyclades.h
++++ b/include/linux/cyclades.h
+@@ -82,9 +82,9 @@ struct cyclades_monitor {
+  * open)
+  */
+ struct cyclades_idle_stats {
+-    time_t	   in_use;	/* Time device has been in use (secs) */
+-    time_t	   recv_idle;	/* Time since last char received (secs) */
+-    time_t	   xmit_idle;	/* Time since last char transmitted (secs) */
++    __kernel_time_t in_use;	/* Time device has been in use (secs) */
++    __kernel_time_t recv_idle;	/* Time since last char received (secs) */
++    __kernel_time_t xmit_idle;	/* Time since last char transmitted (secs) */
+     unsigned long  recv_bytes;	/* Bytes received */
+     unsigned long  xmit_bytes;	/* Bytes transmitted */
+     unsigned long  overruns;	/* Input overruns */
+diff --git a/include/linux/dvb/video.h b/include/linux/dvb/video.h
+index bd49c3e..ee5d2df 100644
+--- a/include/linux/dvb/video.h
++++ b/include/linux/dvb/video.h
+@@ -137,7 +137,7 @@ struct video_event {
+ #define VIDEO_EVENT_FRAME_RATE_CHANGED	2
+ #define VIDEO_EVENT_DECODER_STOPPED 	3
+ #define VIDEO_EVENT_VSYNC 		4
+-	time_t timestamp;
++	__kernel_time_t timestamp;
+ 	union {
+ 		video_size_t size;
+ 		unsigned int frame_rate;	/* in frames per 1000sec */
+diff --git a/include/linux/if_pppol2tp.h b/include/linux/if_pppol2tp.h
+index c7a6688..3a14b08 100644
+--- a/include/linux/if_pppol2tp.h
++++ b/include/linux/if_pppol2tp.h
+@@ -26,7 +26,7 @@
+  */
+ struct pppol2tp_addr
+ {
+-	pid_t	pid;			/* pid that owns the fd.
++	__kernel_pid_t	pid;		/* pid that owns the fd.
+ 					 * 0 => current */
+ 	int	fd;			/* FD of UDP socket to use */
+ 
+diff --git a/include/linux/mroute6.h b/include/linux/mroute6.h
+index 5375fac..43dc97e 100644
+--- a/include/linux/mroute6.h
++++ b/include/linux/mroute6.h
+@@ -65,7 +65,7 @@ struct mif6ctl {
+ 	mifi_t	mif6c_mifi;		/* Index of MIF */
+ 	unsigned char mif6c_flags;	/* MIFF_ flags */
+ 	unsigned char vifc_threshold;	/* ttl limit */
+-	u_short	 mif6c_pifi;		/* the index of the physical IF */
++	__u16	 mif6c_pifi;		/* the index of the physical IF */
+ 	unsigned int vifc_rate_limit;	/* Rate limiter values (NI) */
+ };
+ 
+diff --git a/include/linux/netfilter_ipv4/ipt_owner.h b/include/linux/netfilter_ipv4/ipt_owner.h
+index 92f4bda..60e941f 100644
+--- a/include/linux/netfilter_ipv4/ipt_owner.h
++++ b/include/linux/netfilter_ipv4/ipt_owner.h
+@@ -9,10 +9,10 @@
+ #define IPT_OWNER_COMM	0x10
+ 
+ struct ipt_owner_info {
+-    uid_t uid;
+-    gid_t gid;
+-    pid_t pid;
+-    pid_t sid;
++    __kernel_uid_t uid;
++    __kernel_gid_t gid;
++    __kernel_pid_t pid;
++    __kernel_pid_t sid;
+     char comm[16];
+     u_int8_t match, invert;	/* flags */
+ };
+diff --git a/include/linux/netfilter_ipv6/ip6t_owner.h b/include/linux/netfilter_ipv6/ip6t_owner.h
+index 19937da..dc2cbcb 100644
+--- a/include/linux/netfilter_ipv6/ip6t_owner.h
++++ b/include/linux/netfilter_ipv6/ip6t_owner.h
+@@ -8,10 +8,10 @@
+ #define IP6T_OWNER_SID	0x08
+ 
+ struct ip6t_owner_info {
+-    uid_t uid;
+-    gid_t gid;
+-    pid_t pid;
+-    pid_t sid;
++    __kernel_uid_t uid;
++    __kernel_gid_t gid;
++    __kernel_pid_t pid;
++    __kernel_pid_t sid;
+     u_int8_t match, invert;	/* flags */
+ };
+ 
+diff --git a/include/linux/ppp_defs.h b/include/linux/ppp_defs.h
+index 1c866bd..0f93ed6 100644
+--- a/include/linux/ppp_defs.h
++++ b/include/linux/ppp_defs.h
+@@ -177,8 +177,8 @@ struct ppp_comp_stats {
+  * the last NP packet was sent or received.
+  */
+ struct ppp_idle {
+-    time_t xmit_idle;		/* time since last NP packet sent */
+-    time_t recv_idle;		/* time since last NP packet received */
++    __kernel_time_t xmit_idle;	/* time since last NP packet sent */
++    __kernel_time_t recv_idle;	/* time since last NP packet received */
+ };
+ 
+ #endif /* _PPP_DEFS_H_ */
+diff --git a/include/linux/suspend_ioctls.h b/include/linux/suspend_ioctls.h
+index 2c6faec..40d4605 100644
+--- a/include/linux/suspend_ioctls.h
++++ b/include/linux/suspend_ioctls.h
+@@ -7,8 +7,8 @@
+  * SNAPSHOT_SET_SWAP_AREA ioctl
+  */
+ struct resume_swap_area {
+-	loff_t offset;
+-	u_int32_t dev;
++	__kernel_loff_t offset;
++	__u32 dev;
+ } __attribute__((packed));
+ 
+ #define SNAPSHOT_IOC_MAGIC	'3'
+@@ -20,13 +20,13 @@ struct resume_swap_area {
+ #define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
+ #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
+ 							struct resume_swap_area)
+-#define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
++#define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, __kernel_loff_t)
+ #define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
+ #define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
+ #define SNAPSHOT_CREATE_IMAGE		_IOW(SNAPSHOT_IOC_MAGIC, 17, int)
+ #define SNAPSHOT_PREF_IMAGE_SIZE	_IO(SNAPSHOT_IOC_MAGIC, 18)
+-#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 19, loff_t)
+-#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 20, loff_t)
++#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 19, __kernel_loff_t)
++#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 20, __kernel_loff_t)
+ #define SNAPSHOT_IOC_MAXNR	20
+ 
+ #endif /* _LINUX_SUSPEND_IOCTLS_H */
+diff --git a/include/linux/time.h b/include/linux/time.h
+index fbbd2a1..242f624 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -12,14 +12,14 @@
+ #ifndef _STRUCT_TIMESPEC
+ #define _STRUCT_TIMESPEC
+ struct timespec {
+-	time_t	tv_sec;		/* seconds */
+-	long	tv_nsec;	/* nanoseconds */
++	__kernel_time_t	tv_sec;			/* seconds */
++	long		tv_nsec;		/* nanoseconds */
+ };
+ #endif
+ 
+ struct timeval {
+-	time_t		tv_sec;		/* seconds */
+-	suseconds_t	tv_usec;	/* microseconds */
++	__kernel_time_t		tv_sec;		/* seconds */
++	__kernel_suseconds_t	tv_usec;	/* microseconds */
+ };
+ 
+ struct timezone {
+diff --git a/include/linux/times.h b/include/linux/times.h
+index e2d3020..87b6261 100644
+--- a/include/linux/times.h
++++ b/include/linux/times.h
+@@ -4,10 +4,10 @@
+ #include <linux/types.h>
+ 
+ struct tms {
+-	clock_t tms_utime;
+-	clock_t tms_stime;
+-	clock_t tms_cutime;
+-	clock_t tms_cstime;
++	__kernel_clock_t tms_utime;
++	__kernel_clock_t tms_stime;
++	__kernel_clock_t tms_cutime;
++	__kernel_clock_t tms_cstime;
+ };
+ 
+ #endif
+diff --git a/include/linux/utime.h b/include/linux/utime.h
+index 640be6a..5cdf673 100644
+--- a/include/linux/utime.h
++++ b/include/linux/utime.h
+@@ -4,8 +4,8 @@
+ #include <linux/types.h>
+ 
+ struct utimbuf {
+-	time_t actime;
+-	time_t modtime;
++	__kernel_time_t actime;
++	__kernel_time_t modtime;
+ };
+ 
+ #endif
+diff --git a/include/linux/xfrm.h b/include/linux/xfrm.h
+index 52f3abd..a58fe2b 100644
+--- a/include/linux/xfrm.h
++++ b/include/linux/xfrm.h
+@@ -58,7 +58,7 @@ struct xfrm_selector
+ 	__u8	prefixlen_s;
+ 	__u8	proto;
+ 	int	ifindex;
+-	uid_t	user;
++	__kernel_uid_t	user;
+ };
+ 
+ #define XFRM_INF (~(__u64)0)
+diff --git a/include/mtd/mtd-abi.h b/include/mtd/mtd-abi.h
+index c6c61cd..fb67201 100644
+--- a/include/mtd/mtd-abi.h
++++ b/include/mtd/mtd-abi.h
+@@ -84,8 +84,8 @@ struct otp_info {
+ #define MEMGETREGIONINFO	_IOWR('M', 8, struct region_info_user)
+ #define MEMSETOOBSEL		_IOW('M', 9, struct nand_oobinfo)
+ #define MEMGETOOBSEL		_IOR('M', 10, struct nand_oobinfo)
+-#define MEMGETBADBLOCK		_IOW('M', 11, loff_t)
+-#define MEMSETBADBLOCK		_IOW('M', 12, loff_t)
++#define MEMGETBADBLOCK		_IOW('M', 11, __kernel_loff_t)
++#define MEMSETBADBLOCK		_IOW('M', 12, __kernel_loff_t)
+ #define OTPSELECT		_IOR('M', 13, int)
+ #define OTPGETREGIONCOUNT	_IOW('M', 14, int)
+ #define OTPGETREGIONINFO	_IOW('M', 15, struct otp_info)
+diff --git a/include/sound/asound.h b/include/sound/asound.h
+index 1c02ed1..16684c5 100644
+--- a/include/sound/asound.h
++++ b/include/sound/asound.h
+@@ -385,7 +385,7 @@ struct snd_pcm_sw_params {
+ 
+ struct snd_pcm_channel_info {
+ 	unsigned int channel;
+-	off_t offset;			/* mmap offset */
++	__kernel_off_t offset;		/* mmap offset */
+ 	unsigned int first;		/* offset to first sample in bits */
+ 	unsigned int step;		/* samples distance in bits */
+ };
+@@ -789,7 +789,7 @@ struct snd_ctl_elem_info {
+ 	snd_ctl_elem_type_t type;	/* R: value type - SNDRV_CTL_ELEM_TYPE_* */
+ 	unsigned int access;		/* R: value access (bitmask) - SNDRV_CTL_ELEM_ACCESS_* */
+ 	unsigned int count;		/* count of values */
+-	pid_t owner;			/* owner's PID of this control */
++	__kernel_pid_t owner;		/* owner's PID of this control */
+ 	union {
+ 		struct {
+ 			long min;		/* R: minimum value */
