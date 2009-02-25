@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbZBYK3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762472AbZBYK3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761536AbZBYK3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 05:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761505AbZBYK2v
+	id S1762472AbZBYK3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 05:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762229AbZBYK2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 05:28:51 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:62947 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762155AbZBYK2u (ORCPT
+	Wed, 25 Feb 2009 05:28:53 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48008 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762181AbZBYK2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 05:28:50 -0500
-X-BigFish: VPS1(zzzzzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KFMAFL-02-5JF-01
-Date: Wed, 25 Feb 2009 11:28:07 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/7] x86: memtest: cleanup memtest function
-Message-ID: <20090225102807.GS6298@alberich.amd.com>
-References: <20090225102337.GP6298@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090225102337.GP6298@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 25 Feb 2009 10:28:34.0785 (UTC) FILETIME=[D022FD10:01C99733]
+	Wed, 25 Feb 2009 05:28:51 -0500
+To: hooanon05@yahoo.co.jp
+CC: miklos@szeredi.hu, tomas@slax.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <15922.1235492819@jrobl> (hooanon05@yahoo.co.jp)
+Subject: Re: New filesystem for Linux kernel
+References: <7558.1235374266@jrobl> <7769.1235374482@jrobl> <49A268A7.1010708@slax.org> <49A26ACC.90804@slax.org> <49A3AC14.2050107@slax.org> <E1Lbvpf-0006fF-Tg@pomaz-ex.szeredi.hu> <11287.1235481490@jrobl> <E1LbycM-0007FV-Rg@pomaz-ex.szeredi.hu> <15922.1235492819@jrobl>
+Message-Id: <E1LcH0H-00016K-Im@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Feb 2009 11:28:37 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 25 Feb 2009, hooanon05@yahoo.co.j wrote:
+> > The simplest version is with all branches read-only.  That gets rid of
+> > a _huge_ amount of complexity, yet it's still useful in some
+> > situations.  It also deals with a lot of the basic infrastucture
+> > needed for stacking.
+> 
+> If you really think it is a better way to get merged into mainline, then
+> I'll try implement such version.
 
-Impact: code cleanup
+I'd personally be more motivated to review <2000 line chunks (where
+each step adds new functionality and makes sense in itself), than a
+20000 line filesystem all in one.
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/mm/memtest.c |   37 +++++++++++++++++++------------------
- 1 files changed, 19 insertions(+), 18 deletions(-)
+> > And that's when one starts thinking about whether unioning is really
+> > the right solution.  Instead this could be implemented with a special
+> > filesystem format that only contains deltas to the data, metatata and
+> > directory tree.  It would be much more space efficient, could easily
+> > handle renames, hard links etc, without all the hacks that
+> > unionfs/aufs does.
+> 
+> It sounds like an ODF (on disk format) version of unionfs (while it
+> seems to be inactive).
+> At implementing, I don't think it easier to maintain delta of filedata
+> and metadata. Since aufs has a writable branch in it, it is better and
+> easier to maintain data in a branch fs.
 
-diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
-index 827f940..01a72d6 100644
---- a/arch/x86/mm/memtest.c
-+++ b/arch/x86/mm/memtest.c
-@@ -16,6 +16,15 @@ static u64 patterns[] __initdata = {
- 	0xaaaaaaaaaaaaaaaaULL,
- };
- 
-+static void __init reserve_bad_mem(u64 pattern, unsigned long start_bad,
-+			    unsigned long end_bad)
-+{
-+	printk(KERN_CONT "\n  %016llx bad mem addr "
-+	       "%010lx - %010lx reserved",
-+	       (unsigned long long) pattern, start_bad, end_bad);
-+	reserve_early(start_bad, end_bad, "BAD RAM");
-+}
-+
- static void __init memtest(unsigned long start_phys, unsigned long size,
- 			   u64 pattern)
- {
-@@ -37,26 +46,18 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
- 	for (i = 0; i < count; i++)
- 		start[i] = pattern;
- 	for (i = 0; i < count; i++, start++, start_phys_aligned += incr) {
--		if (*start != pattern) {
--			if (start_phys_aligned == last_bad + incr) {
--				last_bad += incr;
--			} else {
--				if (start_bad) {
--					printk(KERN_CONT "\n  %016llx bad mem addr %010lx - %010lx reserved",
--					       (unsigned long long) pattern,
--					       start_bad, last_bad + incr);
--					reserve_early(start_bad, last_bad + incr, "BAD RAM");
--				}
--				start_bad = last_bad = start_phys_aligned;
--			}
-+		if (*start == pattern)
-+			continue;
-+		if (start_phys_aligned == last_bad + incr) {
-+			last_bad += incr;
-+			continue;
- 		}
-+		if (start_bad)
-+			reserve_bad_mem(pattern, start_bad, last_bad + incr);
-+		start_bad = last_bad = start_phys_aligned;
- 	}
--	if (start_bad) {
--		printk(KERN_CONT "\n  %016llx bad mem addr %010lx - %010lx reserved",
--		       (unsigned long long) pattern, start_bad,
--		       last_bad + incr);
--		reserve_early(start_bad, last_bad + incr, "BAD RAM");
--	}
-+	if (start_bad)
-+		reserve_bad_mem(pattern, start_bad, last_bad + incr);
- }
- 
- /* default is disabled */
--- 
-1.6.1.3
+Perhaps it's easier, but copy-up is a very inefficient operation, both
+in disk space and in time.  My personal opinion is that a "delta"
+filesystem would be cleaner and more useful than a writable union.
+Writable union filesystems need many hacks to make them useful, such
+as copy-up, whiteouts, inode number tables, virtual hard links, etc.
 
+But that's just a thought, I haven't gone too deeply into this.
 
+> If you think there should not be any writable branch in aufs, and all
+> "write" goes to a new filesystem format, then it is equivalent to a
+> writable branch, isn't it?
 
+Yes, it should be equivalent.
+
+> If you say "just a part of write" goes to a new fs, then I don't think
+> we can support several essential features, for instance mmap.
+
+It should be possible to support mmap.
+
+Miklos
