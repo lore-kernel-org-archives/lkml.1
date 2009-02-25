@@ -1,110 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZBYTRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbZBYTTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758650AbZBYTRt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 14:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbZBYTRk
+	id S1758710AbZBYTTz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 14:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbZBYTTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 14:17:40 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44730 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752442AbZBYTRj (ORCPT
+	Wed, 25 Feb 2009 14:19:45 -0500
+Received: from frost.carfax.org.uk ([212.13.194.111]:4462 "EHLO
+	frost.carfax.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752442AbZBYTTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 14:17:39 -0500
-Date: Wed, 25 Feb 2009 20:20:11 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>
-Subject: 2.6.29-rc3: rfcomm0 still triggers WARNING: at sysfs_add_one
-Message-ID: <20090225192011.GA2645@elf.ucw.cz>
+	Wed, 25 Feb 2009 14:19:44 -0500
+X-Greylist: delayed 1525 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Feb 2009 14:19:43 EST
+Date: Wed, 25 Feb 2009 18:54:13 +0000
+From: Hugo Mills <hugo-lkml@carfax.org.uk>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Hugo Mills <hugo-lkml@carfax.org.uk>, linux-btrfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: btrfs: warn_slowpath in clean_tree_block and others
+Message-ID: <20090225185413.GA2816@selene>
+Mail-Followup-To: Hugo Mills <hugo-lkml@carfax.org.uk>,
+	Chris Mason <chris.mason@oracle.com>, linux-btrfs@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20090224230249.GA6859@vlad.carfax.org.uk> <1235586986.32346.48.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <1235586986.32346.48.camel@think.oraclecorp.com>
+X-GPG-Fingerprint: 8C59 86C7 81F3 93FE BB02  DDB1 20AC B3BE 515C 238D
+X-GPG-Key: 515C238D
+X-Parrot: It is no more. It has joined the choir invisible.
+X-IRC-Nicks: darksatanic darkersatanic darkling darkthing
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-frost.carfax.org.uk-Spam-Score: 0.0 (/)
+X-frost.carfax.org.uk-Spam-Report: Spam detection software, running on the system "admin.kwak.bitfolk.com", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  On Wed, Feb 25, 2009 at 01:36:26PM -0500, Chris Mason wrote:
+	> On Tue, 2009-02-24 at 23:02 +0000, Hugo Mills wrote: > > This is essentially
+	a repost of a mail I made last week, to which I > > didn't get a reply. >
+	> Sorry I missed replying to this one last week, thanks for resending. [...]
+	Content analysis details:   (0.0 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Not sure how repeatable this is ...
+--mYCpIKhGyMATD0i+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-								Pavel
+On Wed, Feb 25, 2009 at 01:36:26PM -0500, Chris Mason wrote:
+> On Tue, 2009-02-24 at 23:02 +0000, Hugo Mills wrote:
+> > This is essentially a repost of a mail I made last week, to which I
+> > didn't get a reply.
+> 
+> Sorry I missed replying to this one last week, thanks for resending.
 
-Linux version 2.6.29-rc3 (pavel@Elf) (gcc version 4.1.3 20080704 (prerelease) (Debian 4.1.2-24)) #505 SMP Sun Feb 8 00:20:09 CET 2009
-KERNEL supported cpus:
-.../data/l/linux/drivers/usb/core/inode.c: creating file '023'
-scsi 17:0:0:0: Direct-Access     HTC      Android Phone    0100 PQ: 0 ANSI: 2
-sd 17:0:0:0: [sdc] Attached SCSI removable disk
-sd 17:0:0:0: Attached scsi generic sg1 type 0
-usb-storage: device scan complete
-------------[ cut here ]------------
-WARNING: at /data/l/linux/fs/sysfs/dir.c:462 sysfs_add_one+0x49/0x50()
-Hardware name: 17097HU
-sysfs: duplicate filename 'rfcomm0' can not be created
-Modules linked in:
-Pid: 18941, comm: rfcomm Not tainted 2.6.29-rc3 #505
-Call Trace:
- [<c022dec6>] warn_slowpath+0x86/0xa0
- [<c024ef52>] ? __lock_acquire+0x232/0xac0
- [<c02cc021>] ? sysfs_find_dirent+0x21/0x30
- [<c02cc04d>] ? __sysfs_add_one+0x1d/0x90
- [<c02cc170>] ? sysfs_addrm_start+0x60/0xb0
- [<c02cc109>] sysfs_add_one+0x49/0x50
- [<c02cc649>] create_dir+0x49/0x90
- [<c02cc6bb>] sysfs_create_dir+0x2b/0x50
- [<c077c2cd>] ? _spin_unlock+0x1d/0x20
- [<c035f120>] kobject_add_internal+0xc0/0x1a0
- [<c035f2ec>] kobject_add_varg+0x4c/0x50
- [<c035f58f>] kobject_add+0x2f/0x60
- [<c0421183>] device_add+0xa3/0x480
- [<c0368a72>] ? __spin_lock_init+0x32/0x60
- [<c0421572>] device_register+0x12/0x20
- [<c042160c>] device_create_vargs+0x8c/0xc0
- [<c042166b>] device_create+0x2b/0x30
- [<c03c9519>] tty_register_device+0x69/0xe0
- [<c07103e8>] ? rfcomm_dev_ioctl+0x5f8/0x760
- [<c07103fa>] rfcomm_dev_ioctl+0x60a/0x760
- [<c070e4cd>] ? rfcomm_sock_ioctl+0x3d/0x60
- [<c070e4d9>] rfcomm_sock_ioctl+0x49/0x60
- [<c0675941>] sock_ioctl+0xd1/0x220
- [<c0675870>] ? sock_ioctl+0x0/0x220
- [<c0295aa8>] vfs_ioctl+0x28/0x80
- [<c0295de2>] do_vfs_ioctl+0x1e2/0x540
- [<c021b4cf>] ? do_page_fault+0x34f/0x610
- [<c0244f06>] ? up_read+0x16/0x30
- [<c021b4cf>] ? do_page_fault+0x34f/0x610
- [<c0675636>] ? sys_socketcall+0x66/0x270
- [<c0296179>] sys_ioctl+0x39/0x60
- [<c02032be>] syscall_call+0x7/0xb
----[ end trace 55cba734514c5169 ]---
-kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to register things with the same name in the same directory.
-Pid: 18941, comm: rfcomm Tainted: G        W  2.6.29-rc3 #505
-Call Trace:
- [<c035f1aa>] kobject_add_internal+0x14a/0x1a0
- [<c035f2ec>] kobject_add_varg+0x4c/0x50
- [<c035f58f>] kobject_add+0x2f/0x60
- [<c0421183>] device_add+0xa3/0x480
- [<c0368a72>] ? __spin_lock_init+0x32/0x60
- [<c0421572>] device_register+0x12/0x20
- [<c042160c>] device_create_vargs+0x8c/0xc0
- [<c042166b>] device_create+0x2b/0x30
- [<c03c9519>] tty_register_device+0x69/0xe0
- [<c07103e8>] ? rfcomm_dev_ioctl+0x5f8/0x760
- [<c07103fa>] rfcomm_dev_ioctl+0x60a/0x760
- [<c070e4cd>] ? rfcomm_sock_ioctl+0x3d/0x60
- [<c070e4d9>] rfcomm_sock_ioctl+0x49/0x60
- [<c0675941>] sock_ioctl+0xd1/0x220
- [<c0675870>] ? sock_ioctl+0x0/0x220
- [<c0295aa8>] vfs_ioctl+0x28/0x80
- [<c0295de2>] do_vfs_ioctl+0x1e2/0x540
- [<c021b4cf>] ? do_page_fault+0x34f/0x610
- [<c0244f06>] ? up_read+0x16/0x30
- [<c021b4cf>] ? do_page_fault+0x34f/0x610
- [<c0675636>] ? sys_socketcall+0x66/0x270
- [<c0296179>] sys_ioctl+0x39/0x60
- [<c02032be>] syscall_call+0x7/0xb
+   Not a problem. I know things go astray sometimes.
 
+> >    I'm getting huge numbers of kernel warnings whilst using
+> > btrfs. They're all "warn_slowpath", and all seem to be in
+> > fs/btrfs/disk-io.c. I've included one typical example at the end of
+> > this mail.
+> > 
+> >    Kernel versions are 2.6.29-rc2, -rc4 and -rc6.
+> > 
+> 
+> The warnings look like i386, exactly what hardware is this?  Is your
+> kernel compiled for SMP or UP?
+
+   amd64 and a UP kernel:
+
+hrm@vlad:linux-2.6 $ uname -a
+Linux vlad 2.6.29-rc6 #1 Mon Feb 23 19:53:22 GMT 2009 x86_64 GNU/Linux
+
+   Hardware is an original-series Turion 64 (i.e. one core) in a
+Socket 745 desktop motherboard. The btrfs filesystem is in
+LVM-on-RAID1 in an eSATA port-multiplier storage rack.
+
+> The warning you're getting is that clean_tree_block expects this block
+> to be locked, and giving out a warning because it is showing up as
+> unlocked.
+> 
+> So, hopefully you're on a UP kernel and my test for a locked spinlock is
+> broken in that config.
+
+   OK. I can try patches if necessary.
+
+   Hugo.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+=== Hugo Mills: hugo@... carfax.org.uk | darksatanic.net | lug.org.uk ===
+  PGP key: 515C238D from wwwkeys.eu.pgp.net or http://www.carfax.org.uk
+      --- UNIX: British manufacturer of modular shelving units. ---      
+
+--mYCpIKhGyMATD0i+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQFJpZPVIKyzvlFcI40RAkQiAKCiFmWYJwB9XcKUNE6M+Mb80xYLegCeOYCr
+YdActk+KX9hbb5tr2U+dtAs=
+=RJBi
+-----END PGP SIGNATURE-----
+
+--mYCpIKhGyMATD0i+--
