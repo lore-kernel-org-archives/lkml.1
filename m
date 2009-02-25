@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbZBYXL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763175AbZBYXMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763476AbZBYXL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 18:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759157AbZBYXLN
+	id S1763175AbZBYXMN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 18:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763633AbZBYXLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 18:11:13 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:42928 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758479AbZBYXLK (ORCPT
+	Wed, 25 Feb 2009 18:11:46 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:49403 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763612AbZBYXLo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 18:11:10 -0500
+	Wed, 25 Feb 2009 18:11:44 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 3/5] drivers/isdn/hisax: fix sparse warning: Should it be
-	static?
+Subject: [PATCH 5/5] drivers/isdn/hardware/eicon: fix sparse warnings: Should
+	it be static?
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 26 Feb 2009 00:11:03 +0100
-Message-ID: <20090225231001.5377.60524.stgit@localhost.localdomain>
+Date: Thu, 26 Feb 2009 00:11:37 +0100
+Message-ID: <20090225231131.5377.81409.stgit@localhost.localdomain>
 In-Reply-To: <20090225230737.5377.31370.stgit@localhost.localdomain>
 References: <20090225230737.5377.31370.stgit@localhost.localdomain>
 User-Agent: StGit/0.14.3.348.gcb02
@@ -27,152 +27,273 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Move declarations to a header file.
+Impact: Make symbols static.
 
-Fix this sparse warning:
-  drivers/isdn/hisax/callc.c:24:12: warning: symbol 'lli_revision' was not declared. Should it be static?
-  drivers/isdn/hisax/config.c:84:12: warning: symbol 'CardType' was not declared. Should it be static?
-  drivers/isdn/hisax/config.c:362:5: warning: symbol 'nrcards' was not declared. Should it be static?
-  drivers/isdn/hisax/isdnl1.c:21:12: warning: symbol 'l1_revision' was not declared. Should it be static?
-  drivers/isdn/hisax/isdnl2.c:22:12: warning: symbol 'l2_revision' was not declared. Should it be static?
-  drivers/isdn/hisax/isdnl3.c:22:12: warning: symbol 'l3_revision' was not declared. Should it be static?
-  drivers/isdn/hisax/tei.c:23:12: warning: symbol 'tei_revision' was not declared. Should it be static?
+Fix this sparse warnings:
+  drivers/isdn/hardware/eicon/message.c:1197:6: warning: symbol 'connect_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1414:6: warning: symbol 'connect_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1570:6: warning: symbol 'connect_a_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1576:6: warning: symbol 'disconnect_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1631:6: warning: symbol 'disconnect_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1658:6: warning: symbol 'listen_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1707:6: warning: symbol 'info_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1816:6: warning: symbol 'info_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1822:6: warning: symbol 'alert_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:1852:6: warning: symbol 'facility_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:2602:6: warning: symbol 'facility_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:2608:6: warning: symbol 'connect_b3_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:2842:6: warning: symbol 'connect_b3_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:2957:6: warning: symbol 'connect_b3_a_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:2977:6: warning: symbol 'disconnect_b3_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:3033:6: warning: symbol 'disconnect_b3_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:3089:6: warning: symbol 'data_b3_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:3166:6: warning: symbol 'data_b3_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:3199:6: warning: symbol 'reset_b3_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:3240:6: warning: symbol 'reset_b3_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:3264:6: warning: symbol 'connect_b3_t90_a_res' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:3298:6: warning: symbol 'select_b_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:8692:6: warning: symbol 'sig_req' was not declared. Should it be static?
+  drivers/isdn/hardware/eicon/message.c:8792:6: warning: symbol 'send_data' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
+ drivers/isdn/hardware/eicon/message.c |   70 ++++++++++++++++++++++-----------
+ 1 files changed, 46 insertions(+), 24 deletions(-)
 
-How to deal with this checkpatch.pl warning?
-> WARNING: CVS style keyword markers, these will _not_ be updated
-> #104: FILE: drivers/isdn/hisax/isdnl1.c:25:
-> +const char *l1_revision = "$Revision: 2.46.2.5 $";
-
- drivers/isdn/hisax/callc.c     |    1 -
- drivers/isdn/hisax/config.c    |    6 ------
- drivers/isdn/hisax/hfcscard.c  |    2 --
- drivers/isdn/hisax/hisax.h     |    9 +++++++++
- drivers/isdn/hisax/isdnl1.c    |    4 ++--
- drivers/isdn/hisax/sedlbauer.c |    2 --
- drivers/isdn/hisax/teles0.c    |    2 --
- drivers/isdn/hisax/teles3.c    |    1 -
- 8 files changed, 11 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/isdn/hisax/callc.c b/drivers/isdn/hisax/callc.c
-index 7c56c44..025a20d 100644
---- a/drivers/isdn/hisax/callc.c
-+++ b/drivers/isdn/hisax/callc.c
-@@ -24,7 +24,6 @@
- const char *lli_revision = "$Revision: 2.59.2.4 $";
+diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
+index 4cc94f2..31f91c1 100644
+--- a/drivers/isdn/hardware/eicon/message.c
++++ b/drivers/isdn/hardware/eicon/message.c
+@@ -1194,7 +1194,8 @@ static char hex_digit_table[0x10] =
+ /* translation function for each message                            */
+ /*------------------------------------------------------------------*/
  
- extern struct IsdnCard cards[];
--extern int nrcards;
- 
- static int init_b_st(struct Channel *chanp, int incoming);
- static void release_b_st(struct Channel *chanp);
-diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
-index ded9d0b..4fab18d 100644
---- a/drivers/isdn/hisax/config.c
-+++ b/drivers/isdn/hisax/config.c
-@@ -361,12 +361,6 @@ module_param_array(io1, int, NULL, 0);
- 
- int nrcards;
- 
--extern const char *l1_revision;
--extern const char *l2_revision;
--extern const char *l3_revision;
--extern const char *lli_revision;
--extern const char *tei_revision;
--
- char *HiSax_getrev(const char *revision)
+-byte connect_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte connect_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			PLCI *plci, APPL *appl, API_PARSE *parms)
  {
- 	char *rev;
-diff --git a/drivers/isdn/hisax/hfcscard.c b/drivers/isdn/hisax/hfcscard.c
-index cf08266..20d7688 100644
---- a/drivers/isdn/hisax/hfcscard.c
-+++ b/drivers/isdn/hisax/hfcscard.c
-@@ -16,8 +16,6 @@
- #include "hfc_2bds0.h"
- #include "isdnl1.h"
+   word ch;
+   word i;
+@@ -1411,7 +1412,8 @@ byte connect_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci,
+   return 2;
+ }
  
--extern const char *CardType[];
--
- static const char *hfcs_revision = "$Revision: 1.10.2.4 $";
+-byte connect_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte connect_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word i, Info;
+   word Reject;
+@@ -1567,13 +1569,15 @@ byte connect_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci,
+   return 1;
+ }
  
- static irqreturn_t
-diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
-index e8d429f..f852704 100644
---- a/drivers/isdn/hisax/hisax.h
-+++ b/drivers/isdn/hisax/hisax.h
-@@ -121,6 +121,15 @@
+-byte connect_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte connect_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			  PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   dbug(1,dprintf("connect_a_res"));
+   return false;
+ }
  
- #ifdef __KERNEL__
+-byte disconnect_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte disconnect_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			   PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   word Info;
+   word i;
+@@ -1628,7 +1632,8 @@ byte disconnect_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plc
+   return false;
+ }
  
-+extern const char *CardType[];
-+extern int nrcards;
-+
-+extern const char *l1_revision;
-+extern const char *l2_revision;
-+extern const char *l3_revision;
-+extern const char *lli_revision;
-+extern const char *tei_revision;
-+
- /* include l3dss1 & ni1 specific process structures, but no other defines */
- #ifdef CONFIG_HISAX_EURO
-   #define l3dss1_process
-diff --git a/drivers/isdn/hisax/isdnl1.c b/drivers/isdn/hisax/isdnl1.c
-index a14204e..317f16f 100644
---- a/drivers/isdn/hisax/isdnl1.c
-+++ b/drivers/isdn/hisax/isdnl1.c
-@@ -18,12 +18,12 @@
-  *
-  */
+-byte disconnect_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte disconnect_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			   PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   dbug(1,dprintf("disconnect_res"));
+   if(plci)
+@@ -1655,7 +1660,8 @@ byte disconnect_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plc
+   return 0;
+ }
  
--const char *l1_revision = "$Revision: 2.46.2.5 $";
--
- #include <linux/init.h>
- #include "hisax.h"
- #include "isdnl1.h"
+-byte listen_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte listen_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++		       PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word Info;
+   byte i;
+@@ -1704,7 +1710,8 @@ byte listen_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, A
+   return false;
+ }
  
-+const char *l1_revision = "$Revision: 2.46.2.5 $";
-+
- #define TIMER3_VALUE 7000
+-byte info_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte info_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++		     PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   word i;
+   API_PARSE * ai;
+@@ -1813,13 +1820,15 @@ byte info_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APP
+   return false;
+ }
  
- static struct Fsm l1fsm_b;
-diff --git a/drivers/isdn/hisax/sedlbauer.c b/drivers/isdn/hisax/sedlbauer.c
-index a10dfa8..5569a52 100644
---- a/drivers/isdn/hisax/sedlbauer.c
-+++ b/drivers/isdn/hisax/sedlbauer.c
-@@ -48,8 +48,6 @@
- #include <linux/pci.h>
- #include <linux/isapnp.h>
+-byte info_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte info_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++		     PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   dbug(1,dprintf("info_res"));
+   return false;
+ }
  
--extern const char *CardType[];
--
- static const char *Sedlbauer_revision = "$Revision: 1.34.2.6 $";
+-byte alert_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte alert_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++		      PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   word Info;
+   byte ret;
+@@ -1849,7 +1858,8 @@ byte alert_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, AP
+   return ret;
+ }
  
- static const char *Sedlbauer_Types[] =
-diff --git a/drivers/isdn/hisax/teles0.c b/drivers/isdn/hisax/teles0.c
-index 4858133..3ca0bed 100644
---- a/drivers/isdn/hisax/teles0.c
-+++ b/drivers/isdn/hisax/teles0.c
-@@ -21,8 +21,6 @@
- #include "isac.h"
- #include "hscx.h"
+-byte facility_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte facility_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			 PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   word Info = 0;
+   word i    = 0;
+@@ -2599,13 +2609,15 @@ byte facility_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci,
+   return false;
+ }
  
--extern const char *CardType[];
--
- static const char *teles0_revision = "$Revision: 2.15.2.4 $";
+-byte facility_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte facility_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			 PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   dbug(1,dprintf("facility_res"));
+   return false;
+ }
  
- #define TELES_IOMEM_SIZE	0x400
-diff --git a/drivers/isdn/hisax/teles3.c b/drivers/isdn/hisax/teles3.c
-index 5dc9f1a..e9f5bb4 100644
---- a/drivers/isdn/hisax/teles3.c
-+++ b/drivers/isdn/hisax/teles3.c
-@@ -20,7 +20,6 @@
- #include "hscx.h"
- #include "isdnl1.h"
+-byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			   PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word Info = 0;
+   byte req;
+@@ -2839,7 +2851,8 @@ byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plc
+   return false;
+ }
  
--extern const char *CardType[];
- static const char *teles3_revision = "$Revision: 2.19.2.4 $";
+-byte connect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte connect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			   PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word ncci;
+   API_PARSE * ncpi;
+@@ -2954,7 +2967,8 @@ byte connect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plc
+   return false;
+ }
  
- #define byteout(addr,val) outb(val,addr)
+-byte connect_b3_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte connect_b3_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			     PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word ncci;
+ 
+@@ -2974,7 +2988,8 @@ byte connect_b3_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * p
+   return false;
+ }
+ 
+-byte disconnect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte disconnect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			      PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word Info;
+   word ncci;
+@@ -3030,7 +3045,8 @@ byte disconnect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   *
+   return false;
+ }
+ 
+-byte disconnect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte disconnect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			      PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word ncci;
+   word i;
+@@ -3086,7 +3102,8 @@ byte disconnect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   *
+   return false;
+ }
+ 
+-byte data_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte data_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   NCCI   *ncci_ptr;
+   DATA_B3_DESC   *data;
+@@ -3163,7 +3180,8 @@ byte data_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci,
+   return false;
+ }
+ 
+-byte data_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte data_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word n;
+   word ncci;
+@@ -3196,7 +3214,8 @@ byte data_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci,
+   return false;
+ }
+ 
+-byte reset_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte reset_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			 PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word Info;
+   word ncci;
+@@ -3237,7 +3256,8 @@ byte reset_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci,
+   return false;
+ }
+ 
+-byte reset_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte reset_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			 PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word ncci;
+ 
+@@ -3261,7 +3281,8 @@ byte reset_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci,
+   return false;
+ }
+ 
+-byte connect_b3_t90_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * parms)
++static byte connect_b3_t90_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++				 PLCI *plci, APPL *appl, API_PARSE *parms)
+ {
+   word ncci;
+   API_PARSE * ncpi;
+@@ -3295,7 +3316,8 @@ byte connect_b3_t90_a_res(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI
+ }
+ 
+ 
+-byte select_b_req(dword Id, word Number, DIVA_CAPI_ADAPTER   * a, PLCI   * plci, APPL   * appl, API_PARSE * msg)
++static byte select_b_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
++			 PLCI *plci, APPL *appl, API_PARSE *msg)
+ {
+   word Info=0;
+   word i;
+@@ -8689,7 +8711,7 @@ static word add_modem_b23 (PLCI  * plci, API_PARSE* bp_parms)
+ /* send a request for the signaling entity                          */
+ /*------------------------------------------------------------------*/
+ 
+-void sig_req(PLCI   * plci, byte req, byte Id)
++static void sig_req(PLCI *plci, byte req, byte Id)
+ {
+   if(!plci) return;
+   if(plci->adapter->adapter_disabled) return;
+@@ -8789,7 +8811,7 @@ static void send_req(PLCI *plci)
+   dbug(1,dprintf("send_ok"));
+ }
+ 
+-void send_data(PLCI   * plci)
++static void send_data(PLCI *plci)
+ {
+   DIVA_CAPI_ADAPTER   * a;
+   DATA_B3_DESC   * data;
 
