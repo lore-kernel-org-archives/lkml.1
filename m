@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbZBYVoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761823AbZBYVp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761356AbZBYVoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbZBYVoB
+	id S1761823AbZBYVp7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758075AbZBYVpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:44:01 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:49821 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755889AbZBYVoA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:44:00 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Make exported headers use strict posix types
-Date: Wed, 25 Feb 2009 22:42:44 +0100
-User-Agent: KMail/1.9.9
-Cc: Kyle McMartin <kyle@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-References: <20090225032553.GD6690@bombadil.infradead.org> <200902251917.49017.arnd@arndb.de> <20090225201131.GA26110@uranus.ravnborg.org>
-In-Reply-To: <20090225201131.GA26110@uranus.ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Feb 2009 16:45:50 -0500
+Received: from movementarian.org ([79.99.65.163]:42088 "EHLO movementarian.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757362AbZBYVpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 16:45:50 -0500
+Date: Wed, 25 Feb 2009 16:45:42 -0500
+From: wli@movementarian.org
+To: linux-kernel@vger.kernel.org
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Eric Lammerts <eric@lammerts.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] mm: k8_northbridges[] build fix
+Message-ID: <20090225214542.GB5757@movementarian.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902252242.45755.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+sHqy8LxTo6oSL6+LdRvydxGxwipRooAgrMAW
- ajcHLEx9VnHXF8PYOmrquurwKF9h8uR9Aq+MIFCFiUkdFUKL9b
- ypzfS/mwRRLj75Qi0uDBQ==
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 February 2009, Sam Ravnborg wrote:
+k8_northbridges[] isn't a defined symbol unless arch/x86/kernel/k8.c
+is compiled, which is conditional on CONFIG_K8_NB. This patch resolves
+the link error by making the sysfs access to the k8 northbridge
+conditional on CONFIG_K8_NB in like fashion to the k8_northbridges[]
+array itself. The issue was encountered on a 32-bit build with the
+processor family specified as CONFIG_MCORE2=y.
 
+The link error was introduced in
+	x86-conform-l3-cache-index-disable-to-linux-standards.patch
+
+Signed-off-by: William Irwin <wli@movementarian.org>
+
+
+Index: mmotm-2.6.29-rc6/arch/x86/kernel/cpu/intel_cacheinfo.c
+===================================================================
+--- mmotm-2.6.29-rc6.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ mmotm-2.6.29-rc6/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -613,7 +613,7 @@ static int __cpuinit detect_cache_attrib
+ 	return retval;
+ }
  
-> Does this change really belong in this patchset?
+-#ifdef CONFIG_SYSFS
++#if defined(CONFIG_SYSFS) && defined(CONFIG_K8_NB)
  
-> Yes - I can build kernels again. But I think we should skip this change..
-
-> This change looks correct - but I assume this is a separate patch.
-> 
-> Rest looks good.
-
-Agreed on all points, I had the changes sitting in a dirty git tree
-and got sloppy. Thanks for looking through it!
-
-	Arnd <><
+ #include <linux/kobject.h>
+ #include <linux/sysfs.h>
+@@ -986,4 +986,4 @@ static int __cpuinit cache_sysfs_init(vo
+ 
+ device_initcall(cache_sysfs_init);
+ 
+-#endif
++#endif /* defined(CONFIG_SYSFS) && defined(CONFIG_K8_NB) */
