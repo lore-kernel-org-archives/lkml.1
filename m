@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbZBYHSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759923AbZBYHU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbZBYHSB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 02:18:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZBYHRu
+	id S1759923AbZBYHU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 02:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZBYHUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 02:17:50 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43355 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755158AbZBYHRt (ORCPT
+	Wed, 25 Feb 2009 02:20:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36509 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbZBYHUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 02:17:49 -0500
-Subject: Re: [patch 1/2] slub: move min_partial to struct kmem_cach
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0902230835120.24379@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0902221710430.26165@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0902231108200.22276@qirst.com>
-	 <alpine.DEB.2.00.0902230821510.23216@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0902231119390.22276@qirst.com>
-	 <alpine.DEB.2.00.0902230835120.24379@chino.kir.corp.google.com>
-Date: Wed, 25 Feb 2009 09:17:46 +0200
-Message-Id: <1235546266.6216.71.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 25 Feb 2009 02:20:15 -0500
+Message-ID: <49A4F051.3000706@zytor.com>
+Date: Tue, 24 Feb 2009 23:16:33 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Kyle McMartin <kyle@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [rfc] headers_check cleanups break the whole world
+References: <20090225032553.GD6690@bombadil.infradead.org> <20090225065632.GB21903@elte.hu> <20090225070511.GG6690@bombadil.infradead.org> <49A4EE85.5000907@zytor.com> <20090225071347.GH6690@bombadil.infradead.org>
+In-Reply-To: <20090225071347.GH6690@bombadil.infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Feb 2009, Christoph Lameter wrote:
-> > > The second patch in this series as a /sys/kernel/slab/cache/min_partial
-> > > tunable that uses calculate_min_partial() to enforce a sane range, so
-> > > while it may not actually be doing any calculations, the ilog2() is
-> > > appropriately placed in kmem_cache_open().  We don't want to be taking the
-> > > log of the user's min_partial value.
-> > 
-> > Then Rename the function to set_min_partial()?
+Kyle McMartin wrote:
+> On Tue, Feb 24, 2009 at 11:08:53PM -0800, H. Peter Anvin wrote:
+>> Because <linux/types.h> should work just fine once we get rid of the
+>> __KERNEL_STRICT_NAMES idiocy?
+>>
+>> FWIW, Arnd Bergmann has been working on exactly this cleanup.
+>>
+> 
+> Ah good, I was about to cook a patch, then I realized there's probably
+> quite a mess of userspace things depending on, say, sector_t and such.
+> 
+> This is a pretty ugly problem, all things considered. :/
+> 
 
-On Mon, 2009-02-23 at 08:37 -0800, David Rientjes wrote:
-> I don't have any strong opinions as to the specific name, so I'll leave 
-> this up to Pekka.  set_min_partial(), to me, seems to indicate that 
-> s->min_partial will unconditionally set to the value passed, which isn't 
-> necessarily true.
+Not all that bad, actually.
 
-Applied, thanks!
+This is the last patch I've seen on the subject:
+
+http://marc.info/?i=200902051707.55457.arnd@arndb.de
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
