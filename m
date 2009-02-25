@@ -1,119 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZBYNsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZBYNup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbZBYNsf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 08:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZBYNsZ
+	id S1755926AbZBYNup (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 08:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBYNug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 08:48:25 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33165 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825AbZBYNsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 08:48:24 -0500
-Message-ID: <49A54C23.8090209@suse.de>
-Date: Wed, 25 Feb 2009 14:48:19 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 25 Feb 2009 08:50:36 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34475 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbZBYNuf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 08:50:35 -0500
+Date: Wed, 25 Feb 2009 08:50:31 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+In-Reply-To: <49A50A36.8000305@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0902250821190.12697@gandalf.stny.rr.com>
+References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org> <49A50A36.8000305@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-Cc: linux-crypto@vger.kernel.org, Frank Seidel <frank@f-seidel.de>,
-       Frank Seidel <fseidel@suse.de>, akpm@linux-foundation.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, nhorman@tuxdriver.com,
-       lho@amcc.com, kaber@trash.net, darrenrjenkins@gmail.com
-Subject: [PATCH][trivial] crypto: tcrypt - reduce stack size
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <frank@f-seidel.de>
 
-Applying kernel janitors todos (printk calls need KERN_*
-constants on linebeginnings, reduce stack footprint where
-possible) to tcrypts test_hash_speed (where stacks
-memory footprint was very high (on i386 1184 bytes to
-292 now).
+On Wed, 25 Feb 2009, Lai Jiangshan wrote:
 
-Signed-off-by: Frank Seidel <frank@f-seidel.de>
----
- crypto/tcrypt.c |   29 ++++++++++++++++++++---------
- 1 file changed, 20 insertions(+), 9 deletions(-)
+> a very nice infrastructure!
+> 
+> Two comments about format:
+> 
+> Steven Rostedt ??:
+> > From: Steven Rostedt <srostedt@redhat.com>
+> > +#undef TPFMT
+> > +#define TPFMT(fmt, args...)	fmt "\n", ##args
+> 
+> Where is other TPFMT's definition?
+> I think TPFMT should be defined in tracepoint.h, because trace/<type>.h
+> uses it.
 
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -396,26 +396,34 @@ static void test_hash_speed(const char *
- 	struct scatterlist sg[TVMEMSIZE];
- 	struct crypto_hash *tfm;
- 	struct hash_desc desc;
--	char output[1024];
-+	char *output;
-+	size_t output_size = 1024;
- 	int i;
- 	int ret;
- 
--	printk("\ntesting speed of %s\n", algo);
-+	printk(KERN_INFO "\ntesting speed of %s\n", algo);
-+
-+	output = kmalloc(output_size * sizeof(*output), GFP_KERNEL);
-+	if (!output) {
-+		printk(KERN_ERR "tcrypt: failed to allocate outputbuffer\n");
-+		return;
-+	}
- 
- 	tfm = crypto_alloc_hash(algo, 0, CRYPTO_ALG_ASYNC);
- 
- 	if (IS_ERR(tfm)) {
--		printk("failed to load transform for %s: %ld\n", algo,
-+		printk(KERN_ERR "failed to load transform for %s: %ld\n", algo,
- 		       PTR_ERR(tfm));
-+		kfree(output);
- 		return;
- 	}
- 
- 	desc.tfm = tfm;
- 	desc.flags = 0;
- 
--	if (crypto_hash_digestsize(tfm) > sizeof(output)) {
--		printk("digestsize(%u) > outputbuffer(%zu)\n",
--		       crypto_hash_digestsize(tfm), sizeof(output));
-+	if (crypto_hash_digestsize(tfm) > output_size) {
-+		printk(KERN_ERR "digestsize(%u) > outputbuffer(%zu)\n",
-+		       crypto_hash_digestsize(tfm), output_size);
- 		goto out;
- 	}
- 
-@@ -427,12 +435,14 @@ static void test_hash_speed(const char *
- 
- 	for (i = 0; speed[i].blen != 0; i++) {
- 		if (speed[i].blen > TVMEMSIZE * PAGE_SIZE) {
--			printk("template (%u) too big for tvmem (%lu)\n",
-+			printk(KERN_ERR
-+			       "template (%u) too big for tvmem (%lu)\n",
- 			       speed[i].blen, TVMEMSIZE * PAGE_SIZE);
- 			goto out;
- 		}
- 
--		printk("test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
-+		printk(KERN_INFO "test%3u "
-+		       "(%5u byte blocks,%5u bytes per update,%4u updates): ",
- 		       i, speed[i].blen, speed[i].plen, speed[i].blen / speed[i].plen);
- 
- 		if (sec)
-@@ -443,13 +453,14 @@ static void test_hash_speed(const char *
- 					       speed[i].plen, output);
- 
- 		if (ret) {
--			printk("hashing failed ret=%d\n", ret);
-+			printk(KERN_ERR "hashing failed ret=%d\n", ret);
- 			break;
- 		}
- 	}
- 
- out:
- 	crypto_free_hash(tfm);
-+	kfree(output);
- }
- 
- static void test_available(void)
+I was thinking that. But in may just end up being a nop.
+
+#define TPFMT(fmt, args)	/* define me */
+
+
+> 
+> > +#define DEFINE_TRACE_FMT(call, proto, args, fmt)			\
+> > +static void ftrace_event_##call(proto)					\
+> > +{									\
+> > +	event_trace_printk(_RET_IP_, "(" #call ") " fmt);		\
+> > +}									\
+> > +									\
+> > +static int ftrace_reg_event_##call(void)				\
+> > +{									\
+> > +	int ret;							\
+> > +									\
+> > +	ret = register_trace_##call(ftrace_event_##call);		\
+> > +	if (!ret)							\
+> > +		pr_info("event trace: Could not activate trace point "	\
+> > +			"probe to " #call);				\
+> > +	return ret;							\
+> > +}									\
+> > +									\
+> > +static void ftrace_unreg_event_##call(void)				\
+> > +{									\
+> > +	unregister_trace_##call(ftrace_event_##call);			\
+> > +}									\
+> > +									\
+> > +static struct ftrace_event_call __used					\
+> > +__attribute__((section("_ftrace_events"))) event_##call = {		\
+> > +	.name 			= #call,				\
+> > +	.regfunc		= ftrace_reg_event_##call,		\
+> > +	.unregfunc		= ftrace_unreg_event_##call,		\
+> > +}
+> > +
+> > +void event_trace_printk(unsigned long ip, const char *fmt, ...);
+> 
+> add format checking here:
+> __attribute__ ((format (printf, 2, 3)))
+> 
+> If user does not use this infrastructure(he uses trace/<type>.h only),
+> this checking is not work, so I think we can add format checking
+> in DEFINE_TRACE_FMT in tracepoint.h
+
+Darn! You are correct. That was what I forgot to fix since the RFC
+announcement. I had that on my TODO list and simply forgot.
+
+Thanks!
+
+> 
+> --------example:
+> 
+> static inline void  __tp_check_format(const char *fmt, ...)
+> 		__attribute__ ((format (printf, 1, 2)));
+> static inline void __tp_check_format(const char *fmt, ...) {}
+> 
+> #define DECLARE_TRACE_FORMAT_CHECK(name, proto, fmt, fmt_args...)	\
+> static inline void ftrace_event_check_format_##name(proto)		\
+> {									\
+> 	__tp_check_format(fmt, ##fmt_args);				\
+
+Cool, thanks, I'll add that.
+
+-- Steve
+
+> }
+> 
+> #define DEFINE_TRACE_FMT(name, proto, args, fmt)			\
+> 	DECLARE_TRACE_FORMAT_CHECK(name, TPPROTO(proto), fmt)		\
+> 	DECLARE_TRACE(name, TPPROTO(proto), TPARGS(args))
+> 
+> ---------
+> 
+> Thanks, Lai
+> 
+> 
+> 
