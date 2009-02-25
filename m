@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZBYNCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZBYNDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZBYNCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 08:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZBYNB4
+	id S1756345AbZBYNDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 08:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZBYNDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 08:01:56 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58584 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753750AbZBYNBz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 08:01:55 -0500
-Date: Wed, 25 Feb 2009 08:01:51 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+	Wed, 25 Feb 2009 08:03:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46645 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753152AbZBYNC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 08:02:59 -0500
+Date: Wed, 25 Feb 2009 14:02:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/4] tracing: add DEFINE_TRACE_FMT to tracepoint.h
-In-Reply-To: <1235543227.4645.2907.camel@laptop>
-Message-ID: <alpine.DEB.2.00.0902250758100.12697@gandalf.stny.rr.com>
-References: <20090225025608.956691460@goodmis.org>  <20090225025753.547618424@goodmis.org> <1235543227.4645.2907.camel@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/2] tracing/core: introduce per cpu tracing files
+Message-ID: <20090225130202.GH26273@elte.hu>
+References: <49a4e2c1.0508d00a.21e6.2eea@mx.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49a4e2c1.0508d00a.21e6.2eea@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 25 Feb 2009, Peter Zijlstra wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Tue, 2009-02-24 at 21:56 -0500, Steven Rostedt wrote:
+> Impact: split up tracing output per cpu
+
+> So this patch creates a new directory inside /debug/tracing 
+> (provided you have a debugfs mountpoint on /debug). Inside 
+> this directory, you will now find one trace_pipe file, one 
+> trace file and one latency_trace file per cpu. Which means if 
+> you have two cpus, you will have:
 > 
-> > +#define DEFINE_TRACE_FMT(name, proto, args, fmt)		\
-> > +	DECLARE_TRACE(name, TPPROTO(proto), TPARGS(args))
-> > +
-> 
-> If TPPROTO and TPARGS were anything but empty stubs, the above would add
-> them twice, no?
+> trace0
+> trace1
+> trace_pipe0
+> trace_pipe1
 
-I guess I can rename them too.
+Very nice! I've applied your patches to tip:tracing/ftrace.
 
-The problem comes from passing in more than one argument. If a proto or 
-args has a comma, you get a nasty error about unmatched number of 
-parameters.
+Could you please do one more tweak? The /debug/tracing/per_cpu/ 
+directory looks a bit cluttered on a 16-way box. It would be a 
+nicer structure to have per CPU directories, i.e.:
 
-I believe that they were purposely made to be empty stubs to allow for 
-multiple parameters. But you are right, if that changes we need to fix it.
+ /debug/tracing/per_cpu/cpu0/trace
+ /debug/tracing/per_cpu/cpu0/trace_pipe
+ /debug/tracing/per_cpu/cpu1/trace
+ /debug/tracing/per_cpu/cpu1/trace_pipe
 
-Since the above is only to protect against the substitution into multiple 
-parameters, we could probably create a new macro name to just be
+etc.
 
- #define PARAMS(args...) args
- #define DEFINE_TRACE_FMT(name, proto, args, fmt) \
-	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+Besides being easier to handle, this also makes it easy to 
+extend the list of per CPU attributes as well, without 
+cluttering the /debug/tracing/per_cpu/ directory.
 
--- Steve
-
+	Ingo
