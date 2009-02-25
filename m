@@ -1,1247 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZBYAsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZBYA7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbZBYAsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 19:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbZBYAsB
+	id S1756010AbZBYA7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 19:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZBYA7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 19:48:01 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:62385 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752021AbZBYAr6 (ORCPT
+	Tue, 24 Feb 2009 19:59:09 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:34727 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753320AbZBYA7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 19:47:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=XNF0GmVJQkmrju9KzFro4h2EOKM5XlvoWrmg2F2xIkumeagYRHciQJpZfsg34SJats
-         bhFWnxy3WwzQ1ENI3xsE1sycBfSgAYfmG0KAuIzaPaC8DPGv4kgodfdLyp2EhgdzzXmh
-         CNNOfelz68IR3yPU8tqGvF/NK9m3LNKtCB1I8=
-Message-ID: <49A49537.8050002@gmail.com>
-Date: Tue, 24 Feb 2009 19:47:51 -0500
-From: jacques <ocean4200@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: no sound with DIGITAL INPUT
-References: <49A175E4.6070608@gmail.com> <s5hfxi484d9.wl%tiwai@suse.de>
-In-Reply-To: <s5hfxi484d9.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Feb 2009 19:59:08 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhQFAAQhpElMQWXi/2dsb2JhbACBb9YKhBEG
+Date: Tue, 24 Feb 2009 19:59:04 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 0/4][RFC] event tracer
+Message-ID: <20090225005903.GA16396@Krystal>
+References: <20090224193344.638329210@goodmis.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090224193344.638329210@goodmis.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:58:26 up 3 days, 16:32,  3 users,  load average: 0.40, 0.40,
+	0.27
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> This is still RFC, do not pull.
+> 
+> This patch set gives the ability to add a format string and args to
+> a trace point declaration. Then it gives a tracer an opportunity to
+> override the header macro and use the default trace format to trace
+> the object.
+> 
+> For example (and used in this patch series), the sched tracepoint
+> declarations are moved from include/trace/sched.h to
+> include/trace/sched_event_types.h, and instead of using the macro
+> DECLARE_TRACE we use DECLARE_TRACE_FMT. The first three arguments
+> are the same, but it adds 2 more arguments. A printf format and
+> arguments.
+> 
+> The new trace/sched.h file contains:
+> 
+>   #include <linux/sched.h>
+>   #include <linux/tracepoint.h>
+> 
+>   #include <trace/sched_event_types.h>
+> 
+> The sched_event_types.h file has:
+> 
+>  DECLARE_TRACE_FMT(sched_kthread_stop,
+>         TPPROTO(struct task_struct *t),
+>                   TPARGS(t),
+>                    "task %s:%d", TPARGS(t->comm, t->pid));
+> 
+> The tracepoint.h defines DECLARE_TRACE_FMT as:
+> 
+>  #define DECLARE_TRACE_FMT(name, proto, args, fmt, fmt_args) \
+>         DECLARE_TRACE(name, TPPROTO(proto), TPARGS(args))
+> 
+> 
+> But in kernel/trace/events.c we have:
+> 
+>  /* trace/<type>.h here */
+>  #include <trace/sched.h>
+> 
+>  #include "trace_events.h"
+> 
+>  /* trace/<type>_event_types.h here */
+>  #include <trace/sched_event_types.h>
+> 
+> The trace_events.h redefines the DECLARE_TRACE_FMT and makes a hook
+> for to automate adding event points.
+> 
+> To add event points, convert to the DECLARE_TRACE_FMT, add your default
+> printf format, and then add to events.c, the <type>.h and <type>_event_types.h
+> as described. Then your trace points will appear in the event tracer.
+> 
+> Next I'll convert the rest of the tracepoints that are already defined
+> to this format.
+> 
 
-I upgraded the alsa driver with the latest snapshot without success. I 
-also tried to record to a file directly then playing it after, still no 
-sound. By the way, I'm not a programmer so about the line
+Hi Steve,
 
-CONFIG_SND_DEBUG_VERBOSE=y, I added it at the end of the ./configure but I'm not sure if it was the right place... If not tell me how to do it. I'm not comfortable with kernel upgrade. Thank you for helping me further with this problem. I really appreciate your help :)
+The approach sounds great : an hybrid between markers and tracepoints.
+I'll dig into it. That would be useful for LTTng.
 
-Here is the alsa-info output for alsa (snapshot) :
+Mathieu
 
-upload=true&script=true&cardinfo=
-!!################################
-!!ALSA Information Script v 0.4.54
-!!################################
+> 
+> The following patches are in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: rfc/event_tracer
+> 
+> 
+> Steven Rostedt (4):
+>       tracing: add event trace infrastructure
+>       tracing: add DECLARE_TRACE_FMT to tracepoint.h
+>       tracing: add schedule events to event trace
+>       tracing: make event directory structure
+> 
+> ----
+>  include/asm-generic/vmlinux.lds.h |   11 +-
+>  include/linux/tracepoint.h        |    3 +
+>  include/trace/sched.h             |   49 +-----
+>  include/trace/sched_event_types.h |   74 +++++++
+>  kernel/trace/Kconfig              |    9 +
+>  kernel/trace/Makefile             |    2 +
+>  kernel/trace/events.c             |   13 ++
+>  kernel/trace/trace_events.c       |  407 +++++++++++++++++++++++++++++++++++++
+>  kernel/trace/trace_events.h       |   52 +++++
+>  9 files changed, 571 insertions(+), 49 deletions(-)
+> -- 
+> 
 
-!!Script ran on: Wed Feb 25 00:37:25 UTC 2009
-
-
-!!Linux Distribution
-!!------------------
-
-Ubuntu 8.10 \n \l DISTRIB_ID=Ubuntu DISTRIB_DESCRIPTION="Ubuntu 8.10"
-
-
-!!Kernel Information
-!!------------------
-
-Kernel release:    2.6.27-7-server
-Operating System:  GNU/Linux
-Architecture:      x86_64
-Processor:         unknown
-SMP Enabled:       Yes
-
-
-!!ALSA Version
-!!------------
-
-Driver version:     1.0.19
-Library version:    1.0.19.14.g59826
-Utilities version:  1.0.19.4.g08837
-
-
-!!Loaded ALSA modules
-!!-------------------
-
-snd_hda_intel
-
-
-!!Sound Servers on this system
-!!----------------------------
-
-No sound servers found.
-
-
-!!Soundcards recognised by ALSA
-!!-----------------------------
-
- 0 [Intel          ]: HDA-Intel - HDA Intel
-                      HDA Intel at 0xe3600000 irq 22
-
-
-!!PCI Soundcards installed in the system
-!!--------------------------------------
-
-00:1b.0 Audio device: Intel Corporation 82801JI (ICH10 Family) HD Audio Controller
-03:01.0 Communication controller: NetMos Technology PCI 9835 Multi-I/O Controller (rev 01)
-
-
-!!Advanced information - PCI Vendor/Device/Susbsystem ID's
-!!--------------------------------------------------------
-
-00:1b.0 0403: 8086:3a3e
-	Subsystem: 1458:a002
-
-
-!!Modprobe options (Sound related)
-!!--------------------------------
-
-snd-atiixp-modem: index=-2
-snd-intel8x0m: index=-2
-snd-via82xx-modem: index=-2
-snd-usb-audio: index=-2
-snd-usb-usx2y: index=-2
-snd-usb-caiaq: index=-2
-snd-cmipci: mpu_port=0x330 fm_port=0x388
-snd-pcsp: index=-2
-
-
-!!Loaded sound module options
-!!--------------------------
-
-!!Module: snd_hda_intel
-bdl_pos_adj : 1,-1,-1,-1,-1,-1,-1,-1
-enable : Y,Y,Y,Y,Y,Y,Y,Y
-enable_msi : 0
-id : <NULL>,<NULL>,<NULL>,<NULL>,<NULL>,<NULL>,<NULL>,<NULL>
-index : -1,-1,-1,-1,-1,-1,-1,-1
-model : <NULL>,<NULL>,<NULL>,<NULL>,<NULL>,<NULL>,<NULL>,<NULL>
-position_fix : 0,0,0,0,0,0,0,0
-power_save : 0
-power_save_controller : Y
-probe_mask : -1,-1,-1,-1,-1,-1,-1,-1
-probe_only : N,N,N,N,N,N,N,N
-single_cmd : N
-
-
-!!HDA-Intel Codec information
-!!---------------------------
---startcollapse--
-
-Codec: Realtek ALC888
-Address: 2
-Vendor Id: 0x10ec0888
-Subsystem Id: 0x1458a002
-Revision Id: 0x100001
-No Modem Function Group found
-Default PCM:
-    rates [0x560]: 44100 48000 96000 192000
-    bits [0xe]: 16 20 24
-    formats [0x1]: PCM
-Default Amp-In caps: N/A
-Default Amp-Out caps: N/A
-GPIO: io=3, o=0, i=0, unsolicited=1, wake=0
-  IO[0]: enable=0, dir=0, wake=0, sticky=0, data=0, unsol=0
-  IO[1]: enable=0, dir=0, wake=0, sticky=0, data=0, unsol=0
-  IO[2]: enable=0, dir=0, wake=0, sticky=0, data=0, unsol=0
-Node 0x02 [Audio Output] wcaps 0x11: Stereo
-  Converter: stream=0, channel=0
-  PCM:
-    rates [0x560]: 44100 48000 96000 192000
-    bits [0xe]: 16 20 24
-    formats [0x1]: PCM
-Node 0x03 [Audio Output] wcaps 0x11: Stereo
-  Converter: stream=0, channel=0
-  PCM:
-    rates [0x560]: 44100 48000 96000 192000
-    bits [0xe]: 16 20 24
-    formats [0x1]: PCM
-Node 0x04 [Audio Output] wcaps 0x11: Stereo
-  Converter: stream=0, channel=0
-  PCM:
-    rates [0x560]: 44100 48000 96000 192000
-    bits [0xe]: 16 20 24
-    formats [0x1]: PCM
-Node 0x05 [Audio Output] wcaps 0x11: Stereo
-  Converter: stream=0, channel=0
-  PCM:
-    rates [0x560]: 44100 48000 96000 192000
-    bits [0xe]: 16 20 24
-    formats [0x1]: PCM
-Node 0x06 [Audio Output] wcaps 0x211: Stereo Digital
-  Converter: stream=0, channel=0
-  Digital: Enabled
-  Digital category: 0x0
-  PCM:
-    rates [0x5e0]: 44100 48000 88200 96000 192000
-    bits [0x1e]: 16 20 24 32
-    formats [0x1]: PCM
-Node 0x07 [Vendor Defined Widget] wcaps 0xf00000: Mono
-Node 0x08 [Audio Input] wcaps 0x10011b: Stereo Amp-In
-  Amp-In caps: ofs=0x0b, nsteps=0x1f, stepsize=0x05, mute=1
-  Amp-In vals:  [0x80 0x80]
-  Converter: stream=0, channel=0
-  SDI-Select: 0
-  PCM:
-    rates [0x160]: 44100 48000 96000
-    bits [0x6]: 16 20
-    formats [0x1]: PCM
-  Connection: 1
-     0x23
-Node 0x09 [Audio Input] wcaps 0x10011b: Stereo Amp-In
-  Amp-In caps: ofs=0x0b, nsteps=0x1f, stepsize=0x05, mute=1
-  Amp-In vals:  [0x80 0x80]
-  Converter: stream=0, channel=0
-  SDI-Select: 0
-  PCM:
-    rates [0x160]: 44100 48000 96000
-    bits [0x6]: 16 20
-    formats [0x1]: PCM
-  Connection: 1
-     0x22
-Node 0x0a [Audio Input] wcaps 0x100391: Stereo Digital
-  Converter: stream=0, channel=0
-  SDI-Select: 0
-  Digital: Enabled
-  Digital category: 0x0
-  PCM:
-    rates [0x560]: 44100 48000 96000 192000
-    bits [0x1e]: 16 20 24 32
-    formats [0x1]: PCM
-  Unsolicited: tag=00, enabled=0
-  Connection: 1
-     0x1f
-Node 0x0b [Audio Mixer] wcaps 0x20010b: Stereo Amp-In
-  Amp-In caps: ofs=0x17, nsteps=0x1f, stepsize=0x05, mute=1
-  Amp-In vals:  [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80]
-  Connection: 10
-     0x18 0x19 0x1a 0x1b 0x1c 0x1d 0x14 0x15 0x16 0x17
-Node 0x0c [Audio Mixer] wcaps 0x20010f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-In vals:  [0x00 0x00] [0x00 0x00]
-  Amp-Out caps: ofs=0x1f, nsteps=0x1f, stepsize=0x05, mute=0
-  Amp-Out vals:  [0x1f 0x1f]
-  Connection: 2
-     0x02 0x0b
-Node 0x0d [Audio Mixer] wcaps 0x20010f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-In vals:  [0x80 0x80] [0x80 0x80]
-  Amp-Out caps: ofs=0x1f, nsteps=0x1f, stepsize=0x05, mute=0
-  Amp-Out vals:  [0x00 0x00]
-  Connection: 2
-     0x03 0x0b
-Node 0x0e [Audio Mixer] wcaps 0x20010f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-In vals:  [0x80 0x80] [0x80 0x80]
-  Amp-Out caps: ofs=0x1f, nsteps=0x1f, stepsize=0x05, mute=0
-  Amp-Out vals:  [0x00 0x00]
-  Connection: 2
-     0x04 0x0b
-Node 0x0f [Audio Mixer] wcaps 0x20010f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-In vals:  [0x80 0x80] [0x80 0x80]
-  Amp-Out caps: ofs=0x1f, nsteps=0x1f, stepsize=0x05, mute=0
-  Amp-Out vals:  [0x00 0x00]
-  Connection: 2
-     0x05 0x0b
-Node 0x10 [Vendor Defined Widget] wcaps 0xf00000: Mono
-Node 0x11 [Vendor Defined Widget] wcaps 0xf00000: Mono
-Node 0x12 [Vendor Defined Widget] wcaps 0xf00000: Mono
-Node 0x13 [Vendor Defined Widget] wcaps 0xf00000: Mono
-Node 0x14 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x00 0x00]
-  Pincap 0x0000003e: IN OUT HP Detect Trigger
-  Pin Default 0x01014410: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Green
-    DefAssociation = 0x1, Sequence = 0x0
-  Pin-ctls: 0x40: OUT
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c* 0x0d 0x0e 0x0f 0x26
-Node 0x15 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x00 0x00]
-  Pincap 0x0000003e: IN OUT HP Detect Trigger
-  Pin Default 0x01011412: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Black
-    DefAssociation = 0x1, Sequence = 0x2
-  Pin-ctls: 0x40: OUT
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c 0x0d* 0x0e 0x0f 0x26
-Node 0x16 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x00 0x00]
-  Pincap 0x00000036: IN OUT Detect Trigger
-  Pin Default 0x01016411: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Orange
-    DefAssociation = 0x1, Sequence = 0x1
-  Pin-ctls: 0x40: OUT
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c 0x0d 0x0e* 0x0f 0x26
-Node 0x17 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x00 0x00]
-  Pincap 0x00000036: IN OUT Detect Trigger
-  Pin Default 0x01012414: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Grey
-    DefAssociation = 0x1, Sequence = 0x4
-  Pin-ctls: 0x40: OUT
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c 0x0d 0x0e 0x0f* 0x26
-Node 0x18 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Pincap 0x0000373e: IN OUT HP Detect Trigger
-    Vref caps: HIZ 50 GRD 80 100
-  Pin Default 0x01a19c40: [Jack] Mic at Ext Rear
-    Conn = 1/8, Color = Pink
-    DefAssociation = 0x4, Sequence = 0x0
-  Pin-ctls: 0x24: IN VREF_80
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c* 0x0d 0x0e 0x0f 0x26
-Node 0x19 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Pincap 0x0000373e: IN OUT HP Detect Trigger
-    Vref caps: HIZ 50 GRD 80 100
-  Pin Default 0x02a19c50: [Jack] Mic at Ext Front
-    Conn = 1/8, Color = Pink
-    DefAssociation = 0x5, Sequence = 0x0
-  Pin-ctls: 0x24: IN VREF_80
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c* 0x0d 0x0e 0x0f 0x26
-Node 0x1a [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Pincap 0x0000373e: IN OUT HP Detect Trigger
-    Vref caps: HIZ 50 GRD 80 100
-  Pin Default 0x0181344f: [Jack] Line In at Ext Rear
-    Conn = 1/8, Color = Blue
-    DefAssociation = 0x4, Sequence = 0xf
-  Pin-ctls: 0x20: IN VREF_HIZ
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c* 0x0d 0x0e 0x0f 0x26
-Node 0x1b [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x03, stepsize=0x27, mute=0
-  Amp-In vals:  [0x00 0x00]
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Pincap 0x0000373e: IN OUT HP Detect Trigger
-    Vref caps: HIZ 50 GRD 80 100
-  Pin Default 0x02214c20: [Jack] HP Out at Ext Front
-    Conn = 1/8, Color = Green
-    DefAssociation = 0x2, Sequence = 0x0
-  Pin-ctls: 0xc0: OUT HP VREF_HIZ
-  Unsolicited: tag=00, enabled=0
-  Connection: 5
-     0x0c* 0x0d 0x0e 0x0f 0x26
-Node 0x1c [Pin Complex] wcaps 0x400001: Stereo
-  Pincap 0x00000020: IN
-  Pin Default 0x593301f0: [N/A] CD at Int ATAPI
-    Conn = ATAPI, Color = Unknown
-    DefAssociation = 0xf, Sequence = 0x0
-    Misc = NO_PRESENCE
-  Pin-ctls: 0x20: IN
-Node 0x1d [Pin Complex] wcaps 0x400000: Mono
-  Pincap 0x00000020: IN
-  Pin Default 0x4005e601: [N/A] Line Out at Ext N/A
-    Conn = Optical, Color = White
-    DefAssociation = 0x0, Sequence = 0x1
-  Pin-ctls: 0x20: IN
-Node 0x1e [Pin Complex] wcaps 0x400300: Mono Digital
-  Pincap 0x00000010: OUT
-  Pin Default 0x014b6130: [Jack] SPDIF Out at Ext Rear
-    Conn = Comb, Color = Orange
-    DefAssociation = 0x3, Sequence = 0x0
-    Misc = NO_PRESENCE
-  Pin-ctls: 0x40: OUT
-  Connection: 1
-     0x06
-Node 0x1f [Pin Complex] wcaps 0x400200: Mono Digital
-  Pincap 0x00000020: IN
-  Pin Default 0x01cb7160: [Jack] SPDIF In at Ext Rear
-    Conn = Comb, Color = Yellow
-    DefAssociation = 0x6, Sequence = 0x0
-    Misc = NO_PRESENCE
-  Pin-ctls: 0x20: IN
-Node 0x20 [Vendor Defined Widget] wcaps 0xf00040: Mono
-  Processing caps: benign=0, ncoeff=17
-  Processing Coefficient: 0x00
-  Coefficient Index: 0x0a
-Node 0x21 [Vendor Defined Widget] wcaps 0xf00000: Mono
-Node 0x22 [Audio Mixer] wcaps 0x20010b: Stereo Amp-In
-  Amp-In caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-In vals:  [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x00 0x00] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80]
-  Connection: 11
-     0x18 0x19 0x1a 0x1b 0x1c 0x1d 0x14 0x15 0x16 0x17 0x0b
-Node 0x23 [Audio Mixer] wcaps 0x20010b: Stereo Amp-In
-  Amp-In caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-In vals:  [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x00 0x00] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80]
-  Connection: 11
-     0x18 0x19 0x1a 0x1b 0x1c 0x1d 0x14 0x15 0x16 0x17 0x0b
-Node 0x24 [Vendor Defined Widget] wcaps 0xf00000: Mono
-Node 0x25 [Audio Output] wcaps 0x11: Stereo
-  Converter: stream=0, channel=0
-  PCM:
-    rates [0x560]: 44100 48000 96000 192000
-    bits [0xe]: 16 20 24
-    formats [0x1]: PCM
-Node 0x26 [Audio Mixer] wcaps 0x20010f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-In vals:  [0x00 0x00] [0x80 0x80]
-  Amp-Out caps: ofs=0x1f, nsteps=0x1f, stepsize=0x05, mute=0
-  Amp-Out vals:  [0x00 0x00]
-  Connection: 2
-     0x25 0x0b
-Codec: Intel G45 DEVELK
-Address: 3
-Vendor Id: 0x80862803
-Subsystem Id: 0x80860101
-Revision Id: 0x100000
-No Modem Function Group found
-Default PCM:
-    rates [0x0]:
-    bits [0x0]:
-    formats [0x0]:
-Default Amp-In caps: N/A
-Default Amp-Out caps: N/A
-GPIO: io=0, o=0, i=0, unsolicited=0, wake=0
-Node 0x02 [Audio Output] wcaps 0x6211: 8-Channels Digital
-  Converter: stream=0, channel=0
-  Digital: Enabled
-  Digital category: 0x0
-  PCM:
-    rates [0x7f0]: 32000 44100 48000 88200 96000 176400 192000
-    bits [0x1e]: 16 20 24 32
-    formats [0x5]: PCM AC3
-Node 0x03 [Pin Complex] wcaps 0x40739d: 8-Channels Digital Amp-Out CP
-  Amp-Out caps: ofs=0x00, nsteps=0x00, stepsize=0x00, mute=1
-  Amp-Out vals:  [0x00 0x00]
-  Pincap 0x00000094: OUT Detect HDMI
-  Pin Default 0x18560010: [Jack] Digital Out at Int HDMI
-    Conn = Digital, Color = Unknown
-    DefAssociation = 0x1, Sequence = 0x0
-  Pin-ctls: 0x40: OUT
-  Unsolicited: tag=08, enabled=1
-  Connection: 1
-     0x02
---endcollapse--
-
-
-!!ALSA Device nodes
-!!-----------------
-
-crw-rw---- 1 root audio 116,  0 Feb 24 19:26 /dev/snd/controlC0
-crw-rw---- 1 root audio 116,  6 Feb 24 19:26 /dev/snd/hwC0D2
-crw-rw---- 1 root audio 116,  7 Feb 24 19:26 /dev/snd/hwC0D3
-crw-rw---- 1 root audio 116, 24 Feb 24 19:26 /dev/snd/pcmC0D0c
-crw-rw---- 1 root audio 116, 16 Feb 24 19:26 /dev/snd/pcmC0D0p
-crw-rw---- 1 root audio 116, 25 Feb 24 19:35 /dev/snd/pcmC0D1c
-crw-rw---- 1 root audio 116, 17 Feb 24 19:34 /dev/snd/pcmC0D1p
-crw-rw---- 1 root audio 116, 26 Feb 24 19:26 /dev/snd/pcmC0D2c
-crw-rw---- 1 root audio 116, 19 Feb 24 19:26 /dev/snd/pcmC0D3p
-crw-rw---- 1 root audio 116,  1 Feb 24 19:26 /dev/snd/seq
-crw-rw---- 1 root audio 116, 33 Feb 24 19:26 /dev/snd/timer
-
-
-!!Aplay/Arecord output
-!!------------
-
-APLAY
-
-**** List of PLAYBACK Hardware Devices ****
-card 0: Intel [HDA Intel], device 0: ALC888 Analog [ALC888 Analog]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-card 0: Intel [HDA Intel], device 1: ALC888 Digital [ALC888 Digital]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-card 0: Intel [HDA Intel], device 3: INTEL HDMI [INTEL HDMI]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-
-ARECORD
-
-**** List of CAPTURE Hardware Devices ****
-card 0: Intel [HDA Intel], device 0: ALC888 Analog [ALC888 Analog]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-card 0: Intel [HDA Intel], device 1: ALC888 Digital [ALC888 Digital]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-card 0: Intel [HDA Intel], device 2: ALC888 Analog [ALC888 Analog]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-
-!!Amixer output
-!!-------------
-
-!!-------Mixer controls for card 0 [Intel]
-
-Card hw:0 'Intel'/'HDA Intel at 0xe3600000 irq 22'
-  Mixer name	: 'Intel G45 DEVELK'
-  Components	: 'HDA:10ec0888,1458a002,00100001 HDA:80862803,80860101,00100000'
-  Controls      : 44
-  Simple ctrls  : 23
-Simple mixer control 'Master',0
-  Capabilities: pvolume pvolume-joined pswitch pswitch-joined
-  Playback channels: Mono
-  Limits: Playback 0 - 31
-  Mono: Playback 31 [100%] [0.00dB] [on]
-Simple mixer control 'Headphone',0
-  Capabilities: pswitch
-  Playback channels: Front Left - Front Right
-  Mono:
-  Front Left: Playback [off]
-  Front Right: Playback [off]
-Simple mixer control 'PCM',0
-  Capabilities: pvolume
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 255
-  Mono:
-  Front Left: Playback 255 [100%] [0.00dB]
-  Front Right: Playback 255 [100%] [0.00dB]
-Simple mixer control 'Front',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 31 [100%] [0.00dB] [on]
-  Front Right: Playback 31 [100%] [0.00dB] [on]
-Simple mixer control 'Front Mic',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 0 [0%] [-34.50dB] [off]
-  Front Right: Playback 0 [0%] [-34.50dB] [off]
-Simple mixer control 'Front Mic Boost',0
-  Capabilities: volume
-  Playback channels: Front Left - Front Right
-  Capture channels: Front Left - Front Right
-  Limits: 0 - 3
-  Front Left: 0 [0%]
-  Front Right: 0 [0%]
-Simple mixer control 'Surround',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 0 [0%] [-46.50dB] [off]
-  Front Right: Playback 0 [0%] [-46.50dB] [off]
-Simple mixer control 'Center',0
-  Capabilities: pvolume pvolume-joined pswitch pswitch-joined
-  Playback channels: Mono
-  Limits: Playback 0 - 31
-  Mono: Playback 0 [0%] [-46.50dB] [off]
-Simple mixer control 'LFE',0
-  Capabilities: pvolume pvolume-joined pswitch pswitch-joined
-  Playback channels: Mono
-  Limits: Playback 0 - 31
-  Mono: Playback 0 [0%] [-46.50dB] [off]
-Simple mixer control 'Side',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 0 [0%] [-46.50dB] [off]
-  Front Right: Playback 0 [0%] [-46.50dB] [off]
-Simple mixer control 'Line',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 0 [0%] [-34.50dB] [off]
-  Front Right: Playback 0 [0%] [-34.50dB] [off]
-Simple mixer control 'CD',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 0 [0%] [-34.50dB] [off]
-  Front Right: Playback 0 [0%] [-34.50dB] [off]
-Simple mixer control 'Mic',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 0 [0%] [-34.50dB] [off]
-  Front Right: Playback 0 [0%] [-34.50dB] [off]
-Simple mixer control 'Mic Boost',0
-  Capabilities: volume
-  Playback channels: Front Left - Front Right
-  Capture channels: Front Left - Front Right
-  Limits: 0 - 3
-  Front Left: 0 [0%]
-  Front Right: 0 [0%]
-Simple mixer control 'IEC958',0
-  Capabilities: pswitch pswitch-joined cswitch cswitch-joined
-  Playback channels: Mono
-  Capture channels: Mono
-  Mono: Playback [on] Capture [on]
-Simple mixer control 'IEC958 Default PCM',0
-  Capabilities: pswitch pswitch-joined
-  Playback channels: Mono
-  Mono: Playback [on]
-Simple mixer control 'IEC958',1
-  Capabilities: pswitch pswitch-joined
-  Playback channels: Mono
-  Mono: Playback [on]
-Simple mixer control 'Capture',0
-  Capabilities: cvolume cswitch
-  Capture channels: Front Left - Front Right
-  Limits: Capture 0 - 31
-  Front Left: Capture 0 [0%] [-16.50dB] [off]
-  Front Right: Capture 0 [0%] [-16.50dB] [off]
-Simple mixer control 'Capture',1
-  Capabilities: cvolume cswitch
-  Capture channels: Front Left - Front Right
-  Limits: Capture 0 - 31
-  Front Left: Capture 0 [0%] [-16.50dB] [off]
-  Front Right: Capture 0 [0%] [-16.50dB] [off]
-Simple mixer control 'Beep',0
-  Capabilities: pvolume pswitch
-  Playback channels: Front Left - Front Right
-  Limits: Playback 0 - 31
-  Mono:
-  Front Left: Playback 0 [0%] [-34.50dB] [off]
-  Front Right: Playback 0 [0%] [-34.50dB] [off]
-Simple mixer control 'Channel Mode',0
-  Capabilities: enum
-  Items: '6ch' '8ch'
-  Item0: '6ch'
-Simple mixer control 'Input Source',0
-  Capabilities: cenum
-  Items: 'Mic' 'Front Mic' 'Line' 'CD'
-  Item0: 'CD'
-Simple mixer control 'Input Source',1
-  Capabilities: cenum
-  Items: 'Mic' 'Front Mic' 'Line' 'CD'
-  Item0: 'CD'
-
-
-!!Alsactl output
-!!-------------
-
---startcollapse--
-state.Intel {
-	control.1 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -4650
-		comment.dbmax 0
-		iface MIXER
-		name 'Front Playback Volume'
-		value.0 31
-		value.1 31
-	}
-	control.2 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Front Playback Switch'
-		value.0 true
-		value.1 true
-	}
-	control.3 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -4650
-		comment.dbmax 0
-		iface MIXER
-		name 'Surround Playback Volume'
-		value.0 0
-		value.1 0
-	}
-	control.4 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Surround Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.5 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 1
-		comment.range '0 - 31'
-		comment.dbmin -4650
-		comment.dbmax 0
-		iface MIXER
-		name 'Center Playback Volume'
-		value 0
-	}
-	control.6 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 1
-		comment.range '0 - 31'
-		comment.dbmin -4650
-		comment.dbmax 0
-		iface MIXER
-		name 'LFE Playback Volume'
-		value 0
-	}
-	control.7 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 1
-		iface MIXER
-		name 'Center Playback Switch'
-		value false
-	}
-	control.8 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 1
-		iface MIXER
-		name 'LFE Playback Switch'
-		value false
-	}
-	control.9 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -4650
-		comment.dbmax 0
-		iface MIXER
-		name 'Side Playback Volume'
-		value.0 0
-		value.1 0
-	}
-	control.10 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Side Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.11 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Headphone Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.12 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -3450
-		comment.dbmax 1200
-		iface MIXER
-		name 'CD Playback Volume'
-		value.0 0
-		value.1 0
-	}
-	control.13 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'CD Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.14 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -3450
-		comment.dbmax 1200
-		iface MIXER
-		name 'Line Playback Volume'
-		value.0 0
-		value.1 0
-	}
-	control.15 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Line Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.16 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -3450
-		comment.dbmax 1200
-		iface MIXER
-		name 'Mic Playback Volume'
-		value.0 0
-		value.1 0
-	}
-	control.17 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 3'
-		comment.dbmin 0
-		comment.dbmax 3000
-		iface MIXER
-		name 'Mic Boost'
-		value.0 0
-		value.1 0
-	}
-	control.18 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Mic Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.19 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -3450
-		comment.dbmax 1200
-		iface MIXER
-		name 'Front Mic Playback Volume'
-		value.0 0
-		value.1 0
-	}
-	control.20 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 3'
-		comment.dbmin 0
-		comment.dbmax 3000
-		iface MIXER
-		name 'Front Mic Boost'
-		value.0 0
-		value.1 0
-	}
-	control.21 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Front Mic Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.22 {
-		comment.access 'read write'
-		comment.type ENUMERATED
-		comment.count 1
-		comment.item.0 '6ch'
-		comment.item.1 '8ch'
-		iface MIXER
-		name 'Channel Mode'
-		value '6ch'
-	}
-	control.23 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Capture Switch'
-		value.0 false
-		value.1 false
-	}
-	control.24 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Capture Switch'
-		index 1
-		value.0 false
-		value.1 false
-	}
-	control.25 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -1650
-		comment.dbmax 3000
-		iface MIXER
-		name 'Capture Volume'
-		value.0 0
-		value.1 0
-	}
-	control.26 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -1650
-		comment.dbmax 3000
-		iface MIXER
-		name 'Capture Volume'
-		index 1
-		value.0 0
-		value.1 0
-	}
-	control.27 {
-		comment.access 'read write'
-		comment.type ENUMERATED
-		comment.count 1
-		comment.item.0 Mic
-		comment.item.1 'Front Mic'
-		comment.item.2 Line
-		comment.item.3 CD
-		iface MIXER
-		name 'Input Source'
-		value CD
-	}
-	control.28 {
-		comment.access 'read write'
-		comment.type ENUMERATED
-		comment.count 1
-		comment.item.0 Mic
-		comment.item.1 'Front Mic'
-		comment.item.2 Line
-		comment.item.3 CD
-		iface MIXER
-		name 'Input Source'
-		index 1
-		value CD
-	}
-	control.29 {
-		comment.access read
-		comment.type IEC958
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Con Mask'
-		value '0fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-	}
-	control.30 {
-		comment.access read
-		comment.type IEC958
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Pro Mask'
-		value '0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-	}
-	control.31 {
-		comment.access 'read write'
-		comment.type IEC958
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Default'
-		value '0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-	}
-	control.32 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Switch'
-		value true
-	}
-	control.33 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Default PCM Playback Switch'
-		value true
-	}
-	control.34 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Capture Switch'
-		value true
-	}
-	control.35 {
-		comment.access read
-		comment.type IEC958
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Capture Default'
-		value '0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-	}
-	control.36 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 31'
-		comment.dbmin -3450
-		comment.dbmax 1200
-		iface MIXER
-		name 'Beep Playback Volume'
-		value.0 0
-		value.1 0
-	}
-	control.37 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 2
-		iface MIXER
-		name 'Beep Playback Switch'
-		value.0 false
-		value.1 false
-	}
-	control.38 {
-		comment.access 'read write'
-		comment.type INTEGER
-		comment.count 1
-		comment.range '0 - 31'
-		comment.dbmin -4650
-		comment.dbmax 0
-		iface MIXER
-		name 'Master Playback Volume'
-		value 31
-	}
-	control.39 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 1
-		iface MIXER
-		name 'Master Playback Switch'
-		value true
-	}
-	control.40 {
-		comment.access read
-		comment.type IEC958
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Con Mask'
-		index 1
-		value '0fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-	}
-	control.41 {
-		comment.access read
-		comment.type IEC958
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Pro Mask'
-		index 1
-		value '0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-	}
-	control.42 {
-		comment.access 'read write'
-		comment.type IEC958
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Default'
-		index 1
-		value '0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-	}
-	control.43 {
-		comment.access 'read write'
-		comment.type BOOLEAN
-		comment.count 1
-		iface MIXER
-		name 'IEC958 Playback Switch'
-		index 1
-		value true
-	}
-	control.44 {
-		comment.access 'read write user'
-		comment.type INTEGER
-		comment.count 2
-		comment.range '0 - 255'
-		comment.tlv '0000000100000008ffffec1400000014'
-		comment.dbmin -5100
-		comment.dbmax 0
-		iface MIXER
-		name 'PCM Playback Volume'
-		value.0 255
-		value.1 255
-	}
-}
---endcollapse--
-
-
-!!All Loaded Modules
-!!------------------
-
-Module
-xt_tcpudp
-xt_mac
-nf_conntrack_ipv4
-xt_state
-nf_conntrack
-ppdev
-ipv6
-iptable_filter
-ip_tables
-x_tables
-ac
-coretemp
-it87
-hwmon_vid
-lp
-loop
-snd_hda_codec_intelhdmi
-snd_hda_codec_realtek
-snd_hda_intel
-snd_hda_codec
-snd_hwdep
-snd_pcm_oss
-snd_mixer_oss
-snd_pcm
-parport_serial
-snd_seq_dummy
-snd_seq_oss
-button
-parport_pc
-parport
-snd_seq_midi
-snd_rawmidi
-pcspkr
-snd_seq_midi_event
-snd_seq
-snd_timer
-evdev
-snd_seq_device
-snd
-soundcore
-snd_page_alloc
-shpchp
-intel_agp
-pci_hotplug
-xfs
-sr_mod
-cdrom
-pata_it8213
-pata_acpi
-sd_mod
-crc_t10dif
-sg
-usbhid
-hid
-ata_generic
-sata_promise
-ahci
-libata
-scsi_mod
-dock
-r8169
-ehci_hcd
-uhci_hcd
-usbcore
-raid10
-raid456
-async_xor
-async_memcpy
-async_tx
-xor
-raid1
-raid0
-multipath
-linear
-md_mod
-thermal
-processor
-fan
-fbcon
-tileblit
-font
-bitblit
-softcursor
-fuse
-
-
-
-
-> At Sun, 22 Feb 2009 10:57:24 -0500,
-> jacques wrote:
->   
->> Hello,
->>
->> I have a giga-byte GA-EG43-S2H with an integrated REALTEK ALC888 sound 
->> card. I'm unable to use the digital INPUT while recording or using pipe 
->> (arecord -M -D iec958 -f dat | aplay -D iec958 -f dat). Also, the 
->> giga-byte GA-EG41-S2H has the same problem (uses the same sound 
->> chipset). The giga-byte GA-EP45-UD3R is working perfectly but it uses a 
->> different sound chip (ALC889A). I tried a lot of things like changing 
->> snd-hda-intel model (auto, 6stack-dig, 3stack-dig, etc). I upgraded the 
->> ALSA sound driver to the latest version (1.0.19) and also used the 
->> snapshot. My distribution is Ubuntu 8.10 (server edition) 64 bits. I 
->> also installed the desktop version of it without success. I tested the 
->> digital input on Windows operating system and it works perfectly. Now, 
->> I'm not sure if I'm missing something with the configuration or it is a 
->> problem with the ALSA driver or the kernel module itself.
->>     
->
-> What about simply recording to a file?
->
-> 	% arecord -Diec958 -fdat foo.wav
->
-> Also try to build with CONFIG_SND_DEBUG_VERBOSE=y once to check how
-> the PCM stream is assigned.
->
->   
->> Look at the outputs from alsa-info script (computer outputs for details):
->> http://www.alsa-project.org/db/?f=068933737fa64bc43928b06d2f4b4559986e6439
->>     
->
-> It shows you are using 1.0.17.
-> Use the latest driver below, run alsa-info with --no-upload, and
-> attach the content.
->
->     git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
->     ftp://ftp.kernel.org/pub/linux/kernel/people/tiwai/snapshot/alsa-driver-snapshot.tar.gz
->
->
-> thanks,
->
-> Takashi
->
->   
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
