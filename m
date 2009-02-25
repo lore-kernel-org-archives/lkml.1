@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbZBYCTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbZBYCYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757576AbZBYCTs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 21:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZBYCTj
+	id S1758080AbZBYCYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 21:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZBYCX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 21:19:39 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:54845 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbZBYCTi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 21:19:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Dru6cjK/LNkrR9c0432eo0kxN0hrz84XiJ5ZCLmfJixRSF28bEm1/rfQnSB0JQDd02
-         3pdD3gnRprDIK+mBnmlSTsnNHPbZccN4Ps9Q7lGPcj7qLghkqdn4Dazd9bqea0Okyks4
-         Zr4Qf6chsIAEOzhEiOhF6QsZayLDrZculQB5g=
+	Tue, 24 Feb 2009 21:23:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54254 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753835AbZBYCX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 21:23:59 -0500
+Message-ID: <49A4ABAC.90602@kernel.org>
+Date: Wed, 25 Feb 2009 11:23:40 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-Date: Wed, 25 Feb 2009 15:19:36 +1300
-Message-ID: <cfd18e0f0902241819m15e737ebjd6ad40be1c08818e@mail.gmail.com>
-Subject: man-pages-3.19 is released
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yinghai@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       jeremy@goop.org, cpw@sgi.com, nickpiggin@yahoo.com.au,
+       ink@jurassic.park.msu.ru
+Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk	allocation
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224201718.GE28772@elte.hu> <20090224205105.GA19460@elte.hu> <20090224211659.GA3687@elte.hu>
+In-Reply-To: <20090224211659.GA3687@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Feb 2009 02:23:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+Hello, Ingo.
 
-I've released man-pages-3.19.tar.gz - man pages for Linux
+Patches posted to fix the build failure and warning.  Patches are also
+available in the usual git tree.
 
-This release is now available for download at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
 
-http://www.kernel.org/pub/linux/docs/man-pages
-or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+Ingo Molnar wrote:
+> and one tip:master merge impact due to API change:
+> 
+>  kernel/trace/trace_functions_graph.c: In function ‘graph_trace_close’:
+>  kernel/trace/trace_functions_graph.c:836: error: implicit declaration of function ‘percpu_free’
+> 
+> that's free_percpu() now, right?
+> 
+> Btw., why was this rename done? We generally standardize on 
+> hierarchical names, going from the more general to the more 
+> specific names, left to right. So we have 
+> <subsystem>_<functionality>_<subtype> sort of names generally.
 
-man-pages nowadays also has a public git repository at
+It's a strange story and not really a rename.
 
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+We had __percpu_alloc_mask(), percpu_alloc(), __alloc_percpu() and
+alloc_percpu() and of course matching frees.  The percpu_*() stuff was
+introduced so that allocations can take online cpus into
+consideration.  So, percpu_alloc() uses cpu_online_map as the default
+allocation mask while alloc_percpu() uses cpu_possible_map.  The
+allocation mask thing never really took off and there virtually was no
+user and got killed.
 
-The online changelog is available at
-http://www.kernel.org/doc/man-pages/changelog.html
-(blogged at
-http://linux-man-pages.blogspot.com/2009/02/man-pages-319-is-released.html)
-and the current version of the pages is browsable at
-http://www.kernel.org/doc/man-pages/
-An abridged list of changes that may be of interest to readers of this
-list is given below.
+If the only merge impact was percpu_free() and it's not missing
+percpu_alloc(), it could be that allocation path used alloc_percpu()
+but free path used percpu_free().
 
-Cheers,
+Thanks.
 
-Michael
-
-=================== Changes in man-pages-3.19 ===================
-
-Released: 2009-02-20, Putaruru
-
-
-Contributors
-------------
-
-The following people contributed notes, ideas, or patches that have
-been incorporated in changes in this release:
-
-Christian Siebert <christian.siebert@gmail.com>
-Jan Engelhardt <jengelh@medozas.de>
-Jens Thoms Toerring <jt@toerring.de>
-Kir Kolyshkin <kir@openvz.org>
-Mark Hills <mark@pogo.org.uk>
-Michael Kerrisk <mtk.manpages@gmail.com>
-Parag Warudkar <parag.lkml@gmail.com>
-Peter Zijlstra <a.p.zijlstra@chello.nl>
-Sami Liedes <sliedes@cc.hut.fi>
-
-Apologies if I missed anyone!
-
-
-New and rewritten pages
------------------------
-
-timer_create.2
-    Michael Kerrisk
-        New page documenting timer_create(2)
-
-timer_delete.2
-    Michael Kerrisk
-        New page documenting timer_delete(2)
-
-timer_getoverrun.2
-    Michael Kerrisk
-        New page documenting timer_getoverrun(2)
-
-timer_settime.2
-    Michael Kerrisk
-        New page documenting timer_settime(2) and timer_gettime(2)
-
-
-Changes to individual pages
----------------------------
-
-proc.5
-    Michael Kerrisk
-        Add description of /proc/sys/kernel/sysrq
-            Reported by: Goerghe Cosorea <gheorghe.coserea@gmail.com>
+-- 
+tejun
