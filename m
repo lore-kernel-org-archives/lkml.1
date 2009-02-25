@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbZBYHwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbZBYHxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759526AbZBYHwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 02:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbZBYHv4
+	id S1760106AbZBYHxw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 02:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbZBYHxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 02:51:56 -0500
-Received: from rv-out-0506.google.com ([209.85.198.227]:18625 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757090AbZBYHvz (ORCPT
+	Wed, 25 Feb 2009 02:53:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54866
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757426AbZBYHxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 02:51:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=XWTcOuwWse0NULYj1cMTZq1GwYVYwhRVSw8SRLwwNZM39RkwsdRxwg214mGdhkVokn
-         L3y13X8HYlYCtbebFvxqFK530dYLQhcc0ApBpg/0Ub7g6B8dmb0KTmKbqpxT5bKGARyS
-         sWwZ95jlDmzENrBpLL2m+OCC0zbSI+BQikA5g=
-MIME-Version: 1.0
-Date: Wed, 25 Feb 2009 01:51:53 -0600
-Message-ID: <6d291e080902242351p191bf3cdh2422824b5a2ce82f@mail.gmail.com>
-Subject: the -rt patches
-From: Stoyan Gaydarov <stoyboyker@gmail.com>
-To: tytso@mit.edu, mingo@elte.hu, torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Feb 2009 02:53:39 -0500
+Date: Tue, 24 Feb 2009 23:53:17 -0800 (PST)
+Message-Id: <20090224.235317.10940015.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-02-23
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090223192617.GA3553@tuxdriver.com>
+References: <20090223192617.GA3553@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What is the thing preventing the -rt(real time) patches from making it
-into the mainline?
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 23 Feb 2009 14:26:17 -0500
 
--- 
+> Here are a couple of fixes, one for an oops and one for a warning.  Also
+> included is a PCI ID addition.  These are intended for 2.6.29.
 
--Stoyan
+Pulled, thanks John.
+
+> P.S.  This causes some conflicts with -next.  The ath9k conflict is
+> simple.  The orinoco conflict involves moving some code from orinoco.c
+> to orinoco/main.c in -next (where orinoco.c no longer exists).  I have
+> included a "merge-test" branch in the wireless-next-2.6 tree to provide
+> and example for the merge when you get to it.
+
+Ok, I'll take care of that now, thanks John.
