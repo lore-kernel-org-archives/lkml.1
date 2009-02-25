@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbZBYQJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbZBYQJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760302AbZBYQJU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 11:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZBYQJE
+	id S1760605AbZBYQJj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 11:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbZBYQJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 11:09:04 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:34407 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752675AbZBYQJD (ORCPT
+	Wed, 25 Feb 2009 11:09:16 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:65486 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758784AbZBYQJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 11:09:03 -0500
-Date: Wed, 25 Feb 2009 17:08:54 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Frank Seidel <frank@f-seidel.de>
-cc: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, nhorman@tuxdriver.com,
-       lho@amcc.com, kaber@trash.net, darrenrjenkins@gmail.com
-Subject: Re: [PATCHv3][trivial] crypto: tcrypt - reduce stack size
-In-Reply-To: <alpine.LRH.2.00.0902251657431.15476@vixen.sonytel.be>
-Message-ID: <alpine.LRH.2.00.0902251706580.15476@vixen.sonytel.be>
-References: <49A54C23.8090209@suse.de> <49A5549F.4070304@suse.de> <49A55B5A.70705@suse.de> <alpine.LRH.2.00.0902251604430.15476@vixen.sonytel.be> <49A56A2B.4040305@f-seidel.de> <alpine.LRH.2.00.0902251657431.15476@vixen.sonytel.be>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Feb 2009 11:09:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAEj6pElMQWWY/2dsb2JhbACBb9dshBEG
+Date: Wed, 25 Feb 2009 11:09:03 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/4] tracing: add DEFINE_TRACE_FMT to tracepoint.h
+Message-ID: <20090225160903.GA11295@Krystal>
+References: <20090225025608.956691460@goodmis.org> <20090225025753.547618424@goodmis.org> <1235543227.4645.2907.camel@laptop> <alpine.DEB.2.00.0902250758100.12697@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902250758100.12697@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:08:15 up 4 days,  7:42,  2 users,  load average: 0.43, 0.35,
+	0.33
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, Geert Uytterhoeven wrote:
-> On Wed, 25 Feb 2009, Frank Seidel wrote:
-> > Geert Uytterhoeven wrote:
-> > > BTW, why are you using printk(KERN_INFO "..."), and not pr_info("...")?
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Wed, 25 Feb 2009, Peter Zijlstra wrote:
+> 
+> > On Tue, 2009-02-24 at 21:56 -0500, Steven Rostedt wrote:
 > > 
-> > Without special reason. Is pr_info preferred?
+> > > +#define DEFINE_TRACE_FMT(name, proto, args, fmt)		\
+> > > +	DECLARE_TRACE(name, TPPROTO(proto), TPARGS(args))
+> > > +
+> > 
+> > If TPPROTO and TPARGS were anything but empty stubs, the above would add
+> > them twice, no?
 > 
-> It's shorter.
+> I guess I can rename them too.
 > 
-> Especially `pr_err' fits in the space of `printk', so you don't have to split
-> lines that become to long due to adding the KERN_*.
+> The problem comes from passing in more than one argument. If a proto or 
+> args has a comma, you get a nasty error about unmatched number of 
+> parameters.
+> 
+> I believe that they were purposely made to be empty stubs to allow for 
+> multiple parameters. But you are right, if that changes we need to fix it.
+> 
+> Since the above is only to protect against the substitution into multiple 
+> parameters, we could probably create a new macro name to just be
+> 
+>  #define PARAMS(args...) args
+>  #define DEFINE_TRACE_FMT(name, proto, args, fmt) \
+> 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+> 
 
-I sent it out too soon...
+Yes, I think this should work. Just be careful to test passing a "void"
+function parameter to these when you make any changes. This is a
+subtle corner-case.
 
-Other advantages:
-  - The pr_*() calls use pr_fmt(), so you can set default prefixes (like
-    __FILE__, __function, __LINE) at one place at the top of your driver source
-    file.
-  - pr_debug() is automatically left out if DEBUG is not defined (unless
-    CONFIG_DYNAMIC_PRINTK_DEBUG is set).
+Mathieu
 
-With kind regards,
+> -- Steve
+> 
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
