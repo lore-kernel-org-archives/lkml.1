@@ -1,90 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbZBYD20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbZBYDcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758659AbZBYD20 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 22:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZBYD2R
+	id S1758775AbZBYDcr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 22:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbZBYDci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 22:28:17 -0500
-Received: from smtp104.prem.mail.sp1.yahoo.com ([98.136.44.59]:25454 "HELO
-	smtp104.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754250AbZBYD2Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 22:28:16 -0500
-X-YMail-OSG: oMPouQ4VM1mF58bwcdfPE5Jmz5Q56YUEf6qSRutIGwnIuIJh5NuSSmvbKdW7L1R4x2wDIzTKr3IHWm_5jaZRgj6Pgz4v2gn17j7Hau3H3f3uaDQ3HN5MP3H1TkBuwKWRiqCmMI1OSBhCcuphmEFjA00wBGxqxosPc9d8uXEPDGjJ_..OioOkn_EWpCwOz5MjvA8o4a2pBqdCO.3uEO37iMqANyUR_0R9IGQp8wZnJQN_24a3j2YB15bGgXK314xsZER2pbK3pVaEXPJkOWlnBiivDWPiXBamSAOA
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <49A4BAC8.30708@schaufler-ca.com>
-Date: Tue, 24 Feb 2009 19:28:08 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>
-CC: etienne <etienne.basset@numericable.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH][SMACK] add a socket_post_accept hook to fix netlabel
- issues with labeled TCP servers V1
-References: <fa.eUdEnVYPYgnfwD9aw1dVY6gL1+E@ifi.uio.no> <200902241738.08877.paul.moore@hp.com> <49A47BEF.5030507@numericable.fr> <200902241836.59679.paul.moore@hp.com>
-In-Reply-To: <200902241836.59679.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Feb 2009 22:32:38 -0500
+Received: from ns1.suse.de ([195.135.220.2]:60241 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755405AbZBYDch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 22:32:37 -0500
+Date: Wed, 25 Feb 2009 04:32:30 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       steiner@sgi.com
+Subject: Re: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single ipi fallback for smp_call_function_many())
+Message-ID: <20090225033230.GA4611@wotan.suse.de>
+References: <20090217112657.GE26402@wotan.suse.de> <1234923702.29823.7.camel@vayu> <20090218135945.GC23125@wotan.suse.de> <1234982620.29823.22.camel@vayu> <20090218191757.GD8889@elte.hu> <1235001314.14523.2.camel@vayu> <20090219122031.GC1703@elte.hu> <1235080824.14523.19.camel@vayu> <20090220105640.GE28581@elte.hu> <1235156214.14523.54.camel@vayu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235156214.14523.54.camel@vayu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
-> ...
->> well, i think it is simple : let's say i want to run a "smack-labelled
->> server" (apache, vsftpd, ...) clients connect from internet,  so the server
->> admin/user  will want to add a "0.0.0.0/0 @" entry in netlabel that will
->> _fail_ because the server will send back "labeled" packets.
->>     
->
-> I had to go back and look at the address based labeling patches, I had somehow 
-> forgotten that the single label support in Smack can only be used for removing 
-> labels, not adding them.  With that in mind your approach should work although 
-> you will still get really bizarre behavior in the following case:
->
->  * Service not running at the ambient label
->  * Only address based label loaded into Smack is "0.0.0.0/0 @" (everything
->    unlabeled)
->  * Client connects to service using labeled networking
->
-> If you and Casey can live with labeled connection suddenly becoming unlabeled 
-> (I doubt the remote host will deal with it very gracefully) then go for it.
->   
+On Fri, Feb 20, 2009 at 10:56:54AM -0800, Suresh B wrote:
+> On Fri, 2009-02-20 at 02:56 -0800, Ingo Molnar wrote:
+> > * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > 
+> > > On Thu, 2009-02-19 at 04:20 -0800, Ingo Molnar wrote:
+> > > > Could you please refresh this patch to latest tip:master? The 
+> > > > APIC drivers moved to arch/x86/kernel/apic/.
+> > > 
+> > > Appended the refreshed patch. Thanks.
+> > 
+> > thanks. Two details i noticed:
+> > 
+> > Firstly:
+> > 
+> > > +++ b/arch/x86/kernel/apic/x2apic_cluster.c
+> > > +++ b/arch/x86/kernel/apic/x2apic_phys.c
+> > 
+> > how about x2apic_uv.c? It uses uv_write_global_mmr64() in its 
+> > IPI sending method, which uses:
+> > 
+> > static inline void uv_write_global_mmr64(int pnode, unsigned long offset,
+> >                                 unsigned long val)
+> > {
+> >         *uv_global_mmr64_address(pnode, offset) = val;
+> > }
+> > 
+> > which uses ->mmr_base, which is mapped via:
+> > 
+> >         init_extra_mapping_uc(UV_LOCAL_MMR_BASE, UV_LOCAL_MMR_SIZE);
+> >
+> > so it should be fine because uncached - but at minimum we should 
+> > put a comment into x2apic_uv.c that the generic IPI code relies 
+> > on the lowlevel code serializing - i.e. relies on the UC PAT 
+> > attribute.
+> 
+> Oops. I forgot to mention that and copy Jack to confirm our
+> understanding. I can send a followup patch adding the comments for UV.
+> Jack, are you ok?
+> 
+> > 
+> > Secondly, you added smp_mb(), which will translate to an MFENCE. 
+> > 
+> > But in theory it should be enough to have a wmb() here. [Note, 
+> > not an smp_wmb() that i suggested before.] That will translate 
+> > to an SFENCE - which will serialize writes but still allows 
+> > reads/prefetches to pass.
+> > 
+> > So the question is, is an SFENCE there enough to serialize the 
+> > WRMSR with previous memory-writes? It's not specified in the 
+> > x2apic docs as far as i could see.
+> 
+> No. sfence is not enough (wrmsr to x2apic regs was still passing ahead).
+> We have done a small experiment to demonstrate the issue and adding
+> mfence fixes the issue but not sfence. We need a serializing instruction
+> or mfence. I will try to get the SDM updated.
 
-The case where the netlabel entry "0.0.0.0/0 @" has been added
-will unfortunately be a very common case because it say that while
-the local machine does MAC the world as a whole does not. It also
-means that the admin does not understand the implication that
-local networking will no longer enforce MAC controls, or that for
-some bizarre reason that it what he wants. In either case it is
-very unlikely that he expects to connect to another system that
-speaks CIPSO. For that reason I expect that the "bizarre behavior"
-of labeled hosts to be quite rare.
-
-I think that it might be necessary to introduce mechanism to specify
-labeled hosts in addition to unlabeled hosts. That way one could
-specify:
-    0.0.0.0/0       @
-    127.0.0.1       CIPSO
-    192.168.1.103   CIPSO
-
-and let everyone except the local host be unlabeled while the local
-host enforces Real MAC policy.
-
-I personally find it reprehensible that the attitude that network
-communications ought to be exempt from access controls is so
-pervasive, but I bend to the will of the people. The interest in
-Smack since the introduction of the web ("@") label has grown
-dramatically.
-
-I am still reviewing and verifying these patches, which look
-fine so far, but I know better than to let my eyes make the
-call when I have computers that are so much better at finding
-software flaws.
-
-Thank you again for the work and reviews. I am working on my
-end. Really.
+Just if I may add something -- I would probably slightly prefer if
+you explicitly used an sfence or other serializing instruction rather
+than smp_mb(). Maybe call it wrmsr_fence() or something. Apart from
+being self documenting, and less confusing (wrmsr is not part of
+normal ordering), I assume you technically also need it on UP
+systems?
 
 
