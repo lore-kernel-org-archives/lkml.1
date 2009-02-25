@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbZBYW0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763495AbZBYW0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763427AbZBYW0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763357AbZBYWZq
+	id S1763495AbZBYW0i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763304AbZBYW0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:25:46 -0500
-Received: from movementarian.org ([79.99.65.163]:38340 "EHLO movementarian.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763352AbZBYWZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:25:45 -0500
-Date: Wed, 25 Feb 2009 17:25:43 -0500
-From: wli@movementarian.org
-To: linux-kernel@vger.kernel.org
-Subject: latencytop traces
-Message-ID: <20090225222543.GC5757@movementarian.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 25 Feb 2009 17:26:09 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:34802 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761081AbZBYW0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 17:26:08 -0500
+Date: Wed, 25 Feb 2009 23:26:04 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Bernd Schmidt <bernds_cb1@t-online.de>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] make CALLER_ADDRx overwriteable
+Message-ID: <20090225222604.GA26938@pengutronix.de>
+References: <1235600169-26912-1-git-send-email-u.kleine-koenig@pengutronix.de> <8bd0f97a0902251420k7bd00c4fhda34004d1993975a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0902251420k7bd00c4fhda34004d1993975a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I ran into a nasty one.
-Here it is.
+On Wed, Feb 25, 2009 at 05:20:13PM -0500, Mike Frysinger wrote:
+> On Wed, Feb 25, 2009 at 17:16, Uwe Kleine-König wrote:
+> > The current definition of CALLER_ADDRx isn't suitable for all platforms.
+> > E.g. for ARM __builtin_return_address(N) doesn't work for N > 0
+> 
+> afaik, the same applies to the Blackfin port.  we looked at
+> implementing __builtin_return_address(N) and decided it wasnt worth
+> the hassle.
+I think the same applies for ARM:
 
+	http://thread.gmane.org/gmane.comp.gcc.devel/103804
 
--- wli
+Best regards
+Uwe
 
-   LatencyTOP version 0.4       (C) 2008 Intel Corporation
-
-Cause                                                Maximum     Percentage
-xlog_state_get_iclog_space xlog_write xfs_log_writ1011.4 msec          8.4 %
-sync_page __lock_page find_lock_page filemap_fault740.3 msec         30.6 %
-down xfs_buf_lock xfs_getsb xfs_trans_getsb xfs_tr676.8 msec          8.8 %
-xlog_state_get_iclog_space xlog_write xfs_log_writ527.5 msec          2.6 %
-down xfs_buf_lock _xfs_buf_find xfs_buf_get_flags 326.0 msec          0.7 %
-xlog_state_get_iclog_space xlog_write xfs_log_writ158.6 msec          0.3 %
-xlog_state_get_iclog_space xlog_write xfs_log_writ 70.0 msec          0.2 %
-down xfs_buf_lock xfs_getsb xfs_trans_getsb xfs_tr 60.4 msec          0.2 %
-Scheduler: waiting for cpu_create xfs_vn_mknod xfs 57.2 msec         18.2 %
-
-
-Process git (26894)                        Total: 1212.9 msec                   
-sync_page __lock_page find_lock_page filemap_fault 57.7 msec         40.0 %lt do
-Scheduler: waiting for cpu                         57.2 msec         60.0 %
-
-
-
-
-
-
- zsh  zsh  gnome-volume-co  gconfd-2  smplayer  zsh  evince  pdflush  view  git 
-
-   LatencyTOP version 0.4       (C) 2008 Intel Corporation
-
-Cause                                                Maximum     Percentage
-sync_page __lock_page find_lock_page filemap_fault1228.0 msec          5.3 %
-sync_page sync_page_killable __lock_page_killable 1200.0 msec         36.5 %
-xlog_state_get_iclog_space xlog_write xfs_log_writ172.6 msec          3.8 %
-xfs_ilock xfs_iomap __xfs_get_blocks xfs_get_block117.4 msec          0.3 %
-do_fork sys_vfork syscall_call generic_file_buffer 43.5 msec          0.1 %
-Scheduler: waiting for cpuwrite                    40.0 msec         16.7 %
-xfs_buf_iowait _xfs_buf_read xfs_buf_read_flags xf 37.0 msec          2.2 %
-down xfs_buf_lock _xfs_buf_find xfs_buf_get_flags  21.4 msec          0.1 %
-xfs_buf_iowait _xfs_buf_read xfs_buf_read_flags xf 15.8 msec          0.0 %
-
-
-Process make (4903)                        Total: 1711.2 msec                   
-sync_page __lock_page find_lock_page filemap_fault968.3 msec         56.6 %lt do
-sync_page sync_page_killable __lock_page_killable 170.3 msec         17.9 %_read
-Scheduler: waiting for cpu_read vfs_read sys_read  31.8 msec         21.8 %
-xfs_buf_iowait _xfs_buf_read xfs_buf_read_flags xf 15.1 msec          3.6 %_to_b
-pipe_wait pipe_read do_sync_read vfs_read sys_read  0.4 msec          0.0 %th_wa
-lk
-
-
- vmstat  python  zsh  top  zsh  zsh  gnome-volume-co  gconfd-2  smplayer  make 
-
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Peiner Strasse 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686              | Fax:   +49-5121-206917-5555 |
