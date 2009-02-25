@@ -1,153 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZBYR14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZBYRe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670AbZBYR14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 12:27:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbZBYR1r
+	id S1755950AbZBYRe0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 12:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZBYReR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 12:27:47 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:45056 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbZBYR1q (ORCPT
+	Wed, 25 Feb 2009 12:34:17 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:40950 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752898AbZBYReR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 12:27:46 -0500
-Message-ID: <49A57FA7.407@oracle.com>
-Date: Wed, 25 Feb 2009 09:28:07 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-02-24-16-23 uploaded (proc_net & namespaces)
-References: <200902250041.n1P0fe4A024914@imap1.linux-foundation.org> <49A5778E.1000204@oracle.com> <20090225171748.GC14463@us.ibm.com>
-In-Reply-To: <20090225171748.GC14463@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Feb 2009 12:34:17 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap8EAK8KpUlMQWWY/2dsb2JhbACBbtdshBEG
+Date: Wed, 25 Feb 2009 12:34:12 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       acme@ghostprotocols.net, fweisbec@gmail.com
+Subject: Re: [PATCH] new irq tracer
+Message-ID: <20090225173412.GA14269@Krystal>
+References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com> <20090222123543.359C.A69D9226@jp.fujitsu.com> <49A5765C.2020001@redhat.com> <20090225165747.GC3123@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49A57F64.0158:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+In-Reply-To: <20090225165747.GC3123@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:22:19 up 4 days,  8:56,  4 users,  load average: 0.03, 0.24,
+	0.27
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Randy Dunlap (randy.dunlap@oracle.com):
->> akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2009-02-24-16-23 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>>    git://git.zen-sources.org/zen/mmotm.git
->>>
->>> It contains the following patches against 2.6.29-rc6:
->> namespaces-move-proc_net_get_sb-to-a-generic-fs-superc-helper.patch,
->> when CONFIG_NAMESPACES=n:
->>
->> proc_net.c:(.text+0x4255c): undefined reference to `get_sb_ns'
->>
->>
->> config attached.
+* Jason Baron (jbaron@redhat.com) wrote:
+> On Wed, Feb 25, 2009 at 11:48:28AM -0500, Masami Hiramatsu wrote:
+> > KOSAKI Motohiro wrote:
+> > >>  /**
+> > >>   * handle_IRQ_event - irq action chain handler
+> > >>   * @irq:	the interrupt number
+> > >> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+> > >>  		local_irq_enable_in_hardirq();
+> > >>  
+> > >>  	do {
+> > >> +		trace_irq_entry(irq);
+> > >>  		ret = action->handler(irq, action->dev_id);
+> > >> +		trace_irq_exit(irq, ret);
+> > >>  		if (ret == IRQ_HANDLED)
+> > >>  			status |= action->flags;
+> > >>  		retval |= ret;
+> > > 
+> > > Nobdy want unnecessary redundant tracepoint.
+> > > Please discuss with mathieu, and merge his tracepoint.
+> > 
+> > Hmm, from the viewpoint of trouble shooting, the place of LTTng's tracepoint
+> > is enough. However, from the same viewpoint, it should pass irq-number
+> > to irq-exit event too, because we may lost some previous events by buffer-overflow
+> > etc.
+> > 
+> >          trace_irq_entry(irq, NULL);
+> >          ret = _handle_IRQ_event(irq, action);
+> >          trace_irq_exit(irq, ret);
+> >                         ^^^^
+> > 
 > 
-> Thanks, Randy.  Does the following fix it?
+> the lttng tracepoints wrap the calls to _handle_IRQ_event in 3
+> different places. So the above suggested irq tracepoint provides the
+> same information with 4 less tracepoints in the code. So I believe its
+> simpler - plus we can understand which action handlers are handling the
+> interrupt.
 > 
-> (Sorry, it's a misleading patch, and maybe it would turn out more
-> readable if I moved get_sb_ns under instead of above the
-> CONFIG_BLOCK ifdef...  But all I'm doing is what the subject says,
-> plus adding an EXPORT_SYMBOL which may be debatable, but is in
-> keeping with other get_sb_*'s.)
 
-That causes problems in fs/super.c:
+The main thing I dislike about only tracing action->handler() calls is
+that you are not tracing an IRQ per se, but rather the invocation of a
+given handler within the interrupt. For instance, it would be difficult
+to calculate the maximum interrupt latency for a given interrupt line,
+because you don't have the "real" irq entry/exit events, just the
+individual handler() calls.
 
-fs/super.c: In function 'get_sb_ns':
-fs/super.c:773: error: 'ns_test_super' undeclared (first use in this function)
+But I agree that knowing which handler is called is important.
+
+How about this compromise :
+
+trace_irq_entry(irq, action)
+  _handle_IRQ_event()
+    for each action  {
+      trace_irq_handler(action, ret);
+      ret = action->handler(irq, action->dev_id);
+      ...
+    }
+trace_irq_exit(action_ret);
+
+Would that give you the information you need ?
+
+Here trace_irq_handler would be passed the _current_ action invoked and
+the _previous_ action return value. Note that we should initialize
+irqreturn_t ret to some initial value if we do this. That should keep
+the tracing overhead minimal.
+
+Mathieu
 
 > thanks,
-> -serge
 > 
-> From fff28e37112037efbbc6e44e29bbd741c9dd38a9 Mon Sep 17 00:00:00 2001
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Date: Wed, 25 Feb 2009 09:14:03 -0800
-> Subject: [PATCH 1/1] namespaces: get_sb_ns does not require CONFIG_BLOCK
+> -Jason
 > 
-> So move it outside of the CONFIG_BLOCK ifdef in fs/super.c.
-> 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> ---
->  fs/super.c |   50 ++++++++++++++++++++++++++------------------------
->  1 files changed, 26 insertions(+), 24 deletions(-)
-> 
-> diff --git a/fs/super.c b/fs/super.c
-> index 1a37b58..b3bf049 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -761,30 +761,6 @@ void kill_litter_super(struct super_block *sb)
->  
->  EXPORT_SYMBOL(kill_litter_super);
->  
-> -#ifdef CONFIG_BLOCK
-> -static int set_bdev_super(struct super_block *s, void *data)
-> -{
-> -	s->s_bdev = data;
-> -	s->s_dev = s->s_bdev->bd_dev;
-> -	return 0;
-> -}
-> -
-> -static int test_bdev_super(struct super_block *s, void *data)
-> -{
-> -	return (void *)s->s_bdev == data;
-> -}
-> -
-> -static int ns_test_super(struct super_block *sb, void *data)
-> -{
-> -	return sb->s_fs_info == data;
-> -}
-> -
-> -static int ns_set_super(struct super_block *sb, void *data)
-> -{
-> -	sb->s_fs_info = data;
-> -	return set_anon_super(sb, NULL);
-> -}
-> -
->  int get_sb_ns(struct file_system_type *fs_type, int flags, void *data,
->  	int (*fill_super)(struct super_block *, void *, int),
->  	struct vfsmount *mnt)
-> @@ -812,6 +788,32 @@ int get_sb_ns(struct file_system_type *fs_type, int flags, void *data,
->  	return 0;
->  }
->  
-> +EXPORT_SYMBOL(get_sb_ns);
-> +
-> +#ifdef CONFIG_BLOCK
-> +static int set_bdev_super(struct super_block *s, void *data)
-> +{
-> +	s->s_bdev = data;
-> +	s->s_dev = s->s_bdev->bd_dev;
-> +	return 0;
-> +}
-> +
-> +static int test_bdev_super(struct super_block *s, void *data)
-> +{
-> +	return (void *)s->s_bdev == data;
-> +}
-> +
-> +static int ns_test_super(struct super_block *sb, void *data)
-> +{
-> +	return sb->s_fs_info == data;
-> +}
-> +
-> +static int ns_set_super(struct super_block *sb, void *data)
-> +{
-> +	sb->s_fs_info = data;
-> +	return set_anon_super(sb, NULL);
-> +}
-> +
->  int get_sb_bdev(struct file_system_type *fs_type,
->  	int flags, const char *dev_name, void *data,
->  	int (*fill_super)(struct super_block *, void *, int),
-
 
 -- 
-~Randy
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
