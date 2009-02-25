@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbZBYA07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZBYA11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbZBYA07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 19:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZBYA0u
+	id S1758161AbZBYA11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 19:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbZBYA1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 19:26:50 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65424 "EHLO
+	Tue, 24 Feb 2009 19:27:13 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65507 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752014AbZBYA0t (ORCPT
+	by vger.kernel.org with ESMTP id S1752021AbZBYA1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 19:26:49 -0500
+	Tue, 24 Feb 2009 19:27:11 -0500
 From: Tim Abbott <tabbott@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
@@ -17,296 +17,110 @@ Cc: Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>,
        Nikanth Karthikesan <knikanth@suse.de>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH v2 0/4] Ksplice: Rebootless kernel updates
-Date: Tue, 24 Feb 2009 19:21:51 -0500
-Message-Id: <1235521315-3424-1-git-send-email-tabbott@mit.edu>
+Subject: [PATCH v2 3/4] Ksplice: Export symbols needed for Ksplice
+Date: Tue, 24 Feb 2009 19:21:54 -0500
+Message-Id: <1235521315-3424-4-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <1235521315-3424-3-git-send-email-tabbott@mit.edu>
+References: <1235521315-3424-1-git-send-email-tabbott@mit.edu>
+ <1235521315-3424-2-git-send-email-tabbott@mit.edu>
+ <1235521315-3424-3-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an updated version of the Ksplice patch series.  It applies to
-Linux 2.6.29-rc5 with Rusty Russell's patch series for the module
-subsystem from February 7 [0].
+Ksplice uses __module_address and __module_text_address to determine
+which module contains various addresses.
 
-[0] http://lkml.org/lkml/2009/2/7/53
+Ksplice uses __kernel_text_address to limit its check for trampolines
+(jump instructions inserted by Ksplice) to only text addresses.
 
-This patch series differs from the previous version in a few notable
-ways:
+Ksplice uses task_curr in order to confirm that no other tasks are
+executing during Ksplice's kernel stack check.
 
-(1) The Ksplice changes to the module loader have been removed from
-this patch series because versions of them are already in Rusty
-Russell's tree.
+Ksplice uses find_bug and search_exception_tables as part of its
+conservative check that the user provided the correct source code for
+the running kernel.
 
-(2) Some of the data structures were renamed in response to
-suggestions from Rusty Russell on the previous version of the patch
-series
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+---
+ kernel/extable.c |    3 +++
+ kernel/module.c  |    2 ++
+ kernel/sched.c   |    1 +
+ lib/bug.c        |    1 +
+ 4 files changed, 7 insertions(+), 0 deletions(-)
 
-(3) The patch changing the kernel's magic section names to support
--ffunction-sections fdata-sections patch was rewritten in a cleaner
-way.  I believe this new version of the patch eliminates the primary
-downside associated with previous iterations of the patch (in
-particular, the need to specify section flags for many sections).
-
-A detailed changelog is available below.
-
-==
-
-These patches add support for Ksplice [1], a rebootless update system,
-to the kernel.
-
-[1] http://www.ksplice.com/download
-
-Jeff Arnold first mentioned Ksplice to the LKML last April [2], and
-submitted patches to the LKML last September [3], November [4], and
-December [5].  The basic idea is that Ksplice can apply an update to a
-running Linux kernel based only on a source code patch and the
-original kernel source.  The Ksplice technical overview document [6]
-describes the design of Ksplice and some of the ways that Ksplice has
-been evaluated.
-
-[2] http://lkml.org/lkml/2008/4/23/330
-[3] http://lkml.org/lkml/2008/9/13/6
-[4] http://lkml.org/lkml/2008/11/21/484
-[5] http://lkml.org/lkml/2008/12/5/330
-[6] http://www.ksplice.com/doc/ksplice.pdf
-
-Specifically, Ksplice has been used to correct every significant Linux
-kernel CVE from May 2005 to May 2008 [7].  88% of these CVEs can be
-fixed without writing any new code at all; the remaining 12% of CVEs
-require a minimal amount of new code (on average, roughly 20 new
-semicolon-terminated lines per CVE).
-
-[7] http://www.ksplice.com/cve-evaluation
-
-The interface between the Ksplice kernel component and the userspace
-utilities is documented in the last patch of this series.  The current
-implementation of the userspace utilities is available from the
-Ksplice website and the Ksplice git repository [8].  The Ksplice
-userspace utilities transparently support both "integrated" operation
-(updating a kernel patched with this patch series) and "standalone"
-operation (updating a completely unmodified kernel).
-
-[8] http://www.ksplice.com/git/ksplice.git
-
-We think that merging Ksplice makes sense at this point because (1)
-development on the Ksplice kernel code has stabilized and (2) the
-system is useful as it currently stands.
-
-	-Tim Abbott
-
-Changes between v1 and v2:
-- rewrote the -ffunction-sections -fdata-sections patches in a cleaner way
-- rebased on top of Rusty Russell's module.c patch series for 2.6.30.
-  - replaced starts_with with strstarts.
-  - replaced __module_data_address with __module_address.
-- renamed some data structures, as requested by Rusty Russell
-  - renamed struct ksplice_pack to struct ksplice_mod_change.
-  - created new struct ksplice_code, containing the symbols, relocs,
-    and sections for an object file.
-  - renamed helper modules to old_code modules, and primary modules to
-    new_code modules.
-  - renamed ksplice_module_list to ksplice_modules.
-  - renamed ksplice_symbol->vals to candidate_vals
-  - created new struct ksplice_hooks to organize the Ksplice hooks.
-- improved Ksplice's kobject variable names.
-- merged apply_patches and reverse_patches.
-- added check to prevent reversing an update that has been partially
-  cold-applied.
-- added support for patching multi-page data structures.
-- added more function-level documentation, as requested by Ted Ts'o
-- bail out earlier (to give a better error message) when there are
-  multiple writers to an update's stage file.
-
-Changes between RFC v3 and v1:
-- removed use of init_mm, as requested by Christoph Hellwig
-
-Changes between RFC v2 and RFC v3:
-- added taint flag, as requested by Alexey Dobriyan
-- various speed optimizations
-- support for replacing functions mapped read-only (CONFIG_DEBUG_RODATA)
-- run-pre matching extended to bug table, ex_table, exported symbol table
-- added hooks for calling custom code during the update process
-- struct ksplice_export eliminated (struct ksplice_patch used instead)
-- minor sysfs API changes
-- added support for ksplice-apply's --partial option
-- improved -ffunction-sections patches and added them to this patch series
-- dropped ARM support for now, for simplicity
-
-No changes between RFC v1 and RFC v2.
-
-==
-
-Jeff Arnold (1):
-  Ksplice: Support updating x86-32 and x86-64
-
-Tim Abbott (2):
-  Make section names compatible with -ffunction-sections
-    -fdata-sections
-  Ksplice: Export symbols needed for Ksplice
-
-Waseem Daher (1):
-  x86: Add an option to compile with -ffunction-sections
-    -fdata-sections
-
- Documentation/ksplice.txt                   |  304 +++
- Documentation/mutex-design.txt              |    4 +-
- MAINTAINERS                                 |   10 +
- Makefile                                    |    4 +
- arch/Kconfig                                |   14 +
- arch/alpha/kernel/head.S                    |    2 +-
- arch/alpha/kernel/init_task.c               |    2 +-
- arch/alpha/kernel/vmlinux.lds.S             |   14 +-
- arch/arm/kernel/head-nommu.S                |    2 +-
- arch/arm/kernel/head.S                      |    2 +-
- arch/arm/kernel/init_task.c                 |    2 +-
- arch/arm/kernel/vmlinux.lds.S               |   14 +-
- arch/arm/mm/proc-v6.S                       |    2 +-
- arch/arm/mm/proc-v7.S                       |    2 +-
- arch/arm/mm/tlb-v6.S                        |    2 +-
- arch/arm/mm/tlb-v7.S                        |    2 +-
- arch/avr32/kernel/init_task.c               |    2 +-
- arch/avr32/kernel/vmlinux.lds.S             |    6 +-
- arch/avr32/mm/init.c                        |    2 +-
- arch/blackfin/kernel/vmlinux.lds.S          |    2 +-
- arch/cris/kernel/process.c                  |    2 +-
- arch/cris/kernel/vmlinux.lds.S              |    2 +-
- arch/frv/kernel/break.S                     |    4 +-
- arch/frv/kernel/entry.S                     |    2 +-
- arch/frv/kernel/head-mmu-fr451.S            |    2 +-
- arch/frv/kernel/head-uc-fr401.S             |    2 +-
- arch/frv/kernel/head-uc-fr451.S             |    2 +-
- arch/frv/kernel/head-uc-fr555.S             |    2 +-
- arch/frv/kernel/head.S                      |    4 +-
- arch/frv/kernel/init_task.c                 |    2 +-
- arch/frv/kernel/vmlinux.lds.S               |   18 +-
- arch/frv/mm/tlb-miss.S                      |    2 +-
- arch/h8300/boot/compressed/head.S           |    2 +-
- arch/h8300/boot/compressed/vmlinux.lds      |    2 +-
- arch/h8300/kernel/init_task.c               |    2 +-
- arch/h8300/kernel/vmlinux.lds.S             |    2 +-
- arch/ia64/include/asm/asmmacro.h            |   12 +-
- arch/ia64/include/asm/cache.h               |    2 +-
- arch/ia64/include/asm/percpu.h              |    2 +-
- arch/ia64/kernel/Makefile                   |    2 +-
- arch/ia64/kernel/gate-data.S                |    2 +-
- arch/ia64/kernel/gate.S                     |    8 +-
- arch/ia64/kernel/gate.lds.S                 |   10 +-
- arch/ia64/kernel/head.S                     |    2 +-
- arch/ia64/kernel/init_task.c                |    4 +-
- arch/ia64/kernel/ivt.S                      |    2 +-
- arch/ia64/kernel/minstate.h                 |    4 +-
- arch/ia64/kernel/paravirtentry.S            |    2 +-
- arch/ia64/kernel/vmlinux.lds.S              |   48 +-
- arch/ia64/kvm/vmm_ivt.S                     |    2 +-
- arch/ia64/xen/xensetup.S                    |    2 +-
- arch/m32r/kernel/head.S                     |    2 +-
- arch/m32r/kernel/init_task.c                |    2 +-
- arch/m32r/kernel/vmlinux.lds.S              |    8 +-
- arch/m68k/kernel/head.S                     |    2 +-
- arch/m68k/kernel/process.c                  |    2 +-
- arch/m68k/kernel/sun3-head.S                |    2 +-
- arch/m68k/kernel/vmlinux-std.lds            |    6 +-
- arch/m68k/kernel/vmlinux-sun3.lds           |    4 +-
- arch/m68knommu/kernel/init_task.c           |    2 +-
- arch/m68knommu/kernel/vmlinux.lds.S         |    6 +-
- arch/m68knommu/platform/68360/head-ram.S    |    2 +-
- arch/m68knommu/platform/68360/head-rom.S    |    2 +-
- arch/mips/kernel/init_task.c                |    2 +-
- arch/mips/kernel/vmlinux.lds.S              |    8 +-
- arch/mips/lasat/image/head.S                |    2 +-
- arch/mips/lasat/image/romscript.normal      |    2 +-
- arch/mn10300/kernel/head.S                  |    2 +-
- arch/mn10300/kernel/init_task.c             |    2 +-
- arch/mn10300/kernel/vmlinux.lds.S           |   16 +-
- arch/parisc/include/asm/cache.h             |    2 +-
- arch/parisc/include/asm/system.h            |    2 +-
- arch/parisc/kernel/head.S                   |    2 +-
- arch/parisc/kernel/init_task.c              |    8 +-
- arch/parisc/kernel/vmlinux.lds.S            |   26 +-
- arch/powerpc/include/asm/cache.h            |    2 +-
- arch/powerpc/include/asm/page_64.h          |    2 +-
- arch/powerpc/include/asm/ppc_asm.h          |    4 +-
- arch/powerpc/kernel/head_32.S               |    2 +-
- arch/powerpc/kernel/head_40x.S              |    2 +-
- arch/powerpc/kernel/head_44x.S              |    2 +-
- arch/powerpc/kernel/head_8xx.S              |    2 +-
- arch/powerpc/kernel/head_fsl_booke.S        |    2 +-
- arch/powerpc/kernel/init_task.c             |    2 +-
- arch/powerpc/kernel/machine_kexec_64.c      |    2 +-
- arch/powerpc/kernel/vdso.c                  |    2 +-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    2 +-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    2 +-
- arch/powerpc/kernel/vmlinux.lds.S           |   28 +-
- arch/s390/include/asm/cache.h               |    2 +-
- arch/s390/kernel/head.S                     |    2 +-
- arch/s390/kernel/init_task.c                |    2 +-
- arch/s390/kernel/vdso.c                     |    2 +-
- arch/s390/kernel/vdso32/vdso32_wrapper.S    |    2 +-
- arch/s390/kernel/vdso64/vdso64_wrapper.S    |    2 +-
- arch/s390/kernel/vmlinux.lds.S              |   20 +-
- arch/sh/include/asm/cache.h                 |    2 +-
- arch/sh/kernel/cpu/sh5/entry.S              |    4 +-
- arch/sh/kernel/head_32.S                    |    2 +-
- arch/sh/kernel/head_64.S                    |    2 +-
- arch/sh/kernel/init_task.c                  |    2 +-
- arch/sh/kernel/irq.c                        |    4 +-
- arch/sh/kernel/vmlinux_32.lds.S             |   14 +-
- arch/sh/kernel/vmlinux_64.lds.S             |   14 +-
- arch/sparc/boot/btfixupprep.c               |    4 +-
- arch/sparc/include/asm/cache.h              |    2 +-
- arch/sparc/kernel/head_32.S                 |    4 +-
- arch/sparc/kernel/head_64.S                 |    2 +-
- arch/sparc/kernel/init_task.c               |    2 +-
- arch/sparc/kernel/vmlinux.lds.S             |   14 +-
- arch/um/include/asm/common.lds.S            |    4 +-
- arch/um/kernel/dyn.lds.S                    |    4 +-
- arch/um/kernel/init_task.c                  |    4 +-
- arch/um/kernel/uml.lds.S                    |    4 +-
- arch/x86/Kconfig                            |    2 +
- arch/x86/boot/compressed/head_32.S          |    2 +-
- arch/x86/boot/compressed/head_64.S          |    2 +-
- arch/x86/boot/compressed/relocs.c           |    2 +-
- arch/x86/boot/compressed/vmlinux.scr        |    2 +-
- arch/x86/boot/compressed/vmlinux_32.lds     |   14 +-
- arch/x86/boot/compressed/vmlinux_64.lds     |   10 +-
- arch/x86/include/asm/cache.h                |    4 +-
- arch/x86/kernel/acpi/wakeup_32.S            |    2 +-
- arch/x86/kernel/head_32.S                   |    6 +-
- arch/x86/kernel/head_64.S                   |    4 +-
- arch/x86/kernel/init_task.c                 |    4 +-
- arch/x86/kernel/ksplice-arch.c              |   96 +
- arch/x86/kernel/traps.c                     |    2 +-
- arch/x86/kernel/vmlinux_32.lds.S            |   37 +-
- arch/x86/kernel/vmlinux_64.lds.S            |   27 +-
- arch/xtensa/kernel/head.S                   |    2 +-
- arch/xtensa/kernel/init_task.c              |    2 +-
- arch/xtensa/kernel/vmlinux.lds.S            |    6 +-
- include/asm-frv/init.h                      |    8 +-
- include/asm-generic/vmlinux.lds.h           |   19 +-
- include/linux/cache.h                       |    2 +-
- include/linux/init.h                        |    8 +-
- include/linux/kernel.h                      |    1 +
- include/linux/ksplice.h                     |  224 ++
- include/linux/linkage.h                     |    4 +-
- include/linux/percpu.h                      |   10 +-
- include/linux/spinlock.h                    |    2 +-
- kernel/Makefile                             |    3 +
- kernel/extable.c                            |    3 +
- kernel/ksplice.c                            | 2995 +++++++++++++++++++++++++++
- kernel/module.c                             |    4 +-
- kernel/panic.c                              |    1 +
- kernel/sched.c                              |    1 +
- lib/Kconfig.debug                           |   18 +
- lib/bug.c                                   |    1 +
- scripts/Makefile.modpost                    |    1 +
- scripts/mod/modpost.c                       |   22 +-
- scripts/recordmcount.pl                     |    6 +-
- 153 files changed, 4049 insertions(+), 350 deletions(-)
- create mode 100644 Documentation/ksplice.txt
- create mode 100644 arch/x86/kernel/ksplice-arch.c
- create mode 100644 include/linux/ksplice.h
- create mode 100644 kernel/ksplice.c
+diff --git a/kernel/extable.c b/kernel/extable.c
+index 384f0da..ce08fe8 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -40,6 +40,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+ 		e = search_module_extables(addr);
+ 	return e;
+ }
++EXPORT_SYMBOL_GPL(search_exception_tables);
+ 
+ __notrace_funcgraph int core_kernel_text(unsigned long addr)
+ {
+@@ -60,6 +61,7 @@ __notrace_funcgraph int __kernel_text_address(unsigned long addr)
+ 		return 1;
+ 	return is_module_text_address(addr);
+ }
++EXPORT_SYMBOL_GPL(__kernel_text_address);
+ 
+ int kernel_text_address(unsigned long addr)
+ {
+@@ -83,3 +85,4 @@ int func_ptr_is_kernel_text(void *ptr)
+ 		return 1;
+ 	return is_module_text_address(addr);
+ }
++EXPORT_SYMBOL_GPL(kernel_text_address);
+diff --git a/kernel/module.c b/kernel/module.c
+index 77fbf38..b3135db 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2760,6 +2760,7 @@ __notrace_funcgraph struct module *__module_address(unsigned long addr)
+ 			return mod;
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(__module_address);
+ 
+ /*
+  * is_module_text_address - is this address inside module code?
+@@ -2798,6 +2799,7 @@ struct module *__module_text_address(unsigned long addr)
+ 	}
+ 	return mod;
+ }
++EXPORT_SYMBOL_GPL(__module_text_address);
+ 
+ /* Don't grab lock, we're oopsing. */
+ void print_modules(void)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c1d0ed3..a35f940 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1801,6 +1801,7 @@ inline int task_curr(const struct task_struct *p)
+ {
+ 	return cpu_curr(task_cpu(p)) == p;
+ }
++EXPORT_SYMBOL_GPL(task_curr);
+ 
+ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
+ {
+diff --git a/lib/bug.c b/lib/bug.c
+index 300e41a..c8491f9 100644
+--- a/lib/bug.c
++++ b/lib/bug.c
+@@ -124,6 +124,7 @@ const struct bug_entry *find_bug(unsigned long bugaddr)
+ 
+ 	return module_find_bug(bugaddr);
+ }
++EXPORT_SYMBOL_GPL(find_bug);
+ 
+ enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
+ {
+-- 
+1.6.1.3
 
