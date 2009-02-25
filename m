@@ -1,145 +1,341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761049AbZBYIP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbZBYIQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761049AbZBYIP7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 03:15:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZBYIPt
+	id S1761347AbZBYIQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 03:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760589AbZBYIPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 03:15:49 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:41636 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753339AbZBYIPs (ORCPT
+	Wed, 25 Feb 2009 03:15:54 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:56897 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755525AbZBYIPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 03:15:48 -0500
-Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and
-	struct_mutex.
-From: Eric Anholt <eric@anholt.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Hellstrom <thomas@shipmail.org>,
-       Wang Chen <wangchen@cn.fujitsu.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1235115406.4736.4.camel@laptop>
-References: <1234918786-854-1-git-send-email-eric@anholt.net>
-	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org>
-	 <1235082372.4612.665.camel@laptop>  <1235095484.2636.39.camel@gaiman>
-	 <1235115406.4736.4.camel@laptop>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-DiHVWKGvHTxbeovPvODo"
-Date: Wed, 25 Feb 2009 00:15:45 -0800
-Message-Id: <1235549745.5213.4.camel@gaiman>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 25 Feb 2009 03:15:52 -0500
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
+       <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 25 Feb 2009 00:16:20 -0800
+Message-ID: <m18wnvq6cr.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: gregkh@suse.de, akpm@linux-foundation.org, jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org, htejun@gmail.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Greg Kroah-Hartman <gregkh@suse.de>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH] sysfs: Don't block indefinitely for unmapped files. 
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-DiHVWKGvHTxbeovPvODo
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This patch modifies sysfs bin files so that we can remove
+the bin file while they are still mapped.  When the kobject
+is removed we unmap the bin file and arrange for future
+accesses to the mapping to receive SIGBUS.
 
-On Fri, 2009-02-20 at 08:36 +0100, Peter Zijlstra wrote:
-> On Thu, 2009-02-19 at 18:04 -0800, Eric Anholt wrote:
-> > On Thu, 2009-02-19 at 23:26 +0100, Peter Zijlstra wrote:
-> > > On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
-> > > > =20
-> > > > It looks to me like the driver preferred locking order is
-> > > >=20
-> > > > object_mutex (which happens to be the device global struct_mutex)
-> > > >   mmap_sem
-> > > >      offset_mutex.
-> > > >=20
-> > > > So if one could avoid using the struct_mutex for object bookkeeping=
- (A=20
-> > > > separate lock) then
-> > > > vm_open() and vm_close() would adhere to that locking order as well=
-,=20
-> > > > simply by not taking the struct_mutex at all.
-> > > >=20
-> > > > So only fault() remains, in which that locking order is reversed.=20
-> > > > Personally I think the trylock ->reschedule->retry method with prop=
-er=20
-> > > > commenting is a good solution. It will be the _only_ place where lo=
-cking=20
-> > > > order is reversed and it is done in a deadlock-safe manner. Note th=
-at=20
-> > > > fault() doesn't really fail, but requests a retry from user-space w=
-ith=20
-> > > > rescheduling to give the process holding the struct_mutex time to=20
-> > > > release it.
-> > >=20
-> > > It doesn't do the reschedule -- need_resched() will check if the curr=
-ent
-> > > task was marked to be scheduled away, furthermore yield based locking
-> > > sucks chunks.
->=20
-> Imagine what would happen if your faulting task was the highest RT prio
-> task in the system, you'd end up with a life-lock.
->=20
-> > > What's so very difficult about pulling the copy_*_user() out from und=
-er
-> > > the locks?
-> >=20
-> > That we're expecting the data movement to occur while holding device
-> > state in place.  For example, we write data through the GTT most of the
-> > time so we:
-> >=20
-> > lock struct_mutex
-> > pin the object to the GTT
-> > flushing caches as needed
-> > copy_from_user
-> > unpin object
-> > unlock struct_mutex
->=20
-> So you cannot drop the lock once you've pinned the dst object?
->=20
-> > If I'm to pull the copy_from_user out, that means I have to:
-> >=20
-> > alloc temporary storage
-> > for each block of temp storage size:
-> > 	copy_from_user
-> > 	lock struct_mutex
-> > 	pin the object to the GTT
-> > 	flush caches as needed
-> > 	memcpy
-> > 	unpin object
-> > 	unlock struct_mutex
-> >=20
-> > At this point of introducing our third copy of the user's data in our
-> > hottest path, we should probably ditch the pwrite path entirely and go
-> > to user mapping of the objects for performance.  Requiring user mapping
-> > (which has significant overhead) cuts the likelihood of moving from
-> > user-space object caching to kernel object caching in the future, which
-> > has the potential of saving steaming piles of memory.
->=20
-> Or you could get_user_pages() to fault the user pages and pin them, and
-> then do pagefault_disable() and use copy_from_user_inatomic or such, and
-> release the pages again.
+Implementing this prevents a nasty DOS when pci devices are
+hot plugged and unplugged.  Where if any of their resources
+were mmaped the kernel could not free up their pci resources
+or release their pci data structures.
 
-I started poking at this today, since the get_user_pages sounded like
-the solution.  Only then I noticed: when we unbind an existing object,
-we have to unmap_mapping_range to clear the clients' mappings to it in
-the GTT, which needs to happen while the struct lock (protecting the gtt
-structure and the gtt to object mappings) is held.  So for fault we have
-mmap_sem held to struct mutex taken for poking at the gtt structure, and
-for unbind we have struct mutex held to mmap_sem taken to clear
-mappings.
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+---
+ fs/sysfs/bin.c   |  183 ++++++++++++++++++++++++++++++++++++++++++++++++++----
+ fs/sysfs/dir.c   |    1 +
+ fs/sysfs/sysfs.h |    2 +
+ 3 files changed, 174 insertions(+), 12 deletions(-)
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index f2c478c..f02a3c7 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -21,15 +21,28 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
++#include <linux/mm.h>
+ 
+ #include <asm/uaccess.h>
+ 
+ #include "sysfs.h"
+ 
++/*
++ * There's one bin_buffer for each open file.
++ *
++ * filp->private_data points to bin_buffer and
++ * sysfs_dirent->s_bin_attr.buffers points to a the bin_buffer s
++ * sysfs_dirent->s_bin_attr.buffers is protected by sysfs_bin_lock
++ */
++static DEFINE_MUTEX(sysfs_bin_lock);
++
+ struct bin_buffer {
+-	struct mutex	mutex;
+-	void		*buffer;
+-	int		mmapped;
++	struct mutex			mutex;
++	void				*buffer;
++	int				mmapped;
++	struct vm_operations_struct 	*vm_ops;
++	struct file			*file;
++	struct hlist_node		list;
+ };
+ 
+ static int
+@@ -168,29 +181,148 @@ out_free:
+ 	return count;
+ }
+ 
++static void bin_vma_open(struct vm_area_struct *vma)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++
++	if (!bb->vm_ops || !bb->vm_ops->open)
++		return;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return;
++
++	bb->vm_ops->open(vma);
++
++	sysfs_put_active_two(attr_sd);
++}
++
++static void bin_vma_close(struct vm_area_struct *vma)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++
++	if (!bb->vm_ops || !bb->vm_ops->close)
++		return;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return;
++
++	bb->vm_ops->close(vma);
++
++	sysfs_put_active_two(attr_sd);
++}
++
++static int bin_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++	int ret;
++
++	if (!bb->vm_ops || !bb->vm_ops->fault)
++		return VM_FAULT_SIGBUS;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return VM_FAULT_SIGBUS;
++
++	ret = bb->vm_ops->fault(vma, vmf);
++
++	sysfs_put_active_two(attr_sd);
++	return ret;
++}
++
++static int bin_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++	int ret;
++
++	if (!bb->vm_ops || !bb->vm_ops->page_mkwrite)
++		return -EINVAL;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return -EINVAL;
++
++	ret = bb->vm_ops->page_mkwrite(vma, page);
++
++	sysfs_put_active_two(attr_sd);
++	return ret;
++}
++
++static int bin_access(struct vm_area_struct *vma, unsigned long addr,
++		  void *buf, int len, int write)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++	int ret;
++
++	if (!bb->vm_ops || !bb->vm_ops->access)
++		return -EINVAL;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return -EINVAL;
++
++	ret = bb->vm_ops->access(vma, addr, buf, len, write);
++
++	sysfs_put_active_two(attr_sd);
++	return ret;
++}
++
++static struct vm_operations_struct bin_vm_ops = {
++	.open		= bin_vma_open,
++	.close		= bin_vma_close,
++	.fault		= bin_fault,
++	.page_mkwrite	= bin_page_mkwrite,
++	.access		= bin_access,
++};
++
+ static int mmap(struct file *file, struct vm_area_struct *vma)
+ {
+ 	struct bin_buffer *bb = file->private_data;
+ 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+ 	struct bin_attribute *attr = attr_sd->s_bin_attr.bin_attr;
+ 	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
++	struct vm_operations_struct *vm_ops;
+ 	int rc;
+ 
+ 	mutex_lock(&bb->mutex);
+ 
+ 	/* need attr_sd for attr, its parent for kobj */
++	rc = -ENODEV;
+ 	if (!sysfs_get_active_two(attr_sd))
+-		return -ENODEV;
++		goto out_unlock;
+ 
+ 	rc = -EINVAL;
+-	if (attr->mmap)
+-		rc = attr->mmap(kobj, attr, vma);
++	if (!attr->mmap)
++		goto out_put;
+ 
+-	if (rc == 0 && !bb->mmapped)
+-		bb->mmapped = 1;
+-	else
+-		sysfs_put_active_two(attr_sd);
++	rc = attr->mmap(kobj, attr, vma);
++	vm_ops = vma->vm_ops;
++	vma->vm_ops = &bin_vm_ops;
++	if (rc)
++		goto out_put;
++
++	rc = -EINVAL;
++	if (bb->mmapped && bb->vm_ops != vma->vm_ops)
++		goto out_put;
+ 
++#ifdef CONFIG_NUMA
++	rc = -EINVAL;
++	if (vm_ops && ((vm_ops->set_policy || vm_ops->get_policy || vm_ops->migrate)))
++		goto out_put;
++#endif
++
++	rc = 0;
++	bb->mmapped = 1;
++	bb->vm_ops = vm_ops;
++out_put:
++	sysfs_put_active_two(attr_sd);
++out_unlock:
+ 	mutex_unlock(&bb->mutex);
+ 
+ 	return rc;
+@@ -223,8 +355,13 @@ static int open(struct inode * inode, struct file * file)
+ 		goto err_out;
+ 
+ 	mutex_init(&bb->mutex);
++	bb->file = file;
+ 	file->private_data = bb;
+ 
++	mutex_lock(&sysfs_bin_lock);
++	hlist_add_head(&bb->list, &attr_sd->s_bin_attr.buffers);
++	mutex_unlock(&sysfs_bin_lock);
++
+ 	/* open succeeded, put active references */
+ 	sysfs_put_active_two(attr_sd);
+ 	return 0;
+@@ -240,8 +377,10 @@ static int release(struct inode * inode, struct file * file)
+ 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+ 	struct bin_buffer *bb = file->private_data;
+ 
+-	if (bb->mmapped)
+-		sysfs_put_active_two(attr_sd);
++	mutex_lock(&sysfs_bin_lock);
++	hlist_del(&bb->list);
++	mutex_unlock(&sysfs_bin_lock);
++
+ 	kfree(bb->buffer);
+ 	kfree(bb);
+ 	return 0;
+@@ -256,6 +395,26 @@ const struct file_operations bin_fops = {
+ 	.release	= release,
+ };
+ 
++
++void unmap_bin_file(struct sysfs_dirent *attr_sd)
++{
++	struct bin_buffer *bb;
++	struct hlist_node *tmp;
++
++	if (sysfs_type(attr_sd) != SYSFS_KOBJ_BIN_ATTR)
++		return;
++
++	mutex_lock(&sysfs_bin_lock);
++
++	hlist_for_each_entry(bb, tmp, &attr_sd->s_bin_attr.buffers, list) {
++		struct inode *inode = bb->file->f_path.dentry->d_inode;
++
++		unmap_mapping_range(inode->i_mapping, 0, 0, 1);
++	}
++
++	mutex_unlock(&sysfs_bin_lock);
++}
++
+ /**
+  *	sysfs_create_bin_file - create binary file for object.
+  *	@kobj:	object.
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 82d3b79..5dcea0d 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -581,6 +581,7 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
+ 
+ 		sysfs_drop_dentry(sd);
+ 		sysfs_deactivate(sd);
++		unmap_bin_file(sd);
+ 		sysfs_put(sd);
+ 	}
+ }
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 93c6d6b..bee5344 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -28,6 +28,7 @@ struct sysfs_elem_attr {
+ 
+ struct sysfs_elem_bin_attr {
+ 	struct bin_attribute	*bin_attr;
++	struct hlist_head	buffers;
+ };
+ 
+ /*
+@@ -163,6 +164,7 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
+  * bin.c
+  */
+ extern const struct file_operations bin_fops;
++void unmap_bin_file(struct sysfs_dirent *attr_sd);
+ 
+ /*
+  * symlink.c
+-- 
+1.6.1.2.350.g88cc
 
-
-
---=-DiHVWKGvHTxbeovPvODo
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmk/i4ACgkQHUdvYGzw6vdEowCfY+RiKhv7D6ZifacSzcJoSloD
-hngAnjP6VZRvvKAjc6+G99w5Fd0tyXPv
-=tAwT
------END PGP SIGNATURE-----
-
---=-DiHVWKGvHTxbeovPvODo--
