@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762244AbZBYPNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbZBYPQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762244AbZBYPNt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 10:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbZBYPJG
+	id S1758333AbZBYPQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 10:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbZBYPJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 10:09:06 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:58518 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756376AbZBYPIj (ORCPT
+	Wed, 25 Feb 2009 10:09:15 -0500
+Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:16520
+	"EHLO WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756974AbZBYPIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 10:08:39 -0500
-Message-Id: <20090225150832.347579350@de.ibm.com>
-References: <20090225150622.529143164@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 25 Feb 2009 16:06:41 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch/s390 19/46] Fix appldata build break with !NET
-Content-Disposition: inline; filename=118-appldata-build.diff
+	Wed, 25 Feb 2009 10:08:43 -0500
+X-BigFish: VPS1(zzzzzzz32i65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KFMNE6-04-9OH-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: Gerd Hoffmann <kraxel@redhat.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH] kvm x86: release time_page on vcpu destruction
+Date: Wed, 25 Feb 2009 16:08:31 +0100
+Message-ID: <1235574511-4571-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.6.4
+X-OriginalArrivalTime: 25 Feb 2009 15:08:31.0823 (UTC) FILETIME=[EBF395F0:01C9975A]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sachin Sant <sachinp@in.ibm.com>
+Not releasing the time_page causes a leak of that page or the compound
+page it is situated in.
 
-With CONFIG_NET not set appldata build breaks on s390.
-
-arch/s390/appldata/built-in.o: In function appldata_get_net_sum_data:
-appldata_net_sum.c:(.text+0x2684): undefined reference to dev_get_stats
-appldata_net_sum.c:(.text+0x2688): undefined reference to init_net
-appldata_net_sum.c:(.text+0x268c): undefined reference to init_net
-appldata_net_sum.c:(.text+0x2694): undefined reference to dev_base_lock
-
-The following patch fixes the issue for me.
-
-Signed-off-by: Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
+ arch/x86/kvm/x86.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
- arch/s390/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: quilt-2.6/arch/s390/Kconfig
-===================================================================
---- quilt-2.6.orig/arch/s390/Kconfig
-+++ quilt-2.6/arch/s390/Kconfig
-@@ -521,7 +521,7 @@ config APPLDATA_OS
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 8ca100a..a1ecec5 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4159,6 +4159,11 @@ EXPORT_SYMBOL_GPL(kvm_put_guest_fpu);
  
- config APPLDATA_NET_SUM
- 	tristate "Monitor overall network statistics"
--	depends on APPLDATA_BASE
-+	depends on APPLDATA_BASE && NET
- 	help
- 	  This provides network related data to the Linux - VM Monitor Stream,
- 	  currently there is only a total sum of network I/O statistics, no
-
+ void kvm_arch_vcpu_free(struct kvm_vcpu *vcpu)
+ {
++	if (vcpu->arch.time_page) {
++		kvm_release_page_dirty(vcpu->arch.time_page);
++		vcpu->arch.time_page = NULL;
++	}
++
+ 	kvm_x86_ops->vcpu_free(vcpu);
+ }
+ 
 -- 
-blue skies,
-   Martin.
+1.5.6.4
 
-"Reality continues to ruin my life." - Calvin.
 
