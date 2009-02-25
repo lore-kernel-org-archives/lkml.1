@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZBYVYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZBYVZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758960AbZBYVYc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbZBYVYX
+	id S1757587AbZBYVZo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421AbZBYVZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:24:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56816 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbZBYVYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:24:22 -0500
-Date: Wed, 25 Feb 2009 22:20:39 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Evans <scarybeasts@gmail.com>,
-       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
-       Eugene Teo <eugene@redhat.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] copy_process: fix CLONE_PARENT && ->exit_signal
-	interaction
-Message-ID: <20090225212039.GA11883@redhat.com>
-References: <20090225190211.GA7445@redhat.com> <20090225193927.1ED25FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902251156160.3111@localhost.localdomain>
+	Wed, 25 Feb 2009 16:25:34 -0500
+Received: from web39803.mail.mud.yahoo.com ([209.191.106.64]:23088 "HELO
+	web39803.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756381AbZBYVZd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 16:25:33 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Feb 2009 16:25:33 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:To:MIME-Version:Content-Type:Message-ID;
+  b=hlJFgYac7OeOIuxsdt9g1ui91dUsnDvhzOOmviosnchBUvkgDXJklZN5R3O/7warwBobvA80dVvmyzfxJo9Asw9D9K9a7tYWVA/PdRLE4PLe6vJkrP2jMqiKd31tbnm5L/3fCfI4+6eyYhB9pENMxahxsIZxL6TI9Od2CwsgYSk=;
+X-YMail-OSG: pLQAjrMVM1lgbtlyWtSEa5iWTYjmBt_PwYM0mNU1scZcrH6Hn5F_vMp0iH6maZApYNOxy03Vk7JjdSBG1jeT5iOkah6D2WU1Z3vUwJ30N9aQFd_R5nWK.5.A9Pqyt9o9S9VHdHdhEg_1aVtC6MYbPlJkV8tpkn9cfTJgUPl6x6i60e8Q.WiqRVWxdwZy.A--
+X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.260.1
+Date: Wed, 25 Feb 2009 13:18:50 -0800 (PST)
+From: Vinay Venkataraghavan <raghavanvinay@yahoo.com>
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902251156160.3111@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <684823.94105.qm@web39803.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25, Linus Torvalds wrote:
->
-> > As I think I said before, I don't really know what the actual use case is
-> > for CLONE_PARENT without CLONE_THREAD.  So it's easy to approve changing
-> > its behavior, but I do vaguely worry about who expected what behavior before.
->
-> I think changing it is wrong.
 
-Perhaps. As I said, I don't know what is the expected behaviour. And in fact
-I can't think of the "obviously good" behaviour.
+Folks,
 
-> I can easily see somebody using CLONE_PARENT to get the correct getppid
-> semantics in the thread, and then setting the signal to zero to not make
-> the parent see the thread go away.
+I am trying to port some PPC code to x86 based linux. My question is that I am need to create some page mappings using remap_pfn_range. In the code for the PPC,
+the protection flags being specified are:
 
-->exit_signal == 0 doesn't mean the thread silently goes away, it becomes
-a zombie (even if ->parent ignores SIGCHLD). We don't send the signal, but
-that is all.
+__pgprot(_PAGE_NO_CACHE | _PAGE_GUARDED);
 
-And if ->parent execs, we reset ->exit_signal to SIGCHLD anyway.
+But it looks like these do not exist when linux is compiled for the x86 architecture. 
 
-> So at the very least it should accept zero for "no signal".
+What are the relevant protection flags to achieve the same for the x86 architecture. 
 
-perhaps. I don't know. But I am not sure this is always right.
+Thanks for any help.
 
-> And quite
-> frankly, it would be good to try to see if there are other alternatives.
-
-Agreed. I thought about checking ->xxx_exec_id's in copy_process(),
-but doesn't look very nice...
+- Vinay
 
 
-(can't resist... hopefully now it is clear this should have beeen discussed
- outside of the closed lists from the very beginning ;)
 
-Oleg.
-
+      
