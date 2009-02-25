@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759403AbZBYEWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbZBYEZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759403AbZBYEWh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 23:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbZBYEWR
+	id S1759224AbZBYEZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 23:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbZBYEZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 23:22:17 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:37890 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756537AbZBYEWP (ORCPT
+	Tue, 24 Feb 2009 23:25:16 -0500
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:36358 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753296AbZBYEZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 23:22:15 -0500
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
+	Tue, 24 Feb 2009 23:25:15 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=2hk9fzTZaqJEGlsVzZFA2//0DHY55IVHG92G5BwqhLqDhZS1qdUGPvPCONwq1Fg6V3d/Q4k6XMiktnzBR6QrGJr9p4zEiBm3qic1rcE5jsCuUq6wxRk5YQAJStkne3g7PSroX1VXSAC9zaxxU3AeknUUr/dXBehun2/QoBhd9Ok=  ;
+X-YMail-OSG: 8dQkdRgVM1ne2M_s3iVwrdqM9hxXs3mHL1B4wa5KMYqmr10mzYO3Hz_MhAZGEJFmU77o86Jrr1sxOgk.tuf7euBwuwWWXGEVQXaNW1aHJmdSZxQNZRtyajfXEbhelwe1e2kX5tlzrc.fvYZKCMhHB8WCcUMwytX5iAMCSq_clxACnuGQZK55Gu9rKdSTCUOLWqMunuQEN_r7.OAehTqxRSE08Hg0.SFz
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+Date: Wed, 25 Feb 2009 15:24:35 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <m1ocx5ve8o.fsf@fess.ebiederm.org>
-	<200902201153.52683.rjw@sisk.pl> <m1r61s2znc.fsf_-_@fess.ebiederm.org>
-	<200902241112.59203.jbarnes@virtuousgeek.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 24 Feb 2009 20:22:44 -0800
-In-Reply-To: <200902241112.59203.jbarnes@virtuousgeek.org> (Jesse Barnes's message of "Tue\, 24 Feb 2009 11\:12\:58 -0800")
-Message-ID: <m1k57ftaaz.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+References: <20090225025608.956691460@goodmis.org> <20090224194548.3effb746.akpm@linux-foundation.org> <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, rjw@sisk.pl, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jesse Barnes <jbarnes@virtuousgeek.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pcie_portdriver: FIX: pcie_port_device_remove (take 2)
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902251524.37542.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes <jbarnes@virtuousgeek.org> writes:
-
-> On Friday, February 20, 2009 8:16:07 pm Eric W. Biederman wrote:
->> pcie_port_device_remove currently calls the remove method of port
->> drivers twice.  Ouch!
->>
->> We are calling device_for_each_child multiple times for no apparent
->> reason.
->>
->> So make it simple. Place put_device and device_unregister into
->> remove_iter, and throw out the rest.  Only call device_for_each_child
->> once.
->>
->> The code is simpler and actually works!
->>
->> Changelog:
->> v2 rebase against the linux-next tree so I don't conflict with Rafael's
->>    irq work, and remove the irq handling cleanups as Rafael's patch already
->>    made them.
+On Wednesday 25 February 2009 15:08:56 Steven Rostedt wrote:
+> On Tue, 24 Feb 2009, Andrew Morton wrote:
+> > On Tue, 24 Feb 2009 21:56:10 -0500 Steven Rostedt <rostedt@goodmis.org> 
+wrote:
+> > > From: Steven Rostedt <srostedt@redhat.com>
+> > >
+> > > This patch creates the event tracing infrastructure of ftrace.
+> > > It will create the files:
+> > >
+> > >  /debug/tracing/available_events
+> > >  /debug/tracing/set_event
+> > >
+> > > The available_events will list the trace points that have been
+> > > registered with the event tracer.
+> > >
+> > > set_events will allow the user to enable or disable an event hook.
+> > >
+> > > example:
+> > >
+> > >  # echo sched_wakeup > /debug/tracing/set_event
+> > >
+> > > Will enable the sched_wakeup event (if it is registered).
+> > >
+> > >  # echo "!sched_wakeup" >> /debug/tracing/set_event
+> > >
+> > > Will disable the sched_wakeup event (and only that event).
+> >
+> > Why not
+> >
+> > echo sched_wakeup > /debug/tracing/set_event
+> > echo sched_wakeup > /debug/tracing/clear_event
 >
-> Thanks for rebasing; it's queued up in my linux-next branch now.  If we really 
-> need this in the stable kernel it'll be a bit painful, since some of these 
-> structures have changed around a bit...
+> I'm trying to keep the number of files in /debug/tracing down.
 
-I don't think it is necessary for stable.  The pciehp still needs more
-work, and if anyone of the other port drivers was being hotplugged I
-expect someone would have noticed the bug and fixed it before now.
+Why? Andrew's proposal is much cleaner. (what is the !sched_wakeup
+event? An event you get when the scheduler does not wake up a task? ;)
 
-Eric
+
