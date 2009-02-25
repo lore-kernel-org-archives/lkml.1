@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbZBYBz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZBYCK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbZBYBz6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 20:55:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZBYBzt
+	id S1757213AbZBYCK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 21:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZBYCKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 20:55:49 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:15768 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbZBYBzs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 20:55:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GSWdjqZATTASrcT4EZ2U5gLqGzXk41eARwB+3A/9p5TDVU6desGwahGSh0qCPF35Cg
-         D8nEnn5+pZZKCFMZPJgVxe+zURUnJ3dKJTPwHih/IK+YcrNrbdijTEf5p5tNWI2hcBQM
-         y829VwaJjnrJGRKvMt0+f+qDqedYQ3t/TeMOM=
+	Tue, 24 Feb 2009 21:10:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47742 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752939AbZBYCKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 21:10:14 -0500
+Message-ID: <49A4A86F.9010001@kernel.org>
+Date: Wed, 25 Feb 2009 11:09:51 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <200902241509.54649.david-b@pacbell.net>
-References: <200902241509.54649.david-b@pacbell.net>
-Date: Tue, 24 Feb 2009 22:55:45 -0300
-Message-ID: <82ecf08e0902241755y5a7be725gb84116433b7d3be2@mail.gmail.com>
-Subject: Re: [patch/RESEND 2.6.29-rc3-git] NAND: davinci_nand driver
-From: Thiago Galesi <thiagogalesi@gmail.com>
-To: dbrownell@users.sourceforge.net
-Cc: Linux MTD <linux-mtd@lists.infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       DaVinci <davinci-linux-open-source@linux.davincidsp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yinghai@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       jeremy@goop.org, cpw@sgi.com, nickpiggin@yahoo.com.au,
+       ink@jurassic.park.msu.ru
+Subject: [PATCH x86/core/percpu 1/2] x86, percpu: fix minor bugs in setup_percpu.c
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224201718.GE28772@elte.hu> <20090224205105.GA19460@elte.hu> <20090224211659.GA3687@elte.hu>
+In-Reply-To: <20090224211659.GA3687@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Feb 2009 02:09:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK a couple of things
- +
-> +
-> +#ifdef CONFIG_MTD_PARTITIONS
-> +static inline int mtd_has_partitions(void) { return 1; }
-> +#else
-> +static inline int mtd_has_partitions(void) { return 0; }
-> +#endif
-> +
-> +#ifdef CONFIG_MTD_CMDLINE_PARTS
-> +static inline int mtd_has_cmdlinepart(void) { return 1; }
-> +#else
-> +static inline int mtd_has_cmdlinepart(void) { return 0; }
-> +#endif
+Recent changes in setup_percpu.c made a now meaningless DBG()
+statement fail to compile and introduced a
+comparison-of-different-types warning.  Fix them.
 
-I'm not sure stylewise this is the best way. Even though #ifdefs stays
-outside of functions, this is a case where maybe it's better to put it
-inside or rething the need / usage for these functions.
+Compile failure is reported by Ingo Molnar.
 
-> +static int nand_davinci_calculate_1bit(struct mtd_info *mtd,
-> +                                     const u_char *dat, u_char *ecc_code)
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/setup_percpu.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-(and others)
-
-My beef here is the use of u_char. This is really not a standart C
-type or a standart Linux type (u8/u32 etc), so we should aim for those
-(yes, I hate typing unsigned blah blah blah) but you can use u8 for
-that.
-
-> +static void nand_davinci_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
-> +{
-> +       struct nand_chip *chip = mtd->priv;
-> +
-> +       if ((0x03 & ((unsigned)buf)) == 0 && (0x03 & len) == 0)
-> +               ioread32_rep(chip->IO_ADDR_R, buf, len >> 2);
-> +       else if ((0x01 & ((unsigned)buf)) == 0 && (0x01 & len) == 0)
-
-What are those 0x03 and 0x01 (and other places as well), you'll have
-to spell out those, preferably using defines.
-
--- 
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 2d946a8..c29f301 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -270,7 +270,7 @@ static ssize_t __init setup_pcpu_embed(size_t static_size)
+ 
+ 	/* allocate and copy */
+ 	pcpue_unit_size = PFN_ALIGN(static_size + PERCPU_DYNAMIC_RESERVE);
+-	pcpue_unit_size = max(pcpue_unit_size, PCPU_MIN_UNIT_SIZE);
++	pcpue_unit_size = max_t(size_t, pcpue_unit_size, PCPU_MIN_UNIT_SIZE);
+ 	pcpue_ptr = pcpu_alloc_bootmem(0, num_possible_cpus() * pcpue_unit_size,
+ 				       PAGE_SIZE);
+ 	if (!pcpue_ptr)
+@@ -438,8 +438,6 @@ void __init setup_per_cpu_areas(void)
+ 		 */
+ 		if (cpu == boot_cpu_id)
+ 			switch_to_new_gdt(cpu);
 -
-Thiago Galesi
+-		DBG("PERCPU: cpu %4d %p\n", cpu, ptr);
+ 	}
+ 
+ 	/* indicate the early static arrays will soon be gone */
+-- 
+1.6.0.2
+
