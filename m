@@ -1,53 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbZBYWV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762249AbZBYWZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763136AbZBYWV7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbZBYWVu
+	id S1762249AbZBYWZQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757116AbZBYWZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:21:50 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34991 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757554AbZBYWVt (ORCPT
+	Wed, 25 Feb 2009 17:25:01 -0500
+Received: from smtp-noauth7.primus.ca ([216.254.180.38]:43820 "EHLO
+	mail-07.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751045AbZBYWZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:21:49 -0500
-Date: Wed, 25 Feb 2009 17:21:47 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com
-Subject: Re: [PATCH] new irq tracer
-In-Reply-To: <20090225221210.GA20133@Krystal>
-Message-ID: <alpine.DEB.2.00.0902251721170.12697@gandalf.stny.rr.com>
-References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com> <20090222123543.359C.A69D9226@jp.fujitsu.com> <49A5765C.2020001@redhat.com> <20090225165747.GC3123@redhat.com> <20090225173412.GA14269@Krystal> <alpine.DEB.2.00.0902251250110.12697@gandalf.stny.rr.com>
- <20090225221210.GA20133@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Feb 2009 17:25:01 -0500
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: ATA support for 4k sector size
+Date: Wed, 25 Feb 2009 17:24:56 -0500
+Message-Id: <1235600698-6446-1-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+The two patches following this add support for drives which have sector
+sizes other than 512 bytes.  I haven't been able to test this as I don't
+have the hardware.
 
-On Wed, 25 Feb 2009, Mathieu Desnoyers wrote:
-> > > The main thing I dislike about only tracing action->handler() calls is
-> > > that you are not tracing an IRQ per se, but rather the invocation of a
-> > > given handler within the interrupt. For instance, it would be difficult
-> > > to calculate the maximum interrupt latency for a given interrupt line,
-> > > because you don't have the "real" irq entry/exit events, just the
-> > > individual handler() calls.
-> > 
-> > Then use the function_graph tracer.
-> > 
-> 
-> Sadly, the function tracer cannot be enabled on production systems.
-> Therefore it's not a usable solution in the context where I need this.
+Individual host drivers will have to be updated to support sizes other
+than 512 bytes.
 
-And why not? It has zero overhead when disabled.
+Support for logical sector sizes that differ from physical sector sizes
+depends on the READ CAPACITY 16 patch I posted in December that isn't in
+scsi-misc yet.
 
--- Steve
+The approach I've taken to generating the tables of which commands need
+a 512-byte transfer size and which use the drive's sector size command is
+'innovative'.  Review is encouraged ;-)
