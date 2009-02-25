@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbZBYLUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbZBYLUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762746AbZBYLUJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 06:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761060AbZBYLTy
+	id S1762840AbZBYLUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 06:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761129AbZBYLU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 06:19:54 -0500
-Received: from p-mail2.rd.francetelecom.com ([195.101.245.16]:4954 "EHLO
-	p-mail2.rd.francetelecom.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760846AbZBYLTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 06:19:54 -0500
-Message-ID: <49A51B4D.5070903@Free.fr>
-Date: Wed, 25 Feb 2009 11:19:57 +0100
-From: Eric Valette <Eric.Valette@Free.fr>
-Reply-To: Eric.Valette@Free.fr
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 25 Feb 2009 06:20:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32847 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761516AbZBYLUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 06:20:25 -0500
+Date: Wed, 25 Feb 2009 12:20:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] x86: memtest: add additional (regular) test
+	patterns
+Message-ID: <20090225112017.GF15453@elte.hu>
+References: <20090225102337.GP6298@alberich.amd.com> <20090225103149.GW6298@alberich.amd.com>
 MIME-Version: 1.0
-To: airlied@gmail.com
-CC: linux-kernel@vger.kernel.org
-Subject: Some user feedback on recent Intel chipset and 2.6.29 KMS 
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 25 Feb 2009 10:19:40.0864 (UTC) FILETIME=[91E51C00:01C99732]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225103149.GW6298@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Thanks for the nice work: for the first time (starting with
-2.6.29-rc6-git1), I managed to remove the vesa framebuffer in favor of
-intel's ones.  Recent X server (1.5.99.902 + git intel driver and git
-drm) also comes up correctly and detects the KMS.
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-This amilo xi 3650 is a transportable SLI enabled laptop with Nvidia
-GeForce 9600M GT & Mobile Intel® GM45 Express Chipset. By defaut the
-Intel card is active. I can force using one or other in the bios but
-expects one day I will be able to be able to dynamically switch like on
-vista.
+> 
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  arch/x86/mm/memtest.c |   13 +++++++++++++
+>  1 files changed, 13 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
+> index 9c52ef1..0bcd788 100644
+> --- a/arch/x86/mm/memtest.c
+> +++ b/arch/x86/mm/memtest.c
+> @@ -14,6 +14,19 @@ static u64 patterns[] __initdata = {
+>  	0xffffffffffffffffULL,
+>  	0x5555555555555555ULL,
+>  	0xaaaaaaaaaaaaaaaaULL,
+> +	0x1111111111111111ULL,
+> +	0x2222222222222222ULL,
+> +	0x4444444444444444ULL,
+> +	0x8888888888888888ULL,
+> +	0x3333333333333333ULL,
+> +	0x6666666666666666ULL,
+> +	0x9999999999999999ULL,
+> +	0xccccccccccccccccULL,
+> +	0x7777777777777777ULL,
+> +	0xbbbbbbbbbbbbbbbbULL,
+> +	0xddddddddddddddddULL,
+> +	0xeeeeeeeeeeeeeeeeULL,
+> +	0x7a6c7258554e494cULL, /* yeah ;-) */
 
-However there are still some problem with drm, Xorg, suspend/resume:
+it indeed does ;-)
 
-   1. The X server needs interrupts (mouse or keyboard) to redraw things
-      (e.g if I do apt-get update in a konsole, I see it freeeze but if
-      I move the mouse I get the complete output instantly. Same thing
-      when I start a new application, I have to hit shift or move mouse.
-      The same user land setting with 2.6.28.7 behaves correctly,
-   2. I have a lot of problem with suspend to ram: when console comes up
-      but with a cyan background and then X comes up completely garbled
-      although I can distinguish some shadow of the windows and a
-      konsole is still active if I enter init 0. Sometimes it purely
-      freeze. If I switch back to tty (when I can), and restart kdm,
-      then it starts only in 800x600 mode. Using krandrtray to put it
-      back at 1920x1080, it simply freezes.
-
-If I can help testing anything, providing traces (dmesg, config, lspci,
-xorg config) let me know.
-
-PS: CC me if anwering to the list I'm not suscribed.
-
--- eric
+	Ingo
