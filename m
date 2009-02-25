@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbZBYCYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbZBYC3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758080AbZBYCYP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 21:24:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZBYCX7
+	id S1758188AbZBYC3T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 21:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZBYC3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 21:23:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54254 "EHLO hera.kernel.org"
+	Tue, 24 Feb 2009 21:29:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52957 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbZBYCX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 21:23:59 -0500
-Message-ID: <49A4ABAC.90602@kernel.org>
-Date: Wed, 25 Feb 2009 11:23:40 +0900
+	id S1754859AbZBYC3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 21:29:05 -0500
+Message-ID: <49A4ACAE.4020104@kernel.org>
+Date: Wed, 25 Feb 2009 11:27:58 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
-       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       jeremy@goop.org, cpw@sgi.com, nickpiggin@yahoo.com.au,
-       ink@jurassic.park.msu.ru
-Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu chunk	allocation
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224201718.GE28772@elte.hu> <20090224205105.GA19460@elte.hu> <20090224211659.GA3687@elte.hu>
-In-Reply-To: <20090224211659.GA3687@elte.hu>
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/percpu] bootmem: clean up arch-specific bootmem wrapping
+References: <tip-c132937556f56ee4b831ef4b23f1846e05fde102@kernel.org> <20090224214638.GA2049@cmpxchg.org> <20090224214932.GC12601@elte.hu> <20090224234949.GA1778@cmpxchg.org>
+In-Reply-To: <20090224234949.GA1778@cmpxchg.org>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Feb 2009 02:23:23 +0000 (UTC)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Feb 2009 02:27:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ingo.
+Hello,
 
-Patches posted to fix the build failure and warning.  Patches are also
-available in the usual git tree.
+Johannes Weiner wrote:
+> No, when the patch was submitted for review, I pointed out the change
+> in semantics and gathered from Tejun's reaction that this wasn't done
+> intentionally.  So the problem is the change itself, not the missing
+> declaration.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+Yeah, I should have regenerated the tree.  Sorry about that.
 
-Ingo Molnar wrote:
-> and one tip:master merge impact due to API change:
+>>From the original mail:
 > 
->  kernel/trace/trace_functions_graph.c: In function ‘graph_trace_close’:
->  kernel/trace/trace_functions_graph.c:836: error: implicit declaration of function ‘percpu_free’
+> 	Johannes Weiner wrote:
+> 	> This won't suffice as reserve_bootmem() doesn't use
+> 	> alloc_bootmem_core(), so now you effectively removed the
+> 	> node-0 restriction for reserve_bootmem() on this
+> 	> configuration.
 > 
-> that's free_percpu() now, right?
+> 	Ah... right.  :-(
 > 
-> Btw., why was this rename done? We generally standardize on 
-> hierarchical names, going from the more general to the more 
-> specific names, left to right. So we have 
-> <subsystem>_<functionality>_<subtype> sort of names generally.
+> I just wrote again because I didn't understand why Tejun acknowledged
+> the error in the patch and then it went into -tip anyway.
+> 
+> The other part of my email was just suggestions for a cleanup, I
+> wasn't referring to that when I said 'broken' - sorry if that is how
+> it came over.
 
-It's a strange story and not really a rename.
-
-We had __percpu_alloc_mask(), percpu_alloc(), __alloc_percpu() and
-alloc_percpu() and of course matching frees.  The percpu_*() stuff was
-introduced so that allocations can take online cpus into
-consideration.  So, percpu_alloc() uses cpu_online_map as the default
-allocation mask while alloc_percpu() uses cpu_possible_map.  The
-allocation mask thing never really took off and there virtually was no
-user and got killed.
-
-If the only merge impact was percpu_free() and it's not missing
-percpu_alloc(), it could be that allocation path used alloc_percpu()
-but free path used percpu_free().
+It seems that the wrapping thing was broken both before and after the
+patch and can lead to panic on free path.  I'll soon post a patch to
+fix it.
 
 Thanks.
 
