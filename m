@@ -1,240 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762641AbZBYVkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbZBYVoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762641AbZBYVkw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZBYVk2
+	id S1761356AbZBYVoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbZBYVoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:40:28 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45620 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752325AbZBYVk1 (ORCPT
+	Wed, 25 Feb 2009 16:44:01 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:49821 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755889AbZBYVoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:40:27 -0500
-Date: Wed, 25 Feb 2009 13:39:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
-       fweisbec@gmail.com, srostedt@redhat.com
-Subject: Re: [PATCH 1/4] uaccess: add copy_word_from_user
-Message-Id: <20090225133929.f67163e3.akpm@linux-foundation.org>
-In-Reply-To: <20090225203427.382137706@goodmis.org>
-References: <20090225203007.582030664@goodmis.org>
-	<20090225203427.382137706@goodmis.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Feb 2009 16:44:00 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] Make exported headers use strict posix types
+Date: Wed, 25 Feb 2009 22:42:44 +0100
+User-Agent: KMail/1.9.9
+Cc: Kyle McMartin <kyle@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+References: <20090225032553.GD6690@bombadil.infradead.org> <200902251917.49017.arnd@arndb.de> <20090225201131.GA26110@uranus.ravnborg.org>
+In-Reply-To: <20090225201131.GA26110@uranus.ravnborg.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902252242.45755.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+sHqy8LxTo6oSL6+LdRvydxGxwipRooAgrMAW
+ ajcHLEx9VnHXF8PYOmrquurwKF9h8uR9Aq+MIFCFiUkdFUKL9b
+ ypzfS/mwRRLj75Qi0uDBQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 15:30:08 -0500
-Steven Rostedt <rostedt@goodmis.org> wrote:
+On Wednesday 25 February 2009, Sam Ravnborg wrote:
 
-> From: Steven Rostedt <srostedt@redhat.com>
+ 
+> Does this change really belong in this patchset?
+ 
+> Yes - I can build kernels again. But I think we should skip this change..
+
+> This change looks correct - but I assume this is a separate patch.
 > 
-> The ftrace utility reads space delimited words from user space.
-> Andrew Morton did not like how ftrace open coded this. He had
-> a good point since more than one location performed this feature.
-> 
-> This patch creates a copy_word_from_user function that can copy
-> a space delimited word from user space. This puts the code in
-> a new lib/uaccess.c file. This keeps the code in a single location
-> and may be optimized in the future.
-> 
+> Rest looks good.
 
-Does your code actually still need this?  It is unacceptble to just
-be more strict about userspace's write()s?
+Agreed on all points, I had the changes sitting in a dirty git tree
+and got sloppy. Thanks for looking through it!
 
-> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
-> index 6b58367..2d706d9 100644
-> --- a/include/linux/uaccess.h
-> +++ b/include/linux/uaccess.h
-> @@ -106,4 +106,8 @@ extern long probe_kernel_read(void *dst, void *src, size_t size);
->   */
->  extern long probe_kernel_write(void *dst, void *src, size_t size);
->  
-> +extern int copy_word_from_user(void *to, const void __user *from,
-> +			       unsigned int copy, unsigned int read,
-> +			       unsigned int *copied, int skip);
-> +
->  #endif		/* __LINUX_UACCESS_H__ */
-> diff --git a/lib/Makefile b/lib/Makefile
-> index 32b0e64..46ce28c 100644
-> --- a/lib/Makefile
-> +++ b/lib/Makefile
-> @@ -11,7 +11,8 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
->  	 rbtree.o radix-tree.o dump_stack.o \
->  	 idr.o int_sqrt.o extable.o prio_tree.o \
->  	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
-> -	 proportions.o prio_heap.o ratelimit.o show_mem.o is_single_threaded.o
-> +	 proportions.o prio_heap.o ratelimit.o show_mem.o is_single_threaded.o \
-> +	 uaccess.o
->  
->  lib-$(CONFIG_MMU) += ioremap.o
->  lib-$(CONFIG_SMP) += cpumask.o
-> diff --git a/lib/uaccess.c b/lib/uaccess.c
-> new file mode 100644
-> index 0000000..5b9a4ac
-> --- /dev/null
-> +++ b/lib/uaccess.c
-> @@ -0,0 +1,134 @@
-> +/*
-> + * lib/uaccess.c
-> + * generic user access file.
-
-That's a good place for it.  I wonder if we have other uaccess
-functions which should be moved here sometime.
-
-> + * started by Steven Rostedt
-> + *
-> + *  Copyright (C) 2009 Red Hat, Inc., Steven Rostedt <srostedt@redhat.com>
-> + *
-> + * This source code is licensed under the GNU General Public License,
-> + * Version 2.  See the file COPYING for more details.
-> + */
-> +#include <linux/uaccess.h>
-> +#include <linux/ctype.h>
-> +
-> +/**
-> + * copy_word_from_user - copy a space delimited word from user space
-> + * @to:	     The location to copy to
-> + * @from:    The location to copy from
-> + * @copy:    The number of bytes to copy
-> + * @read:    The number of bytes to read
-> + * @copied:  The number of bytes actually copied to @to
-> + * @skip:    If other than zero, will skip leading white space
-> + *
-> + * This reads from a user buffer, a space delimited word.
-> + * If skip is set, then it will trim all leading white space.
-> + * Then it will copy all non white space until @copy bytes have
-> + * been copied, @read bytes have been read from the user buffer,
-> + * or more white space has been encountered.
-> + *
-> + * Note, if skip is not set, and white space exists at the beginning
-> + *  it will return immediately.
-> + *
-> + * Returns:
-> + *  The number of bytes read from user space
-
-Confused.
-
-Is this "the number of bytes which I copied into *to", or is it "the
-number of userspace bytes over which I advanced"?
-
-Hopefully the latter, because callers of copy_word_from_user() should
-be able to call this function multiple times to be able to parse "foo
-bar zot\0" into three separate words with three separate calls to
-copy_word_from_user().  It might be worth mentioning how callers should
-do this in the covering comment?
-
-> + *  -EAGAIN, if we copied a word successfully, but never hit
-> + *    ending white space. The number of bytes copied will be the same
-> + *    as @read. Note, if skip is set, and all we hit was white space
-> + *    then we will also returne -EAGAIN with @copied = 0.
-> + *
-> + *  @copied will contain the number of bytes copied into @to
-> + *
-> + *  -EFAULT, if we faulted during any part of the copy.
-> + *     @copied will be undefined.
-> + *
-> + *  -EINVAL, if we fill up @from before hitting white space.
-> + *    @copy must be bigger than the expected word to read.
-> + */
-> +int copy_word_from_user(void *to, const void __user *from,
-> +			unsigned int copy, unsigned int read,
-> +			unsigned int *copied, int skip)
-> +{
-
-The uaccess functions are a bit confused about whether the `size' args
-are unsigned, unsigned long, etc.  They should be size_t.  unsigned is
-OK here.
-
-> +	unsigned int have_read = 0;
-> +	unsigned int have_copied = 0;
-> +	const char __user *user = from;
-> +	char *kern = to;
-> +	int ret;
-> +	char ch;
-> +
-> +	/* get the first character */
-> +	ret = get_user(ch, user++);
-> +	if (ret)
-> +		return ret;
-> +	have_read++;
-> +
-> +	/*
-> +	 * If skip is set, and the first character is white space
-> +	 * then we will continue to read until we find non white space.
-> +	 */
-> +	if (skip) {
-> +		while (have_read < read && isspace(ch)) {
-> +			ret = get_user(ch, user++);
-> +			if (ret)
-> +				return ret;
-> +			have_read++;
-> +		}
-> +
-> +		/*
-> +		 * If ch is still white space, then have_read == read.
-> +		 * We successfully copied zero bytes. But this is
-> +		 * still valid. Just let the caller try again.
-> +		 */
-> +		if (isspace(ch)) {
-> +			ret = -EAGAIN;
-> +			goto out;
-> +		}
-> +	} else if (isspace(ch)) {
-> +		/*
-> +		 * If skip was not set and the first character was
-> +		 * white space, then we return immediately.
-> +		 */
-> +		ret = have_read;
-> +		goto out;
-> +	}
-> +
-> +
-> +	/* Now read the actual word */
-> +	while (have_read < read &&
-> +	       have_copied < copy && !isspace(ch)) {
-> +
-> +		kern[have_copied++] = ch;
-> +
-> +		ret = get_user(ch, user++);
-> +		if (ret)
-> +			return ret;
-> +
-> +		have_read++;
-> +	}
-> +
-> +	/*
-> +	 * If we ended with white space then we have successfully
-> +	 * read in a full word.
-> +	 *
-> +	 * If ch is not white space, and we have filled up @from,
-> +	 * then this was an invalid word.
-> +	 *
-> +	 * If ch is not white space, and we still have room in @from
-> +	 * then we let the caller know we have split a word.
-> +	 *  (have_read == read)
-> +	 */
-> +	if (isspace(ch))
-> +		ret = have_read;
-> +	else if (have_copied == copy)
-> +		ret = -EINVAL;
-> +	else {
-> +		WARN_ON(have_read != read);
-> +		ret = -EAGAIN;
-> +	}
-> +
-> + out:
-> +	*copied = have_copied;
-> +
-> +	return ret;
-> +}
-
-Sheer madness ;)
-
-Someone is going to want to extend the "isspace" to include other
-tokens.  We can fall off that bridge when we come to it.
-
+	Arnd <><
