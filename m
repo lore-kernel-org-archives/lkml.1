@@ -1,116 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbZBYJ71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762239AbZBYJ7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762157AbZBYJ71 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762041AbZBYJ6p
+	id S1762239AbZBYJ7m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:59:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761944AbZBYJ7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:58:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50446 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762031AbZBYJ6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:58:43 -0500
-Date: Wed, 25 Feb 2009 10:56:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
-Message-ID: <20090225095623.GB12352@elte.hu>
-References: <20090225025753.798204550@goodmis.org> <20090224194548.3effb746.akpm@linux-foundation.org> <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com> <20090224203308.8d623e0b.akpm@linux-foundation.org> <20090225081118.GC15303@elte.hu> <20090225002852.5ef5b869.akpm@linux-foundation.org> <84144f020902250100k41e55dd7w8a9c8d2ca96908ea@mail.gmail.com> <20090225012250.db68e480.akpm@linux-foundation.org> <1235554387.3849.30.camel@penberg-laptop> <20090225014442.7b7b7726.akpm@linux-foundation.org>
+	Wed, 25 Feb 2009 04:59:03 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58708 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1762119AbZBYJ7A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 04:59:00 -0500
+Date: Wed, 25 Feb 2009 10:58:57 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Brad Boyer <flar@allandria.com>
+cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+       linux-parisc@vger.kernel.org, David@ozlabs.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Woodhouse <dwmw2@infradead.org>
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <20090225011426.GB9362@cynthia.pants.nu>
+Message-ID: <alpine.LRH.2.00.0902251055260.4063@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090220170454.04382e9e@i1501.lan.towertech.it> <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be> <20090223160506.04e347c7@i1501.lan.towertech.it>
+ <alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be> <20090224193708.5f8be86c@i1501.lan.towertech.it> <20090225011426.GB9362@cynthia.pants.nu>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090225014442.7b7b7726.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> Plus...  it's all English-only.
-
-Note that with bin+raw output you can already internationalize 
-tracepoints, if you want to.
-
-I havent seen much interest in that, and the default tracing 
-output is in English indeed, and the reason is rather 
-fundamental: currently we've got 60,000+ kernel function 
-symbols, 99% of which are in English.
-
-Do you argue for them to be converted to some i8n format so that 
-the trace output becomes readable in other languages as well? 
-
-I.e. do you suggest that this:
-
->  3)               |  handle_mm_fault() {
->  3)               |    count_vm_event() {
->  3)   0.243 us    |      test_ti_thread_flag();
->  3)   0.754 us    |    }
->  3)   0.249 us    |    pud_alloc();
->  3)   0.251 us    |    pmd_alloc();
->  3)               |    __do_fault() {
->  3)               |      filemap_fault() {
->  3)               |        find_lock_page() {
->  3)               |          find_get_page() {
->  3)   0.248 us    |            test_ti_thread_flag();
->  3)   0.844 us    |          }
->  3)   1.341 us    |        }
->  3)   1.837 us    |      }
->  3)   0.275 us    |	   _spin_lock();
->  3)   0.257 us    |	   page_add_file_rmap();
->  3)   0.233 us    |      native_set_pte_at();
-
-and /proc/kallsysms to be internationalized? Should all oopses 
-and warnings that show up in the kernel log be translated as 
-well?
-
-I dont think it's realistic - and arguing for anything less and 
-singling out tracing would be a double standard.
-
-Currently being able to understand and hack the kernel means 
-being able to read some English - and the same holds for trace 
-output as well.
-
-The default output of traces is just a mirror image of what is 
-the kernel status quo. If the kernel gets internationalized so 
-will ftrace be internationalized too.
-
-> > So if you're arguing against specific ftrace plugins, go 
-> > ahead (you probably have a fair point there). But please 
-> > don't dismiss the while _concept_ of ftrace because of them.
+On Tue, 24 Feb 2009, Brad Boyer wrote:
+> On Tue, Feb 24, 2009 at 07:37:08PM +0100, Alessandro Zummo wrote:
+> > On Tue, 24 Feb 2009 18:56:03 +0100 (CET)
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > Converting all (ca. 20?) ppc and m68k RTC support code into individual RTC
+> > > class drivers would add ca. 100+ lines of code for each individual driver.
+> > 
+> >  How different are all of those boards? It's simply a matter
+> >  of parameters and offsets? can we group them somehow?
 > 
-> Where on earth did that come from?
-> 
-> What I'm arguing against is putting English-only 
-> pretty-printers and pretty-parsers on wrong side of int 80.  
-> That's all.
+> I imagine we could cut down the numbers somewhat with clever code sharing,
+> but it's still going to be a fairly large number. I don't know all the
+> embedded boards, but just with all the Macintosh models there are at
+> least three and maybe four drastically different methods of RTC access,
+> and all of them are directly tied to some chip that does something else
+> completely unrelated. For one of them we don't even have a driver at the
 
-Since the concept of a kernel tracing facility being 
-self-sufficient and being easy to use is an integral and key 
-concept to ftrace, dont you see why people take your suggestions 
-as a dismissal of the ftrace concept?
+Yeah, on Mac/m68k the RTC is usually handled by a chip that does lots of other
+things, so you need to keep the bulk of the code in arch/m68k/ anyway.
 
-	Ingo
+> moment.  They also are all custom chips that wouldn't be used anywhere
+> else. The other thing we need to keep in mind is that if we do it right
+> we can share drivers across m68k and powerpc in some cases.  I imagine
+> some of the embedded powerpc boards are using chips that are common in
+> other architectures as well.
+
+Many embedded powerpc boards already have RTC class drivers under drivers/rtc/,
+as their RTC chips are sufficiently common.
+
+The ones that don't are mostly "workstation" or "server" type hardware. The
+full list is:
+  - rtas_set_rtc_time
+  - mpc8xx_set_rtc_time
+  - beat_get_rtc_time
+  - chrp_set_rtc_time
+  - iSeries_set_rtc_time
+  - maple_set_rtc_time
+  - pmac_set_rtc_time
+  - ps3_set_rtc_time
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
