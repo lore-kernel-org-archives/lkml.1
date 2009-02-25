@@ -1,94 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbZBYWgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbZBYWjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761904AbZBYWgS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbZBYWf6
+	id S1760822AbZBYWjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:39:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZBYWjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:35:58 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56079 "EHLO mx2.redhat.com"
+	Wed, 25 Feb 2009 17:39:01 -0500
+Received: from mga01.intel.com ([192.55.52.88]:13033 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756236AbZBYWf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:35:57 -0500
-Date: Wed, 25 Feb 2009 23:32:34 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Evans <scarybeasts@gmail.com>,
-       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
-       Eugene Teo <eugene@redhat.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] exit_notify: kill the wrong capable(CAP_KILL) check
-Message-ID: <20090225223234.GA16156@redhat.com>
-References: <20090225190218.GA7453@redhat.com> <20090225194140.D6F6EFC3DA@magilla.sf.frob.com> <20090225215356.GA1442@hallyn.com> <20090225220324.GA14667@redhat.com> <20090225221415.GA1751@hallyn.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090225221415.GA1751@hallyn.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753209AbZBYWjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 17:39:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,266,1233561600"; 
+   d="scan'208";a="668544855"
+Subject: Re: [PATCH] fsldma: dev_err 1 too early.
+From: Dan Williams <dan.j.williams@intel.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <49A53DCA.4060004@gmail.com>
+References: <49A53DCA.4060004@gmail.com>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 15:38:58 -0700
+Message-Id: <1235601538.21542.10.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25, Serge E. Hallyn wrote:
->
-> Quoting Oleg Nesterov (oleg@redhat.com):
-> > On 02/25, Serge E. Hallyn wrote:
-> > >
-> > > Quoting Roland McGrath (roland@redhat.com):
-> > > > > I can't understand why exit_notify() checks capable(CAP_KILL), but this
-> > > > > looks just wrong.
-> > > >
-> > > > I don't know either why it's there.  My guess is that it was not actually
-> > > > thought out specifically, just a "unless capable" exception added when the
-> > > > security-motivated exclusions (exec_id stuff) were added.
-> > > >
-> > > > I can't think of any reason not to drop this check.
-> > >
-> > > Because of the following test?
-> > >
-> > > #include <stdio.h>
-> > > #include <sched.h>
-> > > #include <signal.h>
-> > > #include <stdlib.h>
-> > >
-> > > int childfn(void *data)
-> > > {
-> > > 	printf("hi there, i'm the child\n");
-> > > 	sleep(10);
-> > > 	exit(0);
-> > > }
-> > >
-> > > int main()
-> > > {
-> > > 	int stacksize = 4*getpagesize();
-> > > 	void *stack, *stacktop;
-> > >
-> > > 	stack = malloc(stacksize);
-> > > 	stacktop = stack + stacksize;
-> > >
-> > > 	int p = clone(childfn, stacktop, CLONE_PARENT|SIGSTOP, NULL);
-> > > 	exit(0);
-> > > }
-> >
-> > Can't understand... Why do you think CAP_KILL makes things better?
-> >
-> > Actually, how can it make any difference in this case?
->
-> Well the check by itself isn't quite right - it seems to me it
-> should also check whether tsk->euid == parent->uid.  But letting
-> an unprivileged task send SIGSTOP to a privileged one bc of
-> some fluke in the task hierarchy doesn't seem right.
+On Wed, 2009-02-25 at 05:47 -0700, Roel Kluin wrote:
+> If unsuccessful, i reaches 101 after the loop, so 100 is still success.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index 70126a6..444c4e4 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -168,7 +168,7 @@ static void dma_halt(struct fsl_dma_chan *fsl_chan)
+>  
+>  	while (!dma_is_idle(fsl_chan) && (i++ < 100))
+>  		udelay(10);
+> -	if (i >= 100 && !dma_is_idle(fsl_chan))
+> +	if (i > 100 && !dma_is_idle(fsl_chan))
+>  		dev_err(fsl_chan->dev, "DMA halt timeout!\n");
+>  }
+>  
 
-I think you misread this CAP_KILL check.
+Thanks for the report.  I prefer a more canonical loop.  Objections?
 
-It does not restrict the unprivileged task to send the signal. Instead,
-if the exiting task has CAP_KILL, we bypass other security checks.
+--
+Dan
 
-Oleg.
+<-----
+fsldma: fix off by one in dma_halt
+
+From: Dan Williams <dan.j.williams@intel.com>
+
+Prevent dev_err from firing even if we successfully detected 'dma-idle'
+before the full 1ms timeout has elapsed.
+
+Reported-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/dma/fsldma.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 70126a6..86d6da4 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -158,7 +158,8 @@ static void dma_start(struct fsl_dma_chan *fsl_chan)
+ 
+ static void dma_halt(struct fsl_dma_chan *fsl_chan)
+ {
+-	int i = 0;
++	int i;
++
+ 	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+ 		DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) | FSL_DMA_MR_CA,
+ 		32);
+@@ -166,8 +167,11 @@ static void dma_halt(struct fsl_dma_chan *fsl_chan)
+ 		DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) & ~(FSL_DMA_MR_CS
+ 		| FSL_DMA_MR_EMS_EN | FSL_DMA_MR_CA), 32);
+ 
+-	while (!dma_is_idle(fsl_chan) && (i++ < 100))
++	for (i = 0; i < 100; i++) {
++		if (dma_is_idle(fsl_chan))
++			break;
+ 		udelay(10);
++	}
+ 	if (i >= 100 && !dma_is_idle(fsl_chan))
+ 		dev_err(fsl_chan->dev, "DMA halt timeout!\n");
+ }
+
 
