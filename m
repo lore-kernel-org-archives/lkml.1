@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbZBYLK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762660AbZBYLLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762173AbZBYLK2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 06:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbZBYLKU
+	id S1762660AbZBYLLe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 06:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZBYLLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 06:10:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33575 "EHLO mx3.mail.elte.hu"
+	Wed, 25 Feb 2009 06:11:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58486 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbZBYLKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 06:10:19 -0500
-Date: Wed, 25 Feb 2009 12:10:02 +0100
+	id S1752012AbZBYLLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 06:11:24 -0500
+Date: Wed, 25 Feb 2009 12:11:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v2 1/2] x86_32: summit_32, use BAD_APICID
-Message-ID: <20090225111002.GA15453@elte.hu>
-References: <20090224175518.GA15616@elte.hu> <1235508093-18063-1-git-send-email-jirislaby@gmail.com> <49A524D3.3090408@gmail.com>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-tip-commits@vger.kernel.org" 
+	<linux-tip-commits@vger.kernel.org>
+Subject: Re: [tip:tracing/hw-branch-tracing] tracing/hw-branch-tracing:
+	convert bts-tracer mutex to a spinlock
+Message-ID: <20090225111116.GB15453@elte.hu>
+References: <tip-2d542cf34264ac92e9e7ac55c0b096b066d569d2@kernel.org> <928CFBE8E7CB0040959E56B4EA41A77E4A4C1EF6@irsmsx504.ger.corp.intel.com> <20090225095814.GC12352@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A4C1F31@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A524D3.3090408@gmail.com>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A4C1F31@irsmsx504.ger.corp.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,37 +39,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jiri Slaby <jirislaby@gmail.com> wrote:
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
 
-> On 24.2.2009 21:41, Jiri Slaby wrote:
->> --- a/arch/x86/kernel/apic/summit_32.c
->> +++ b/arch/x86/kernel/apic/summit_32.c
->> @@ -303,12 +303,10 @@ static inline unsigned int summit_cpu_mask_to_apicid(const cpumask_t *cpumask)
->>   	int cpu;
->>
->>   	num_bits_set = cpus_weight(*cpumask);
->> -	/* Return id to all */
->>   	if (num_bits_set>= nr_cpu_ids)
->> -		return 0xFF;
->> +		return BAD_APICID;
->
-> Actually, wasn't this intended to return all available rather 
-> than BAD (to which would correspond the comment), but 
-> performed in a wrong manner? This is old code, any ideas who 
-> would know this?
->
-> In my opinion the check should be removed completely to allow 
-> the code go through same-cluster check.
->
-> In that case, the callers code is buggy, since it passes 
-> online_cpu masks even on machines, where apics are not on the 
-> same clusters.
+> >-----Original Message-----
+> >From: Ingo Molnar [mailto:mingo@elte.hu]
+> >Sent: Wednesday, February 25, 2009 10:58 AM
+> >To: Metzger, Markus T
+> 
+> 
+> >* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+> >
+> >> > static void trace_bts_prepare(struct trace_iterator *iter)
+> >> > {
+> >> >-    mutex_lock(&bts_tracer_mutex);
+> >> >+    spin_lock(&bts_tracer_lock);
+> >> >
+> >> >     on_each_cpu(trace_bts_cpu, iter->tr, 1);
+> >> >
+> >> >-    mutex_unlock(&bts_tracer_mutex);
+> >> >+    spin_unlock(&bts_tracer_lock);
+> >> > }
+> >>
+> >> Whereas start/stop are relatively fast, the above operation is
+> >> rather expensive. Would it make sense to use
+> >> schedule_on_each_cpu() instead of on_each_cpu()?
+> >
+> >it's perfectly fine to do that on_each_cpu() under the spinlock.
+> >schedule_on_each_cpu() would likely be more expensive - and for
+> >no good reason.
+> 
+> OK. 
+> 
+> And I assume you like the spinlock better than the
+> get/put_online_cpus(), as well.
 
-It's most likely confusion in the old code. This used to be 
-copy&paste-ed versions of different snapshots of the 
-mach-default-code, hacked to make work on weird platforms. 
-Mainline fixes/updates werent merged in consistently.
-
-So could you please send a patch that fixes this?
+yeah - and get/put_online_cpus is sleepable too, so it doesnt 
+really help unless i'm missing something ...
 
 	Ingo
