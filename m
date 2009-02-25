@@ -1,96 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761607AbZBYJwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761737AbZBYJyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761607AbZBYJwt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZBYJwl
+	id S1761737AbZBYJyt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbZBYJyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:52:41 -0500
-Received: from mga14.intel.com ([143.182.124.37]:62186 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752093AbZBYJwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:52:40 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,264,1233561600"; 
-   d="scan'208";a="114192594"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
-       "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Date: Wed, 25 Feb 2009 09:51:25 +0000
-Subject: RE: [tip:tracing/hw-branch-tracing] tracing/hw-branch-tracing:
- convert bts-tracer mutex to a spinlock
-Thread-Topic: [tip:tracing/hw-branch-tracing] tracing/hw-branch-tracing:
- convert bts-tracer mutex to a spinlock
-Thread-Index: AcmXIhzEHIfpAEUoR2O5suSGqGrFFAACmY1A
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A4C1EF6@irsmsx504.ger.corp.intel.com>
-References: <tip-2d542cf34264ac92e9e7ac55c0b096b066d569d2@kernel.org>
-In-Reply-To: <tip-2d542cf34264ac92e9e7ac55c0b096b066d569d2@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Wed, 25 Feb 2009 04:54:37 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58568 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757531AbZBYJyg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 04:54:36 -0500
+Date: Wed, 25 Feb 2009 10:54:33 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, Richard Zidlicky <rz@linux-m68k.org>,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <1235511327.18632.73.camel@macbook.infradead.org>
+Message-ID: <alpine.LRH.2.00.0902251051370.4063@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090220170454.04382e9e@i1501.lan.towertech.it> <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be> <1235511327.18632.73.camel@macbook.infradead.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n1P9qrwM009949
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Wednesday, February 25, 2009 9:21 AM
+On Wed, 25 Feb 2009, David Woodhouse wrote:
+> On Mon, 2009-02-23 at 13:34 +0100, Geert Uytterhoeven wrote:
+> > >    my opinion on this kind of stuff is that I want to avoid the layering
+> > >  of implementations under the rtc subsystem. I'd rather prefer that each
+> > >  rtc device had its own driver. 
+> > >  
+> > >   I've made error in the past, by accepting such kind of drivers, and
+> > >  would like to avoid that it happens again.
+> > 
+> > So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+> > mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+> > RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
+> 
+> That's the ideal... although did we get NTP sync working again yet?
+> 
+> The rtc-ppc driver was intended as a short-term workaround so that we
+> can enable the generic RTC class (which was required for PA Semi
+> Electra, iirc), and still have stuff work on other platforms.
 
+Sure. The only differences between your rtc-ppc driver and rtc-parisc were:
+  - rtc-ppc uses the PPC RTC abstraction (ppc_md.[gs]et_rtc_time()),
+    while rtc-parisc uses the genrtc abstraction layer ([gs]et_rtc_time()),
+    which is shared by several architectures,
+  - rtc-ppc has the platform device built-in in the driver, while rtc-parisc
+    relies on the creation of the platform device in platform code.
 
->bts_hotcpu_handler() is called with irqs disabled, so using mutex_lock()
->is a no-no.
->
->All the BTS codepaths here are atomic (they do not schedule), so using
->a spinlock is the right solution.
+With kind regards,
 
-I introduced the lock to protect against a race between bts_trace_start/stop()
-and bts_hotcpu_handler().
+Geert Uytterhoeven
+Software Architect
 
-Assuming that the hw-branch-tracer is removed and at the same time a cpu
-comes online, we might be left with a disabled tracer but still trace
-that new cpu.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-I wonder whether a simple get/put_online_cpus() would suffice, i.e.
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-static void bts_trace_start(struct trace_array *tr)
-{
-	get_online_cpus();
-
- 	on_each_cpu(bts_trace_start_cpu, NULL, 1);
- 	trace_hw_branches_enabled = 1;
-
-	put_online_cpus();
-}
-
-
-
-> static void trace_bts_prepare(struct trace_iterator *iter)
-> {
->-	mutex_lock(&bts_tracer_mutex);
->+	spin_lock(&bts_tracer_lock);
->
-> 	on_each_cpu(trace_bts_cpu, iter->tr, 1);
->
->-	mutex_unlock(&bts_tracer_mutex);
->+	spin_unlock(&bts_tracer_lock);
-> }
-
-Whereas start/stop are relatively fast, the above operation is rather
-expensive. Would it make sense to use schedule_on_each_cpu() instead
-of on_each_cpu()?
-
-regards,
-markus.
-
----------------------------------------------------------------------Intel GmbHDornacher Strasse 185622 Feldkirchen/Muenchen GermanySitz der Gesellschaft: Feldkirchen bei MuenchenGeschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes SchwadererRegistergericht: Muenchen HRB 47456 Ust.-IdNr.VAT Registration No.: DE129385895Citibank Frankfurt (BLZ 502 109 00) 600119052
-This e-mail and any attachments may contain confidential material forthe sole use of the intended recipient(s). Any review or distributionby others is strictly prohibited. If you are not the intendedrecipient, please contact the sender and delete all copies.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
