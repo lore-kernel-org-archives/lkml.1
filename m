@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbZBYC3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbZBYCac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbZBYC3T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 21:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZBYC3I
+	id S1758808AbZBYCac (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 21:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbZBYCaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 21:29:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52957 "EHLO hera.kernel.org"
+	Tue, 24 Feb 2009 21:30:22 -0500
+Received: from ns.suse.de ([195.135.220.2]:59338 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754859AbZBYC3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 21:29:05 -0500
-Message-ID: <49A4ACAE.4020104@kernel.org>
-Date: Wed, 25 Feb 2009 11:27:58 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754945AbZBYCaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 21:30:21 -0500
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 25 Feb 2009 13:30:06 +1100
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/percpu] bootmem: clean up arch-specific bootmem wrapping
-References: <tip-c132937556f56ee4b831ef4b23f1846e05fde102@kernel.org> <20090224214638.GA2049@cmpxchg.org> <20090224214932.GC12601@elte.hu> <20090224234949.GA1778@cmpxchg.org>
-In-Reply-To: <20090224234949.GA1778@cmpxchg.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Feb 2009 02:27:42 +0000 (UTC)
+Message-ID: <18852.44334.513936.123107@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PULL-REQUEST]  3 md fixes suitable for 2.6.29 and -stable
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Johannes Weiner wrote:
-> No, when the patch was submitted for review, I pointed out the change
-> in semantics and gathered from Tejun's reaction that this wasn't done
-> intentionally.  So the problem is the change itself, not the missing
-> declaration.
+Hi Linus, 
+ Recently discovered bugs, mostly affecting raid10 (though with a
+ raid1 connection).
+ Can cause Oops or data corruption.
 
-Yeah, I should have regenerated the tree.  Sorry about that.
+Thanks,
+NeilBrown
 
->>From the original mail:
-> 
-> 	Johannes Weiner wrote:
-> 	> This won't suffice as reserve_bootmem() doesn't use
-> 	> alloc_bootmem_core(), so now you effectively removed the
-> 	> node-0 restriction for reserve_bootmem() on this
-> 	> configuration.
-> 
-> 	Ah... right.  :-(
-> 
-> I just wrote again because I didn't understand why Tejun acknowledged
-> the error in the patch and then it went into -tip anyway.
-> 
-> The other part of my email was just suggestions for a cleanup, I
-> wasn't referring to that when I said 'broken' - sorry if that is how
-> it came over.
 
-It seems that the wrapping thing was broken both before and after the
-patch and can lead to panic on free path.  I'll soon post a patch to
-fix it.
 
-Thanks.
+The following changes since commit 2ec77fc93ca8731368fbe8e71f805c0569d4bcee:
+  Linus Torvalds (1):
+        Merge branch 'drm-fixes' of git://git.kernel.org/.../airlied/drm-2.6
 
--- 
-tejun
+are available in the git repository at:
+
+  git://neil.brown.name/md/ for-linus
+
+NeilBrown (3):
+      md/raid10:  Don't skip more than 1 bitmap-chunk at a time during recovery.
+      md/raid10:  Don't call bitmap_cond_end_sync when we are doing recovery.
+      md: avoid races when stopping resync.
+
+ drivers/md/raid1.c  |    3 ++-
+ drivers/md/raid10.c |   19 ++++++++++---------
+ 2 files changed, 12 insertions(+), 10 deletions(-)
