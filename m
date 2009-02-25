@@ -1,414 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbZBYEJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZBYEMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757665AbZBYEJV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 23:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZBYEJD
+	id S1758674AbZBYEMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 23:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZBYEML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 23:09:03 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48656 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753854AbZBYEJB (ORCPT
+	Tue, 24 Feb 2009 23:12:11 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:26426 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753854AbZBYEMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 23:09:01 -0500
-Date: Tue, 24 Feb 2009 23:08:56 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
-In-Reply-To: <20090224194548.3effb746.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
-References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org> <20090224194548.3effb746.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 24 Feb 2009 23:12:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LoGHRaHRPRW+7KhFzSrB2OfJMcTz/fOr0ezEOJcAdoHfKZeC2cptU1fumE55oF3z78EejdHP362yl96x+jR6yubVM1+4bUfo3erGwn9FSVLlIg/FgjL2FIV0B/8lr5FoKu3XXVnPj2AAarM1JDCD7fI1MIdkQrROQlQ+2oT+8LM=  ;
+X-YMail-OSG: 3551BbAVM1lkjf._87eMAhYWTxdEv.FXhCjaWt6Oe5jv6lGAsVVYAZmYxQK0rnJZe0WrbEghjdAruLZRWQ8rbnG1oc1LXaK3wfHO0Sb6SdauWKhqRlUm2Qka60OmnniTDkEJFhhgwlUrA7ymzAQczF.m
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Thiago Galesi <thiagogalesi@gmail.com>
+Subject: Re: [patch/RESEND 2.6.29-rc3-git] NAND: davinci_nand driver
+Date: Tue, 24 Feb 2009 20:12:06 -0800
+User-Agent: KMail/1.9.10
+Cc: Linux MTD <linux-mtd@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       DaVinci <davinci-linux-open-source@linux.davincidsp.com>
+References: <200902241509.54649.david-b@pacbell.net> <82ecf08e0902241755y5a7be725gb84116433b7d3be2@mail.gmail.com>
+In-Reply-To: <82ecf08e0902241755y5a7be725gb84116433b7d3be2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200902242012.06447.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Feb 2009, Andrew Morton wrote:
-
-> On Tue, 24 Feb 2009 21:56:10 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > This patch creates the event tracing infrastructure of ftrace.
-> > It will create the files:
-> > 
-> >  /debug/tracing/available_events
-> >  /debug/tracing/set_event
-> > 
-> > The available_events will list the trace points that have been
-> > registered with the event tracer.
-> > 
-> > set_events will allow the user to enable or disable an event hook.
-> > 
-> > example:
-> > 
-> >  # echo sched_wakeup > /debug/tracing/set_event
-> > 
-> > Will enable the sched_wakeup event (if it is registered).
-> > 
-> >  # echo "!sched_wakeup" >> /debug/tracing/set_event
-> > 
-> > Will disable the sched_wakeup event (and only that event).
-> 
-> Why not
-> 
-> echo sched_wakeup > /debug/tracing/set_event
-> echo sched_wakeup > /debug/tracing/clear_event
-
-I'm trying to keep the number of files in /debug/tracing down.
-
-> 
-> ?
-> 
-> >  # echo > /debug/tracing/set_event
-> > 
-> > Will disable all events (notice the '>')
-> 
-> echo 1 > /debug/tracing/clear_all_events
-> 
-> ?
-> 
-> >  # cat /debug/tracing/available_events > /debug/tracing/set_event
-> > 
-> > Will enable all registered event hooks.
-> > 
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > ---
-> >  include/asm-generic/vmlinux.lds.h |   11 ++-
-> >  kernel/trace/Kconfig              |    9 ++
-> >  kernel/trace/Makefile             |    1 +
-> >  kernel/trace/trace_events.c       |  280 +++++++++++++++++++++++++++++++++++++
-> >  kernel/trace/trace_events.h       |   52 +++++++
-> >  5 files changed, 352 insertions(+), 1 deletions(-)
-> >  create mode 100644 kernel/trace/trace_events.c
-> >  create mode 100644 kernel/trace/trace_events.h
-> > 
-> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> > index c61fab1..0add6b2 100644
-> > --- a/include/asm-generic/vmlinux.lds.h
-> > +++ b/include/asm-generic/vmlinux.lds.h
-> > @@ -61,6 +61,14 @@
-> >  #define BRANCH_PROFILE()
-> >  #endif
-> >  
-> > +#ifdef CONFIG_EVENT_TRACER
-> > +#define FTRACE_EVENTS()	VMLINUX_SYMBOL(__start_ftrace_events) = .;	\
-> > +			*(_ftrace_events)				\
-> > +			VMLINUX_SYMBOL(__stop_ftrace_events) = .;
+On Tuesday 24 February 2009, Thiago Galesi wrote:
+> OK a couple of things
+>  +
+> > +
+> > +#ifdef CONFIG_MTD_PARTITIONS
+> > +static inline int mtd_has_partitions(void) { return 1; }
 > > +#else
-> > +#define FTRACE_EVENTS()
+> > +static inline int mtd_has_partitions(void) { return 0; }
 > > +#endif
 > > +
-> >  /* .data section */
-> >  #define DATA_DATA							\
-> >  	*(.data)							\
-> > @@ -81,7 +89,8 @@
-> >  	*(__tracepoints)						\
-> >  	VMLINUX_SYMBOL(__stop___tracepoints) = .;			\
-> >  	LIKELY_PROFILE()		       				\
-> > -	BRANCH_PROFILE()
-> > +	BRANCH_PROFILE()						\
-> > +	FTRACE_EVENTS()
-> >  
-> >  #define RO_DATA(align)							\
-> >  	. = ALIGN((align));						\
-> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> > index 07877f4..999c6a2 100644
-> > --- a/kernel/trace/Kconfig
-> > +++ b/kernel/trace/Kconfig
-> > @@ -159,6 +159,15 @@ config CONTEXT_SWITCH_TRACER
-> >  	  This tracer gets called from the context switch and records
-> >  	  all switching of tasks.
-> >  
-> > +config EVENT_TRACER
-> > +	bool "Trace various events in the kernel"
-> > +	depends on DEBUG_KERNEL
-> > +	select TRACING
-> > +	help
-> > +	  This tracer hooks to various trace points in the kernel
-> > +	  allowing the user to pick and choose which trace point they
-> > +	  want to trace.
-> > +
-> >  config BOOT_TRACER
-> >  	bool "Trace boot initcalls"
-> >  	depends on DEBUG_KERNEL
-> > diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-> > index 627090b..c736356 100644
-> > --- a/kernel/trace/Makefile
-> > +++ b/kernel/trace/Makefile
-> > @@ -38,5 +38,6 @@ obj-$(CONFIG_POWER_TRACER) += trace_power.o
-> >  obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
-> >  obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
-> >  obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
-> > +obj-$(CONFIG_EVENT_TRACER) += trace_events.o
-> >  
-> >  libftrace-y := ftrace.o
-> > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> > new file mode 100644
-> > index 0000000..05bc80e
-> > --- /dev/null
-> > +++ b/kernel/trace/trace_events.c
-> > @@ -0,0 +1,280 @@
-> > +/*
-> > + * event tracer
-> > + *
-> > + * Copyright (C) 2008 Red Hat Inc, Steven Rostedt <srostedt@redhat.com>
-> > + *
-> > + */
-> > +
-> > +#include <linux/debugfs.h>
-> > +#include <linux/uaccess.h>
-> > +#include <linux/module.h>
-> > +#include <linux/ctype.h>
-> > +
-> > +#include "trace_events.h"
-> > +
-> > +void event_trace_printk(unsigned long ip, const char *fmt, ...)
+> > +#ifdef CONFIG_MTD_CMDLINE_PARTS
+> > +static inline int mtd_has_cmdlinepart(void) { return 1; }
+> > +#else
+> > +static inline int mtd_has_cmdlinepart(void) { return 0; }
+> > +#endif
+> 
+> I'm not sure stylewise this is the best way. Even though #ifdefs stays
+> outside of functions, this is a case where maybe it's better to put it
+> inside or rething the need / usage for these functions.
+
+My preference would be to have those functions live in the
+MTD headers.
+
+Needing #ifdefs in the body of probe() is *extremely* error
+prone.  Having function versions makes it harder to commit
+a lot of the common errors I've seen, like having some mix
+of options gratuitously break compiles because of missing
+code fragments or variable declarations.  It also makes it
+easier to see when code is obviously doing the wrong thing.
+
+Note that #ifdefs-in-functions is contrary to standard
+kernel coding practices.  It persists in the MTD code
+mostly due to legacy drivers, from what I can tell, which
+do so because ... there's been no better option, such as
+having those functions.
+
+
+> > +static int nand_davinci_calculate_1bit(struct mtd_info *mtd,
+> > +                                     const u_char *dat, u_char *ecc_code)
+> 
+> (and others)
+> 
+> My beef here is the use of u_char. This is really not a standart C
+> type or a standart Linux type (u8/u32 etc), so we should aim for those
+> (yes, I hate typing unsigned blah blah blah) but you can use u8 for
+> that.
+
+I too would like to see <linux/mtd/*.h> use u8/u32/etc.  But
+in this case, it's just doing what the MTD framework does.
+If I used u8/u32/etc the usual feedback would be "do what
+all the other drivers do", "match the interface decls", etc.
+
+
+> > +static void nand_davinci_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
 > > +{
-> > +	va_list ap;
+> > +       struct nand_chip *chip = mtd->priv;
 > > +
-> > +	va_start(ap, fmt);
-> > +	tracing_record_cmdline(current);
-> > +	trace_vprintk(ip, task_curr_ret_stack(current), fmt, ap);
-> > +	va_end(ap);
-> > +}
-> > +
-> > +static void ftrace_clear_events(void)
-> > +{
-> > +	struct ftrace_event_call *call = (void *)__start_ftrace_events;
+> > +       if ((0x03 & ((unsigned)buf)) == 0 && (0x03 & len) == 0)
+> > +               ioread32_rep(chip->IO_ADDR_R, buf, len >> 2);
+> > +       else if ((0x01 & ((unsigned)buf)) == 0 && (0x01 & len) == 0)
 > 
-> __start_ftrace_events has type `unsigned long'.  It is instantiated by
-> the linker.  There's a very old unix convention tha tthese things have
-> type `int'.  Doesn't matter.
-> 
-> It's a bit strange to do the double-cast like this - one explicit, one
-> implicit.  Doesn't matter much.
+> What are those 0x03 and 0x01 (and other places as well), you'll have
+> to spell out those, preferably using defines.
 
-Heh, I fix this in a later patch. Well, I make __start_ftrace_events into 
-an array of struct ftrace_event_call's.
+The "0x03" is "low two bits", "0x01" is "low one bit", etc.
+Those functions can't be used except when memory address
+is "naturally" aligned, and the data length likewise.
 
-> 
-> > +
-> > +
-> 
-> The patch adds various random \n\n's
-> 
-> > +	while ((unsigned long)call < (unsigned long)__stop_ftrace_events) {
-> > +
-> 
-> and various random \n's
-> 
+You might have an argument if you suggested a comment were
+appropriate ... but those are very common idioms, used all
+over the kernel without #defines that I've ever seen.  Did
+you have suggestions for pre-existing symbols to use?
 
-Hmm, I cut a bunch out of here in development. I must not have noticed
-that I left extra \n's laying around. And now I feel guilty for yelling
-at my daughter for leaving her \n's on the kitchen floor.
-
-> > +		if (call->enabled) {
-> > +			call->enabled = 0;
-> > +			call->unregfunc();
-> > +		}
-> > +		call++;
-> > +	}
-> > +}
-> > +
-> > +static int ftrace_set_clr_event(char *buf, int set)
-> > +{
-> > +	struct ftrace_event_call *call = (void *)__start_ftrace_events;
-> > +
-> > +
-> > +	while ((unsigned long)call < (unsigned long)__stop_ftrace_events) {
-> > +
-> > +		if (strcmp(buf, call->name) != 0) {
-> > +			call++;
-> > +			continue;
-> > +		}
-> > +
-> > +		if (set) {
-> > +			/* Already set? */
-> > +			if (call->enabled)
-> > +				return 0;
-> > +			call->enabled = 1;
-> > +			call->regfunc();
-> > +		} else {
-> > +			/* Already cleared? */
-> > +			if (!call->enabled)
-> > +				return 0;
-> > +			call->enabled = 0;
-> > +			call->unregfunc();
-> > +		}
-> > +		return 0;
-> > +	}
-> > +	return -EINVAL;
-> > +}
-> 
-> I spose if I looked at this and surrounding code enough, I could work
-> out what it's for.
-
-Um, er, ah, yyyyeaah, you would. /me quickly goes to write a bunch of 
-comments.
-
-> 
-> > +/* 128 should be much more than enough */
-> > +#define EVENT_BUF_SIZE		127
-> > +
-> > +static ssize_t
-> > +ftrace_event_write(struct file *file, const char __user *ubuf,
-> > +		   size_t cnt, loff_t *ppos)
-> > +{
-> > +	size_t read = 0;
-> > +	int i, set = 1;
-> > +	ssize_t ret;
-> > +	char *buf;
-> > +	char ch;
-> > +
-> > +	if (!cnt || cnt < 0)
-> > +		return 0;
-> 
-> cnt is unsigned, and I don't think the VFS lets through either zero or
-> -ve counts (I always forget).
-
-gag, this was cut and pasted from another function. I guess once I have 
-some sloppiness around, I constantly reuse it :-/  A clean up patch is 
-soon to come.
-
-
-> 
-> > +	ret = get_user(ch, ubuf++);
-> > +	if (ret)
-> > +		return ret;
-> > +	read++;
-> > +	cnt--;
-> > +
-> > +	/* skip white space */
-> > +	while (cnt && isspace(ch)) {
-> > +		ret = get_user(ch, ubuf++);
-> > +		if (ret)
-> > +			return ret;
-> > +		read++;
-> > +		cnt--;
-> > +	}
-> > +
-> > +	/* Only white space found? */
-> > +	if (isspace(ch)) {
-> > +		file->f_pos += read;
-> > +		ret = read;
-> > +		return ret;
-> > +	}
-> > +
-> > +	buf = kmalloc(EVENT_BUF_SIZE+1, GFP_KERNEL);
-> > +	if (!buf)
-> > +		return -ENOMEM;
-> > +
-> > +	if (cnt > EVENT_BUF_SIZE)
-> > +		cnt = EVENT_BUF_SIZE;
-> > +
-> > +	i = 0;
-> > +	while (cnt && !isspace(ch)) {
-> > +		if (!i && ch == '!')
-> > +			set = 0;
-> > +		else
-> > +			buf[i++] = ch;
-> > +
-> > +		ret = get_user(ch, ubuf++);
-> > +		if (ret)
-> > +			goto out_free;
-> > +		read++;
-> > +		cnt--;
-> > +	}
-> > +	buf[i] = 0;
-> 
-> Gad, what a lot of stuff.
-> 
-> Use strncpy_from_user()?
-> 
-> Use strstrip()?
-> 
-> Why do we care about leading and trailing whitespace - user error!
-
-This is because i want:
-
- cat available_events > set_event
-
-to work. It probably is already broken. The code I copied this from had an 
-iterator to catch when we are in a middle of a name, and it would reuse 
-the buffer on the next call. This code has the seq_read part shared with 
-other code, so passing an iterator is a bit more complex.
-
-> 
-> Then we can use sysfs_streq().
-> 
-> If we really really need to do all this, how's about positioning it as
-> a general copy_string_from_userspace_then_trim_the_ends() for other
-> callsites to use?
-
-Or more about, copy_word_from_userspace() that gives me the next word.
-Space delimited. I only want to process one word at a time.
-
-> 
-> > +	file->f_pos += read;
-> > +
-> > +	ret = ftrace_set_clr_event(buf, set);
-> > +	if (ret)
-> > +		goto out_free;
-> > +
-> > +	ret = read;
-> > +
-> > + out_free:
-> > +	kfree(buf);
-> > +
-> > +	return ret;
-> > +}
-> >
-> > ..
-> >
-> >
-> > +static int
-> > +ftrace_event_seq_open(struct inode *inode, struct file *file)
-> > +{
-> > +	int ret;
-> > +	const struct seq_operations *seq_ops;
-> > +
-> > +	if ((file->f_mode & FMODE_WRITE) &&
-> > +	    !(file->f_flags & O_APPEND))
-> > +		ftrace_clear_events();
-> > +
-> > +	seq_ops = inode->i_private;
-> > +	ret = seq_open(file, seq_ops);
-> > +	if (!ret) {
-> > +		struct seq_file *m = file->private_data;
-> > +
-> > +		m->private = __start_ftrace_events;
-> > +	}
-> > +	return ret;
-> > +}
-> 
-> It would be nice if the code were to somewhere document the userspace
-> interface which it is attempting to implement.  It's a bit hard to
-> follow if the reader doesn't already know this.
-
-Ingo, I told you I should comment ;-)
-
-Yeah, I need to go back and add a bunch of comments. I actually did plan 
-to do that. 
-
-Thanks,
-
--- Steve
+- Dave
 
