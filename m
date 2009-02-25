@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762328AbZBYWEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761553AbZBYWHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762328AbZBYWEW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbZBYWEL
+	id S1761553AbZBYWHM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZBYWG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:04:11 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45271 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758766AbZBYWEK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:04:10 -0500
-Message-ID: <49A5C055.70000@zytor.com>
-Date: Wed, 25 Feb 2009 14:04:05 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Feb 2009 17:06:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53784 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751334AbZBYWG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 17:06:57 -0500
+Date: Wed, 25 Feb 2009 23:03:24 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Evans <scarybeasts@gmail.com>,
+       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
+       Eugene Teo <eugene@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] exit_notify: kill the wrong capable(CAP_KILL) check
+Message-ID: <20090225220324.GA14667@redhat.com>
+References: <20090225190218.GA7453@redhat.com> <20090225194140.D6F6EFC3DA@magilla.sf.frob.com> <20090225215356.GA1442@hallyn.com>
 MIME-Version: 1.0
-To: Thomas Jourdan <tjourdan@interfaceconcept.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] dmi_scan_machine uses uninitialized address on x86 / EFI
-References: <342F93DAA55A4EE888FBD256CE6044F4@thje6600v>
-In-Reply-To: <342F93DAA55A4EE888FBD256CE6044F4@thje6600v>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225215356.GA1442@hallyn.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Jourdan wrote:
-> Hi
-> 
-> On x86/EFI platforms, if efi_enabled is true, the dmi_scan_machine function
-> fails, even if valid DMI table is present. In the setup_arch function,
-> efi_init is called after dmi_scan_machine. But this is efi_init which will
-> initialize the smbios address, needed by dmi_scan_machine.
-> 
-> This leads to dmi_scan_machine ioremapping physical address 0, instead of
-> the address provided by the EFI system table. The following patch fixes the
-> problem.
-> 
+On 02/25, Serge E. Hallyn wrote:
+>
+> Quoting Roland McGrath (roland@redhat.com):
+> > > I can't understand why exit_notify() checks capable(CAP_KILL), but this
+> > > looks just wrong.
+> >
+> > I don't know either why it's there.  My guess is that it was not actually
+> > thought out specifically, just a "unless capable" exception added when the
+> > security-motivated exclusions (exec_id stuff) were added.
+> >
+> > I can't think of any reason not to drop this check.
+>
+> Because of the following test?
+>
+> #include <stdio.h>
+> #include <sched.h>
+> #include <signal.h>
+> #include <stdlib.h>
+>
+> int childfn(void *data)
+> {
+> 	printf("hi there, i'm the child\n");
+> 	sleep(10);
+> 	exit(0);
+> }
+>
+> int main()
+> {
+> 	int stacksize = 4*getpagesize();
+> 	void *stack, *stacktop;
+>
+> 	stack = malloc(stacksize);
+> 	stacktop = stack + stacksize;
+>
+> 	int p = clone(childfn, stacktop, CLONE_PARENT|SIGSTOP, NULL);
+> 	exit(0);
+> }
 
-Hi Thomas,
+Can't understand... Why do you think CAP_KILL makes things better?
 
-Could you please resend both this patch and the phys_efi_get_time patch 
-with a Signed-off-by: line so I can apply them?
+Actually, how can it make any difference in this case?
 
-Thanks,
+Oleg.
 
-	-hpa
