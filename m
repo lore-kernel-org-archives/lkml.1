@@ -1,70 +1,494 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZBYNIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbZBYNJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386AbZBYNIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 08:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbZBYNIO
+	id S1756011AbZBYNJs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 08:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZBYNJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 08:08:14 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:65024 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbZBYNIN convert rfc822-to-8bit (ORCPT
+	Wed, 25 Feb 2009 08:09:40 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33995 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbZBYNJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 08:08:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=ix/pol/wvjoTk0IpoIb3e/3r6M1UU1QoZYJd9qLFhnqE2NX4vJVlMuibSxARoT4fGJ
-         0nkM+AKC04DwX/C7aDKOEi6NWl+LxbBjX/Fz3vSEyFmWS4qzisT0hp8S6EUOrll2BP32
-         +sOiHk+fRbFSC0y9j393a7dJQTgzv3ls9ljFE=
-MIME-Version: 1.0
-In-Reply-To: <87397bdf0902250503v2c9ac230od5c807f0b7d2e5f6@mail.gmail.com>
-References: <87397bdf0902250503v2c9ac230od5c807f0b7d2e5f6@mail.gmail.com>
-Date: Wed, 25 Feb 2009 21:08:11 +0800
-Message-ID: <87397bdf0902250508u70fc4b55g323479840a0ea1bf@mail.gmail.com>
-Subject: module buid issue with kbuild
-From: des <desperatephilosopher@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Feb 2009 08:09:38 -0500
+Message-Id: <20090225130045.127445067@chello.nl>
+References: <20090225125946.840677191@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Wed, 25 Feb 2009 13:59:47 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 1/2] generic-ipi: remove kmalloc()
+Content-Disposition: inline; filename=smp-remove-kmalloc.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I have an issue building my kernel modules, generally the makefile
-should look like:
+Remove the use of kmalloc() from the smp_call_function_*() calls.
 
-obj-m = my_mod.o
-my_mod-objs := $(the_obj_file_list)
+Steven's generic-ipi patch (d7240b98: generic-ipi: use per cpu data for
+single cpu ipi calls) started the discussion on the use of kmalloc() in
+this code and fixed the smp_call_function_single(.wait=0) fallback case.
 
-if I list the obj files explicitly like
-the_obj_file_list := a/obj1.o b/obj2.o c/obj3.o, it seems fine
+In this patch we complete this by also providing means for the _many()
+call, which fully removes the need for kmalloc() in this code.
 
-Sometime there are too many obj files to add, so I want make to search
-it automatically, so I use:
-#find each of the .c files
-mods := $(sort $(dir $(shell find . -name '*.c' -print)))
-sources := $(wildcard $(addsuffix *.c,$(mods)))
-#make the obj file list
-objects := $(subst .c,.o,$(sources))
-#remove the prefixing ./
-myobjects := $(subst ./,,$(objects))
+The problem with the _many() call is that other cpus might still be
+observing our entry when we're done with it. It solved this by
+dynamically allocating data elements and RCU-freeing it.
 
-obj-m = my_mod.o
-my_mod-objs := $(myobjects)
-$(myobjects) should be exactly the same as $(the_obj_file_list) above,
-I printed them in the makefile.
+We solve it by using a single per-cpu entry which provides static
+storage and solves one half of the problem (avoiding referencing freed
+data).
 
-Unfortunately this does not work, it gives error messages below:
-make[2]: *** No rule to make target
-`/home/user/workingdir/scripts/bin2c.s', needed by
-`/home/user/workingdir/scripts/bin2c.o'.  Stop.
+The other half, ensuring the queue iteration it still possible, is done
+by placing re-used entries at the head of the list. This means that if
+someone was still iterating that entry when it got moved, he will now
+re-visit the entries on the list he had already seen, but avoids
+skipping over entries like would have happened had we placed the new
+entry at the end.
 
-Obviously bin2c is not in my working dir, it is in the kbuild directory.
+Furthermore, visiting entries twice is not a problem, since we remove
+our cpu from the entry's cpumask once its called.
 
-I wonder if there is any way at all to avoid to write the full obj
-list, it's really annoying.
+Many thanks to Oleg for his suggestions and him poking holes in my
+earlier attempts.
 
-Thanks a lot.
-If you reply this post, please also CC to this address.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/smp.c |  266 +++++++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 167 insertions(+), 99 deletions(-)
+
+Index: linux-2.6/kernel/smp.c
+===================================================================
+--- linux-2.6.orig/kernel/smp.c
++++ linux-2.6/kernel/smp.c
+@@ -10,23 +10,28 @@
+ #include <linux/rcupdate.h>
+ #include <linux/rculist.h>
+ #include <linux/smp.h>
++#include <linux/cpu.h>
+ 
+ static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
+-static LIST_HEAD(call_function_queue);
+-__cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
++
++static struct {
++	struct list_head	queue;
++	spinlock_t		lock;
++} call_function __cacheline_aligned_in_smp = {
++	.queue = LIST_HEAD_INIT(call_function.queue),
++	.lock  = __SPIN_LOCK_UNLOCKED(call_function.lock),
++};
+ 
+ enum {
+ 	CSD_FLAG_WAIT		= 0x01,
+-	CSD_FLAG_ALLOC		= 0x02,
+-	CSD_FLAG_LOCK		= 0x04,
++	CSD_FLAG_LOCK		= 0x02,
+ };
+ 
+ struct call_function_data {
+ 	struct call_single_data csd;
+ 	spinlock_t lock;
+ 	unsigned int refs;
+-	struct rcu_head rcu_head;
+-	unsigned long cpumask_bits[];
++	cpumask_var_t cpumask;
+ };
+ 
+ struct call_single_queue {
+@@ -34,8 +39,45 @@ struct call_single_queue {
+ 	spinlock_t lock;
+ };
+ 
++static DEFINE_PER_CPU(struct call_function_data, cfd_data) = {
++	.lock = __SPIN_LOCK_UNLOCKED(cfd_data.lock),
++};
++
++static int
++hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
++{
++	long cpu = (long)hcpu;
++	struct call_function_data *cfd = &per_cpu(cfd_data, cpu);
++
++	switch (action) {
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		if (!alloc_cpumask_var_node(&cfd->cpumask, GFP_KERNEL,
++				cpu_to_node(cpu)))
++			return NOTIFY_BAD;
++		break;
++
++#ifdef CONFIG_CPU_HOTPLUG
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
++
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++		free_cpumask_var(cfd->cpumask);
++		break;
++#endif
++	};
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block __cpuinitdata hotplug_cfd_notifier = {
++	.notifier_call = hotplug_cfd,
++};
++
+ static int __cpuinit init_call_single_data(void)
+ {
++	void *cpu = (void *)(long)smp_processor_id();
+ 	int i;
+ 
+ 	for_each_possible_cpu(i) {
+@@ -44,18 +86,69 @@ static int __cpuinit init_call_single_da
+ 		spin_lock_init(&q->lock);
+ 		INIT_LIST_HEAD(&q->list);
+ 	}
++
++	hotplug_cfd(&hotplug_cfd_notifier, CPU_UP_PREPARE, cpu);
++	register_cpu_notifier(&hotplug_cfd_notifier);
++
+ 	return 0;
+ }
+ early_initcall(init_call_single_data);
+ 
+-static void csd_flag_wait(struct call_single_data *data)
++/*
++ * csd_wait/csd_complete are used for synchronous ipi calls
++ */
++static void csd_wait_prepare(struct call_single_data *data)
++{
++	data->flags |= CSD_FLAG_WAIT;
++}
++
++static void csd_complete(struct call_single_data *data)
+ {
+-	/* Wait for response */
+-	do {
+-		if (!(data->flags & CSD_FLAG_WAIT))
+-			break;
++	if (data->flags & CSD_FLAG_WAIT) {
++		/*
++		 * ensure we're all done before saying we are
++		 */
++		smp_mb();
++		data->flags &= ~CSD_FLAG_WAIT;
++	}
++}
++
++static void csd_wait(struct call_single_data *data)
++{
++	while (data->flags & CSD_FLAG_WAIT)
+ 		cpu_relax();
+-	} while (1);
++}
++
++/*
++ * csd_lock/csd_unlock used to serialize access to per-cpu csd resources
++ *
++ * For non-synchronous ipi calls the csd can still be in use by the previous
++ * function call. For multi-cpu calls its even more interesting as we'll have
++ * to ensure no other cpu is observing our csd.
++ */
++static void csd_lock(struct call_single_data *data)
++{
++	while (data->flags & CSD_FLAG_LOCK)
++		cpu_relax();
++	data->flags = CSD_FLAG_LOCK;
++
++	/*
++	 * prevent CPU from reordering the above assignment to ->flags
++	 * with any subsequent assignments to other fields of the
++	 * specified call_single_data structure.
++	 */
++
++	smp_mb();
++}
++
++static void csd_unlock(struct call_single_data *data)
++{
++	WARN_ON(!(data->flags & CSD_FLAG_LOCK));
++	/*
++	 * ensure we're all done before releasing data
++	 */
++	smp_mb();
++	data->flags &= ~CSD_FLAG_LOCK;
+ }
+ 
+ /*
+@@ -89,16 +182,7 @@ static void generic_exec_single(int cpu,
+ 		arch_send_call_function_single_ipi(cpu);
+ 
+ 	if (wait)
+-		csd_flag_wait(data);
+-}
+-
+-static void rcu_free_call_data(struct rcu_head *head)
+-{
+-	struct call_function_data *data;
+-
+-	data = container_of(head, struct call_function_data, rcu_head);
+-
+-	kfree(data);
++		csd_wait(data);
+ }
+ 
+ /*
+@@ -122,41 +206,35 @@ void generic_smp_call_function_interrupt
+ 	 * It's ok to use list_for_each_rcu() here even though we may delete
+ 	 * 'pos', since list_del_rcu() doesn't clear ->next
+ 	 */
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(data, &call_function_queue, csd.list) {
++	list_for_each_entry_rcu(data, &call_function.queue, csd.list) {
+ 		int refs;
+ 
+-		if (!cpumask_test_cpu(cpu, to_cpumask(data->cpumask_bits)))
++		spin_lock(&data->lock);
++		if (!cpumask_test_cpu(cpu, data->cpumask)) {
++			spin_unlock(&data->lock);
+ 			continue;
++		}
++		cpumask_clear_cpu(cpu, data->cpumask);
++		spin_unlock(&data->lock);
+ 
+ 		data->csd.func(data->csd.info);
+ 
+ 		spin_lock(&data->lock);
+-		cpumask_clear_cpu(cpu, to_cpumask(data->cpumask_bits));
+ 		WARN_ON(data->refs == 0);
+-		data->refs--;
+-		refs = data->refs;
++		refs = --data->refs;
++		if (!refs) {
++			spin_lock(&call_function.lock);
++			list_del_rcu(&data->csd.list);
++			spin_unlock(&call_function.lock);
++		}
+ 		spin_unlock(&data->lock);
+ 
+ 		if (refs)
+ 			continue;
+ 
+-		spin_lock(&call_function_lock);
+-		list_del_rcu(&data->csd.list);
+-		spin_unlock(&call_function_lock);
+-
+-		if (data->csd.flags & CSD_FLAG_WAIT) {
+-			/*
+-			 * serialize stores to data with the flag clear
+-			 * and wakeup
+-			 */
+-			smp_wmb();
+-			data->csd.flags &= ~CSD_FLAG_WAIT;
+-		}
+-		if (data->csd.flags & CSD_FLAG_ALLOC)
+-			call_rcu(&data->rcu_head, rcu_free_call_data);
++		csd_complete(&data->csd);
++		csd_unlock(&data->csd);
+ 	}
+-	rcu_read_unlock();
+ 
+ 	put_cpu();
+ }
+@@ -192,14 +270,14 @@ void generic_smp_call_function_single_in
+ 
+ 		data->func(data->info);
+ 
+-		if (data_flags & CSD_FLAG_WAIT) {
+-			smp_wmb();
+-			data->flags &= ~CSD_FLAG_WAIT;
+-		} else if (data_flags & CSD_FLAG_LOCK) {
+-			smp_wmb();
+-			data->flags &= ~CSD_FLAG_LOCK;
+-		} else if (data_flags & CSD_FLAG_ALLOC)
+-			kfree(data);
++		if (data_flags & CSD_FLAG_WAIT)
++			csd_complete(data);
++
++		/*
++		 * Unlocked CSDs are valid through generic_exec_single()
++		 */
++		if (data_flags & CSD_FLAG_LOCK)
++			csd_unlock(data);
+ 	}
+ }
+ 
+@@ -218,7 +296,9 @@ static DEFINE_PER_CPU(struct call_single
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 			     int wait)
+ {
+-	struct call_single_data d;
++	struct call_single_data d = {
++		.flags = 0,
++	};
+ 	unsigned long flags;
+ 	/* prevent preemption and reschedule on another processor,
+ 	   as well as CPU removal */
+@@ -239,13 +319,11 @@ int smp_call_function_single(int cpu, vo
+ 			/*
+ 			 * We are calling a function on a single CPU
+ 			 * and we are not going to wait for it to finish.
+-			 * We first try to allocate the data, but if we
+-			 * fail, we fall back to use a per cpu data to pass
+-			 * the information to that CPU. Since all callers
+-			 * of this code will use the same data, we must
+-			 * synchronize the callers to prevent a new caller
+-			 * from corrupting the data before the callee
+-			 * can access it.
++			 * We use a per cpu data to pass the information to
++			 * that CPU. Since all callers of this code will
++			 * use the same data, we must synchronize the
++			 * callers to prevent a new caller from corrupting
++			 * the data before the callee can access it.
+ 			 *
+ 			 * The CSD_FLAG_LOCK is used to let us know when
+ 			 * the IPI handler is done with the data.
+@@ -255,18 +333,11 @@ int smp_call_function_single(int cpu, vo
+ 			 * will make sure the callee is done with the
+ 			 * data before a new caller will use it.
+ 			 */
+-			data = kmalloc(sizeof(*data), GFP_ATOMIC);
+-			if (data)
+-				data->flags = CSD_FLAG_ALLOC;
+-			else {
+-				data = &per_cpu(csd_data, me);
+-				while (data->flags & CSD_FLAG_LOCK)
+-					cpu_relax();
+-				data->flags = CSD_FLAG_LOCK;
+-			}
++			data = &__get_cpu_var(csd_data);
++			csd_lock(data);
+ 		} else {
+ 			data = &d;
+-			data->flags = CSD_FLAG_WAIT;
++			csd_wait_prepare(data);
+ 		}
+ 
+ 		data->func = func;
+@@ -326,14 +397,14 @@ void smp_call_function_many(const struct
+ {
+ 	struct call_function_data *data;
+ 	unsigned long flags;
+-	int cpu, next_cpu;
++	int cpu, next_cpu, me = smp_processor_id();
+ 
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON(irqs_disabled());
+ 
+ 	/* So, what's a CPU they want?  Ignoring this one. */
+ 	cpu = cpumask_first_and(mask, cpu_online_mask);
+-	if (cpu == smp_processor_id())
++	if (cpu == me)
+ 		cpu = cpumask_next_and(cpu, mask, cpu_online_mask);
+ 	/* No online cpus?  We're done. */
+ 	if (cpu >= nr_cpu_ids)
+@@ -341,7 +412,7 @@ void smp_call_function_many(const struct
+ 
+ 	/* Do we have another CPU which isn't us? */
+ 	next_cpu = cpumask_next_and(cpu, mask, cpu_online_mask);
+-	if (next_cpu == smp_processor_id())
++	if (next_cpu == me)
+ 		next_cpu = cpumask_next_and(next_cpu, mask, cpu_online_mask);
+ 
+ 	/* Fastpath: do that cpu by itself. */
+@@ -350,31 +421,28 @@ void smp_call_function_many(const struct
+ 		return;
+ 	}
+ 
+-	data = kmalloc(sizeof(*data) + cpumask_size(), GFP_ATOMIC);
+-	if (unlikely(!data)) {
+-		/* Slow path. */
+-		for_each_online_cpu(cpu) {
+-			if (cpu == smp_processor_id())
+-				continue;
+-			if (cpumask_test_cpu(cpu, mask))
+-				smp_call_function_single(cpu, func, info, wait);
+-		}
+-		return;
+-	}
++	data = &__get_cpu_var(cfd_data);
++	csd_lock(&data->csd);
+ 
+-	spin_lock_init(&data->lock);
+-	data->csd.flags = CSD_FLAG_ALLOC;
++	spin_lock_irqsave(&data->lock, flags);
+ 	if (wait)
+-		data->csd.flags |= CSD_FLAG_WAIT;
++		csd_wait_prepare(&data->csd);
++
+ 	data->csd.func = func;
+ 	data->csd.info = info;
+-	cpumask_and(to_cpumask(data->cpumask_bits), mask, cpu_online_mask);
+-	cpumask_clear_cpu(smp_processor_id(), to_cpumask(data->cpumask_bits));
+-	data->refs = cpumask_weight(to_cpumask(data->cpumask_bits));
+-
+-	spin_lock_irqsave(&call_function_lock, flags);
+-	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+-	spin_unlock_irqrestore(&call_function_lock, flags);
++	cpumask_and(data->cpumask, mask, cpu_online_mask);
++	cpumask_clear_cpu(me, data->cpumask);
++	data->refs = cpumask_weight(data->cpumask);
++
++	spin_lock(&call_function.lock);
++	/*
++	 * Place entry at the _HEAD_ of the list, so that any cpu still
++	 * observing the entry in generic_smp_call_function_interrupt() will
++	 * not miss any other list entries.
++	 */
++	list_add_rcu(&data->csd.list, &call_function.queue);
++	spin_unlock(&call_function.lock);
++	spin_unlock_irqrestore(&data->lock, flags);
+ 
+ 	/*
+ 	 * Make the list addition visible before sending the ipi.
+@@ -384,11 +452,11 @@ void smp_call_function_many(const struct
+ 	smp_mb();
+ 
+ 	/* Send a message to all CPUs in the map */
+-	arch_send_call_function_ipi_mask(to_cpumask(data->cpumask_bits));
++	arch_send_call_function_ipi_mask(data->cpumask);
+ 
+ 	/* optionally wait for the CPUs to complete */
+ 	if (wait)
+-		csd_flag_wait(&data->csd);
++		csd_wait(&data->csd);
+ }
+ EXPORT_SYMBOL(smp_call_function_many);
+ 
+@@ -418,20 +486,20 @@ EXPORT_SYMBOL(smp_call_function);
+ 
+ void ipi_call_lock(void)
+ {
+-	spin_lock(&call_function_lock);
++	spin_lock(&call_function.lock);
+ }
+ 
+ void ipi_call_unlock(void)
+ {
+-	spin_unlock(&call_function_lock);
++	spin_unlock(&call_function.lock);
+ }
+ 
+ void ipi_call_lock_irq(void)
+ {
+-	spin_lock_irq(&call_function_lock);
++	spin_lock_irq(&call_function.lock);
+ }
+ 
+ void ipi_call_unlock_irq(void)
+ {
+-	spin_unlock_irq(&call_function_lock);
++	spin_unlock_irq(&call_function.lock);
+ }
+
+-- 
+
