@@ -1,89 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbZBYIOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761049AbZBYIP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbZBYIOI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 03:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760812AbZBYINt
+	id S1761049AbZBYIP7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 03:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZBYIPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 03:13:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53707 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760670AbZBYINs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 03:13:48 -0500
-Date: Wed, 25 Feb 2009 09:11:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
-Message-ID: <20090225081118.GC15303@elte.hu>
-References: <20090225025608.956691460@goodmis.org> <20090225025753.798204550@goodmis.org> <20090224194548.3effb746.akpm@linux-foundation.org> <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com> <20090224203308.8d623e0b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224203308.8d623e0b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 25 Feb 2009 03:15:49 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:41636 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753339AbZBYIPs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 03:15:48 -0500
+Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and
+	struct_mutex.
+From: Eric Anholt <eric@anholt.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Hellstrom <thomas@shipmail.org>,
+       Wang Chen <wangchen@cn.fujitsu.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1235115406.4736.4.camel@laptop>
+References: <1234918786-854-1-git-send-email-eric@anholt.net>
+	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org>
+	 <1235082372.4612.665.camel@laptop>  <1235095484.2636.39.camel@gaiman>
+	 <1235115406.4736.4.camel@laptop>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-DiHVWKGvHTxbeovPvODo"
+Date: Wed, 25 Feb 2009 00:15:45 -0800
+Message-Id: <1235549745.5213.4.camel@gaiman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+--=-DiHVWKGvHTxbeovPvODo
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 24 Feb 2009 23:08:56 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > > Gad, what a lot of stuff.
-> > > 
-> > > Use strncpy_from_user()?
-> > > 
-> > > Use strstrip()?
-> > > 
-> > > Why do we care about leading and trailing whitespace - user error!
-> > 
-> > This is because i want:
-> > 
-> >  cat available_events > set_event
-> > 
-> > to work.
-> 
-> :(
-> 
-> Why on earth do we keep on putting all these pretty-printers 
-> and pretty-parsers into the kernel?  I mean, how hard is it 
-> for userspace to read a text file, do some basic substitutions 
-> and print it out again?
+On Fri, 2009-02-20 at 08:36 +0100, Peter Zijlstra wrote:
+> On Thu, 2009-02-19 at 18:04 -0800, Eric Anholt wrote:
+> > On Thu, 2009-02-19 at 23:26 +0100, Peter Zijlstra wrote:
+> > > On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
+> > > > =20
+> > > > It looks to me like the driver preferred locking order is
+> > > >=20
+> > > > object_mutex (which happens to be the device global struct_mutex)
+> > > >   mmap_sem
+> > > >      offset_mutex.
+> > > >=20
+> > > > So if one could avoid using the struct_mutex for object bookkeeping=
+ (A=20
+> > > > separate lock) then
+> > > > vm_open() and vm_close() would adhere to that locking order as well=
+,=20
+> > > > simply by not taking the struct_mutex at all.
+> > > >=20
+> > > > So only fault() remains, in which that locking order is reversed.=20
+> > > > Personally I think the trylock ->reschedule->retry method with prop=
+er=20
+> > > > commenting is a good solution. It will be the _only_ place where lo=
+cking=20
+> > > > order is reversed and it is done in a deadlock-safe manner. Note th=
+at=20
+> > > > fault() doesn't really fail, but requests a retry from user-space w=
+ith=20
+> > > > rescheduling to give the process holding the struct_mutex time to=20
+> > > > release it.
+> > >=20
+> > > It doesn't do the reschedule -- need_resched() will check if the curr=
+ent
+> > > task was marked to be scheduled away, furthermore yield based locking
+> > > sucks chunks.
+>=20
+> Imagine what would happen if your faulting task was the highest RT prio
+> task in the system, you'd end up with a life-lock.
+>=20
+> > > What's so very difficult about pulling the copy_*_user() out from und=
+er
+> > > the locks?
+> >=20
+> > That we're expecting the data movement to occur while holding device
+> > state in place.  For example, we write data through the GTT most of the
+> > time so we:
+> >=20
+> > lock struct_mutex
+> > pin the object to the GTT
+> > flushing caches as needed
+> > copy_from_user
+> > unpin object
+> > unlock struct_mutex
+>=20
+> So you cannot drop the lock once you've pinned the dst object?
+>=20
+> > If I'm to pull the copy_from_user out, that means I have to:
+> >=20
+> > alloc temporary storage
+> > for each block of temp storage size:
+> > 	copy_from_user
+> > 	lock struct_mutex
+> > 	pin the object to the GTT
+> > 	flush caches as needed
+> > 	memcpy
+> > 	unpin object
+> > 	unlock struct_mutex
+> >=20
+> > At this point of introducing our third copy of the user's data in our
+> > hottest path, we should probably ditch the pwrite path entirely and go
+> > to user mapping of the objects for performance.  Requiring user mapping
+> > (which has significant overhead) cuts the likelihood of moving from
+> > user-space object caching to kernel object caching in the future, which
+> > has the potential of saving steaming piles of memory.
+>=20
+> Or you could get_user_pages() to fault the user pages and pin them, and
+> then do pagefault_disable() and use copy_from_user_inatomic or such, and
+> release the pages again.
 
-Note that there's no mandatory user-space component here - the 
-final destination is the kernel developer's eyes in 90% of the 
-cases. These traces get pasted into email, etc. etc.
+I started poking at this today, since the get_user_pages sounded like
+the solution.  Only then I noticed: when we unbind an existing object,
+we have to unmap_mapping_range to clear the clients' mappings to it in
+the GTT, which needs to happen while the struct lock (protecting the gtt
+structure and the gtt to object mappings) is held.  So for fault we have
+mmap_sem held to struct mutex taken for poking at the gtt structure, and
+for unbind we have struct mutex held to mmap_sem taken to clear
+mappings.
 
-So leading spaces, meaningful formatting and general hands-on 
-usability is important. [ I know, it's a strange concept in the 
-kernel, we tend to have a perversion for the most unusable and 
-most inconsistent user interfaces ;-) ]
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
-It's also a balancing act. We dont want to put all of TeX into 
-the kernel obviously. Nor do we want the default to be the 
-opposite end of the spectrum: to output raw binary records. So 
-we find some middle ground. That middle ground is inluenced by 
-the developers using this stuff.
 
-	Ingo
+
+--=-DiHVWKGvHTxbeovPvODo
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmk/i4ACgkQHUdvYGzw6vdEowCfY+RiKhv7D6ZifacSzcJoSloD
+hngAnjP6VZRvvKAjc6+G99w5Fd0tyXPv
+=tAwT
+-----END PGP SIGNATURE-----
+
+--=-DiHVWKGvHTxbeovPvODo--
