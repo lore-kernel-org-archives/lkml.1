@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758324AbZBYOyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758324AbZBYPAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758324AbZBYOyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 09:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZBYOyf
+	id S1758324AbZBYPAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 10:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbZBYPAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 09:54:35 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:35651 "EHLO mx2.suse.de"
+	Wed, 25 Feb 2009 10:00:03 -0500
+Received: from THUNK.ORG ([69.25.196.29]:52107 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752442AbZBYOyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 09:54:35 -0500
-Message-ID: <49A55BA8.2060205@suse.de>
-Date: Wed, 25 Feb 2009 15:54:32 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754166AbZBYPAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 10:00:00 -0500
+Date: Wed, 25 Feb 2009 09:59:50 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Yang Hongyang <yanghy@cn.fujitsu.com>
+Cc: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-doc@vger.kernel.org, mtk.manpages@gmail.com, rdunlap@xenotime.net
+Subject: Re: Documentation:Update the INDEX of the documents
+Message-ID: <20090225145950.GJ7064@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Yang Hongyang <yanghy@cn.fujitsu.com>, netdev@vger.kernel.org,
+	"David S. Miller" <davem@davemloft.net>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-doc@vger.kernel.org, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net
+References: <49A4F06B.6030205@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Frank Seidel <fseidel@suse.de>, Herbert Xu <herbert@gondor.apana.org.au>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, nhorman@tuxdriver.com,
-       lho@amcc.com, kaber@trash.net, darrenrjenkins@gmail.com,
-       Greg KH <gregkh@suse.de>, Frank Seidel <frank@f-seidel.de>
-Subject: Re: [PATCH][trivial] crypto: tcrypt - reduce stack size
-References: <49A54C23.8090209@suse.de> <20090225142000.GA4136@gondor.apana.org.au> <49A55499.6090700@suse.de> <20090225142744.GA4331@gondor.apana.org.au> <alpine.LRH.2.00.0902251529440.15476@vixen.sonytel.be> <49A55771.1050408@suse.de> <alpine.LRH.2.00.0902251542010.15476@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0902251542010.15476@vixen.sonytel.be>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A4F06B.6030205@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Wed, 25 Feb 2009, Frank Seidel wrote:
-> Wel...
+On Wed, Feb 25, 2009 at 03:16:59PM +0800, Yang Hongyang wrote:
+> There are so many 00-INDEX file that are missing description of the
+> current files in the dir.  Such as 00-INDEX in
+> Documentation/x86/,Documentation/networking/,Documentation/ and so
+> on.
 > 
-> Using kmalloc() increases code size, makes the code more complex, and increases
-> the risk of introducing a memory leak now or later.
-
-Ok, admitted.
-
->> I just stumbled over tcrypt on the make checkstack output and as also
->> the kerneljanitors todo advises to reduce this footprint where possible
->> i just wanted to help out here.
+> It's a large amount of work for someone to go through all these
+> documents and make summaries.
 > 
-> Reducing stack usage is fine. However, for a loadable test module without
-> concurrency issues it's far easier to do that by just making the data static.
+> I'm willing to do some of the work but if someone else pick these
+> up(especially the authors of these new files) it will be a great
+> help.^_^
 
-Is PATCHv3 then ok for you?
+Before you embark on this large amount of work, we should probably ask
+a question first --- how useful are the 00-INDEX files?  I don't find
+them particularly interesting, given that my normal way of finding
+documentation in the Documentation directory is:
 
-Thanks,
-Frank
+find . -type f | xargs grep <keyword>
+
+Or, if I have a git tree of the Linux sources handy:
+
+git grep <keyword> -- Documentation
+
+If folks do find the 00-INDEX files useful, my suggestion would be to
+make a way of automatically extracting them from the individual files
+and/or directories, and then making the 00-INDEX files to be
+automatically generated.
+
+						- Ted
