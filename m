@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbZBYOUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbZBYOWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997AbZBYOUX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 09:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZBYOUJ
+	id S1757503AbZBYOWh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 09:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZBYOW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 09:20:09 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:37269 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752960AbZBYOUI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 09:20:08 -0500
-Date: Wed, 25 Feb 2009 22:20:00 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org,
-       Frank Seidel <frank@f-seidel.de>, akpm@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, nhorman@tuxdriver.com,
-       lho@amcc.com, kaber@trash.net, darrenrjenkins@gmail.com
-Subject: Re: [PATCH][trivial] crypto: tcrypt - reduce stack size
-Message-ID: <20090225142000.GA4136@gondor.apana.org.au>
-References: <49A54C23.8090209@suse.de>
+	Wed, 25 Feb 2009 09:22:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43267 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754313AbZBYOW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 09:22:28 -0500
+Date: Wed, 25 Feb 2009 09:19:49 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 0/4][RFC] event tracer
+Message-ID: <20090225141948.GA3123@redhat.com>
+References: <20090224193344.638329210@goodmis.org> <20090225021033.GA17269@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A54C23.8090209@suse.de>
+In-Reply-To: <20090225021033.GA17269@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 02:48:19PM +0100, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
+On Tue, Feb 24, 2009 at 09:10:33PM -0500, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> Applying kernel janitors todos (printk calls need KERN_*
-> constants on linebeginnings, reduce stack footprint where
-> possible) to tcrypts test_hash_speed (where stacks
-> memory footprint was very high (on i386 1184 bytes to
-> 292 now).
+> > This is still RFC, do not pull.
+> > This patch set gives the ability to add a format string and args to
+> > a trace point declaration. [...]
 > 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> ---
->  crypto/tcrypt.c |   29 ++++++++++++++++++++---------
->  1 file changed, 20 insertions(+), 9 deletions(-)
+> It looks like a good compromise, a dual to the trace_mark_tp
+> prototype, and a plausible replacement for markers.  Thank you.  The
+> main thing this would lose is a callback API to intercept generic
+> varargs event flavour, which we in systemtap land enjoy using, but
+> before too long we would make do.
 > 
-> --- a/crypto/tcrypt.c
-> +++ b/crypto/tcrypt.c
-> @@ -396,26 +396,34 @@ static void test_hash_speed(const char *
->  	struct scatterlist sg[TVMEMSIZE];
->  	struct crypto_hash *tfm;
->  	struct hash_desc desc;
-> -	char output[1024];
 
-How about just making it static?
+Along these lines, I think it should be possible to have
+'DEFINE_TRACE_FMT' define an additional tracepoint with a
+signature that is simply a fomat string and a list of args. This
+tracpoint is then what could be registred with the original tracepoint.
+Then, event_trace_printk can be registered with this additional
+tracepoint. In this way different consumers would be able to register
+not only with the oringal tracepoint, but also with a format string
+callback version of it. this obviously adds extra functions call, but at
+the advantage of additional flexibility. If ppl think this makes sense,
+I can prototype a patch.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+thanks,
+
+-Jason
+
