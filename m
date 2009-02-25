@@ -1,290 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZBYFsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZBYFwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbZBYFsh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 00:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZBYFs2
+	id S1756775AbZBYFwA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 00:52:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZBYFvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 00:48:28 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59902 "EHLO smtps.tip.net.au"
+	Wed, 25 Feb 2009 00:51:49 -0500
+Received: from mga09.intel.com ([134.134.136.24]:23702 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbZBYFs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 00:48:26 -0500
-Date: Wed, 25 Feb 2009 16:48:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for February 25
-Message-Id: <20090225164816.953eb5b8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
+	id S1751589AbZBYFvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 00:51:48 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,263,1233561600"; 
+   d="scan'208";a="389563059"
+Subject: Re: [RFC v1] hand off skb list to other cpu to submit to upper
+	layer
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, jesse.brandeburg@intel.com
+In-Reply-To: <20090224211859.0ee8c632@nehalam>
+References: <1235525270.2604.483.camel@ymzhang>
+	 <20090224181153.06aa1fbd@nehalam> <1235529343.2604.499.camel@ymzhang>
+	 <20090224211859.0ee8c632@nehalam>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 25 Feb 2009 13:51:26 +0800
+Message-Id: <1235541086.2604.524.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Feb_2009_16_48_16_+1100_v8I6zSUAalQ.QK1r"
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Feb_2009_16_48_16_+1100_v8I6zSUAalQ.QK1r
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-02-24 at 21:18 -0800, Stephen Hemminger wrote:
+> On Wed, 25 Feb 2009 10:35:43 +0800
+> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+> 
+> > On Tue, 2009-02-24 at 18:11 -0800, Stephen Hemminger wrote:
+> > > On Wed, 25 Feb 2009 09:27:49 +0800
+> > > "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+> > > 
+> > > > ﻿Subject: hand off skb list to other cpu to submit to upper layer
+> > > > From: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> > > > 
+> > > > Recently, I am investigating an ip_forward performance issue with 10G IXGBE NIC.
+> > > > I start the testing on 2 machines. Every machine has 2 10G NICs. The 1st one seconds
+> > > > packets by pktgen. The 2nd receives the packets from one NIC and forwards them out
+> > > > from the 2nd NIC. As NICs supports multi-queue, I bind the queues to different logical
+> > > > cpu of different physical cpu while considering cache sharing carefully.
+> > > > 
+> > > > Comparing with sending speed on the 1st machine, the forward speed is not good, only
+> > > > about 60% of sending speed. As a matter of fact, IXGBE driver starts NAPI when interrupt
+> > > > arrives. When ip_forward=1, receiver collects a packet and forwards it out immediately.
+> > > > So although IXGBE collects packets with NAPI, the forwarding really has much impact on
+> > > > collection. As IXGBE runs very fast, it drops packets quickly. The better way for
+> > > > receiving cpu is doing nothing than just collecting packets.
+> > > > 
+> > > > Currently kernel has backlog to support a similar capability, but process_backlog still
+> > > > runs on the receiving cpu. I enhance backlog by adding a new input_pkt_alien_queue to
+> > > > softnet_data. Receving cpu collects packets and link them into skb list, then delivers
+> > > > the list to the ﻿input_pkt_alien_queue of other cpu. process_backlog picks up the skb list
+> > > > from ﻿input_pkt_alien_queue when ﻿input_pkt_queue is empty.
+> > > > 
+> > > > NIC driver could use this capability like below step in NAPI RX cleanup function.
+> > > > 1) Initiate a local var struct sk_buff_head skb_head;
+> > > > 2) In the packet collection loop, just calls netif_rx_queue or __skb_queue_tail(skb_head, skb)
+> > > > to add skb to the list;
+> > > > 3) Before exiting, calls raise_netif_irq to submit the skb list to specific cpu.
+> > > > 
+> > > > Enlarge /proc/sys/net/core/netdev_max_backlog and netdev_budget before testing.
+> > > > 
+> > > > I tested my patch on top of 2.6.28.5. The improvement is about 43%.
+> > > > 
+> > > > Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> > > > 
+> > > You can't safely put packets on another CPU queue without adding a spinlock.
+> > ﻿input_pkt_alien_queue is a struct sk_buff_head which has a spinlock. We use
+> > that lock to protect the queue.
+> 
+> I was reading netif_rx_queue() and you have it using __skb_queue_tail() which
+> has no locking. 
+Sorry, I need add some comments to function netif_rx_queue.
 
-Hi all,
+Parameter skb_queue is point to a local var, or NULL. If it points to a local var,
+just like ﻿function ixgbe_clean_rx_irq of IXGBE, so we needn't protect it when
+﻿using __skb_queue_tail to add new skb. If ﻿skb_queue is point to NULL, below
 
-Changes since 20090224:
+skb_queue = &queue->input_pkt_queue;
 
-Undropped trees:
-	cifs
+make it points to the local input_pkt_queue which is protected by local_irq_save.
 
-Dropped trees (temporary):
-	acpi (build failure)
-	cpufreq (build failure)
+> > > And if you add the spinlock, you drop the performance back down for your
+> > > device and all the other devices.
+> > My testing shows 43% improvement. As multi-core machines are becoming
+> > popular, we can allocate some core for packet collection only.
+> > 
+> > I use the spinlock carefully. The deliver cpu locks it only when ﻿input_pkt_queue
+> > is empty, and just merges the list to ﻿input_pkt_queue. Later skb dequeue needn't
+> > hold the spinlock. In the other hand, the original receving cpu dispatches a batch
+> > of skb (64 packets with IXGBE default) when holding the lock once.
+> > 
+> > >  Also, you will end up reordering
+> > > packets which hurts single stream TCP performance.
+> > Would you like to elaborate the scenario? Does your speaking mean multi-queue
+> > also hurts ﻿single stream TCP performance when we bind multi-queue(interrupt) to
+> > different cpu?
+> > 
+> > > 
+> > > Is this all because the hardware doesn't do MSI-X
+> > IXGBE supports MSI-X and I enables it when testing. ﻿ The receiver has 16 multi-queue,
+> > so 16 irq numbers. I bind 2 irq numbers per logical cpu of one physical cpu.
+> > 
+> > >  or are you testing only
+> > > a single flow. 
+> > What does a single flow mean here? One sender? I do start one sender for testing because
+> > I couldn't get enough hardware.
+> 
+> Multiple receive queues only have an performance gain if the packets are being
+> sent with different SRC/DST address pairs. That is how the hardware is supposed
+> to break them into queues.
+Thanks for your explanation.
 
-The net-current tree lost its build failure.
+> 
+> Reordering is what happens when packts that are sent as [ 0, 1, 2, 3, 4 ]
+> get received as [ 0, 1, 4, 3, 2 ] because your receive processing happened on different
+> CPU's. You really need to test this with some program like 'iperf' to see the effect
+> it has on TCP. Older Juniper routers used to have hardware that did this and it
+> caused it caused performance loss. Do some google searches and you will see
+> it is a active research topic about whether reordering is okay or not. Existing
+> multiqueue is safe because it doesn't reorder inside a single flow; it only
+> changes order between flows:  [ A1, A2, B1, B2] => [ A1, B1, A2, B2 ]
+Thanks. Your explanation is very clear. My patch might cause reorder, but very rarely,
+because reorder only happens when there is a failover in function raise_netif_irq. perhaps
+I need replace the failover with just packet dropping?
 
-The ext4 tree gained a trivial conflict against the quota tree.
+I will try iperf.
 
-The cifs tree lost its build failure.
+> 
+> Isn't this a problem:
+> > +int netif_rx_queue(struct sk_buff *skb, struct sk_buff_head *skb_queue)
+> >  {
+> >  	struct softnet_data *queue;
+> >  	unsigned long flags;
+> > +	int this_cpu;
+> >  
+> >  	/* if netpoll wants it, pretend we never saw it */
+> >  	if (netpoll_rx(skb))
+> > @@ -1943,24 +1946,31 @@ int netif_rx(struct sk_buff *skb)
+> >  	if (!skb->tstamp.tv64)
+> >  		net_timestamp(skb);
+> >  
+> > +	if (skb_queue)
+> > +		this_cpu = 0;
+> > +	else
+> > +		this_cpu = 1;
+> 
+> Why bother with a special boolean? and instead just test for skb_queue != NULL
+Var this_cpu is used for ﻿napi_schedule late. Although the logical has no problem,
+this_cpu seems confused. Let me check if there is a better way for late napi_schedule.
 
-----------------------------------------------------------------------------
+> 
+> > +
+> >  	/*
+> >  	 * The code is rearranged so that the path is the most
+> >  	 * short when CPU is congested, but is still operating.
+> >  	 */
+> >  	local_irq_save(flags);
+> > +
+> >  	queue = &__get_cpu_var(softnet_data);
+> > +	if (!skb_queue)
+> > +		skb_queue = &queue->input_pkt_queue;
+﻿When ﻿skb_queue is NULL, we redirect it to ﻿queue->input_pkt_queue.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+> 
+> >  
+> >  	__get_cpu_var(netdev_rx_stat).total++;
+> > -	if (queue->input_pkt_queue.qlen <= netdev_max_backlog) {
+> > -		if (queue->input_pkt_queue.qlen) {
+> > -enqueue:
+> > -			__skb_queue_tail(&queue->input_pkt_queue, skb);
+> > -			local_irq_restore(flags);
+> > -			return NET_RX_SUCCESS;
+> > +
+> > +	if (skb_queue->qlen <= netdev_max_backlog) {
+> > +		if (!skb_queue->qlen && this_cpu) {
+> > +			napi_schedule(&queue->backlog);
+> >  		}
+> 
+> Won't this break if skb_queue is NULL (non NAPI case)?
+So skb_queue isn't NULL here.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
+Another idea is just to delete function ﻿netif_rx_queue. Drivers could use
+﻿__skb_queue_tail directly. The difference ﻿netif_rx_queue has a queue length
+checking while ﻿﻿__skb_queue_tail hasn't. But mostly ﻿skb_queue is far smaller than
+﻿queue->input_pkt_queue.qlen and ﻿queue->input_pkt_alien_queue.qlen.
 
-Below is a summary of the state of the merge.
+Yanmin
 
-We are up to 133 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/mach-at91/gpio.c
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-CONFLICT (rename/modify): Merge conflict in arch/arm/plat-pxa/dma.c
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/powerpc/include/asm/elf.h
-CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in x86/auto=
--x86-next and modified in HEAD. Version HEAD of arch/x86/mach-default/setup=
-.c left in tree.
-$ git rm -f arch/x86/mach-default/setup.c
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-CONFLICT (content): Merge conflict in arch/x86/Kconfig
-Merging genirq/auto-genirq-next
-CONFLICT (content): Merge conflict in kernel/irq/handle.c
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-mpc.c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-$ git reset --hard HEAD^
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-CONFLICT (content): Merge conflict in fs/ext4/ext4.h
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (delete/modify): drivers/net/wireless/orinoco/orinoco.c deleted in=
- net/master and modified in HEAD. Version HEAD of drivers/net/wireless/orin=
-oco/orinoco.c left in tree.
-$ git rm -f drivers/net/wireless/orinoco/orinoco.c
-Applying: orinoco merge fixup
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/ath9k/main.c
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
-Merging cpufreq/next
-$ git reset --hard HEAD^
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging quilt/rr
-CONFLICT (delete/modify): arch/x86/include/asm/es7000/apic.h deleted in HEA=
-D and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/es7000=
-/apic.h left in tree.
-CONFLICT (delete/modify): arch/x86/include/asm/numaq/apic.h deleted in HEAD=
- and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/numaq/a=
-pic.h left in tree.
-CONFLICT (content): Merge conflict in drivers/hid/hid-core.c
-CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134-c=
-ore.c
-CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134.h
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-CONFLICT (content): Merge conflict in kernel/module.c
-$ git rm -f arch/x86/include/asm/es7000/apic.h
-$ git rm -f arch/x86/include/asm/numaq/apic.h
-Applying: rr: fixup for cpumask:remove-address-of-CPU_MASK_ALL
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in sound/isa/Kconfig
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-CONFLICT (content): Merge conflict in include/linux/slub_def.h
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in mm/Makefile
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-CONFLICT (content): Merge conflict in security/selinux/hooks.c
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging squashfs/master
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-CONFLICT (content): Merge conflict in include/linux/slab.h
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Wed__25_Feb_2009_16_48_16_+1100_v8I6zSUAalQ.QK1r
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmk26AACgkQjjKRsyhoI8zsYQCdEhoZBWZtZudFeOpBK31qhI2k
-SGoAmgJJ3Khy9jtno0bYQPtwvlk6I4v/
-=v3fF
------END PGP SIGNATURE-----
-
---Signature=_Wed__25_Feb_2009_16_48_16_+1100_v8I6zSUAalQ.QK1r--
