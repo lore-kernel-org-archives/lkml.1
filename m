@@ -1,40 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762773AbZBYQD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761305AbZBYQFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762773AbZBYQD3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 11:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbZBYQDU
+	id S1761305AbZBYQFl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 11:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZBYQFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 11:03:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58539 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753876AbZBYQDT (ORCPT
+	Wed, 25 Feb 2009 11:05:32 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52794 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752011AbZBYQFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 11:03:19 -0500
-Subject: Re: [PATCH 00/15] bitops: Change bitmap index from int to unsigned
- long
-From: Peter Zijlstra <peterz@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Justin Chen <jchen@hpdst41.cup.hp.com>, linux-arch@vger.kernel.org,
-       bjorn.helgaas@hp.com, justin.chen@hp.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20090225155347.GR16891@parisc-linux.org>
-References: <200902250441.UAA12527@hpdst41.cup.hp.com>
-	 <1235544888.4645.2942.camel@laptop>
-	 <20090225153757.GP16891@parisc-linux.org>
-	 <1235576760.4645.3535.camel@laptop>
-	 <20090225155347.GR16891@parisc-linux.org>
-Content-Type: text/plain
-Date: Wed, 25 Feb 2009 17:03:15 +0100
-Message-Id: <1235577795.4645.3575.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Feb 2009 11:05:31 -0500
+Date: Wed, 25 Feb 2009 08:04:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Salman Qazi <sqazi@google.com>,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] x86, mm: pass in 'total' to
+ __copy_from_user_*nocache()
+In-Reply-To: <20090225072503.GD21903@elte.hu>
+Message-ID: <alpine.LFD.2.00.0902250753030.3111@localhost.localdomain>
+References: <20090224020304.GA4496@google.com> <200902242002.37555.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0902240744500.3111@localhost.localdomain> <200902251423.58861.nickpiggin@yahoo.com.au> <20090225072503.GD21903@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-25 at 08:53 -0700, Matthew Wilcox wrote:
-> I don't see the downside to using unsigned long instead of unsigned int.
 
-OK, I guess, it just seemed plenty large enough, but if you're actually
-running off the end..
 
+On Wed, 25 Feb 2009, Ingo Molnar wrote:
+> 
+> The main artifact would be the unaligned edges around a bigger 
+> write. In particular the tail portion of a big write will be 
+> cached.
+
+.. but I don't really agree that this is a problem.
+
+Sure, it's "wrong", but does it actually matter? No. Is it worth adding 
+complexity to existing interfaces for? I think not.
+
+In general, I think that software should not mess with nontemporal stores. 
+The thing is, software almost never knows enough about the CPU cache to 
+make an intelligent choice.
+
+So I didn't want to apply the nocache patches in the first place, but the 
+performance numbers were pretty clear. I'll take "real numbers" over my 
+personal dislikes any day. But now we have real numbers going the other 
+way for small writes, and a patch to fix that.
+
+But we have no amount of real numbers for the edge cases, and I don't 
+think they matter. In fact, I don't think they _can_ matter, because it is 
+inevitably always going to be an issue of "which CPU and which memory 
+subsystem".
+
+In other words, there is no "right" answer. There is no "perfect". But 
+there is "we can fix the real numbers".
+
+At the same time, we also do know:
+ - caches work
+ - CPU designers will continue to worry about the normal (cached) case, 
+   and will do reasonable things with cache replacement.
+ - ergo: w should always consider the cached case to be the _normal_ mode, 
+   and it's the nontempral loads/stores that need to explain themselves.
+
+So I do think we should just apply the simple patch. Not make a big deal 
+out of it. We have numbers. We use cached memory copies for everything 
+else. It's always "safe".
+
+And we pretty much know that the only time we will ever really care about 
+the nontemporal case is with big writes - where the "edge effects" 
+essentially become total noise. 
+
+		Linus
