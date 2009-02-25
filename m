@@ -1,91 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbZBYBqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbZBYBrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758043AbZBYBqY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 20:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbZBYBqO
+	id S1758631AbZBYBrI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 20:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZBYBqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 20:46:14 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:65471 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752098AbZBYBqN (ORCPT
+	Tue, 24 Feb 2009 20:46:55 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:39461 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbZBYBqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 20:46:13 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhQFADMtpElMQWXi/2dsb2JhbACBbtYDhBEG
-Date: Tue, 24 Feb 2009 20:46:09 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/4][RFC] event tracer
-Message-ID: <20090225014609.GA18250@Krystal>
-References: <20090224193344.638329210@goodmis.org> <1235504556.4645.2252.camel@laptop> <alpine.DEB.2.00.0902241706260.12697@gandalf.stny.rr.com> <49A473ED.4010001@redhat.com> <alpine.DEB.2.00.0902241731020.12697@gandalf.stny.rr.com> <20090225010111.GB16396@Krystal> <alpine.DEB.2.00.0902242012360.12697@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Feb 2009 20:46:55 -0500
+X-Greylist: delayed 306 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Feb 2009 20:46:55 EST
+Message-ID: <49A4A1D3.8070402@davidnewall.com>
+Date: Wed, 25 Feb 2009 12:11:39 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: List of 404 URLs in kernel .c and .h files
+References: <1235506239.2501.46.camel@localhost>
+In-Reply-To: <1235506239.2501.46.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0902242012360.12697@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:45:45 up 3 days, 17:19,  2 users,  load average: 0.48, 0.56,
-	0.43
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Tue, 24 Feb 2009, Mathieu Desnoyers wrote:
-> 
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > 
-> > > On Tue, 24 Feb 2009, Masami Hiramatsu wrote:
-> > > > > 
-> > > > > #undef TPFMT
-> > > > > #define TPFMT(fmt, args...) \
-> > > > > 	"(%s)" fmt "\n", #call, ##args
-> > > > > 
-> > > > > and then I could do
-> > > > > 
-> > > > > 	event_printk(fmt);
-> > > > 
-> > > > Why don't you do as below? :)
-> > > > 	event_printk_line("(" #call ")" ##fmtandargs);
-> > > 
-> > > Still need to sneak that "\n" in ;-)
-> > > 
-> > 
-> > Why do you need the \n ? Having all event format strings ending with \0
-> > should be enough to tell event_printk to generate a \n each time it
-> > encounters a format string \0. Doing so would save 1 byte per format
-> > string.
-> 
-> Because currently event_printk uses a generic function that acts pretty 
-> much like ftrace_printk.
-> 
-> I like having fmt and args separate. This way, we can add more stuff to 
-> the end if we ever want to. For now it's a '\n'. We can deal with 
-> those extra bytes.
-> 
+Joe Perches wrote:
+> Any suggestions on what if anything should be done
+> to the sources with these dead links?
 
-Ah ok, given you need it as a separator too, that makes sense.
-
-Mathieu
-
-> -- Steve
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Unless you have a better reference, leave them.  Even if they 404, they
+still provide a good starting point to search.
