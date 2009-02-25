@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbZBYBtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbZBYBz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758207AbZBYBtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 20:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZBYBtJ
+	id S1757850AbZBYBz6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 20:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZBYBzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 20:49:09 -0500
-Received: from [76.245.85.235] ([76.245.85.235]:58689 "EHLO cynthia.pants.nu"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751856AbZBYBtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 20:49:08 -0500
-X-Greylist: delayed 2012 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Feb 2009 20:49:07 EST
-Date: Tue, 24 Feb 2009 17:14:26 -0800
-From: Brad Boyer <flar@allandria.com>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, Geert.Uytterhoeven@sonycom.com,
-       Richard Zidlicky <rz@linux-m68k.org>, linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Woodhouse <dwmw2@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
-Message-ID: <20090225011426.GB9362@cynthia.pants.nu>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090220170454.04382e9e@i1501.lan.towertech.it> <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be> <20090223160506.04e347c7@i1501.lan.towertech.it> <alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be> <20090224193708.5f8be86c@i1501.lan.towertech.it>
+	Tue, 24 Feb 2009 20:55:49 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:15768 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbZBYBzs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 20:55:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=GSWdjqZATTASrcT4EZ2U5gLqGzXk41eARwB+3A/9p5TDVU6desGwahGSh0qCPF35Cg
+         D8nEnn5+pZZKCFMZPJgVxe+zURUnJ3dKJTPwHih/IK+YcrNrbdijTEf5p5tNWI2hcBQM
+         y829VwaJjnrJGRKvMt0+f+qDqedYQ3t/TeMOM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090224193708.5f8be86c@i1501.lan.towertech.it>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200902241509.54649.david-b@pacbell.net>
+References: <200902241509.54649.david-b@pacbell.net>
+Date: Tue, 24 Feb 2009 22:55:45 -0300
+Message-ID: <82ecf08e0902241755y5a7be725gb84116433b7d3be2@mail.gmail.com>
+Subject: Re: [patch/RESEND 2.6.29-rc3-git] NAND: davinci_nand driver
+From: Thiago Galesi <thiagogalesi@gmail.com>
+To: dbrownell@users.sourceforge.net
+Cc: Linux MTD <linux-mtd@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       DaVinci <davinci-linux-open-source@linux.davincidsp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 24, 2009 at 07:37:08PM +0100, Alessandro Zummo wrote:
-> On Tue, 24 Feb 2009 18:56:03 +0100 (CET)
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > Converting all (ca. 20?) ppc and m68k RTC support code into individual RTC
-> > class drivers would add ca. 100+ lines of code for each individual driver.
-> 
->  How different are all of those boards? It's simply a matter
->  of parameters and offsets? can we group them somehow?
+OK a couple of things
+ +
+> +
+> +#ifdef CONFIG_MTD_PARTITIONS
+> +static inline int mtd_has_partitions(void) { return 1; }
+> +#else
+> +static inline int mtd_has_partitions(void) { return 0; }
+> +#endif
+> +
+> +#ifdef CONFIG_MTD_CMDLINE_PARTS
+> +static inline int mtd_has_cmdlinepart(void) { return 1; }
+> +#else
+> +static inline int mtd_has_cmdlinepart(void) { return 0; }
+> +#endif
 
-I imagine we could cut down the numbers somewhat with clever code sharing,
-but it's still going to be a fairly large number. I don't know all the
-embedded boards, but just with all the Macintosh models there are at
-least three and maybe four drastically different methods of RTC access,
-and all of them are directly tied to some chip that does something else
-completely unrelated. For one of them we don't even have a driver at the
-moment.  They also are all custom chips that wouldn't be used anywhere
-else. The other thing we need to keep in mind is that if we do it right
-we can share drivers across m68k and powerpc in some cases.  I imagine
-some of the embedded powerpc boards are using chips that are common in
-other architectures as well.
+I'm not sure stylewise this is the best way. Even though #ifdefs stays
+outside of functions, this is a case where maybe it's better to put it
+inside or rething the need / usage for these functions.
 
-	Brad Boyer
-	flar@allandria.com
+> +static int nand_davinci_calculate_1bit(struct mtd_info *mtd,
+> +                                     const u_char *dat, u_char *ecc_code)
 
+(and others)
+
+My beef here is the use of u_char. This is really not a standart C
+type or a standart Linux type (u8/u32 etc), so we should aim for those
+(yes, I hate typing unsigned blah blah blah) but you can use u8 for
+that.
+
+> +static void nand_davinci_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+> +{
+> +       struct nand_chip *chip = mtd->priv;
+> +
+> +       if ((0x03 & ((unsigned)buf)) == 0 && (0x03 & len) == 0)
+> +               ioread32_rep(chip->IO_ADDR_R, buf, len >> 2);
+> +       else if ((0x01 & ((unsigned)buf)) == 0 && (0x01 & len) == 0)
+
+What are those 0x03 and 0x01 (and other places as well), you'll have
+to spell out those, preferably using defines.
+
+-- 
+-
+Thiago Galesi
