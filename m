@@ -1,110 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZBYNFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbZBYNHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbZBYNFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 08:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZBYNFW
+	id S1755944AbZBYNHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 08:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZBYNHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 08:05:22 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:42787 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753083AbZBYNFV convert rfc822-to-8bit (ORCPT
+	Wed, 25 Feb 2009 08:07:32 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46620 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbZBYNHc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 08:05:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OXigujcrxqrKwHMKLjyzXdtmNsqdx+SNToUd2eZMHTh2HQKRUO/YD0W8hcc1oVf/oT
-         33TbhRU10XSFgodWAbtR57YIO3BWulWVCT/gP6/KcEUEuli9limqBeqEjR2AplM9sULi
-         7OpC4uwKOFFEXJpFTTqC/Tfr6vanhvArTpdx8=
+	Wed, 25 Feb 2009 08:07:32 -0500
+Date: Wed, 25 Feb 2009 08:07:29 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/4] tracing: make event directory structure
+In-Reply-To: <20090225065948.GA5200@nowhere>
+Message-ID: <alpine.DEB.2.00.0902250803070.12697@gandalf.stny.rr.com>
+References: <20090225025608.956691460@goodmis.org> <20090225025754.297578658@goodmis.org> <20090225065948.GA5200@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <200902242012.06447.david-b@pacbell.net>
-References: <200902241509.54649.david-b@pacbell.net>
-	 <82ecf08e0902241755y5a7be725gb84116433b7d3be2@mail.gmail.com>
-	 <200902242012.06447.david-b@pacbell.net>
-Date: Wed, 25 Feb 2009 10:05:18 -0300
-Message-ID: <82ecf08e0902250505l59f6ddebo9789d205e46b7751@mail.gmail.com>
-Subject: Re: [patch/RESEND 2.6.29-rc3-git] NAND: davinci_nand driver
-From: Thiago Galesi <thiagogalesi@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux MTD <linux-mtd@lists.infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       DaVinci <davinci-linux-open-source@linux.davincidsp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 1:12 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Tuesday 24 February 2009, Thiago Galesi wrote:
->> OK a couple of things
->>  +
->> > +
->> > +#ifdef CONFIG_MTD_PARTITIONS
->> > +static inline int mtd_has_partitions(void) { return 1; }
->> > +#else
->> > +static inline int mtd_has_partitions(void) { return 0; }
->> > +#endif
->
-> My preference would be to have those functions live in the
-> MTD headers.
->
-> Needing #ifdefs in the body of probe() is *extremely* error
-> prone.  Having function versions makes it harder to commit
-> a lot of the common errors I've seen, like having some mix
-> of options gratuitously break compiles because of missing
-> code fragments or variable declarations.  It also makes it
-> easier to see when code is obviously doing the wrong thing.
-
-Agreed. Especially about having #ifdefs in probe, no question about
-that, this way is _much_better_
-
->
-> Note that #ifdefs-in-functions is contrary to standard
-> kernel coding practices.
-
-Yes, I know (and agree with) that 100% :)
-
->
-> I too would like to see <linux/mtd/*.h> use u8/u32/etc.  But
-> in this case, it's just doing what the MTD framework does.
-> If I used u8/u32/etc the usual feedback would be "do what
-> all the other drivers do", "match the interface decls", etc.
-
-Yes, that happens a lot. But a movement towards 'the right way' is
-always welcome.
-
->
->> > +static void nand_davinci_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
->> > +{
->> > +       struct nand_chip *chip = mtd->priv;
->> > +
->> > +       if ((0x03 & ((unsigned)buf)) == 0 && (0x03 & len) == 0)
->> > +               ioread32_rep(chip->IO_ADDR_R, buf, len >> 2);
->> > +       else if ((0x01 & ((unsigned)buf)) == 0 && (0x01 & len) == 0)
->>
->> What are those 0x03 and 0x01 (and other places as well), you'll have
->> to spell out those, preferably using defines.
->
-> The "0x03" is "low two bits", "0x01" is "low one bit", etc.
-> Those functions can't be used except when memory address
-> is "naturally" aligned, and the data length likewise.
->
-> You might have an argument if you suggested a comment were
-> appropriate ... but those are very common idioms,
-
-Oh, ok, now I get it. But this is still confusing. (Yes, put a comment there)
-No need for the ifdefs though.
-
-Also, in the case of non-aligned acesses what is commonly done goes like this:
-you write the small unaligned part with 8/16 bit ops, then the rest
-with 32 bit ops.
-
-Maybe it's really not worth speedwise to do all of this, but this is
-ARM after all :)
 
 
--- 
--
-Thiago Galesi
+On Wed, 25 Feb 2009, Frederic Weisbecker wrote:
+
+> On Tue, Feb 24, 2009 at 09:56:12PM -0500, Steven Rostedt wrote:
+> > From: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > This patch adds the directory /debug/tracing/events/ that will contain
+> > all the registered trace points.
+> > 
+> >  # ls /debug/tracing/events/
+> > sched_kthread_stop      sched_process_fork  sched_switch
+> > sched_kthread_stop_ret  sched_process_free  sched_wait_task
+> > sched_migrate_task      sched_process_wait  sched_wakeup
+> > sched_process_exit      sched_signal_send   sched_wakeup_new
+> > 
+> >  # ls /debug/tracing/events/sched_switch/
+> > enable
+> > 
+> >  # cat /debug/tracing/events/sched_switch/enable
+> > 1
+> > 
+> >  # cat /debug/tracing/set_event
+> > sched_switch
+> 
+> 
+> Do you plan to add other things inside these events directory?
+
+That's actually the plan. We might want to trigger a stack trace or 
+something on that event. The idea will be to add attributes to each 
+individual event, and it should be pretty easy to implement since each 
+event has its own structure.
+
+> I mean, if you plan to only put an enable file on each of 
+them, > it would be better to have just one file:
+> 
+> cat /debug/tracing/events/sched_switch
+> 1
+> 
+>  
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > ---
+> >  kernel/trace/trace_events.c |  137 +++++++++++++++++++++++++++++++++++++++++--
+> >  kernel/trace/trace_events.h |    7 ++-
+> >  2 files changed, 137 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> > index 05bc80e..3bcb9df 100644
+> > --- a/kernel/trace/trace_events.c
+> > +++ b/kernel/trace/trace_events.c
+> > @@ -12,6 +12,11 @@
+> >  
+> >  #include "trace_events.h"
+> >  
+> > +#define events_for_each(event)						\
+> > +	for (event = __start_ftrace_events;				\
+> > +	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
+> > +	     event++)
+> > +
+> 
+> 
+> The name for_each_events seems to me more intuitive, but it's just
+> a matter of taste.
+
+I like that better too. But I was trying to be more consistent with the 
+kernel. "list_for_each", "hlist_for_each".
+
+But come to think about it, we do have "for_each_cpu_mask". Hmm?
+
+But it is local to the file. Not something to worry about now ;-)
+
+-- Steve
+
