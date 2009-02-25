@@ -1,93 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762175AbZBYQVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762875AbZBYQVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762175AbZBYQVW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 11:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbZBYQVI
+	id S1762875AbZBYQVi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 11:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762065AbZBYQVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 11:21:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52268 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755382AbZBYQVF (ORCPT
+	Wed, 25 Feb 2009 11:21:20 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:33450 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756713AbZBYQVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 11:21:05 -0500
-Date: Wed, 25 Feb 2009 08:19:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
-       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
-Message-Id: <20090225081954.8776ba9b.akpm@linux-foundation.org>
-In-Reply-To: <20090225160124.GA31915@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie>
-	<1235344649-18265-21-git-send-email-mel@csn.ul.ie>
-	<20090223013723.1d8f11c1.akpm@linux-foundation.org>
-	<20090223233030.GA26562@csn.ul.ie>
-	<20090223155313.abd41881.akpm@linux-foundation.org>
-	<20090224115126.GB25151@csn.ul.ie>
-	<20090224160103.df238662.akpm@linux-foundation.org>
-	<20090225160124.GA31915@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Feb 2009 11:21:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Yzlc9jFNJ4Q1a2F2/edoqsipYodjTND5aTKAMrb5hIxU2rIB69WSiHMNb2qmS7WtME
+         mqWxyDAObIg0mbm1Wk8q1SaAsy0Cik/cNeE9Z7E43N/5xBibj23Ofd+kp4VKogj0rB+e
+         ktXMkggcIH5+rkWWZZwYtG/jGJ8swZieC1WWk=
+Date: Wed, 25 Feb 2009 17:21:11 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+Message-ID: <20090225162110.GB5862@nowhere>
+References: <20090224194548.3effb746.akpm@linux-foundation.org> <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com> <20090224203308.8d623e0b.akpm@linux-foundation.org> <20090225081118.GC15303@elte.hu> <20090225002852.5ef5b869.akpm@linux-foundation.org> <84144f020902250100k41e55dd7w8a9c8d2ca96908ea@mail.gmail.com> <20090225012250.db68e480.akpm@linux-foundation.org> <1235554387.3849.30.camel@penberg-laptop> <20090225014442.7b7b7726.akpm@linux-foundation.org> <20090225095623.GB12352@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225095623.GB12352@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 16:01:25 +0000 Mel Gorman <mel@csn.ul.ie> wrote:
+On Wed, Feb 25, 2009 at 10:56:23AM +0100, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > Plus...  it's all English-only.
+> 
+> Note that with bin+raw output you can already internationalize 
+> tracepoints, if you want to.
+> 
+> I havent seen much interest in that, and the default tracing 
+> output is in English indeed, and the reason is rather 
+> fundamental: currently we've got 60,000+ kernel function 
+> symbols, 99% of which are in English.
 
-> ...
->
-> > That would rub out the benefit which that microbenchmark
-> > demonstrated?
+
+Neither do I use the raw/bin formats from ftrace personally, but
+they are used by automated tools such as userspace side sysprof,
+blktrace, ...
+
+Frederic.
+
+ 
+> Do you argue for them to be converted to some i8n format so that 
+> the trace output becomes readable in other languages as well? 
+> 
+> I.e. do you suggest that this:
+> 
+> >  3)               |  handle_mm_fault() {
+> >  3)               |    count_vm_event() {
+> >  3)   0.243 us    |      test_ti_thread_flag();
+> >  3)   0.754 us    |    }
+> >  3)   0.249 us    |    pud_alloc();
+> >  3)   0.251 us    |    pmd_alloc();
+> >  3)               |    __do_fault() {
+> >  3)               |      filemap_fault() {
+> >  3)               |        find_lock_page() {
+> >  3)               |          find_get_page() {
+> >  3)   0.248 us    |            test_ti_thread_flag();
+> >  3)   0.844 us    |          }
+> >  3)   1.341 us    |        }
+> >  3)   1.837 us    |      }
+> >  3)   0.275 us    |	   _spin_lock();
+> >  3)   0.257 us    |	   page_add_file_rmap();
+> >  3)   0.233 us    |      native_set_pte_at();
+> 
+> and /proc/kallsysms to be internationalized? Should all oopses 
+> and warnings that show up in the kernel log be translated as 
+> well?
+> 
+> I dont think it's realistic - and arguing for anything less and 
+> singling out tracing would be a double standard.
+> 
+> Currently being able to understand and hack the kernel means 
+> being able to read some English - and the same holds for trace 
+> output as well.
+> 
+> The default output of traces is just a mirror image of what is 
+> the kernel status quo. If the kernel gets internationalized so 
+> will ftrace be internationalized too.
+> 
+> > > So if you're arguing against specific ftrace plugins, go 
+> > > ahead (you probably have a fair point there). But please 
+> > > don't dismiss the while _concept_ of ftrace because of them.
 > > 
+> > Where on earth did that come from?
+> > 
+> > What I'm arguing against is putting English-only 
+> > pretty-printers and pretty-parsers on wrong side of int 80.  
+> > That's all.
 > 
-> It'd impact it for sure. Due to the non-temporal stores, I'm surprised
-> there is any measurable impact from the patch.  This has likely been the
-> case since commit 0812a579c92fefa57506821fa08e90f47cb6dbdd. My reading of
-> this (someone correct/enlighten) is that even if the data was cache hot,
-> it is pushed out as a result of the non-temporal access.
-
-yup, that's my understanding.
-
-> The changelog doesn't give the reasoning for using uncached accesses but maybe
-> it's because for filesystem writes, it is not expected that the data will be
-> accessed by the CPU any more and the storage device driver has less work to
-> do to ensure the data in memory is not dirty in cache (this is speculation,
-> I don't know for sure what the expected benefit is meant to be but it might
-> be in the manual, I'll check later).
+> Since the concept of a kernel tracing facility being 
+> self-sufficient and being easy to use is an integral and key 
+> concept to ftrace, dont you see why people take your suggestions 
+> as a dismissal of the ftrace concept?
 > 
-> Thinking of alternative microbenchmarks that might show this up....
-
-Well, 0812a579c92fefa57506821fa08e90f47cb6dbdd is beeing actively
-discussed over in the "Performance regression in write() syscall"
-thread.  There are patches there which disable the movnt for
-less-than-PAGE_SIZE copies.  Perhaps adapt those to disable movnt
-altogether to then see whether the use of movnt broke the advantages
-which hot-cold-pages gave us?
-
-argh.
-
-Sorry to be pushing all this kernel archeology at you.  Sometimes I
-think we're insufficiently careful about removing old stuff - it can
-turn out that it wasn't that bad after all!  (cf slab.c...)
-
-> Repeated setup, populate and teardown of pagetables might show up something
-> as it should benefit if the pages were cache hot but the cost of faulting
-> and zeroing might hide it.
-
-Well, pagetables have been churning for years, with special-cased
-magazining, quicklists, magazining of known-to-be-zeroed pages, etc.
-
-I've always felt that we're doing that wrong, or at least awkwardly. 
-If the magazining which the core page allocator does is up-to-snuff
-then it _should_ be usable for pagetables.
-
-The magazining of known-to-be-zeroed pages is a new requirement.  But
-it absolutely should not be done private to the pagetable page
-allocator (if it still is - I forget), because there are other
-callsites in the kernel which want cache-hot zeroed pages, and there
-are probably other places which free up known-to-be-zeroed pages.
+> 	Ingo
 
