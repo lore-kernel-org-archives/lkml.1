@@ -1,67 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762136AbZBYQAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762714AbZBYQBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762136AbZBYQAz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 11:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbZBYQAr
+	id S1762714AbZBYQBi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 11:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbZBYQB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 11:00:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43055 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Feb 2009 11:01:28 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:41057 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755564AbZBYQAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 11:00:46 -0500
-Date: Wed, 25 Feb 2009 17:00:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, vegard.nossum@gmail.com, stable@kernel.org,
-       akpm@linux-foundation.org, npiggin@suse.de, penberg@cs.helsinki.fi
-Subject: Re: [PATCH] v4 Teach RCU that idle task is not quiscent state at
-	boot
-Message-ID: <20090225160024.GB12732@elte.hu>
-References: <20090223161611.GA9563@linux.vnet.ibm.com> <20090223204332.GA19861@linux.vnet.ibm.com> <20090225002937.GA23733@linux.vnet.ibm.com> <20090225141945.GA28455@linux.vnet.ibm.com>
+	id S1754170AbZBYQB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 11:01:28 -0500
+Date: Wed, 25 Feb 2009 16:01:25 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
+       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
+Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
+Message-ID: <20090225160124.GA31915@csn.ul.ie>
+References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-21-git-send-email-mel@csn.ul.ie> <20090223013723.1d8f11c1.akpm@linux-foundation.org> <20090223233030.GA26562@csn.ul.ie> <20090223155313.abd41881.akpm@linux-foundation.org> <20090224115126.GB25151@csn.ul.ie> <20090224160103.df238662.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090225141945.GA28455@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090224160103.df238662.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 24, 2009 at 04:01:03PM -0800, Andrew Morton wrote:
+> On Tue, 24 Feb 2009 11:51:26 +0000
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > > > Almost the opposite with steady improvements almost all the way through.
+> > > > 
+> > > > With the patch applied, we are still using hot/cold information on the
+> > > > allocation side so I'm somewhat surprised the patch even makes much of a
+> > > > difference. I'd have expected the pages being freed to be mostly hot.
+> > > 
+> > > Oh yeah.  Back in the ancient days, hot-cold-pages was using separate
+> > > magazines for hot and cold pages.  Then Christoph went and mucked with
+> > > it, using a single queue.  That might have affected things.
+> > > 
+> > 
+> > It might have. The impact is that requests for cold pages can get hot pages
+> > if there are not enough cold pages in the queue so readahead could prevent
+> > an active process getting cache hot pages. I don't think that would have
+> > showed up in the microbenchmark though.
+> 
+> We switched to doing non-temporal stores in copy_from_user(), didn't
+> we? 
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+We do? I would have missed something like that but luckily I took a profile
+of the microbenchmark and what do you know, we spent 17053 profiles samples in
+__copy_user_nocache(). It's not quite copy_from_user() but it's close. Thanks
+for pointing that out!
 
-> +/* Internal to kernel, but needed by rcupreempt.h. */
-> +extern int rcu_idle_cpu_truthful;
+For anyone watching, copy_from_user() itself and the functions it calls do
+not use non-temporal stores. At least, I am not seeing the nt variants of
+mov in the assembly I looked at. __copy_user_nocache() on the other hand
+uses movnt and it's called in the generic_file_buffered_write() path which
+this micro-benchmark is optimising.
 
-The name sucks a bit ;-) 'truthful' is an emotionally laden 
-statement and distracts from the technical purpose when reading 
-it ;)
+> That would rub out the benefit which that microbenchmark
+> demonstrated?
+> 
 
-Same for:
+It'd impact it for sure. Due to the non-temporal stores, I'm surprised
+there is any measurable impact from the patch.  This has likely been the
+case since commit 0812a579c92fefa57506821fa08e90f47cb6dbdd. My reading of
+this (someone correct/enlighten) is that even if the data was cache hot,
+it is pushed out as a result of the non-temporal access.
 
-> +extern void rcu_idle_now_means_idle(void);
+The changelog doesn't give the reasoning for using uncached accesses but maybe
+it's because for filesystem writes, it is not expected that the data will be
+accessed by the CPU any more and the storage device driver has less work to
+do to ensure the data in memory is not dirty in cache (this is speculation,
+I don't know for sure what the expected benefit is meant to be but it might
+be in the manual, I'll check later).
 
-Also, i'm wondering, is there really no way to avoid this quirk. 
-We almost got away without it for a long time.
+Thinking of alternative microbenchmarks that might show this up....
 
-This one:
+Repeated setup, populate and teardown of pagetables might show up something
+as it should benefit if the pages were cache hot but the cost of faulting
+and zeroing might hide it.
 
->  void rcu_check_callbacks(int cpu, int user)
->  {
->  	if (user ||
-> -	    (idle_cpu(cpu) && !in_softirq() &&
-> -				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
-> +	    (idle_cpu(cpu) && rcu_idle_cpu_truthful &&
-> +	     !in_softirq() && hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+Maybe a microbenchmark that creates/deletes many small (or empty) files
+or reads large directories might benefit from cache hotness as the slab
+pages would have to be allocated, populated and then freed back to the
+allocator. I'll give it a shot but alternative suggestions are welcome.
 
-Is a hotpath called very often ...
-
-	Ingo
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
