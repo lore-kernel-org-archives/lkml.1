@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbZBYCMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbZBYCMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758269AbZBYCMR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Feb 2009 21:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbZBYCL6
+	id S1757305AbZBYCMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Feb 2009 21:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbZBYCMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Feb 2009 21:11:58 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:34225 "EHLO mail.vyatta.com"
+	Tue, 24 Feb 2009 21:12:08 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50283 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752340AbZBYCL5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Feb 2009 21:11:57 -0500
-Date: Tue, 24 Feb 2009 18:11:53 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, jesse.brandeburg@intel.com
-Subject: Re: [RFC v1] hand off skb list to other cpu to submit to upper
- layer
-Message-ID: <20090224181153.06aa1fbd@nehalam>
-In-Reply-To: <1235525270.2604.483.camel@ymzhang>
-References: <1235525270.2604.483.camel@ymzhang>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.15.4; x86_64-pc-linux-gnu)
+	id S1756686AbZBYCMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Feb 2009 21:12:07 -0500
+Date: Tue, 24 Feb 2009 21:10:33 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 0/4][RFC] event tracer
+Message-ID: <20090225021033.GA17269@redhat.com>
+References: <20090224193344.638329210@goodmis.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090224193344.638329210@goodmis.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 09:27:49 +0800
-"Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+Hi -
 
-> ﻿Subject: hand off skb list to other cpu to submit to upper layer
-> From: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> 
-> Recently, I am investigating an ip_forward performance issue with 10G IXGBE NIC.
-> I start the testing on 2 machines. Every machine has 2 10G NICs. The 1st one seconds
-> packets by pktgen. The 2nd receives the packets from one NIC and forwards them out
-> from the 2nd NIC. As NICs supports multi-queue, I bind the queues to different logical
-> cpu of different physical cpu while considering cache sharing carefully.
-> 
-> Comparing with sending speed on the 1st machine, the forward speed is not good, only
-> about 60% of sending speed. As a matter of fact, IXGBE driver starts NAPI when interrupt
-> arrives. When ip_forward=1, receiver collects a packet and forwards it out immediately.
-> So although IXGBE collects packets with NAPI, the forwarding really has much impact on
-> collection. As IXGBE runs very fast, it drops packets quickly. The better way for
-> receiving cpu is doing nothing than just collecting packets.
-> 
-> Currently kernel has backlog to support a similar capability, but process_backlog still
-> runs on the receiving cpu. I enhance backlog by adding a new input_pkt_alien_queue to
-> softnet_data. Receving cpu collects packets and link them into skb list, then delivers
-> the list to the ﻿input_pkt_alien_queue of other cpu. process_backlog picks up the skb list
-> from ﻿input_pkt_alien_queue when ﻿input_pkt_queue is empty.
-> 
-> NIC driver could use this capability like below step in NAPI RX cleanup function.
-> 1) Initiate a local var struct sk_buff_head skb_head;
-> 2) In the packet collection loop, just calls netif_rx_queue or __skb_queue_tail(skb_head, skb)
-> to add skb to the list;
-> 3) Before exiting, calls raise_netif_irq to submit the skb list to specific cpu.
-> 
-> Enlarge /proc/sys/net/core/netdev_max_backlog and netdev_budget before testing.
-> 
-> I tested my patch on top of 2.6.28.5. The improvement is about 43%.
-> 
-> Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> 
-> ---
+> This is still RFC, do not pull.
+> This patch set gives the ability to add a format string and args to
+> a trace point declaration. [...]
 
-You can't safely put packets on another CPU queue without adding a spinlock.
-And if you add the spinlock, you drop the performance back down for your
-device and all the other devices. Also, you will end up reordering
-packets which hurts single stream TCP performance.
+It looks like a good compromise, a dual to the trace_mark_tp
+prototype, and a plausible replacement for markers.  Thank you.  The
+main thing this would lose is a callback API to intercept generic
+varargs event flavour, which we in systemtap land enjoy using, but
+before too long we would make do.
 
-Is this all because the hardware doesn't do MSI-X or are you testing only
-a single flow. 
+- FChE
