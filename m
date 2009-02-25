@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbZBYJE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761153AbZBYJHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761329AbZBYJE7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 04:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbZBYJEm
+	id S1761153AbZBYJHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 04:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757198AbZBYJH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 04:04:42 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:23127 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757141AbZBYJEk (ORCPT
+	Wed, 25 Feb 2009 04:07:29 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35887 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753652AbZBYJH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 04:04:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=qowid2r/9Nltk7aCiURl+QM7EZDUAokiIyhFpLOopXZunuLTaNm6yV5gwQWnztEtKG
-         eS0E8MbNopFhztgbg/3ueN4HdglpEV3a5t4bqu3dt9uMRDxdBqWpj9j2TS3scLPPC+qK
-         kxT/Nrw1vd7kgMOfS0z9Ggv6EBz4csMjUhBJg=
-MIME-Version: 1.0
-Date: Wed, 25 Feb 2009 10:04:37 +0100
-Message-ID: <81b0412b0902250104q53f38343o303e980c1446ed3e@mail.gmail.com>
-Subject: [PATCH] Use a format string for linux_banner
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, trivial@kernel.org
-Content-Type: multipart/mixed; boundary=0015174bdf286cdff10463ba864b
+	Wed, 25 Feb 2009 04:07:27 -0500
+Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and
+ struct_mutex.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Anholt <eric@anholt.net>
+Cc: Thomas Hellstrom <thomas@shipmail.org>,
+       Wang Chen <wangchen@cn.fujitsu.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1235549745.5213.4.camel@gaiman>
+References: <1234918786-854-1-git-send-email-eric@anholt.net>
+	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org>
+	 <1235082372.4612.665.camel@laptop>  <1235095484.2636.39.camel@gaiman>
+	 <1235115406.4736.4.camel@laptop>  <1235549745.5213.4.camel@gaiman>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 10:07:16 +0100
+Message-Id: <1235552836.4645.3089.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0015174bdf286cdff10463ba864b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, 2009-02-25 at 00:15 -0800, Eric Anholt wrote:
+> > Or you could get_user_pages() to fault the user pages and pin them, and
+> > then do pagefault_disable() and use copy_from_user_inatomic or such, and
+> > release the pages again.
+> 
+> I started poking at this today, since the get_user_pages sounded like
+> the solution.  Only then I noticed: when we unbind an existing object,
+> we have to unmap_mapping_range to clear the clients' mappings to it in
+> the GTT, which needs to happen while the struct lock (protecting the gtt
+> structure and the gtt to object mappings) is held.  So for fault we have
+> mmap_sem held to struct mutex taken for poking at the gtt structure, and
+> for unbind we have struct mutex held to mmap_sem taken to clear
+> mappings.
 
-There is no format specifiers left in the linux_banner,
-and gcc complains seeing the printk.
+So it again comes down to the fact that you cannot pin a gtt object
+without also holding this struct_mutex?
 
-Signed-off-by: Alex Riesen <raa.lkml@gmail.com>
----
- init/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Normally such things are done by elevating a refcount so that both
+regular frees and reclaim gets delayed until you're done with the
+object.
 
---0015174bdf286cdff10463ba864b
-Content-Type: application/octet-stream; 
-	name="0001-Use-a-format-for-linux_banner.diff"
-Content-Disposition: attachment; 
-	filename="0001-Use-a-format-for-linux_banner.diff"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_frls5aej0
 
-RnJvbSBlN2I0NGM0YzFkN2QwZjE4MmYwMTAwYjBkYzMxYzIwZmIzZGZlOGVhIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBBbGV4IFJpZXNlbiA8cmFhLmxrbWxAZ21haWwuY29tPgpEYXRl
-OiBXZWQsIDI1IEZlYiAyMDA5IDA5OjUzOjE1ICswMTAwClN1YmplY3Q6IFtQQVRDSF0gVXNlIGEg
-Zm9ybWF0IHN0cmluZyBmb3IgbGludXhfYmFubmVyCgpUaGVyZSBpcyBubyBmb3JtYXQgc3BlY2lm
-aWVycyBsZWZ0IGluIHRoZSBsaW51eF9iYW5uZXIsCmFuZCBnY2MgY29tcGxhaW5zIHNlZWluZyB0
-aGUgcHJpbnRrLgoKU2lnbmVkLW9mZi1ieTogQWxleCBSaWVzZW4gPHJhYS5sa21sQGdtYWlsLmNv
-bT4KLS0tCiBpbml0L21haW4uYyB8ICAgIDIgKy0KIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRp
-b25zKCspLCAxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2luaXQvbWFpbi5jIGIvaW5pdC9t
-YWluLmMKaW5kZXggODQ0MjA5NC4uNzhmYzBkOCAxMDA2NDQKLS0tIGEvaW5pdC9tYWluLmMKKysr
-IGIvaW5pdC9tYWluLmMKQEAgLTU1NCw3ICs1NTQsNyBAQCBhc21saW5rYWdlIHZvaWQgX19pbml0
-IHN0YXJ0X2tlcm5lbCh2b2lkKQogCWJvb3RfY3B1X2luaXQoKTsKIAlwYWdlX2FkZHJlc3NfaW5p
-dCgpOwogCXByaW50ayhLRVJOX05PVElDRSk7Ci0JcHJpbnRrKGxpbnV4X2Jhbm5lcik7CisJcHJp
-bnRrKCIlcyIsIGxpbnV4X2Jhbm5lcik7CiAJc2V0dXBfYXJjaCgmY29tbWFuZF9saW5lKTsKIAlt
-bV9pbml0X293bmVyKCZpbml0X21tLCAmaW5pdF90YXNrKTsKIAlzZXR1cF9jb21tYW5kX2xpbmUo
-Y29tbWFuZF9saW5lKTsKLS0gCjEuNi4yLnJjMS40Ni5nYjNlYzg0ZgoK
---0015174bdf286cdff10463ba864b--
+
