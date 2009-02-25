@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZBYVBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbZBYVD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbZBYVBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 16:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZBYVBG
+	id S1760822AbZBYVD6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 16:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbZBYVDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 16:01:06 -0500
-Received: from omr4.networksolutionsemail.com ([205.178.146.54]:47275 "EHLO
-	omr4.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756330AbZBYVBF (ORCPT
+	Wed, 25 Feb 2009 16:03:50 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:40771 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755282AbZBYVDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 16:01:05 -0500
-Message-ID: <49A5B17C.9060705@nerdgrounds.com>
-Date: Wed, 25 Feb 2009 13:00:44 -0800
-From: Jonathan Campbell <jon@nerdgrounds.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 25 Feb 2009 16:03:49 -0500
+Date: Wed, 25 Feb 2009 15:03:36 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 4/4] keys: make procfiles per-user-namespace
+Message-ID: <20090225210336.GA20086@us.ibm.com>
+References: <20090223204041.GA31626@us.ibm.com> <20090109225313.GB15599@us.ibm.com> <20090109225208.GA15252@us.ibm.com> <5296.1234522990@redhat.com> <16728.1235565664@redhat.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: ATI Radeon DIRECTCOLOR -> TRUECOLOR patch
-References: <49A52A73.2000406@nerdgrounds.com>	 <20090225.035712.103590506.davem@davemloft.net> <1235594524.8805.326.camel@pasglop>
-In-Reply-To: <1235594524.8805.326.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <16728.1235565664@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  But at the very least could radeonfb default to truecolor-like 
-behavior and leave the bizarre ramp mapping for programs that want it?
-> On Wed, 2009-02-25 at 03:57 -0800, David Miller wrote:
->> From: Jonathan Campbell <jon@nerdgrounds.com>
->> Date: Wed, 25 Feb 2009 03:24:35 -0800
->>
->> [ Ben H. is the Radeon driver maintainer, as listed in
->>   linux/MAINTAINERS, you might want to CC: him ]
->>
->>> I don't know about you but when I ask the framebuffer to set up
->>> 16-bit or 32-bit RGB modes I expect a video mode to be set up with
->>> R, G, and B mapped linearly so that I can display images properly,
->>> not some odd "directcolor" mode that seems to serve no other purpose
->>> than to avoid a few shifts converting the fbcon palette to an RGB
->>> triplet.
->> It might be using DIRECTCOLOR for compatibility with openfirmware,
->> BOOTX, or similar on PowerPC.
->
-> Hrm, the kernel fb layer does seem to do strange things with the palette
-> for >8bpp stuff indeed. I'm not entirely sure why.
->
-> The problem if you switch to truecolor is that you remove the ability to
-> set the gamma ramp completely which some apps use.
->
-> Normally, I'd say it's the responsibility of your application, when it's
-> displaying pictures, to set an appropriate cmap. If you don't like the
-> one set by fbcon for displaying text, just set another one. Ie. You
-> aren't -supposed- to mix graphics and fbcon text from an application...
-> if you're going to blast to the fb, you should switch to KD_GRAPHICS (ie
-> take ownership of the VT) and set a linear ramp yourself.
->
-> Cheers,
-> Ben.
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
+Quoting David Howells (dhowells@redhat.com):
+> Serge E. Hallyn <serue@us.ibm.com> wrote:
+> 
+> > > Hmmm...  I wonder if we can do better by making the file position indicate
+> > > the key ID rather than being a count of the number of keys read.  It might
+> > > make this cleaner.
+> > 
+> > file position?  as in the result of lseek(fd, 0, SEEK_CUR)?
+> > 
+> > I don't understand what you're suggesting.
+> 
+> Currently the file position on /proc/keys indicates the number of keys that
+> have been read.  It is incremented by 1 for each key read, irrespective of the
+> length of the line that was read for that key.
+> 
+> We could, instead, map file positions to key IDs, and skip any file positions
+> that don't actually map to an extant key.
 
+So you want users to be able to mmap the file and lseek to a particular
+spot?  Is that bc you have users with so many keys that
+	grep keyid /proc/keys
+becomes slow?
+
+Or am I still misunderstanding?
+
+Meanwhile, do you have any objections to these 4 patches?  :)
+
+thanks,
+-serge
