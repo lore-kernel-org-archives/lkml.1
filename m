@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZBYRx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZBYRx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbZBYRx3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 12:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZBYRxT
+	id S1757917AbZBYRx6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 12:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbZBYRxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 12:53:19 -0500
-Received: from sov-mail-b0012.gradwell.net ([193.84.87.36]:44106 "EHLO
-	sov-mail-b0012.gradwell.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752694AbZBYRxS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 12:53:18 -0500
-Date: Wed, 25 Feb 2009 17:52:49 +0000
-From: Alex Buell <alex.buell@munted.org.uk>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Unused modules in 2.6.x
-Message-ID: <20090225175249.30e47b85@lithium.local.net>
-Organization: One tortoiseshell cat, very high maintenance
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
-X-Face: "wUuhsy:X)M;>-dA\j"&y@*\$91]iX10Iv1WG_oNbGYpo,eqc06O?"VSeRTx]xM\LiITUh01z}<|GF/4Gzz(MAU~;p4AS,%TB69M:vB-9+i'#W7$UQCW&UP#zt{VdLlzEiw8k~jL<
+	Wed, 25 Feb 2009 12:53:46 -0500
+Received: from zombie2.ncsc.mil ([144.51.88.133]:60900 "EHLO zombie2.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755116AbZBYRxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 12:53:45 -0500
+Subject: Re: [RFC 0/8] Aufs2 documents
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: hooanon05@yahoo.co.jp
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <7558.1235374266@jrobl>
+References: <7558.1235374266@jrobl>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 25 Feb 2009 12:50:54 -0500
+Message-Id: <1235584254.15148.86.camel@moss-terrapins.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I think it would be useful to see the source code for AUFS2 posted to
+LKML. One of the questions I have not which doesn't seem to be addressed
+in these documents is how robust is your xattr support and are you
+making the appropriate LSM calls to make this usable with SELinux and
+Smack. Also from a labeling perspective you have a very interesting
+question of which label do you select when unifying directories. If you
+have a/foo and b/foo each with different labels which do you choose.
+Based on the history of Union type file systems I would suspect the
+answer is whichever branch is listed first. 
 
-Perhaps I missed something when the 2.6.x kernels got started a few
-years back, but why is it not possible for unused modules to be
-automatically unloaded anymore i.e with rmmod -a? I remember being able
-to do that with the 2.2.x and 2.4.x series a long time ago.
+Dave
 
-
-Thanks,
-Alex
--- 
-http://www.munted.org.uk
-
-Fearsome grindings.
