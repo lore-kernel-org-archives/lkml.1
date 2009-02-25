@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbZBYWjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761594AbZBYWkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760822AbZBYWjR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 17:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZBYWjB
+	id S1761594AbZBYWkb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 17:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZBYWkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 17:39:01 -0500
-Received: from mga01.intel.com ([192.55.52.88]:13033 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753209AbZBYWjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 17:39:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,266,1233561600"; 
-   d="scan'208";a="668544855"
-Subject: Re: [PATCH] fsldma: dev_err 1 too early.
-From: Dan Williams <dan.j.williams@intel.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <49A53DCA.4060004@gmail.com>
-References: <49A53DCA.4060004@gmail.com>
+	Wed, 25 Feb 2009 17:40:22 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47603 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754119AbZBYWkV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 17:40:21 -0500
+Subject: Re: [PATCH] Make exported headers use strict posix types
+From: David Woodhouse <dwmw2@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <49A5C118.3070605@zytor.com>
+References: <20090225032553.GD6690@bombadil.infradead.org>
+	 <200902251917.49017.arnd@arndb.de>
+	 <20090225201131.GA26110@uranus.ravnborg.org>
+	 <200902252258.30489.arnd@arndb.de>  <49A5C118.3070605@zytor.com>
 Content-Type: text/plain
-Date: Wed, 25 Feb 2009 15:38:58 -0700
-Message-Id: <1235601538.21542.10.camel@dwillia2-linux.ch.intel.com>
+Date: Thu, 26 Feb 2009 07:39:46 +0900
+Message-Id: <1235601586.4913.9.camel@macbook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-25 at 05:47 -0700, Roel Kluin wrote:
-> If unsuccessful, i reaches 101 after the loop, so 100 is still success.
+On Wed, 2009-02-25 at 14:07 -0800, H. Peter Anvin wrote:
+> Arnd Bergmann wrote:
+> > 
+> > Actually, this change does belong in here: This is the only user of u_short
+> > in exported headers, and nothing uses u_char, u_int or u_long, so it gets
+> > rid of a whole class of types. The only questionable types left after this
+> > are the standard stdint.h types, many of which are probably legitimate:
+> > 
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 70126a6..444c4e4 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -168,7 +168,7 @@ static void dma_halt(struct fsl_dma_chan *fsl_chan)
->  
->  	while (!dma_is_idle(fsl_chan) && (i++ < 100))
->  		udelay(10);
-> -	if (i >= 100 && !dma_is_idle(fsl_chan))
-> +	if (i > 100 && !dma_is_idle(fsl_chan))
->  		dev_err(fsl_chan->dev, "DMA halt timeout!\n");
->  }
->  
+> Not legitimate in *exported* headers.
 
-Thanks for the report.  I prefer a more canonical loop.  Objections?
+Not in the ones which might be included implicitly by glibc, perhaps --
+but other non-POSIX headers are perfectly entitled to require C standard
+types, surely?
 
---
-Dan
-
-<-----
-fsldma: fix off by one in dma_halt
-
-From: Dan Williams <dan.j.williams@intel.com>
-
-Prevent dev_err from firing even if we successfully detected 'dma-idle'
-before the full 1ms timeout has elapsed.
-
-Reported-by: Roel Kluin <roel.kluin@gmail.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- drivers/dma/fsldma.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 70126a6..86d6da4 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -158,7 +158,8 @@ static void dma_start(struct fsl_dma_chan *fsl_chan)
- 
- static void dma_halt(struct fsl_dma_chan *fsl_chan)
- {
--	int i = 0;
-+	int i;
-+
- 	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
- 		DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) | FSL_DMA_MR_CA,
- 		32);
-@@ -166,8 +167,11 @@ static void dma_halt(struct fsl_dma_chan *fsl_chan)
- 		DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) & ~(FSL_DMA_MR_CS
- 		| FSL_DMA_MR_EMS_EN | FSL_DMA_MR_CA), 32);
- 
--	while (!dma_is_idle(fsl_chan) && (i++ < 100))
-+	for (i = 0; i < 100; i++) {
-+		if (dma_is_idle(fsl_chan))
-+			break;
- 		udelay(10);
-+	}
- 	if (i >= 100 && !dma_is_idle(fsl_chan))
- 		dev_err(fsl_chan->dev, "DMA halt timeout!\n");
- }
-
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
