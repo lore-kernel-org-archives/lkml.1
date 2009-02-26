@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbZBZTYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZBZTYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbZBZTYd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZBZTYZ
+	id S1756123AbZBZTYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZBZTYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 26 Feb 2009 14:24:25 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35106 "EHLO
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35105 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752379AbZBZTYY (ORCPT
+	by vger.kernel.org with ESMTP id S1752419AbZBZTYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Feb 2009 14:24:24 -0500
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Liam Girdwood <lrg@slimlogic.co.uk>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 1/2] regulator: Allow regulators to set the initial operating mode
-Date: Thu, 26 Feb 2009 19:24:19 +0000
-Message-Id: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2/2] regulator: Fix get_mode() for WM835x DCDCs
+Date: Thu, 26 Feb 2009 19:24:20 +0000
+Message-Id: <1235676260-19696-2-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is useful when wishing to run in a fixed operating mode that isn't
-the default.
+The WM835x regulators need a different register checking for force
+mode on each DCDC. Previously the force mode status for DCDC1 was
+checked.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/regulator/core.c          |   17 +++++++++++++++++
- include/linux/regulator/machine.h |    4 ++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
+ drivers/regulator/wm8350-regulator.c |   24 ++++++++++++++++++------
+ 1 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index d55a25a..75abcd8 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -724,6 +724,23 @@ static int set_machine_constraints(struct regulator_dev *rdev,
- 		}
- 	}
+diff --git a/drivers/regulator/wm8350-regulator.c b/drivers/regulator/wm8350-regulator.c
+index 93e0ce5..261db94 100644
+--- a/drivers/regulator/wm8350-regulator.c
++++ b/drivers/regulator/wm8350-regulator.c
+@@ -1031,18 +1031,30 @@ static unsigned int wm8350_dcdc_get_mode(struct regulator_dev *rdev)
+ 	int dcdc = rdev_get_id(rdev);
+ 	u16 mask, sleep, active, force;
+ 	int mode = REGULATOR_MODE_NORMAL;
++	int reg;
  
-+	if (constraints->initial_mode) {
-+		if (!ops->set_mode) {
-+			printk(KERN_ERR "%s: no set_mode operation for %s\n",
-+			       __func__, name);
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+
-+		ret = ops->set_mode(rdev, constraints->initial_mode);
-+		if (ret < 0) {
-+			printk(KERN_ERR
-+			       "%s: failed to set initial mode for %s: %d\n",
-+			       __func__, name, ret);
-+			goto out;
-+		}
+-	if (dcdc < WM8350_DCDC_1 || dcdc > WM8350_DCDC_6)
+-		return -EINVAL;
+-
+-	if (dcdc == WM8350_DCDC_2 || dcdc == WM8350_DCDC_5)
++	switch (dcdc) {
++	case WM8350_DCDC_1:
++		reg = WM8350_DCDC1_FORCE_PWM;
++		break;
++	case WM8350_DCDC_3:
++		reg = WM8350_DCDC3_FORCE_PWM;
++		break;
++	case WM8350_DCDC_4:
++		reg = WM8350_DCDC4_FORCE_PWM;
++		break;
++	case WM8350_DCDC_6:
++		reg = WM8350_DCDC6_FORCE_PWM;
++		break;
++	default:
+ 		return -EINVAL;
 +	}
-+
- 	/* if always_on is set then turn the regulator on if it's not
- 	 * already on. */
- 	if (constraints->always_on && ops->enable &&
-diff --git a/include/linux/regulator/machine.h b/include/linux/regulator/machine.h
-index 5aa00ee..1eb861c 100644
---- a/include/linux/regulator/machine.h
-+++ b/include/linux/regulator/machine.h
-@@ -83,6 +83,7 @@ struct regulator_state {
-  * @state_standby: State for regulator when system is suspended in standby
-  *                 mode.
-  * @initial_state: Suspend state to set by default.
-+ * @initial_mode: Mode to set at startup.
-  */
- struct regulation_constraints {
  
-@@ -111,6 +112,9 @@ struct regulation_constraints {
- 	struct regulator_state state_standby;
- 	suspend_state_t initial_state; /* suspend state to set at init */
- 
-+	/* mode to set on startup */
-+	unsigned int initial_mode;
+ 	mask = 1 << (dcdc - WM8350_DCDC_1);
+ 	active = wm8350_reg_read(wm8350, WM8350_DCDC_ACTIVE_OPTIONS) & mask;
++	force = wm8350_reg_read(wm8350, reg) & WM8350_DCDC1_FORCE_PWM_ENA;
+ 	sleep = wm8350_reg_read(wm8350, WM8350_DCDC_SLEEP_OPTIONS) & mask;
+-	force = wm8350_reg_read(wm8350, WM8350_DCDC1_FORCE_PWM)
+-	    & WM8350_DCDC1_FORCE_PWM_ENA;
 +
- 	/* constriant flags */
- 	unsigned always_on:1;	/* regulator never off when system is on */
- 	unsigned boot_on:1;	/* bootloader/firmware enabled regulator */
+ 	dev_dbg(wm8350->dev, "mask %x active %x sleep %x force %x",
+ 		mask, active, sleep, force);
+ 
 -- 
 1.6.1.3
 
