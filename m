@@ -1,85 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZBZSJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZBZSLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbZBZSJm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 13:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZBZSJd
+	id S1753430AbZBZSLd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 13:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZBZSLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 13:09:33 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:48562 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbZBZSJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 13:09:32 -0500
-Subject: Re: [tip:timers/ntp] time: apply NTP frequency/tick changes
- immediately, fix
-From: John Stultz <johnstul@us.ibm.com>
-To: hpa@zytor.com, mingo@redhat.com, williams@redhat.com, tglx@linutronix.de,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <tip-a66a97da747f7a119f45626c9d8170f8cac61b37@kernel.org>
-References: <tip-a66a97da747f7a119f45626c9d8170f8cac61b37@kernel.org>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 10:08:05 -0800
-Message-Id: <1235671685.3793.31.camel@jstultz-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 13:11:24 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52448 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbZBZSLY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 13:11:24 -0500
+Date: Thu, 26 Feb 2009 13:11:19 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Kyle McMartin <kyle@infradead.org>
+Cc: airlied@redhat.com, jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [PATCH] drm: edid: don't fail to build on big endian
+Message-ID: <20090226181119.GQ6690@bombadil.infradead.org>
+References: <20090226172327.GN6690@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090226172327.GN6690@bombadil.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 17:57 +0000, John Stultz wrote:
-> Author:     John Stultz <johnstul@us.ibm.com>
-> AuthorDate: Thu, 26 Feb 2009 09:46:14 -0800
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu, 26 Feb 2009 18:55:36 +0100
+On Thu, Feb 26, 2009 at 12:23:27PM -0500, Kyle McMartin wrote:
+> From: Kyle McMartin <kyle@redhat.com>
 > 
-> time: apply NTP frequency/tick changes immediately, fix
-
-Sorry, the commit name isn't quite right there. I should have added the
-patch name explicitly. This patch was a fix to the following patch in
--tip:
-
-time: ntp: fix bug in ntp_update_offset() & do_adjtimex()
-
-
-thanks
--john
-
-
-
-> The time_status conditional was accidentally placed right after we clear
-> the checked time_status bits, which causes us to take the conditional
-> every time through. This fixes it by moving the conditional to before we
-> clear the time_status bits.
+> Currently, DRM only accidently builds on powerpc/sparc64/etc, because
+> the #ifdef in drm_edid.h was using BIG_ENDIAN instead of __BIG_ENDIAN.
 > 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> Cc: Clark Williams <williams@redhat.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Since there's currently no driver which can use this on powerpc at the
+> moment (radeon modesetting is not upstream yet...) instead of failing to
+> build the entire DRM because of it, just bail out in the individual
+> EDID functions.
 > 
+> Signed-off-by: Kyle McMartin <kyle@redhat.com>
 > 
-> ---
->  kernel/time/ntp.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-> index c74eb7d..7fc6437 100644
-> --- a/kernel/time/ntp.c
-> +++ b/kernel/time/ntp.c
-> @@ -365,8 +365,6 @@ static inline void process_adj_status(struct timex *txc, struct timespec *ts)
->  		time_state = TIME_OK;
->  		time_status = STA_UNSYNC;
->  	}
-> -	/* only set allowed bits */
-> -	time_status &= STA_RONLY;
-> 
->  	/*
->  	 * If we turn on PLL adjustments then reset the
-> @@ -375,6 +373,8 @@ static inline void process_adj_status(struct timex *txc, struct timespec *ts)
->  	if (!(time_status & STA_PLL) && (txc->status & STA_PLL))
->  		time_reftime = xtime.tv_sec;
-> 
-> +	/* only set allowed bits */
-> +	time_status &= STA_RONLY;
->  	time_status |= txc->status & ~STA_RONLY;
-> 
->  	switch (time_state) {
 
+Ugh, I noviced a hand-edit of that email. My bad.
+
+---
+diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
+index a839a28..3357394 100644
+--- a/drivers/gpu/drm/drm_edid.c
++++ b/drivers/gpu/drm/drm_edid.c
+@@ -551,6 +551,7 @@ static int add_detailed_info(struct drm_connector *connector,
+ 
+ #define DDC_ADDR 0x50
+ 
++#ifdef __LITTLE_ENDIAN
+ unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
+ {
+ 	unsigned char start = 0x0;
+@@ -582,6 +583,13 @@ unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
+ 	kfree(buf);
+ 	return NULL;
+ }
++#else
++unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
++{
++	dev_info(&adapter->dev, "EDID unsupported on big endian.\n");
++	return NULL;
++}
++#endif /*__BIG_ENDIAN*/
+ EXPORT_SYMBOL(drm_do_probe_ddc_edid);
+ 
+ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
+@@ -653,6 +661,7 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
+  *
+  * Return edid data or NULL if we couldn't find any.
+  */
++#ifdef __LITTLE_ENDIAN
+ struct edid *drm_get_edid(struct drm_connector *connector,
+ 			  struct i2c_adapter *adapter)
+ {
+@@ -675,6 +684,15 @@ struct edid *drm_get_edid(struct drm_connector *connector,
+ 
+ 	return edid;
+ }
++#else
++struct edid *drm_get_edid(struct drm_connector *connector,
++			  struct i2c_adapter *adapter)
++{
++	dev_warn(&connector->dev->pdev->dev, "%s: EDID unsupported on big endian.\n",
++		drm_get_connector_name(connector));
++	return NULL;
++}
++#endif /*__BIG_ENDIAN*/
+ EXPORT_SYMBOL(drm_get_edid);
+ 
+ /**
+@@ -686,6 +704,7 @@ EXPORT_SYMBOL(drm_get_edid);
+  *
+  * Return number of modes added or 0 if we couldn't find any.
+  */
++#ifdef __LITTLE_ENDIAN
+ int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid)
+ {
+ 	int num_modes = 0;
+@@ -729,4 +748,12 @@ int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid)
+ 
+ 	return num_modes;
+ }
++#else
++int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid)
++{
++	dev_warn(&connector->dev->pdev->dev, "%s: EDID unsupported on big endian.\n",
++		 drm_get_connector_name(connector));
++	return 0;
++}
++#endif /*__BIG_ENDIAN*/
+ EXPORT_SYMBOL(drm_add_edid_modes);
+diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
+index ff8d27a..918b619 100644
+--- a/include/drm/drm_edid.h
++++ b/include/drm/drm_edid.h
+@@ -28,10 +28,6 @@
+ #define EDID_LENGTH 128
+ #define DDC_ADDR 0x50
+ 
+-#ifdef BIG_ENDIAN
+-#error "EDID structure is little endian, need big endian versions"
+-#else
+-
+ struct est_timings {
+ 	u8 t1;
+ 	u8 t2;
+@@ -195,8 +191,6 @@ struct edid {
+ 	u8 checksum;
+ } __attribute__((packed));
+ 
+-#endif /* little endian structs */
+-
+ #define EDID_PRODUCT_ID(e) ((e)->prod_code[0] | ((e)->prod_code[1] << 8))
+ 
+ #endif /* __DRM_EDID_H__ */
