@@ -1,341 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZBZJsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbZBZJuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbZBZJsh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 04:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZBZJs0
+	id S1754912AbZBZJuA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 04:50:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZBZJtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 04:48:26 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:39103 "EHLO kernel.dk"
+	Thu, 26 Feb 2009 04:49:50 -0500
+Received: from bilbo.ozlabs.org ([203.10.76.25]:37156 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751412AbZBZJsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 04:48:25 -0500
-Date: Thu, 26 Feb 2009 10:48:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] block bits for 2.6.29-rc
-Message-ID: <20090226094821.GH6602@kernel.dk>
+	id S1751412AbZBZJts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 04:49:48 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18854.26007.890850.336512@cargo.ozlabs.ibm.com>
+Date: Thu, 26 Feb 2009 20:49:11 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] Performance Counters for Linux, v6
+In-Reply-To: <200902210147.20785.arnd@arndb.de>
+References: <20090121185021.GA8852@elte.hu>
+	<200902210147.20785.arnd@arndb.de>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Arnd Bergmann writes:
 
-A small collection of fixes for the current -rc series, please pull.
+> On Wednesday 21 January 2009, Ingo Molnar wrote:
+> 
+> > diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+> > index 72353f6..4c8095f 100644
+> > --- a/arch/powerpc/include/asm/systbl.h
+> > +++ b/arch/powerpc/include/asm/systbl.h
+> > @@ -322,3 +322,4 @@ SYSCALL_SPU(epoll_create1)
+> >  SYSCALL_SPU(dup3)
+> >  SYSCALL_SPU(pipe2)
+> >  SYSCALL(inotify_init1)
+> > +SYSCALL(perf_counter_open)
+> 
+> Is there a reason to forbid this on the SPU? It's probably not particularly
+> useful, but it shouldn't hurt.
 
-  git://git.kernel.dk/linux-2.6-block.git for-linus
+No, it's just an oversight, plus the fact that this stuff doesn't
+support the hardware counters on Cell, which I've heard is rather
+unusual.  Don't you have to hcalls to access it on machines with a
+hypervisor?  Also, is there any facility for counting events on the
+SPUs?
 
-Jens Axboe (4):
-      block: fix bogus gcc warning for uninitialized var usage
-      cciss: shorten 30s timeout on controller reset
-      block: reduce stack footprint of blk_recount_segments()
-      xen/blkfront: use blk_rq_map_sg to generate ring entries
+> > +#ifdef CONFIG_PERF_COUNTERS
+> > +# include <asm/perf_counter.h>
+> > +#endif
+> > +
+> > +#include <linux/list.h>
+> > +#include <linux/mutex.h>
+> > +#include <linux/rculist.h>
+> > +#include <linux/rcupdate.h>
+> > +#include <linux/spinlock.h>
+> 
+> I guess all */perf_counter.h files should be exported, but then
+> the #ifdef won't work when the file is included from user space.
+> Also, some of the included headers are not exported.
 
-Márton Németh (1):
-      block: add documentation for register_blkdev()
+You're right, we do need to clean this up a bit.  So far, userspace
+programs have tended to use their own copies of the relevant
+definitions.
 
- block/blk-merge.c            |   94 +++++++++++++++++++++++------------------
- block/genhd.c                |   16 +++++++
- drivers/block/cciss.c        |   10 +++-
- drivers/block/xen-blkfront.c |   30 +++++++-------
- fs/bio.c                     |    2 +-
- include/linux/blkdev.h       |    2 +
- 6 files changed, 94 insertions(+), 60 deletions(-)
+I think all that userspace needs is the hw_event_types enum, the
+perf_counter_record_type enum, the perf_counter_hw_event struct, and
+the ioctl definitions.  I don't see why userspace would need the asm
+bits.
 
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index b92f5b0..a104593 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -38,72 +38,84 @@ void blk_recalc_rq_sectors(struct request *rq, int nsect)
- 	}
- }
- 
--void blk_recalc_rq_segments(struct request *rq)
-+static unsigned int __blk_recalc_rq_segments(struct request_queue *q,
-+					     struct bio *bio,
-+					     unsigned int *seg_size_ptr)
- {
--	int nr_phys_segs;
- 	unsigned int phys_size;
- 	struct bio_vec *bv, *bvprv = NULL;
--	int seg_size;
--	int cluster;
--	struct req_iterator iter;
--	int high, highprv = 1;
--	struct request_queue *q = rq->q;
-+	int cluster, i, high, highprv = 1;
-+	unsigned int seg_size, nr_phys_segs;
-+	struct bio *fbio;
- 
--	if (!rq->bio)
--		return;
-+	if (!bio)
-+		return 0;
- 
-+	fbio = bio;
- 	cluster = test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags);
- 	seg_size = 0;
- 	phys_size = nr_phys_segs = 0;
--	rq_for_each_segment(bv, rq, iter) {
--		/*
--		 * the trick here is making sure that a high page is never
--		 * considered part of another segment, since that might
--		 * change with the bounce page.
--		 */
--		high = page_to_pfn(bv->bv_page) > q->bounce_pfn;
--		if (high || highprv)
--			goto new_segment;
--		if (cluster) {
--			if (seg_size + bv->bv_len > q->max_segment_size)
--				goto new_segment;
--			if (!BIOVEC_PHYS_MERGEABLE(bvprv, bv))
--				goto new_segment;
--			if (!BIOVEC_SEG_BOUNDARY(q, bvprv, bv))
-+	for_each_bio(bio) {
-+		bio_for_each_segment(bv, bio, i) {
-+			/*
-+			 * the trick here is making sure that a high page is
-+			 * never considered part of another segment, since that
-+			 * might change with the bounce page.
-+			 */
-+			high = page_to_pfn(bv->bv_page) > q->bounce_pfn;
-+			if (high || highprv)
- 				goto new_segment;
-+			if (cluster) {
-+				if (seg_size + bv->bv_len > q->max_segment_size)
-+					goto new_segment;
-+				if (!BIOVEC_PHYS_MERGEABLE(bvprv, bv))
-+					goto new_segment;
-+				if (!BIOVEC_SEG_BOUNDARY(q, bvprv, bv))
-+					goto new_segment;
-+
-+				seg_size += bv->bv_len;
-+				bvprv = bv;
-+				continue;
-+			}
-+new_segment:
-+			if (nr_phys_segs == 1 && seg_size >
-+			    fbio->bi_seg_front_size)
-+				fbio->bi_seg_front_size = seg_size;
- 
--			seg_size += bv->bv_len;
-+			nr_phys_segs++;
- 			bvprv = bv;
--			continue;
-+			seg_size = bv->bv_len;
-+			highprv = high;
- 		}
--new_segment:
--		if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
--			rq->bio->bi_seg_front_size = seg_size;
--
--		nr_phys_segs++;
--		bvprv = bv;
--		seg_size = bv->bv_len;
--		highprv = high;
- 	}
- 
--	if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
-+	if (seg_size_ptr)
-+		*seg_size_ptr = seg_size;
-+
-+	return nr_phys_segs;
-+}
-+
-+void blk_recalc_rq_segments(struct request *rq)
-+{
-+	unsigned int seg_size = 0, phys_segs;
-+
-+	phys_segs = __blk_recalc_rq_segments(rq->q, rq->bio, &seg_size);
-+
-+	if (phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
- 		rq->bio->bi_seg_front_size = seg_size;
- 	if (seg_size > rq->biotail->bi_seg_back_size)
- 		rq->biotail->bi_seg_back_size = seg_size;
- 
--	rq->nr_phys_segments = nr_phys_segs;
-+	rq->nr_phys_segments = phys_segs;
- }
- 
- void blk_recount_segments(struct request_queue *q, struct bio *bio)
- {
--	struct request rq;
- 	struct bio *nxt = bio->bi_next;
--	rq.q = q;
--	rq.bio = rq.biotail = bio;
-+
- 	bio->bi_next = NULL;
--	blk_recalc_rq_segments(&rq);
-+	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
- 	bio->bi_next = nxt;
--	bio->bi_phys_segments = rq.nr_phys_segments;
- 	bio->bi_flags |= (1 << BIO_SEG_VALID);
- }
- EXPORT_SYMBOL(blk_recount_segments);
-diff --git a/block/genhd.c b/block/genhd.c
-index e1eadcc..a9ec910 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -256,6 +256,22 @@ void blkdev_show(struct seq_file *seqf, off_t offset)
- }
- #endif /* CONFIG_PROC_FS */
- 
-+/**
-+ * register_blkdev - register a new block device
-+ *
-+ * @major: the requested major device number [1..255]. If @major=0, try to
-+ *         allocate any unused major number.
-+ * @name: the name of the new block device as a zero terminated string
-+ *
-+ * The @name must be unique within the system.
-+ *
-+ * The return value depends on the @major input parameter.
-+ *  - if a major device number was requested in range [1..255] then the
-+ *    function returns zero on success, or a negative error code
-+ *  - if any unused major number was requested with @major=0 parameter
-+ *    then the return value is the allocated major number in range
-+ *    [1..255] or a negative error code otherwise
-+ */
- int register_blkdev(unsigned int major, const char *name)
- {
- 	struct blk_major_name **n, *p;
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index d2cb67b..b5a0611 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3611,11 +3611,15 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 		schedule_timeout_uninterruptible(30*HZ);
- 
- 		/* Now try to get the controller to respond to a no-op */
--		for (i=0; i<12; i++) {
-+		for (i=0; i<30; i++) {
- 			if (cciss_noop(pdev) == 0)
- 				break;
--			else
--				printk("cciss: no-op failed%s\n", (i < 11 ? "; re-trying" : ""));
-+
-+			schedule_timeout_uninterruptible(HZ);
-+		}
-+		if (i == 30) {
-+			printk(KERN_ERR "cciss: controller seems dead\n");
-+			return -EBUSY;
- 		}
- 	}
- 
-diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-index 918ef72..b6c8ce2 100644
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -40,6 +40,7 @@
- #include <linux/hdreg.h>
- #include <linux/cdrom.h>
- #include <linux/module.h>
-+#include <linux/scatterlist.h>
- 
- #include <xen/xenbus.h>
- #include <xen/grant_table.h>
-@@ -82,6 +83,7 @@ struct blkfront_info
- 	enum blkif_state connected;
- 	int ring_ref;
- 	struct blkif_front_ring ring;
-+	struct scatterlist sg[BLKIF_MAX_SEGMENTS_PER_REQUEST];
- 	unsigned int evtchn, irq;
- 	struct request_queue *rq;
- 	struct work_struct work;
-@@ -204,12 +206,11 @@ static int blkif_queue_request(struct request *req)
- 	struct blkfront_info *info = req->rq_disk->private_data;
- 	unsigned long buffer_mfn;
- 	struct blkif_request *ring_req;
--	struct req_iterator iter;
--	struct bio_vec *bvec;
- 	unsigned long id;
- 	unsigned int fsect, lsect;
--	int ref;
-+	int i, ref;
- 	grant_ref_t gref_head;
-+	struct scatterlist *sg;
- 
- 	if (unlikely(info->connected != BLKIF_STATE_CONNECTED))
- 		return 1;
-@@ -238,12 +239,13 @@ static int blkif_queue_request(struct request *req)
- 	if (blk_barrier_rq(req))
- 		ring_req->operation = BLKIF_OP_WRITE_BARRIER;
- 
--	ring_req->nr_segments = 0;
--	rq_for_each_segment(bvec, req, iter) {
--		BUG_ON(ring_req->nr_segments == BLKIF_MAX_SEGMENTS_PER_REQUEST);
--		buffer_mfn = pfn_to_mfn(page_to_pfn(bvec->bv_page));
--		fsect = bvec->bv_offset >> 9;
--		lsect = fsect + (bvec->bv_len >> 9) - 1;
-+	ring_req->nr_segments = blk_rq_map_sg(req->q, req, info->sg);
-+	BUG_ON(ring_req->nr_segments > BLKIF_MAX_SEGMENTS_PER_REQUEST);
-+
-+	for_each_sg(info->sg, sg, ring_req->nr_segments, i) {
-+		buffer_mfn = pfn_to_mfn(page_to_pfn(sg_page(sg)));
-+		fsect = sg->offset >> 9;
-+		lsect = fsect + (sg->length >> 9) - 1;
- 		/* install a grant reference. */
- 		ref = gnttab_claim_grant_reference(&gref_head);
- 		BUG_ON(ref == -ENOSPC);
-@@ -254,16 +256,12 @@ static int blkif_queue_request(struct request *req)
- 				buffer_mfn,
- 				rq_data_dir(req) );
- 
--		info->shadow[id].frame[ring_req->nr_segments] =
--				mfn_to_pfn(buffer_mfn);
--
--		ring_req->seg[ring_req->nr_segments] =
-+		info->shadow[id].frame[i] = mfn_to_pfn(buffer_mfn);
-+		ring_req->seg[i] =
- 				(struct blkif_request_segment) {
- 					.gref       = ref,
- 					.first_sect = fsect,
- 					.last_sect  = lsect };
--
--		ring_req->nr_segments++;
- 	}
- 
- 	info->ring.req_prod_pvt++;
-@@ -622,6 +620,8 @@ static int setup_blkring(struct xenbus_device *dev,
- 	SHARED_RING_INIT(sring);
- 	FRONT_RING_INIT(&info->ring, sring, PAGE_SIZE);
- 
-+	sg_init_table(info->sg, BLKIF_MAX_SEGMENTS_PER_REQUEST);
-+
- 	err = xenbus_grant_ring(dev, virt_to_mfn(info->ring.sring));
- 	if (err < 0) {
- 		free_page((unsigned long)sring);
-diff --git a/fs/bio.c b/fs/bio.c
-index 72ab251..124b95c 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -302,7 +302,7 @@ void bio_init(struct bio *bio)
- struct bio *bio_alloc_bioset(gfp_t gfp_mask, int nr_iovecs, struct bio_set *bs)
- {
- 	struct bio *bio = NULL;
--	void *p;
-+	void *uninitialized_var(p);
- 
- 	if (bs) {
- 		p = mempool_alloc(bs->bio_pool, gfp_mask);
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index dcaa0fd..465d6ba 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -708,6 +708,8 @@ struct req_iterator {
- };
- 
- /* This should not be used directly - use rq_for_each_segment */
-+#define for_each_bio(_bio)		\
-+	for (; _bio; _bio = _bio->bi_next)
- #define __rq_for_each_bio(_bio, rq)	\
- 	if ((rq->bio))			\
- 		for (_bio = (rq)->bio; _bio; _bio = _bio->bi_next)
+> > +/*
+> > + * Hardware event to monitor via a performance monitoring counter:
+> > + */
+> > +struct perf_counter_hw_event {
+> > +	s64			type;
+> > +
+> > +	u64			irq_period;
+> > +	u32			record_type;
+> > +
+> > +	u32			disabled     :  1, /* off by default      */
+> > +				nmi	     :  1, /* NMI sampling        */
+> > +				raw	     :  1, /* raw event type      */
+> > +				inherit	     :  1, /* children inherit it */
+> > +				pinned	     :  1, /* must always be on PMU */
+> > +				exclusive    :  1, /* only counter on PMU */
+> > +
+> > +				__reserved_1 : 26;
+> > +
+> > +	u64			__reserved_2;
+> > +};
+> 
+> When exported, the types should be __s64 etc instead of s64.
 
--- 
-Jens Axboe
+Yep.
 
+> > +/*
+> > + * Ioctls that can be done on a perf counter fd:
+> > + */
+> > +#define PERF_COUNTER_IOC_ENABLE		_IO('$', 0)
+> > +#define PERF_COUNTER_IOC_DISABLE	_IO('$', 1)
+> > +
+> > +/*
+> > + * Kernel-internal data types:
+> > + */
+> 
+> The kernel internal parts of the header should be hidden in #ifdef
+> __KERNEL__.
+
+Agreed.
+
+> > +
+> > +asmlinkage int sys_perf_counter_open(
+> > +
+> > +	struct perf_counter_hw_event	*hw_event_uptr		__user,
+> > +	pid_t				pid,
+> > +	int				cpu,
+> > +	int				group_fd);
+> 
+> For the syscall, I'd suggest sys_perf_counter_fd or sys_perfcounterfd
+> to go along with signalfd, eventfd, etc. The only other _open syscall
+> we have is sys_mq_open(), which is different since it actually performs
+> an open() on a (hidden) file.
+
+I don't have a strong opinion on that either way; maybe Ingo does.
+
+> All system calls should return a 'long' value to make sure that the
+> errno handling works on all architectures.
+
+True.
+
+> > +static const struct file_operations perf_fops = {
+> > +	.release		= perf_release,
+> > +	.read			= perf_read,
+> > +	.poll			= perf_poll,
+> > +	.unlocked_ioctl		= perf_ioctl,
+> > +	.compat_ioctl		= perf_ioctl,
+> > +};
+> 
+> It feels inconsistent to combine a syscall for getting the fd with ioctl.
+
+Why?  Once you have an fd, what's inconsistent about doing an ioctl on
+it?
+
+> Assuming the interface is semantically right, I'd suggest using either
+> a chardev with more ioctls or more syscalls but not both:
+> 
+> asmlinkage long sys_perfcounter_fd(
+> 	struct perf_counter_hw_event	*hw_event_uptr		__user,
+> 	pid_t				pid,
+> 	int				cpu,
+> 	int				group_fd);
+> asmlinkage long sys_perfcounter_setflags(int fd, u32 flags);
+> 
+> or
+> 
+> struct perf_counter_setup {
+> 	struct perf_counter_hw_event event;
+> 	__u64 pid;
+> 	__u32 cpu;
+> 	__u32 group_fd;
+> };
+> #define PERF_COUNTER_IOC_SETUP _IOW('$', 1, struct perf_counter_setup)
+> #define PERF_COUNTER_IOC_SETFLAGS _IOW('$', 2, __u32)
+
+I don't see any compelling value in either of those suggestions,
+sorry.  Possibly, if it turns out that read() or ioctl() are just too
+slow (and can't be improved), we might consider adding syscalls.
+
+Paul.
