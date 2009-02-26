@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZBZSDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbZBZSGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbZBZSDc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 13:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZBZSDX
+	id S1750894AbZBZSGu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 13:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZBZSGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 13:03:23 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48078 "EHLO mx2.mail.elte.hu"
+	Thu, 26 Feb 2009 13:06:41 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:49650 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbZBZSDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 13:03:22 -0500
-Date: Thu, 26 Feb 2009 19:03:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kyle McMartin <kyle@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: x86@kernel.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: enable DMAR by default
-Message-ID: <20090226180304.GA10940@elte.hu>
-References: <20090226175756.GP6690@bombadil.infradead.org>
+	id S1751261AbZBZSGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 13:06:40 -0500
+Date: Thu, 26 Feb 2009 19:06:36 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+       jbarnes@virtuousgeek.org, eric@anholt.net
+Subject: Re: [Bug #12210] 2.6.28-rc8 big regression in VM
+Message-ID: <20090226180636.GE4374@ics.muni.cz>
+References: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera> <T1gm2CtAHBF.A.2vG.c4_QJB@chimera> <20081225112017.GB16080@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20090226175756.GP6690@bombadil.infradead.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081225112017.GB16080@localhost>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 26 Feb 2009 19:06:28 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Kyle McMartin <kyle@infradead.org> wrote:
+you may remember that I reported regression in VM. I used you filecache module
+and discovered that the leaks are caused by these items:
+# filecache 1.0
+#      ino       size   cached cached% refcnt state dev          file
+    167302         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+    167301         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+    167300         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+    167299          4        4     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+    167290          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+    167289          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+    167288         16       16     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+    167287         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
 
-> From: Kyle McMartin <kyle@redhat.com>
-> 
-> Now that the obvious bugs have been worked out, specifically 
-> the iwlagn issue, and the write buffer errata, DMAR should be 
-> safe to turn back on by default. (We've had it on since those 
-> patches were first written a few weeks ago, without any 
-> noticeable bug reports (most have been due to the dma-api 
-> debug patchset.))
-> 
-> Signed-off-by: Kyle McMartin <kyle@redhat.com>
-> 
-> ---
-> Probably 2.6.29 material, but should definitely go in for 2.6.30.
+there are tons of those items:
+cat /proc/filecache  | grep drm | wc -l
+14224
 
-Definitely agreed on .30. Can do it in .29 as well if David and 
-the rest of the Cc: agrees.
+Do you have any clues what happens here? Is it a bug in kernel VM system or it
+is more likely a bug in Intel's GEM drm driver? Right now it results in 500MB
+of undropable cache.
 
-	Ingo
+Also lsof reports many leaked file descriptors:
+lsof | grep drm | wc -l
+7326
+
+-- 
+Luká¹ Hejtmánek
