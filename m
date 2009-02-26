@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZBZS7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112AbZBZTAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbZBZS7w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 13:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZBZS7I
+	id S1752112AbZBZTAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:00:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZBZS7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 13:59:08 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:48046 "EHLO
+	Thu, 26 Feb 2009 13:59:09 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48034 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbZBZS7F (ORCPT
+	with ESMTP id S1752264AbZBZS7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Feb 2009 13:59:05 -0500
-Message-Id: <20090226185901.936039304@goodmis.org>
+Message-Id: <20090226185901.508760454@goodmis.org>
 References: <20090226185419.371469287@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 26 Feb 2009 13:54:25 -0500
+Date: Thu, 26 Feb 2009 13:54:23 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v3 6/6] tracing: convert ftrace_graph_write to use copy_strtok_from_user
-Content-Disposition: inline; filename=0006-tracing-convert-ftrace_graph_write-to-use-copy_strt.patch
+Subject: [PATCH v3 4/6] tracing: convert event_trace to use copy_strtok_from_user
+Content-Disposition: inline; filename=0004-tracing-convert-event_trace-to-use-copy_strtok_from.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,98 +30,124 @@ From: Steven Rostedt <srostedt@redhat.com>
 
 Impact: clean up
 
-This removes the open coded parsing of a word sent in by the user
-and replaces it with copy_strtok_from_user.
+This patch converts the open coded retrieving of a word from user
+space to use copy_strtok_from_user.
 
-Also removes cnt < 0 check since cnt is unsigned.
+Also removed a cnt < 0 check that Andrew Morton pointed out saying
+that it was irrelevant since cnt is unsigned.
 
-Also uses (*ppos) += cnt, instead of file->pos += cnt.
+Also changed file->pos += to (*ppos) += which is the proper way
+to modify positions of the file.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ftrace.c |   48 ++++++++++++++++--------------------------------
- 1 files changed, 16 insertions(+), 32 deletions(-)
+ kernel/trace/trace.h        |    2 +
+ kernel/trace/trace_events.c |   69 +++++++++++++++---------------------------
+ 2 files changed, 27 insertions(+), 44 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 963dc14..4ed0a8e 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2083,10 +2083,9 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 	unsigned long *array;
- 	size_t read = 0;
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 6321917..e75b673 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -720,4 +720,6 @@ static inline void trace_branch_disable(void)
+ }
+ #endif /* CONFIG_BRANCH_TRACER */
+ 
++#define SPACES	" \t\r\n"
++
+ #endif /* _LINUX_KERNEL_TRACE_H */
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 3bcb9df..9e71755 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -80,62 +80,43 @@ static ssize_t
+ ftrace_event_write(struct file *file, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
+ {
+-	size_t read = 0;
+-	int i, set = 1;
++	unsigned int copied;
++	size_t read;
  	ssize_t ret;
--	int index = 0;
++	int set = 1;
+ 	char *buf;
 -	char ch;
-+	int copied;
  
 -	if (!cnt || cnt < 0)
 +	if (!cnt)
  		return 0;
  
- 	mutex_lock(&graph_lock);
-@@ -2102,48 +2101,33 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 	} else
- 		array = file->private_data;
- 
 -	ret = get_user(ch, ubuf++);
 -	if (ret)
-+	ret = copy_strtok_from_user(buffer, ubuf, FTRACE_BUFF_MAX + 1,
-+				    cnt, &copied, SPACES);
-+	if (ret < 0)
- 		goto out;
+-		return ret;
 -	read++;
 -	cnt--;
- 
+-
 -	/* skip white space */
 -	while (cnt && isspace(ch)) {
 -		ret = get_user(ch, ubuf++);
 -		if (ret)
--			goto out;
--		read++;
--		cnt--;
-+	/* We only read white space. */
-+	if (!copied) {
-+		(*ppos) += cnt;
-+		ret = cnt;
-+		goto out;
- 	}
- 
--	if (isspace(ch)) {
--		*ppos += read;
--		ret = read;
-+	/* Check if we hit a terminating space */
-+	if (buffer[copied - 1] != 0) {
-+		/* This does not deal with split words */
-+		ret = -EINVAL;
- 		goto out;
- 	}
- 
--	while (cnt && !isspace(ch)) {
--		if (index < FTRACE_BUFF_MAX)
--			buffer[index++] = ch;
--		else {
--			ret = -EINVAL;
--			goto out;
--		}
--		ret = get_user(ch, ubuf++);
--		if (ret)
--			goto out;
+-			return ret;
 -		read++;
 -		cnt--;
 -	}
--	buffer[index] = 0;
-+	read = ret;
+-
+-	/* Only white space found? */
+-	if (isspace(ch)) {
+-		file->f_pos += read;
+-		ret = read;
+-		return ret;
+-	}
+-
+ 	buf = kmalloc(EVENT_BUF_SIZE+1, GFP_KERNEL);
+ 	if (!buf)
+ 		return -ENOMEM;
  
- 	/* we allow only one expression at a time */
- 	ret = ftrace_set_func(array, &ftrace_graph_count, buffer);
- 	if (ret)
- 		goto out;
+-	if (cnt > EVENT_BUF_SIZE)
+-		cnt = EVENT_BUF_SIZE;
+-
+-	i = 0;
+-	while (cnt && !isspace(ch)) {
+-		if (!i && ch == '!')
+-			set = 0;
+-		else
+-			buf[i++] = ch;
+-
+-		ret = get_user(ch, ubuf++);
+-		if (ret)
+-			goto out_free;
+-		read++;
+-		cnt--;
++	ret = copy_strtok_from_user(buf, ubuf, EVENT_BUF_SIZE,
++				    cnt, &copied, SPACES);
++	if (ret < 0)
++		goto out_free;
++
++	if (!copied) {
++		ret = cnt;
++		(*ppos) += cnt;
++
++		/* TODO, handle split words */
++		goto out_free;
+ 	}
+-	buf[i] = 0;
  
 -	file->f_pos += read;
-+	(*ppos) += read;
++	if (buf[0] == '!')
++		set = 0;
++
++	(*ppos) += ret;
++	read = ret;
  
- 	ret = read;
-  out:
+-	ret = ftrace_set_clr_event(buf, set);
++	/*
++	 * A little hack here. If set is true, we want to use buf.
++	 * Otherwise, we want to use buf+1 (to skip the '!').
++	 */
++	ret = ftrace_set_clr_event(buf + !set, set);
+ 	if (ret)
+ 		goto out_free;
+ 
 -- 
 1.5.6.5
 
