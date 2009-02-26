@@ -1,184 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbZBZVqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbZBZV4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751311AbZBZVqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZBZVqI
+	id S1759229AbZBZV4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZBZV4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:46:08 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:42448 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbZBZVqG (ORCPT
+	Thu, 26 Feb 2009 16:56:36 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:45696 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149AbZBZV4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:46:06 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: mingo@redhat.com
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 1/4] x86_32: apic/bigsmp_32, de-inline functions
-Date: Thu, 26 Feb 2009 22:45:29 +0100
-Message-Id: <1235684732-5991-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <20090225111002.GA15453@elte.hu>
-References: <20090225111002.GA15453@elte.hu>
+	Thu, 26 Feb 2009 16:56:35 -0500
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+cc: Brian Haley <brian.haley@hp.com>, David Miller <davem@davemloft.net>,
+       arvidjaar@mail.ru, chuck.lever@oracle.com, tytso@mit.edu,
+       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel module
+In-reply-to: <49A70245.9010405@hp.com>
+References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com> <7418.1235679608@death.nxdomain.ibm.com> <49A70245.9010405@hp.com>
+Comments: In-reply-to Vlad Yasevich <vladislav.yasevich@hp.com>
+   message dated "Thu, 26 Feb 2009 15:57:41 -0500."
+X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+Date: Thu, 26 Feb 2009 13:56:37 -0800
+Message-ID: <22047.1235685397@death.nxdomain.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ones which go only into struct apic are de-inlined
-by compiler anyway, so remove the inline specifier from them.
+Vlad Yasevich <vladislav.yasevich@hp.com> wrote:
 
-Afterwards, remove bigsmp_setup_portio_remap completely as it
-is unused.
+>Jay Vosburgh wrote:
+[...]
+>> Brian Haley <brian.haley@hp.com> wrote:
+[...]
+>>> I think changing ipv6 to support a disable_ipv6 module parameter like Vlad
+>>> suggested would work, as long as we're not worried about someone opening
+>>> an AF_INET6 socket - even if they do they won't get anywhere.  That, along
+>>> with the patch below to actually not add the addresses, would work (sorry
+>>> in advance for using an attachment).  I'll get started on that...
+>> 
+>> 	I agree that it would work, and could even be set up such that
+>> opening sockets doesn't work, either (if ipv6 never registered via
+>> sock_register, for example).  I'm sticking some on the opening sockets
+>> failure behavior because it's the current behavior if ipv6 is aliased
+>> out.  It just seems like a logical place for the permission denial to
+>> occur, rather than later, and is consistent with what happens if ipv6
+>> isn't loaded at all or is not configured in the kernel.
+>> 
+>> 	I still tend to like the bitmask to disable address family
+>> gizmo.  It's not specific to one particular protocol (although it would
+>> likely need a check in the protocols for things like addrconf).  As
+>> somebody pointed out, there are likely to be (if not now, then
+>> relatively soon) users somewhere that want to turn off ipv4 and run ipv6
+>> only.
+>
+>Yes.  The bitmask to disable certain family can be useful, but it's orthogonal
+>the issue of IPv6 support.  As you said, it can be used to disable
+>any address family that user wishes.  The slight issue with this might
+>be, should the settings affect already create sockets?
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
+	Unless I'm misunderstanding your position, I don't think the
+bitmask method is really orthogonal, since it can be used to disable
+IPv6 (AF_INET6).  More on that below.
+
+	I'd also argue that such a method should affect the entirety of
+the protocol family, so extant sockets would cease to function.  That
+may or may not be practical or necessary.
+
+>I guess it comes down how many levels of control to do we want to provide.
+>Things that have been suggested so far:
+>	1) Global on/off switch (i.e module parameter)
+>	2) Per interface on/off switch (currently exists, but has bugs).
+>	3) Socket on/off switch (i.e blocker bitmask)
+>
+>I think numbers 1 and 2 turn off the IPv6 protocol on the wire, while number
+>3 turns off the interface to the user.  The two can be done independent.
+
+	Yes, I think this reaches the crux of the matter: disabling the
+protocol vs. disabling the interface.  Any of the knobs (1 - 3, above)
+can potentially do either one or both of these.
+
+	My feeling is that, for consistency of behavior, whatever knob
+is turned should act like ipv6 was never loaded.  That might or might
+not be the right answer in the grand scheme of things, but it's the
+expected behavior of the users currently aliasing out ipv6 in
+/etc/modprobe.conf.
+
+	When The Knob (however it ends up being done) is turned, why
+should the "ipv6 off" behavior be any different than what is currently
+observed when aliasing out ipv6 or compiling a kernel without
+CONFIG_IPV6?
+
+	-J
+
 ---
- arch/x86/kernel/apic/bigsmp_32.c |   40 ++++++++++++++++---------------------
- 1 files changed, 17 insertions(+), 23 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
-index 0b10933..d14e635 100644
---- a/arch/x86/kernel/apic/bigsmp_32.c
-+++ b/arch/x86/kernel/apic/bigsmp_32.c
-@@ -16,17 +16,17 @@
- #include <asm/apic.h>
- #include <asm/ipi.h>
- 
--static inline unsigned bigsmp_get_apic_id(unsigned long x)
-+static unsigned bigsmp_get_apic_id(unsigned long x)
- {
- 	return (x >> 24) & 0xFF;
- }
- 
--static inline int bigsmp_apic_id_registered(void)
-+static int bigsmp_apic_id_registered(void)
- {
- 	return 1;
- }
- 
--static inline const cpumask_t *bigsmp_target_cpus(void)
-+static const cpumask_t *bigsmp_target_cpus(void)
- {
- #ifdef CONFIG_SMP
- 	return &cpu_online_map;
-@@ -35,13 +35,12 @@ static inline const cpumask_t *bigsmp_target_cpus(void)
- #endif
- }
- 
--static inline unsigned long
--bigsmp_check_apicid_used(physid_mask_t bitmap, int apicid)
-+static unsigned long bigsmp_check_apicid_used(physid_mask_t bitmap, int apicid)
- {
- 	return 0;
- }
- 
--static inline unsigned long bigsmp_check_apicid_present(int bit)
-+static unsigned long bigsmp_check_apicid_present(int bit)
- {
- 	return 1;
- }
-@@ -64,7 +63,7 @@ static inline unsigned long calculate_ldr(int cpu)
-  * an APIC.  See e.g. "AP-388 82489DX User's Manual" (Intel
-  * document number 292116).  So here it goes...
-  */
--static inline void bigsmp_init_apic_ldr(void)
-+static void bigsmp_init_apic_ldr(void)
- {
- 	unsigned long val;
- 	int cpu = smp_processor_id();
-@@ -74,19 +73,19 @@ static inline void bigsmp_init_apic_ldr(void)
- 	apic_write(APIC_LDR, val);
- }
- 
--static inline void bigsmp_setup_apic_routing(void)
-+static void bigsmp_setup_apic_routing(void)
- {
- 	printk(KERN_INFO
- 		"Enabling APIC mode:  Physflat.  Using %d I/O APICs\n",
- 		nr_ioapics);
- }
- 
--static inline int bigsmp_apicid_to_node(int logical_apicid)
-+static int bigsmp_apicid_to_node(int logical_apicid)
- {
- 	return apicid_2_node[hard_smp_processor_id()];
- }
- 
--static inline int bigsmp_cpu_present_to_apicid(int mps_cpu)
-+static int bigsmp_cpu_present_to_apicid(int mps_cpu)
- {
- 	if (mps_cpu < nr_cpu_ids)
- 		return (int) per_cpu(x86_bios_cpu_apicid, mps_cpu);
-@@ -94,7 +93,7 @@ static inline int bigsmp_cpu_present_to_apicid(int mps_cpu)
- 	return BAD_APICID;
- }
- 
--static inline physid_mask_t bigsmp_apicid_to_cpu_present(int phys_apicid)
-+static physid_mask_t bigsmp_apicid_to_cpu_present(int phys_apicid)
- {
- 	return physid_mask_of_physid(phys_apicid);
- }
-@@ -107,29 +106,24 @@ static inline int bigsmp_cpu_to_logical_apicid(int cpu)
- 	return cpu_physical_id(cpu);
- }
- 
--static inline physid_mask_t bigsmp_ioapic_phys_id_map(physid_mask_t phys_map)
-+static physid_mask_t bigsmp_ioapic_phys_id_map(physid_mask_t phys_map)
- {
- 	/* For clustered we don't have a good way to do this yet - hack */
- 	return physids_promote(0xFFL);
- }
- 
--static inline void bigsmp_setup_portio_remap(void)
--{
--}
--
--static inline int bigsmp_check_phys_apicid_present(int boot_cpu_physical_apicid)
-+static int bigsmp_check_phys_apicid_present(int boot_cpu_physical_apicid)
- {
- 	return 1;
- }
- 
- /* As we are using single CPU as destination, pick only one CPU here */
--static inline unsigned int bigsmp_cpu_mask_to_apicid(const cpumask_t *cpumask)
-+static unsigned int bigsmp_cpu_mask_to_apicid(const cpumask_t *cpumask)
- {
- 	return bigsmp_cpu_to_logical_apicid(first_cpu(*cpumask));
- }
- 
--static inline unsigned int
--bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
-+static unsigned int bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 			      const struct cpumask *andmask)
- {
- 	int cpu;
-@@ -148,7 +142,7 @@ bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 	return BAD_APICID;
- }
- 
--static inline int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
-+static int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
- {
- 	return cpuid_apic >> index_msb;
- }
-@@ -158,12 +152,12 @@ static inline void bigsmp_send_IPI_mask(const struct cpumask *mask, int vector)
- 	default_send_IPI_mask_sequence_phys(mask, vector);
- }
- 
--static inline void bigsmp_send_IPI_allbutself(int vector)
-+static void bigsmp_send_IPI_allbutself(int vector)
- {
- 	default_send_IPI_mask_allbutself_phys(cpu_online_mask, vector);
- }
- 
--static inline void bigsmp_send_IPI_all(int vector)
-+static void bigsmp_send_IPI_all(int vector)
- {
- 	bigsmp_send_IPI_mask(cpu_online_mask, vector);
- }
--- 
-1.6.1.3
-
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
