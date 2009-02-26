@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbZBZOZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761493AbZBZO1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761174AbZBZOZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 09:25:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbZBZOQw
+	id S1761493AbZBZO1B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 09:27:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbZBZORI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 09:16:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43099 "EHLO mx2.redhat.com"
+	Thu, 26 Feb 2009 09:17:08 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43096 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755761AbZBZOPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 09:15:47 -0500
+	id S1755260AbZBZOPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 09:15:45 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH 38/40] KVM: ppc: small cosmetic changes to Book E DTLB miss handler
-Date: Thu, 26 Feb 2009 16:15:28 +0200
-Message-Id: <1235657730-27683-39-git-send-email-avi@redhat.com>
+Subject: [PATCH 36/40] KVM: ppc: move struct kvmppc_44x_tlbe into 44x-specific header
+Date: Thu, 26 Feb 2009 16:15:26 +0200
+Message-Id: <1235657730-27683-37-git-send-email-avi@redhat.com>
 In-Reply-To: <1235657730-27683-1-git-send-email-avi@redhat.com>
 References: <1235657730-27683-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,48 +26,46 @@ From: Hollis Blanchard <hollisb@us.ibm.com>
 Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/powerpc/kvm/booke.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/kvm_44x.h  |    7 +++++++
+ arch/powerpc/include/asm/kvm_host.h |    7 -------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 35485dd..d196ae6 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -290,6 +290,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		struct kvmppc_44x_tlbe *gtlbe;
- 		unsigned long eaddr = vcpu->arch.fault_dear;
- 		int gtlb_index;
-+		gpa_t gpaddr;
- 		gfn_t gfn;
+diff --git a/arch/powerpc/include/asm/kvm_44x.h b/arch/powerpc/include/asm/kvm_44x.h
+index f49031b..d22d399 100644
+--- a/arch/powerpc/include/asm/kvm_44x.h
++++ b/arch/powerpc/include/asm/kvm_44x.h
+@@ -28,6 +28,13 @@
+  * need to find some way of advertising it. */
+ #define KVM44x_GUEST_TLB_SIZE 64
  
- 		/* Check the guest TLB. */
-@@ -305,8 +306,8 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		}
++struct kvmppc_44x_tlbe {
++	u32 tid; /* Only the low 8 bits are used. */
++	u32 word0;
++	u32 word1;
++	u32 word2;
++};
++
+ struct kvmppc_44x_shadow_ref {
+ 	struct page *page;
+ 	u16 gtlb_index;
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index a226005..65c4d49 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -64,13 +64,6 @@ struct kvm_vcpu_stat {
+ 	u32 halt_wakeup;
+ };
  
- 		gtlbe = &vcpu_44x->guest_tlb[gtlb_index];
--		vcpu->arch.paddr_accessed = tlb_xlate(gtlbe, eaddr);
--		gfn = vcpu->arch.paddr_accessed >> PAGE_SHIFT;
-+		gpaddr = tlb_xlate(gtlbe, eaddr);
-+		gfn = gpaddr >> PAGE_SHIFT;
- 
- 		if (kvm_is_visible_gfn(vcpu->kvm, gfn)) {
- 			/* The guest TLB had a mapping, but the shadow TLB
-@@ -315,13 +316,14 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			 * b) the guest used a large mapping which we're faking
- 			 * Either way, we need to satisfy the fault without
- 			 * invoking the guest. */
--			kvmppc_mmu_map(vcpu, eaddr, vcpu->arch.paddr_accessed, gtlbe->tid,
-+			kvmppc_mmu_map(vcpu, eaddr, gpaddr, gtlbe->tid,
- 			               gtlbe->word2, get_tlb_bytes(gtlbe), gtlb_index);
- 			kvmppc_account_exit(vcpu, DTLB_VIRT_MISS_EXITS);
- 			r = RESUME_GUEST;
- 		} else {
- 			/* Guest has mapped and accessed a page which is not
- 			 * actually RAM. */
-+			vcpu->arch.paddr_accessed = gpaddr;
- 			r = kvmppc_emulate_mmio(run, vcpu);
- 			kvmppc_account_exit(vcpu, MMIO_EXITS);
- 		}
+-struct kvmppc_44x_tlbe {
+-	u32 tid; /* Only the low 8 bits are used. */
+-	u32 word0;
+-	u32 word1;
+-	u32 word2;
+-};
+-
+ enum kvm_exit_types {
+ 	MMIO_EXITS,
+ 	DCR_EXITS,
 -- 
 1.6.0.6
 
