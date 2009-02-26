@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbZBZKbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbZBZKd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828AbZBZKbm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 05:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZBZKb3
+	id S1755486AbZBZKd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 05:33:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZBZKdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 05:31:29 -0500
-Received: from an-out-0708.google.com ([209.85.132.244]:35101 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753730AbZBZKb2 convert rfc822-to-8bit (ORCPT
+	Thu, 26 Feb 2009 05:33:20 -0500
+Received: from sineb-mail-1.sun.com ([192.18.19.6]:60099 "EHLO
+	sineb-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753385AbZBZKdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 05:31:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=w1XIsjxng5f3q+QVz7lCIva5lx9lhSDOCpHyktKctfae7/tOgGhosz5XbEKoXcGmfZ
-         QR8WpjNwVOh73sMbCzAZk2Kt5TJmzCUIcsoRMJj1opkU7WsuTi01eHCC0sYriqmP2ClQ
-         JhZzmJzhp0OcJ/fbWmvMOItY6WoZapEliTdUA=
-MIME-Version: 1.0
-In-Reply-To: <20090226100327.3615.21419.stgit@linux.site>
-References: <20090226100327.3615.21419.stgit@linux.site>
-Date: Thu, 26 Feb 2009 02:31:24 -0800
-X-Google-Sender-Auth: 9085770c34b7a57d
-Message-ID: <9929d2390902260231p72aacdf3j489a8a9e67dbb659@mail.gmail.com>
-Subject: Re: [PATCH 0/7] I/OAT update
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: Maciej Sosnowski <maciej.sosnowski@intel.com>
-Cc: dan.j.williams@intel.com, snakebyte@gmx.de, shannon.nelson@intel.com,
-       jeffrey.t.krisher@intel.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 26 Feb 2009 05:33:19 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain
+Date: Thu, 26 Feb 2009 18:33:09 +0800
+From: Li Wei <W.Li@Sun.COM>
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+In-reply-to: <49A66841.8020301@linux.vnet.ibm.com>
+To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Message-id: <1235644389.13052.28.camel@localhost>
+X-Mailer: Evolution 2.24.3
+References: <49883CD7.2060602@linux.vnet.ibm.com>
+ <1235616005.7351.8.camel@localhost> <49A66841.8020301@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 2:04 AM, Maciej Sosnowski
-<maciej.sosnowski@intel.com> wrote:
-> This patch series updates ioatdma driver
-> with a couple of fixes and workarounds,
-> including copybreak modification,
-> plus some cleanup like copyright dates update.
->
-> Maciej Sosnowski (6):
->    I/OAT: add verification for proper APICID_TAG_MAP setting by BIOS
->    I/OAT: do not set DCACTRL_CMPL_WRITE_ENABLE for I/OAT ver.3
->    I/OAT: fail initialization on zero channels detection
->    I/OAT: cancel watchdog before dma remove
->    I/OAT: set tcp_dma_copybreak to 256k for I/OAT ver.3
->    I/OAT: update driver version and copyright dates
->
-> Eric Sesterhenn (1):
->    I/OAT: list usage cleanup
->
->  drivers/dca/dca-core.c          |    2 -
->  drivers/dma/ioat.c              |    2 -
->  drivers/dma/ioat_dca.c          |   26 ++++++++++++++++++++++++-
->  drivers/dma/ioat_dma.c          |   31 ++++++++++++++++++------------
->  drivers/dma/ioatdma.h           |    8 ++++---
->  drivers/dma/ioatdma_hw.h        |    2 -
->  drivers/dma/ioatdma_registers.h |    2 -
->  7 files changed, 53 insertions(+), 20 deletions(-)
->
-> --
-> Maciej
-> --
->
+On Thu, 2009-02-26 at 11:00 +0100, Peter Oberparleiter wrote:
+> Since a few RCs have been released since the last gcov-kernel patch 
+> post, I'll do a full re-post with a fix similar to the one you suggested 
+> included.
 
-Dave - FYI, my Acked-by email on this patch series is incorrect.  It
-should be jeffrey.t.kirsher@intel.com not "krisher".
+Thanks! It would be great if ".."s in object pathnames could also be
+supported in the forth coming re-post.
 
+I have some external modules which link with object files outside their
+directories. For example, a source tree looks like
+
+  module0/main.c
+  lib0/lib.c
+
+and the Kbuild file has to use
+
+  main-y += ../lib0/lib.o
+
+to link in lib.c. Current gcov-kernel does not support ".." in
+pathnames. Could ".."s be handled in add_node?
+
+---
+ kernel/gcov/fs.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/gcov/fs.c b/kernel/gcov/fs.c
+index aab3be7..2f92955 100644
+--- a/kernel/gcov/fs.c
++++ b/kernel/gcov/fs.c
+@@ -500,6 +500,15 @@ static void add_node(struct gcov_info *info)
+ 		if (curr == next)
+ 			continue;
+ 		*next = 0;
++		if (!strcmp(curr, "."))
++			continue;
++		if (!strcmp(curr, "..")) {
++			if (parent != &root_node) {
++				parent = parent->parent;
++				continue;
++			} else
++				goto out_err;
++		}
+ 		node = get_child_by_name(parent, curr);
+ 		if (!node) {
+ 			node = new_node(parent, NULL, curr);
 -- 
-Cheers,
-Jeff
+1.5.6.3
+
