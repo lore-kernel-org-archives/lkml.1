@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbZBZU0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbZBZU1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758488AbZBZU0e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZBZU0I
+	id S1758557AbZBZU1Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZBZU1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:26:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34719 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755581AbZBZU0G (ORCPT
+	Thu, 26 Feb 2009 15:27:13 -0500
+Received: from caiajhbdcaid.dreamhost.com ([208.97.132.83]:39928 "EHLO
+	spunkymail-a17.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752810AbZBZU1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:26:06 -0500
-Date: Thu, 26 Feb 2009 12:25:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: dbrownell@users.sourceforge.net
-Cc: david-b@pacbell.net, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch/RESEND 2.6.29-rc6] NAND:  fix "raw" reads with ECC
- syndrome layouts
-Message-Id: <20090226122543.797eac77.akpm@linux-foundation.org>
-In-Reply-To: <200902241508.13835.david-b@pacbell.net>
-References: <200902241508.13835.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Feb 2009 15:27:11 -0500
+Message-ID: <49A6FB1D.2030807@hiramoto.org>
+Date: Thu, 26 Feb 2009 21:27:09 +0100
+From: Karl Hiramoto <karl@hiramoto.org>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       chohnstaedt@innominate.com, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] ixp4xx_crypto panic with fragmented packets in	scatterlist
+References: <20090226121043.GA13749@gondor.apana.org.au>
+In-Reply-To: <20090226121043.GA13749@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Antivirus: avast! (VPS 090225-1, 25/02/2009), Outbound message
+X-Antivirus-Status: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Feb 2009 15:08:13 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Herbert Xu wrote:
+> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+>   
+>> We can't merge this until _all_ of ARM has been fixed for walking
+>> scatterlist chains.
+>>     
+>
+> Right, this is definitely not the way to fix this bug.  Because
+> even if ARM completely supported chaining, you still have to fix
+> all the other architectures as well.
+>
+> So please just fix the driver to remove the chaining before doing
+> DMA.
+>
+>   
+Is there an example of how to do this somewhere? 
 
-> +static void nand_write_page_raw_syndrome(struct mtd_info *mtd, struct nand_chip *chip,
-> +				const uint8_t *buf)
-> +{
-> +	int eccsize = chip->ecc.size;
-> +	int eccbytes = chip->ecc.bytes;
-> +	uint8_t *oob = chip->oob_poi;
-> +	int temp;
+Thanks
 
-Please don't create variables called "temp" or "tmp".
-
-> +	temp = chip->ecc.steps;
-> +	do {
-> +		chip->write_buf(mtd, buf, eccsize);
-> +		buf += eccsize;
-> +
-> +		if (chip->ecc.prepad) {
-> +			chip->write_buf(mtd, oob, chip->ecc.prepad);
-> +			oob += chip->ecc.prepad;
-> +		}
-> +
-> +		chip->read_buf(mtd, oob, eccbytes);
-> +		oob += eccbytes;
-> +
-> +		if (chip->ecc.postpad) {
-> +			chip->write_buf(mtd, oob, chip->ecc.postpad);
-> +			oob += chip->ecc.postpad;
-> +		}
-> +	} while (--temp);
-
-It would be clearer to code this as a plain old up-counting for loop.
-
-> +	temp = mtd->oobsize - (oob - chip->oob_poi);
-> +	if (temp)
-> +		chip->write_buf(mtd, oob, temp);
-
-Here the same woefully-named variable appears to be reemployed for some
-semantically quite different purpose.
-
-> +}
+Karl
