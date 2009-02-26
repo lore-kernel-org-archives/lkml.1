@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZBZUSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbZBZUSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbZBZUSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZBZUR6
+	id S1757399AbZBZUSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbZBZUSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:17:58 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:10840 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbZBZUR5 (ORCPT
+	Thu, 26 Feb 2009 15:18:36 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:43649 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbZBZUSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:17:57 -0500
-Message-ID: <49A6F8F1.4060104@hp.com>
-Date: Thu, 26 Feb 2009 15:17:53 -0500
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 26 Feb 2009 15:18:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FJfaJAyZfI72W0HvzIBpL2fQt0CJOuMpmVD/ufaAFb2bHifgU7X8GvhlcytzBplKTA
+         T34d9TS+HP5AZ96CzlM1TAKgYM7GSaaSCQSJOGNUZSPdZX6K8mHugNvrT2BgGEEMy7yl
+         lwwMMNFtrSJn9x8/lUakie9BUjODNorsx0iT4=
 MIME-Version: 1.0
-To: Chuck Lever <chuck.lever@oracle.com>
-CC: Brian Haley <brian.haley@hp.com>, Jay Vosburgh <fubar@us.ibm.com>,
-       David Miller <davem@davemloft.net>, arvidjaar@mail.ru, tytso@mit.edu,
-       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+In-Reply-To: <20090226191509.GA6204@redhat.com>
+References: <20090226184433.GA15644@damson.getinternet.no>
+	 <20090226191509.GA6204@redhat.com>
+Date: Thu, 26 Feb 2009 21:18:32 +0100
+Message-ID: <19f34abd0902261218u388de998l1204857bde9bbe32@mail.gmail.com>
+Subject: Re: [RFC][PATCH] signals: don't copy siginfo_t on dequeue
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel
- module
-References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com> <F613EEFD-2332-4C75-A486-73CDF2BAADDE@oracle.com> <49A6F50E.3070100@hp.com> <2FBB0F50-8763-4A17-8734-5940FC3FF26A@oracle.com>
-In-Reply-To: <2FBB0F50-8763-4A17-8734-5940FC3FF26A@oracle.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Lever wrote:
-> On Feb 26, 2009, at Feb 26, 2009, 3:01 PM, Brian Haley wrote:
->> Chuck Lever wrote:
->>>> I think changing ipv6 to support a disable_ipv6 module parameter
->>>> like Vlad suggested would work, as long as we're not worried about
->>>> someone opening an AF_INET6 socket - even if they do they won't get
->>>> anywhere.
->>> In this case, if IPV6ONLY is set on an AF_INET6 listener, it should
->>> still get AF_INET traffic, correct?
->>
->> No, it should get nothing, and a send should get ENETUNREACH.
-> 
-> Sorry, I got my logic backwards.  If IPV6ONLY is intentionally cleared
-> on an AF_INET6 socket, it should still be able to handle AF_INET traffic.
+2009/2/26 Oleg Nesterov <oleg@redhat.com>:
+> So. dequeue_signal() returns NULL if there is no siginfo queued. In that
+> case we assume that the signal is not pending.
+>
+> But this is not right. Think about SEND_SIG_FORCED, or __sigqueue_alloc()
+> failure when the signal is sent. Or look at zap_other_threads() for example,
+> it just sets the bit in ->pending but doesn't queue siginfo.
 
-Yes. :-)
+I will investigate. Thanks for looking, and thanks for the pointers :-)
 
--vlad
 
-> 
-> -- 
-> Chuck Lever
-> chuck[dot]lever[at]oracle[dot]com
-> 
+Vegard
 
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
