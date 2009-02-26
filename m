@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZBZD0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759445AbZBZD0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759009AbZBZD0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:26:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZBZDZ6
+	id S1759445AbZBZD0u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZBZD0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:25:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43326 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Feb 2009 22:26:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43434 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752958AbZBZDZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:25:58 -0500
-Date: Thu, 26 Feb 2009 04:25:44 +0100
+	id S1751590AbZBZD0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 22:26:40 -0500
+Date: Thu, 26 Feb 2009 04:26:18 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC] introduce pr_cont macro
-Message-ID: <20090226032544.GB22223@elte.hu>
-References: <20090225205920.GA22091@localhost> <20090226030315.GB7526@elte.hu> <1235617541.5610.0.camel@brick> <20090226031301.GE7526@elte.hu> <1235618574.5610.1.camel@brick>
+To: Tejun Heo <tj@kernel.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       jeremy@goop.org, cpw@sgi.com, nickpiggin@yahoo.com.au,
+       ink@jurassic.park.msu.ru
+Subject: Re: [PATCH core/percpu] percpu: fix too low alignment restriction
+	on UP
+Message-ID: <20090226032618.GC22223@elte.hu>
+References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224201718.GE28772@elte.hu> <20090224205105.GA19460@elte.hu> <20090224211659.GA3687@elte.hu> <49A4ABAC.90602@kernel.org> <20090225125935.GG26273@elte.hu> <20090225134343.GA30279@elte.hu> <49A5F876.2080607@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1235618574.5610.1.camel@brick>
+In-Reply-To: <49A5F876.2080607@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,62 +38,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+* Tejun Heo <tj@kernel.org> wrote:
 
-> On Thu, 2009-02-26 at 04:13 +0100, Ingo Molnar wrote:
-> > * Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> > 
-> > > On Thu, 2009-02-26 at 04:03 +0100, Ingo Molnar wrote:
-> > > > * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> > > > 
-> > > > > We cover all log-levels by pr_... macros except
-> > > > > KERN_CONT one. Add it for convenience.
-> > > > > 
-> > > > > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> > > > > ---
-> > > > > 
-> > > > > I think start printing with some pr_... macro
-> > > > > and continue with printk(KERN_CONT ...) look
-> > > > > not that clear -- better to continue with
-> > > > > same pr_... slogan. Thoughts? I hope I didn't
-> > > > > miss anything.
-> > > > > 
-> > > > >  include/linux/kernel.h |    2 ++
-> > > > >  1 file changed, 2 insertions(+)
-> > > > > 
-> > > > > Index: linux-2.6.git/include/linux/kernel.h
-> > > > > ===================================================================
-> > > > > --- linux-2.6.git.orig/include/linux/kernel.h
-> > > > > +++ linux-2.6.git/include/linux/kernel.h
-> > > > > @@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
-> > > > >          printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-> > > > >  #define pr_info(fmt, ...) \
-> > > > >          printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-> > > > > +#define pr_cont(fmt, ...) \
-> > > > > +        printk(KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
-> > > > 
-> > > > Makes sense.
-> > > > 
-> > > > Acked-by: Ingo Molnar <mingo@elte.hu>
-> > > > 
-> > > 
-> > > Don't you want to omit the pr_fmt() from the KERN_CONT case?
-> > 
-> > indeed, good catch. It should be:
-> > 
-> > #define pr_cont(fmt, ...) \
-> > 	printk(KERN_CONT ##__VA_ARGS__)
+> UP __alloc_percpu() triggered WARN_ON_ONCE() if the requested
+> alignment is larger than that of unsigned long long, which is too
+> small for all the cacheline aligned allocations.  Bump it up to
+> SMP_CACHE_BYTES which kmalloc allocations generally guarantee.
 > 
-> Missing fmt entirely?
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> ---
+> Hello, Ingo.
+> 
+> I somehow completely forgot about testing UP.  Sorry about that. :-)
+> The following patch should do it.  Also available in the #tj-percpu
+> tree.
 
-yeah ...
-
-Btw., why do those macros use ##__VA_ARGS__ ? Why not a 
-straightforward:
-
- #define __pr_cont(args...) \
- 	printk(KERN_CONT args)
-
-?
+Pulled into tip:core/percpu, thanks Tejun!
 
 	Ingo
