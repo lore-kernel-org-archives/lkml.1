@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbZBZKpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZBZKql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821AbZBZKpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 05:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZBZKow
+	id S1755676AbZBZKql (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 05:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZBZKqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 05:44:52 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60396 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753478AbZBZKov (ORCPT
+	Thu, 26 Feb 2009 05:46:31 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1106 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753462AbZBZKqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 05:44:51 -0500
-Subject: Re: [PATCH] cpuacct: add a branch prediction
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Bharata B Rao <bharata.rao@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
-References: <49A6475F.4000502@cn.fujitsu.com>
-	 <20090226170738.a982057b.kamezawa.hiroyu@jp.fujitsu.com>
-	 <49A6501B.7040604@cn.fujitsu.com>
-	 <20090226172234.a931931f.kamezawa.hiroyu@jp.fujitsu.com>
-	 <49A65455.4030204@cn.fujitsu.com>
-	 <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
-	 <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
-	 <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 11:44:36 +0100
-Message-Id: <1235645076.4645.4781.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 05:46:30 -0500
+Date: Thu, 26 Feb 2009 10:46:27 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
+Message-ID: <20090226104624.GA4229@sirena.org.uk>
+References: <200902081037.06645.david-b@pacbell.net> <200902241617.22643.david-b@pacbell.net> <20090225151721.GA31637@sirena.org.uk> <200902251702.03230.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902251702.03230.david-b@pacbell.net>
+X-Cookie: Yow!  I threw up on my window!
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 19:28 +0900, KAMEZAWA Hiroyuki wrote:
+On Wed, Feb 25, 2009 at 05:02:03PM -0800, David Brownell wrote:
 
-> Taking hierarchy mutex while reading will make read-side stable.
+> Oh, one more comment.  Requiring manual configuration
+> of fixed-voltage regulators is pure time-wastage.
 
-We're talking about scheduling here, taking a mutex to stop scheduling
-won't work, nor will it be acceptible to use anything that will.
+Unless, of course, you happen to be using one of those consumers that
+wants to know the voltage it's running at to configure itself.  Examples
+I've seen include sensors and analogue components which can be
+configured for better performance if they know the voltage they run at -
+and yes, people do run these things off regulators that they vary at
+runtime.
 
-
-
+If you want to submit a patch making it optional that's fine.
