@@ -1,56 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZBZClT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbZBZCuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbZBZClT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 21:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZBZClL
+	id S1757644AbZBZCuM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 21:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZBZCt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 21:41:11 -0500
-Received: from sineb-mail-1.sun.com ([192.18.19.6]:45432 "EHLO
-	sineb-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZBZClK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 21:41:10 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain
-Date: Thu, 26 Feb 2009 10:40:05 +0800
-From: Li Wei <W.Li@Sun.COM>
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-In-reply-to: <49883CD7.2060602@linux.vnet.ibm.com>
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Message-id: <1235616005.7351.8.camel@localhost>
-X-Mailer: Evolution 2.24.3
-References: <49883CD7.2060602@linux.vnet.ibm.com>
+	Wed, 25 Feb 2009 21:49:56 -0500
+Received: from mga02.intel.com ([134.134.136.20]:41220 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752165AbZBZCtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 21:49:55 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,268,1233561600"; 
+   d="scan'208";a="493180321"
+Date: Thu, 26 Feb 2009 10:50:35 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 0/6] ATS capability support for Intel IOMMU
+Message-ID: <20090226025035.GA12973@yzhao-otc.sh.intel.com>
+References: <1234443038-15437-1-git-send-email-yu.zhao@intel.com> <20090214225910.GA1515@colo.lackof.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090214225910.GA1515@colo.lackof.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-node->parent is always NULL, causing NULL-pointer dereference in
-remove_node.
+On Sun, Feb 15, 2009 at 06:59:10AM +0800, Grant Grundler wrote:
+> On Thu, Feb 12, 2009 at 08:50:32PM +0800, Yu Zhao wrote:
+> > This patch series implements Address Translation Service support for
+> > the Intel IOMMU. ATS makes the PCI Endpoint be able to request the
+> > DMA address translation from the IOMMU and cache the translation in
+> > the Endpoint, thus alleviate IOMMU pressure and improve the hardware
+> > performance in the I/O virtualization environment.
+> > 
+> > 
+> > Changelog: v2 -> v3
+> >   1, throw error message if VT-d hardware detects invalid descriptor
+> >      on Queued Invalidation interface (David Woodhouse)
+> >   2, avoid using pci_find_ext_capability every time when reading ATS
+> >      Invalidate Queue Depth (Matthew Wilcox)
+> > Changelog: v1 -> v2
+> >   added 'static' prefix to a local LIST_HEAD (Andrew Morton)
+> > 
+> > 
+> > Yu Zhao (6):
+> >   PCI: support the ATS capability
+> >   VT-d: parse ATSR in DMA Remapping Reporting Structure
+> >   VT-d: add queue invalidation fault status support
+> >   VT-d: add device IOTLB invalidation support
+> >   VT-d: cleanup iommu_flush_iotlb_psi and flush_unmaps
+> >   VT-d: support the device IOTLB
+> > 
+> >  drivers/pci/dmar.c           |  230 ++++++++++++++++++++++++++++++++++++++----
+> 
+> Yu,
+> Can you please add something to Documentation/PCI/pci.txt?
+> New API I'm seeing are:
+> +extern int pci_enable_ats(struct pci_dev *dev, int ps);
+> +extern void pci_disable_ats(struct pci_dev *dev);
+> +extern int pci_ats_queue_depth(struct pci_dev *dev);
 
-Could you please include something like this?
+Yes, I'll document these new API.
 
----
- kernel/gcov/fs.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> Do these also need to be EXPORT_SYMBOL_GPL() as well?
+> Or are drivers never expected to call the above?
 
-diff --git a/kernel/gcov/fs.c b/kernel/gcov/fs.c
-index 0084492..6675c82 100644
---- a/kernel/gcov/fs.c
-+++ b/kernel/gcov/fs.c
-@@ -374,6 +374,7 @@ static struct gcov_node *new_node(struct gcov_node *parent,
- 		return NULL;
- 	}
- 	init_node(node, info, name);
-+	node->parent = parent;
- 	/* Differentiate between gcov data file nodes and directory nodes. */
- 	if (info) {
- 		node->dentry = debugfs_create_file(deskew(node->name), 0600,
--- 
-1.5.6.3
+PCI device driver shouldn't use these API, only IOMMU driver (can't be module)
+would use them. Anyway it's a good idea to export them :-)
 
-
-
+Thanks,
+Yu
