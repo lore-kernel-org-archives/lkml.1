@@ -1,124 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZBZNxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZBZN7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbZBZNxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 08:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbZBZNxc
+	id S1756570AbZBZN7X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 08:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZBZN7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 08:53:32 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:35334 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbZBZNxb (ORCPT
+	Thu, 26 Feb 2009 08:59:15 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46101 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752745AbZBZN7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 08:53:31 -0500
-Message-ID: <49A69EA2.2000507@linux.vnet.ibm.com>
-Date: Thu, 26 Feb 2009 14:52:34 +0100
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Thu, 26 Feb 2009 08:59:14 -0500
+Date: Thu, 26 Feb 2009 08:59:10 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] make CALLER_ADDRx overwriteable
+In-Reply-To: <20090226134544.GA7110@pengutronix.de>
+Message-ID: <alpine.DEB.2.00.0902260857510.26792@gandalf.stny.rr.com>
+References: <1235600169-26912-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090226050806.GB25589@goodmis.org> <20090226134544.GA7110@pengutronix.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>
-Subject: [PATCH 4/4] gcov: enable GCOV_PROFILE_ALL for x86_64
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 
-Enable gcov profiling of the entire kernel on x86_64. Required changes
-include disabling profiling for:
+On Thu, 26 Feb 2009, Uwe Kleine-K?nig wrote:
 
-* arch/kernel/acpi/realmode and arch/kernel/boot/compressed:
-  not linked to main kernel
-* arch/vdso, arch/kernel/vsyscall_64 and arch/kernel/hpet:
-  profiling causes segfaults during boot (incompatible context)
+> Hi Steven,
+> 
+> On Thu, Feb 26, 2009 at 12:08:06AM -0500, Steven Rostedt wrote:
+> > On Wed, Feb 25, 2009 at 11:16:09PM +0100, Uwe Kleine-K??nig wrote:
+> > > The current definition of CALLER_ADDRx isn't suitable for all platforms.
+> > > E.g. for ARM __builtin_return_address(N) doesn't work for N > 0 and
+> > > AFAIK for powerpc there are no frame pointers needed to have a working
+> > > __builtin_return_address.  This patch allows defining the CALLER_ADDRx
+> > > macros in <asm/ftrace.h> and let these take precedence.
+> > > 
+> > > Signed-off-by: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
+> >
+> > Ah, but unfortunately this will break other archs :-(
+> > 
+> > They may not use FTRACE, but they do include the ftrace header (the
+> > ftrace.h header can be used for other types of tracing, not just
+> > function tracing).
+> Then that's from generic files, because the archs that don't have
+> <asm/ftrace.h> don't include <linus/ftrace.h> under arch/.
+> 
+> > A better solution would be to move the CALLER_ADDER0 out of the
+> > ftrace.h header completely. Not sure where though. Have a caller.h ?
+> > And then we can have ftrace.h include caller.h. A asm/caller.h can be
+> > used to override the default.
+> Well, but then every arch needs this file.  I don't see an advantage
+> here.  So I'd favour to add an empty ftrace.h for the relevant archs.
 
-Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+The safest bet is then to add an empty ftrace.h to all archs.
 
----
- arch/x86/boot/Makefile                 |    1 +
- arch/x86/boot/compressed/Makefile      |    1 +
- arch/x86/kernel/Makefile               |    2 ++
- arch/x86/kernel/acpi/realmode/Makefile |    1 +
- arch/x86/vdso/Makefile                 |    1 +
- kernel/gcov/Kconfig                    |    2 +-
- 6 files changed, 7 insertions(+), 1 deletion(-)
+Anyone else have any issues with that?
 
-Index: linux-2.6.29-rc6/kernel/gcov/Kconfig
-===================================================================
---- linux-2.6.29-rc6.orig/kernel/gcov/Kconfig
-+++ linux-2.6.29-rc6/kernel/gcov/Kconfig
-@@ -34,7 +34,7 @@ config GCOV_KERNEL
- config GCOV_PROFILE_ALL
- 	bool "Profile entire Kernel"
- 	depends on GCOV_KERNEL
--	depends on S390 || X86_32
-+	depends on S390 || X86
- 	default n
- 	---help---
- 	This options activates profiling for the entire kernel.
-Index: linux-2.6.29-rc6/arch/x86/kernel/acpi/realmode/Makefile
-===================================================================
---- linux-2.6.29-rc6.orig/arch/x86/kernel/acpi/realmode/Makefile
-+++ linux-2.6.29-rc6/arch/x86/kernel/acpi/realmode/Makefile
-@@ -42,6 +42,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS	+= $(call cc-option, -m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
- 
-Index: linux-2.6.29-rc6/arch/x86/boot/Makefile
-===================================================================
---- linux-2.6.29-rc6.orig/arch/x86/boot/Makefile
-+++ linux-2.6.29-rc6/arch/x86/boot/Makefile
-@@ -71,6 +71,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS +=   $(call cc-option,-m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- $(obj)/zImage:  asflags-y := $(SVGA_MODE) $(RAMDISK)
- $(obj)/bzImage: ccflags-y := -D__BIG_KERNEL__
-Index: linux-2.6.29-rc6/arch/x86/boot/compressed/Makefile
-===================================================================
---- linux-2.6.29-rc6.orig/arch/x86/boot/compressed/Makefile
-+++ linux-2.6.29-rc6/arch/x86/boot/compressed/Makefile
-@@ -14,6 +14,7 @@ KBUILD_CFLAGS += $(call cc-option,-ffree
- KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
- 
- KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- LDFLAGS := -m elf_$(UTS_MACHINE)
- LDFLAGS_vmlinux := -T
-Index: linux-2.6.29-rc6/arch/x86/vdso/Makefile
-===================================================================
---- linux-2.6.29-rc6.orig/arch/x86/vdso/Makefile
-+++ linux-2.6.29-rc6/arch/x86/vdso/Makefile
-@@ -123,6 +123,7 @@ quiet_cmd_vdso = VDSO    $@
- 		       -Wl,-T,$(filter %.lds,$^) $(filter %.o,$^)
- 
- VDSO_LDFLAGS = -fPIC -shared $(call ld-option, -Wl$(comma)--hash-style=sysv)
-+GCOV_PROFILE := n
- 
- #
- # Install the unstripped copy of vdso*.so listed in $(vdso-install-y).
-Index: linux-2.6.29-rc6/arch/x86/kernel/Makefile
-===================================================================
---- linux-2.6.29-rc6.orig/arch/x86/kernel/Makefile
-+++ linux-2.6.29-rc6/arch/x86/kernel/Makefile
-@@ -23,6 +23,8 @@ nostackp := $(call cc-option, -fno-stack
- CFLAGS_vsyscall_64.o	:= $(PROFILING) -g0 $(nostackp)
- CFLAGS_hpet.o		:= $(nostackp)
- CFLAGS_tsc.o		:= $(nostackp)
-+GCOV_PROFILE_vsyscall_64.o	:= n
-+GCOV_PROFILE_hpet.o		:= n
- 
- obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
- obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+If this happens, you can put the asm/ftrace.h at the top and remove the
+asm/ftrace.h referenced in the DYNAMIC_FTRACE ifdef.
 
+-- Steve
 
