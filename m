@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbZBZXpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZBZXxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757985AbZBZXpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 18:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZBZXpO
+	id S1757017AbZBZXxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 18:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbZBZXxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 18:45:14 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:49334 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbZBZXpM (ORCPT
+	Thu, 26 Feb 2009 18:53:03 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:54818 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754177AbZBZXxB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 18:45:12 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-Date: Fri, 27 Feb 2009 00:44:52 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org
-References: <20090224000002.GA578@ovro.caltech.edu> <200902262334.33778.arnd@arndb.de> <20090226231742.GB19959@ovro.caltech.edu>
-In-Reply-To: <20090226231742.GB19959@ovro.caltech.edu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 26 Feb 2009 18:53:01 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902270044.53683.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18uUghHA6mmPBWuaE43/kM9M9jkGzICXxjod2G
- D7CphHif6ZhkJyNqxEov/GxSBW2j2Hk6S5XXsQZ7k1p3yI8eJn
- 2bq4j7gWECq2Kmbg3A38Q==
+In-Reply-To: <ac3eb2510902261428n297063f5webb06fc105e5ef0a@mail.gmail.com>
+References: <20090218151132.476.81706.stgit@localhost.localdomain>
+	 <fa686aa40902180834r2b9b8de0tcdc31c850f6323a6@mail.gmail.com>
+	 <ac3eb2510902180849o6d86bbfev337e1bc203d6543e@mail.gmail.com>
+	 <fa686aa40902180951q64c71581y3811062256685df7@mail.gmail.com>
+	 <ac3eb2510902181032h3f9ed994s212dd8b42ddca82@mail.gmail.com>
+	 <20090218183945.GA31797@suse.de>
+	 <fa686aa40902182250g1c4e7cb6o4d0102da35ab838b@mail.gmail.com>
+	 <ac3eb2510902191508w71cf7d76x4a8957ecee9c4e6@mail.gmail.com>
+	 <fa686aa40902200728k1466121cqb772bb9e5d1a777c@mail.gmail.com>
+	 <ac3eb2510902261428n297063f5webb06fc105e5ef0a@mail.gmail.com>
+Date: Thu, 26 Feb 2009 16:52:58 -0700
+Message-ID: <fa686aa40902261552ibc36057p5e9173a0f8a5a8dd@mail.gmail.com>
+Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 February 2009, Ira Snyder wrote:
-> On Thu, Feb 26, 2009 at 11:34:33PM +0100, Arnd Bergmann wrote:
-> > I guess the best option for doing it in Linux then would be to have
-> > a board control driver (not sure if this already exists) that exports
-> > high-level functions to set up the inbound and outbound windows.
-> > 
-> 
-> Nothing like it exists. The OF device tree doesn't even describe these
-> registers. The code in arch/powerpc/sysdev/fsl_pci.c uses some registers
-> near these, but it gets their address by masking the low bits off the
-> addresses from the device tree and adding the offsets of the new
-> registers. Nasty.
-> 
-> I'll do this for now:
-> 1) Get the message unit registers from my device tree
-> 2) Encapsulate all use of get_immrbase() to a single function
-> 
-> That way it could be easily replaced in the future when something more
-> suitable comes along.
+Thanks, this is exactly what I want.  I'll read through and write up a
+little blurb to describe the recommended model.
 
-Ok. However, I don't expect this to get fixed magically. Ideally,
-you would start a new file for the board control in arch/powerpc/sysdev
-and export the function from there, otherwise you do it the way you
-suggested.
-Then we can tell the fsl_pci and other people to use the same
-method and source file to access the board control.
-> 
-> I didn't think about this at all. This driver could be used to boot a
-> (guest) system over NFS, so in that case there isn't a userspace running
-> yet, to allow configuration. This is essentially my use case, though I
-> haven't implemented it yet.
-> 
-> Also, I hate designing user interfaces :) Any concrete suggestions on
-> design would be most welcome.
+g.
 
-Don't worry about it for now, just put all the hardcoded virtio_net
-specific stuff into a file separate from the hardware specific
-files so that we have a nice kernel level abstraction to build a
-user abstraction on top of.
 
-	Arnd <><
+On Thu, Feb 26, 2009 at 3:28 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Fri, Feb 20, 2009 at 16:28, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> Thanks for the reply, it clarifies a lot.  It sounds like this really
+>> should be documented (in Documentation/driver-model/device.txt?).  I'm
+>> happy to add a blurb to that effect and send a patch, but I want to
+>> make sure I really understand the model before I do so.  I've got a
+>> couple more questions below:
+>>
+>> On Thu, Feb 19, 2009 at 4:08 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>> [...]
+>>> If an attribute is not available at event time, nothing of this can
+>>> ever work. If you look a the device a second later, you will see the
+>>> proper looking files and values, and all the test programs will work,
+>>> but it will always fail at device creation.
+>> [...]
+>>> That all might not be needed for your specific setup/driver/device and
+>>> may work fine for your need. But we don't want to encourage anybody
+>>> with another new API which creates the usual trouble we need to fix
+>>> later.
+>>
+>> Fair enough
+>>
+>>> And we need to fix things like this all the time.
+>>
+>> Can you point me at a 'textbook' example of one of these fixups?
+>
+> Here are a few cases of broken atribute timing, a quick git search has found:
+>  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f7120a4f75168df3c02efacd10403a4ba0bcb29d
+>  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8a89efd18aa15bb832778baa4e6eee3857ecada4
+>  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3b23dd6f8a718e5339de4f7d86ce76a078b5f771
+>  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2e5f10e4f0a9649186d8a8c793822b2e0dae8373
+>  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bfd129445f23c037d9a440ebfa4109e11c220301
+>
+> Regarding the split of the driver device and the device to bind to:
+> the platform stuff is kind of "special", because it is often used for
+> devices/buses which can not be enumerated. With buses which need
+> enumeration, it's pretty obvious that the enumeration creates their
+> own devices, which then a driver can bind to, and where the driver
+> creates its own driver instance for it. Like nobody would expect a
+> network driver to add the netif properties directly to the pci device,
+> and so on.
+>
+> Many platform devices are just static placeholders, and then it is not
+> obvious that userspace still prefers another device instance while
+> binding a driver, but in most cases it's worth the effort, because
+> then all devices, regardless which bus is backing them, can be handled
+> the same way with a "hotplug handler" like udev.
+>
+> Thanks,
+> Kay
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
