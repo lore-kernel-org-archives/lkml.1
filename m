@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZBZDF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbZBZDGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbZBZDF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZBZDFr
+	id S1758545AbZBZDGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:06:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZBZDGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:05:47 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:49140 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZBZDFq (ORCPT
+	Wed, 25 Feb 2009 22:06:40 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:38106 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbZBZDGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:05:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=D2GBYkeugzCq85iODsClpYHgZUzMs5+zX7Mf/Lx2rmUPHQkKUffWgJnr4sKBlq93cS
-         mMjRTPOuqn9S8AIX/4WmiF2QqjotLWJ5e21UPhso3JWwRLybX/qls324cI+1AmSm44v5
-         VS8Te5uI2Mq67MNtM+fuGGN8ELMBHVZ5I/uKc=
-Subject: Re: [RFC] introduce pr_cont macro
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20090226030315.GB7526@elte.hu>
-References: <20090225205920.GA22091@localhost>
-	 <20090226030315.GB7526@elte.hu>
-Content-Type: text/plain
-Date: Wed, 25 Feb 2009 19:05:41 -0800
-Message-Id: <1235617541.5610.0.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Feb 2009 22:06:38 -0500
+To: Theodore Tso <tytso@mit.edu>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sandeen@redhat.com
+Subject: Re: ATA support for 4k sector size
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
+	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
+	<20090226025043.GJ1363@mit.edu>
+Date: Wed, 25 Feb 2009 22:05:30 -0500
+In-Reply-To: <20090226025043.GJ1363@mit.edu> (Theodore Tso's message of "Wed\, 25 Feb 2009 21\:50\:43 -0500")
+Message-ID: <yq1r61lgao5.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.49A606FE.010D:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 04:03 +0100, Ingo Molnar wrote:
-> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> 
-> > We cover all log-levels by pr_... macros except
-> > KERN_CONT one. Add it for convenience.
-> > 
-> > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> > ---
-> > 
-> > I think start printing with some pr_... macro
-> > and continue with printk(KERN_CONT ...) look
-> > not that clear -- better to continue with
-> > same pr_... slogan. Thoughts? I hope I didn't
-> > miss anything.
-> > 
-> >  include/linux/kernel.h |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > Index: linux-2.6.git/include/linux/kernel.h
-> > ===================================================================
-> > --- linux-2.6.git.orig/include/linux/kernel.h
-> > +++ linux-2.6.git/include/linux/kernel.h
-> > @@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
-> >          printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-> >  #define pr_info(fmt, ...) \
-> >          printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-> > +#define pr_cont(fmt, ...) \
-> > +        printk(KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
-> 
-> Makes sense.
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
-> 
+>>>>> "Ted" == Theodore Tso <tytso@mit.edu> writes:
 
-Don't you want to omit the pr_fmt() from the KERN_CONT case?
+>> Because of 63-sector legacy problems a bunch of ATA vendors will
+>> initially ship 512/4096 drives that are not naturally aligned.
+>> I.e. logical sector 63 will be aligned on a 4KB hardware sector
+>> boundary to overcome the misaligned default partitioning.
+>> 
 
-Harvey
+Ted> Are we *sure* that this is what they plan to be doing?  
 
+I have asked my contacts to verify.  That was the plan as of last
+October.
+
+
+Ted> Is there a way we can query the hardware to find out for sure what
+Ted> drives are doing what?
+
+Yep.  And with my patches the appropriate alignment is exposed in sysfs
+for each block device.
+
+Hardware workarounds for DOS partition table brain damage have existed
+for a long time.  On a lot of RAID arrays you have to pick a LUN
+personality.  And by choosing DOS/Windows/Linux you often align sector
+63 to the internal RAID chunk size.
+
+I'm working with several RAID vendors to make sure they set the right
+alignment offset when they do that.  That isn't currently the case.  The
+alignment knobs only recently made their appearance in the spec to
+accommodate the 4KB sector transition.
+
+
+Ted> I'll note that Vista starts all new partitions at the 1MB boundary,
+Ted> so its filesystems will be naturally aligned.
+
+Maybe.  See above.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
