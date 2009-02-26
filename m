@@ -1,86 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZBZWyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbZBZW75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZBZWyJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:54:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZBZWx4
+	id S1756974AbZBZW75 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZBZW7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:53:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36805 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753792AbZBZWxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:53:55 -0500
-Date: Thu, 26 Feb 2009 14:53:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/fork.c: define reset_task_cputimes()
-Message-Id: <20090226145346.8a778d98.akpm@linux-foundation.org>
-In-Reply-To: <1235625475-21218-1-git-send-email-gustavo@las.ic.unicamp.br>
-References: <1235625475-21218-1-git-send-email-gustavo@las.ic.unicamp.br>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 26 Feb 2009 17:59:48 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39796 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753612AbZBZW7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 17:59:47 -0500
+Subject: Re: Linux 2.6.29-rc6
+From: john stultz <johnstul@us.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+In-Reply-To: <alpine.LFD.2.00.0902261434390.3111@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
+	 <49A6F39F.9040801@krogh.cc>
+	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
+	 <49A6FEE2.90700@krogh.cc>
+	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
+	 <49A70B24.6090706@krogh.cc>
+	 <1235685269.6811.11.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
+	 <1235687483.6811.26.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0902261434390.3111@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 14:59:42 -0800
+Message-Id: <1235689182.6811.34.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009 02:17:55 -0300
-"Gustavo F. Padovan" <gustavo@las.ic.unicamp.br> wrote:
-
-> Group all vars that receive cputime_zero in the same static function.
-> This also cleans the code.
+On Thu, 2009-02-26 at 14:40 -0800, Linus Torvalds wrote:
 > 
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-> ---
->  include/linux/sched.h |   11 +++++++++++
->  kernel/fork.c         |    8 +-------
->  2 files changed, 12 insertions(+), 7 deletions(-)
+> On Thu, 26 Feb 2009, john stultz wrote:
+> > 
+> > I'll kick up some of my own testing between these two releases to see if
+> > I can't find something similar.
 > 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 8981e52..1a64587 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1595,6 +1595,17 @@ extern cputime_t task_utime(struct task_struct *p);
->  extern cputime_t task_stime(struct task_struct *p);
->  extern cputime_t task_gtime(struct task_struct *p);
->  
-> +static inline void reset_task_cputimes(struct task_struct *t)
-> +{
-> +	t->utime = cputime_zero;
-> +	t->stime = cputime_zero;
-> +	t->gtime = cputime_zero;
-> +	t->utimescaled = cputime_zero;
-> +	t->stimescaled = cputime_zero;
-> +	t->prev_utime = cputime_zero;
-> +	t->prev_stime = cputime_zero;
-> +}
-> +
->  /*
->   * Per process flags
->   */
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index a66fbde..9856abe 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -1031,13 +1031,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->  	clear_tsk_thread_flag(p, TIF_SIGPENDING);
->  	init_sigpending(&p->pending);
->  
-> -	p->utime = cputime_zero;
-> -	p->stime = cputime_zero;
-> -	p->gtime = cputime_zero;
-> -	p->utimescaled = cputime_zero;
-> -	p->stimescaled = cputime_zero;
-> -	p->prev_utime = cputime_zero;
-> -	p->prev_stime = cputime_zero;
-> +	reset_task_cputimes(p);
->  
->  	p->default_timer_slack_ns = current->timer_slack_ns;
->  
+> Since the PIT timer read is possibly hw-dependent, it might be that you 
+> can't necessarily reproduce it on some random hardware.
+> 
+> How sensitive is ntpd to (stable) drift? IOW, if we get the calibration 
+> wrong, the TSC should still hopefully be very _stable_, it's just that the 
+> initial guesstimate for the frequency is off and ntp would have to correct 
+> for that.
 
-I cannot see much point in doing this, unless you have some other patch
-which adds a second caller of reset_task_cputimes()?
+NTP can adjust the clock about +/-500ppm (so a 1000ppm range). Past that
+it starts throwing errors.
+
+Part of the issue is that if the drift value changes in between boots,
+NTPd can take a while to settle down on the right freq. I suspect that's
+whats happening here, and should the box be left alone for a few hours
+(maybe overnight) NTPd will find the new drift correction the issue will
+go away.
+
+Thomas tripped over this a little while back when the
+NTP_INTERVAL_LENGTH change landed, but I think that was prior to 2.6.26,
+so its probably the calibration changes discussed, but I wanted to see
+if there were any other slight changes that might be contributing to the
+issue as well.
+
+thanks
+-john
 
 
