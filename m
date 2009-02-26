@@ -1,168 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbZBZVuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbZBZVz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468AbZBZVuk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759166AbZBZVuS
+	id S1759537AbZBZVz1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbZBZVzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:50:18 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:33517 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758883AbZBZVuR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:50:17 -0500
-Date: Thu, 26 Feb 2009 15:50:12 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 4/4] keys: make procfiles per-user-namespace
-Message-ID: <20090226215012.GA24500@us.ibm.com>
-References: <20090109225313.GB15599@us.ibm.com> <20090109225208.GA15252@us.ibm.com> <5296.1234522990@redhat.com>
+	Thu, 26 Feb 2009 16:55:13 -0500
+Received: from www.tglx.de ([62.245.132.106]:49977 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756731AbZBZVzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 16:55:11 -0500
+Date: Thu, 26 Feb 2009 22:54:46 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: john stultz <johnstul@us.ibm.com>
+cc: Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29-rc6
+In-Reply-To: <1235684809.6811.5.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0902262249390.9135@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> 
+ <49A70B24.6090706@krogh.cc> <1235684809.6811.5.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5296.1234522990@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
-> 
-> > Restrict the /proc/keys and /proc/key-users output to keys
-> > belonging to the same user namespace as the reading task.
+On Thu, 26 Feb 2009, john stultz wrote:
+> On Thu, 2009-02-26 at 22:35 +0100, Jesper Krogh wrote:
+> > john stultz wrote:
+> > > On Thu, Feb 26, 2009 at 12:43 PM, Jesper Krogh <jesper@krogh.cc> wrote:
+> > >> Linus Torvalds wrote:
+> > >>> On Thu, 26 Feb 2009, Jesper Krogh wrote:
+> > >>>> 2.6.26.8 doesnt have this problem.
+> > >>>>
+> > >>>> The "current_clocsource" is the same on both systems.
+> > >>>>
+> > >>>> $ cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+> > >>>> tsc
+> > >>> What does the frequency calibrate to? It should be in the dmesg. Does it
+> > >>> differ by a big amount?
+> > >> Non-working:
+> > >> $ dmesg | grep -i freq
+> > >> [    0.004007] Calibrating delay loop (skipped), value calculated using
+> > >> timer frequency.. 4620.05 BogoMIPS (lpj=9240104)
+> > >>
+> > >> 2.6.26.8 doesn't have that information.
+> > > 
+> > > I'm surprised the clocksource watchdog isn't catching it.
+> > > 
+> > > What's the output from:
+> > > cat /sys/devices/system/clocksource/clocksource0/available_clocksource
 > > 
-> > We may want to make this more complicated - so that any
-> > keys in a user-namespace which is belongs to the reading
-> > task are also shown.  But let's see if anyone wants that
-> > first.
+> > $ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > tsc acpi_pm jiffies
 > 
-> Hmmm...  I wonder if we can do better by making the file position indicate the
-> key ID rather than being a count of the number of keys read.  It might make
-> this cleaner.
+> Hmm. Does booting w/ "clocksourc=acpi_pm" also show the severe (~550ppm,
+> which NTP can't handle) drift?
+> 
+> >From the dmesg, I don't see any major calibration difference right off. 
+> 
+> So I'd suspect something like TSC halting in idle could be causing
+> problems, but the watchdog should catch that as well. My only guess at
+> this point is that the ACPI PM is halting in idle along with the TSC. 
 
-Ok, what I came up with so far is the following.  The diffstat
-would be far more impressive (in terms of - vs +) if I could
-use key_lookup() for proc_keys_start(), but since I need to
-return the next greatest key, it seems like I need to do my
-own find_ge_key() function.
+But why would it do that on 29-rc6 and not on 2.6.28.8 ? I'm not aware
+of changes which might cause that.
 
->From cf3961ed60d162bb2b1a3da231009733fd114546 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Thu, 26 Feb 2009 13:29:59 -0800
-Subject: [PATCH 1/1] keys: /proc/keys: use keyid not numread as fpos
+Thanks,
 
-Just an experiment - previously the fpos used in
-printing /proc/keys through seq_file interface
-represented number of items read.  This patch
-instead stores the key->serial in fpos.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/keys/proc.c |   63 ++++++++++++++++++++++++++++++++-----------------
- 1 files changed, 41 insertions(+), 22 deletions(-)
-
-diff --git a/security/keys/proc.c b/security/keys/proc.c
-index 769f9bd..6132629 100644
---- a/security/keys/proc.c
-+++ b/security/keys/proc.c
-@@ -91,8 +91,9 @@ __initcall(key_proc_init);
-  */
- #ifdef CONFIG_KEYS_DEBUG_PROC_KEYS
- 
--static struct rb_node *__key_serial_next(struct rb_node *n)
-+static struct rb_node *key_serial_next(struct rb_node *n)
- {
-+	n = rb_next(n);
- 	while (n) {
- 		struct key *key = rb_entry(n, struct key, serial_node);
- 		if (key->user->user_ns == current_user_ns())
-@@ -102,44 +103,62 @@ static struct rb_node *__key_serial_next(struct rb_node *n)
- 	return n;
- }
- 
--static struct rb_node *key_serial_next(struct rb_node *n)
-+static int proc_keys_open(struct inode *inode, struct file *file)
- {
--	return __key_serial_next(rb_next(n));
--}
-+	return seq_open(file, &proc_keys_ops);
- 
--static struct rb_node *key_serial_first(struct rb_root *r)
--{
--	struct rb_node *n = rb_first(r);
--	return __key_serial_next(n);
- }
- 
--static int proc_keys_open(struct inode *inode, struct file *file)
-+static struct key *find_ge_key(unsigned int id)
- {
--	return seq_open(file, &proc_keys_ops);
-+	struct rb_node *n = key_serial_tree.rb_node;
-+	struct key *minkey = NULL;
-+
-+	while (n) {
-+		struct key *key = rb_entry(n, struct key, serial_node);
-+		if (id < key->serial) {
-+			if (!minkey || minkey->serial > key->serial)
-+				minkey = key;
-+			n = n->rb_left;
-+		} else if (id > key->serial)
-+			n = n->rb_right;
-+		else {
-+			minkey = key;
-+			break;
-+		}
-+		key = NULL;
-+	}
- 
-+	return minkey;
- }
- 
- static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
- {
--	struct rb_node *_p;
--	loff_t pos = *_pos;
-+	struct key *key;
-+	unsigned int pos = *_pos;
- 
- 	spin_lock(&key_serial_lock);
-+	key = find_ge_key(pos);
-+	if (!key)
-+		return NULL;
-+	*_pos = key->serial;
-+	return &key->serial_node;
-+}
- 
--	_p = key_serial_first(&key_serial_tree);
--	while (pos > 0 && _p) {
--		pos--;
--		_p = key_serial_next(_p);
--	}
--
--	return _p;
--
-+static inline unsigned int key_node_serial(struct rb_node *n)
-+{
-+	struct key *key = rb_entry(n, struct key, serial_node);
-+	return key->serial;
- }
- 
- static void *proc_keys_next(struct seq_file *p, void *v, loff_t *_pos)
- {
--	(*_pos)++;
--	return key_serial_next((struct rb_node *) v);
-+	struct rb_node *n;
-+
-+	n = key_serial_next(v);
-+	if (n)
-+		*_pos = key_node_serial(n);
-+	return n;
- 
- }
- 
--- 
-1.5.4.3
-
+	tglx
