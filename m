@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZBZVTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758457AbZBZVUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbZBZVTi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZBZVT0
+	id S1758457AbZBZVUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZBZVUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:19:26 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:53039 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758029AbZBZVTZ convert rfc822-to-8bit (ORCPT
+	Thu, 26 Feb 2009 16:20:25 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:46742 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753065AbZBZVUZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:19:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Db2kd87n7uMfLGTbina75U0LEmtqXYrx6l9fgXGXCTNIJZbPTsdkmBP0AZNcX+sVim
-         pjZsaM/42zT13lnQFUiQkQwvUWPrmXuuoSZ9hnB3+mh6/2MNt2kZ6o0VJQVpZRhII06T
-         EkmP2TGh64ynhchjlJwbifq6Mn6ctB8Wok67s=
+	Thu, 26 Feb 2009 16:20:25 -0500
 MIME-Version: 1.0
-In-Reply-To: <49A6FEE2.90700@krogh.cc>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
-	 <49A6F39F.9040801@krogh.cc>
-	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
-	 <49A6FEE2.90700@krogh.cc>
-Date: Thu, 26 Feb 2009 13:19:22 -0800
-X-Google-Sender-Auth: 3e60d76ef0f64aa2
-Message-ID: <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
-Subject: Re: Linux 2.6.29-rc6
-From: john stultz <johnstul@us.ibm.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1235681849.7388.22.camel@pasglop>
+References: <200902221837.49396.rjw@sisk.pl> <200902250029.16107.rjw@sisk.pl>
+	 <d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
+	 <200902261050.50531.rjw@sisk.pl>
+	 <d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
+	 <1235681849.7388.22.camel@pasglop>
+Date: Thu, 26 Feb 2009 13:20:21 -0800
+Message-ID: <d6200be20902261320q58a347e5s1af790e56b186c81@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
+	suspend-resume
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 12:43 PM, Jesper Krogh <jesper@krogh.cc> wrote:
-> Linus Torvalds wrote:
+On Thu, Feb 26, 2009 at 12:57 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2009-02-26 at 12:34 -0800, Arve Hjønnevåg wrote:
+>> That is enough for drivers that use wakelocks to abort suspend (if I
+>> fix the wakelock code to not use a platform device as its last abort
+>> point). It is not enough if you don't have wakelocks, since the
+>> interrupt can occur after suspend_late has been called and the driver
+>> has no way to abort suspend.
 >>
->> On Thu, 26 Feb 2009, Jesper Krogh wrote:
->>>
->>> 2.6.26.8 doesnt have this problem.
->>>
->>> The "current_clocsource" is the same on both systems.
->>>
->>> $ cat /sys/devices/system/clocksource/clocksource0/current_clocksource
->>> tsc
->>
->> What does the frequency calibrate to? It should be in the dmesg. Does it
->> differ by a big amount?
->
-> Non-working:
-> $ dmesg | grep -i freq
-> [    0.004007] Calibrating delay loop (skipped), value calculated using
-> timer frequency.. 4620.05 BogoMIPS (lpj=9240104)
->
-> 2.6.26.8 doesn't have that information.
+> I still don't quite see how you deal with the race anyway. Ie. Even
+> without Rafael patch, what if the interrupt occurs after your sysdev
+> suspend ?
 
-I'm surprised the clocksource watchdog isn't catching it.
+After local_irq_disable has been called, the interrupt will no longer
+be cleared by Linux when it occurs. This means that is still pending
+when you get to the low level suspend code which will prevent suspend.
 
-What's the output from:
-cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> In general, unless they are level sensitive, wakeup interrupts tend to
+> always be somewhat racy.
 
-Also mind sending the full dmesg for both kernels?
+They don't have to be. If you have a separate hardware component that
+tracks wakeup interrupts, you need to start this before you stop the
+main interrupt controller. If any interrupts are pending at this time
+you abort suspend. After a wakeup you do the reverse.
 
-thanks
--john
+-- 
+Arve Hjønnevåg
