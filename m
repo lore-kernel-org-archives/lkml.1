@@ -1,95 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZBZKLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbZBZKMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbZBZKLo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 05:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZBZKLf
+	id S1755617AbZBZKMK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 05:12:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbZBZKLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 05:11:35 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:50296 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751274AbZBZKLe (ORCPT
+	Thu, 26 Feb 2009 05:11:54 -0500
+Received: from sineb-mail-1.sun.com ([192.18.19.6]:59570 "EHLO
+	sineb-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbZBZKLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 05:11:34 -0500
-Date: Thu, 26 Feb 2009 15:42:13 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 1/2] New cgroup subsystem API (->initialize())
-Message-ID: <20090226101213.GB3312@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090225105730.GA4008@in.ibm.com> <20090225105831.GB4008@in.ibm.com> <49A604BA.9090407@cn.fujitsu.com> <20090226075259.GA3312@in.ibm.com> <49A64EB8.9020203@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A64EB8.9020203@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Feb 2009 05:11:53 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain
+Date: Thu, 26 Feb 2009 18:11:44 +0800
+From: Li Wei <W.Li@Sun.COM>
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+In-reply-to: <49883CD7.2060602@linux.vnet.ibm.com>
+To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Message-id: <1235643104.13052.10.camel@localhost>
+X-Mailer: Evolution 2.24.3
+References: <49883CD7.2060602@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 04:11:36PM +0800, Li Zefan wrote:
-> Bharata B Rao wrote:
-> > On Thu, Feb 26, 2009 at 10:55:54AM +0800, Li Zefan wrote:
-> >> Bharata B Rao wrote:
-> >>> From: Balaji Rao <balajirrao@gmail.com>
-> >>>
-> >>> cgroup: Add ->initialize() to cgroup_subsys structure
-> >>>
-> >>> Some cgroup subsystems (like cpu controller) would need subsystem
-> >>> specific initialization. Such subsystems can define ->initialize()
-> >>> which gets called during cgroup_init() (and not cgroup_init_early()).
-> >>>
-> >> I think it's better to avoid adding this.
-> >>
-> >> It would be best if we can add a hook to initialize init_task_group.stat where
-> >> kmalloc is available but acount_xxx_time() hasn't been called. Otherwise, we
-> >> have to check (tg->stat == NULL) in account_task_group_time(), then why not add
-> >> a hook in smp_init_smp() to do initialization?
-> > 
-> > account_xxx_time() is called from scheduler ticks and AFAICS they end up
-> > getting called much before kmalloc is available. In any case, I would think
-> > any hook to just initialize stats for init_task_group would be
-> > very very (cpu controller) subsytem specific. Isn't that bad ?
-> > 
-> 
-> Since it's very very cpu subsystem specific, so it's better to use it's own hook.
-> (and because the initialize() API is not so elegant..)
-> 
-> > Another solution I see which can prevent all this is not to collect
-> > stats for init_task_group at all with the understanding that system wide
-> 
-> This came to my mind too. ;)
-> 
-> > stime/utime accounting (which is already present) is essentially the
-> > accounting for init_task_group because init_task_group comprises of all
-> > the tasks in the system. But this would necessiate us to make collection
-> > of cpu controller stats hierarchial. This was one of the questions I asked
-> > in my 0/2 thread. Shouldn't we be doing hierarchial accounting for
-> > cpu controller ?
-> > 
-> 
-> Don't know. I have no strong opinion about this. I'm a bit doubt how useful
-> this is.
-> 
-> > Another thing that could be done is to enhance already existing
-> > cpuacct controller to do stime/utime accouting also. cpuacct controller
-> > exists precisely for doing per-cgroup accounting and is there any reason
-> > why these stats shouldn't be part of cpuacct controller. If we do this,
-> > users would be forced to use cpu controller and cpuacct controller
-> > together. Is that a problem ?
-> > 
-> 
-> I wondered why these stats is part of cpu subsystem but not cpuacct.
-> And I don't see any problem to use these 2 subsystems together. Actually
-> this is one of the advantage of cgroup.
+On Tue, 2009-02-03 at 13:47 +0100, Peter Oberparleiter wrote:
+> +/* write() implementation for reset file. Reset all profiling data to zero
+> + * and remove ghost nodes. */
+> +static ssize_t reset_write(struct file *file, const char __user *addr,
+> +			   size_t len, loff_t *pos)
+> +{
+> +	struct gcov_node *node;
+> +	struct gcov_node *r;
+> +
+> +	mutex_lock(&node_lock);
+> +	list_for_each_entry_safe(node, r, &all_head, all) {
+> +		if (node->info)
+> +			gcov_info_reset(node->info);
+> +		else
+> +			remove_node(node);
+> +	}
+> +	mutex_unlock(&node_lock);
+> +
+> +	return len;
+> +}
 
-Ok, so if there are no objections, my next version would move these
-stats to cpuacct subsystem.
+The remove_node above may have deleted the node that r points at. How
+about replacing all_head with a leaves_head that contains all leaf
+nodes, and iterate the latter instead?
 
-Regards,
-Bharata.
+---
+ kernel/gcov/fs.c |   19 ++++++++++---------
+ 1 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/gcov/fs.c b/kernel/gcov/fs.c
+index 6675c82..aab3be7 100644
+--- a/kernel/gcov/fs.c
++++ b/kernel/gcov/fs.c
+@@ -29,7 +29,7 @@
+  * struct gcov_node - represents a debugfs entry
+  * @list: list head for child node list
+  * @children: child nodes
+- * @all: list head for list of all nodes
++ * @leaves: list head for list of all leaf nodes
+  * @parent: parent node
+  * @info: associated profiling data structure if not a directory
+  * @ghost: when an object file containing profiling data is unloaded we keep a
+@@ -47,7 +47,7 @@
+ struct gcov_node {
+ 	struct list_head list;
+ 	struct list_head children;
+-	struct list_head all;
++	struct list_head leaves;
+ 	struct gcov_node *parent;
+ 	struct gcov_info *info;
+ 	struct gcov_info *ghost;
+@@ -60,7 +60,7 @@ static const char objtree[] = OBJTREE;
+ static const char srctree[] = SRCTREE;
+ static struct gcov_node root_node;
+ static struct dentry *reset_dentry;
+-static LIST_HEAD(all_head);
++static LIST_HEAD(leaves_head);
+ static DEFINE_MUTEX(node_lock);
+ 
+ /* If non-zero, keep copies of profiling data for unloaded modules. */
+@@ -206,7 +206,7 @@ static struct gcov_node *get_node_by_name(const char *name)
+ 	struct gcov_node *node;
+ 	struct gcov_info *info;
+ 
+-	list_for_each_entry(node, &all_head, all) {
++	list_for_each_entry(node, &leaves_head, leaves) {
+ 		info = get_node_info(node);
+ 		if (info && (strcmp(info->filename, name) == 0))
+ 			return node;
+@@ -355,7 +355,7 @@ static void init_node(struct gcov_node *node, struct gcov_info *info,
+ {
+ 	INIT_LIST_HEAD(&node->list);
+ 	INIT_LIST_HEAD(&node->children);
+-	INIT_LIST_HEAD(&node->all);
++	INIT_LIST_HEAD(&node->leaves);
+ 	node->info = info;
+ 	if (name)
+ 		strcpy(node->name, name);
+@@ -389,7 +389,8 @@ static struct gcov_node *new_node(struct gcov_node *parent,
+ 	if (info)
+ 		add_links(node, parent->dentry);
+ 	list_add(&node->list, &parent->children);
+-	list_add(&node->all, &all_head);
++	list_add(&node->leaves, &leaves_head)From e3ffddfa9af66bf6f9df400b63ae88f2ac90562c Mon Sep 17 00:00:00 2001
+From: Li Wei <w.li@sun.com>
+Date: Thu, 26 Feb 2009 17:53:37 +0800
+Subject: [PATCH] gcov: fix panic in reset_write
+
+remove_node may delete the next node in all_head. Replace the all_head
+with a list of all leaf nodes, and process leaves_head in reset_write.
+;
++	list_del_init(&parent->leaves);
+ 
+ 	return node;
+ }
+@@ -412,7 +413,7 @@ static void remove_links(struct gcov_node *node)
+ static void release_node(struct gcov_node *node)
+ {
+ 	list_del(&node->list);
+-	list_del(&node->all);
++	list_del(&node->leaves);
+ 	debugfs_remove(node->dentry);
+ 	remove_links(node);
+ 	if (node->ghost)
+@@ -456,7 +457,7 @@ static ssize_t reset_write(struct file *file, const char __user *addr,
+ 	struct gcov_node *r;
+ 
+ 	mutex_lock(&node_lock);
+-	list_for_each_entry_safe(node, r, &all_head, all) {
++	list_for_each_entry_safe(node, r, &leaves_head, leaves) {
+ 		if (node->info)
+ 			gcov_info_reset(node->info);
+ 		else
+@@ -480,7 +481,7 @@ static const struct file_operations gcov_reset_fops = {
+ 	.read = reset_read,
+ };
+ 
+-/* Create a node for a given profiling data set and add it to all lists and
++/* Create a node for a given profiling data set and add it to leaves lists and
+  * debugfs. Needs to be called with node_lock held. */
+ static void add_node(struct gcov_info *info)
+ {
+-- 
+1.5.6.3
+
