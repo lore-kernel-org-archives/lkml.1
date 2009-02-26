@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZBZNOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZBZNRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbZBZNOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 08:14:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZBZNOq
+	id S1756172AbZBZNRb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 08:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZBZNRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 08:14:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59236 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbZBZNOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 08:14:45 -0500
-Date: Thu, 26 Feb 2009 14:14:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH 1/2] tracing/core: make the per cpu trace files in per
-	cpu directories
-Message-ID: <20090226131431.GA14722@elte.hu>
-References: <49a632a5.0707d00a.296d.24b3@mx.google.com>
+	Thu, 26 Feb 2009 08:17:23 -0500
+Received: from silene.metacarta.com ([208.80.142.18]:47106 "EHLO
+	silene.metacarta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753195AbZBZNRX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 08:17:23 -0500
+Date: Thu, 26 Feb 2009 08:17:20 -0500 (EST)
+From: Joe Malicki <jmalicki@metacarta.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, bakerkj@metacarta.com, mitz@metacarta.com
+Message-ID: <13156243.9761011235654240048.JavaMail.root@ouachita>
+In-Reply-To: <20090225162836.63fce3c4.akpm@linux-foundation.org>
+Subject: Re: BUG: setuid sometimes doesn't.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49a632a5.0707d00a.296d.24b3@mx.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [208.80.142.151]
+X-Mailer: Zimbra 5.0.9_GA_2533.UBUNTU6 (ZimbraWebClient - [unknown] (Linux)/5.0.9_GA_2533.UBUNTU6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+----- "Andrew Morton" <akpm@linux-foundation.org> wrote:
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Impact: scale per cpu tracing
+> On Wed, 25 Feb 2009 18:11:54 -0500 (EST)
+> Joe Malicki <jmalicki@metacarta.com> wrote:
+> >
 > 
-> The per cpu trace files are all in a single directory: 
-> /debug/tracing/per_cpu. In case of a large number of cpu, the 
-> content of this directory becomes messy so we create now one 
-> directory per cpu inside /debug/tracing/per_cpu which contain 
-> each their own trace_pipe and trace files.
+> wow, good bug report!
 
-Applied to tip:tracing/ftrace, thanks Frederic!
+Thanks!
 
-	Ingo
+> > 
+> > Very rarely, we experience a setuid program not properly getting
+> > the euid of its owner.
+> 
+> Do you know which euid it _does_ get?  Is it unchanged, or is it
+> random
+> garbage, or...?
+
+Sorry, It's unchanged.  (Also, as in other reply, this only seems to
+happen for setuid to root on multicore, I jumbled words in the original
+report)
