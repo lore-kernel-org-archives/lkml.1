@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759160AbZBZV72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbZBZWAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759160AbZBZV72 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbZBZV7T
+	id S1759380AbZBZWAw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZBZWAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:59:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38560 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752958AbZBZV7T convert rfc822-to-8bit (ORCPT
+	Thu, 26 Feb 2009 17:00:43 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:60486 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbZBZWAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:59:19 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during suspend-resume
-Date: Thu, 26 Feb 2009 22:58:54 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200902221837.49396.rjw@sisk.pl> <200902261050.50531.rjw@sisk.pl> <d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
-In-Reply-To: <d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
+	Thu, 26 Feb 2009 17:00:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vo3YXOHS+G0IHA3lz9QF1i4QkG2U+O+3lj3EPCGxAHYnkZ3NxVbZF9xrLwzEGlboZi
+         U5KemcwZmdpk38stMVzywAPO9lrAbiaErungnDGUgjXWN8OEUBB4o8zavLIdHBp0egOB
+         TyBLbLoLWb+6kd86CL+3y+Chk+gozNsuoEs7Y=
+Message-ID: <49A71105.4050001@gmail.com>
+Date: Thu, 26 Feb 2009 23:00:37 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090218 SUSE/3.0b2-1.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200902262258.55835.rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+CC: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v2 1/2] x86_32: summit_32, use BAD_APICID
+References: <20090224175518.GA15616@elte.hu> <1235508093-18063-1-git-send-email-jirislaby@gmail.com> <49A524D3.3090408@gmail.com> <20090225111002.GA15453@elte.hu>
+In-Reply-To: <20090225111002.GA15453@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, Arve Hjønnevåg wrote:
-> On Thu, Feb 26, 2009 at 1:50 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Thursday 26 February 2009, Arve Hjønnevåg wrote:
-> >> On Tue, Feb 24, 2009 at 3:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > BTW, appended is the current (3rd) version of the $subject patch with some
-> >> > of your comments taken into account.  In particular, I did the following:
-> >> > - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
-> >> > - fixed interrupt.h so that their headers are at a better place
-> >> > - made enable_irq() clear IRQ_SUSPENDED
-> >> > - made device_power_down() and device_power_up() call
-> >> >  suspend_device_irqs() and resume_device_irqs(), respectively, which
-> >> >  simplified the callers quite a bit (it changed the Xen code ordering, though,
-> >> >  but I _think_ it still should work).
-> >>
-> >> Do you plan to fix edge triggered wakeup interrupts? It still looks
-> >> like edge triggered wakeup interrupts that occur between
-> >> suspend_device_irqs and local_irq_disable will not cause a wakeup.
-> >
-> > In the current version of the patch the interrupts that have IRQ_WAKEUP set
-> > in status are not disabled.  Is this not enough?
-> 
-> That is enough for drivers that use wakelocks to abort suspend (if I
-> fix the wakelock code to not use a platform device as its last abort
-> point). It is not enough if you don't have wakelocks, since the
-> interrupt can occur after suspend_late has been called and the driver
-> has no way to abort suspend.
+On 25.2.2009 12:10, Ingo Molnar wrote:
+> * Jiri Slaby<jirislaby@gmail.com>  wrote:
+>> In that case, the callers code is buggy, since it passes
+>> online_cpu masks even on machines, where apics are not on the
+>> same clusters.
+>
+> It's most likely confusion in the old code. This used to be
+> copy&paste-ed versions of different snapshots of the
+> mach-default-code, hacked to make work on weird platforms.
+> Mainline fixes/updates werent merged in consistently.
+>
+> So could you please send a patch that fixes this?
 
-Well, how exactly the $subject patch does cause this problem to happen?
+I've sent 4 more patches, but there are still issues:
+* es7000 + summit: I haven't solved calling with all bits set (only all 
+online is sufficient to trigger this). Some of the processors needn't be 
+on the same apic cluster. It will scream now (again -- it did before 
+adding the "optimisation"). Actually I don't know how to solve this. How 
+the caller would know the correct mask, ANDing with a apic->target_cpus 
+retval?
 
-Rafael
+* es7000: target_cpus_cluster returns CPU_MASK_ALL and hence it will 
+choke itself, because es7000_cpu_mask_to_apicid doesn't count with that. 
+Invoked by setup_timer_IRQ0_pin this way.
+
+* set_desc_affinity doesn't expect apic->cpu_mask_to_apicid_and to 
+return BAD_APICID and silently sets desc->affinity. Again, I see no 
+straightforward solution (rollback of assign_irq_vector and 
+set_extra_move_desc needed).
