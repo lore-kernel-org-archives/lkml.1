@@ -1,60 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZBZTrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbZBZTtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZBZTrR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZBZTrG
+	id S1756264AbZBZTtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZBZTtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:47:06 -0500
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:60498 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752102AbZBZTrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:47:05 -0500
-Message-ID: <49A6F1AC.4090305@krogh.cc>
-Date: Thu, 26 Feb 2009 20:46:52 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Olsen <dolsen@lnxi.com>, Ryan Jackson <rjackson@lnxi.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29-rc6
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>	 <49A679E8.1010301@krogh.cc>	 <alpine.LFD.2.00.0902260941090.3111@localhost.localdomain>	 <49A6EE17.4070102@krogh.cc> <1235677008.8730.176.camel@macbook.infradead.org>
-In-Reply-To: <1235677008.8730.176.camel@macbook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 14:49:06 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:45958 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752647AbZBZTtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 14:49:03 -0500
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+cc: Brian Haley <brian.haley@hp.com>, David Miller <davem@davemloft.net>,
+       arvidjaar@mail.ru, chuck.lever@oracle.com, tytso@mit.edu,
+       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel module
+In-reply-to: <49A6E1BC.4020209@hp.com>
+References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6E1BC.4020209@hp.com>
+Comments: In-reply-to Vlad Yasevich <vladislav.yasevich@hp.com>
+   message dated "Thu, 26 Feb 2009 13:38:52 -0500."
+X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+Date: Thu, 26 Feb 2009 11:49:05 -0800
+Message-ID: <31896.1235677745@death.nxdomain.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Thu, 2009-02-26 at 19:31 +0000, Jesper Krogh wrote:
->> 1) pick the distro .config
->> 2) make oldconfig
-> 
-> So it should have been a module, not built-in?
+Vlad Yasevich <vladislav.yasevich@hp.com> wrote:
 
-It is a module.. and it somehow gets auto-loaded on my system. (not 
-listed in /etc/modules).
+>Jay Vosburgh wrote:
+>> Brian Haley <brian.haley@hp.com> wrote:
+>> 
+>>> David Miller wrote:
+>>>> From: Jay Vosburgh <fubar@us.ibm.com>
+>>>> Date: Wed, 25 Feb 2009 14:10:58 -0800
+>>>>
+>>>>> 	I've been fooling with the disable_ipv6 sysctl, and one issue is
+>>>>> that, at least on the distro I'm testing on (SLES), it's not picked up
+>>>>> from /etc/sysctl.conf at boot time (presumably because ipv6 isn't loaded
+>>>>> yet, although I haven't really checked).
+>>>> Correct, that's the problem.
+>>>>
+>>>> We could create a blocker bitmap.  Two sysctls, "block_af" and
+>>>> "unblock_af".  You write the AF_foo value for the protocol there and
+>>>> it sets or clears the assosciated bit in the internal blocker bitmap.
+>>>>
+>>>> Things like sys_socket() et al. key off of this.
+>>> I'm open to suggestions at this point in time, I just don't see how this
+>>> will solve the bonding problem since it still wouldn't load, right?
+>> 
+>> 	It would permit users to load ipv6 (thus allowing bonding to
+>> load), but prevent ipv6 from actually doing anything.  (because
+>> sys_socket, e.g., won't open an ipv6 socket if block_af includes ipv6).
+>> 
+>> 	Actually, __sock_create might be the better place to put the
+>> hook for "create a socket"; there would probably need to be a check
+>> within the protocol code as well, so that, e.g., ipv6 addrconf won't run
+>> if AF_INET6 is disabled.
+>
+>But addrconf_init doesn't care about AF_INET6 sockets...
+>
+>Additionally, why is it absolutely necessary to block AF_INET6 sockets.
+>I never understood that requirement?
 
-$ grep -i ck804xrom /boot/config-2.6.29-rc6
-CONFIG_MTD_CK804XROM=m
+	I don't know that it is, but it's the current behavior if ipv6
+is prevented from loading.
 
-Same in the distro .config
-$ grep -i ck804xrom /boot/config-2.6.24-23-server
-CONFIG_MTD_CK804XROM=m
+>I can see people blocking IPv6 from loading because the module automatically
+>configures IPv6 addresses and thus opens another communication channel that
+>may not be monitored/controlled.  AF_INET6 sockets, on the other hand, are
+>simply relegated to IPv4 protocol, when there are no IPv6 addresses.
 
+	I believe that's only true if the ipv6 module is loaded.  If
+ipv6 is not loaded, then socket(AF_INET6, ...)  returns failure with
+EAFNOSUPPORT.  If ipv6 is loaded, socket(AF_INET6, ...) succeeds
+(apparently no matter if there are ipv6 addresses configured or not).
 
->> 3) Let the kernel load what it think it needs.
-> 
-> That part at least ought to be disabled -- we don't let this driver
-> autoload, because unless you _know_ you need it, you don't need it.
-> 
-> It's for overwriting your BIOS.
+>>> Dave - do you feel I need to fix this regression?  If not I can try to
+>>> work on this AF blocker thing.  My only other thought if we want to fix
+>>> this is to have the IPv6 module register these five functions into an ops
+>>> structure that bonding can call.  It doesn't fix SCTP, qeth, etc, but it
+>>> gets these "blacklist ipv6" configs working again, and gets me out of the
+>>> crosshairs :)
+>> 
+>> 	I think the problem (customers want to disable ipv6 and use
+>> bonding, sctp, qeth, whatever) needs to be fixed.  If it's not, I'm sure
+>> I'll be getting lots of cards and letters from customers.
+>> 
+>> 	I don't think the solution needs to preserve the current
+>> solution (preventing the ipv6 module from loading).  Ipv6 being unusable
+>> should be sufficient.  Except perhaps in an embedded environment, but
+>> they're probably in a position to compile their kernel without ipv6.
+>
+>Yes.  The system must not be reachable using IPv6.
+>
+>> 
+>> 	Another possible resolution is to modify the initscripts in the
+>> distros to perform sysctl -p (read sysctls from /etc/sysctl.conf) after
+>> ipv6 is loaded, so that the disable_ipv6 sysctl can be set.  That seems
+>> like more work, and is limited to ipv6, so I don't see it as being
+>> better than a "kernel shut off AF_xxx" type of solution.
+>
+>This not enough.  You need to disable parts of IPv6 at module initiation
+>time and the only way to do that is with a parameter.  Otherwise, you will
+>have a small window of time when the system has ipv6 configured and is potentially
+>vulnerable.
+>
+>We can have our own sysfs parameter calls that can turn the functionality
+>back on to get back to a fully functional ipv6 implementation.
+>
+>-vlad
 
-Oh. Thanks for your time... I'll just make sure to disable it from now on.
+	-J
 
--- 
-Jesper
-
+---
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
