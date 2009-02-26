@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbZBZAOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZBZAR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757622AbZBZAOW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 19:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZBZAOI
+	id S1754526AbZBZAR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 19:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZBZARs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 19:14:08 -0500
-Received: from mail.lang.hm ([64.81.33.126]:35160 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751855AbZBZAOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 19:14:07 -0500
-Date: Wed, 25 Feb 2009 16:13:42 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Matthew Wilcox <matthew@wil.cx>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-In-Reply-To: <yq1wsbegj1i.fsf@sermon.lab.mkp.net>
-Message-ID: <alpine.DEB.1.10.0902251609490.26625@asgard.lang.hm>
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx> <49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net> <alpine.DEB.1.10.0902251549180.26625@asgard.lang.hm> <yq1wsbegj1i.fsf@sermon.lab.mkp.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 25 Feb 2009 19:17:48 -0500
+Received: from quackingmoose.com ([63.73.180.143]:60795 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751066AbZBZARr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 19:17:47 -0500
+Date: Wed, 25 Feb 2009 16:17:45 -0800
+From: Aaron Straus <aaron@merfinllc.com>
+To: Ben Myers <bpm@sgi.com>
+Cc: bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
+Subject: Re: BUG NULL pointer dereference in SUNRPC xs_udp_send_request
+Message-ID: <20090226001744.GB7613@merfinllc.com>
+References: <20090223201108.GB3308@merfinllc.com> <20090225023900.GD15475@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225023900.GD15475@sgi.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, Martin K. Petersen wrote:
+Hi Ben,
 
->>>>>> "david" == david  <david@lang.hm> writes:
->
->>> 512-byte logical / 512-byte hardware (current) 512-byte logical /
->>> 4096-byte hardware (ATA, doing read-modify-write) 4096-byte logical /
->>> 4096-byte hardware (SCSI initially, ATA later)
->
-> david> add to this good support for SSDs
->
-> david> ?? logical / 128K hardware
->
-> david> or similar.
->
-> Yep.  And that goes for RAID arrays too.
->
-> For SCSI there some knobs we can query to get this information and my
-> alignment changes are using those (and they are in turn what Willy's
-> stuff hooks into).
->
-> I've been lobbying the SSD vendors whose architecture is prone to
-> misalignment problems to propose a similar set of knobs for ATA.  But so
-> far it's just been a lot of talking.
+Thanks for the response.
 
-even if we can't get them to give us any info from the drive directly, we 
-still want to allow the sysadmin to configure the use of the systems when 
-they can find the info in other ways.
+On Feb 24 08:39 PM, Ben Myers wrote:
+> >   If I'm reading the trace correctly, it looks like this line of
+> > xs_udp_send_request:
+> > 
+> >    clear_bit(SOCK_ASYNC_NOSPACE, &transport->sock->flags);
+> 
+> That's a coincidence.  I looked at a similar bug today that crashed on
+> the same line but a different stack.  My suggestion is:
+> 
+> Index: linux/net/sunrpc/xprtsock.c
+> ===================================================================
+> --- linux.orig/net/sunrpc/xprtsock.c
+> +++ linux/net/sunrpc/xprtsock.c
+> @@ -1512,14 +1512,13 @@ static void xs_udp_finish_connecting(str
+>                 sk->sk_no_check = UDP_CSUM_NORCV;
+>                 sk->sk_allocation = GFP_ATOMIC;
+> 
+> -               xprt_set_connected(xprt);
+> -
+>                 /* Reset to new socket */
+>                 transport->sock = sock;
+>                 transport->inet = sk;
+> 
+>                 xs_set_memalloc(xprt);
+> 
+> +               xprt_set_connected(xprt);
+>                 write_unlock_bh(&sk->sk_callback_lock);
+>         }
+>         xs_udp_do_set_buffer_size(xprt);
+> 
+> Looks like xs_sendpages() returned -ENOTCONN.  The above should sort
+> that out by returning earlier in xprt_prepare_transmit() and the rpc
+> would be retried by __rpc_execute().
 
-> My topology changes are a bit abstract in the sense that they expose:
->
-> - smallest I/O you can submit without incurring a penalty (hw sector,
->   raid chunk size)
->
-> - optimal I/O size for the device in question
->
-> - biggest I/O you can submit without incurring a penalty
->
-> - alignment
->
-> We can use these parameters to lay out partitions and filesystems
-> optimally.  Just like we currently do with XFS but implemented in a more
-> generic way that all filesystems can use.
+I'll start running with it tonight to see if I can trigger the BUG
+again (it was hard to hit).
 
-if you have the smallest and largest I/O you can submit without a penalty 
-and the alignment, isn't the optimal I/O size everything between these 
-two? (or at least everything between these two may be close enough that 
-defining an 'optimal' size may not be worthwhile)
+Quick question, do we need a barrier between setting the transport->sock
+and the xprt_set_connected(xprt)?  I don't really understand the locking
+on the reader side, so I cannot say...
 
-David Lang
+Also, out of curiosity, do you know what changed to introduce the BUG?
+
+Kerneloops doesn't seem to know about it before 2.6.26.3:
+
+  http://www.kerneloops.org/search.php?search=xs_udp_send_request&btnG=Function+Search
+
+Anyway, thanks!
+
+					=a=
+
+
+
+-- 
+===================
+Aaron Straus
+aaron@merfinllc.com
