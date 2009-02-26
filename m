@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbZBZW3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbZBZWag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757691AbZBZW3A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZBZW2w
+	id S1758934AbZBZWag (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZBZWa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:28:52 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:64544 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbZBZW2v convert rfc822-to-8bit (ORCPT
+	Thu, 26 Feb 2009 17:30:28 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:40072 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753307AbZBZWa1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:28:51 -0500
+	Thu, 26 Feb 2009 17:30:27 -0500
 MIME-Version: 1.0
-In-Reply-To: <fa686aa40902200728k1466121cqb772bb9e5d1a777c@mail.gmail.com>
-References: <20090218151132.476.81706.stgit@localhost.localdomain>
-	 <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com>
-	 <fa686aa40902180834r2b9b8de0tcdc31c850f6323a6@mail.gmail.com>
-	 <ac3eb2510902180849o6d86bbfev337e1bc203d6543e@mail.gmail.com>
-	 <fa686aa40902180951q64c71581y3811062256685df7@mail.gmail.com>
-	 <ac3eb2510902181032h3f9ed994s212dd8b42ddca82@mail.gmail.com>
-	 <20090218183945.GA31797@suse.de>
-	 <fa686aa40902182250g1c4e7cb6o4d0102da35ab838b@mail.gmail.com>
-	 <ac3eb2510902191508w71cf7d76x4a8957ecee9c4e6@mail.gmail.com>
-	 <fa686aa40902200728k1466121cqb772bb9e5d1a777c@mail.gmail.com>
-Date: Thu, 26 Feb 2009 23:28:48 +0100
-Message-ID: <ac3eb2510902261428n297063f5webb06fc105e5ef0a@mail.gmail.com>
-Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl> <200902261050.50531.rjw@sisk.pl>
+	 <d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
+	 <200902262258.55835.rjw@sisk.pl>
+	 <alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>
+Date: Thu, 26 Feb 2009 14:30:22 -0800
+Message-ID: <d6200be20902261430w19ea3e6fye014f8443d9ab5ca@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
+	suspend-resume
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 16:28, Grant Likely <grant.likely@secretlab.ca> wrote:
-> Thanks for the reply, it clarifies a lot. Â It sounds like this really
-> should be documented (in Documentation/driver-model/device.txt?). Â I'm
-> happy to add a blurb to that effect and send a patch, but I want to
-> make sure I really understand the model before I do so. Â I've got a
-> couple more questions below:
+On Thu, Feb 26, 2009 at 2:10 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> On Thu, Feb 19, 2009 at 4:08 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> [...]
->> If an attribute is not available at event time, nothing of this can
->> ever work. If you look a the device a second later, you will see the
->> proper looking files and values, and all the test programs will work,
->> but it will always fail at device creation.
-> [...]
->> That all might not be needed for your specific setup/driver/device and
->> may work fine for your need. But we don't want to encourage anybody
->> with another new API which creates the usual trouble we need to fix
->> later.
 >
-> Fair enough
+> On Thu, 26 Feb 2009, Rafael J. Wysocki wrote:
+>>
+>> Well, how exactly the $subject patch does cause this problem to happen?
 >
->> And we need to fix things like this all the time.
+> Rafael, the problem is that if an interrupt happens while it's disabled -
+> but before the CPU has actually turned all interrupts off - the CPU will
+> ACK the interrupt (but just set a flag for it being PENDING), so now the
+> chipset logic around it will not see it as pending any more, so now the
+> chipset won't auto-wake the CPU immediately (or more likely, it won't
+> even suspend it).
 >
-> Can you point me at a 'textbook' example of one of these fixups?
+> It's trivial to fix multiple ways, so I wouldn't worry. The most trivial
+> way is to just have some sysdev drievr code simply do something like
+>
+>  static int sysdev_suspend()
+>  {
+>        for_each_irq(irq,desc) {
+>                if (!(desc->flags & IRQF_WAKE))
+>                        continue;
+>                if (desc->flags & IRQ_PENDING)
+>                        return -EBUSY;
+>        }
+>        return 0;
+>  }
+>
+> and that should automatically mean that if any irq is pending, the suspend
+> will fail and we'll immediately wake up again.
+>
+> It looks trivial, and I don't understand why Arve can't just do the sysdev
+> thing.
 
-Here are a few cases of broken atribute timing, a quick git search has found:
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f7120a4f75168df3c02efacd10403a4ba0bcb29d
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8a89efd18aa15bb832778baa4e6eee3857ecada4
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3b23dd6f8a718e5339de4f7d86ce76a078b5f771
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2e5f10e4f0a9649186d8a8c793822b2e0dae8373
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bfd129445f23c037d9a440ebfa4109e11c220301
+I can. My point is that the patch breaks our existing code. If anyone
+else uses edge triggered wakeup interrupt it may break from them as
+well. The main question if this should be fixed separately for every
+platform that needs it, or if pending wakeup interrupts should always
+abort sleep.
 
-Regarding the split of the driver device and the device to bind to:
-the platform stuff is kind of "special", because it is often used for
-devices/buses which can not be enumerated. With buses which need
-enumeration, it's pretty obvious that the enumeration creates their
-own devices, which then a driver can bind to, and where the driver
-creates its own driver instance for it. Like nobody would expect a
-network driver to add the netif properties directly to the pci device,
-and so on.
-
-Many platform devices are just static placeholders, and then it is not
-obvious that userspace still prefers another device instance while
-binding a driver, but in most cases it's worth the effort, because
-then all devices, regardless which bus is backing them, can be handled
-the same way with a "hotplug handler" like udev.
-
-Thanks,
-Kay
+-- 
+Arve Hjønnevåg
