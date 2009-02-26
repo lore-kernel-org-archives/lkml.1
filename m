@@ -1,44 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZBZTFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZBZTLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbZBZTFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZBZTFj
+	id S1754683AbZBZTLD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:11:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZBZTKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:05:39 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3227 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755868AbZBZTFf (ORCPT
+	Thu, 26 Feb 2009 14:10:52 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:40444 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbZBZTKv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:05:35 -0500
-Date: Thu, 26 Feb 2009 19:05:29 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
-Message-ID: <20090226190511.GD8595@sirena.org.uk>
-References: <200902081037.06645.david-b@pacbell.net> <200902251702.03230.david-b@pacbell.net> <20090226104624.GA4229@sirena.org.uk> <200902261056.05740.david-b@pacbell.net>
+	Thu, 26 Feb 2009 14:10:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pPJlg47+Jlu1F/6jOCQUk53KdEnALbyBgmi4X8o+jj30H3IUboZztfchONVs8wrzTQ
+         bMtQ3h03ykFoluTrZvptqvnMLeCLEw6j2mbJdFJDkVBwVahMjC4v7/6dMS6z7p1XferU
+         65aaDVrHKWFrcCLk0pSpeXwuq+Jx9vJyXzC/A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902261056.05740.david-b@pacbell.net>
-X-Cookie: My haircut is totally traditional!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090226185053.GD31413@elte.hu>
+References: <20090226184433.GA15644@damson.getinternet.no>
+	 <20090226185053.GD31413@elte.hu>
+Date: Thu, 26 Feb 2009 20:10:48 +0100
+Message-ID: <19f34abd0902261110n7b73eabdpf5b963594fc821c8@mail.gmail.com>
+Subject: Re: [RFC][PATCH] signals: don't copy siginfo_t on dequeue
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 10:56:05AM -0800, David Brownell wrote:
-> On Thursday 26 February 2009, Mark Brown wrote:
+2009/2/26 Ingo Molnar <mingo@elte.hu>:
+>
+> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>
+>> >From 60fc9a464377159ab807aec63277d4970019d631 Mon Sep 17 00:00:00 2001
+>> From: Vegard Nossum <vegard.nossum@gmail.com>
+>> Date: Thu, 26 Feb 2009 19:17:58 +0100
+>> Subject: [PATCH] signals: don't copy siginfo_t on dequeue
+>>
+>> Instead of copying the siginfo_t whenever a signal is dequeued, just
+>> get the pointer to the struct sigqueue, which can be freed by the
+>> caller when the signal has been delivered.
+>>
+>> We can save kernel text (x86, 32-bit):
+>>
+>> $ scripts/bloat-o-meter vmlinux-unpatched vmlinux
+>> add/remove: 0/0 grow/shrink: 3/7 up/down: 81/-538 (-457)
+>> function                                     old     new   delta
+>> get_signal_to_deliver                        871     922     +51
+>> release_console_sem                          459     481     +22
+>> generate_resume_trace                        611     619      +8
+>> send_sigqueue                                257     253      -4
+>> vma_adjust                                  1101    1093      -8
+>> sys_rt_sigtimedwait                          548     531     -17
+>> dequeue_signal                               415     372     -43
+>> __dequeue_signal                             388     259    -129
+>> signalfd_read                               1290    1139    -151
+>> do_notify_resume                            2216    2030    -186
+>>
+>> And we reduce stack pressure; In handle_signal() (in x86 code), we
+>> replace a siginfo_t (128 bytes) with a pointer (8 bytes on x86_64),
+>> and the same in signalfd_read().
+>>
+>> There is a slight slowdown (2.02% relative increase in CPU time):
+>>
+>>               unpatched       patched
+>> ----------------------------------------
+>> mean:         3.078500        3.140800
+>> stddev:       0.074624        0.168989
+>>
+>> (Numbers are: CPU time in seconds, for two processes to
+>> ping-pong in total 655360 SIGUSR1/SIGUSR2 signals between each
+>> other. This was repeated 100 times for each kernel.)
+>
+> hm, does this SIGUSR1/SIGUSR2 test actually make use siginfo?
 
-> > Unless, of course, you happen to be using one of those consumers that
-> > wants to know the voltage it's running at to configure itself.
+The delivery of a signal requires one copy_siginfo(). Likewise for
+e.g. sys_kill(), which also requires one copy_siginfo(). So with this
+patch, we have saved only the copy_siginfo() of the delivery path.
 
-> In which case it can ask the regulator what voltage it's using.  :)
+> I.e. shouldnt we have seen a speedup, due to not having to copy
+> the siginfo structure?
 
-I suspect we're talking at cross purposes here - I was talking about the
-fixed voltage regulator driver.  I suspect you were talking about
-something else?
+Actually, no. Because copy_siginfo() does not copy the whole (128
+byte) structure if the signal was generated by the user, just probably
+the first 24 bytes or so. So I would expect the "kernel generated
+signal" path to be faster, but that is not tested by my SIGUSR test.
+
+Besides, I think there is a small overhead in now having an extra
+level of indirection for getting our hands on the signal number.
+
+But we might able to speed up the user->user case a little bit by
+fixing sys_kill() not to use copy_siginfo() too.
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
