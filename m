@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZBZBCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbZBZBCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbZBZBCU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 20:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZBZBCF
+	id S1757240AbZBZBCe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 20:02:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZBZBCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 20:02:05 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36029 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbZBZBCC (ORCPT
+	Wed, 25 Feb 2009 20:02:08 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:44685 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753038AbZBZBCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 20:02:02 -0500
-Message-ID: <49A5E876.1000501@zytor.com>
-Date: Wed, 25 Feb 2009 16:55:18 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Feb 2009 20:02:06 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=xq2g4aAVAkzbG56wDmzuVebOa64oKvqfPuQtSPM2adIftvFMui6t8XfRxTLFUSpaEvSp+8CXM9KgwUWkjuQUET1JqmrrGwDjv2oMny2RiBVwciMCAXDIAFeRktvH8i3i5cpxMKNe2om/DgH7cFLbJUeGfhshw+bv4KMC+yTN9u0=  ;
+X-YMail-OSG: IJ4Rh0YVM1nxtfY043KbXL1gqD4rYhPQs9FozBS0ntWA1DZ.shMm2W96tUEJiF90Ef3iwVoxJ5oUGupQXpOf908xJLf_DD.iksFuhNMOEInaiBZO32nM0zELoVbC8paXWs2RTNfm3Vd2FGBERUlifK5uud4U6hi35AmiDRcCxh9S3v8GxjufAw34bm9n
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
+Date: Wed, 25 Feb 2009 17:02:03 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200902081037.06645.david-b@pacbell.net> <200902241617.22643.david-b@pacbell.net> <20090225151721.GA31637@sirena.org.uk>
+In-Reply-To: <20090225151721.GA31637@sirena.org.uk>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: Justin Chen <jchen@hpdst41.cup.hp.com>, linux-arch@vger.kernel.org,
-       bjorn.helgaas@hp.com, justin.chen@hp.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14/15] bitops: Change the bitmap index from int to unsigned
- long [frv]
-References: <49A5C754.7000408@zytor.com> <200902250452.UAA12902@hpdst41.cup.hp.com> <16693.1235565430@redhat.com> <7355.1235605851@redhat.com>
-In-Reply-To: <7355.1235605851@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200902251702.03230.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
+On Wednesday 25 February 2009, Mark Brown wrote:
+> > Fixable in an update.  I still think it's better to require less
+> > manual configuration, not more ... manual configuration is by
+> > definition error prone; requiring more manual configuration makes
 > 
->> A casual grep finds no less than 3524 instances of "static inline <type>" --
->> presumably with a function name following -- and only 447 instances of
->> "static inline" without a type in the kernel.
-> 
-> But how does it break down between "static inline type\nfunction_name" and
-> "static inline\ntype function_name"?  That's more to the point.
-> 
+> This whole interface is structured around the idea that the consequences
+> of getting this wrong include things like lasting hardware damage.
 
-I believe that is the breakdown is roughly what you see above, i.e. over 
-8:1; the pattern I used was looking for "^static inline[^;(]*$", and a 
-visual examination of the results shows that even if my line count is 
-slighly off the lopsidedness is still dramatic.
-
-	-hpa
+Oh, one more comment.  Requiring manual configuration
+of fixed-voltage regulators is pure time-wastage.
 
