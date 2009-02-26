@@ -1,133 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZBZQpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbZBZQyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZBZQpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 11:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZBZQpP
+	id S1757475AbZBZQyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 11:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbZBZQyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 11:45:15 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:47342 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754527AbZBZQpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 11:45:13 -0500
-Date: Thu, 26 Feb 2009 08:45:09 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Bharata B Rao <bharata.rao@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpuacct: add a branch prediction
-Message-ID: <20090226164509.GB6634@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49A6501B.7040604@cn.fujitsu.com> <20090226172234.a931931f.kamezawa.hiroyu@jp.fujitsu.com> <49A65455.4030204@cn.fujitsu.com> <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com> <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com> <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com> <1235645076.4645.4781.camel@laptop> <934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com> <1235647682.4948.15.camel@laptop> <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
+	Thu, 26 Feb 2009 11:54:00 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57092 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755212AbZBZQx7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 11:53:59 -0500
+Date: Thu, 26 Feb 2009 17:53:56 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Ira Snyder <iws@ovro.caltech.edu>, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, Jan-Bernd Themann <THEMANN@de.ibm.com>
+Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+In-Reply-To: <200902261715.28440.arnd@arndb.de>
+Message-ID: <alpine.LRH.2.00.0902261752310.29190@vixen.sonytel.be>
+References: <20090224000002.GA578@ovro.caltech.edu> <200902261715.28440.arnd@arndb.de>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 09:06:24PM +0900, KAMEZAWA Hiroyuki wrote:
-> Peter Zijlstra wroteï¼š
-> > On Thu, 2009-02-26 at 20:17 +0900, KAMEZAWA Hiroyuki wrote:
-> >> Peter Zijlstra wroteï¼š
-> >> > On Thu, 2009-02-26 at 19:28 +0900, KAMEZAWA Hiroyuki wrote:
-> >> >
-> >> >> Taking hierarchy mutex while reading will make read-side stable.
-> >> >
-> >> > We're talking about scheduling here, taking a mutex to stop scheduling
-> >> > won't work, nor will it be acceptible to use anything that will.
-> >> >
-> >> No mutex is necessary, anyway.
-> >> hierarchy-walker function completely works well under rcu read lock,
-> >> if small jitter is allowed.
-> >
-> > Right, should be doable -- and looking at the code, we have this
-> > horrible 32 bit exception in there that locks the rq in order to read
-> > the 64bit value.
-> >
-> > Would be grand to get rid of that,. how bad would it be for userspace to
-> > get the occasionally fubarred value?
-> >
-> >From view of user-support saler, if terrible broken value is reported,
-> it will be user-incident and annoy me(us) ;)
+On Thu, 26 Feb 2009, Arnd Bergmann wrote:
+> On Tuesday 24 February 2009, Ira Snyder wrote:
+> > +/* Virtio-over-PCI descriptors: 12 bytes. These can chain together via "next" */
+> > +struct vop_desc {
+> > +	/* Address (host physical) */
+> > +	__le32 addr;
+               ^^^^
+Only 32-bit? Is this future-proof?
+
+> > +	/* Length (bytes) */
+> > +	__le32 len;
+> > +	/* Flags */
+> > +	__le16 flags;
+> > +	/* Chaining for descriptors */
+> > +	__le16 next;
+> > +} __attribute__((packed));
 > 
-> I'd like to get rid of rq->lock, too..Hmm.. some routine like
-> atomic64_read() can help this ? (But I don't want to use atomic_t here..)
-
-atomic64_read() will not help you on a 32-bit machine.  Here is the
-sequence of events that will cause the aforementioned user incidents and
-consequent annoyance:
-
-o	The value of the counter is (2^32)-1, or 0xffffffff.
-
-o	CPU 0 reads the high-order 32 bits of the counter, getting zero.
-
-o	CPU 1 increments the low-order 32 bits of the counter, resulting
-	in zero, but notes that there is a carry out of this field.
-
-o	CPU 0 reads the low-order 32 bits of the counter, getting zero.
-
-o	CPU 1 increments the high-order 32 bits of the counter, so that
-	the new value of the counter is 2^32, or 0x100000000.
-
-So CPU 0 gets a value that is -way- off.
-
-The usual trick is something like the following for counter read:
-
-1.	Read the high-order 32 bits of the counter.
-
-2.	Do a memory barrier, smp_mb().
-
-3.	Read the low-order 32 bits of the counter.
-
-4.	Do another memory barrier, again smp_mb().
-
-5.	Read the high-order 32 bits of the counter again.
-
-	If it is the same as the value obtained in step 1 (or the previous
-	execution of step 5), then we are done.  (This works even in case
-	of complete 64-bit overflow, though we should be very lucky to
-	live that long!)  Otherwise, go to step 2.
-
-But it is also necessary to modify the counter update:
-
-1.	Increment the low-order 32 bits of the counter.  If no overflow
-	occurred, we are done, otherwise, continue through this sequence
-	of steps.
-
-2.	Do a memory barrier, smp_mb().
-
-3.	Increment the high-order 32 bits of the counter.
-
-How to detect overflow in step 1?  Well, if we are incrementing, we can
-just test for the new value being zero.  Otherwise, if we are adding
-a 32-bit number, if the new value of the low-order 32 bits of counter
-is less than the old value, overflow occurred (but make sure that the
-comparison is unsigned!).
-
-This all assumes that you are adding a 32-bit quantity to the counter.
-Adding 64-bit values is not much harder.
-
-Does this approach work for you?
-
-							Thanx, Paul
-
-> > But aside from that, the cpu controller itself is also summing directly
-> > up the hierarchy, so cpuacct doing the same doesn't seem odd.
-> >
-> I'll post some idea if I can think of something reasonable.
-> But I tend to hesitate to modify sched.c ;)
+> I would drop the "packed" attribute in the structure definitions.
+> It would imply that only byte accesses are allowed on these
+> data structures, because the attribute invalidates any assumptions
+> about alignment. None of your structures require padding, so
+> the attribute does not have any positive effect either.
 > 
-> Thanks,
-> -Kame
+> > +/* MPC8349EMDS specific get_immrbase() */
+> > +#include <sysdev/fsl_soc.h>
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Do you really need get_immrbase? I would expect that you can find
+> all the registers you need in the device tree, or exported from
+> other low-level drivers per subsystem.
+> 
+> immrbase is a concept from the time before our device trees.
+> 
+> > +/*
+> > + * These are internal use only versions of the structures that
+> > + * are exported over PCI by this driver
+> > + *
+> > + * They are used internally to keep track of the PowerPC queues so that
+> > + * we don't have to keep flipping endianness all the time
+> > + */
+> > +struct vop_loc_desc {
+> > +	u32 addr;
+        ^^^
+Same here.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
