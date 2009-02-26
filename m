@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZBZUOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZBZUQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbZBZUOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZBZUOG
+	id S1755488AbZBZUQR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbZBZUQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:14:06 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:36667 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753028AbZBZUOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:14:04 -0500
-Cc: Jay Vosburgh <fubar@us.ibm.com>, David Miller <davem@davemloft.net>,
-       arvidjaar@mail.ru, vladislav.yasevich@hp.com, tytso@mit.edu,
-       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
-       linux-kernel@vger.kernel.org
-Message-Id: <2FBB0F50-8763-4A17-8734-5940FC3FF26A@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: Brian Haley <brian.haley@hp.com>
-In-Reply-To: <49A6F50E.3070100@hp.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Thu, 26 Feb 2009 15:16:01 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:37821 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751814AbZBZUQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 15:16:00 -0500
+Subject: Re: [PATCH 1/2] regulator: Allow regulators to set the initial
+ operating mode
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 20:15:57 +0000
+Message-Id: <1235679357.31223.49.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel module
-Date: Thu, 26 Feb 2009 15:12:48 -0500
-References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com> <F613EEFD-2332-4C75-A486-73CDF2BAADDE@oracle.com> <49A6F50E.3070100@hp.com>
-X-Mailer: Apple Mail (2.930.3)
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.49A6F7CC.010A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 26, 2009, at Feb 26, 2009, 3:01 PM, Brian Haley wrote:
-> Chuck Lever wrote:
->>> I think changing ipv6 to support a disable_ipv6 module parameter  
->>> like Vlad suggested would work, as long as we're not worried about  
->>> someone opening an AF_INET6 socket - even if they do they won't  
->>> get anywhere.
->> In this case, if IPV6ONLY is set on an AF_INET6 listener, it should  
->> still get AF_INET traffic, correct?
->
-> No, it should get nothing, and a send should get ENETUNREACH.
+On Thu, 2009-02-26 at 19:24 +0000, Mark Brown wrote:
+> This is useful when wishing to run in a fixed operating mode that isn't
+> the default.
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/regulator/core.c          |   17 +++++++++++++++++
+>  include/linux/regulator/machine.h |    4 ++++
+>  2 files changed, 21 insertions(+), 0 deletions(-)
+> 
 
-Sorry, I got my logic backwards.  If IPV6ONLY is intentionally cleared  
-on an AF_INET6 socket, it should still be able to handle AF_INET  
-traffic.
+Applied.
 
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+Thanks
+
+Liam
+
