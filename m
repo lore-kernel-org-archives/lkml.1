@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbZBZWOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbZBZWPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759985AbZBZWOi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZBZWOQ
+	id S1757843AbZBZWPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZBZWPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:14:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53372 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753792AbZBZWOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:14:16 -0500
-Date: Thu, 26 Feb 2009 14:12:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Evans <scarybeasts@gmail.com>,
-       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
-       Eugene Teo <eugene@redhat.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] copy_process: fix CLONE_PARENT && ->exit_signal
- interaction
-In-Reply-To: <20090226215945.GA12520@redhat.com>
-Message-ID: <alpine.LFD.2.00.0902261410581.3111@localhost.localdomain>
-References: <20090225190211.GA7445@redhat.com> <20090225193927.1ED25FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902251156160.3111@localhost.localdomain> <20090225212039.GA11883@redhat.com> <20090226215945.GA12520@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 26 Feb 2009 17:15:30 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:48557 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751827AbZBZWPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 17:15:30 -0500
+Subject: Re: [patch 2.6.29-rc3-git 1/2] regulator: twl4030 regulators
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+In-Reply-To: <200902081037.06645.david-b@pacbell.net>
+References: <200902081037.06645.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 22:15:26 +0000
+Message-Id: <1235686526.31223.105.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 26 Feb 2009, Oleg Nesterov wrote:
+On Sun, 2009-02-08 at 10:37 -0800, David Brownell wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
 > 
-> Really, how CLONE_PARENT + exit_signal==0 can be useful?
+> Support most of the LDO regulators in the twl4030 family chips.
+> In the case of LDOs supporting MMC/SD, the voltage controls are
+> used; but in most other cases, the regulator framework is only
+> used to enable/disable a supplies, conserving power when a given
+> voltage rail is not needed.
+> 
+> The drivers/mfd/twl4030-core.c code already sets up the various
+> regulators according to board-specific configuration, and knows
+> that some chips don't provide the full set of voltage rails.
+> 
+> The omitted regulators are intended to be under hardware control,
+> such as during the hardware-mediated system powerup, powerdown,
+> and suspend states.  Unless/until software hooks are known to
+> be safe, they won't be exported here.
+> 
+> These regulators implement the new get_status() operation, but
+> can't realistically implement get_mode(); the status output is
+> effectively the result of a vote, with the relevant hardware
+> inputs not exposed.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-Umm? For the reason I already stated?
+Applied.
 
-> But because the current behaviour is just silly. Imho.
+Thanks
 
-So? If there are people using it, you calling it silly is immaterial.
+Liam
 
-The fact is, it's an existing user space interface. We don't break them. 
-
-> But of course, if this change can break the user-space applications, then
-> it should not be applied.
-
-That's the point. Nobody has shown that there aren't any users.
-
-		Linus
