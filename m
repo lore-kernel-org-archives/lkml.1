@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZBZThP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZBZThm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbZBZThP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZBZThA
+	id S1756015AbZBZThm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbZBZThE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:37:00 -0500
-Received: from web39808.mail.mud.yahoo.com ([209.191.106.69]:22740 "HELO
-	web39808.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751747AbZBZTg7 (ORCPT
+	Thu, 26 Feb 2009 14:37:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55477 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbZBZThB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:36:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=cNZCX9ilQW48DNEir2+imtPLdHF0Quo2BAioizrHGH/33gSaIoHGkzLD5B/cZN+scqzDPgPnByhQpzCdH7GxX9VQR2WyPzuJpEvjqZaTUi3nu7K1CjrXfuE8zw+KYp8QLHzLFJ1xPg7RqpekZkIDzBnPUt1E8v70gCS2mTIzbAY=;
-X-YMail-OSG: X0JVAKwVM1krYf7bZvINzB1yCXwfxgbcgSYtCvBzUY_mDuANQy5DjqwL0cbRAUtqx5TNQVHnPjSHi1G6SJdhmSt80Joe7BIhMyajPmITl.u7uUPjaH66yfUykO4XZIqrikjO9IWSteEGKL7r6j2mPLV5yw--
-X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.260.1
-Date: Thu, 26 Feb 2009 11:36:57 -0800 (PST)
-From: Vinay Venkataraghavan <raghavanvinay@yahoo.com>
-Subject: Page protection flags in linux on an x86 platform
-To: linux kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <356809.23263.qm@web39808.mail.mud.yahoo.com>
+	Thu, 26 Feb 2009 14:37:01 -0500
+Subject: Re: Linux 2.6.29-rc6
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Olsen <dolsen@lnxi.com>, Ryan Jackson <rjackson@lnxi.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <49A6EE17.4070102@krogh.cc>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
+	 <49A679E8.1010301@krogh.cc>
+	 <alpine.LFD.2.00.0902260941090.3111@localhost.localdomain>
+	 <49A6EE17.4070102@krogh.cc>
+Content-Type: text/plain
+Date: Fri, 27 Feb 2009 04:36:48 +0900
+Message-Id: <1235677008.8730.176.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-02-26 at 19:31 +0000, Jesper Krogh wrote:
+> 1) pick the distro .config
+> 2) make oldconfig
 
+So it should have been a module, not built-in?
 
+> 3) Let the kernel load what it think it needs.
 
-Folks,
+That part at least ought to be disabled -- we don't let this driver
+autoload, because unless you _know_ you need it, you don't need it.
 
-I am trying to port some PPC code to x86 based linux. My question is that I am need to create some page mappings using remap_pfn_range. In the code for the PPC,
-the protection flags being specified are:
+It's for overwriting your BIOS.
 
-__pgprot(_PAGE_NO_CACHE | _PAGE_GUARDED);
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-But it looks like these do not exist when linux is compiled for the x86 architecture. 
-
-What are the relevant protection flags to achieve the same for the x86 architecture. 
-
-Thanks for your help.
-
-- Vinay
-
-
-      
