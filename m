@@ -1,206 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZBZSeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZBZSjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbZBZSeb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 13:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZBZSeW
+	id S1753430AbZBZSjV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 13:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZBZSjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 13:34:22 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:37691 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbZBZSeV (ORCPT
+	Thu, 26 Feb 2009 13:39:01 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:34048 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbZBZSjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 13:34:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kkkwiIWpQM1Z+MGakIqpqQ1BbuYRWD42G9lI5uNQ5gCclXh5zO0gj/hzcqpgz079Je
-         k9+zYAhGuWKg+7Fc2T2bEaqV86qezw4/LDcbWjG7VcM4LTggGz1/zrtl0dU1X4CX2/Zn
-         Wb2z8bY2ftEtHFrKCvcbZvsuJbtCaKXKkqnVM=
-Date: Thu, 26 Feb 2009 19:34:16 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/3] add binary printf
-Message-ID: <20090226183415.GE5889@nowhere>
-References: <49a38304.0506d00a.1f4b.406d@mx.google.com> <20090226130243.GA22460@elte.hu> <20090226170524.GB5889@nowhere> <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu>
+	Thu, 26 Feb 2009 13:39:00 -0500
+Message-ID: <49A6E1BC.4020209@hp.com>
+Date: Thu, 26 Feb 2009 13:38:52 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090226175225.GA4527@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Brian Haley <brian.haley@hp.com>, David Miller <davem@davemloft.net>,
+       arvidjaar@mail.ru, chuck.lever@oracle.com, tytso@mit.edu,
+       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel
+ module
+References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com>
+In-Reply-To: <22876.1235672073@death.nxdomain.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 06:52:25PM +0100, Ingo Molnar wrote:
+Jay Vosburgh wrote:
+> Brian Haley <brian.haley@hp.com> wrote:
 > 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>> David Miller wrote:
+>>> From: Jay Vosburgh <fubar@us.ibm.com>
+>>> Date: Wed, 25 Feb 2009 14:10:58 -0800
+>>>
+>>>> 	I've been fooling with the disable_ipv6 sysctl, and one issue is
+>>>> that, at least on the distro I'm testing on (SLES), it's not picked up
+>>>> from /etc/sysctl.conf at boot time (presumably because ipv6 isn't loaded
+>>>> yet, although I haven't really checked).
+>>> Correct, that's the problem.
+>>>
+>>> We could create a blocker bitmap.  Two sysctls, "block_af" and
+>>> "unblock_af".  You write the AF_foo value for the protocol there and
+>>> it sets or clears the assosciated bit in the internal blocker bitmap.
+>>>
+>>> Things like sys_socket() et al. key off of this.
+>> I'm open to suggestions at this point in time, I just don't see how this
+>> will solve the bonding problem since it still wouldn't load, right?
 > 
-> > On Thu, Feb 26, 2009 at 06:43:03PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > 
-> > > > On Thu, Feb 26, 2009 at 02:02:43PM +0100, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > > > 
-> > > > > > From: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > > > > > 
-> > > > > > Impact: Add APIs for binary trace printk infrastructure
-> > > > > > 
-> > > > > > vbin_printf(): write args to binary buffer, string is copied
-> > > > > > when "%s" is occurred.
-> > > > > > 
-> > > > > > bstr_printf(): read from binary buffer for args and format a string
-> > > > > > 
-> > > > > > [fweisbec@gmail.com: ported to latest -tip]
-> > > > > > 
-> > > > > > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > > > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > > > > > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > > > > > ---
-> > > > > >  include/linux/string.h |    7 +
-> > > > > >  lib/Kconfig            |    3 +
-> > > > > >  lib/vsprintf.c         |  442 ++++++++++++++++++++++++++++++++++++++++++++++++
-> > > > > >  3 files changed, 452 insertions(+), 0 deletions(-)
-> > > > > 
-> > > > > OK, it's a nice idea and speedup for printf based tracing - 
-> > > > > which is common and convenient. Would you mind to post the 
-> > > > > performance measurements you've done using the new bstr_printf() 
-> > > > > facility? (the nanoseconds latency figures you did in the timer 
-> > > > > irq in a system under load and on a system that is idle)
-> > > > 
-> > > > 
-> > > > Ok.
-> > > > 
-> > > >  
-> > > > > The new printf code itself should be done cleaner i think and is 
-> > > > > not acceptable in its current form.
-> > > > > 
-> > > > > These two new functions:
-> > > > > 
-> > > > > > +#ifdef CONFIG_BINARY_PRINTF
-> > > > > > +/*
-> > > > > > + * bprintf service:
-> > > > > > + * vbin_printf() - VA arguments to binary data
-> > > > > > + * bstr_printf() - Binary data to text string
-> > > > > > + */
-> > > > > 
-> > > > > Duplicate hundreds of lines of code into three large functions 
-> > > > > (vsnprintf, vbin_printf, bstr_printf). These functions only have 
-> > > > > a difference in the way the argument list is iterated and the 
-> > > > > way the parsed result is stored:
-> > > > > 
-> > > > >   vsnprintf:   iterates va_list, stores into string
-> > > > >   bstr_printf: iterates bin_buf, stores into string
-> > > > >   vbin_printf: iterates va_list, stores into bin_buf
-> > > > > 
-> > > > > We should try _much_ harder at unifying these functions before 
-> > > > > giving up and duplicating them...
-> > > > > 
-> > > > > An opaque in_buf/out_buf handle plus two helper function 
-> > > > > pointers passed in would be an obvious implementation.
-> > > > > 
-> > > > > That way we'd have a single generic (inline) function that knows 
-> > > > > about the printf format itself:
-> > > > > 
-> > > > >  __generic_printf(void *in_buf,
-> > > > > 		  void *out_buf,
-> > > > > 		  void * (*read_in_buf)(void **),
-> > > > > 		  void * (*store_out_buf)(void **));
-> > > > > 
-> > > > > And we'd have various variants for read_in_buf and 
-> > > > > store_out_buf. The generic function iterates the following way:
-> > > > > 
-> > > > > 	in_val = read_in_buf(&in_buf);
-> > > > > 	...
-> > > > > 	store_out_buf(&out_buf, in_val);
-> > > > > 
-> > > > > (where in_val is wide enough to store a single argument.) The 
-> > > > > iterators modify the in_buf / out_buf pointers. Argument 
-> > > > > skipping can be done by reading the in-buf and not using it. I 
-> > > > > think we can do it with just two iterator methods.
-> > > > > 
-> > > > > Or something like that - you get the idea. It can all be inlined 
-> > > > > so that we'd end up with essentially the same vsnprint() 
-> > > > > instruction sequence we have today.
-> > > > > 
-> > > > > 	Ingo
-> > > > 
-> > > > 
-> > > > Ok, I just looked deeply inside vsnprintf, and I don't think 
-> > > > such a generic interface would allow that. We need to know the 
-> > > > size of the argument, it's precision, width and flags.... And 
-> > > > we need to know if we want to skip the non format char.
-> > > > 
-> > > > 
-> > > > What do you think of the following:
-> > > > 
-> > > > __ generic_printf(void *in,
-> > > > 		  void *out,
-> > > > 		  void *(*read_in)(void **buf, int size),
-> > > > 		  void *(store_char)(char *dst, char *end, char val, int field_width, int flags),
-> > > > 		  void *(*store_string)(char *dst, char *end, char *val, int field_width, int precision, int flags),
-> > > > 		  void *(*store_pointer)(char type, char *dst, char *end, void *val,
-> > > > 					int field_width, int precision, int flags),
-> > > > 		  void *(*store_number)(char *dst, char *size, int base,int field_width, int precision, int flags),
-> > > > 		  bool skip_non_format
-> > > > 		  )
-> > > > 
-> > > > 
-> > > > Well, something like that...
-> > > > 
-> > > > read_in can advance the pointer to the buffer itself (buf can 
-> > > > be a va_args or u32 *) and it returns a value, void * is 
-> > > > generic for the type.
-> > > > 
-> > > > The storage functions are more specialized because of the 
-> > > > interpretation of flags, precision... So we can easily pass 
-> > > > the usual string(), pointer(), .... that are already present 
-> > > > in vsnprintf.c or use custom ones. They return the advanced 
-> > > > dst pointer.
-> > > > 
-> > > > And at last, skip_non_format will decide if we want to 
-> > > > consider non-format characters from fmt to be copied as common 
-> > > > %c characters or if we want to ignore them (useful for 
-> > > > vbin_printf()).
-> > > 
-> > > hm, that indeed looks very wide - storing into a binary buffer 
-> > > does complicate the iterator interface significantly.
-> > > 
-> > > But at least vsnprintf() and bstr_printf() could be unified - 
-> > > they both output into a string buffer, just have different 
-> > > methods to iterate arguments.
-> > > 
-> > > 	Ingo
-> > 
-> > Right, ok I'm on it.
+> 	It would permit users to load ipv6 (thus allowing bonding to
+> load), but prevent ipv6 from actually doing anything.  (because
+> sys_socket, e.g., won't open an ipv6 socket if block_af includes ipv6).
 > 
-> hm, it would still be nice to get vbin_printf() into the same 
-> scheme too.
-> 
-> And i think we can do it by unconditionally tracking field type 
-> and width in the generic helper - instead of passing this across 
-> the abstraction barrier like your proposal did. vsnprintf() and 
-> bstr_printf() wont make use of it - but vbin_printf() will.
-> 
-> Am i missing anything?
-> 
-> 	Ingo
+> 	Actually, __sock_create might be the better place to put the
+> hook for "create a socket"; there would probably need to be a check
+> within the protocol code as well, so that, e.g., ipv6 addrconf won't run
+> if AF_INET6 is disabled.
 
-Hm, I have some trouble to visualize it globally.
+But addrconf_init doesn't care about AF_INET6 sockets...
 
-vsnprintf: takes char * for dest and va_list as src, write formatted in dest
-bstr_printf: takes char * as dest and u32 * as src, read from src is specialized
-vbin_printf: takes u32 * buf as dest and va_list as src, write to dest is specialized
+Additionally, why is it absolutely necessary to block AF_INET6 sockets.
+I never understood that requirement?
 
-The only thing that can be generic between the three is the format decoding.
-All in-out operations must be abstracted if we want a common interface from the three.
+I can see people blocking IPv6 from loading because the module automatically
+configures IPv6 addresses and thus opens another communication channel that
+may not be monitored/controlled.  AF_INET6 sockets, on the other hand, are
+simply relegated to IPv4 protocol, when there are no IPv6 addresses.
 
-So I'm not sure I have the choice.
+> 
+>> Dave - do you feel I need to fix this regression?  If not I can try to
+>> work on this AF blocker thing.  My only other thought if we want to fix
+>> this is to have the IPv6 module register these five functions into an ops
+>> structure that bonding can call.  It doesn't fix SCTP, qeth, etc, but it
+>> gets these "blacklist ipv6" configs working again, and gets me out of the
+>> crosshairs :)
+> 
+> 	I think the problem (customers want to disable ipv6 and use
+> bonding, sctp, qeth, whatever) needs to be fixed.  If it's not, I'm sure
+> I'll be getting lots of cards and letters from customers.
+> 
+> 	I don't think the solution needs to preserve the current
+> solution (preventing the ipv6 module from loading).  Ipv6 being unusable
+> should be sufficient.  Except perhaps in an embedded environment, but
+> they're probably in a position to compile their kernel without ipv6.
+
+Yes.  The system must not be reachable using IPv6.
+
+> 
+> 	Another possible resolution is to modify the initscripts in the
+> distros to perform sysctl -p (read sysctls from /etc/sysctl.conf) after
+> ipv6 is loaded, so that the disable_ipv6 sysctl can be set.  That seems
+> like more work, and is limited to ipv6, so I don't see it as being
+> better than a "kernel shut off AF_xxx" type of solution.
+
+This not enough.  You need to disable parts of IPv6 at module initiation
+time and the only way to do that is with a parameter.  Otherwise, you will
+have a small window of time when the system has ipv6 configured and is potentially
+vulnerable.
+
+We can have our own sysfs parameter calls that can turn the functionality
+back on to get back to a fully functional ipv6 implementation.
+
+-vlad
+
+> 
+> 	-J
+> 
+> ---
+> 	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+> 
 
