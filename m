@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbZBZTi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbZBZTme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbZBZTi5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZBZTir
+	id S1755620AbZBZTme (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZBZTmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:38:47 -0500
-Received: from n18.bullet.mail.mud.yahoo.com ([68.142.206.145]:42050 "HELO
-	n18.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752836AbZBZTir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:38:47 -0500
-X-Yahoo-Newman-Id: 705981.70303.bm@omp421.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rgJPLfG9ra5XNNheKqwdMqiFBroN3R9YAdbiz12+t89qR/9X3b3mm/I6sqOzve1wzDt6+UFL145YUgChDy5gxOVLILIai+YduA9SgkVLhUDnocPj7M9FHuKwek05Rhsq+Vd7ybwzI3u7hFNUfODxerGRw1SYbSgjRhoOxS3cJI0=  ;
-X-YMail-OSG: Ym9ymnkVM1m97JLAP19Vtv.r.zZxRBPgTAoEpdpChg7raeleRAUheok9175Q.1GZH33bgEWAluJ9h19Zc6XyuvRn1WHHXAZp6_Il7exUHC4v8O0CJYNY2DgnKLdF9VwsZzzLELVChw8NOUUrddfKlXOC
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
-Date: Thu, 26 Feb 2009 11:38:34 -0800
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200902081037.06645.david-b@pacbell.net> <200902261056.05740.david-b@pacbell.net> <20090226190511.GD8595@sirena.org.uk>
-In-Reply-To: <20090226190511.GD8595@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902261138.34859.david-b@pacbell.net>
+	Thu, 26 Feb 2009 14:42:24 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42795 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752217AbZBZTmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 14:42:23 -0500
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: [PATCH] remove static declaration from wall clock version
+Date: Thu, 26 Feb 2009 14:42:20 -0500
+Message-Id: <1235677340-3139-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, Mark Brown wrote:
-> On Thu, Feb 26, 2009 at 10:56:05AM -0800, David Brownell wrote:
-> > On Thursday 26 February 2009, Mark Brown wrote:
-> 
-> > > Unless, of course, you happen to be using one of those consumers that
-> > > wants to know the voltage it's running at to configure itself.
-> 
-> > In which case it can ask the regulator what voltage it's using.  :)
-> 
-> I suspect we're talking at cross purposes here - I was talking about the
-> fixed voltage regulator driver.  I suspect you were talking about
-> something else?
+Matt T. Yourst noted that we're currently having a dumb
+race for no reason in paravirtual wall clock. This is due
+to the use of a static variable to hold the counting.
 
-Yes ... e.g. the USB1V5, USB1V, and USB3V1 regulators
-exported through the twl4030 regulator driver.
+This can race with multiple guests reading wallclock
+at the same time, since the static variable value would
+then be accessible to all callers. This wasn't noted
+before because it is a rather rare scenario.
 
+Instead, just use a normal stack variable. This will
+mean that each caller will have it's version written
+separatedly. No need for a global counter.
 
-Semi-related:  someone with time to spend on it might
-find and fix the bug causing the regulator framework
-to oops when regulator/core.c::set_machine_constraints()
-returns an error code.
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+---
+ arch/x86/kvm/x86.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-- Dave
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 2511708..d7236f6 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -548,15 +548,13 @@ static int do_set_msr(struct kvm_vcpu *vcpu, unsigned index, u64 *data)
+ 
+ static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock)
+ {
+-	static int version;
++	int version = 1;
+ 	struct pvclock_wall_clock wc;
+ 	struct timespec now, sys, boot;
+ 
+ 	if (!wall_clock)
+ 		return;
+ 
+-	version++;
+-
+ 	kvm_write_guest(kvm, wall_clock, &version, sizeof(version));
+ 
+ 	/*
+-- 
+1.5.6.5
 
