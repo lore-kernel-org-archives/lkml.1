@@ -1,110 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZBZPNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbZBZPRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbZBZPNH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 10:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZBZPMx
+	id S1756513AbZBZPRi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 10:17:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbZBZPR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 10:12:53 -0500
-Received: from imr1.ericy.com ([198.24.6.9]:41406 "EHLO imr1.ericy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754144AbZBZPMx convert rfc822-to-8bit (ORCPT
+	Thu, 26 Feb 2009 10:17:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59683 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbZBZPR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 10:12:53 -0500
-X-Greylist: delayed 9258 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Feb 2009 10:12:52 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 26 Feb 2009 10:17:27 -0500
+Message-ID: <49A6B272.2070905@zytor.com>
+Date: Thu, 26 Feb 2009 07:17:06 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] new irq tracer
-Date: Thu, 26 Feb 2009 07:37:18 -0500
-Message-ID: <806EF3041844884CAC68E1E16026AB8905CE58DA@ecamlmw720.eamcs.ericsson.se>
-In-Reply-To: <alpine.DEB.2.00.0902252040210.12697@gandalf.stny.rr.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] new irq tracer
-Thread-Index: AcmXs15m0Qy8zmUgRHahED7/wVuymQAW1xBg
-References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com> <20090222123543.359C.A69D9226@jp.fujitsu.com> <49A5765C.2020001@redhat.com> <20090225165747.GC3123@redhat.com> <20090225173412.GA14269@Krystal> <alpine.DEB.2.00.0902251250110.12697@gandalf.stny.rr.com> <20090225221210.GA20133@Krystal> <20090225222001.GC5838@nowhere> <20090225231325.GB21928@Krystal> <alpine.DEB.2.00.0902252040210.12697@gandalf.stny.rr.com>
-From: "Dominique Toupin" <dominique.toupin@ericsson.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>
-Cc: "Frederic Weisbecker" <fweisbec@gmail.com>,
-       "Jason Baron" <jbaron@redhat.com>,
-       "Masami Hiramatsu" <mhiramat@redhat.com>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, <mingo@elte.hu>,
-       <linux-kernel@vger.kernel.org>, <acme@ghostprotocols.net>
-X-OriginalArrivalTime: 26 Feb 2009 12:37:20.0405 (UTC) FILETIME=[F760CC50:01C9980E]
+To: Karel Zak <kzak@redhat.com>
+CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sandeen@redhat.com
+Subject: Re: ATA support for 4k sector size
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx> <49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net> <49A5D55A.9080402@zytor.com> <20090226124339.GA10548@nb.net.home>
+In-Reply-To: <20090226124339.GA10548@nb.net.home>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Karel Zak wrote:
+> On Wed, Feb 25, 2009 at 03:33:46PM -0800, H. Peter Anvin wrote:
+>> virtually every partition table format contains a sector size  
+>> dependency
+> 
+>  Is it true that "every partition table format"? I see in
+>  fs/partitions/ that only ibm.c and msdos.c care about a sector size.
+>  It seems that the others formats are based on 512 sectors only.
+> 
 
-In many cases we don't use Linux real-time, we have many systems that
-are soft-real-time an non real-time Linux is good enough.
- 
+And do they do so correctly?
 
-> -----Original Message-----
-> From: Steven Rostedt [mailto:rostedt@goodmis.org] 
-> Sent: 25-Feb-09 20:42
-> To: Mathieu Desnoyers
-> Cc: Frederic Weisbecker; Jason Baron; Masami Hiramatsu; 
-> KOSAKI Motohiro; Peter Zijlstra; Frank Ch. Eigler; 
-> mingo@elte.hu; linux-kernel@vger.kernel.org; 
-> acme@ghostprotocols.net; Dominique Toupin
-> Subject: Re: [PATCH] new irq tracer
-> 
-> 
-> On Wed, 25 Feb 2009, Mathieu Desnoyers wrote:
-> > > > > 
-> > > > > Then use the function_graph tracer.
-> > > > > 
-> > > > 
-> > > > Sadly, the function tracer cannot be enabled on 
-> production systems.
-> > > > Therefore it's not a usable solution in the context 
-> where I need this.
-> > > > 
-> > > > Mathieu
-> > > 
-> > > 
-> > > Why?
-> > > If this is about the interrupt latency caused by 
-> stop_machine, I still don't understand.
-> > > This latency happens before the tracing (function filter 
-> which use 
-> > > patching), not during tracing.
-> > > 
-> > 
-> > Given this scenario :
-> > 
-> > A telecommunication system runs, but the client notices 
-> something wrong.
-> > They call their service provider. The provider enables tracing 
-> > _remotely_ on the _production system_ while it's _active in 
-> the field_.
-> > 
-> > Bam, those few milliseconds interrupt latencies become unacceptable.
-> > 
-> > Hopefully this scenario makes the use-case clearer. The 
-> problem is not 
-> > that interrupt latencies would occur while tracing is on, 
-> but rather 
-> > that it would happen on a running production system when switching 
-> > tracing on. This is what is totally unacceptable for this use-case.
-> > 
-> > For more details about such requirements, I'm CCing 
-> Dominique Toupin 
-> > from Ericsson who I'm sure would be happy to give more 
-> details about 
-> > this if needed.
-> 
-> Hmm, so this system in the field is running Linux with the 
-> Real-Time Patch?  Because if it isn't it will suffer from 
-> millisecond latencies in normal operation.
-> 
-> -- Steve
-> 
-> 
+Looking at the UEFI spec for one, the GPT partition table format
+definitely has a logical sector size dependency.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
