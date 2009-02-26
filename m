@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbZBZCur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbZBZCvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbZBZCur (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 21:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZBZCuh
+	id S1752451AbZBZCvU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 21:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZBZCu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 21:50:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41495 "EHLO mx3.mail.elte.hu"
+	Wed, 25 Feb 2009 21:50:58 -0500
+Received: from THUNK.ORG ([69.25.196.29]:41077 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZBZCug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 21:50:36 -0500
-Date: Thu, 26 Feb 2009 03:49:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 0/2] [git pull] for tip/tracing/ftrace
-Message-ID: <20090226024924.GA6411@elte.hu>
-References: <20090225221304.097297742@goodmis.org>
+	id S1754763AbZBZCu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 21:50:57 -0500
+Date: Wed, 25 Feb 2009 21:50:43 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sandeen@redhat.com
+Subject: Re: ATA support for 4k sector size
+Message-ID: <20090226025043.GJ1363@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Matthew Wilcox <matthew@wil.cx>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	sandeen@redhat.com
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx> <49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090225221304.097297742@goodmis.org>
+In-Reply-To: <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 25, 2009 at 06:27:18PM -0500, Martin K. Petersen wrote:
+> 
+> Because of 63-sector legacy problems a bunch of ATA vendors will
+> initially ship 512/4096 drives that are not naturally aligned.
+> I.e. logical sector 63 will be aligned on a 4KB hardware sector
+> boundary to overcome the misaligned default partitioning.
+> 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Are we *sure* that this is what they plan to be doing?  Is there a way
+we can query the hardware to find out for sure what drives are doing
+what?
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (2):
->       tracing: rename DEFINE_TRACE_FMT to just TRACE_FORMAT
->       tracing: wrap arguments with PARAMS
-> 
-> ----
->  include/linux/tracepoint.h        |    5 +++--
->  include/trace/sched_event_types.h |   26 +++++++++++++-------------
->  kernel/trace/trace_events.h       |    4 ++--
->  3 files changed, 18 insertions(+), 17 deletions(-)
+I'll note that Vista starts all new partitions at the 1MB boundary, so
+its filesystems will be naturally aligned.  As I mentioned in a recent blog
+entry:
 
-Pulled into tip/tracing, thanks Steve!
+http://thunk.org/tytso/blog/2009/02/20/aligning-filesystems-to-an-ssds-erase-block-size/
 
-	Ingo
+... this is one place Vista is ahead of Linux.  So while Microsoft's
+market share has slipped, 85% of all new x86 machines still have some
+variant of Redmond-spawn installed on them, and with the advent of
+Windows 7 coming soon, and Microsoft making it harder and harder for
+vendors to ship machines upgraded to Windows XP, it
+seems... surprising... that new disks meant for Windows Vista or
+Windows 7 systems would be misaligned to start at logical sector 63.
+
+						- Ted
+
