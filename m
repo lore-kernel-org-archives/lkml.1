@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbZBZPvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbZBZP4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbZBZPvq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 10:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbZBZPvf
+	id S1756716AbZBZP4W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 10:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZBZP4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 10:51:35 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:10037 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756450AbZBZPve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 10:51:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=gixg/2aDp0H3wvCBtCEgXEjnXEYf8HT84bVPzgrRc3NkF2+lFnEdzuH7SbJ4jl+Th+
-         0y4oJoUVJuVtqE/N6OvCCJR4WR8fGgcmMl4ETi2Bv834H9A1WwF8egTT8+hgD/wU/hcE
-         8Zp0JaFad4RGxC9YGoTnhZkfGRTkJsjXmfRvg=
+	Thu, 26 Feb 2009 10:56:12 -0500
+Received: from kroah.org ([198.145.64.141]:43672 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754341AbZBZP4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 10:56:11 -0500
+Date: Thu, 26 Feb 2009 07:53:55 -0800
+From: Greg KH <greg@kroah.com>
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, ashwin.ganti@gmail.com
+Subject: Re: [Staging/p9auth] Feb 26 Next: build failure
+Message-ID: <20090226155355.GA22194@kroah.com>
+References: <20090226193022.adb78235.sfr@canb.auug.org.au> <49A67892.8060006@in.ibm.com>
 MIME-Version: 1.0
-Reply-To: petkovbb@gmail.com
-In-Reply-To: <200902261529.43554.bzolnier@gmail.com>
-References: <200902260229.n1Q2T2lY006773@www262.sakura.ne.jp>
-	 <200902261529.43554.bzolnier@gmail.com>
-Date: Thu, 26 Feb 2009 16:51:30 +0100
-Message-ID: <9ea470500902260751t4221d04cm839765a93300d861@mail.gmail.com>
-Subject: Re: linux-next-20090225: ide-cd triggers BUG at arch/x86/mm/ioremap.c:80!
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A67892.8060006@in.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, Feb 26, 2009 at 3:29 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
-> On Thursday 26 February 2009, Tetsuo Handa wrote:
->> 2.6.29-rc6 is OK.
+On Thu, Feb 26, 2009 at 04:40:10PM +0530, Sachin P. Sant wrote:
+> Feb 26 Next tree randconfig build fails with
 >
-> Could you try to narrow down the issue by bisecting linux-next?
+> drivers/staging/p9auth/p9auth.c: In function cap_write:
+> drivers/staging/p9auth/p9auth.c:249: error: implicit declaration of 
+> function current_uid
+> drivers/staging/p9auth/p9auth.c:261: error: implicit declaration of 
+> function prepare_creds
+> drivers/staging/p9auth/p9auth.c:261: warning: assignment makes pointer from 
+> integer without a cast
+> drivers/staging/p9auth/p9auth.c:266: error: dereferencing pointer to 
+> incomplete type
+> drivers/staging/p9auth/p9auth.c:267: error: dereferencing pointer to 
+> incomplete type
+> drivers/staging/p9auth/p9auth.c:268: error: implicit declaration of 
+> function commit_creds
+> make[3]: *** [drivers/staging/p9auth/p9auth.o] Error 1
 
-Can you also apply the following patch and send us the output?
+Wierd, I thought cred.h would be pulled in with the current include
+files.
 
-Thanks.
+With this .config, if you add:
+	#include <linux/cred.h>
+to drivers/staging/p9auth/p9auth.c does it solve the build error?
 
---
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 9e19aec..fca6e64 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -918,6 +918,12 @@ static ide_startstop_t
-ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+I'll go add it just to be safe :)
 
- 	ide_init_sg_cmd(&cmd,
- 		blk_fs_request(rq) ? (rq->nr_sectors << 9) : rq->data_len);
-+
-+	blk_dump_rq_flags(rq, "mapping rq to sg");
-+
-+	if ((unsigned long)rq->data < PAGE_OFFSET)
-+		dump_stack();
-+
- 	ide_map_sg(drive, &cmd);
+thanks,
 
- 	return ide_issue_pc(drive, &cmd);
-
--- 
-Regards/Gruss,
-Boris
+greg k-h
