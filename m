@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbZBZVAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZBZVEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbZBZVAf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:00:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbZBZVAY
+	id S1758054AbZBZVEq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZBZVEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:00:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43537 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755078AbZBZVAW (ORCPT
+	Thu, 26 Feb 2009 16:04:35 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53478 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbZBZVEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:00:22 -0500
-Date: Thu, 26 Feb 2009 13:00:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       menage@google.com, lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] cgroup allow subsys to set default mode of its own
- file
-Message-Id: <20090226130005.3282cb02.akpm@linux-foundation.org>
-In-Reply-To: <20090225163555.d2a0b24c.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090225163555.d2a0b24c.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Feb 2009 16:04:34 -0500
+Message-ID: <49A70379.3050306@zytor.com>
+Date: Thu, 26 Feb 2009 13:02:49 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: Matthew Wilcox <matthew@wil.cx>, Theodore Tso <tytso@mit.edu>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sandeen@redhat.com
+Subject: Re: ATA support for 4k sector size
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx>	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>	<20090226025043.GJ1363@mit.edu>	<20090226030735.GA16891@parisc-linux.org>	<yq1eixlg4mn.fsf@sermon.lab.mkp.net> <49A6B604.1060702@zytor.com> <yq1iqmxey1o.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq1iqmxey1o.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 16:35:55 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Martin K. Petersen wrote:
+>>>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
+> 
+>>> Quick answer from one of my contacts.  Desktop drives will indeed
+>>> ship with an alignment of 1(*).  The alignment is hardwired at time
+>>> of manufacture and can't be changed.
+>>>
+> 
+> hpa> Oh God.
+> 
+> hpa> This is a disaster.
+> 
+> Rationale being that modern Microsoft operating systems know how to
+> interpret the alignment bits.  Legacy XP will work without changes
+> thanks to the shifted alignment.  And Vista+ will do the right thing to
+> align partition 1 to what the drive reports.
+> 
+> Also note that Windows only aligns the first partition.  That's
+> something we need to be aware of when setting up dual boot systems.
+> 
 
->  When I wrote tools for maintain cgroup, I can't find which file is
->  writable intarfece or not via cgroup file systems. (finally, I did
->  dirty approach.)
->  IMHO, showing "this file is read-only" in explicit way is useful
->  for user-land (tools). In other story, a file whose name sounds read-only
->  may have "trigger" operation and support reseting. In this case,
->  "writable" is informative.
+Yeah, but all of this completely breaks the disk image abstraction, 
+which is a very powerful paradigm.
 
-Well, we have compatibility issues here.  If we make this change, and
-people write tools which depend upon that change then those tools might
-break when run upon older kernels.  Or they need back-compatibility
-additions, which increases the testing burden of those tools.
+	-hpa
 
-One way in which we could improve this situation is to backport these
-changes into earlier kernels, although I don't know which versions.
-
-What do we think?
