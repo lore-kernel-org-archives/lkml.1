@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZBZDDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZBZDF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbZBZDDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZBZDDV
+	id S1757347AbZBZDF4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZBZDFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:03:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36132 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751562AbZBZDDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:03:21 -0500
-Date: Thu, 26 Feb 2009 04:03:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+	Wed, 25 Feb 2009 22:05:47 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:49140 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbZBZDFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 22:05:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=D2GBYkeugzCq85iODsClpYHgZUzMs5+zX7Mf/Lx2rmUPHQkKUffWgJnr4sKBlq93cS
+         mMjRTPOuqn9S8AIX/4WmiF2QqjotLWJ5e21UPhso3JWwRLybX/qls324cI+1AmSm44v5
+         VS8Te5uI2Mq67MNtM+fuGGN8ELMBHVZ5I/uKc=
 Subject: Re: [RFC] introduce pr_cont macro
-Message-ID: <20090226030315.GB7526@elte.hu>
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20090226030315.GB7526@elte.hu>
 References: <20090225205920.GA22091@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090225205920.GA22091@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	 <20090226030315.GB7526@elte.hu>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 19:05:41 -0800
+Message-Id: <1235617541.5610.0.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-
-> We cover all log-levels by pr_... macros except
-> KERN_CONT one. Add it for convenience.
+On Thu, 2009-02-26 at 04:03 +0100, Ingo Molnar wrote:
+> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 > 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> ---
+> > We cover all log-levels by pr_... macros except
+> > KERN_CONT one. Add it for convenience.
+> > 
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> > ---
+> > 
+> > I think start printing with some pr_... macro
+> > and continue with printk(KERN_CONT ...) look
+> > not that clear -- better to continue with
+> > same pr_... slogan. Thoughts? I hope I didn't
+> > miss anything.
+> > 
+> >  include/linux/kernel.h |    2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > Index: linux-2.6.git/include/linux/kernel.h
+> > ===================================================================
+> > --- linux-2.6.git.orig/include/linux/kernel.h
+> > +++ linux-2.6.git/include/linux/kernel.h
+> > @@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
+> >          printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
+> >  #define pr_info(fmt, ...) \
+> >          printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+> > +#define pr_cont(fmt, ...) \
+> > +        printk(KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
 > 
-> I think start printing with some pr_... macro
-> and continue with printk(KERN_CONT ...) look
-> not that clear -- better to continue with
-> same pr_... slogan. Thoughts? I hope I didn't
-> miss anything.
+> Makes sense.
 > 
->  include/linux/kernel.h |    2 ++
->  1 file changed, 2 insertions(+)
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 > 
-> Index: linux-2.6.git/include/linux/kernel.h
-> ===================================================================
-> --- linux-2.6.git.orig/include/linux/kernel.h
-> +++ linux-2.6.git/include/linux/kernel.h
-> @@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
->          printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
->  #define pr_info(fmt, ...) \
->          printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-> +#define pr_cont(fmt, ...) \
-> +        printk(KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
 
-Makes sense.
+Don't you want to omit the pr_fmt() from the KERN_CONT case?
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Harvey
 
-	Ingo
