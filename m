@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZBZR6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZBZSDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZBZR6d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 12:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZBZR6R
+	id S1753484AbZBZSDc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 13:03:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZBZSDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 12:58:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51406 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Feb 2009 13:03:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48078 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbZBZR6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 12:58:15 -0500
-Date: Thu, 26 Feb 2009 18:57:58 +0100
+	id S1751880AbZBZSDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 13:03:22 -0500
+Date: Thu, 26 Feb 2009 19:03:04 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: hpa@zytor.com, mingo@redhat.com, rostedt@goodmis.org, peterz@infradead.org,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/ftrace] tracing: implement trace_clock_*() APIs
-Message-ID: <20090226175758.GA8262@elte.hu>
-References: <tip-14131f2f98ac350ee9e73faed916d2238a8b6a0d@kernel.org> <20090226175302.GD5889@nowhere>
+To: Kyle McMartin <kyle@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: x86@kernel.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: enable DMAR by default
+Message-ID: <20090226180304.GA10940@elte.hu>
+References: <20090226175756.GP6690@bombadil.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090226175302.GD5889@nowhere>
+In-Reply-To: <20090226175756.GP6690@bombadil.infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,17 +35,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+* Kyle McMartin <kyle@infradead.org> wrote:
 
-> I missed this one.
+> From: Kyle McMartin <kyle@redhat.com>
+> 
+> Now that the obvious bugs have been worked out, specifically 
+> the iwlagn issue, and the write buffer errata, DMAR should be 
+> safe to turn back on by default. (We've had it on since those 
+> patches were first written a few weeks ago, without any 
+> noticeable bug reports (most have been due to the dma-api 
+> debug patchset.))
+> 
+> Signed-off-by: Kyle McMartin <kyle@redhat.com>
+> 
+> ---
+> Probably 2.6.29 material, but should definitely go in for 2.6.30.
 
-because i just posted it :)
-
-> Wouldn't your previous idea of a cmpxchg global clock be 
-> better? Perhaps it would scale better while tracing on many 
-> cpus.
-
-a cmpxchg global clock has exactly the same cacheline-bouncing 
-properties as the lock here, so there's no real difference.
+Definitely agreed on .30. Can do it in .29 as well if David and 
+the rest of the Cc: agrees.
 
 	Ingo
