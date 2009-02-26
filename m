@@ -1,104 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZBZT3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZBZTcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZBZT3Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZBZT24
+	id S1754819AbZBZTcD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:32:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZBZTbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:28:56 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:7400 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751679AbZBZT2z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:28:55 -0500
-Message-ID: <49A6ED6D.3090508@hp.com>
-Date: Thu, 26 Feb 2009 14:28:45 -0500
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
+	Thu, 26 Feb 2009 14:31:52 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:51522 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752492AbZBZTbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 14:31:52 -0500
+Message-ID: <49A6EE17.4070102@krogh.cc>
+Date: Thu, 26 Feb 2009 20:31:35 +0100
+From: Jesper Krogh <jesper@krogh.cc>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: David Miller <davem@davemloft.net>, arvidjaar@mail.ru,
-       vladislav.yasevich@hp.com, chuck.lever@oracle.com, tytso@mit.edu,
-       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel
- module
-References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com>
-In-Reply-To: <22876.1235672073@death.nxdomain.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------080805060702040309020702"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Woodhouse <David.Woodhouse@intel.com>, Dave Olsen <dolsen@lnxi.com>,
+       Ryan Jackson <rjackson@lnxi.com>, linux-mtd@lists.infradead.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29-rc6
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain> <49A679E8.1010301@krogh.cc> <alpine.LFD.2.00.0902260941090.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902260941090.3111@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080805060702040309020702
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Jay Vosburgh wrote:
->>>> 	I've been fooling with the disable_ipv6 sysctl, and one issue is
->>>> that, at least on the distro I'm testing on (SLES), it's not picked up
->>>> from /etc/sysctl.conf at boot time (presumably because ipv6 isn't loaded
->>>> yet, although I haven't really checked).
->>> Correct, that's the problem.
->>>
->>> We could create a blocker bitmap.  Two sysctls, "block_af" and
->>> "unblock_af".  You write the AF_foo value for the protocol there and
->>> it sets or clears the assosciated bit in the internal blocker bitmap.
->>>
->>> Things like sys_socket() et al. key off of this.
->> I'm open to suggestions at this point in time, I just don't see how this
->> will solve the bonding problem since it still wouldn't load, right?
+Linus Torvalds wrote:
+> Dave Olsen <dolsen@lnxi.com>,
+>     Ryan Jackson <rjackson@lnxi.com>, David.Woodhouse@intel.com, 
+> linux-mtd@lists.infradead.org
 > 
-> 	It would permit users to load ipv6 (thus allowing bonding to
-> load), but prevent ipv6 from actually doing anything.  (because
-> sys_socket, e.g., won't open an ipv6 socket if block_af includes ipv6).
+> 
+> On Thu, 26 Feb 2009, Jesper Krogh wrote:
+>>
+>> Booting up 2.6.29-rc6 gave me this one in dmesg...
+>>
+>> [   21.136149] ck804xrom ck804xrom_init_one(): Unable to register resource 0x00000000ff000000-0x00000000ffffffff - kernel bug?
+> 
+> Well, it _is_ a kernel bug, but it's in that stupid driver. It does 
+> everything wrong, including printing out a scary message.
 
-Right, but it doesn't help someone that changed /etc/modprobe.conf to have 
-"install ipv6 /bin/true" - they'll have to stop doing that.
+I've seen that before.. (even reported it before). It just "slipped" 
+into the cut'n'paste It was the following stuff that I intended to report.
 
-I think changing ipv6 to support a disable_ipv6 module parameter like Vlad 
-suggested would work, as long as we're not worried about someone opening an 
-AF_INET6 socket - even if they do they won't get anywhere.  That, along with the 
-patch below to actually not add the addresses, would work (sorry in advance for 
-using an attachment).  I'll get started on that...
+>> [   21.136269] WARNING: at arch/x86/mm/ioremap.c:208 __ioremap_caller+0x359/0x390()
+> 
+> This is a different, but related warning, since the driver is doing an 
+> ioremap across different resources. The warning is directly related to the 
+> fact that the resource wasn't actually valid to begin with.
+> 
+> What does "cat /proc/iomem" say?
 
--Brian
+http://krogh.cc/~jesper/iomem.txt
 
+>> System is fully operational, but I didnt get it in 2.6.26.8 (most recent
+>> kernel tried on this hardware).
+> 
+> The ioremap() warning is newish, and may be what made you notice the 
+> previous (just one-line) crappy warning.
+> 
+> Quite frankly, having looked at that horrible driver, I would seriously 
+> consider disabling it. Stuff like that should not be allowed to exist.
 
---
+Being a "stupid" user, I pick the easy way to build a fresh kernel:
+1) pick the distro .config
+2) make oldconfig
+3) Let the kernel load what it think it needs.
+4) Report if I see and strange stuff (warnings / bugs / oops) or 
+misbehaviour.
 
-The disable_ipv6 knob was meant to be used for the kernel to disable IPv6 on an 
-interface when DAD failed for the link-local address based on the MAC, but we 
-should also be able to administratively disable it on an interface, or the 
-entire system.  This patch fixes the per-interface problem.
+So I dont know if I need that driver for anything vital. Should I care? 
+Or shouldn't it "just work"?
 
-Signed-off-by: Brian Haley <brian.haley@hp.com>
-
---------------080805060702040309020702
-Content-Type: text/x-diff;
- name="noipv6.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="noipv6.patch"
-
-diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
-index f8f76d6..90f2a81 100644
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -603,6 +603,11 @@ ipv6_add_addr(struct inet6_dev *idev, const struct in6_addr *addr, int pfxlen,
- 		goto out2;
- 	}
- 
-+	if (idev->cnf.disable_ipv6) {
-+		err = -EPERM;
-+		goto out2;
-+	}
-+
- 	write_lock(&addrconf_hash_lock);
- 
- 	/* Ignore adding duplicate addresses on an interface */
-
---------------080805060702040309020702--
+-- 
+Jesper
