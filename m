@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZBZLDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbZBZLF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbZBZLDw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 06:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZBZLDn
+	id S1755012AbZBZLF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 06:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZBZLFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 06:03:43 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:48215 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751832AbZBZLDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 06:03:42 -0500
-Date: Thu, 26 Feb 2009 11:03:36 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-Message-ID: <20090226110336.GC32756@csn.ul.ie>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235639427.11390.11.camel@minggr>
+	Thu, 26 Feb 2009 06:05:14 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2087 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZBZLFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 06:05:13 -0500
+Date: Thu, 26 Feb 2009 11:05:10 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
+Message-ID: <20090226110509.GB4229@sirena.org.uk>
+References: <200902081037.06645.david-b@pacbell.net> <200902251412.26855.david-b@pacbell.net> <20090225230123.GA5715@sirena.org.uk> <200902251547.53256.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1235639427.11390.11.camel@minggr>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200902251547.53256.david-b@pacbell.net>
+X-Cookie: Yow!  I threw up on my window!
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 05:10:27PM +0800, Lin Ming wrote:
-> We tested this v2 patch series with 2.6.29-rc6 on different machines.
-> 
+On Wed, Feb 25, 2009 at 03:47:52PM -0800, David Brownell wrote:
+> On Wednesday 25 February 2009, Mark Brown wrote:
 
-Wonderful, thanks.
+> In terms of the consumer interface, not -- "struct regulator"
+> is opaque to consumers, and everything is a functional accessor.
+> So I'll leave that as-is.
 
-> 		4P qual-core	2P qual-core	2P qual-core HT
-> 		tigerton	stockley	Nehalem
-> 		------------------------------------------------
-> tbench		+3%		+2%		0%
+Yes, obviously.
 
-Nice.
+> > At present only continous ranges are possible, though. ?I can't think of
+> > any systems I've seen that'd want discontinous constraints, though I'm
+> > sure there are some.
 
-> oltp		-2%		0%		0%
+> Consider a regulator where voltage selectors 0..3 correspond to
+> voltages
 
-This is a big disappointment and somewhat confusing that it is so
-severe. For sysbench I was seeing on six different machines;
+> 	{ 3.3V, 1.8V, 4.2V, 5.0V }
 
-	50834.14        51763.08    1.79%
-	61852.08        61966.58    0.18%
-	5935.98         5980.06     0.74%
-	29227.78        30167.72    3.12%
-	66702.67        66534.76   -0.25%
-	26643.18        26542.59   -0.38%
+> With machine constraints that say voltages go from 3V to 4.5V ...
 
-So, two smallish regressions but mainly gains. Then again, I'm becoming
-more and more convinced that sysbench doesn't really represent a proper
-OLTP workload.
-
-I'd like to understand more how the page allocator at least was being used
-during your tests. Would it be possible to get a full profile (including
-instruction if possible and the vmlinux file) for both kernels please?
-
-If you can get the profiles, confirm the regression is still there as
-sometimes profiling can alter the outcome. Even if this happens, the
-profile will tell me where time is being spent.
-
-> aim7		0%		0%		0%
-> specjbb2005	+3%		0%		0%
-> hackbench	0%		0%		0%	
-> 
-> netperf:
-> TCP-S-112k	0%		-1%		0%
-> TCP-S-64k	0%		-1%		+1%
-> TCP-RR-1	0%		0%		+1%
-> UDP-U-4k	-2%		0%		-2%
-
-Pekka, for this test was SLUB or the page allocator handling the 4K
-allocations?
-
-> UDP-U-1k	+3%		0%		0%
-> UDP-RR-1	0%		0%		0%
-> UDP-RR-512	-1%		0%		+1%
-> 
-> Lin Ming
-> 
-
-Thanks a million for testing.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Continuous ranges of voltages, not continous indexes.  The indexes are
+meaningless.  At the minute consumers and machines always supply
+constraints as min,max pairs.
