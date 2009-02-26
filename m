@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbZBZI7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbZBZI70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbZBZI7G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 03:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZBZI6j
+	id S1755808AbZBZI70 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 03:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbZBZI7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 03:58:39 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:37015 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752731AbZBZI6h (ORCPT
+	Thu, 26 Feb 2009 03:59:04 -0500
+Received: from mail.netone.net.tr ([193.192.98.182]:43549 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755520AbZBZI7B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 03:58:37 -0500
-Date: Thu, 26 Feb 2009 14:28:31 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
-       ego@in.ibm.com, tglx@linutronix.de, andi@firstfloor.org,
-       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
-       arun@linux.vnet.ibm.com, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH 0/4] timers: framework for migration between CPU
-Message-ID: <20090226085831.GA28397@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20090220132145.GF26418@elte.hu> <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu> <20090223075521.GA3725@balbir.in.ibm.com> <20090223091158.GJ9582@elte.hu> <20090223094850.GA10226@balbir.in.ibm.com> <20090223103814.GB8817@dirshya.in.ibm.com> <20090223110725.GB17312@elte.hu>
+	Thu, 26 Feb 2009 03:59:01 -0500
+Message-ID: <49A659D0.2040903@turknet.net.tr>
+Date: Thu, 26 Feb 2009 10:58:56 +0200
+From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090223110725.GB17312@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: Failover Kernel
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Feb 2009 08:58:57.0257 (UTC) FILETIME=[754B1590:01C997F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 12:07:25PM +0100, Ingo Molnar wrote:
-> 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> 
-> > * Identify set of idle CPUs (CPU package) from which timers 
-> >   can be removed
-> > * Identify a semi-idle or idle CPU package to which the timers
-> >   can be moved
-> > * Decide when to start moving timers as the system has large
-> >   number of idle CPUs
-> > * Decide when to stop migrating as system becomes less idle
-> >   and utilisation increases
-> > 
-> > Guiding all of the above decisions from user space may not be 
-> > fast enough.
-> 
-> Exactly.
+Hi all,
 
-That is true for power management. However there are other
-situations where we may need targeted avoidance of timers.
-Certain type of applications - HPC for example - prefer avoidance
-of jitters due to periodic timers. It would be good to be
-able to say "avoid these CPUs for timers" while they are being
-used for HPC tasks.
+I'm thinking about a kernel feature called "Failover Kernel". The basic 
+idea is to put 2 kernels (One is running "Primary Kernel" and the next 
+one is "Backup Kernel") into the memory for disaster recovery of kernel 
+panic'ing/crashing.
 
-Thanks
-Dipankar
+This feature's working schema could be like this :
+
+- "Backup Kernel" could be stated and loaded into the memory via a boot 
+line option like : "failover_kernel=/boot/vmlinuz-2.6.26"
+- Primary running kernel will send keepalives to the "Backup Kernel" to 
+state that it's alive.
+- Primary running kernel can write a journal (like the journaled 
+filesystems.) about needed infos for the backup kernel to recover.
+- When the primary kernel crashed and couldn't send anymore keepalives, 
+the backup kernel will recover from this journal to proceed to where the 
+primary kernel left and will become primary.
+- When "Backup Kernel" became "Primary" it will load the previous one as 
+"Backup Kernel" again or maybe it could be left to manual. User could 
+decide after the disaster recovery which kernel will be load as backup 
+via a utility like "kexec".
+- At kernel compile time, user can choose the the timing for failover 
+kernel. For example, "Recover After 10 MS. of inactivity (not receiving 
+keepalives). "
+
+
+The usage scenarios of this feature could be :
+
+- For people whose Datacenter is remote, it's a big problem when you 
+compiled a new kernel and rebooting into a crashing/non-booting new 
+kernel. You left with a completely crashed and non-functioning system. 
+Hard reset and manual action is required. If there could be "Failover 
+Kernel feature, the system will simply switch back to the "Backup 
+Kernel" (This backup kernel will be the known stable kernel of the 
+system.) and the system will proceed to work without any manual action 
+required.
+
+- Your system runs fine for the last several months and one day you hit 
+a bug and kernel crashed/panic'ed . With "Failover Kernel", the system 
+will switch to the "Backup Kernel" quickly (maybe some milliseconds or 
+few seconds.) to recover and the system could proceed to work normally.
+
+So,I'm not a coder and I don't know it is really possible as technically 
+or not. You the kernel hackers, what's your opinion about it ? Could it 
+be really possible ? If so, how we really can implement it ?
+
+Many thanks for reading this long (and maybe stupid) post! :-)
+
+Tarkan ERIMER
+
+
