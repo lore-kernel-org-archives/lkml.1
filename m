@@ -1,183 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbZBZUiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZBZUkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758428AbZBZUiJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:38:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbZBZUhx
+	id S1753576AbZBZUkH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZBZUj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:37:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:56285 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755576AbZBZUhv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:37:51 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-Date: Thu, 26 Feb 2009 21:37:14 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org
-References: <20090224000002.GA578@ovro.caltech.edu> <200902261715.28440.arnd@arndb.de> <20090226200110.GA19523@ovro.caltech.edu>
-In-Reply-To: <20090226200110.GA19523@ovro.caltech.edu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 26 Feb 2009 15:39:56 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58935 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751513AbZBZUjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 15:39:55 -0500
+Date: Thu, 26 Feb 2009 21:36:53 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] signals: don't copy siginfo_t on dequeue
+Message-ID: <20090226203653.GA9285@redhat.com>
+References: <20090226184433.GA15644@damson.getinternet.no> <20090226191509.GA6204@redhat.com> <19f34abd0902261218u388de998l1204857bde9bbe32@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902262137.15169.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/tZcLd0f8jhGu8sBjc88MoIiyBGkAkWRX1w10
- b6hIITBJ/v8VIZWbWfkiS+jkhYDO64MPwpO5etJ2s5QlRlnCCd
- u7EZlm/UNBJyLeO+xs/+Q==
+In-Reply-To: <19f34abd0902261218u388de998l1204857bde9bbe32@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, Ira Snyder wrote:
-> On Thu, Feb 26, 2009 at 05:15:27PM +0100, Arnd Bergmann wrote:
+On 02/26, Vegard Nossum wrote:
 >
-> I think so too. I was just getting something working, and thought it
-> would be better to have it "out there" rather than be working on it
-> forever. I'll try to break things up as I have time.
+> 2009/2/26 Oleg Nesterov <oleg@redhat.com>:
+> > So. dequeue_signal() returns NULL if there is no siginfo queued. In that
+> > case we assume that the signal is not pending.
+> >
+> > But this is not right. Think about SEND_SIG_FORCED, or __sigqueue_alloc()
+> > failure when the signal is sent. Or look at zap_other_threads() for example,
+> > it just sets the bit in ->pending but doesn't queue siginfo.
+>
+> I will investigate.
 
-Ok, perfect!
- 
-> For the "libraries", would you suggest breaking things into seperate
-> code files, and using EXPORT_SYMBOL_GPL()? I'm not very familiar with
-> doing that, I've mostly been writing code within the existing device
-> driver frameworks. Or do I need export symbol at all? I'm not sure...
+Cough. Well, I must admit I am a bit skeptical about this patch ;) Because
+I suspect it will add more complications to the code. And _I think_ avoiding
+copy_siginfo() does not buy too much. I will be happy if I am wrong, though.
 
-You have both options. When you list each file as a separate module
-in the Makefile, you use EXPORT_SYMBOL_GPL to mark functions that
-get called by dependent modules, but this will work only in one way.
+But. If you are going to do another version, then please note there is another
+problem with this patch, SIGQUEUE_PREALLOC.
 
-You can also link multiple files together into one module, although
-it is less common to link a single source file into multiple modules.
+If collect_signal() returns SIGQUEUE_PREALLOC info, we can not drop ->siglock.
+I mean, once we drop ->siglock, this info can be freed, so for example
 
-> I always thought you were supposed to use packed for data structures
-> that are external to the system. I purposely designed the structures so
-> they wouldn't need padding.
+			spin_unlock(&tsk->sighand->siglock);
+	-               do_schedule_next_timer(info);
+	+               do_schedule_next_timer(&signal->info);
 
-That would only make sense for structures that are explicitly unaligned,
-like a register layout using
+even this part is not safe.
 
-struct my_registers {
-	__le16 first;
-	__le32 second __attribute__((packed));
-	__le16 third;
-};
+Also. The patch uses __sigqueue_free() to free the delivered siginfo, but
+this is not safe without ->siglock, we can race with sigqueue_free().
 
-Even here, I'd recommend listing the individual members as packed
-rather than the entire struct. Obviously if you layout the members
-in a sane way, you don't need either.
+Oleg.
 
-> I mostly don't need it. In fact, the only place I'm using registers not
-> specific to the messaging unit is in the probe routine, where I setup
-> the 1GB window into host memory and setting up access to the guest
-> memory on the PCI bus.
-
-You could add the registers you need for this to the "reg" property
-of your device, to be mapped with of_iomap.
-
-If the registers for setting up this window don't logically fit
-into the same device as the one you already use, the cleanest
-solution would be to have another device just for this and then
-make a function call into that driver to set up the window.
-
-> Now, I wouldn't need to access these registers at all if the bootloader
-> could handle it. I just don't know if it is possible to have Linux not
-> use some memory that the bootloader allocated, other than with the
-> mem=XXX trick, which I'm sure wouldn't be acceptable. I've just used
-> regular RAM so this is portable to my custom board (mpc8349emds based)
-> and a regular mpc8349emds. I didn't want to change anything board
-> specific.
-> 
-> I would love to have the bootloader allocate (or reserve somewhere in
-> the memory map) 16K of RAM, and not be required to allocate it with
-> dma_alloc_coherent(). It would save me plenty of headaches.
-
-I believe you can do that through the "memory" devices in the
-device tree, by leaving out a small part of the description of
-main memory, at putting it into the "reg" property of your own
-device.
-
-> Code complexity only. Also, it was easier to write 80-char lines with
-> something like:
-> 
-> vop_get_desc(vq, idx, &desc);
-> if (desc.flags & VOP_DESC_F_NEXT) {
-> 	/* do something */
-> }
-> 
-> Instead of:
-> if (le16_to_cpu(vq->desc[idx].flags) & VOP_DESC_F_NEXT) {
-> 	/* do something */
-> }
-> 
-> Plus, I didn't have to remember how many bits were in each field. I just
-> thought it made everything simpler to understand. Suggestions?
-
-hmm, in this particular case, you could change the definition
-of VOP_DESC_F_NEXT to
-
-#define VOP_DESC_F_NEXT cpu_to_le16(1)
-
-and then do the code as the even simpler (source and object code wise)
-
-if (vq->desc[idx].flags) & VOP_DESC_F_NEXT)
-
-I'm not sure if you can do something along these lines for the other
-cases as well though.
-
-> I used 3 so they would would align to 1024 byte boundaries within a 4K
-> page. Then the layout was 16K on the bus, each 4K page is a single
-> virtio-device, and each 1K block is a single virtqueue. The first 1K is
-> for virtio-device status and feature bits, etc.
-> 
-> Packing them differently isn't a problem. It was just easier to code
-> because setting up a window with the correct size is so platform
-> specific.
-
-Ok. I guess the important question is what part of the code makes
-this decision. Ideally, the virtio-net glue would instantiate
-the device with the right number of queues.
-
-> > > +/*
-> > > + * This function abuses some of the scatterlist code and implements
-> > > + * dma_map_sg() in such a way that we don't need to keep the scatterlist
-> > > + * around in order to unmap it.
-> > > + *
-> > > + * It is also designed to never merge scatterlist entries, which is
-> > > + * never what we want for virtio.
-> > > + *
-> > > + * When it is time to unmap the buffer, you can use dma_unmap_single() to
-> > > + * unmap each entry in the chain. Get the address, length, and direction
-> > > + * from the descriptors! (keep a local copy for speed)
-> > > + */
-> > 
-> > Why is that an advantage over dma_unmap_sg?
-> > 
-> 
-> When running dma_map_sg(), the scatterlist code is allowed to alter the
-> scatterlist to store data it needs for dma_unmap_sg(), along with
-> merging adjacent buffers, etc.
-> 
-> I don't want any of that behavior. The generic virtio code does not
-> handle merging of buffers.
-> 
-> Also, all of the generic virtio code allocates its scatterlists on the
-> stack. This means I cannot save the pointers between add_buf() and
-> get_buf(). If I used dma_map_sg(), I'd have to allocate memory to copy
-> the scatterlist, map it, and save the pointer. Later, retrieve the
-> pointer, unmap it, and free the memory.
-> 
-> This is simpler than all of that.
-
-Not sure if I'm following, but you seem to have put enough thought
-into it ;-)
-
-	Arnd <><
