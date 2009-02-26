@@ -1,128 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbZBZOQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZBZOQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757130AbZBZOQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 09:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbZBZOPj
+	id S1755949AbZBZOQk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 09:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZBZOPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 09:15:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43029 "EHLO mx2.redhat.com"
+	Thu, 26 Feb 2009 09:15:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43047 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924AbZBZOPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 09:15:38 -0500
+	id S1753792AbZBZOPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 09:15:40 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/40] KVM Updates for the 2.6.30 merge window (1/3)
-Date: Thu, 26 Feb 2009 16:14:50 +0200
-Message-Id: <1235657730-27683-1-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>
+Subject: [PATCH 02/40] KVM: SVM: Move EFER and MSR constants to generic x86 code
+Date: Thu, 26 Feb 2009 16:14:52 +0200
+Message-Id: <1235657730-27683-3-git-send-email-avi@redhat.com>
+In-Reply-To: <1235657730-27683-1-git-send-email-avi@redhat.com>
+References: <1235657730-27683-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the first batch of three containing the current 2.6.30 patch queue
-for review.
+From: Alexander Graf <agraf@suse.de>
 
-Changes include nested virtualization on AMD hosts, ppc e500 support,
-improved guest debugging support, better performance and improved emulation
-accuracy.
+MSR_EFER_SVME_MASK, MSR_VM_CR and MSR_VM_HSAVE_PA are set in KVM
+specific headers. Linux does have nice header files to collect
+EFER bits and MSR IDs, so IMHO we should put them there.
 
-Alexander Graf (10):
-  KVM: SVM: Clean up VINTR setting
-  KVM: SVM: Move EFER and MSR constants to generic x86 code
-  KVM: SVM: Add helper functions for nested SVM
-  KVM: SVM: Implement GIF, clgi and stgi
-  KVM: SVM: Implement hsave
-  KVM: SVM: Add VMLOAD and VMSAVE handlers
-  KVM: SVM: Add VMRUN handler
-  KVM: SVM: Add VMEXIT handler and intercepts
-  KVM: SVM: Allow setting the SVME bit
-  KVM: SVM: Only allow setting of EFER_SVME when CPUID SVM is set
+While at it, I also changed the naming scheme to match that
+of the other defines.
 
-Avi Kivity (11):
-  KVM: MMU: Inherit a shadow page's guest level count from vcpu setup
-  KVM: MMU: Segregate mmu pages created with different cr4.pge settings
-  KVM: MMU: Initialize a shadow page's global attribute from cr4.pge
-  KVM: Fix vmload and friends misinterpreted as lidt
-  KVM: MMU: Add for_each_shadow_entry(), a simpler alternative to
-    walk_shadow()
-  KVM: MMU: Use for_each_shadow_entry() in __direct_map()
-  KVM: MMU: Replace walk_shadow() by for_each_shadow_entry() in fetch()
-  KVM: MMU: Replace walk_shadow() by for_each_shadow_entry() in
-    invlpg()
-  KVM: MMU: Drop walk_shadow()
-  KVM: Fallback support for MSR_VM_HSAVE_PA
-  KVM: Move struct kvm_pio_request into x86 kvm_host.h
+(introduced in v6)
 
-Hollis Blanchard (5):
-  KVM: ppc: move struct kvmppc_44x_tlbe into 44x-specific header
-  KVM: ppc: cosmetic changes to mmu hook names
-  KVM: ppc: small cosmetic changes to Book E DTLB miss handler
-  KVM: ppc: change kvmppc_mmu_map() parameters
-  KVM: ppc: turn tlb_xlate() into a per-core hook (and give it a better
-    name)
+Acked-by: Joerg Roedel <joro@8bytes.org>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/include/asm/kvm_host.h  |    1 +
+ arch/x86/include/asm/msr-index.h |    7 +++++++
+ arch/x86/include/asm/svm.h       |    4 ----
+ arch/x86/include/asm/virtext.h   |    2 +-
+ arch/x86/kvm/svm.c               |    6 +++---
+ 5 files changed, 12 insertions(+), 8 deletions(-)
 
-Izik Eidus (2):
-  KVM: introduce kvm_read_guest_virt, kvm_write_guest_virt
-  KVM: remove the vmap usage
-
-Jan Kiszka (7):
-  KVM: VMX: Support for injecting software exceptions
-  KVM: New guest debug interface
-  KVM: VMX: Allow single-stepping when uninterruptible
-  KVM: x86: Virtualize debug registers
-  KVM: x86: Wire-up hardware breakpoints for guest debugging
-  KVM: Remove old kvm_guest_debug structs
-  KVM: Advertise guest debug capability per-arch
-
-Jes Sorensen (1):
-  KVM: ia64: stack get/restore patch
-
-Joerg Roedel (1):
-  KVM: SVM: Allow read access to MSR_VM_VR
-
-Marcelo Tosatti (2):
-  KVM: VMX: initialize TSC offset relative to vm creation time
-  KVM: PIT: provide an option to disable interrupt reinjection
-
-Xiantao Zhang (1):
-  KVM: ia64: Code cleanup
-
- arch/ia64/include/asm/kvm.h         |   14 +
- arch/ia64/include/asm/kvm_host.h    |    8 +-
- arch/ia64/kvm/kvm-ia64.c            |   96 ++++-
- arch/ia64/kvm/process.c             |   15 -
- arch/ia64/kvm/vcpu.c                |   39 +--
- arch/ia64/kvm/vtlb.c                |    5 -
- arch/powerpc/include/asm/kvm.h      |    7 +
- arch/powerpc/include/asm/kvm_44x.h  |    7 +
- arch/powerpc/include/asm/kvm_host.h |   13 -
- arch/powerpc/include/asm/kvm_ppc.h  |    8 +-
- arch/powerpc/kvm/44x.c              |    6 +-
- arch/powerpc/kvm/44x_tlb.c          |   27 +-
- arch/powerpc/kvm/44x_tlb.h          |    7 -
- arch/powerpc/kvm/booke.c            |   20 +-
- arch/powerpc/kvm/powerpc.c          |    6 +-
- arch/s390/include/asm/kvm.h         |    7 +
- arch/s390/include/asm/kvm_host.h    |    3 -
- arch/s390/kvm/kvm-s390.c            |    4 +-
- arch/x86/include/asm/kvm.h          |   23 +
- arch/x86/include/asm/kvm_host.h     |   54 ++-
- arch/x86/include/asm/msr-index.h    |    7 +
- arch/x86/include/asm/svm.h          |    4 -
- arch/x86/include/asm/virtext.h      |    2 +-
- arch/x86/include/asm/vmx.h          |    5 +-
- arch/x86/kvm/i8254.c                |    4 +
- arch/x86/kvm/i8254.h                |    1 +
- arch/x86/kvm/kvm_svm.h              |   16 +-
- arch/x86/kvm/mmu.c                  |  171 ++++----
- arch/x86/kvm/paging_tmpl.h          |  209 ++++-----
- arch/x86/kvm/svm.c                  |  863 +++++++++++++++++++++++++++++++----
- arch/x86/kvm/vmx.c                  |  268 +++++++----
- arch/x86/kvm/x86.c                  |  261 +++++++----
- arch/x86/kvm/x86_emulate.c          |   15 +-
- include/linux/kvm.h                 |   60 ++-
- include/linux/kvm_host.h            |    6 +-
- include/linux/kvm_types.h           |   13 -
- virt/kvm/kvm_main.c                 |    6 +-
- 37 files changed, 1611 insertions(+), 669 deletions(-)
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 730843d..2998efe 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -22,6 +22,7 @@
+ #include <asm/pvclock-abi.h>
+ #include <asm/desc.h>
+ #include <asm/mtrr.h>
++#include <asm/msr-index.h>
+ 
+ #define KVM_MAX_VCPUS 16
+ #define KVM_MEMORY_SLOTS 32
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 358acc5..46e9646 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -18,11 +18,13 @@
+ #define _EFER_LME		8  /* Long mode enable */
+ #define _EFER_LMA		10 /* Long mode active (read-only) */
+ #define _EFER_NX		11 /* No execute enable */
++#define _EFER_SVME		12 /* Enable virtualization */
+ 
+ #define EFER_SCE		(1<<_EFER_SCE)
+ #define EFER_LME		(1<<_EFER_LME)
+ #define EFER_LMA		(1<<_EFER_LMA)
+ #define EFER_NX			(1<<_EFER_NX)
++#define EFER_SVME		(1<<_EFER_SVME)
+ 
+ /* Intel MSRs. Some also available on other CPUs */
+ #define MSR_IA32_PERFCTR0		0x000000c1
+@@ -360,4 +362,9 @@
+ #define MSR_IA32_VMX_PROCBASED_CTLS2    0x0000048b
+ #define MSR_IA32_VMX_EPT_VPID_CAP       0x0000048c
+ 
++/* AMD-V MSRs */
++
++#define MSR_VM_CR                       0xc0010114
++#define MSR_VM_HSAVE_PA                 0xc0010117
++
+ #endif /* _ASM_X86_MSR_INDEX_H */
+diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+index 1b8afa7..82ada75 100644
+--- a/arch/x86/include/asm/svm.h
++++ b/arch/x86/include/asm/svm.h
+@@ -174,10 +174,6 @@ struct __attribute__ ((__packed__)) vmcb {
+ #define SVM_CPUID_FEATURE_SHIFT 2
+ #define SVM_CPUID_FUNC 0x8000000a
+ 
+-#define MSR_EFER_SVME_MASK (1ULL << 12)
+-#define MSR_VM_CR       0xc0010114
+-#define MSR_VM_HSAVE_PA 0xc0010117ULL
+-
+ #define SVM_VM_CR_SVM_DISABLE 4
+ 
+ #define SVM_SELECTOR_S_SHIFT 4
+diff --git a/arch/x86/include/asm/virtext.h b/arch/x86/include/asm/virtext.h
+index 5936362..e0f9aa1 100644
+--- a/arch/x86/include/asm/virtext.h
++++ b/arch/x86/include/asm/virtext.h
+@@ -118,7 +118,7 @@ static inline void cpu_svm_disable(void)
+ 
+ 	wrmsrl(MSR_VM_HSAVE_PA, 0);
+ 	rdmsrl(MSR_EFER, efer);
+-	wrmsrl(MSR_EFER, efer & ~MSR_EFER_SVME_MASK);
++	wrmsrl(MSR_EFER, efer & ~EFER_SVME);
+ }
+ 
+ /** Makes sure SVM is disabled, if it is supported on the CPU
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 33407d9..e4eb3fd 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -198,7 +198,7 @@ static void svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
+ 	if (!npt_enabled && !(efer & EFER_LMA))
+ 		efer &= ~EFER_LME;
+ 
+-	to_svm(vcpu)->vmcb->save.efer = efer | MSR_EFER_SVME_MASK;
++	to_svm(vcpu)->vmcb->save.efer = efer | EFER_SVME;
+ 	vcpu->arch.shadow_efer = efer;
+ }
+ 
+@@ -292,7 +292,7 @@ static void svm_hardware_enable(void *garbage)
+ 	svm_data->tss_desc = (struct kvm_ldttss_desc *)(gdt + GDT_ENTRY_TSS);
+ 
+ 	rdmsrl(MSR_EFER, efer);
+-	wrmsrl(MSR_EFER, efer | MSR_EFER_SVME_MASK);
++	wrmsrl(MSR_EFER, efer | EFER_SVME);
+ 
+ 	wrmsrl(MSR_VM_HSAVE_PA,
+ 	       page_to_pfn(svm_data->save_area) << PAGE_SHIFT);
+@@ -559,7 +559,7 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 	init_sys_seg(&save->ldtr, SEG_TYPE_LDT);
+ 	init_sys_seg(&save->tr, SEG_TYPE_BUSY_TSS16);
+ 
+-	save->efer = MSR_EFER_SVME_MASK;
++	save->efer = EFER_SVME;
+ 	save->dr6 = 0xffff0ff0;
+ 	save->dr7 = 0x400;
+ 	save->rflags = 2;
+-- 
+1.6.0.6
 
