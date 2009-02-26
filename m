@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbZBZVFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbZBZVKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbZBZVFa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbZBZVFS
+	id S1758376AbZBZVKZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:10:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZBZVKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:05:18 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:3364 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbZBZVFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:05:17 -0500
-From: "Bob Copeland" <me@bobcopeland.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Date: Thu, 26 Feb 2009 16:05:06 -0500
-Message-Id: <20090226205921.M20262@bobcopeland.com>
-In-Reply-To: <49A70134.4070700@gmail.com>
-References: <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com> <49A321BA.2040500@gmail.com> <49A326A4.8090103@gmail.com> <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org> <20090226010625.GA10577@hash.localnet> <49A70134.4070700@gmail.com>
-X-Mailer: OpenWebMail 2.53 
-X-OriginatingIP: 149.101.1.121 (bob)
+	Thu, 26 Feb 2009 16:10:08 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45520 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754299AbZBZVKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 16:10:06 -0500
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+References: <20090225025608.956691460@goodmis.org>
+	<20090225025753.798204550@goodmis.org>
+	<20090224194548.3effb746.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
+	<20090224203308.8d623e0b.akpm@linux-foundation.org>
+	<20090225081118.GC15303@elte.hu>
+	<20090225002852.5ef5b869.akpm@linux-foundation.org>
+	<20090225135437.GG7064@mit.edu>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Thu, 26 Feb 2009 16:08:54 -0500
+In-Reply-To: <20090225135437.GG7064@mit.edu> (Theodore Tso's message of "Wed, 25 Feb 2009 08:54:37 -0500")
+Message-ID: <y0miqmwoqhl.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009 21:53:08 +0100, Jiri Slaby wrote
-> On 26.2.2009 02:06, Bob Copeland wrote:
-> > --- a/drivers/net/wireless/ath5k/base.c
-> > +++ b/drivers/net/wireless/ath5k/base.c
-> > @@ -1140,12 +1140,14 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc, struct
-ath5k_buf *bf)
-> >   	struct ath5k_hw *ah = sc->ah;
-> >   	struct sk_buff *skb = bf->skb;
-> >   	struct ath5k_desc *ds;
-> > +	dma_addr_t dma_addr;
-> >
-> >   	if (!skb) {
-> > -		skb = ath5k_rx_skb_alloc(sc,&bf->skbaddr);
-> > +		skb = ath5k_rx_skb_alloc(sc,&dma_addr);
-> >   		if (!skb)
-> >   			return -ENOMEM;
-> >   		bf->skb = skb;
-> > +		bf->skbaddr = dma_addr;
-> 
-> Hmm, rather than the caller, ath5k_rx_skb_alloc is wrong here in my 
-> eyes. It shouldn't touch the second parameter unless it knows it won't 
-> fail anymore.
+Theodore Tso <tytso@mit.edu> writes:
 
-Sure, the temporary could go there instead.  It's a consequence of my
-making ath5k_rx_skb_alloc() as much as possible a straight code move
-from the original, which IIRC would also clobber bf->skbaddr on the
-error path.
+> [...]  I think it's because we've just been burned so many times
+> with complex user space tools that are built in C++, have
+> impossible-to-understand error handling ("try again with -vvvvvvv"),
+> is hard to build because they have huge dependencies on external
+> libraries, or is filled with distro dependencies and might not build
+> on various distributions, or is dependent on the RPM macros, etc.
+> [...]
 
--- 
-Bob Copeland %% www.bobcopeland.com
+How many of these concerns have a basis in recent reality / experience?
 
-
+- FChE
