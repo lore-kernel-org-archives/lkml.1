@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZBZQIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZBZQNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502AbZBZQIo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 11:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZBZQIe
+	id S1756881AbZBZQNQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 11:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZBZQM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 11:08:34 -0500
-Received: from thunk.org ([69.25.196.29]:37045 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753787AbZBZQId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 11:08:33 -0500
-Date: Thu, 26 Feb 2009 11:08:29 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Crash in 2.6.28.7 - ext4 related
-Message-ID: <20090226160829.GH7227@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Fabio Comolli <fabio.comolli@gmail.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <b637ec0b0902251203i1fe5f081vfd06350dbf5060e9@mail.gmail.com> <b637ec0b0902260118o19f74acal567440a6f049512@mail.gmail.com> <20090226141946.GE7227@mit.edu> <b637ec0b0902260638u2a07433ayf0ea56fd3e41ec5a@mail.gmail.com>
+	Thu, 26 Feb 2009 11:12:59 -0500
+Received: from mga07.intel.com ([143.182.124.22]:12068 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754640AbZBZQM7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 11:12:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,271,1233561600"; 
+   d="scan'208";a="114717116"
+Date: Thu, 26 Feb 2009 17:15:15 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] mfd: Add support for WM8351 revision B
+Message-ID: <20090226161515.GA3114@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1235579015-16193-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b637ec0b0902260638u2a07433ayf0ea56fd3e41ec5a@mail.gmail.com>
+In-Reply-To: <1235579015-16193-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got the crash image.  Unfortunately the beginning of the Oops
-message was cut off, which might have been valuable.  There are some
-new patches that are newer than what has been backported to 2.6.28.7;
-some of them are in the for-stable branch of the ext4 git tree, and
-have been queued for 2.6.28.8.  The call stack doesn't look like one
-of the known bugs, though.
+Hi Mark,
 
-Hmm... can you send us the output of dumpe2fs on the filesystem?  And
-something that would be very useful would be a raw e2image of the
-filesystem, created thusly:
+I'll apply both patches to my for-next branch, thanks a lot.
 
-	    e2image -r /dev/sdXXX - | bzip2 > sdXXX.e2i.bz2
+Cheers,
+Samuel.
 
-This image will contain the basic filesystem metadata, including the
-directory blocks (and directory names), but none of the data blocks.
-It is therefore much smaller, and if you are willing to let me see
-your directory file names, I can take that image and try to replicate
-the problem on one of my systems.
+On Wed, Feb 25, 2009 at 04:23:34PM +0000, Mark Brown wrote:
+> No software visible difference from revision A.
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/mfd/wm8350-core.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+> index c384cd2..a285cc0 100644
+> --- a/drivers/mfd/wm8350-core.c
+> +++ b/drivers/mfd/wm8350-core.c
+> @@ -1386,6 +1386,11 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+>  			wm8350->power.rev_g_coeff = 1;
+>  			break;
+>  
+> +		case 1:
+> +			dev_info(wm8350->dev, "WM8351 Rev B\n");
+> +			wm8350->power.rev_g_coeff = 1;
+> +			break;
+> +
+>  		default:
+>  			dev_err(wm8350->dev, "Unknown WM8351 CHIP_REV\n");
+>  			ret = -ENODEV;
+> -- 
+> 1.6.1.3
+> 
 
-If you have a spare 20gb of disk space, you can also unpack the raw
-image dump and try reproducing the problem on the raw image dump.  If
-you can trigger it easily with an rm -rf operation, it should be just
-as reproducible on the raw image dump.
-
-Regards,
-
-						- Ted
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
