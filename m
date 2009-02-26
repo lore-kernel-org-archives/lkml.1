@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZBZN7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZBZOAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbZBZN7X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 08:59:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZBZN7P
+	id S1757160AbZBZOAH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 09:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZBZN7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 08:59:15 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46101 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbZBZN7O (ORCPT
+	Thu, 26 Feb 2009 08:59:51 -0500
+Received: from mail.deathmatch.net ([70.167.247.36]:2799 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752825AbZBZN7v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 08:59:14 -0500
-Date: Thu, 26 Feb 2009 08:59:10 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] make CALLER_ADDRx overwriteable
-In-Reply-To: <20090226134544.GA7110@pengutronix.de>
-Message-ID: <alpine.DEB.2.00.0902260857510.26792@gandalf.stny.rr.com>
-References: <1235600169-26912-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090226050806.GB25589@goodmis.org> <20090226134544.GA7110@pengutronix.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 26 Feb 2009 08:59:51 -0500
+Date: Thu, 26 Feb 2009 08:59:39 -0500
+From: Bob Copeland <me@bobcopeland.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090226135938.GA12182@hash.localnet>
+References: <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com> <49A321BA.2040500@gmail.com> <49A326A4.8090103@gmail.com> <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225140139.GA18694@silver.sucs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 25, 2009 at 02:01:39PM +0000, Sitsofe Wheeler wrote:
+> It has been days since the original BUG occurred and further it
+> originally had happened in a -tip kernel with kmemcheck compiled into
+> it. I had been utterly unable to reproduce the error on any network with
+> a stock 2.6.29-rc6 kernel. Not even the original -tip kernel produced
+> the error again...
 
-On Thu, 26 Feb 2009, Uwe Kleine-K?nig wrote:
+Can you post your config?  I want to make sure I have all the same
+knobs turned on, if I can think of a way to reproduce it.
 
-> Hi Steven,
-> 
-> On Thu, Feb 26, 2009 at 12:08:06AM -0500, Steven Rostedt wrote:
-> > On Wed, Feb 25, 2009 at 11:16:09PM +0100, Uwe Kleine-K??nig wrote:
-> > > The current definition of CALLER_ADDRx isn't suitable for all platforms.
-> > > E.g. for ARM __builtin_return_address(N) doesn't work for N > 0 and
-> > > AFAIK for powerpc there are no frame pointers needed to have a working
-> > > __builtin_return_address.  This patch allows defining the CALLER_ADDRx
-> > > macros in <asm/ftrace.h> and let these take precedence.
-> > > 
-> > > Signed-off-by: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
-> >
-> > Ah, but unfortunately this will break other archs :-(
-> > 
-> > They may not use FTRACE, but they do include the ftrace header (the
-> > ftrace.h header can be used for other types of tracing, not just
-> > function tracing).
-> Then that's from generic files, because the archs that don't have
-> <asm/ftrace.h> don't include <linus/ftrace.h> under arch/.
-> 
-> > A better solution would be to move the CALLER_ADDER0 out of the
-> > ftrace.h header completely. Not sure where though. Have a caller.h ?
-> > And then we can have ftrace.h include caller.h. A asm/caller.h can be
-> > used to override the default.
-> Well, but then every arch needs this file.  I don't see an advantage
-> here.  So I'd favour to add an empty ftrace.h for the relevant archs.
-
-The safest bet is then to add an empty ftrace.h to all archs.
-
-Anyone else have any issues with that?
-
-If this happens, you can put the asm/ftrace.h at the top and remove the
-asm/ftrace.h referenced in the DYNAMIC_FTRACE ifdef.
-
--- Steve
+-- 
+Bob Copeland %% www.bobcopeland.com
 
