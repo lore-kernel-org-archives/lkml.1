@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764237AbZBZAF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764073AbZBZAGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764237AbZBZAF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 19:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758751AbZBZADI
+	id S1764073AbZBZAGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 19:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762671AbZBZAFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 19:03:08 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:64934 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763780AbZBZADG (ORCPT
+	Wed, 25 Feb 2009 19:05:15 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:40377 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759977AbZBZAFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 19:03:06 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Make exported headers use strict posix types
-Date: Thu, 26 Feb 2009 01:01:30 +0100
-User-Agent: KMail/1.9.9
-Cc: Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-References: <20090225032553.GD6690@bombadil.infradead.org> <20090225201131.GA26110@uranus.ravnborg.org> <49A5CF2E.6050306@zytor.com>
-In-Reply-To: <49A5CF2E.6050306@zytor.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 25 Feb 2009 19:05:12 -0500
+To: david@lang.hm
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sandeen@redhat.com
+Subject: Re: ATA support for 4k sector size
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
+	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
+	<alpine.DEB.1.10.0902251549180.26625@asgard.lang.hm>
+Date: Wed, 25 Feb 2009 19:04:41 -0500
+In-Reply-To: <alpine.DEB.1.10.0902251549180.26625@asgard.lang.hm> (david@lang.hm's message of "Wed\, 25 Feb 2009 15\:49\:58 -0800 \(PST\)")
+Message-ID: <yq1wsbegj1i.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902260101.31580.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+c2Eim4THXOXybpKW00QAOFRZsPL1xCYWfja9
- E3DOO43ct1o1PQVFp1OmJ+0Oj52hfn19tsW41A7cESZo8STeNv
- s4kq/MYbxopO+hFZqifwQ==
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.49A5DC9E.0159:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, H. Peter Anvin wrote:
-> Sam Ravnborg wrote:
-> >>
-> >> This is my previous patch, ported to today's git. It's my last day
-> >> before my vacation, so I can't do the usual testing etc. on it.
-> >> Hopefully somebody else can take care of this.
-> > 
-> > I hesitate to put it in kbuild.git... Any better place?
-> > 
-> 
-> I'll put it in tip:core/headers-fixes.
+>>>>> "david" == david  <david@lang.hm> writes:
 
-Just in the minute I notice a bug :(
+>> 512-byte logical / 512-byte hardware (current) 512-byte logical /
+>> 4096-byte hardware (ATA, doing read-modify-write) 4096-byte logical /
+>> 4096-byte hardware (SCSI initially, ATA later)
 
-Unfortunately, I mistakenly replaced uid_t with __kernel_uid_t when
-it had to be __kernel_uid32_t. New series follows, including the
-changes for all integer types.
+david> add to this good support for SSDs
 
-	Arnd <><
+david> ?? logical / 128K hardware
+
+david> or similar.
+
+Yep.  And that goes for RAID arrays too.
+
+For SCSI there some knobs we can query to get this information and my
+alignment changes are using those (and they are in turn what Willy's
+stuff hooks into).
+
+I've been lobbying the SSD vendors whose architecture is prone to
+misalignment problems to propose a similar set of knobs for ATA.  But so
+far it's just been a lot of talking.
+
+My topology changes are a bit abstract in the sense that they expose:
+
+ - smallest I/O you can submit without incurring a penalty (hw sector,
+   raid chunk size)
+
+ - optimal I/O size for the device in question
+
+ - biggest I/O you can submit without incurring a penalty
+
+ - alignment
+
+We can use these parameters to lay out partitions and filesystems
+optimally.  Just like we currently do with XFS but implemented in a more
+generic way that all filesystems can use.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
