@@ -1,77 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbZBZVre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbZBZVqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759341AbZBZVre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbZBZVq5
+	id S1751311AbZBZVqe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:46:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZBZVqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:46:57 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:46634 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756333AbZBZVqy (ORCPT
+	Thu, 26 Feb 2009 16:46:08 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:42448 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbZBZVqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:46:54 -0500
-Subject: Re: Linux 2.6.29-rc6
-From: john stultz <johnstul@us.ibm.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <49A70B24.6090706@krogh.cc>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
-	 <49A6F39F.9040801@krogh.cc>
-	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
-	 <49A6FEE2.90700@krogh.cc>
-	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
-	 <49A70B24.6090706@krogh.cc>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 13:46:49 -0800
-Message-Id: <1235684809.6811.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 16:46:06 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: mingo@redhat.com
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 1/4] x86_32: apic/bigsmp_32, de-inline functions
+Date: Thu, 26 Feb 2009 22:45:29 +0100
+Message-Id: <1235684732-5991-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <20090225111002.GA15453@elte.hu>
+References: <20090225111002.GA15453@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 22:35 +0100, Jesper Krogh wrote:
-> john stultz wrote:
-> > On Thu, Feb 26, 2009 at 12:43 PM, Jesper Krogh <jesper@krogh.cc> wrote:
-> >> Linus Torvalds wrote:
-> >>> On Thu, 26 Feb 2009, Jesper Krogh wrote:
-> >>>> 2.6.26.8 doesnt have this problem.
-> >>>>
-> >>>> The "current_clocsource" is the same on both systems.
-> >>>>
-> >>>> $ cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-> >>>> tsc
-> >>> What does the frequency calibrate to? It should be in the dmesg. Does it
-> >>> differ by a big amount?
-> >> Non-working:
-> >> $ dmesg | grep -i freq
-> >> [    0.004007] Calibrating delay loop (skipped), value calculated using
-> >> timer frequency.. 4620.05 BogoMIPS (lpj=9240104)
-> >>
-> >> 2.6.26.8 doesn't have that information.
-> > 
-> > I'm surprised the clocksource watchdog isn't catching it.
-> > 
-> > What's the output from:
-> > cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-> 
-> $ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-> tsc acpi_pm jiffies
+The ones which go only into struct apic are de-inlined
+by compiler anyway, so remove the inline specifier from them.
 
-Hmm. Does booting w/ "clocksourc=acpi_pm" also show the severe (~550ppm,
-which NTP can't handle) drift?
+Afterwards, remove bigsmp_setup_portio_remap completely as it
+is unused.
 
->From the dmesg, I don't see any major calibration difference right off. 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/apic/bigsmp_32.c |   40 ++++++++++++++++---------------------
+ 1 files changed, 17 insertions(+), 23 deletions(-)
 
-So I'd suspect something like TSC halting in idle could be causing
-problems, but the watchdog should catch that as well. My only guess at
-this point is that the ACPI PM is halting in idle along with the TSC. 
-
-And you said this only happens under load? 
-
--john
-
+diff --git a/arch/x86/kernel/apic/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
+index 0b10933..d14e635 100644
+--- a/arch/x86/kernel/apic/bigsmp_32.c
++++ b/arch/x86/kernel/apic/bigsmp_32.c
+@@ -16,17 +16,17 @@
+ #include <asm/apic.h>
+ #include <asm/ipi.h>
+ 
+-static inline unsigned bigsmp_get_apic_id(unsigned long x)
++static unsigned bigsmp_get_apic_id(unsigned long x)
+ {
+ 	return (x >> 24) & 0xFF;
+ }
+ 
+-static inline int bigsmp_apic_id_registered(void)
++static int bigsmp_apic_id_registered(void)
+ {
+ 	return 1;
+ }
+ 
+-static inline const cpumask_t *bigsmp_target_cpus(void)
++static const cpumask_t *bigsmp_target_cpus(void)
+ {
+ #ifdef CONFIG_SMP
+ 	return &cpu_online_map;
+@@ -35,13 +35,12 @@ static inline const cpumask_t *bigsmp_target_cpus(void)
+ #endif
+ }
+ 
+-static inline unsigned long
+-bigsmp_check_apicid_used(physid_mask_t bitmap, int apicid)
++static unsigned long bigsmp_check_apicid_used(physid_mask_t bitmap, int apicid)
+ {
+ 	return 0;
+ }
+ 
+-static inline unsigned long bigsmp_check_apicid_present(int bit)
++static unsigned long bigsmp_check_apicid_present(int bit)
+ {
+ 	return 1;
+ }
+@@ -64,7 +63,7 @@ static inline unsigned long calculate_ldr(int cpu)
+  * an APIC.  See e.g. "AP-388 82489DX User's Manual" (Intel
+  * document number 292116).  So here it goes...
+  */
+-static inline void bigsmp_init_apic_ldr(void)
++static void bigsmp_init_apic_ldr(void)
+ {
+ 	unsigned long val;
+ 	int cpu = smp_processor_id();
+@@ -74,19 +73,19 @@ static inline void bigsmp_init_apic_ldr(void)
+ 	apic_write(APIC_LDR, val);
+ }
+ 
+-static inline void bigsmp_setup_apic_routing(void)
++static void bigsmp_setup_apic_routing(void)
+ {
+ 	printk(KERN_INFO
+ 		"Enabling APIC mode:  Physflat.  Using %d I/O APICs\n",
+ 		nr_ioapics);
+ }
+ 
+-static inline int bigsmp_apicid_to_node(int logical_apicid)
++static int bigsmp_apicid_to_node(int logical_apicid)
+ {
+ 	return apicid_2_node[hard_smp_processor_id()];
+ }
+ 
+-static inline int bigsmp_cpu_present_to_apicid(int mps_cpu)
++static int bigsmp_cpu_present_to_apicid(int mps_cpu)
+ {
+ 	if (mps_cpu < nr_cpu_ids)
+ 		return (int) per_cpu(x86_bios_cpu_apicid, mps_cpu);
+@@ -94,7 +93,7 @@ static inline int bigsmp_cpu_present_to_apicid(int mps_cpu)
+ 	return BAD_APICID;
+ }
+ 
+-static inline physid_mask_t bigsmp_apicid_to_cpu_present(int phys_apicid)
++static physid_mask_t bigsmp_apicid_to_cpu_present(int phys_apicid)
+ {
+ 	return physid_mask_of_physid(phys_apicid);
+ }
+@@ -107,29 +106,24 @@ static inline int bigsmp_cpu_to_logical_apicid(int cpu)
+ 	return cpu_physical_id(cpu);
+ }
+ 
+-static inline physid_mask_t bigsmp_ioapic_phys_id_map(physid_mask_t phys_map)
++static physid_mask_t bigsmp_ioapic_phys_id_map(physid_mask_t phys_map)
+ {
+ 	/* For clustered we don't have a good way to do this yet - hack */
+ 	return physids_promote(0xFFL);
+ }
+ 
+-static inline void bigsmp_setup_portio_remap(void)
+-{
+-}
+-
+-static inline int bigsmp_check_phys_apicid_present(int boot_cpu_physical_apicid)
++static int bigsmp_check_phys_apicid_present(int boot_cpu_physical_apicid)
+ {
+ 	return 1;
+ }
+ 
+ /* As we are using single CPU as destination, pick only one CPU here */
+-static inline unsigned int bigsmp_cpu_mask_to_apicid(const cpumask_t *cpumask)
++static unsigned int bigsmp_cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	return bigsmp_cpu_to_logical_apicid(first_cpu(*cpumask));
+ }
+ 
+-static inline unsigned int
+-bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
++static unsigned int bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 			      const struct cpumask *andmask)
+ {
+ 	int cpu;
+@@ -148,7 +142,7 @@ bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 	return BAD_APICID;
+ }
+ 
+-static inline int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
++static int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
+ {
+ 	return cpuid_apic >> index_msb;
+ }
+@@ -158,12 +152,12 @@ static inline void bigsmp_send_IPI_mask(const struct cpumask *mask, int vector)
+ 	default_send_IPI_mask_sequence_phys(mask, vector);
+ }
+ 
+-static inline void bigsmp_send_IPI_allbutself(int vector)
++static void bigsmp_send_IPI_allbutself(int vector)
+ {
+ 	default_send_IPI_mask_allbutself_phys(cpu_online_mask, vector);
+ }
+ 
+-static inline void bigsmp_send_IPI_all(int vector)
++static void bigsmp_send_IPI_all(int vector)
+ {
+ 	bigsmp_send_IPI_mask(cpu_online_mask, vector);
+ }
+-- 
+1.6.1.3
 
