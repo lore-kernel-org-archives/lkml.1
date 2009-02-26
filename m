@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZBZA6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZBZBAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZBZA6X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 19:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZBZA6I
+	id S1756292AbZBZBAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 20:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbZBZA76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 19:58:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63686 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbZBZA6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 19:58:05 -0500
-Message-ID: <49A5E97F.3070807@cn.fujitsu.com>
-Date: Thu, 26 Feb 2009 08:59:43 +0800
-From: Yang Hongyang <yanghy@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Theodore Tso <tytso@mit.edu>, Yang Hongyang <imhy.yang@gmail.com>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-doc@vger.kernel.org, mtk.manpages@gmail.com
-Subject: Re: Documentation:Update the INDEX of the documents
-References: <49A4F06B.6030205@cn.fujitsu.com> <20090225145950.GJ7064@mit.edu> <a669f14b0902250725j4c21463eqc1b88092486f38ad@mail.gmail.com> <20090225155628.GM7064@mit.edu> <49A5E72C.1080804@cn.fujitsu.com> <49A5E7CA.8020905@oracle.com>
-In-Reply-To: <49A5E7CA.8020905@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Feb 2009 19:59:58 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50014
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752731AbZBZA75 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 19:59:57 -0500
+Date: Wed, 25 Feb 2009 16:59:40 -0800 (PST)
+Message-Id: <20090225.165940.116607063.davem@davemloft.net>
+To: hpa@zytor.com
+Cc: jengelh@medozas.de, arnd@arndb.de, sam@ravnborg.org, kyle@infradead.org,
+       mingo@elte.hu, jaswinderrajput@gmail.com, mingo@redhat.com,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       coreteam@netfilter.org
+Subject: Re: [patch 5/7] make netfilter use strict integer types
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49A5E92E.8080505@zytor.com>
+References: <alpine.LSU.2.00.0902260104220.20789@fbirervta.pbzchgretzou.qr>
+	<20090225.165552.32040707.davem@davemloft.net>
+	<49A5E92E.8080505@zytor.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Yang Hongyang wrote:
->> Theodore Tso wrote:
->>> On Wed, Feb 25, 2009 at 11:25:08PM +0800, Yang Hongyang wrote:
->>>>> If folks do find the 00-INDEX files useful, my suggestion would be to
->>>>> make a way of automatically extracting them from the individual files
->>>>> and/or directories, and then making the 00-INDEX files to be
->>>>> automatically generated.
->>>> Sounds like a good idea but How to automatically generate
->>>>  the summaries then?
->>> Well, for text files (including subdirectory's 00-INDEX files) we
->>> could have a convention which is the first line of the file should be
->>> a (max 60 characters) one-line summary of the file.
->>>
->>> We would probably have to do something special with non-free-form-text
->>> files, including structured text files like Docbook files.  So it's
->>> not quite so straightforward, but it should be doable.
->> Yeah,if we do this one-line summary thing,we still have to go through
->> all these documents.So why not just update the 00-INDEX and then tell
->> the authors that will add docs to the kernel do the "00-INDEX work"
->>  themselves?
-> 
-> I doubt that the 00-INDEX files are that useful...
-> 
-> 
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Wed, 25 Feb 2009 16:58:22 -0800
 
-I think it depends on the individual^_^
+> David Miller wrote:
+> > Disagreed, I think we should have done what Arnd is doing
+> > a long time ago.
+> > Ending up with linux/types.h in userspace for these kinds of
+> > interfaces is already a fore-gone conclusion, it happens
+> > already whether you like it or not.
+> > And existing apps will work just fine, since they are already
+> > getting stdint.h
+> > As for compile time, since you're already getting linux/types.h
+> > in your apps it's a non-argument.  But even if it was, what
+> > are you compiling netfilter utilities on?  A VAX?
+> 
+> I take it that you're OK that we merge Arnd's patchset?
 
--- 
-Regards
-Yang Hongyang
+Yes, ignore Jan, I think he forgot to take his medication today:
+
+Acked-by: David S. Miller <davem@davemloft.net>
