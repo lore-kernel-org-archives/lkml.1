@@ -1,111 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZBZUUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZBZUVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbZBZUUe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZBZUUJ
+	id S1756176AbZBZUVb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbZBZUVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:20:09 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:37189 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753249AbZBZUUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:20:08 -0500
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Brian Haley <brian.haley@hp.com>
-cc: David Miller <davem@davemloft.net>, arvidjaar@mail.ru,
-       vladislav.yasevich@hp.com, chuck.lever@oracle.com, tytso@mit.edu,
-       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel module
-In-reply-to: <49A6ED6D.3090508@hp.com>
-References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com>
-Comments: In-reply-to Brian Haley <brian.haley@hp.com>
-   message dated "Thu, 26 Feb 2009 14:28:45 -0500."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Thu, 26 Feb 2009 12:20:08 -0800
-Message-ID: <7418.1235679608@death.nxdomain.ibm.com>
+	Thu, 26 Feb 2009 15:21:06 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3677 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756369AbZBZUVA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 15:21:00 -0500
+Date: Thu, 26 Feb 2009 20:20:56 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc6 1/2] regulator: enumerate voltages (v2)
+Message-ID: <20090226202055.GE8595@sirena.org.uk>
+References: <200902081037.06645.david-b@pacbell.net> <200902231245.44360.david-b@pacbell.net> <200902231252.01980.david-b@pacbell.net> <200902261148.36892.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902261148.36892.david-b@pacbell.net>
+X-Cookie: My haircut is totally traditional!
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Haley <brian.haley@hp.com> wrote:
+On Thu, Feb 26, 2009 at 11:48:36AM -0800, David Brownell wrote:
 
->Jay Vosburgh wrote:
->>>>> 	I've been fooling with the disable_ipv6 sysctl, and one issue is
->>>>> that, at least on the distro I'm testing on (SLES), it's not picked up
->>>>> from /etc/sysctl.conf at boot time (presumably because ipv6 isn't loaded
->>>>> yet, although I haven't really checked).
->>>> Correct, that's the problem.
->>>>
->>>> We could create a blocker bitmap.  Two sysctls, "block_af" and
->>>> "unblock_af".  You write the AF_foo value for the protocol there and
->>>> it sets or clears the assosciated bit in the internal blocker bitmap.
->>>>
->>>> Things like sys_socket() et al. key off of this.
->>> I'm open to suggestions at this point in time, I just don't see how this
->>> will solve the bonding problem since it still wouldn't load, right?
->>
->> 	It would permit users to load ipv6 (thus allowing bonding to
->> load), but prevent ipv6 from actually doing anything.  (because
->> sys_socket, e.g., won't open an ipv6 socket if block_af includes ipv6).
->
->Right, but it doesn't help someone that changed /etc/modprobe.conf to have
->"install ipv6 /bin/true" - they'll have to stop doing that.
+> Updates since previous version:  address feedback, simplify.
 
-	Yes.  There's no reasonable solution that won't require some
-change for users that have aliased out ipv6.
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
->I think changing ipv6 to support a disable_ipv6 module parameter like Vlad
->suggested would work, as long as we're not worried about someone opening
->an AF_INET6 socket - even if they do they won't get anywhere.  That, along
->with the patch below to actually not add the addresses, would work (sorry
->in advance for using an attachment).  I'll get started on that...
+This looks good to merge to me - coincidentally I've got a use case for
+it lined up already.  Might it be worth merging the MMC client along
+with this patch if the relevant maintainers are OK with that, could help
+get it in faster?
 
-	I agree that it would work, and could even be set up such that
-opening sockets doesn't work, either (if ipv6 never registered via
-sock_register, for example).  I'm sticking some on the opening sockets
-failure behavior because it's the current behavior if ipv6 is aliased
-out.  It just seems like a logical place for the permission denial to
-occur, rather than later, and is consistent with what happens if ipv6
-isn't loaded at all or is not configured in the kernel.
+Just two very minor points which might be nice to fix at some point:
 
-	I still tend to like the bitmask to disable address family
-gizmo.  It's not specific to one particular protocol (although it would
-likely need a check in the protocols for things like addrconf).  As
-somebody pointed out, there are likely to be (if not now, then
-relatively soon) users somewhere that want to turn off ipv4 and run ipv6
-only.
+> +			cmin = INT_MIN;
+> +			cmax = INT_MAX;
+> +		}
+> +
+> +		/* else require explicit machine-level constraints */
+> +		else if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
 
->-Brian
->
->
->--
->
->The disable_ipv6 knob was meant to be used for the kernel to disable IPv6
->on an interface when DAD failed for the link-local address based on the
->MAC, but we should also be able to administratively disable it on an
->interface, or the entire system.  This patch fixes the per-interface
->problem.
->
->Signed-off-by: Brian Haley <brian.haley@hp.com>
->diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
->index f8f76d6..90f2a81 100644
->--- a/net/ipv6/addrconf.c
->+++ b/net/ipv6/addrconf.c
->@@ -603,6 +603,11 @@ ipv6_add_addr(struct inet6_dev *idev, const struct in6_addr *addr, int pfxlen,
-> 		goto out2;
-> 	}
->
->+	if (idev->cnf.disable_ipv6) {
->+		err = -EPERM;
->+		goto out2;
->+	}
->+
-> 	write_lock(&addrconf_hash_lock);
->
-> 	/* Ignore adding duplicate addresses on an interface */
+That indentation is going to catch some people out :)
 
-	-J
+> +		/* final: [min_uV..max_uV] valid iff constraints valid */
+> +		if (max_uV < min_uV) {
+> +			pr_err("%s: %s '%s' voltage constraints\n",
+> +				       __func__, "unsupportable", name);
+> +			ret = -EINVAL;
 
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+That style is going to hurt grepability for the error.
