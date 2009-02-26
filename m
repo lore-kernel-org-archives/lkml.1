@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbZBZV4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZBZV6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759229AbZBZV4t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZBZV4g
+	id S1758932AbZBZV6X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbZBZV6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:56:36 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:45696 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbZBZV4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:56:35 -0500
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Vlad Yasevich <vladislav.yasevich@hp.com>
-cc: Brian Haley <brian.haley@hp.com>, David Miller <davem@davemloft.net>,
-       arvidjaar@mail.ru, chuck.lever@oracle.com, tytso@mit.edu,
-       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel module
-In-reply-to: <49A70245.9010405@hp.com>
-References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com> <7418.1235679608@death.nxdomain.ibm.com> <49A70245.9010405@hp.com>
-Comments: In-reply-to Vlad Yasevich <vladislav.yasevich@hp.com>
-   message dated "Thu, 26 Feb 2009 15:57:41 -0500."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Thu, 26 Feb 2009 13:56:37 -0800
-Message-ID: <22047.1235685397@death.nxdomain.ibm.com>
+	Thu, 26 Feb 2009 16:58:13 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:55425 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752126AbZBZV6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 16:58:12 -0500
+Subject: Re: [patch 2.6.29-rc6 1/2] regulator: enumerate voltages (v2)
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+In-Reply-To: <200902261328.41910.david-b@pacbell.net>
+References: <200902081037.06645.david-b@pacbell.net>
+	 <200902261148.36892.david-b@pacbell.net>
+	 <1235681638.31223.57.camel@vega.slimlogic.co.uk>
+	 <200902261328.41910.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 21:58:08 +0000
+Message-Id: <1235685488.31223.104.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vlad Yasevich <vladislav.yasevich@hp.com> wrote:
+On Thu, 2009-02-26 at 13:28 -0800, David Brownell wrote:
+> On Thursday 26 February 2009, Liam Girdwood wrote:
+> > Applied with git-am merge conflicts. It builds ok, can you check against
+> > your tree.
+> 
+> What were the conflicts -- just offsets?
+> 
+> Your "-next" regulator tree seems to be missing a doc patch
+> you had asked for, maybe that's an issue.
+> 
+> - Dave
+> 
+> =========== CUT HERE
+> From: David Brownell <dbrownell@users.sourceforge.net>
+> Subject: regulator: get_status() grows kerneldoc
+> 
+> Add kerneldoc for the new get_status() message.  Fix the existing
+> kerneldoc for that struct in two ways:
+> 
+>  (a) Syntax, making sure parameter descriptions immediately
+>      follow the one-line struct description and that the first
+>      blank lines is before any more expansive description;
+>  (b) Presentation for a few points, to highlight the fact that
+>      the previous "get" methods exist only to report the current
+>      configuration, not to display actual status.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  include/linux/regulator/driver.h |   22 ++++++++++------------
+>  1 file changed, 10 insertions(+), 12 deletions(-)
 
->Jay Vosburgh wrote:
-[...]
->> Brian Haley <brian.haley@hp.com> wrote:
-[...]
->>> I think changing ipv6 to support a disable_ipv6 module parameter like Vlad
->>> suggested would work, as long as we're not worried about someone opening
->>> an AF_INET6 socket - even if they do they won't get anywhere.  That, along
->>> with the patch below to actually not add the addresses, would work (sorry
->>> in advance for using an attachment).  I'll get started on that...
->> 
->> 	I agree that it would work, and could even be set up such that
->> opening sockets doesn't work, either (if ipv6 never registered via
->> sock_register, for example).  I'm sticking some on the opening sockets
->> failure behavior because it's the current behavior if ipv6 is aliased
->> out.  It just seems like a logical place for the permission denial to
->> occur, rather than later, and is consistent with what happens if ipv6
->> isn't loaded at all or is not configured in the kernel.
->> 
->> 	I still tend to like the bitmask to disable address family
->> gizmo.  It's not specific to one particular protocol (although it would
->> likely need a check in the protocols for things like addrconf).  As
->> somebody pointed out, there are likely to be (if not now, then
->> relatively soon) users somewhere that want to turn off ipv4 and run ipv6
->> only.
->
->Yes.  The bitmask to disable certain family can be useful, but it's orthogonal
->the issue of IPv6 support.  As you said, it can be used to disable
->any address family that user wishes.  The slight issue with this might
->be, should the settings affect already create sockets?
+Thanks.
 
-	Unless I'm misunderstanding your position, I don't think the
-bitmask method is really orthogonal, since it can be used to disable
-IPv6 (AF_INET6).  More on that below.
+Fixed.
 
-	I'd also argue that such a method should affect the entirety of
-the protocol family, so extant sockets would cease to function.  That
-may or may not be practical or necessary.
+Liam
 
->I guess it comes down how many levels of control to do we want to provide.
->Things that have been suggested so far:
->	1) Global on/off switch (i.e module parameter)
->	2) Per interface on/off switch (currently exists, but has bugs).
->	3) Socket on/off switch (i.e blocker bitmask)
->
->I think numbers 1 and 2 turn off the IPv6 protocol on the wire, while number
->3 turns off the interface to the user.  The two can be done independent.
-
-	Yes, I think this reaches the crux of the matter: disabling the
-protocol vs. disabling the interface.  Any of the knobs (1 - 3, above)
-can potentially do either one or both of these.
-
-	My feeling is that, for consistency of behavior, whatever knob
-is turned should act like ipv6 was never loaded.  That might or might
-not be the right answer in the grand scheme of things, but it's the
-expected behavior of the users currently aliasing out ipv6 in
-/etc/modprobe.conf.
-
-	When The Knob (however it ends up being done) is turned, why
-should the "ipv6 off" behavior be any different than what is currently
-observed when aliasing out ipv6 or compiling a kernel without
-CONFIG_IPV6?
-
-	-J
-
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
