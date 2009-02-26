@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbZBZWZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbZBZWZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759897AbZBZWZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbZBZWZG
+	id S1759598AbZBZWZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759824AbZBZWZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:25:06 -0500
-Received: from mga02.intel.com ([134.134.136.20]:9625 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757569AbZBZWZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:25:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,273,1233561600"; 
-   d="scan'208";a="390111239"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] PCI fixes
-Date: Thu, 26 Feb 2009 14:24:28 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 26 Feb 2009 17:25:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42045 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759748AbZBZWZZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 17:25:25 -0500
+Date: Thu, 26 Feb 2009 14:25:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org,
+       broonie@opensource.wolfsonmicro.com
+Subject: Re: [PATCH 2/2] mfd: Use the value of the final spin when reading
+ the AUXADC
+Message-Id: <20090226142516.fdef29b5.akpm@linux-foundation.org>
+In-Reply-To: <1235579015-16193-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1235579015-16193-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<1235579015-16193-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902261424.28906.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull my for-linus branch:
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
+On Wed, 25 Feb 2009 16:23:35 +0000
+Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-A few documentation fixes/additions, quirks, and the obligatory hotplug
-related fixes.
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/mfd/wm8350-core.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+> index a285cc0..c2be308 100644
+> --- a/drivers/mfd/wm8350-core.c
+> +++ b/drivers/mfd/wm8350-core.c
+> @@ -1111,7 +1111,7 @@ int wm8350_read_auxadc(struct wm8350 *wm8350, int channel, int scale, int vref)
+>  	do {
+>  		schedule_timeout_interruptible(1);
+>  		reg = wm8350_reg_read(wm8350, WM8350_DIGITISER_CONTROL_1);
+> -	} while (--tries && (reg & WM8350_AUXADC_POLL));
+> +	} while ((reg & WM8350_AUXADC_POLL) && --tries);
+>  
+>  	if (!tries)
+>  		dev_err(wm8350->dev, "adc chn %d read timeout\n", channel);
 
-Alex Chiang (1):
-      PCI: Documentation: fix minor PCIe HOWTO thinko
+Please do not ever send any unchangelogged patches ever again, at all, ever.
 
-Andrew Patterson (1):
-      PCI: Enable PCIe AER only after checking firmware support
-
-Chris Wright (1):
-      PCI: add some sysfs ABI docs
-
-Eric W. Biederman (1):
-      PCI: pciehp: Handle interrupts that happen during initialization.
-
-Matthew Wilcox (1):
-      PCI/MSI: fix msi_mask() shift fix
-
-Randy Dunlap (3):
-      PCI: fix rom.c kernel-doc warning
-      PCI: fix struct pci_platform_pm_ops kernel-doc
-      PCI: fix missing kernel-doc and typos
-
-Stefan Assmann (1):
-      PCI: AMD 813x B2 devices do not need boot interrupt quirk
-
-Yinghai Lu (2):
-      PCI quirk: enable MSI on 8132
-      PCI: don't enable too many HT MSI mappings
-
- Documentation/ABI/testing/sysfs-bus-pci |   43 +++++++++++
- Documentation/PCI/PCIEBUS-HOWTO.txt     |    2 +-
- drivers/pci/hotplug/pciehp.h            |    2 +
- drivers/pci/hotplug/pciehp_core.c       |    7 ++
- drivers/pci/hotplug/pciehp_hpc.c        |   15 ++--
- drivers/pci/msi.c                       |   10 +--
- drivers/pci/pci.c                       |   13 ++-
- drivers/pci/pci.h                       |   20 +++---
- drivers/pci/pcie/aer/aerdrv_core.c      |   48 ++++++++++--
- drivers/pci/pcie/portdrv_pci.c          |    2 -
- drivers/pci/quirks.c                    |  122 +++++++++++++++++++++++++++----
- drivers/pci/rom.c                       |    1 +
- 12 files changed, 229 insertions(+), 56 deletions(-)
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+OK?
