@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZBZF3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbZBZFdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZBZF3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 00:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZBZF3p
+	id S1757642AbZBZFdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 00:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZBZFdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 00:29:45 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47106 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbZBZF3o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 00:29:44 -0500
-Message-ID: <49A62899.4080001@zytor.com>
-Date: Wed, 25 Feb 2009 21:28:57 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 26 Feb 2009 00:33:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43868 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751530AbZBZFdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 00:33:09 -0500
+Date: Thu, 26 Feb 2009 06:32:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: remove update_apic from x86_quirks
+Message-ID: <20090226053254.GA11806@elte.hu>
+References: <49A61FA9.5080706@kernel.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] introduce pr_cont macro
-References: <20090225205920.GA22091@localhost> <20090226030315.GB7526@elte.hu> <1235617541.5610.0.camel@brick> <20090226031301.GE7526@elte.hu> <1235618574.5610.1.camel@brick> <20090226032544.GB22223@elte.hu>
-In-Reply-To: <20090226032544.GB22223@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A61FA9.5080706@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> Btw., why do those macros use ##__VA_ARGS__ ? Why not a 
-> straightforward:
-> 
->  #define __pr_cont(args...) \
->  	printk(KERN_CONT args)
-> 
 
-Don't know if anyone cares, but __VA_ARGS__ is C99 whereas args... is a 
-gcc extension, AFAIK.
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-	-hpa
+> 
+> Impact: cleanup
+> 
+> x86_quirks->update_apic() calling looks crazy. so try to remove it
+> 1. every apic take wakeup_cpu member directly
+> 2. seperate es7000_apic to es7000_apic_cluster
+> 3. use uv_wakeup_cpu directly
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/include/asm/apic.h           |    7 +
+>  arch/x86/include/asm/setup.h          |    3 
+>  arch/x86/include/asm/uv/uv.h          |    3 
+>  arch/x86/kernel/apic/apic_flat_64.c   |    4 -
+>  arch/x86/kernel/apic/bigsmp_32.c      |    2 
+>  arch/x86/kernel/apic/es7000_32.c      |  127 ++++++++++++++++++++++++++--------
+>  arch/x86/kernel/apic/numaq_32.c       |   10 --
+>  arch/x86/kernel/apic/probe_32.c       |   16 ----
+>  arch/x86/kernel/apic/probe_64.c       |    3 
+>  arch/x86/kernel/apic/summit_32.c      |    2 
+>  arch/x86/kernel/apic/x2apic_cluster.c |    2 
+>  arch/x86/kernel/apic/x2apic_phys.c    |    2 
+>  arch/x86/kernel/apic/x2apic_uv_x.c    |   11 +-
+>  arch/x86/kernel/setup.c               |   14 ---
+>  arch/x86/kernel/smpboot.c             |    8 --
+>  15 files changed, 121 insertions(+), 93 deletions(-)
 
+that's certainly a nice cleanup! Applied to tip:x86/apic, thanks 
+Yinghai!
+
+	Ingo
