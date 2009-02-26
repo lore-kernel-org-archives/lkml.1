@@ -1,99 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757826AbZBZQDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbZBZQHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757826AbZBZQDk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 11:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbZBZQDW
+	id S1756890AbZBZQHx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 11:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbZBZQHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 11:03:22 -0500
-Received: from 1wt.eu ([62.212.114.60]:2488 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755502AbZBZQDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 11:03:21 -0500
-Date: Thu, 26 Feb 2009 17:03:13 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Failover Kernel
-Message-ID: <20090226160311.GT5038@1wt.eu>
-References: <49A659D0.2040903@turknet.net.tr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A659D0.2040903@turknet.net.tr>
-User-Agent: Mutt/1.5.11
+	Thu, 26 Feb 2009 11:07:45 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34581 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753112AbZBZQHo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 11:07:44 -0500
+Date: Thu, 26 Feb 2009 16:06:38 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Joe Malicki <jmalicki@metacarta.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Kenneth Baker <bakerkj@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: BUG: setuid sometimes doesn't.
+In-Reply-To: <18521844.9754741235649981642.JavaMail.root@ouachita>
+Message-ID: <Pine.LNX.4.64.0902261553510.12173@blonde.anvils>
+References: <18521844.9754741235649981642.JavaMail.root@ouachita>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 10:58:56AM +0200, Tarkan Erimer wrote:
-> Hi all,
+On Thu, 26 Feb 2009, Joe Malicki wrote:
+> ----- "Joe Malicki" <jmalicki@metacarta.com> wrote:
 > 
-> I'm thinking about a kernel feature called "Failover Kernel". The basic 
-> idea is to put 2 kernels (One is running "Primary Kernel" and the next 
-> one is "Backup Kernel") into the memory for disaster recovery of kernel 
-> panic'ing/crashing.
+> > Very rarely, we experience a setuid program not properly getting
+> > the euid of its owner.
+> > 
+> > Thus far, we have only seen failures for the program being setuid
+> > root, being run by a non-root user, on a multi-core machine.  Trying
+> > to
+> > setuid to a user from root, *or* booting with maxcpus=1 and trying to
+> > setuid from a non-root user to root, both fail.
 > 
-> This feature's working schema could be like this :
+> Sorry, misstated that.
 > 
-> - "Backup Kernel" could be stated and loaded into the memory via a boot 
-> line option like : "failover_kernel=/boot/vmlinuz-2.6.26"
-> - Primary running kernel will send keepalives to the "Backup Kernel" to 
-> state that it's alive.
-> - Primary running kernel can write a journal (like the journaled 
-> filesystems.) about needed infos for the backup kernel to recover.
-> - When the primary kernel crashed and couldn't send anymore keepalives, 
-> the backup kernel will recover from this journal to proceed to where the 
-> primary kernel left and will become primary.
-> - When "Backup Kernel" became "Primary" it will load the previous one as 
-> "Backup Kernel" again or maybe it could be left to manual. User could 
-> decide after the disaster recovery which kernel will be load as backup 
-> via a utility like "kexec".
-> - At kernel compile time, user can choose the the timing for failover 
-> kernel. For example, "Recover After 10 MS. of inactivity (not receiving 
-> keepalives). "
+> setuid from nonroot->root, or with maxcpus=1, always seems to work.
 > 
-> 
-> The usage scenarios of this feature could be :
-> 
-> - For people whose Datacenter is remote, it's a big problem when you 
-> compiled a new kernel and rebooting into a crashing/non-booting new 
-> kernel. You left with a completely crashed and non-functioning system. 
-> Hard reset and manual action is required. If there could be "Failover 
-> Kernel feature, the system will simply switch back to the "Backup 
-> Kernel" (This backup kernel will be the known stable kernel of the 
-> system.) and the system will proceed to work without any manual action 
-> required.
-> 
-> - Your system runs fine for the last several months and one day you hit 
-> a bug and kernel crashed/panic'ed . With "Failover Kernel", the system 
-> will switch to the "Backup Kernel" quickly (maybe some milliseconds or 
-> few seconds.) to recover and the system could proceed to work normally.
-> 
-> So,I'm not a coder and I don't know it is really possible as technically 
-> or not. You the kernel hackers, what's your opinion about it ? Could it 
-> be really possible ? If so, how we really can implement it ?
-> 
-> Many thanks for reading this long (and maybe stupid) post! :-)
+> Only multiple cores with setuid to root has failed for us.
 
-You forgot the most important thing : these two kernels will run on
-the same machine. I'm not even considering how you intend to schedule
-them. However, when a kernel crashes, it's often because of a hard
-error : bug in a driver, memory corruption, etc...  You cannot sanely
-recover from that. If the driver which crashed started to initiate a
-multi-word command to the device, in a lot of situations you'll need
-a reset to restore it in a known state. Memory corruption is even
-worse, as you cannot even trust the backup kernel.
+Here's a shot in the dark: I may be misreading things, and I don't
+quite see how it fits with the finer details you mention here; but
+it looks to me as if /proc/*/cwd and /proc/*/root lookup interferes
+with the fs->count check in fs/exec.c's unsafe_exec().
 
-I'm currently using a backup kernel in our products, and do it with
-the boot loader. Some BIOSes allow you to start a watchdog timer on
-boot. Grub tries to load the first image, otherwise the second one.
-If either image crashes during boot, the hardware watchdog triggers
-and the machine reboots to the other image. That's extremely reliable,
-and relatively simple.
+If you would, please give this patch against 2.6.28* a try (applies
+to 2.6.29-rc too, but not to 2.6.24*), to see if it makes any
+difference to you.  I'm hoping not to hear from you for a while!
+
+(I assume it's okay to read_lock fs->lock while holding task_lock:
+I didn't see anywhere else doing so, but lockdep hasn't objected yet.)
+
+Hugh
+
+--- 2.6.28/fs/proc/base.c	2008-12-24 23:26:37.000000000 +0000
++++ linux/fs/proc/base.c	2009-02-26 15:39:00.000000000 +0000
+@@ -148,15 +148,22 @@ static unsigned int pid_entry_count_dirs
+ 	return count;
+ }
  
-And using this method, you don't have any compatibility problems between
-your primary and secondary kernels.
-
-Regards,
-Willy
-
+-static struct fs_struct *get_fs_struct(struct task_struct *task)
++static int get_fs_path(struct task_struct *task, struct path *path, bool root)
+ {
+ 	struct fs_struct *fs;
++	int result = -ENOENT;
++
+ 	task_lock(task);
+ 	fs = task->fs;
+-	if(fs)
+-		atomic_inc(&fs->count);
++	if (fs) {
++		read_lock(&fs->lock);
++		*path = root ? fs->root : fs->pwd;
++		path_get(path);
++		read_unlock(&fs->lock);
++		result = 0;
++	}
+ 	task_unlock(task);
+-	return fs;
++	return result;
+ }
+ 
+ static int get_nr_threads(struct task_struct *tsk)
+@@ -174,42 +181,24 @@ static int get_nr_threads(struct task_st
+ static int proc_cwd_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
+ 
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 0);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->pwd;
+-		path_get(&fs->pwd);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+ static int proc_root_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
+ 
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 1);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->root;
+-		path_get(&fs->root);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+@@ -567,7 +556,6 @@ static int mounts_open_common(struct ino
+ 	struct task_struct *task = get_proc_task(inode);
+ 	struct nsproxy *nsp;
+ 	struct mnt_namespace *ns = NULL;
+-	struct fs_struct *fs = NULL;
+ 	struct path root;
+ 	struct proc_mounts *p;
+ 	int ret = -EINVAL;
+@@ -581,22 +569,16 @@ static int mounts_open_common(struct ino
+ 				get_mnt_ns(ns);
+ 		}
+ 		rcu_read_unlock();
+-		if (ns)
+-			fs = get_fs_struct(task);
++		if (ns && get_fs_path(task, &root, 1) == 0)
++			ret = 0;
+ 		put_task_struct(task);
+ 	}
+ 
+ 	if (!ns)
+ 		goto err;
+-	if (!fs)
++	if (ret)
+ 		goto err_put_ns;
+ 
+-	read_lock(&fs->lock);
+-	root = fs->root;
+-	path_get(&root);
+-	read_unlock(&fs->lock);
+-	put_fs_struct(fs);
+-
+ 	ret = -ENOMEM;
+ 	p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
+ 	if (!p)
