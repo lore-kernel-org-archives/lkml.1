@@ -1,68 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbZBZXS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760038AbZBZXSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759610AbZBZXS0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 18:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbZBZXSO
+	id S1760038AbZBZXSk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 18:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759271AbZBZXSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 18:18:14 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52306 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758984AbZBZXSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 18:18:13 -0500
-Message-ID: <49A7232C.6050808@redhat.com>
-Date: Thu, 26 Feb 2009 15:18:04 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 26 Feb 2009 18:18:20 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:42004 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759251AbZBZXST (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 18:18:19 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Osk0gBezYcN2z+mF6Fm6gWEsgt2iwn2D2ZabxaCQpg4xZJbCNhPtg2kJBy3xhk6ciBv4NTOOFapK4Pt3z3aOmasBLa0kxxKr2wpCqsE7LXt9o5r7qb/nJHTi/nZ3OPLdU0ApvgQAViNAc9uWPTpt7TdzaE/cLhEuGi/gfBsxAeU=  ;
+X-YMail-OSG: T8dHRCwVM1mn97S0VcwqXv6Y.Qi0GPpQ7n0QKCiqXL5OSmkPGQRPE.yTJ0VphAzVx0LgUN1dqkOebX.HvqclR3TZXKlzDVauVUJI_hJWUXca4So2f8fqIY_bB9uTSN41VWA1R6bxZXSkiuwIKLUKM2sQQ4UMmpoWsR6ffFIZRCQmVyUSq2XNe_x5mqHiEF1G_qMz_9G2DhvcI62OpXpFq3Z2Kp9wyWtqjwk24Q--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org
+Subject: [patch 2.6.29-rc6-mmotm] MTD: partitioning utility predicates
+Date: Thu, 26 Feb 2009 15:18:16 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <200902241509.54649.david-b@pacbell.net> <20090226123341.a2421733.akpm@linux-foundation.org>
+In-Reply-To: <20090226123341.a2421733.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: filesystem time stamp resolution
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902261518.16378.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-How can code at userlevel (e.g., glibc) determine the resolution of the
-a filesystem timestamp?
+Move mtd_has_partitions() and mtd_has_cmdlinepart() inlines from
+a DaVinci-specific driver to the <linux/mtd/partitions.h> header.
 
-Boundary condition:
+Use those to eliminate #ifdefs in two drivers which had their
+own definitions of mtd_has_partitions().
 
-- - I cannot create or modify a file since the information must also
-  be available for filesystems where the caller has no write permission
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+Quite a lot of other MTD drivers could benefit from using use one
+or both of these to remove #ifdeffery.  Maybe some Janitors
+would like to help?
 
-- - it has to work going forward (i.e., hardcoding information is no good
-  idea)
+ drivers/mtd/devices/m25p80.c        |   17 ++++++-----------
+ drivers/mtd/devices/mtd_dataflash.c |   16 ++++++----------
+ drivers/mtd/nand/davinci_nand.c     |   13 -------------
+ include/linux/mtd/partitions.h      |   12 ++++++++++++
+ 4 files changed, 24 insertions(+), 34 deletions(-)
 
-One acceptable solution (for me) would be to have directories for the
-filesystem types under /proc/fs (or /sys/fs) which show this
-information.  E.g.:
-
-  /proc/fs/ext4/timestamp-resolution
-
-Measured in nano-seconds or so.
-
-As a bonus have symlinks like
-
-  /proc/fs/ef53 -> /proc/fs/ext4
-
-(i.e., map the superblock magic number to a name.  But I can live with
-this missing.)
-
-As a second bonus any help for network filesystems would be good but.
-
-Do I miss anything that is there already?
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmnIywACgkQ2ijCOnn/RHRSDgCfUep/fJohBr8kI+iuEFbanL5C
-oXYAn03tnvPse68ewluvH5qrqJj02AEG
-=W6ln
------END PGP SIGNATURE-----
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -65,12 +65,6 @@
+ #define FAST_READ_DUMMY_BYTE 0
+ #endif
+ 
+-#ifdef CONFIG_MTD_PARTITIONS
+-#define	mtd_has_partitions()	(1)
+-#else
+-#define	mtd_has_partitions()	(0)
+-#endif
+-
+ /****************************************************************************/
+ 
+ struct m25p {
+@@ -708,12 +702,13 @@ static int __devinit m25p_probe(struct s
+ 		struct mtd_partition	*parts = NULL;
+ 		int			nr_parts = 0;
+ 
+-#ifdef CONFIG_MTD_CMDLINE_PARTS
+-		static const char *part_probes[] = { "cmdlinepart", NULL, };
++		if (mtd_has_cmdlinepart()) {
++			static const char *part_probes[]
++					= { "cmdlinepart", NULL, };
+ 
+-		nr_parts = parse_mtd_partitions(&flash->mtd,
+-				part_probes, &parts, 0);
+-#endif
++			nr_parts = parse_mtd_partitions(&flash->mtd,
++					part_probes, &parts, 0);
++		}
+ 
+ 		if (nr_parts <= 0 && data && data->parts) {
+ 			parts = data->parts;
+--- a/drivers/mtd/devices/mtd_dataflash.c
++++ b/drivers/mtd/devices/mtd_dataflash.c
+@@ -98,12 +98,6 @@ struct dataflash {
+ 	struct mtd_info		mtd;
+ };
+ 
+-#ifdef CONFIG_MTD_PARTITIONS
+-#define	mtd_has_partitions()	(1)
+-#else
+-#define	mtd_has_partitions()	(0)
+-#endif
+-
+ /* ......................................................................... */
+ 
+ /*
+@@ -682,11 +676,13 @@ add_dataflash_otp(struct spi_device *spi
+ 		struct mtd_partition	*parts;
+ 		int			nr_parts = 0;
+ 
+-#ifdef CONFIG_MTD_CMDLINE_PARTS
+-		static const char *part_probes[] = { "cmdlinepart", NULL, };
++		if (mtd_has_cmdlinepart()) {
++			static const char *part_probes[]
++					= { "cmdlinepart", NULL, };
+ 
+-		nr_parts = parse_mtd_partitions(device, part_probes, &parts, 0);
+-#endif
++			nr_parts = parse_mtd_partitions(device,
++					part_probes, &parts, 0);
++		}
+ 
+ 		if (nr_parts <= 0 && pdata && pdata->parts) {
+ 			parts = pdata->parts;
+--- a/drivers/mtd/nand/davinci_nand.c
++++ b/drivers/mtd/nand/davinci_nand.c
+@@ -39,19 +39,6 @@
+ #include <asm/mach-types.h>
+ 
+ 
+-#ifdef CONFIG_MTD_PARTITIONS
+-static inline int mtd_has_partitions(void) { return 1; }
+-#else
+-static inline int mtd_has_partitions(void) { return 0; }
+-#endif
+-
+-#ifdef CONFIG_MTD_CMDLINE_PARTS
+-static inline int mtd_has_cmdlinepart(void) { return 1; }
+-#else
+-static inline int mtd_has_cmdlinepart(void) { return 0; }
+-#endif
+-
+-
+ /*
+  * This is a device driver for the NAND flash controller found on the
+  * various DaVinci family chips.  It handles up to four SoC chipselects,
+--- a/include/linux/mtd/partitions.h
++++ b/include/linux/mtd/partitions.h
+@@ -76,4 +76,16 @@ int __devinit of_mtd_parse_partitions(st
+                                       struct device_node *node,
+                                       struct mtd_partition **pparts);
+ 
++#ifdef CONFIG_MTD_PARTITIONS
++static inline int mtd_has_partitions(void) { return 1; }
++#else
++static inline int mtd_has_partitions(void) { return 0; }
++#endif
++
++#ifdef CONFIG_MTD_CMDLINE_PARTS
++static inline int mtd_has_cmdlinepart(void) { return 1; }
++#else
++static inline int mtd_has_cmdlinepart(void) { return 0; }
++#endif
++
+ #endif
