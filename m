@@ -1,102 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZBZTSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZBZTWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbZBZTSV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZBZTSM
+	id S1754884AbZBZTWU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZBZTWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:18:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60604 "EHLO mx2.redhat.com"
+	Thu, 26 Feb 2009 14:22:12 -0500
+Received: from mga01.intel.com ([192.55.52.88]:34922 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbZBZTSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:18:12 -0500
-Date: Thu, 26 Feb 2009 20:15:09 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] signals: don't copy siginfo_t on dequeue
-Message-ID: <20090226191509.GA6204@redhat.com>
-References: <20090226184433.GA15644@damson.getinternet.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090226184433.GA15644@damson.getinternet.no>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752241AbZBZTWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 14:22:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,272,1233561600"; 
+   d="scan'208";a="668807231"
+Subject: Re: Linux 2.6.29-rc6
+From: David Woodhouse <david.woodhouse@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jesper Krogh <jesper@krogh.cc>, Dave Olsen <dolsen@lnxi.com>,
+       Ryan Jackson <rjackson@lnxi.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0902260941090.3111@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
+	 <49A679E8.1010301@krogh.cc>
+	 <alpine.LFD.2.00.0902260941090.3111@localhost.localdomain>
+Organization: Intel Corporation
+Date: Fri, 27 Feb 2009 04:22:01 +0900
+Message-Id: <1235676121.8730.167.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26, Vegard Nossum wrote:
+On Thu, 2009-02-26 at 17:53 +0000, Linus Torvalds wrote:
+> Dave Olsen <dolsen@lnxi.com>,
+>     Ryan Jackson <rjackson@lnxi.com>, David.Woodhouse@intel.com, 
+> linux-mtd@lists.infradead.org
+> 
+> 
+> On Thu, 26 Feb 2009, Jesper Krogh wrote:
+> >
+> > 
+> > Booting up 2.6.29-rc6 gave me this one in dmesg...
+> > 
+> > [   21.136149] ck804xrom ck804xrom_init_one(): Unable to register resource 0x00000000ff000000-0x00000000ffffffff - kernel bug?
+> 
+> Well, it _is_ a kernel bug, but it's in that stupid driver. It does 
+> everything wrong, including printing out a scary message.
+> 
+> Piece of sh*t driver, in other words.
+> 
+> I mean, it even has a _comment_ about how the request_region is likely to 
+> not succeed, and then it prints out that scary message when it 
+> then doesn't do so.
+> 
+> Not to mention that the driver is likely _wrong_ to just unconditionally 
+> try to enable that resource without *first* checking whether the resource 
+> can actually be enabled or whether there are other resources in that same 
+> window.
 >
-> Instead of copying the siginfo_t whenever a signal is dequeued, just
-> get the pointer to the struct sigqueue, which can be freed by the
-> caller when the signal has been delivered.
+> Quite frankly, I find that whole thing scary. The driver should be deleted 
+> or at least marked EXPERIMENTAL or BROKEN.
 
-Yes, it would bi nice. But it is not that simple,
+It's giving you access to your BIOS flash so that you can overwrite it
+from within Linux. It's _supposed_ to be scary :)
 
-> -static void collect_signal(int sig, struct sigpending *list, siginfo_t *info)
-> +static struct sigqueue *collect_signal(int sig, struct sigpending *list)
->  {
->  	struct sigqueue *q, *first = NULL;
->  
-> @@ -377,40 +377,29 @@ static void collect_signal(int sig, struct sigpending *list, siginfo_t *info)
->  	if (first) {
->  still_pending:
->  		list_del_init(&first->list);
-> -		copy_siginfo(info, &first->info);
-> -		__sigqueue_free(first);
-> -	} else {
-> -		/* Ok, it wasn't in the queue.  This must be
-> -		   a fast-pathed signal or we must have been
-> -		   out of queue space.  So zero out the info.
-> -		 */
-> -		info->si_signo = sig;
-> -		info->si_errno = 0;
-> -		info->si_code = 0;
-> -		info->si_pid = 0;
-> -		info->si_uid = 0;
->  	}
-> +
-> +	return first;
->  }
->  
-> -static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
-> -			siginfo_t *info)
-> +static struct sigqueue *__dequeue_signal(struct sigpending *pending,
-> +	sigset_t *mask)
->  {
->  	int sig = next_signal(pending, mask);
->  
-> -	if (sig) {
-> -		if (current->notifier) {
-> -			if (sigismember(current->notifier_mask, sig)) {
-> -				if (!(current->notifier)(current->notifier_data)) {
-> -					clear_thread_flag(TIF_SIGPENDING);
-> -					return 0;
-> -				}
-> +	if (!sig)
-> +		return NULL;
-> +
-> +	if (current->notifier) {
-> +		if (sigismember(current->notifier_mask, sig)) {
-> +			if (!(current->notifier)(current->notifier_data)) {
-> +				clear_thread_flag(TIF_SIGPENDING);
-> +				return 0;
->  			}
->  		}
-> -
-> -		collect_signal(sig, pending, info);
->  	}
->  
-> -	return sig;
-> +	return collect_signal(sig, pending);
+It's also always going to be a hack -- it's a PITA getting direct access
+to that flash on most PeeCee chipsets. The driver operates on the
+principle that it knows the hardware, and it can _make_ the flash appear
+at the appropriate physical addresses. The theory, at least, is that it
+knows better than the kernel does.
 
-So. dequeue_signal() returns NULL if there is no siginfo queued. In that
-case we assume that the signal is not pending.
+But yeah, it should probably at least look for other things which
+already overlap with the region that it's trying to 'create'. Although
+the comment leads me to believe that sometimes that's _expected_ and
+shouldn't cause the driver to abort.
 
-But this is not right. Think about SEND_SIG_FORCED, or __sigqueue_alloc()
-failure when the signal is sent. Or look at zap_other_threads() for example,
-it just sets the bit in ->pending but doesn't queue siginfo.
+Dave, Ryan, are you still actively using this?
 
-Oleg.
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+---------------------------------------------------------------------
+Intel Corporation (UK) Limited
+Registered No. 1134945 (England)
+Registered Office: Pipers Way, Swindon SN3 1RJ
+VAT No: 860 2173 47
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
