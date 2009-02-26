@@ -1,136 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZBZQVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZBZQVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbZBZQVI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 11:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZBZQUz
+	id S1758026AbZBZQVb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 11:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZBZQVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 11:20:55 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:15166 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754627AbZBZQUy (ORCPT
+	Thu, 26 Feb 2009 11:21:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:10450 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754894AbZBZQVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 11:20:54 -0500
+	Thu, 26 Feb 2009 11:21:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=RckX7g7oc9JiTHKDvUNYpXEnWq0KE/eIicM4SdzYrdRAaJtzDqHzXFXLUbya0QLlxk
-         x2Qnr1bRjItJz1TzGQWxz8LNtuUf2Sga5VnyhpSdlLF2j1TSQ/SOiQIFTH0svxqGHrGI
-         mnQ4A9Ouzxkz/cF21aySENj3hlMitUN9wBQkE=
-Date: Thu, 26 Feb 2009 17:20:47 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>, mingo@elte.hu,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net
-Subject: Re: [PATCH] new irq tracer
-Message-ID: <20090226162046.GA5889@nowhere>
-References: <1234995035.4799.14.camel@laptop> <20090220195236.GB3104@redhat.com> <20090222123543.359C.A69D9226@jp.fujitsu.com> <49A5765C.2020001@redhat.com> <20090225165747.GC3123@redhat.com> <20090225173412.GA14269@Krystal> <20090226151105.GA3122@redhat.com>
+        b=Nju91Hkb2YFnoEfReS41gar1v6sm5STaDjpSbe338SxIfj4LRFzuyu57+9U39eEkdb
+         wq3BF4sFr6dlHQhWlzkpUTz0qmJcj0GkhTWzwIsJrqnVc14T3NxX1m1e3hgmXmYk1EIA
+         jfNapc6cbgc26+pD2fdo1pxqWwOjcL7Eo4fpw=
+Date: Thu, 26 Feb 2009 19:27:56 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, mpm@selenic.com,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+	do?
+Message-ID: <20090226162755.GB1456@x200.localdomain>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090226151105.GA3122@redhat.com>
+In-Reply-To: <1234479845.30155.220.camel@nimitz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 10:11:05AM -0500, Jason Baron wrote:
-> On Wed, Feb 25, 2009 at 12:34:12PM -0500, Mathieu Desnoyers wrote:
-> > * Jason Baron (jbaron@redhat.com) wrote:
-> > > On Wed, Feb 25, 2009 at 11:48:28AM -0500, Masami Hiramatsu wrote:
-> > > > KOSAKI Motohiro wrote:
-> > > > >>  /**
-> > > > >>   * handle_IRQ_event - irq action chain handler
-> > > > >>   * @irq:	the interrupt number
-> > > > >> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
-> > > > >>  		local_irq_enable_in_hardirq();
-> > > > >>  
-> > > > >>  	do {
-> > > > >> +		trace_irq_entry(irq);
-> > > > >>  		ret = action->handler(irq, action->dev_id);
-> > > > >> +		trace_irq_exit(irq, ret);
-> > > > >>  		if (ret == IRQ_HANDLED)
-> > > > >>  			status |= action->flags;
-> > > > >>  		retval |= ret;
-> > > > > 
-> > > > > Nobdy want unnecessary redundant tracepoint.
-> > > > > Please discuss with mathieu, and merge his tracepoint.
-> > > > 
-> > > > Hmm, from the viewpoint of trouble shooting, the place of LTTng's tracepoint
-> > > > is enough. However, from the same viewpoint, it should pass irq-number
-> > > > to irq-exit event too, because we may lost some previous events by buffer-overflow
-> > > > etc.
-> > > > 
-> > > >          trace_irq_entry(irq, NULL);
-> > > >          ret = _handle_IRQ_event(irq, action);
-> > > >          trace_irq_exit(irq, ret);
-> > > >                         ^^^^
-> > > > 
-> > > 
-> > > the lttng tracepoints wrap the calls to _handle_IRQ_event in 3
-> > > different places. So the above suggested irq tracepoint provides the
-> > > same information with 4 less tracepoints in the code. So I believe its
-> > > simpler - plus we can understand which action handlers are handling the
-> > > interrupt.
-> > > 
-> > 
-> > The main thing I dislike about only tracing action->handler() calls is
-> > that you are not tracing an IRQ per se, but rather the invocation of a
-> > given handler within the interrupt. For instance, it would be difficult
-> > to calculate the maximum interrupt latency for a given interrupt line,
-> > because you don't have the "real" irq entry/exit events, just the
-> > individual handler() calls.
-> > 
-> > But I agree that knowing which handler is called is important.
-> > 
-> > How about this compromise :
-> > 
-> > trace_irq_entry(irq, action)
-> >   _handle_IRQ_event()
-> >     for each action  {
-> >       trace_irq_handler(action, ret);
-> >       ret = action->handler(irq, action->dev_id);
-> >       ...
-> >     }
-> > trace_irq_exit(action_ret);
-> > 
-> > Would that give you the information you need ?
-> > 
-> > Here trace_irq_handler would be passed the _current_ action invoked and
-> > the _previous_ action return value. Note that we should initialize
-> > irqreturn_t ret to some initial value if we do this. That should keep
-> > the tracing overhead minimal.
-> > 
-> 
-> maybe...although that would require re-arranging the 'while' loop in
-> 'handle_IRQ_event' from a do..while loop to a 'while' loop, which will
-> require an extra branch check, and then we still have to record the last 'ret'
-> value. I'm not that keen on re-arranging this for trace data...
-> 
-> Using Steve's new 'DEFINE_TRACE_FMT', I can get function graph trace
-> as follows using the original two tracepoints (patch below):
-> 
->  3)               |                      handle_IRQ_event() {
->  3)               |                        /* (irq_handler_entry) irq=28 handler=eth0 */
->  3)               |                        e1000_intr_msi() {
->  3)   2.460 us    |                          __napi_schedule();
->  3)   9.416 us    |                        }
->  3)               |                        /* (irq_handler_exit) irq=28 handler=eth0 return=handled */
->  3) + 22.935 us   |                      }
-> 
-> thanks,
-> 
-> -Jason
-> 
+Regarding interactions of C/R with other code:
+
+1. trivia
+1a. field in some datastructure is removed
+
+	technically, compilation breaks
+
+	Need to decide what to do -- from trivial compile fix
+	by removing code to ignoring some fields in dump image.
+
+1b. field is added
+
+	This is likely to happen silently, so maintainers
+	will have to keep an eye on critical data structures
+	and general big changes in core kernel.
+
+	Need to decide what to do with new field --
+	anything from 'doesn't matter' to 'yeah, needs C/R part'
+	with dump format change.
+
+2. non-trivia
+2a. standalone subsystem added (say, network protocol)
+
+    If submitter sends C/R part -- excellent.
+    If he doesn't, well, don't forget to add tiny bit of check
+	and abort if said subsystem is in use.
+
+2b. massacre inside some subsystem (say, struct cred introduction)
+
+	Likely, C/R non-trivially breaks both in compilation and
+	in working, requires non-trivial changes in algorithms and in
+	C/R dump image.
+
+For some very core data structures dump file images should be made
+fatter than needed to more future-proof, like
+a) statistics in u64 regardless of in-kernel width.
+b) ->vm_flags in image should be at least u64 and bits made append-only
+	so dump format would survive flags addition, removal and
+	renumbering.
+and so on.
 
 
-I'm impressed by this new TRACE_FMT system.
-It means that I will just need to toggle a value on a /debug/trace/events/irq_stuff/enable
-to have the useful informations as comments inside a trace, or in a whole dedicated traces.
 
-I've played with it a part of the night to test the bprintk patch, this is awesome!
+So I guess, at first C/R maintainers will take care of all of these issues
+with default policy being 'return -E, implement C/R later',
+but, ideally, C/R will have same rights as other kernel subsystem, so people
+will make non-trivial changes in C/R as they make their own non-trivial
+changes.
 
+If last statement isn't acceptable, in-kernel C/R is likely doomed from
+the start (especially given lack of in-kernel testsuite).
