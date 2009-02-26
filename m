@@ -1,63 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbZBZTme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZBZTnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755620AbZBZTme (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZBZTmY
+	id S1755009AbZBZTnx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:43:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZBZTnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:42:24 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42795 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752217AbZBZTmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:42:23 -0500
-From: Glauber Costa <glommer@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: [PATCH] remove static declaration from wall clock version
-Date: Thu, 26 Feb 2009 14:42:20 -0500
-Message-Id: <1235677340-3139-1-git-send-email-glommer@redhat.com>
+	Thu, 26 Feb 2009 14:43:41 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:46122 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbZBZTnk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 14:43:40 -0500
+Cc: Jay Vosburgh <fubar@us.ibm.com>, David Miller <davem@davemloft.net>,
+       arvidjaar@mail.ru, vladislav.yasevich@hp.com, tytso@mit.edu,
+       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Message-Id: <F613EEFD-2332-4C75-A486-73CDF2BAADDE@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: Brian Haley <brian.haley@hp.com>
+In-Reply-To: <49A6ED6D.3090508@hp.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel module
+Date: Thu, 26 Feb 2009 14:41:36 -0500
+References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com>
+X-Mailer: Apple Mail (2.930.3)
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49A6F077.0176:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt T. Yourst noted that we're currently having a dumb
-race for no reason in paravirtual wall clock. This is due
-to the use of a static variable to hold the counting.
+On Feb 26, 2009, at Feb 26, 2009, 2:28 PM, Brian Haley wrote:
+> Jay Vosburgh wrote:
+>>>>> 	I've been fooling with the disable_ipv6 sysctl, and one issue is
+>>>>> that, at least on the distro I'm testing on (SLES), it's not  
+>>>>> picked up
+>>>>> from /etc/sysctl.conf at boot time (presumably because ipv6  
+>>>>> isn't loaded
+>>>>> yet, although I haven't really checked).
+>>>> Correct, that's the problem.
+>>>>
+>>>> We could create a blocker bitmap.  Two sysctls, "block_af" and
+>>>> "unblock_af".  You write the AF_foo value for the protocol there  
+>>>> and
+>>>> it sets or clears the assosciated bit in the internal blocker  
+>>>> bitmap.
+>>>>
+>>>> Things like sys_socket() et al. key off of this.
+>>> I'm open to suggestions at this point in time, I just don't see  
+>>> how this
+>>> will solve the bonding problem since it still wouldn't load, right?
+>> 	It would permit users to load ipv6 (thus allowing bonding to
+>> load), but prevent ipv6 from actually doing anything.  (because
+>> sys_socket, e.g., won't open an ipv6 socket if block_af includes  
+>> ipv6).
+>
+> Right, but it doesn't help someone that changed /etc/modprobe.conf  
+> to have "install ipv6 /bin/true" - they'll have to stop doing that.
+>
+> I think changing ipv6 to support a disable_ipv6 module parameter  
+> like Vlad suggested would work, as long as we're not worried about  
+> someone opening an AF_INET6 socket - even if they do they won't get  
+> anywhere.
 
-This can race with multiple guests reading wallclock
-at the same time, since the static variable value would
-then be accessible to all callers. This wasn't noted
-before because it is a rather rare scenario.
+In this case, if IPV6ONLY is set on an AF_INET6 listener, it should  
+still get AF_INET traffic, correct?
 
-Instead, just use a normal stack variable. This will
-mean that each caller will have it's version written
-separatedly. No need for a global counter.
+> That, along with the patch below to actually not add the addresses,  
+> would work (sorry in advance for using an attachment).  I'll get  
+> started on that...
+>
+> -Brian
+>
+>
+> --
+>
+> The disable_ipv6 knob was meant to be used for the kernel to disable  
+> IPv6 on an interface when DAD failed for the link-local address  
+> based on the MAC, but we should also be able to administratively  
+> disable it on an interface, or the entire system.  This patch fixes  
+> the per-interface problem.
+>
+> Signed-off-by: Brian Haley <brian.haley@hp.com>
+> diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+> index f8f76d6..90f2a81 100644
+> --- a/net/ipv6/addrconf.c
+> +++ b/net/ipv6/addrconf.c
+> @@ -603,6 +603,11 @@ ipv6_add_addr(struct inet6_dev *idev, const  
+> struct in6_addr *addr, int pfxlen,
+> 		goto out2;
+> 	}
+>
+> +	if (idev->cnf.disable_ipv6) {
+> +		err = -EPERM;
+> +		goto out2;
+> +	}
+> +
+> 	write_lock(&addrconf_hash_lock);
+>
+> 	/* Ignore adding duplicate addresses on an interface */
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
----
- arch/x86/kvm/x86.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 2511708..d7236f6 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -548,15 +548,13 @@ static int do_set_msr(struct kvm_vcpu *vcpu, unsigned index, u64 *data)
- 
- static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock)
- {
--	static int version;
-+	int version = 1;
- 	struct pvclock_wall_clock wc;
- 	struct timespec now, sys, boot;
- 
- 	if (!wall_clock)
- 		return;
- 
--	version++;
--
- 	kvm_write_guest(kvm, wall_clock, &version, sizeof(version));
- 
- 	/*
 -- 
-1.5.6.5
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
+
+
+
 
