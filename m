@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZBZS4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZBZS5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbZBZS4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 13:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZBZS4K
+	id S1755465AbZBZS5N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 13:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZBZS46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 13:56:10 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:38986 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752203AbZBZS4J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 13:56:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ly4ieWb3uyBj1X69S4n68FZd/SaGksEgidJfCom32iH7DVF8WRgQ3kq0H+InhkufXl+fCqmhBr1fduN9/WnnQWsLGJov5SejzFbMzN3vi20NH1f4RJ1KNtwpYi41XOCxvFEogi4gdsLZIH/sGBViOiXZcZnC7BfqWxyCc56V/ZM=  ;
-X-YMail-OSG: WlUaKGAVM1nNIPoKxZoQB7rnshQR82BWO9cDT1wOli1mn1mNseKAGVxDMJlLtF94H_38uYr8lxUMHwiE05Cs7mdrtf1LKDVP1.4PatEQzbnXgeQZcf8mJkQce2TDNfVdqILFNFFe0Rlwdw5UuiJhbulM2zHVVa2SwTA6B0FOL8amALEZxHL6_Yoks65u
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
-Date: Thu, 26 Feb 2009 10:56:05 -0800
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200902081037.06645.david-b@pacbell.net> <200902251702.03230.david-b@pacbell.net> <20090226104624.GA4229@sirena.org.uk>
-In-Reply-To: <20090226104624.GA4229@sirena.org.uk>
+	Thu, 26 Feb 2009 13:56:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56051 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751708AbZBZS45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 13:56:57 -0500
+Date: Thu, 26 Feb 2009 19:56:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/3] add binary printf
+Message-ID: <20090226185635.GA12895@elte.hu>
+References: <49a38304.0506d00a.1f4b.406d@mx.google.com> <20090226130243.GA22460@elte.hu> <20090226170524.GB5889@nowhere> <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere> <20090226185208.GA6658@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902261056.05740.david-b@pacbell.net>
+In-Reply-To: <20090226185208.GA6658@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, Mark Brown wrote:
-> On Wed, Feb 25, 2009 at 05:02:03PM -0800, David Brownell wrote:
-> 
-> > Oh, one more comment.  Requiring manual configuration
-> > of fixed-voltage regulators is pure time-wastage.
-> 
-> Unless, of course, you happen to be using one of those consumers that
-> wants to know the voltage it's running at to configure itself.
 
-In which case it can ask the regulator what voltage it's using.  :)
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
+> Instead of calling the in/out helper from the decoder, why not 
+> calling the decoder from these three functions and let them 
+> take the appropriate actions for each decoded format token?
+> 
+> Naive example:
+> 
+> bstr_printf() {
+> 	while (decode_format(...))
+> 		if (type == number)
+> 			read_number_from_buf()
+> 			str = number(....)
+> 		....
+> }
+> 
+> vsnprintf {
+> 	while (decode_format(...))
+> 		if (type == number)
+> 			var_arg(...)
+> 			str = number(....)
+> 		....
+> }
+> 
+> vbin_printf {
+> 	while (decode_format(...))
+> 		if (type == number)
+> 			var_arg(...)
+> 			write_number_to_buffer()
+> 		...
+> }
+> 
+> And the standard in/out pieces can be invoked through helpers.
+
+ok, that looks rather clean too. And maybe vsnprintf() and 
+bstr_printf() could be further unified?
+
+I guess it depends on how it all looks like in the end. Only one 
+way to find out ...
+
+	Ingo
