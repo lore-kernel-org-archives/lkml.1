@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759334AbZBZOUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbZBZOVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759334AbZBZOUq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 09:20:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbZBZOQE
+	id S1759496AbZBZOVH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 09:21:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbZBZOQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 09:16:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43058 "EHLO mx2.redhat.com"
+	Thu, 26 Feb 2009 09:16:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43060 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754240AbZBZOPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754281AbZBZOPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Feb 2009 09:15:41 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>
-Subject: [PATCH 11/40] KVM: SVM: Only allow setting of EFER_SVME when CPUID SVM is set
-Date: Thu, 26 Feb 2009 16:15:01 +0200
-Message-Id: <1235657730-27683-12-git-send-email-avi@redhat.com>
+Subject: [PATCH 07/40] KVM: SVM: Add VMRUN handler
+Date: Thu, 26 Feb 2009 16:14:57 +0200
+Message-Id: <1235657730-27683-8-git-send-email-avi@redhat.com>
 In-Reply-To: <1235657730-27683-1-git-send-email-avi@redhat.com>
 References: <1235657730-27683-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,149 +23,314 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alexander Graf <agraf@suse.de>
 
-Userspace has to tell the kernel module somehow that nested SVM should be used.
-The easiest way that doesn't break anything I could think of is to implement
+This patch implements VMRUN. VMRUN enters a virtual CPU and runs that
+in the same context as the normal guest CPU would run.
+So basically it is implemented the same way, a normal CPU would do it.
 
-if (cpuid & svm)
-    allow write to efer
-else
-    deny write to efer
+We also prepare all intercepts that get OR'ed with the original
+intercepts, as we do not allow a level 2 guest to be intercepted less
+than the first level guest.
 
-Old userspaces mask the SVM capability bit, so they don't break.
-In order to find out that the SVM capability is set, I had to split the
-kvm_emulate_cpuid into a finding and an emulating part.
+v2 implements the following improvements:
 
-(introduced in v6)
+- fixes the CPL check
+- does not allocate iopm when not used
+- remembers the host's IF in the HIF bit in the hflags
+
+v3:
+
+- make use of the new permission checking
+- add support for V_INTR_MASKING_MASK
+
+v4:
+
+- use host page backed hsave
+
+v5:
+
+- remove IOPM merging code
+
+v6:
+
+- save cr4 so PAE l1 guests work
+
+v7:
+
+- return 0 on vmrun so we check the MSRs too
+- fix MSR check to use the correct variable
 
 Acked-by: Joerg Roedel <joro@8bytes.org>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/x86.c |   58 +++++++++++++++++++++++++++++++++++++--------------
- 1 files changed, 42 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    2 +
+ arch/x86/kvm/kvm_svm.h          |    8 ++
+ arch/x86/kvm/svm.c              |  157 ++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 165 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 99165a9..b5e9932 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -69,6 +69,8 @@ static u64 __read_mostly efer_reserved_bits = 0xfffffffffffffffeULL;
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 29e4157..5377930 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -740,6 +740,8 @@ enum {
+ };
  
- static int kvm_dev_ioctl_get_supported_cpuid(struct kvm_cpuid2 *cpuid,
- 				    struct kvm_cpuid_entry2 __user *entries);
-+struct kvm_cpuid_entry2 *kvm_find_cpuid_entry(struct kvm_vcpu *vcpu,
-+					      u32 function, u32 index);
+ #define HF_GIF_MASK		(1 << 0)
++#define HF_HIF_MASK		(1 << 1)
++#define HF_VINTR_MASK		(1 << 2)
  
- struct kvm_x86_ops *kvm_x86_ops;
- EXPORT_SYMBOL_GPL(kvm_x86_ops);
-@@ -173,6 +175,7 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long addr,
- 			   u32 error_code)
- {
- 	++vcpu->stat.pf_guest;
+ /*
+  * Hardware virtualization extension instructions may fault if a
+diff --git a/arch/x86/kvm/kvm_svm.h b/arch/x86/kvm/kvm_svm.h
+index a0877ca..9167341 100644
+--- a/arch/x86/kvm/kvm_svm.h
++++ b/arch/x86/kvm/kvm_svm.h
+@@ -43,6 +43,14 @@ struct vcpu_svm {
+ 	u32 *msrpm;
+ 	struct vmcb *hsave;
+ 	u64 hsave_msr;
 +
- 	if (vcpu->arch.exception.pending) {
- 		if (vcpu->arch.exception.nr == PF_VECTOR) {
- 			printk(KERN_DEBUG "kvm: inject_page_fault:"
-@@ -442,6 +445,11 @@ unsigned long kvm_get_cr8(struct kvm_vcpu *vcpu)
- }
- EXPORT_SYMBOL_GPL(kvm_get_cr8);
++	u64 nested_vmcb;
++
++	/* These are the merged vectors */
++	u32 *nested_msrpm;
++
++	/* gpa pointers to the real vectors */
++	u64 nested_vmcb_msrpm;
+ };
  
-+static inline u32 bit(int bitno)
+ #endif
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index a83c94e..fad187c 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -77,6 +77,11 @@ static inline struct vcpu_svm *to_svm(struct kvm_vcpu *vcpu)
+ 	return container_of(vcpu, struct vcpu_svm, vcpu);
+ }
+ 
++static inline bool is_nested(struct vcpu_svm *svm)
 +{
-+	return 1 << (bitno & 31);
++	return svm->nested_vmcb;
 +}
 +
- /*
-  * List of msr numbers which we expose to userspace through KVM_GET_MSRS
-  * and KVM_SET_MSRS, and KVM_GET_MSR_INDEX_LIST.
-@@ -481,6 +489,17 @@ static void set_efer(struct kvm_vcpu *vcpu, u64 efer)
- 		return;
+ static unsigned long iopm_base;
+ 
+ struct kvm_ldttss_desc {
+@@ -601,6 +606,7 @@ static void init_vmcb(struct vcpu_svm *svm)
  	}
+ 	force_new_asid(&svm->vcpu);
  
-+	if (efer & EFER_SVME) {
-+		struct kvm_cpuid_entry2 *feat;
-+
-+		feat = kvm_find_cpuid_entry(vcpu, 0x80000001, 0);
-+		if (!feat || !(feat->ecx & bit(X86_FEATURE_SVM))) {
-+			printk(KERN_DEBUG "set_efer: #GP, enable SVM w/o SVM\n");
-+			kvm_inject_gp(vcpu, 0);
-+			return;
-+		}
-+	}
-+
- 	kvm_x86_ops->set_efer(vcpu, efer);
- 
- 	efer &= ~EFER_LMA;
-@@ -1181,11 +1200,6 @@ out:
- 	return r;
++	svm->nested_vmcb = 0;
+ 	svm->vcpu.arch.hflags = HF_GIF_MASK;
  }
  
--static inline u32 bit(int bitno)
--{
--	return 1 << (bitno & 31);
--}
--
- static void do_cpuid_1_ent(struct kvm_cpuid_entry2 *entry, u32 function,
- 			  u32 index)
- {
-@@ -1228,7 +1242,8 @@ static void do_cpuid_ent(struct kvm_cpuid_entry2 *entry, u32 function,
- 	const u32 kvm_supported_word3_x86_features =
- 		bit(X86_FEATURE_XMM3) | bit(X86_FEATURE_CX16);
- 	const u32 kvm_supported_word6_x86_features =
--		bit(X86_FEATURE_LAHF_LM) | bit(X86_FEATURE_CMP_LEGACY);
-+		bit(X86_FEATURE_LAHF_LM) | bit(X86_FEATURE_CMP_LEGACY) |
-+		bit(X86_FEATURE_SVM);
+@@ -627,6 +633,7 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+ 	struct page *page;
+ 	struct page *msrpm_pages;
+ 	struct page *hsave_page;
++	struct page *nested_msrpm_pages;
+ 	int err;
  
- 	/* all func 2 cpuid_count() should be called on the same cpu */
- 	get_cpu();
-@@ -2832,20 +2847,15 @@ static int is_matching_cpuid_entry(struct kvm_cpuid_entry2 *e,
+ 	svm = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
+@@ -649,6 +656,11 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+ 	msrpm_pages = alloc_pages(GFP_KERNEL, MSRPM_ALLOC_ORDER);
+ 	if (!msrpm_pages)
+ 		goto uninit;
++
++	nested_msrpm_pages = alloc_pages(GFP_KERNEL, MSRPM_ALLOC_ORDER);
++	if (!nested_msrpm_pages)
++		goto uninit;
++
+ 	svm->msrpm = page_address(msrpm_pages);
+ 	svm_vcpu_init_msrpm(svm->msrpm);
+ 
+@@ -657,6 +669,8 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+ 		goto uninit;
+ 	svm->hsave = page_address(hsave_page);
+ 
++	svm->nested_msrpm = page_address(nested_msrpm_pages);
++
+ 	svm->vmcb = page_address(page);
+ 	clear_page(svm->vmcb);
+ 	svm->vmcb_pa = page_to_pfn(page) << PAGE_SHIFT;
+@@ -687,6 +701,7 @@ static void svm_free_vcpu(struct kvm_vcpu *vcpu)
+ 	__free_page(pfn_to_page(svm->vmcb_pa >> PAGE_SHIFT));
+ 	__free_pages(virt_to_page(svm->msrpm), MSRPM_ALLOC_ORDER);
+ 	__free_page(virt_to_page(svm->hsave));
++	__free_pages(virt_to_page(svm->nested_msrpm), MSRPM_ALLOC_ORDER);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, svm);
+ }
+@@ -1243,6 +1258,123 @@ static int nested_svm_do(struct vcpu_svm *svm,
+ 	return retval;
+ }
+ 
++
++static int nested_svm_vmrun_msrpm(struct vcpu_svm *svm, void *arg1,
++				  void *arg2, void *opaque)
++{
++	int i;
++	u32 *nested_msrpm = (u32*)arg1;
++	for (i=0; i< PAGE_SIZE * (1 << MSRPM_ALLOC_ORDER) / 4; i++)
++		svm->nested_msrpm[i] = svm->msrpm[i] | nested_msrpm[i];
++	svm->vmcb->control.msrpm_base_pa = __pa(svm->nested_msrpm);
++
++	return 0;
++}
++
++static int nested_svm_vmrun(struct vcpu_svm *svm, void *arg1,
++			    void *arg2, void *opaque)
++{
++	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
++	struct vmcb *hsave = svm->hsave;
++
++	/* nested_vmcb is our indicator if nested SVM is activated */
++	svm->nested_vmcb = svm->vmcb->save.rax;
++
++	/* Clear internal status */
++	svm->vcpu.arch.exception.pending = false;
++
++	/* Save the old vmcb, so we don't need to pick what we save, but
++	   can restore everything when a VMEXIT occurs */
++	memcpy(hsave, svm->vmcb, sizeof(struct vmcb));
++	/* We need to remember the original CR3 in the SPT case */
++	if (!npt_enabled)
++		hsave->save.cr3 = svm->vcpu.arch.cr3;
++	hsave->save.cr4 = svm->vcpu.arch.cr4;
++	hsave->save.rip = svm->next_rip;
++
++	if (svm->vmcb->save.rflags & X86_EFLAGS_IF)
++		svm->vcpu.arch.hflags |= HF_HIF_MASK;
++	else
++		svm->vcpu.arch.hflags &= ~HF_HIF_MASK;
++
++	/* Load the nested guest state */
++	svm->vmcb->save.es = nested_vmcb->save.es;
++	svm->vmcb->save.cs = nested_vmcb->save.cs;
++	svm->vmcb->save.ss = nested_vmcb->save.ss;
++	svm->vmcb->save.ds = nested_vmcb->save.ds;
++	svm->vmcb->save.gdtr = nested_vmcb->save.gdtr;
++	svm->vmcb->save.idtr = nested_vmcb->save.idtr;
++	svm->vmcb->save.rflags = nested_vmcb->save.rflags;
++	svm_set_efer(&svm->vcpu, nested_vmcb->save.efer);
++	svm_set_cr0(&svm->vcpu, nested_vmcb->save.cr0);
++	svm_set_cr4(&svm->vcpu, nested_vmcb->save.cr4);
++	if (npt_enabled) {
++		svm->vmcb->save.cr3 = nested_vmcb->save.cr3;
++		svm->vcpu.arch.cr3 = nested_vmcb->save.cr3;
++	} else {
++		kvm_set_cr3(&svm->vcpu, nested_vmcb->save.cr3);
++		kvm_mmu_reset_context(&svm->vcpu);
++	}
++	svm->vmcb->save.cr2 = nested_vmcb->save.cr2;
++	kvm_register_write(&svm->vcpu, VCPU_REGS_RAX, nested_vmcb->save.rax);
++	kvm_register_write(&svm->vcpu, VCPU_REGS_RSP, nested_vmcb->save.rsp);
++	kvm_register_write(&svm->vcpu, VCPU_REGS_RIP, nested_vmcb->save.rip);
++	/* In case we don't even reach vcpu_run, the fields are not updated */
++	svm->vmcb->save.rax = nested_vmcb->save.rax;
++	svm->vmcb->save.rsp = nested_vmcb->save.rsp;
++	svm->vmcb->save.rip = nested_vmcb->save.rip;
++	svm->vmcb->save.dr7 = nested_vmcb->save.dr7;
++	svm->vmcb->save.dr6 = nested_vmcb->save.dr6;
++	svm->vmcb->save.cpl = nested_vmcb->save.cpl;
++
++	/* We don't want a nested guest to be more powerful than the guest,
++	   so all intercepts are ORed */
++	svm->vmcb->control.intercept_cr_read |=
++		nested_vmcb->control.intercept_cr_read;
++	svm->vmcb->control.intercept_cr_write |=
++		nested_vmcb->control.intercept_cr_write;
++	svm->vmcb->control.intercept_dr_read |=
++		nested_vmcb->control.intercept_dr_read;
++	svm->vmcb->control.intercept_dr_write |=
++		nested_vmcb->control.intercept_dr_write;
++	svm->vmcb->control.intercept_exceptions |=
++		nested_vmcb->control.intercept_exceptions;
++
++	svm->vmcb->control.intercept |= nested_vmcb->control.intercept;
++
++	svm->nested_vmcb_msrpm = nested_vmcb->control.msrpm_base_pa;
++
++	force_new_asid(&svm->vcpu);
++	svm->vmcb->control.exit_int_info = nested_vmcb->control.exit_int_info;
++	svm->vmcb->control.exit_int_info_err = nested_vmcb->control.exit_int_info_err;
++	svm->vmcb->control.int_ctl = nested_vmcb->control.int_ctl | V_INTR_MASKING_MASK;
++	if (nested_vmcb->control.int_ctl & V_IRQ_MASK) {
++		nsvm_printk("nSVM Injecting Interrupt: 0x%x\n",
++				nested_vmcb->control.int_ctl);
++	}
++	if (nested_vmcb->control.int_ctl & V_INTR_MASKING_MASK)
++		svm->vcpu.arch.hflags |= HF_VINTR_MASK;
++	else
++		svm->vcpu.arch.hflags &= ~HF_VINTR_MASK;
++
++	nsvm_printk("nSVM exit_int_info: 0x%x | int_state: 0x%x\n",
++			nested_vmcb->control.exit_int_info,
++			nested_vmcb->control.int_state);
++
++	svm->vmcb->control.int_vector = nested_vmcb->control.int_vector;
++	svm->vmcb->control.int_state = nested_vmcb->control.int_state;
++	svm->vmcb->control.tsc_offset += nested_vmcb->control.tsc_offset;
++	if (nested_vmcb->control.event_inj & SVM_EVTINJ_VALID)
++		nsvm_printk("Injecting Event: 0x%x\n",
++				nested_vmcb->control.event_inj);
++	svm->vmcb->control.event_inj = nested_vmcb->control.event_inj;
++	svm->vmcb->control.event_inj_err = nested_vmcb->control.event_inj_err;
++
++	svm->vcpu.arch.hflags |= HF_GIF_MASK;
++
++	return 0;
++}
++
+ static int nested_svm_vmloadsave(struct vmcb *from_vmcb, struct vmcb *to_vmcb)
+ {
+ 	to_vmcb->save.fs = from_vmcb->save.fs;
+@@ -1299,6 +1431,26 @@ static int vmsave_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
  	return 1;
  }
  
--void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
-+struct kvm_cpuid_entry2 *kvm_find_cpuid_entry(struct kvm_vcpu *vcpu,
-+					      u32 function, u32 index)
- {
- 	int i;
--	u32 function, index;
--	struct kvm_cpuid_entry2 *e, *best;
-+	struct kvm_cpuid_entry2 *best = NULL;
- 
--	function = kvm_register_read(vcpu, VCPU_REGS_RAX);
--	index = kvm_register_read(vcpu, VCPU_REGS_RCX);
--	kvm_register_write(vcpu, VCPU_REGS_RAX, 0);
--	kvm_register_write(vcpu, VCPU_REGS_RBX, 0);
--	kvm_register_write(vcpu, VCPU_REGS_RCX, 0);
--	kvm_register_write(vcpu, VCPU_REGS_RDX, 0);
--	best = NULL;
- 	for (i = 0; i < vcpu->arch.cpuid_nent; ++i) {
-+		struct kvm_cpuid_entry2 *e;
++static int vmrun_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++{
++	nsvm_printk("VMrun\n");
++	if (nested_svm_check_permissions(svm))
++		return 1;
 +
- 		e = &vcpu->arch.cpuid_entries[i];
- 		if (is_matching_cpuid_entry(e, function, index)) {
- 			if (e->flags & KVM_CPUID_FLAG_STATEFUL_FUNC)
-@@ -2860,6 +2870,22 @@ void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
- 			if (!best || e->function > best->function)
- 				best = e;
- 	}
++	svm->next_rip = kvm_rip_read(&svm->vcpu) + 3;
++	skip_emulated_instruction(&svm->vcpu);
 +
-+	return best;
++	if (nested_svm_do(svm, svm->vmcb->save.rax, 0,
++			  NULL, nested_svm_vmrun))
++		return 1;
++
++	if (nested_svm_do(svm, svm->nested_vmcb_msrpm, 0,
++		      NULL, nested_svm_vmrun_msrpm))
++		return 1;
++
++	return 1;
 +}
 +
-+void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
-+{
-+	u32 function, index;
-+	struct kvm_cpuid_entry2 *best;
-+
-+	function = kvm_register_read(vcpu, VCPU_REGS_RAX);
-+	index = kvm_register_read(vcpu, VCPU_REGS_RCX);
-+	kvm_register_write(vcpu, VCPU_REGS_RAX, 0);
-+	kvm_register_write(vcpu, VCPU_REGS_RBX, 0);
-+	kvm_register_write(vcpu, VCPU_REGS_RCX, 0);
-+	kvm_register_write(vcpu, VCPU_REGS_RDX, 0);
-+	best = kvm_find_cpuid_entry(vcpu, function, index);
- 	if (best) {
- 		kvm_register_write(vcpu, VCPU_REGS_RAX, best->eax);
- 		kvm_register_write(vcpu, VCPU_REGS_RBX, best->ebx);
+ static int stgi_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ {
+ 	if (nested_svm_check_permissions(svm))
+@@ -1632,7 +1784,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 	[SVM_EXIT_MSR]				= msr_interception,
+ 	[SVM_EXIT_TASK_SWITCH]			= task_switch_interception,
+ 	[SVM_EXIT_SHUTDOWN]			= shutdown_interception,
+-	[SVM_EXIT_VMRUN]			= invalid_op_interception,
++	[SVM_EXIT_VMRUN]			= vmrun_interception,
+ 	[SVM_EXIT_VMMCALL]			= vmmcall_interception,
+ 	[SVM_EXIT_VMLOAD]			= vmload_interception,
+ 	[SVM_EXIT_VMSAVE]			= vmsave_interception,
+@@ -1939,7 +2091,8 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	svm->host_cr2 = kvm_read_cr2();
+ 	svm->host_dr6 = read_dr6();
+ 	svm->host_dr7 = read_dr7();
+-	svm->vmcb->save.cr2 = vcpu->arch.cr2;
++	if (!is_nested(svm))
++		svm->vmcb->save.cr2 = vcpu->arch.cr2;
+ 	/* required for live migration with NPT */
+ 	if (npt_enabled)
+ 		svm->vmcb->save.cr3 = vcpu->arch.cr3;
 -- 
 1.6.0.6
 
