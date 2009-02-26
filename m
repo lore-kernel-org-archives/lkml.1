@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbZBZWZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZBZWZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759598AbZBZWZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759824AbZBZWZ0
+	id S1756856AbZBZWZO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbZBZWYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:25:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42045 "EHLO
+	Thu, 26 Feb 2009 17:24:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58347 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759748AbZBZWZZ (ORCPT
+	by vger.kernel.org with ESMTP id S1757340AbZBZWYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:25:25 -0500
-Date: Thu, 26 Feb 2009 14:25:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org,
-       broonie@opensource.wolfsonmicro.com
-Subject: Re: [PATCH 2/2] mfd: Use the value of the final spin when reading
- the AUXADC
-Message-Id: <20090226142516.fdef29b5.akpm@linux-foundation.org>
-In-Reply-To: <1235579015-16193-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1235579015-16193-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<1235579015-16193-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 17:24:54 -0500
+Date: Thu, 26 Feb 2009 14:24:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: john stultz <johnstul@us.ibm.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+In-Reply-To: <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0902261413400.3111@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> 
+ <49A70B24.6090706@krogh.cc> <1235685269.6811.11.camel@localhost.localdomain> <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 16:23:35 +0000
-Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/mfd/wm8350-core.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+
+On Thu, 26 Feb 2009, Thomas Gleixner wrote:
 > 
-> diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-> index a285cc0..c2be308 100644
-> --- a/drivers/mfd/wm8350-core.c
-> +++ b/drivers/mfd/wm8350-core.c
-> @@ -1111,7 +1111,7 @@ int wm8350_read_auxadc(struct wm8350 *wm8350, int channel, int scale, int vref)
->  	do {
->  		schedule_timeout_interruptible(1);
->  		reg = wm8350_reg_read(wm8350, WM8350_DIGITISER_CONTROL_1);
-> -	} while (--tries && (reg & WM8350_AUXADC_POLL));
-> +	} while ((reg & WM8350_AUXADC_POLL) && --tries);
->  
->  	if (!tries)
->  		dev_err(wm8350->dev, "adc chn %d read timeout\n", channel);
+> Is the delta anything NTP might get upset about:
+> 
+> 2.6.26: time.c: Detected 2311.847 MHz processor.
+> 2.6.29: Detected 2310.029 MHz processor.
+> 
+> If yes, then we need to fix NTP not the calibration code :)
 
-Please do not ever send any unchangelogged patches ever again, at all, ever.
+Well, that _is_ about 500ppm difference, and we claim that we _should_ 
+have reached 150ppm with the 15ms delay. We clearly don't seem to have 
+done that. I'm not quite sure why - we _should_ be finding the edge of the 
+PIT events to within roughly a microsecond (assuming that's about as long 
+as an "inb" takes), and that should give us a pretty good fast 
+calibration, but maybe I'm overlooking something.
 
-OK?
+Or - and this may be more likely - there are chipsets that aren't very 
+good at reading the PIT in a tight loop. That may explain why it's a 
+problem on Jesper's hardware, but we haven't gotten tons of reports of 
+this from others.
+
+I see that it's a SunFire X2200, which I think uses an nVidia HT 
+southbridge. I assume it's an nForce4 thing. There shouldn't be anything 
+odd there, and the PIT read shouldn't be taking any longer than on 
+anything else, but who knows? 
+
+		Linus
