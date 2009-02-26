@@ -1,70 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZBZRkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZBZRnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbZBZRkr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 12:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbZBZRkf
+	id S1753050AbZBZRnl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 12:43:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZBZRnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 12:40:35 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:57842 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751972AbZBZRke (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 12:40:34 -0500
-Date: Thu, 26 Feb 2009 18:40:31 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Mark Nelson <markn@au1.ibm.com>
-cc: linuxppc-dev@ozlabs.org, Jan Kara <jack@ucw.cz>, Jan Kara <jack@suse.cz>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-In-Reply-To: <200902261020.34325.markn@au1.ibm.com>
-Message-ID: <alpine.LRH.2.00.0902261805510.29190@vixen.sonytel.be>
-References: <49A2705D.9030008@in.ibm.com> <alpine.LRH.2.00.0902251430410.4063@vixen.sonytel.be> <200902260945.41990.markn@au1.ibm.com> <200902261020.34325.markn@au1.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 26 Feb 2009 12:43:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35337 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751048AbZBZRnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 12:43:32 -0500
+Date: Thu, 26 Feb 2009 18:43:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/3] add binary printf
+Message-ID: <20090226174303.GC29439@elte.hu>
+References: <49a38304.0506d00a.1f4b.406d@mx.google.com> <20090226130243.GA22460@elte.hu> <20090226170524.GB5889@nowhere>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090226170524.GB5889@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009, Mark Nelson wrote:
-> On Thu, 26 Feb 2009 09:45:41 am Mark Nelson wrote:
-> > On Thu, 26 Feb 2009 12:31:20 am Geert Uytterhoeven wrote:
-> > > On Wed, 25 Feb 2009, Mark Nelson wrote:
-> > > > Does the following patch fix the errors you're seeing? (it applies the
-> > > > same fix as the previous patch but this time to copy_tofrom_user, which
-> > > > I updated in a4e22f02f5b6518c1484faea1f88d81802b9feac)
-> > > 
-> > > Thanks, but I still get crashes in copy_page_range().
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Thu, Feb 26, 2009 at 02:02:43PM +0100, Ingo Molnar wrote:
 > > 
-> > Hmmm... I'm out of ideas for the moment, but thanks for testing anyway!
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > From: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > > 
+> > > Impact: Add APIs for binary trace printk infrastructure
+> > > 
+> > > vbin_printf(): write args to binary buffer, string is copied
+> > > when "%s" is occurred.
+> > > 
+> > > bstr_printf(): read from binary buffer for args and format a string
+> > > 
+> > > [fweisbec@gmail.com: ported to latest -tip]
+> > > 
+> > > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > > ---
+> > >  include/linux/string.h |    7 +
+> > >  lib/Kconfig            |    3 +
+> > >  lib/vsprintf.c         |  442 ++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  3 files changed, 452 insertions(+), 0 deletions(-)
+> > 
+> > OK, it's a nice idea and speedup for printf based tracing - 
+> > which is common and convenient. Would you mind to post the 
+> > performance measurements you've done using the new bstr_printf() 
+> > facility? (the nanoseconds latency figures you did in the timer 
+> > irq in a system under load and on a system that is idle)
 > 
-> If you revert both 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556 and
-> a4e22f02f5b6518c1484faea1f88d81802b9feac, does it help? You could also
-> try to revert 57dda6ef5bd5b9e60410477ad29e654097e2cca1 just in case I
-> need to keep wearing the brown paper bag for a bit longer :)
+> 
+> Ok.
+> 
+>  
+> > The new printf code itself should be done cleaner i think and is 
+> > not acceptable in its current form.
+> > 
+> > These two new functions:
+> > 
+> > > +#ifdef CONFIG_BINARY_PRINTF
+> > > +/*
+> > > + * bprintf service:
+> > > + * vbin_printf() - VA arguments to binary data
+> > > + * bstr_printf() - Binary data to text string
+> > > + */
+> > 
+> > Duplicate hundreds of lines of code into three large functions 
+> > (vsnprintf, vbin_printf, bstr_printf). These functions only have 
+> > a difference in the way the argument list is iterated and the 
+> > way the parsed result is stored:
+> > 
+> >   vsnprintf:   iterates va_list, stores into string
+> >   bstr_printf: iterates bin_buf, stores into string
+> >   vbin_printf: iterates va_list, stores into bin_buf
+> > 
+> > We should try _much_ harder at unifying these functions before 
+> > giving up and duplicating them...
+> > 
+> > An opaque in_buf/out_buf handle plus two helper function 
+> > pointers passed in would be an obvious implementation.
+> > 
+> > That way we'd have a single generic (inline) function that knows 
+> > about the printf format itself:
+> > 
+> >  __generic_printf(void *in_buf,
+> > 		  void *out_buf,
+> > 		  void * (*read_in_buf)(void **),
+> > 		  void * (*store_out_buf)(void **));
+> > 
+> > And we'd have various variants for read_in_buf and 
+> > store_out_buf. The generic function iterates the following way:
+> > 
+> > 	in_val = read_in_buf(&in_buf);
+> > 	...
+> > 	store_out_buf(&out_buf, in_val);
+> > 
+> > (where in_val is wide enough to store a single argument.) The 
+> > iterators modify the in_buf / out_buf pointers. Argument 
+> > skipping can be done by reading the in-buf and not using it. I 
+> > think we can do it with just two iterator methods.
+> > 
+> > Or something like that - you get the idea. It can all be inlined 
+> > so that we'd end up with essentially the same vsnprint() 
+> > instruction sequence we have today.
+> > 
+> > 	Ingo
+> 
+> 
+> Ok, I just looked deeply inside vsnprintf, and I don't think 
+> such a generic interface would allow that. We need to know the 
+> size of the argument, it's precision, width and flags.... And 
+> we need to know if we want to skip the non format char.
+> 
+> 
+> What do you think of the following:
+> 
+> __ generic_printf(void *in,
+> 		  void *out,
+> 		  void *(*read_in)(void **buf, int size),
+> 		  void *(store_char)(char *dst, char *end, char val, int field_width, int flags),
+> 		  void *(*store_string)(char *dst, char *end, char *val, int field_width, int precision, int flags),
+> 		  void *(*store_pointer)(char type, char *dst, char *end, void *val,
+> 					int field_width, int precision, int flags),
+> 		  void *(*store_number)(char *dst, char *size, int base,int field_width, int precision, int flags),
+> 		  bool skip_non_format
+> 		  )
+> 
+> 
+> Well, something like that...
+> 
+> read_in can advance the pointer to the buffer itself (buf can 
+> be a va_args or u32 *) and it returns a value, void * is 
+> generic for the type.
+> 
+> The storage functions are more specialized because of the 
+> interpretation of flags, precision... So we can easily pass 
+> the usual string(), pointer(), .... that are already present 
+> in vsnprintf.c or use custom ones. They return the advanced 
+> dst pointer.
+> 
+> And at last, skip_non_format will decide if we want to 
+> consider non-format characters from fmt to be copied as common 
+> %c characters or if we want to ignore them (useful for 
+> vbin_printf()).
 
-Still doesn't help.
+hm, that indeed looks very wide - storing into a binary buffer 
+does complicate the iterator interface significantly.
 
-However, I noticed I never enabled CONFIG_DEBUG_PAGEALLOC before 2.6.29-rc5.
-So far I tried 2.6.2[5-8], and they all crash with CONFIG_DEBUG_PAGEALLOC.
-I guess it never actually worked on PS3.
+But at least vsnprintf() and bstr_printf() could be unified - 
+they both output into a string buffer, just have different 
+methods to iterate arguments.
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+	Ingo
