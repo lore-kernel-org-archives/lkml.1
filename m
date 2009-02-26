@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZBZWZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbZBZW3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZBZWZO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:25:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbZBZWYz
+	id S1757691AbZBZW3A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZBZW2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:24:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58347 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757340AbZBZWYy (ORCPT
+	Thu, 26 Feb 2009 17:28:52 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:64544 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753307AbZBZW2v convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:24:54 -0500
-Date: Thu, 26 Feb 2009 14:24:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: john stultz <johnstul@us.ibm.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: Linux 2.6.29-rc6
-In-Reply-To: <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902261413400.3111@localhost.localdomain>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> 
- <49A70B24.6090706@krogh.cc> <1235685269.6811.11.camel@localhost.localdomain> <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 26 Feb 2009 17:28:51 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <fa686aa40902200728k1466121cqb772bb9e5d1a777c@mail.gmail.com>
+References: <20090218151132.476.81706.stgit@localhost.localdomain>
+	 <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com>
+	 <fa686aa40902180834r2b9b8de0tcdc31c850f6323a6@mail.gmail.com>
+	 <ac3eb2510902180849o6d86bbfev337e1bc203d6543e@mail.gmail.com>
+	 <fa686aa40902180951q64c71581y3811062256685df7@mail.gmail.com>
+	 <ac3eb2510902181032h3f9ed994s212dd8b42ddca82@mail.gmail.com>
+	 <20090218183945.GA31797@suse.de>
+	 <fa686aa40902182250g1c4e7cb6o4d0102da35ab838b@mail.gmail.com>
+	 <ac3eb2510902191508w71cf7d76x4a8957ecee9c4e6@mail.gmail.com>
+	 <fa686aa40902200728k1466121cqb772bb9e5d1a777c@mail.gmail.com>
+Date: Thu, 26 Feb 2009 23:28:48 +0100
+Message-ID: <ac3eb2510902261428n297063f5webb06fc105e5ef0a@mail.gmail.com>
+Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 20, 2009 at 16:28, Grant Likely <grant.likely@secretlab.ca> wrote:
+> Thanks for the reply, it clarifies a lot.  It sounds like this really
+> should be documented (in Documentation/driver-model/device.txt?).  I'm
+> happy to add a blurb to that effect and send a patch, but I want to
+> make sure I really understand the model before I do so.  I've got a
+> couple more questions below:
+>
+> On Thu, Feb 19, 2009 at 4:08 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> [...]
+>> If an attribute is not available at event time, nothing of this can
+>> ever work. If you look a the device a second later, you will see the
+>> proper looking files and values, and all the test programs will work,
+>> but it will always fail at device creation.
+> [...]
+>> That all might not be needed for your specific setup/driver/device and
+>> may work fine for your need. But we don't want to encourage anybody
+>> with another new API which creates the usual trouble we need to fix
+>> later.
+>
+> Fair enough
+>
+>> And we need to fix things like this all the time.
+>
+> Can you point me at a 'textbook' example of one of these fixups?
 
+Here are a few cases of broken atribute timing, a quick git search has found:
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f7120a4f75168df3c02efacd10403a4ba0bcb29d
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8a89efd18aa15bb832778baa4e6eee3857ecada4
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3b23dd6f8a718e5339de4f7d86ce76a078b5f771
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2e5f10e4f0a9649186d8a8c793822b2e0dae8373
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bfd129445f23c037d9a440ebfa4109e11c220301
 
-On Thu, 26 Feb 2009, Thomas Gleixner wrote:
-> 
-> Is the delta anything NTP might get upset about:
-> 
-> 2.6.26: time.c: Detected 2311.847 MHz processor.
-> 2.6.29: Detected 2310.029 MHz processor.
-> 
-> If yes, then we need to fix NTP not the calibration code :)
+Regarding the split of the driver device and the device to bind to:
+the platform stuff is kind of "special", because it is often used for
+devices/buses which can not be enumerated. With buses which need
+enumeration, it's pretty obvious that the enumeration creates their
+own devices, which then a driver can bind to, and where the driver
+creates its own driver instance for it. Like nobody would expect a
+network driver to add the netif properties directly to the pci device,
+and so on.
 
-Well, that _is_ about 500ppm difference, and we claim that we _should_ 
-have reached 150ppm with the 15ms delay. We clearly don't seem to have 
-done that. I'm not quite sure why - we _should_ be finding the edge of the 
-PIT events to within roughly a microsecond (assuming that's about as long 
-as an "inb" takes), and that should give us a pretty good fast 
-calibration, but maybe I'm overlooking something.
+Many platform devices are just static placeholders, and then it is not
+obvious that userspace still prefers another device instance while
+binding a driver, but in most cases it's worth the effort, because
+then all devices, regardless which bus is backing them, can be handled
+the same way with a "hotplug handler" like udev.
 
-Or - and this may be more likely - there are chipsets that aren't very 
-good at reading the PIT in a tight loop. That may explain why it's a 
-problem on Jesper's hardware, but we haven't gotten tons of reports of 
-this from others.
-
-I see that it's a SunFire X2200, which I think uses an nVidia HT 
-southbridge. I assume it's an nForce4 thing. There shouldn't be anything 
-odd there, and the PIT read shouldn't be taking any longer than on 
-anything else, but who knows? 
-
-		Linus
+Thanks,
+Kay
