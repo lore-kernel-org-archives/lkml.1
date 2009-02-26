@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZBZKql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZBZKtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbZBZKql (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 05:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZBZKqb
+	id S1755866AbZBZKtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 05:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbZBZKtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 05:46:31 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1106 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753462AbZBZKqa (ORCPT
+	Thu, 26 Feb 2009 05:49:06 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57005
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754291AbZBZKtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 05:46:30 -0500
-Date: Thu, 26 Feb 2009 10:46:27 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Subject: Re: [patch/rfc 2.6.29-rc6 1/2] regulator: enumerate voltages
-Message-ID: <20090226104624.GA4229@sirena.org.uk>
-References: <200902081037.06645.david-b@pacbell.net> <200902241617.22643.david-b@pacbell.net> <20090225151721.GA31637@sirena.org.uk> <200902251702.03230.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902251702.03230.david-b@pacbell.net>
-X-Cookie: Yow!  I threw up on my window!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Thu, 26 Feb 2009 05:49:04 -0500
+Date: Thu, 26 Feb 2009 02:48:45 -0800 (PST)
+Message-Id: <20090226.024845.10059946.davem@davemloft.net>
+To: jeffrey.t.kirsher@intel.com
+Cc: maciej.sosnowski@intel.com, dan.j.williams@intel.com, snakebyte@gmx.de,
+       shannon.nelson@intel.com, jeffrey.t.krisher@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 0/7] I/OAT update
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <9929d2390902260231p72aacdf3j489a8a9e67dbb659@mail.gmail.com>
+References: <20090226100327.3615.21419.stgit@linux.site>
+	<9929d2390902260231p72aacdf3j489a8a9e67dbb659@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 05:02:03PM -0800, David Brownell wrote:
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 26 Feb 2009 02:31:24 -0800
 
-> Oh, one more comment.  Requiring manual configuration
-> of fixed-voltage regulators is pure time-wastage.
+> Dave - FYI, my Acked-by email on this patch series is incorrect.  It
+> should be jeffrey.t.kirsher@intel.com not "krisher".
 
-Unless, of course, you happen to be using one of those consumers that
-wants to know the voltage it's running at to configure itself.  Examples
-I've seen include sensors and analogue components which can be
-configured for better performance if they know the voltage they run at -
-and yes, people do run these things off regulators that they vary at
-runtime.
-
-If you want to submit a patch making it optional that's fine.
+I'm actually not the one who will apply this stuff, so...
