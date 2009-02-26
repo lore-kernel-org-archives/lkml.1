@@ -1,72 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbZBZSah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZBZSeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbZBZSah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 13:30:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZBZSa1
+	id S1753310AbZBZSeb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 13:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZBZSeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 13:30:27 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:36113 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbZBZSa0 (ORCPT
+	Thu, 26 Feb 2009 13:34:22 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:37691 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbZBZSeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 13:30:26 -0500
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
- do?
-From: Greg Kurz <gkurz@fr.ibm.com>
+	Thu, 26 Feb 2009 13:34:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kkkwiIWpQM1Z+MGakIqpqQ1BbuYRWD42G9lI5uNQ5gCclXh5zO0gj/hzcqpgz079Je
+         k9+zYAhGuWKg+7Fc2T2bEaqV86qezw4/LDcbWjG7VcM4LTggGz1/zrtl0dU1X4CX2/Zn
+         Wb2z8bY2ftEtHFrKCvcbZvsuJbtCaKXKkqnVM=
+Date: Thu, 26 Feb 2009 19:34:16 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mpm@selenic.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-In-Reply-To: <20090226173302.GB29439@elte.hu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-	 <1234285547.30155.6.camel@nimitz>
-	 <20090211141434.dfa1d079.akpm@linux-foundation.org>
-	 <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx>
-	 <20090212114207.e1c2de82.akpm@linux-foundation.org>
-	 <1234475483.30155.194.camel@nimitz>
-	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>
-	 <1234479845.30155.220.camel@nimitz>
-	 <20090226162755.GB1456@x200.localdomain>  <20090226173302.GB29439@elte.hu>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 19:30:16 +0100
-Message-Id: <1235673016.5877.62.camel@bahia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/3] add binary printf
+Message-ID: <20090226183415.GE5889@nowhere>
+References: <49a38304.0506d00a.1f4b.406d@mx.google.com> <20090226130243.GA22460@elte.hu> <20090226170524.GB5889@nowhere> <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090226175225.GA4527@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 18:33 +0100, Ingo Molnar wrote:
-> I think the main question is: will we ever find ourselves in the 
-> future saying that "C/R sucks, nobody but a small minority uses 
-> it, wish we had never merged it"? I think the likelyhood of that 
-> is very low. I think the current OpenVZ stuff already looks very 
+On Thu, Feb 26, 2009 at 06:52:25PM +0100, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > On Thu, Feb 26, 2009 at 06:43:03PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > 
+> > > > On Thu, Feb 26, 2009 at 02:02:43PM +0100, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > > > 
+> > > > > > From: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > > > > > 
+> > > > > > Impact: Add APIs for binary trace printk infrastructure
+> > > > > > 
+> > > > > > vbin_printf(): write args to binary buffer, string is copied
+> > > > > > when "%s" is occurred.
+> > > > > > 
+> > > > > > bstr_printf(): read from binary buffer for args and format a string
+> > > > > > 
+> > > > > > [fweisbec@gmail.com: ported to latest -tip]
+> > > > > > 
+> > > > > > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > > > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > > > > > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > > > > > ---
+> > > > > >  include/linux/string.h |    7 +
+> > > > > >  lib/Kconfig            |    3 +
+> > > > > >  lib/vsprintf.c         |  442 ++++++++++++++++++++++++++++++++++++++++++++++++
+> > > > > >  3 files changed, 452 insertions(+), 0 deletions(-)
+> > > > > 
+> > > > > OK, it's a nice idea and speedup for printf based tracing - 
+> > > > > which is common and convenient. Would you mind to post the 
+> > > > > performance measurements you've done using the new bstr_printf() 
+> > > > > facility? (the nanoseconds latency figures you did in the timer 
+> > > > > irq in a system under load and on a system that is idle)
+> > > > 
+> > > > 
+> > > > Ok.
+> > > > 
+> > > >  
+> > > > > The new printf code itself should be done cleaner i think and is 
+> > > > > not acceptable in its current form.
+> > > > > 
+> > > > > These two new functions:
+> > > > > 
+> > > > > > +#ifdef CONFIG_BINARY_PRINTF
+> > > > > > +/*
+> > > > > > + * bprintf service:
+> > > > > > + * vbin_printf() - VA arguments to binary data
+> > > > > > + * bstr_printf() - Binary data to text string
+> > > > > > + */
+> > > > > 
+> > > > > Duplicate hundreds of lines of code into three large functions 
+> > > > > (vsnprintf, vbin_printf, bstr_printf). These functions only have 
+> > > > > a difference in the way the argument list is iterated and the 
+> > > > > way the parsed result is stored:
+> > > > > 
+> > > > >   vsnprintf:   iterates va_list, stores into string
+> > > > >   bstr_printf: iterates bin_buf, stores into string
+> > > > >   vbin_printf: iterates va_list, stores into bin_buf
+> > > > > 
+> > > > > We should try _much_ harder at unifying these functions before 
+> > > > > giving up and duplicating them...
+> > > > > 
+> > > > > An opaque in_buf/out_buf handle plus two helper function 
+> > > > > pointers passed in would be an obvious implementation.
+> > > > > 
+> > > > > That way we'd have a single generic (inline) function that knows 
+> > > > > about the printf format itself:
+> > > > > 
+> > > > >  __generic_printf(void *in_buf,
+> > > > > 		  void *out_buf,
+> > > > > 		  void * (*read_in_buf)(void **),
+> > > > > 		  void * (*store_out_buf)(void **));
+> > > > > 
+> > > > > And we'd have various variants for read_in_buf and 
+> > > > > store_out_buf. The generic function iterates the following way:
+> > > > > 
+> > > > > 	in_val = read_in_buf(&in_buf);
+> > > > > 	...
+> > > > > 	store_out_buf(&out_buf, in_val);
+> > > > > 
+> > > > > (where in_val is wide enough to store a single argument.) The 
+> > > > > iterators modify the in_buf / out_buf pointers. Argument 
+> > > > > skipping can be done by reading the in-buf and not using it. I 
+> > > > > think we can do it with just two iterator methods.
+> > > > > 
+> > > > > Or something like that - you get the idea. It can all be inlined 
+> > > > > so that we'd end up with essentially the same vsnprint() 
+> > > > > instruction sequence we have today.
+> > > > > 
+> > > > > 	Ingo
+> > > > 
+> > > > 
+> > > > Ok, I just looked deeply inside vsnprintf, and I don't think 
+> > > > such a generic interface would allow that. We need to know the 
+> > > > size of the argument, it's precision, width and flags.... And 
+> > > > we need to know if we want to skip the non format char.
+> > > > 
+> > > > 
+> > > > What do you think of the following:
+> > > > 
+> > > > __ generic_printf(void *in,
+> > > > 		  void *out,
+> > > > 		  void *(*read_in)(void **buf, int size),
+> > > > 		  void *(store_char)(char *dst, char *end, char val, int field_width, int flags),
+> > > > 		  void *(*store_string)(char *dst, char *end, char *val, int field_width, int precision, int flags),
+> > > > 		  void *(*store_pointer)(char type, char *dst, char *end, void *val,
+> > > > 					int field_width, int precision, int flags),
+> > > > 		  void *(*store_number)(char *dst, char *size, int base,int field_width, int precision, int flags),
+> > > > 		  bool skip_non_format
+> > > > 		  )
+> > > > 
+> > > > 
+> > > > Well, something like that...
+> > > > 
+> > > > read_in can advance the pointer to the buffer itself (buf can 
+> > > > be a va_args or u32 *) and it returns a value, void * is 
+> > > > generic for the type.
+> > > > 
+> > > > The storage functions are more specialized because of the 
+> > > > interpretation of flags, precision... So we can easily pass 
+> > > > the usual string(), pointer(), .... that are already present 
+> > > > in vsnprintf.c or use custom ones. They return the advanced 
+> > > > dst pointer.
+> > > > 
+> > > > And at last, skip_non_format will decide if we want to 
+> > > > consider non-format characters from fmt to be copied as common 
+> > > > %c characters or if we want to ignore them (useful for 
+> > > > vbin_printf()).
+> > > 
+> > > hm, that indeed looks very wide - storing into a binary buffer 
+> > > does complicate the iterator interface significantly.
+> > > 
+> > > But at least vsnprintf() and bstr_printf() could be unified - 
+> > > they both output into a string buffer, just have different 
+> > > methods to iterate arguments.
+> > > 
+> > > 	Ingo
+> > 
+> > Right, ok I'm on it.
+> 
+> hm, it would still be nice to get vbin_printf() into the same 
+> scheme too.
+> 
+> And i think we can do it by unconditionally tracking field type 
+> and width in the generic helper - instead of passing this across 
+> the abstraction barrier like your proposal did. vsnprintf() and 
+> bstr_printf() wont make use of it - but vbin_printf() will.
+> 
+> Am i missing anything?
+> 
+> 	Ingo
 
-We've been maintaining for some years now a C/R middleware with only a
-few hooks in the kernel. Our strategy is to leverage existing kernel
-paths as they do most of the work right.
+Hm, I have some trouble to visualize it globally.
 
-Most of the checkpoint is performed from userspace, using regular
-syscalls in a signal handler or /proc parsing. Restart is a bit trickier
-and needs some kernel support to bypass syscall checks and enforce a
-specific id for a resource. At the end, we support C/R and live
-migration of networking apps (websphere application server for example).
+vsnprintf: takes char * for dest and va_list as src, write formatted in dest
+bstr_printf: takes char * as dest and u32 * as src, read from src is specialized
+vbin_printf: takes u32 * buf as dest and va_list as src, write to dest is specialized
 
->From our experience, we can tell:
+The only thing that can be generic between the three is the format decoding.
+All in-out operations must be abstracted if we want a common interface from the three.
 
-Pros: mostly not-so-tricky userland code, independent from kernel
-internals
-Cons: sub-optimal for some resources
-
--- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
-
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
+So I'm not sure I have the choice.
 
