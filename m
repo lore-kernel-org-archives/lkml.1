@@ -1,111 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZBZXR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbZBZXS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758764AbZBZXR7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 18:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbZBZXRq
+	id S1759610AbZBZXS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 18:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbZBZXSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 18:17:46 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:43976 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754208AbZBZXRp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 18:17:45 -0500
-Date: Thu, 26 Feb 2009 15:17:42 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-Message-ID: <20090226231742.GB19959@ovro.caltech.edu>
-References: <20090224000002.GA578@ovro.caltech.edu> <200902262137.15169.arnd@arndb.de> <20090226214919.GA19959@ovro.caltech.edu> <200902262334.33778.arnd@arndb.de>
+	Thu, 26 Feb 2009 18:18:14 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52306 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758984AbZBZXSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 18:18:13 -0500
+Message-ID: <49A7232C.6050808@redhat.com>
+Date: Thu, 26 Feb 2009 15:18:04 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902262334.33778.arnd@arndb.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 26 Feb 2009 15:17:43 -0800 (PST)
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: filesystem time stamp resolution
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 11:34:33PM +0100, Arnd Bergmann wrote:
-> On Thursday 26 February 2009, Ira Snyder wrote:
-> > On Thu, Feb 26, 2009 at 09:37:14PM +0100, Arnd Bergmann wrote:
-> > 
-> > The registers are part of the board control registers. They don't fit at
-> > all in the message unit. Doing this in the bootloader seems like a
-> > logical place, but that would require any testers to flash a new U-Boot
-> > image into their mpc8349emds boards.
-> > 
-> > The first set of access is used to set up a 1GB region in the memory map
-> > that accesses the host's memory. Any reads/writes to addresses
-> > 0x80000000-0xc0000000 actually hit the host's memory.
-> > 
-> > The last access sets up PCI BAR1 to hit the memory from
-> > dma_alloc_coherent(). The bootloader already sets up the window as 16K,
-> > it just doesn't point it anywhere. Maybe this /should/ go into the
-> > bootloader. Like above, it would require testers to flash a new U-Boot
-> > image into their mpc8349emds boards.
-> 
-> Ok, I see.
-> 
-> I guess the best option for doing it in Linux then would be to have
-> a board control driver (not sure if this already exists) that exports
-> high-level functions to set up the inbound and outbound windows.
-> 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Nothing like it exists. The OF device tree doesn't even describe these
-registers. The code in arch/powerpc/sysdev/fsl_pci.c uses some registers
-near these, but it gets their address by masking the low bits off the
-addresses from the device tree and adding the offsets of the new
-registers. Nasty.
+How can code at userlevel (e.g., glibc) determine the resolution of the
+a filesystem timestamp?
 
-I'll do this for now:
-1) Get the message unit registers from my device tree
-2) Encapsulate all use of get_immrbase() to a single function
+Boundary condition:
 
-That way it could be easily replaced in the future when something more
-suitable comes along.
+- - I cannot create or modify a file since the information must also
+  be available for filesystems where the caller has no write permission
 
-> > Yeah, virtio doesn't work that way.
-> > 
-> > The virtio drivers just call find_vq() with a different index for each
-> > queue they want to use. You have no way of knowing how many queues each
-> > virtio driver will want, unless you go read their source code.
-> > 
-> > virtio-net currently uses 3 queues, but we only support the first two.
-> > The third is optional (for now...), and non-symmetric.
-> 
-> I mean the part of your driver that calls register_virtio_device()
-> could make the decision, this is the one I was referring to
-> as virtio_net glue because it is the only part that actually needs
-> to know about the features etc.
-> 
-> Right now, you just call register_virtio_net from vop_probe(), which
-> is absolutely appropriate for the specific use case. In the most
-> general case though, you would have a user interface on one or
-> both sides that allows a (root) user to trigger the creation of
-> a virtio_net (or other virtio) device with specific characteristics
-> such as MAC address or number of virtqueues.
-> 
+- - it has to work going forward (i.e., hardcoding information is no good
+  idea)
 
-I didn't think about this at all. This driver could be used to boot a
-(guest) system over NFS, so in that case there isn't a userspace running
-yet, to allow configuration. This is essentially my use case, though I
-haven't implemented it yet.
+One acceptable solution (for me) would be to have directories for the
+filesystem types under /proc/fs (or /sys/fs) which show this
+information.  E.g.:
 
-Also, I hate designing user interfaces :) Any concrete suggestions on
-design would be most welcome.
+  /proc/fs/ext4/timestamp-resolution
 
-> One idea I had earlier was that there could be a special device
-> with just one virtqueue that is always present and that allows you
-> do communicate configuration changes regarding the available devices
-> to the remote VOP driver.
-> 
+Measured in nano-seconds or so.
 
-That's an interesting idea that I didn't consider, either. It wouldn't
-have to be fast, just reliable. When you're doing small transfers, the
-CPU is just fine.
+As a bonus have symlinks like
 
-Ira
+  /proc/fs/ef53 -> /proc/fs/ext4
+
+(i.e., map the superblock magic number to a name.  But I can live with
+this missing.)
+
+As a second bonus any help for network filesystems would be good but.
+
+Do I miss anything that is there already?
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmnIywACgkQ2ijCOnn/RHRSDgCfUep/fJohBr8kI+iuEFbanL5C
+oXYAn03tnvPse68ewluvH5qrqJj02AEG
+=W6ln
+-----END PGP SIGNATURE-----
