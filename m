@@ -1,104 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbZBZWB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZBZWBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759835AbZBZWB2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbZBZWBS
+	id S1758136AbZBZWBw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbZBZWBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:01:18 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:57458 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757162AbZBZWBR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:01:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=HrVHji5kZbFfY6D3T4FpmNghV8jiIGiAg7pHsQ78zuT/dkdFtkYwJClkYcEuSvTUq+
-         XOQYE7nBEieGjUXOg9H00tT3TrIB5dQVEsM0QfJCPMzd3mm88p+SKEXR354/qOI4Qf+q
-         Q1YoHOjqah37h+z+tg36j1qMcFu/Y6ZnFN98Q=
+	Thu, 26 Feb 2009 17:01:40 -0500
+Received: from minbar.dodds.net ([66.93.39.86]:53723 "EHLO minbar.dodds.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755177AbZBZWBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 17:01:39 -0500
+Date: Thu, 26 Feb 2009 14:01:36 -0800
+From: Steve Langasek <vorlon@debian.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, libpam-modules@packages.debian.org,
+       debian-admin@lists.debian.org
+Subject: Re: 2.6.28, rlimits, performance and debian etch
+Message-ID: <20090226220136.GA24667@dario.dodds.net>
+Mail-Followup-To: Steve Langasek <vorlon@debian.org>,
+	Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+	libpam-modules@packages.debian.org, debian-admin@lists.debian.org
+References: <200902262248.26713.elendil@planet.nl>
 MIME-Version: 1.0
-In-Reply-To: <20090226205245.GM7227@mit.edu>
-References: <b637ec0b0902251203i1fe5f081vfd06350dbf5060e9@mail.gmail.com>
-	 <b637ec0b0902260118o19f74acal567440a6f049512@mail.gmail.com>
-	 <20090226141946.GE7227@mit.edu>
-	 <b637ec0b0902260638u2a07433ayf0ea56fd3e41ec5a@mail.gmail.com>
-	 <20090226160829.GH7227@mit.edu>
-	 <b637ec0b0902261242o55d67bd9m65a6f26dc8ce1b19@mail.gmail.com>
-	 <20090226205245.GM7227@mit.edu>
-Date: Thu, 26 Feb 2009 23:01:13 +0100
-Message-ID: <b637ec0b0902261401p191b2a1fn75b29e99c9f03726@mail.gmail.com>
-Subject: Re: Crash in 2.6.28.7 - ext4 related
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Fabio Comolli <fabio.comolli@gmail.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902262248.26713.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Thu, Feb 26, 2009 at 10:48:25PM +0100, Frans Pop wrote:
+> Steve Langasek wrote:
+> > It has already been mentioned that this does not apply to the upcoming
+> > Debian 5.0 release (lenny); this patch is only present in the 4.0
+> > release (etch), it was actually fixed in the development series to not
+> > use RLIM_INFINITY *because* previous kernels didn't support this and
+> > would cause pam_limits to throw log warnings.
 
-On Thu, Feb 26, 2009 at 9:52 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Thu, Feb 26, 2009 at 09:42:15PM +0100, Fabio Comolli wrote:
->> It's my home directory and so I prefer not to share, sorry.
->
-> No problem, I understand.
+> I've just migrated my home servers from Debian etch to lenny and bind9 now 
+> gives me this:
 
-Thanks.
+> named[17207]: max open files (1024) is smaller than max sockets (4096)
 
->
->> Anyway, it seems that after the removal of that (possibly corrupted)
->> directory, I can't reproduce the problem anymore. I tried to create
->> / modify / delete some big directories, even two or three at a time
->> with no luck.
->
-> Did you ever try running e2fsck on the filesystem while you could
-> reproduce it?  Did it report any errors?  A good thing to do in
-> general, if you can report these sorts of problems, is to run e2fsck
-> with the -n option, while the filesystme is unmounted, and see if any
-> errors are reported.  That would tell us if there were any filesystem
-> corruption problems (and the -n avoids making any changes to the
-> filesystem).
+That's a separate issue; Debian bug #515673.  I intend to solve this for
+Debian 5.0.1.
 
-OK, maybe I did not make myself clear in my previous post. After the
-last crash (the one from which the picture was taken)  I booted
-single-user and the I forced a full fsck with the filesystem
-unmounted. It reported no errors. After that I removed the problematic
-directory and all is fine since that.
-
-Maybe it's worth mentioning that I did the very same actions after
-another crash that happened before: also in that case a full fsck
-reported no errors but trying to remove the directory after that
-crashed the machine.
-
->
-> Also, even if you don't feel willing to share the e2image file, if you
-> can reproduce it, please consider making a raw e2image dump.  That way
-> if the problem goes away again, maybe you'll be able to consistently
-> report reproduce it on the e2image dump file.
-
-Yup, will do if the problem shows up again.
-
->
-> The other thing that you can do which will sometimes work is to add
-> the -s option to the e2image command.  The -s option scrambles the
-> name of the directory entries and zeros out any unused portions of
-> directory blocks to prevent privacy problems.  The downside is that it
-> can prevent certain bugs from being repeatable and you have to either
-> turn off the dir_index feature or run e2fsck to fix up the htree since
-> the filename hashes will be screwed up after the directory entries are
-> scrambled.  So it's not ideal, but in cases where there are privacy
-> issues, that can be helpful.
-
-Will do.
-
->
-> Regards,
->
->                                        - Ted
->
-
-Regards,
-Fabio
+-- 
+Steve Langasek                   Give me a lever long enough and a Free OS
+Debian Developer                   to set it on, and I can move the world.
+Ubuntu Developer                                    http://www.debian.org/
+slangasek@ubuntu.com                                     vorlon@debian.org
