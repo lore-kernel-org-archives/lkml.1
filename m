@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZBZFhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbZBZFio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759278AbZBZFhb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 00:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZBZFhW
+	id S1758800AbZBZFio (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 00:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZBZFie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 00:37:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38411 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751846AbZBZFhV (ORCPT
+	Thu, 26 Feb 2009 00:38:34 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54310 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbZBZFie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 00:37:21 -0500
-Date: Wed, 25 Feb 2009 21:36:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+	Thu, 26 Feb 2009 00:38:34 -0500
+Message-Id: <20090226053240.607719846@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 26 Feb 2009 00:32:40 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/4] uaccess: add copy_word_from_user
-Message-Id: <20090225213641.1a0ff6f6.akpm@linux-foundation.org>
-In-Reply-To: <49A5F81F.6060604@zytor.com>
-References: <20090225203007.582030664@goodmis.org>
-	<20090225203427.382137706@goodmis.org>
-	<49A5F81F.6060604@zytor.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH v2 0/5] [RFC] copy_strtok_from_user
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 18:02:07 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
+This is the second series of the uaccess code.
 
-> Steven Rostedt wrote:
-> > This patch creates a copy_word_from_user function that can copy
-> > a space delimited word from user space. This puts the code in
-> > a new lib/uaccess.c file. This keeps the code in a single location
-> > and may be optimized in the future.
-> 
-> I have a bit of an issue with the naming... at least *I* read this as 
-> copying a machine word, which made me wonder why you didn't just use 
-> "get_user".  I would suggest copy_token_from_user or something like that.
-> 
+Changes in v2:
 
-Yes, it set me back for a sec.  But anyone who uses the maddeningly
-vague concept of a "word" in an interface deserves to get their head
-boiled anyway, so there should be no confusion.
+ - moved probe_kernel_* functions to lib/uaccess.c
 
+ - renamed copy_word_from_user to copy_strtok_from_user.
+
+ - changed copy_strtok_from_user to pass in a delimiter string.
+   ftrace defines SPACE to be ' \t\r\n'.
+
+Ingo,
+I added your copy right to lib/uaccess.c since git blame shows you
+as the author of the probe_kernel_* code. Also, is it OK that I
+added the "GPL v2" line in that file as well?
+
+Andrew,
+Since you are, in essence, the memory maintainer, could you give
+your Acked-by: to the copy_strtok_from_user code.
+
+The probe_kernel code is still EXPORT_SYMBOL_GPL, and I added
+that too to copy_strtok_from_user. Are there any objections to that?
+
+-- Steve
+
+
+
+The following patches are in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: tip/tracing/uaccess
+
+
+Steven Rostedt (5):
+      uaccess: move probe_kernel_* functions to lib/uaccess.c
+      uaccess: add copy_strtok_from_user
+      tracing: convert event_trace to use copy_strtok_from_user
+      tracing: convert ftrace_regex_write to use copy_strtok_from_user
+      tracing: convert ftrace_graph_write to use copy_strtok_from_user
+
+----
+ include/linux/uaccess.h     |    5 +
+ kernel/trace/ftrace.c       |  155 +++++++++++++++---------------
+ kernel/trace/trace.h        |    2 +
+ kernel/trace/trace_events.c |   78 +++++++--------
+ lib/Makefile                |    3 +-
+ lib/uaccess.c               |  229 +++++++++++++++++++++++++++++++++++++++++++
+ mm/Makefile                 |    2 +-
+ mm/maccess.c                |   55 ----------
+ 8 files changed, 351 insertions(+), 178 deletions(-)
+-- 
