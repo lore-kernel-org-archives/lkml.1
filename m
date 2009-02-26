@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZBZRk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZBZRkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbZBZRk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 12:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZBZRkT
+	id S1754667AbZBZRkr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 12:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbZBZRkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 12:40:19 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:44283 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751430AbZBZRkS (ORCPT
+	Thu, 26 Feb 2009 12:40:35 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57842 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751972AbZBZRke (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 12:40:18 -0500
-Date: Thu, 26 Feb 2009 12:30:45 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       penberg@cs.helsinki.fi, riel@redhat.com, kosaki.motohiro@jp.fujitsu.com,
-       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
-In-Reply-To: <20090226171549.GH32756@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0902261226370.26440@qirst.com>
-References: <1235344649-18265-21-git-send-email-mel@csn.ul.ie> <20090223013723.1d8f11c1.akpm@linux-foundation.org> <20090223233030.GA26562@csn.ul.ie> <20090223155313.abd41881.akpm@linux-foundation.org> <20090224115126.GB25151@csn.ul.ie>
- <20090224160103.df238662.akpm@linux-foundation.org> <20090225160124.GA31915@csn.ul.ie> <20090225081954.8776ba9b.akpm@linux-foundation.org> <20090226163751.GG32756@csn.ul.ie> <alpine.DEB.1.10.0902261157100.7472@qirst.com> <20090226171549.GH32756@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 26 Feb 2009 12:40:34 -0500
+Date: Thu, 26 Feb 2009 18:40:31 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Mark Nelson <markn@au1.ibm.com>
+cc: linuxppc-dev@ozlabs.org, Jan Kara <jack@ucw.cz>, Jan Kara <jack@suse.cz>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+In-Reply-To: <200902261020.34325.markn@au1.ibm.com>
+Message-ID: <alpine.LRH.2.00.0902261805510.29190@vixen.sonytel.be>
+References: <49A2705D.9030008@in.ibm.com> <alpine.LRH.2.00.0902251430410.4063@vixen.sonytel.be> <200902260945.41990.markn@au1.ibm.com> <200902261020.34325.markn@au1.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009, Mel Gorman wrote:
+On Thu, 26 Feb 2009, Mark Nelson wrote:
+> On Thu, 26 Feb 2009 09:45:41 am Mark Nelson wrote:
+> > On Thu, 26 Feb 2009 12:31:20 am Geert Uytterhoeven wrote:
+> > > On Wed, 25 Feb 2009, Mark Nelson wrote:
+> > > > Does the following patch fix the errors you're seeing? (it applies the
+> > > > same fix as the previous patch but this time to copy_tofrom_user, which
+> > > > I updated in a4e22f02f5b6518c1484faea1f88d81802b9feac)
+> > > 
+> > > Thanks, but I still get crashes in copy_page_range().
+> > 
+> > Hmmm... I'm out of ideas for the moment, but thanks for testing anyway!
+> 
+> If you revert both 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556 and
+> a4e22f02f5b6518c1484faea1f88d81802b9feac, does it help? You could also
+> try to revert 57dda6ef5bd5b9e60410477ad29e654097e2cca1 just in case I
+> need to keep wearing the brown paper bag for a bit longer :)
 
-> > I tried the general use of a pool of zeroed pages back in 2005. Zeroing
-> > made sense only if the code allocating the page did not immediately touch
-> > the cachelines of the page.
->
-> Any feeling as to how often this was the case?
+Still doesn't help.
 
-Not often enough to justify the merging of my patches at the time. This
-was publicly discussed on lkml:
+However, I noticed I never enabled CONFIG_DEBUG_PAGEALLOC before 2.6.29-rc5.
+So far I tried 2.6.2[5-8], and they all crash with CONFIG_DEBUG_PAGEALLOC.
+I guess it never actually worked on PS3.
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0503.2/0482.html
+With kind regards,
 
-> Indeed, any gain if it existed would be avoiding zeroing the pages used
-> by userspace. The cleanup would be reducing the amount of
-> architecture-specific code.
->
-> I reckon it's worth an investigate but there is still other lower-lying
-> fruit.
+Geert Uytterhoeven
+Software Architect
 
-I hope we can get rid of various ugly elements of the quicklists if the
-page allocator would offer some sort of support. I would think that the
-slow allocation and freeing behavior is also a factor that makes
-quicklists advantageous. The quicklist page lists are simply a linked list
-of pages and a page can simply be dequeued and used.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
