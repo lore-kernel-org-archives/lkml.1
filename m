@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758176AbZBZUyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbZBZUyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758176AbZBZUyT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbZBZUyE
+	id S1758648AbZBZUyd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZBZUyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 26 Feb 2009 15:54:05 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:58799 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754523AbZBZUyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Feb 2009 15:54:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49020 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752428AbZBZUyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:54:02 -0500
-X-Authenticated: #31060655
-X-Provags-ID: V01U2FsdGVkX1/t/coW/QztDSaGrNpK37UtfHbiNmEjvSSx6mMCxW
-	mqdG1ncamBrWnL
-Message-ID: <49A70164.4000502@gmx.net>
-Date: Thu, 26 Feb 2009 21:53:56 +0100
-From: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.17) Gecko/20080922 SUSE/1.1.12-0.1 SeaMonkey/1.1.12
-MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Jesper Krogh <jesper@krogh.cc>, Ryan Jackson <rjackson@lnxi.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       Dave Olsen <dolsen@lnxi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29-rc6
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>	<49A679E8.1010301@krogh.cc>	<alpine.LFD.2.00.0902260941090.3111@localhost.localdomain>	<49A6EE17.4070102@krogh.cc> <1235677008.8730.176.camel@macbook.infradead.org>
-In-Reply-To: <1235677008.8730.176.camel@macbook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [patch 2.6.29-rc6 1/2] regulator: enumerate voltages (v2)
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+In-Reply-To: <200902261148.36892.david-b@pacbell.net>
+References: <200902081037.06645.david-b@pacbell.net>
+	 <200902231245.44360.david-b@pacbell.net>
+	 <200902231252.01980.david-b@pacbell.net>
+	 <200902261148.36892.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 20:53:58 +0000
+Message-Id: <1235681638.31223.57.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.72
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26.02.2009 20:36, David Woodhouse wrote:
-> It's for overwriting your BIOS.
->   
+On Thu, 2009-02-26 at 11:48 -0800, David Brownell wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> Add a basic mechanism for regulators to report the discrete
+> voltages they support:  list_voltage() enumerates them using
+> selectors numbered from 0 to an upper bound.
+> 
+> Use those methods to force machine-level constraints into bounds.
+> (Example:  regulator supports 1.8V, 2.4V, 2.6V, 3.3V, and board
+> constraints for that rail are 2.0V to 3.6V ... so the range of
+> voltages is then 2.4V to 3.3V on this board.)
+> 
+> Export those voltages to the regulator consumer interface, so for
+> example regulator hooked up to an MMC/SD/SDIO slot can report the
+> actual voltage options available to cards connected there.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
 
-There's a pure userspace replacement for it. That replacement is even
-packaged in most distros. See http://www.coreboot.org/Flashrom .
+Applied with git-am merge conflicts. It builds ok, can you check against
+your tree.
 
+Thanks
 
-Regards,
-Carl-Daniel
-
--- 
-http://www.hailfinger.org/
+Liam
 
