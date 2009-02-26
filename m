@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbZBZAV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZBZAXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752254AbZBZAV1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 19:21:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZBZAVL
+	id S1753931AbZBZAXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 19:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZBZAXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 19:21:11 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45608 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbZBZAVJ (ORCPT
+	Wed, 25 Feb 2009 19:23:07 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:56761 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149AbZBZAXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 19:21:09 -0500
-Message-ID: <49A5DECD.7090809@zytor.com>
-Date: Wed, 25 Feb 2009 16:14:05 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Feb 2009 19:23:06 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, hpa@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [tip:core/header-fixes] compiler-gcc4: conditionalize #error on __KERNEL__
+Date: Thu, 26 Feb 2009 01:21:18 +0100
+User-Agent: KMail/1.9.9
+References: <tip-442405f292c9f9e043afc2243a5b4128f2704c49@kernel.org>
+In-Reply-To: <tip-442405f292c9f9e043afc2243a5b4128f2704c49@kernel.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: arnd@arndb.de, Sam Ravnborg <sam@ravnborg.org>,
-       Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       coreteam@netfilter.org
-Subject: Re: [patch 5/7] make netfilter use strict integer types
-References: <20090225235138.062045835@arndb.de> <20090225235515.682333715@arndb.de> <alpine.LSU.2.00.0902260104220.20789@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LSU.2.00.0902260104220.20789@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902260121.18610.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18eNXIvHciWv2v1MEyxQ09JPOfkGgfwMLA6zmc
+ ZreKi2hdOCF6FhhTduZIzdXledf/Nooc2OmwqRcHNwKlGHzU9E
+ d/NEdi0jZiFQMdeza9KPQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
+On Thursday 26 February 2009, H. Peter Anvin wrote:
+> compiler-gcc4: conditionalize #error on __KERNEL__
 > 
-> I _strongly disagree_ with this move. Userspace also has the uintX
-> types via <stdint.h>/<cstdint>, and now you are adding a dependency
-> on linux/types.h, not to mention that your step can lead to compile
-> time piling up.
+> Impact: Fix for exported headers
 > 
-> IMHO, __uXX should be replaced by uintX_t, but a move this great I
-> will leave to future generations because there is just too much
-> persisting opinions wrt. such proposal. As such I'd like to join
-> and persist on my position and that uintX that we have should be kept.
+> We only want to error out on specific gcc versions if we are actually
+> building the kernel, so conditionalize the #if...#error on __KERNEL__.
 > 
+> Based on a patchset by Arnd Bergmann <arnd@arndb.de>.
+> 
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
 
-We *CAN'T* replace __uXX with uintX_t.  Period, full stop, end of story. 
-  It isn't possible to do universally, and doing it non-universally is 
-just silly.  Nor is it likely that this adds anything to the compile 
-time, since most realistic programs will have a dependency on 
-<linux/types.h> through some indirect path.
+No kidding. It never occurred to me that this hunk from my patch was
+any good. It just happened that I was cross compiling for powerpc
+and only had a ppc64-gcc-4.1.0 installed on my laptop, so I commented
+out that line with the intention of reverting that change after a
+successful build...
 
-Now, I have to say I'd personally would prefer if make headers_install 
-did this transformation mechanically for the common integer types, 
-instead of requiring it to have the source code formatted in a specific 
-fashion.
+Good catch!
 
-	-hpa
+	Arnd <><
