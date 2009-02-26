@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZBZPkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZBZPpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbZBZPkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 10:40:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZBZPkb
+	id S1756042AbZBZPpz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 10:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZBZPpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 10:40:31 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35202 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751898AbZBZPka (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 10:40:30 -0500
-Subject: Re: [PATCH] new irq tracer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>, mingo@elte.hu,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com
-In-Reply-To: <20090226151105.GA3122@redhat.com>
-References: <1234995035.4799.14.camel@laptop>
-	 <20090220195236.GB3104@redhat.com>
-	 <20090222123543.359C.A69D9226@jp.fujitsu.com> <49A5765C.2020001@redhat.com>
-	 <20090225165747.GC3123@redhat.com> <20090225173412.GA14269@Krystal>
-	 <20090226151105.GA3122@redhat.com>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 16:40:13 +0100
-Message-Id: <1235662813.4948.278.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 10:45:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38207 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753613AbZBZPpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 10:45:46 -0500
+Date: Thu, 26 Feb 2009 16:45:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dipankar Sarma <dipankar@in.ibm.com>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+       ego@in.ibm.com, tglx@linutronix.de, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
+       arun@linux.vnet.ibm.com, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration between CPU
+Message-ID: <20090226154526.GD352@elte.hu>
+References: <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu> <20090223075521.GA3725@balbir.in.ibm.com> <20090223091158.GJ9582@elte.hu> <20090223094850.GA10226@balbir.in.ibm.com> <20090223103814.GB8817@dirshya.in.ibm.com> <20090223110725.GB17312@elte.hu> <20090226085831.GA28397@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090226085831.GA28397@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 10:11 -0500, Jason Baron wrote:
-> 
-> Using Steve's new 'DEFINE_TRACE_FMT', I can get function graph trace
-> as follows using the original two tracepoints (patch below):
-> 
->  3)               |                      handle_IRQ_event() {
->  3)               |                        /* (irq_handler_entry) irq=28 handler=eth0 */
->  3)               |                        e1000_intr_msi() {
->  3)   2.460 us    |                          __napi_schedule();
->  3)   9.416 us    |                        }
->  3)               |                        /* (irq_handler_exit) irq=28 handler=eth0 return=handled */
->  3) + 22.935 us   |                      }
-> 
-> thanks,
-> 
-> -Jason
-> 
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
 
-Looks good, thanks Jason!
+* Dipankar Sarma <dipankar@in.ibm.com> wrote:
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> On Mon, Feb 23, 2009 at 12:07:25PM +0100, Ingo Molnar wrote:
+> > 
+> > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> > 
+> > > * Identify set of idle CPUs (CPU package) from which timers 
+> > >   can be removed
+> > > * Identify a semi-idle or idle CPU package to which the timers
+> > >   can be moved
+> > > * Decide when to start moving timers as the system has large
+> > >   number of idle CPUs
+> > > * Decide when to stop migrating as system becomes less idle
+> > >   and utilisation increases
+> > > 
+> > > Guiding all of the above decisions from user space may not be 
+> > > fast enough.
+> > 
+> > Exactly.
+> 
+> That is true for power management. However there are other 
+> situations where we may need targeted avoidance of timers. 
+> Certain type of applications - HPC for example - prefer 
+> avoidance of jitters due to periodic timers. It would be good 
+> to be able to say "avoid these CPUs for timers" while they are 
+> being used for HPC tasks.
 
+Yes - but that kind of policy should be coupled and expressed 
+via cpusets. /proc based irq_affinity is just a limited, 
+inflexible hack. All things IRQ partitioning should be handled 
+via cpusets - perhaps via the 'system sets' idea from Peter?
 
+	Ingo
