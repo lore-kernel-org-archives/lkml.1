@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbZBZDIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758882AbZBZDI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbZBZDIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:08:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZBZDHz
+	id S1758882AbZBZDI7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZBZDIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:07:55 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:40822 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbZBZDHx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:07:53 -0500
-Date: Wed, 25 Feb 2009 20:07:35 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Theodore Tso <tytso@mit.edu>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-Message-ID: <20090226030735.GA16891@parisc-linux.org>
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx> <49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net> <20090226025043.GJ1363@mit.edu>
+	Wed, 25 Feb 2009 22:08:50 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59726 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752123AbZBZDIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 22:08:49 -0500
+Date: Thu, 26 Feb 2009 04:08:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, vegard.nossum@gmail.com, stable@kernel.org,
+       akpm@linux-foundation.org, npiggin@suse.de, penberg@cs.helsinki.fi
+Subject: Re: [PATCH] v5 Teach RCU that idle task is not quiscent state at
+	boot
+Message-ID: <20090226030836.GC7526@elte.hu>
+References: <20090223161611.GA9563@linux.vnet.ibm.com> <20090223204332.GA19861@linux.vnet.ibm.com> <20090225002937.GA23733@linux.vnet.ibm.com> <20090225141945.GA28455@linux.vnet.ibm.com> <20090226020342.GA28627@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090226025043.GJ1363@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090226020342.GA28627@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 09:50:43PM -0500, Theodore Tso wrote:
-> On Wed, Feb 25, 2009 at 06:27:18PM -0500, Martin K. Petersen wrote:
-> > Because of 63-sector legacy problems a bunch of ATA vendors will
-> > initially ship 512/4096 drives that are not naturally aligned.
-> > I.e. logical sector 63 will be aligned on a 4KB hardware sector
-> > boundary to overcome the misaligned default partitioning.
-> 
-> Are we *sure* that this is what they plan to be doing?  Is there a way
-> we can query the hardware to find out for sure what drives are doing
-> what?
 
-The drive I have that's pretending to be a 512/4k drive reports this:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-$ sudo sg_readcap -l /dev/sdc
-Read Capacity results:
-   Protection: prot_en=0, p_type=0
-   Last logical block address=625142447 (0x2542eaaf), Number of logical blocks=625142448
-   Logical block length=512 bytes
-   Logical blocks per physical block=3 (log base 2) [actual=8]
-   Lowest aligned logical block address=0
-Hence:
-   Device size: 320072933376 bytes, 305245.3 MiB, 320.07 GB
+> This patch fixes a bug located by Vegard Nossum with the aid 
+> of kmemcheck, updated based on review comments from Nick 
+> Piggin, Ingo Molnar, and Andrew Morton.  And cleans up the 
+> variable-name and function-name language.  ;-)
 
-This disagrees with Martin's assertion.
+Applied to tip:core/rcu, thanks Paul!
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Ingo
