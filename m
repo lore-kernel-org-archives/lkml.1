@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZBZN25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZBZN3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbZBZN25 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 08:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZBZN2r
+	id S1756656AbZBZN3W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 08:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZBZN2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 08:28:47 -0500
-Received: from www.tglx.de ([62.245.132.106]:46805 "EHLO www.tglx.de"
+	Thu, 26 Feb 2009 08:28:48 -0500
+Received: from www.tglx.de ([62.245.132.106]:46806 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751934AbZBZN2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 08:28:46 -0500
-Message-Id: <20090226131336.423054348@linutronix.de>
+	id S1752047AbZBZN2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 08:28:47 -0500
+Message-Id: <20090226131719.393515463@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 26 Feb 2009 13:28:02 -0000
+Date: Thu, 26 Feb 2009 13:28:09 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
@@ -19,69 +19,86 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Arjan van de Veen <arjan@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Jon Masters <jonathan@jonmasters.org>
-Subject: [patch 0/4] genirq: add infrastructure for threaded interrupt
-	handlers V2
+Subject: [patch 1/4] genirq: make irqreturn_t an enum
+References: <20090226131336.423054348@linutronix.de>
+Content-Disposition: inline; filename=genirq-makeirq-return-t-an-enum.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series implements support for threaded irq handlers for the
-generic IRQ layer.
+Impact: cleanup
 
-Changes vs. V1:
-	- review comments addressed
-	- irq affinity setting for handler threads
+Remove the 2.4 compabiliy cruft
 
-Threaded interrupt handlers are not only interesting in the preempt-rt
-context. Threaded interrupt handlers can help to address common
-problems in the interrupt handling code:
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Peter Zijlstra <peterz@infradead.org>
 
- - move long running handlers out of the hard interrupt context
+---
+ include/linux/irq.h       |    4 ++--
+ include/linux/irqreturn.h |   28 ++++++++++------------------
+ 2 files changed, 12 insertions(+), 20 deletions(-)
 
- - avoid complex hardirq -> tasklet/softirq interaction and locking
-   problems by integration of this functionality into the threaded
-   handler code
+Index: linux-2.6-tip/include/linux/irq.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/irq.h
++++ linux-2.6-tip/include/linux/irq.h
+@@ -272,7 +272,7 @@ static inline int irq_balancing_disabled
+ }
+ 
+ /* Handle irq action chains: */
+-extern int handle_IRQ_event(unsigned int irq, struct irqaction *action);
++extern irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action);
+ 
+ /*
+  * Built-in IRQ handlers for various IRQ types,
+@@ -317,7 +317,7 @@ static inline void generic_handle_irq(un
+ 
+ /* Handling of unhandled and spurious interrupts: */
+ extern void note_interrupt(unsigned int irq, struct irq_desc *desc,
+-			   int action_ret);
++			   irqreturn_t action_ret);
+ 
+ /* Resending of interrupts :*/
+ void check_irq_resend(struct irq_desc *desc, unsigned int irq);
+Index: linux-2.6-tip/include/linux/irqreturn.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/irqreturn.h
++++ linux-2.6-tip/include/linux/irqreturn.h
+@@ -1,25 +1,17 @@
+-/* irqreturn.h */
+ #ifndef _LINUX_IRQRETURN_H
+ #define _LINUX_IRQRETURN_H
+ 
+-/*
+- * For 2.4.x compatibility, 2.4.x can use
+- *
+- *	typedef void irqreturn_t;
+- *	#define IRQ_NONE
+- *	#define IRQ_HANDLED
+- *	#define IRQ_RETVAL(x)
+- *
+- * To mix old-style and new-style irq handler returns.
+- *
+- * IRQ_NONE means we didn't handle it.
+- * IRQ_HANDLED means that we did have a valid interrupt and handled it.
+- * IRQ_RETVAL(x) selects on the two depending on x being non-zero (for handled)
++/**
++ * enum irqreturn
++ * @IRQ_NONE		interrupt was not from this device
++ * @IRQ_HANDLED		interrupt was handled by this device
+  */
+-typedef int irqreturn_t;
++enum irqreturn {
++	IRQ_NONE,
++	IRQ_HANDLED,
++};
+ 
+-#define IRQ_NONE	(0)
+-#define IRQ_HANDLED	(1)
+-#define IRQ_RETVAL(x)	((x) != 0)
++typedef enum irqreturn irqreturn_t;
++#define IRQ_RETVAL(x)	((x) != IRQ_NONE)
+ 
+ #endif
 
- - improved debugability of the kernel: faulty handlers do not take
-   down the system.
-
- - allows prioritizing of the handlers which share an interrupt line
-
-The implementation provides an opt-in mechanism to convert drivers to
-the threaded interrupt handler model contrary to the preempt-rt patch
-where the threaded handlers are enabled by a brute force switch. The
-brute force switch is suboptimal as it does not change the interrupt
-handler -> tasklet/softirq interaction problems, but was the only way
-which was possible for the limited man power of the preempt-rt
-developers.
-
-Converting an interrupt to threaded makes only sense when the handler
-code takes advantage of it by integrating tasklet/softirq
-functionality and simplifying the locking.
-
-When a driver wants to use threaded interrupt handlers it needs to
-provide a quick check handler function, which checks whether the
-interrupt was originated from the device or not.
-
-In case it was originated from the device the quick check handler must
-disable the interrupt at the device level and return
-IRQ_WAKE_THREAD. The generic interrupt handling core then sets the
-IRQF_RUNTHREAD in the irqaction of the handler and wakes the
-associated thread.
-
-The irqaction is referenced in the threads task_struct so handlers can
-check for newly arrived interrupts in action flags. Aside of that the
-reference is used to prevent further referencing of the thread in the
-interrupt code in the case of segfault to make sure that the system
-(minus the now dead interrupt handler) survives and debug information
-can be retrieved. In the best case the driver can be restarted, but
-dont expect that as a given.
-
-The code was tested with a converted USB EHCI driver. The EHCI shares
-an interrupt line with another device and both the threaded and the
-non threaded handlers coexist nicely.
-
-Thanks,
-
-	tglx
 
