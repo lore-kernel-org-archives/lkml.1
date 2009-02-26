@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbZBZUdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbZBZUds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640AbZBZUdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZBZUdD
+	id S1758200AbZBZUds (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:33:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbZBZUdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:33:03 -0500
-Received: from verein.lst.de ([213.95.11.210]:37529 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbZBZUdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:33:01 -0500
-Date: Thu, 26 Feb 2009 21:32:51 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: torvalds@osdl.org
-Cc: Takashi Sato <t-sato@yk.jp.nec.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [hch: [PATCH] fix FREEZE/THAW compat_ioctl regression]
-Message-ID: <20090226203251.GA31003@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44,UPPERCASE_25_50
+	Thu, 26 Feb 2009 15:33:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40358 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753537AbZBZUdg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 15:33:36 -0500
+Date: Thu, 26 Feb 2009 12:33:30 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesper Krogh <jesper@krogh.cc>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29-rc6
+In-Reply-To: <49A6F39F.9040801@krogh.cc>
+Message-ID: <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain> <49A6F39F.9040801@krogh.cc>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[I sent this 10 days ago to lkml and fsdevel and didn't get a single
- reply yet, can we please get this in so we don't have that regression
- in 2.6.29?]
 
 
-Commit 8e961870bb9804110d5c8211d5d9d500451c4518 removed the FREEZE/THAW
-handling in xfs_compat_ioctl but never added any compat handler back, so
-now any freeze/thaw request from a 32-bit binary ond 64-bit userspace
-will fail.
+On Thu, 26 Feb 2009, Jesper Krogh wrote:
+> 
+> 2.6.26.8 doesnt have this problem.
+> 
+> The "current_clocsource" is the same on both systems.
+> 
+> $ cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+> tsc
 
-As these ioctls are 32/64-bit compatible two simple COMPATIBLE_IOCTL
-entries in fs/compat_ioctl.c will do the job.
+What does the frequency calibrate to? It should be in the dmesg. Does it 
+differ by a big amount?
 
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: xfs/fs/compat_ioctl.c
-===================================================================
---- xfs.orig/fs/compat_ioctl.c	2009-02-16 12:48:23.000000000 +0000
-+++ xfs/fs/compat_ioctl.c	2009-02-16 12:49:34.000000000 +0000
-@@ -1913,6 +1913,9 @@
- /* 0x00 */
- COMPATIBLE_IOCTL(FIBMAP)
- COMPATIBLE_IOCTL(FIGETBSZ)
-+/* 'X' - originally XFS but some now in the VFS */
-+COMPATIBLE_IOCTL(FIFREEZE)
-+COMPATIBLE_IOCTL(FITHAW)
- /* RAID */
- COMPATIBLE_IOCTL(RAID_VERSION)
- COMPATIBLE_IOCTL(GET_ARRAY_INFO)
-
------ End forwarded message -----
+		Linus
