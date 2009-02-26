@@ -1,23 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZBZAU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbZBZAV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbZBZAU5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 19:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZBZAUp
+	id S1752254AbZBZAV1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 19:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZBZAVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 19:20:45 -0500
-Received: from xm14.infosec.fedex.com ([199.81.197.42]:38926 "EHLO
-	xm14.infosec.fedex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753736AbZBZAUo (ORCPT
+	Wed, 25 Feb 2009 19:21:11 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45608 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbZBZAVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 19:20:44 -0500
-X-Greylist: delayed 2263 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Feb 2009 19:20:43 EST
-X-AuditID: c75145d5-a37fcbb000000bb3-96-49a5d7796055
-Message-Id: <20090225234240.51BD44A0003@xm15.infosec.fedex.com>
-Date: Wed, 25 Feb 2009 17:42:40 -0600 (CST)
-From: antslpysm@nifty.com
-To: undisclosed-recipients:;
-X-Brightmail-Tracker: AAAABA3FEHANxfpRDcX6Ug3F+4g=
+	Wed, 25 Feb 2009 19:21:09 -0500
+Message-ID: <49A5DECD.7090809@zytor.com>
+Date: Wed, 25 Feb 2009 16:14:05 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: arnd@arndb.de, Sam Ravnborg <sam@ravnborg.org>,
+       Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       coreteam@netfilter.org
+Subject: Re: [patch 5/7] make netfilter use strict integer types
+References: <20090225235138.062045835@arndb.de> <20090225235515.682333715@arndb.de> <alpine.LSU.2.00.0902260104220.20789@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LSU.2.00.0902260104220.20789@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> 
+> I _strongly disagree_ with this move. Userspace also has the uintX
+> types via <stdint.h>/<cstdint>, and now you are adding a dependency
+> on linux/types.h, not to mention that your step can lead to compile
+> time piling up.
+> 
+> IMHO, __uXX should be replaced by uintX_t, but a move this great I
+> will leave to future generations because there is just too much
+> persisting opinions wrt. such proposal. As such I'd like to join
+> and persist on my position and that uintX that we have should be kept.
+> 
+
+We *CAN'T* replace __uXX with uintX_t.  Period, full stop, end of story. 
+  It isn't possible to do universally, and doing it non-universally is 
+just silly.  Nor is it likely that this adds anything to the compile 
+time, since most realistic programs will have a dependency on 
+<linux/types.h> through some indirect path.
+
+Now, I have to say I'd personally would prefer if make headers_install 
+did this transformation mechanically for the common integer types, 
+instead of requiring it to have the source code formatted in a specific 
+fashion.
+
+	-hpa
