@@ -1,108 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZBZTLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZBZTSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbZBZTLD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:11:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZBZTKw
+	id S1754176AbZBZTSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZBZTSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:10:52 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:40444 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbZBZTKv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:10:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pPJlg47+Jlu1F/6jOCQUk53KdEnALbyBgmi4X8o+jj30H3IUboZztfchONVs8wrzTQ
-         bMtQ3h03ykFoluTrZvptqvnMLeCLEw6j2mbJdFJDkVBwVahMjC4v7/6dMS6z7p1XferU
-         65aaDVrHKWFrcCLk0pSpeXwuq+Jx9vJyXzC/A=
-MIME-Version: 1.0
-In-Reply-To: <20090226185053.GD31413@elte.hu>
-References: <20090226184433.GA15644@damson.getinternet.no>
-	 <20090226185053.GD31413@elte.hu>
-Date: Thu, 26 Feb 2009 20:10:48 +0100
-Message-ID: <19f34abd0902261110n7b73eabdpf5b963594fc821c8@mail.gmail.com>
-Subject: Re: [RFC][PATCH] signals: don't copy siginfo_t on dequeue
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Oleg Nesterov <oleg@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+	Thu, 26 Feb 2009 14:18:12 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60604 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752203AbZBZTSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 14:18:12 -0500
+Date: Thu, 26 Feb 2009 20:15:09 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [RFC][PATCH] signals: don't copy siginfo_t on dequeue
+Message-ID: <20090226191509.GA6204@redhat.com>
+References: <20090226184433.GA15644@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090226184433.GA15644@damson.getinternet.no>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/26 Ingo Molnar <mingo@elte.hu>:
+On 02/26, Vegard Nossum wrote:
 >
-> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
->
->> >From 60fc9a464377159ab807aec63277d4970019d631 Mon Sep 17 00:00:00 2001
->> From: Vegard Nossum <vegard.nossum@gmail.com>
->> Date: Thu, 26 Feb 2009 19:17:58 +0100
->> Subject: [PATCH] signals: don't copy siginfo_t on dequeue
->>
->> Instead of copying the siginfo_t whenever a signal is dequeued, just
->> get the pointer to the struct sigqueue, which can be freed by the
->> caller when the signal has been delivered.
->>
->> We can save kernel text (x86, 32-bit):
->>
->> $ scripts/bloat-o-meter vmlinux-unpatched vmlinux
->> add/remove: 0/0 grow/shrink: 3/7 up/down: 81/-538 (-457)
->> function                                     old     new   delta
->> get_signal_to_deliver                        871     922     +51
->> release_console_sem                          459     481     +22
->> generate_resume_trace                        611     619      +8
->> send_sigqueue                                257     253      -4
->> vma_adjust                                  1101    1093      -8
->> sys_rt_sigtimedwait                          548     531     -17
->> dequeue_signal                               415     372     -43
->> __dequeue_signal                             388     259    -129
->> signalfd_read                               1290    1139    -151
->> do_notify_resume                            2216    2030    -186
->>
->> And we reduce stack pressure; In handle_signal() (in x86 code), we
->> replace a siginfo_t (128 bytes) with a pointer (8 bytes on x86_64),
->> and the same in signalfd_read().
->>
->> There is a slight slowdown (2.02% relative increase in CPU time):
->>
->>               unpatched       patched
->> ----------------------------------------
->> mean:         3.078500        3.140800
->> stddev:       0.074624        0.168989
->>
->> (Numbers are: CPU time in seconds, for two processes to
->> ping-pong in total 655360 SIGUSR1/SIGUSR2 signals between each
->> other. This was repeated 100 times for each kernel.)
->
-> hm, does this SIGUSR1/SIGUSR2 test actually make use siginfo?
+> Instead of copying the siginfo_t whenever a signal is dequeued, just
+> get the pointer to the struct sigqueue, which can be freed by the
+> caller when the signal has been delivered.
 
-The delivery of a signal requires one copy_siginfo(). Likewise for
-e.g. sys_kill(), which also requires one copy_siginfo(). So with this
-patch, we have saved only the copy_siginfo() of the delivery path.
+Yes, it would bi nice. But it is not that simple,
 
-> I.e. shouldnt we have seen a speedup, due to not having to copy
-> the siginfo structure?
+> -static void collect_signal(int sig, struct sigpending *list, siginfo_t *info)
+> +static struct sigqueue *collect_signal(int sig, struct sigpending *list)
+>  {
+>  	struct sigqueue *q, *first = NULL;
+>  
+> @@ -377,40 +377,29 @@ static void collect_signal(int sig, struct sigpending *list, siginfo_t *info)
+>  	if (first) {
+>  still_pending:
+>  		list_del_init(&first->list);
+> -		copy_siginfo(info, &first->info);
+> -		__sigqueue_free(first);
+> -	} else {
+> -		/* Ok, it wasn't in the queue.  This must be
+> -		   a fast-pathed signal or we must have been
+> -		   out of queue space.  So zero out the info.
+> -		 */
+> -		info->si_signo = sig;
+> -		info->si_errno = 0;
+> -		info->si_code = 0;
+> -		info->si_pid = 0;
+> -		info->si_uid = 0;
+>  	}
+> +
+> +	return first;
+>  }
+>  
+> -static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
+> -			siginfo_t *info)
+> +static struct sigqueue *__dequeue_signal(struct sigpending *pending,
+> +	sigset_t *mask)
+>  {
+>  	int sig = next_signal(pending, mask);
+>  
+> -	if (sig) {
+> -		if (current->notifier) {
+> -			if (sigismember(current->notifier_mask, sig)) {
+> -				if (!(current->notifier)(current->notifier_data)) {
+> -					clear_thread_flag(TIF_SIGPENDING);
+> -					return 0;
+> -				}
+> +	if (!sig)
+> +		return NULL;
+> +
+> +	if (current->notifier) {
+> +		if (sigismember(current->notifier_mask, sig)) {
+> +			if (!(current->notifier)(current->notifier_data)) {
+> +				clear_thread_flag(TIF_SIGPENDING);
+> +				return 0;
+>  			}
+>  		}
+> -
+> -		collect_signal(sig, pending, info);
+>  	}
+>  
+> -	return sig;
+> +	return collect_signal(sig, pending);
 
-Actually, no. Because copy_siginfo() does not copy the whole (128
-byte) structure if the signal was generated by the user, just probably
-the first 24 bytes or so. So I would expect the "kernel generated
-signal" path to be faster, but that is not tested by my SIGUSR test.
+So. dequeue_signal() returns NULL if there is no siginfo queued. In that
+case we assume that the signal is not pending.
 
-Besides, I think there is a small overhead in now having an extra
-level of indirection for getting our hands on the signal number.
+But this is not right. Think about SEND_SIG_FORCED, or __sigqueue_alloc()
+failure when the signal is sent. Or look at zap_other_threads() for example,
+it just sets the bit in ->pending but doesn't queue siginfo.
 
-But we might able to speed up the user->user case a little bit by
-fixing sys_kill() not to use copy_siginfo() too.
+Oleg.
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
