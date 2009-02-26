@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZBZFRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZBZFT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbZBZFRW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 00:17:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZBZFRI
+	id S1756160AbZBZFT1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 00:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZBZFTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 00:17:08 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:29007 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbZBZFRG (ORCPT
+	Thu, 26 Feb 2009 00:19:18 -0500
+Received: from everest.las.ic.unicamp.br ([143.106.60.118]:38099 "EHLO
+	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbZBZFTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 00:17:06 -0500
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Theodore Tso <tytso@mit.edu>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
-	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
-	<20090226025043.GJ1363@mit.edu>
-	<20090226030735.GA16891@parisc-linux.org>
-Date: Thu, 26 Feb 2009 00:16:00 -0500
-In-Reply-To: <20090226030735.GA16891@parisc-linux.org> (Matthew Wilcox's message of "Wed\, 25 Feb 2009 20\:07\:35 -0700")
-Message-ID: <yq1eixlg4mn.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.49A62594.015B:SCFSTAT928724,ss=1,fgs=0
+	Thu, 26 Feb 2009 00:19:18 -0500
+From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kernel/fork.c: define reset_task_cputimes()
+Date: Thu, 26 Feb 2009 02:17:55 -0300
+Message-Id: <1235625475-21218-1-git-send-email-gustavo@las.ic.unicamp.br>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Matthew" == Matthew Wilcox <matthew@wil.cx> writes:
+Group all vars that receive cputime_zero in the same static function.
+This also cleans the code.
 
-Matthew> Lowest aligned logical block address=0
+Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+---
+ include/linux/sched.h |   11 +++++++++++
+ kernel/fork.c         |    8 +-------
+ 2 files changed, 12 insertions(+), 7 deletions(-)
 
-Matthew> This disagrees with Martin's assertion.
-
-Quick answer from one of my contacts.  Desktop drives will indeed ship
-with an alignment of 1(*).  The alignment is hardwired at time of
-manufacture and can't be changed.
-
-(*) I had to go back and reread the ATA spec to grok this.  READ
-CAPACITY(16) indicates the lowest naturally aligned LBA.  With LBA 63
-offset in play that would be LBA 7.
-
-ATA, on the other hand, indicates how much LBA 0 is offset from the
-beginning of the first physical sector.  If LBA 63 is naturally aligned
-that means that LBA 0 is offset 512 bytes (physical sector 0 starts at
-LBA -1 if you will). Hence IDENTIFY DEVICE word 209 will contain 0x4001.
-
-So you need to tweak your RC16 response a bit...
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 8981e52..1a64587 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1595,6 +1595,17 @@ extern cputime_t task_utime(struct task_struct *p);
+ extern cputime_t task_stime(struct task_struct *p);
+ extern cputime_t task_gtime(struct task_struct *p);
+ 
++static inline void reset_task_cputimes(struct task_struct *t)
++{
++	t->utime = cputime_zero;
++	t->stime = cputime_zero;
++	t->gtime = cputime_zero;
++	t->utimescaled = cputime_zero;
++	t->stimescaled = cputime_zero;
++	t->prev_utime = cputime_zero;
++	t->prev_stime = cputime_zero;
++}
++
+ /*
+  * Per process flags
+  */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index a66fbde..9856abe 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1031,13 +1031,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	clear_tsk_thread_flag(p, TIF_SIGPENDING);
+ 	init_sigpending(&p->pending);
+ 
+-	p->utime = cputime_zero;
+-	p->stime = cputime_zero;
+-	p->gtime = cputime_zero;
+-	p->utimescaled = cputime_zero;
+-	p->stimescaled = cputime_zero;
+-	p->prev_utime = cputime_zero;
+-	p->prev_stime = cputime_zero;
++	reset_task_cputimes(p);
+ 
+ 	p->default_timer_slack_ns = current->timer_slack_ns;
+ 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+1.6.0.6
+
