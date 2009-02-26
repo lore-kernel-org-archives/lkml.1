@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbZBZDja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZBZDqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbZBZDja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZBZDjV
+	id S1757492AbZBZDqX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:46:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZBZDqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:39:21 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:59438 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZBZDjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:39:20 -0500
-Date: Wed, 25 Feb 2009 21:39:18 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 4/4] keys: make procfiles per-user-namespace
-Message-ID: <20090226033917.GA3826@us.ibm.com>
-References: <20090225210336.GA20086@us.ibm.com> <20090223204041.GA31626@us.ibm.com> <20090109225313.GB15599@us.ibm.com> <20090109225208.GA15252@us.ibm.com> <5296.1234522990@redhat.com> <16728.1235565664@redhat.com> <7386.1235606002@redhat.com>
+	Wed, 25 Feb 2009 22:46:09 -0500
+Received: from kroah.org ([198.145.64.141]:46678 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751832AbZBZDqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 22:46:08 -0500
+Date: Wed, 25 Feb 2009 19:46:05 -0800
+From: Greg KH <greg@kroah.com>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 0/6] ATS capability support for Intel IOMMU
+Message-ID: <20090226034605.GA6782@kroah.com>
+References: <1234443038-15437-1-git-send-email-yu.zhao@intel.com> <20090214225910.GA1515@colo.lackof.org> <20090226025035.GA12973@yzhao-otc.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7386.1235606002@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090226025035.GA12973@yzhao-otc.sh.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
+On Thu, Feb 26, 2009 at 10:50:35AM +0800, Yu Zhao wrote:
+> On Sun, Feb 15, 2009 at 06:59:10AM +0800, Grant Grundler wrote:
+> > On Thu, Feb 12, 2009 at 08:50:32PM +0800, Yu Zhao wrote:
+> > > This patch series implements Address Translation Service support for
+> > > the Intel IOMMU. ATS makes the PCI Endpoint be able to request the
+> > > DMA address translation from the IOMMU and cache the translation in
+> > > the Endpoint, thus alleviate IOMMU pressure and improve the hardware
+> > > performance in the I/O virtualization environment.
+> > > 
+> > > 
+> > > Changelog: v2 -> v3
+> > >   1, throw error message if VT-d hardware detects invalid descriptor
+> > >      on Queued Invalidation interface (David Woodhouse)
+> > >   2, avoid using pci_find_ext_capability every time when reading ATS
+> > >      Invalidate Queue Depth (Matthew Wilcox)
+> > > Changelog: v1 -> v2
+> > >   added 'static' prefix to a local LIST_HEAD (Andrew Morton)
+> > > 
+> > > 
+> > > Yu Zhao (6):
+> > >   PCI: support the ATS capability
+> > >   VT-d: parse ATSR in DMA Remapping Reporting Structure
+> > >   VT-d: add queue invalidation fault status support
+> > >   VT-d: add device IOTLB invalidation support
+> > >   VT-d: cleanup iommu_flush_iotlb_psi and flush_unmaps
+> > >   VT-d: support the device IOTLB
+> > > 
+> > >  drivers/pci/dmar.c           |  230 ++++++++++++++++++++++++++++++++++++++----
+> > 
+> > Yu,
+> > Can you please add something to Documentation/PCI/pci.txt?
+> > New API I'm seeing are:
+> > +extern int pci_enable_ats(struct pci_dev *dev, int ps);
+> > +extern void pci_disable_ats(struct pci_dev *dev);
+> > +extern int pci_ats_queue_depth(struct pci_dev *dev);
 > 
-> > So you want users to be able to mmap the file and lseek to a particular
-> > spot?
+> Yes, I'll document these new API.
 > 
-> mmap?  *blink*
-
-/me pretends he didn't say that
-
-> > Meanwhile, do you have any objections to these 4 patches?  :)
+> > Do these also need to be EXPORT_SYMBOL_GPL() as well?
+> > Or are drivers never expected to call the above?
 > 
-> Not really.  You can add my Acked-by.
+> PCI device driver shouldn't use these API, only IOMMU driver (can't be module)
+> would use them. Anyway it's a good idea to export them :-)
 
-Thanks.
-
-> It's just that mapping fpos to keyid
-> might simplify the code.
-
-Ok i think i see what you mean.  I'll give it a shot.
+Don't export them if no one is using them, that's just a waste of space.
 
 thanks,
--serge
+
+greg k-h
