@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZBZVys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbZBZVu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbZBZVys (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbZBZVyj
+	id S1758769AbZBZVu7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759402AbZBZVug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:54:39 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:43265 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752930AbZBZVyj (ORCPT
+	Thu, 26 Feb 2009 16:50:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39005 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756029AbZBZVuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:54:39 -0500
-Subject: Re: Linux 2.6.29-rc6
-From: john stultz <johnstul@us.ibm.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>
-In-Reply-To: <49A70B24.6090706@krogh.cc>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
-	 <49A6F39F.9040801@krogh.cc>
-	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
-	 <49A6FEE2.90700@krogh.cc>
-	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
-	 <49A70B24.6090706@krogh.cc>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 13:54:29 -0800
-Message-Id: <1235685269.6811.11.camel@localhost.localdomain>
+	Thu, 26 Feb 2009 16:50:35 -0500
+Date: Thu, 26 Feb 2009 13:49:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: alan@lxorguk.ukuu.org.uk, alan@redhat.com, hinko.kocevar@cetrtapot.si,
+       janez.cufer@cetrtapot.si, starvik@axis.com, jesper.nilsson@axis.com,
+       apw@canonical.com, linux-kernel@vger.kernel.org, dev-etrax@axis.com
+Subject: Re: [PATCH]  Cleanup patch for RS485 on Cris architecture
+Message-Id: <20090226134924.e4d88605.akpm@linux-foundation.org>
+In-Reply-To: <49A51878.7020206@evidence.eu.com>
+References: <49A51878.7020206@evidence.eu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 22:35 +0100, Jesper Krogh wrote:
-> > Also mind sending the full dmesg for both kernels?
+On Wed, 25 Feb 2009 11:07:52 +0100
+Claudio Scordino <claudio@evidence.eu.com> wrote:
+
+> Dear Alan, dear Andrew,
 > 
-> http://krogh.cc/~jesper/dmesg-2.6.29-rc6.txt
-> http://krogh.cc/~jesper/dmesg-2.6.26.8.txt
+>      around one month ago I submitted a cleanup patch to use the new 
+> general RS485 Linux data structure (introduced by Alan with commit 
+> number c26c56c0f40e200e61d1390629c806f6adaffbcc) in the Cris 
+> architecture too (currently, Cris still uses the old private data 
+> structure instead of the new one).
+> 
+> The code compiled, but I couldn't test it at that time.
+> 
+> Now, the code has been tested by Hinko Kocevar and Janez Cufer 
+> (CC:-ed) from the AXIS group, who also fixed a bug.
+> 
+> Therefore, can you please commit the patch in attachment ?
+> 
+> Many thanks,
+> 
+>              Claudio Scordino
+> 
+> 
+> [0001-RS485-support-on-Cris-rewritten-in-order-to-use-new.patch  text/x-diff (9.9KB)]
+> >From 9d4397feff9773820e158693aa73621c0c20f017 Mon Sep 17 00:00:00 2001
+> From: Claudio Scordino <claudio@evidence.eu.com>
+> Date: Tue, 24 Feb 2009 18:00:44 +0100
+> Subject: [PATCH 1/1] RS485 support on Cris rewritten in order to use new serial_rs485 data structure
+> 
+> 
+> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+> Tested-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
+> Tested-by: Janez Cufer <janez.cufer@cetrtapot.si>
 
-So one interesting difference:
-2.6.26.8:	TSC calibrated against PM_TIMER
-2.6.29-rc6:	Fast TSC calibration using PIT
+The patch had no changelog - please always provide one.
 
-Thomas, any thoughts as to why we might be calibrating off the PIT
-instead of the PM_TIMER w/ 2.6.29?
+I scraped some text from your covering comment and made this:
 
-Maybe does this line provide a hint?
-FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
+    Use the new general RS485 Linux data structure (introduced by
+    Alan with commit number c26c56c0f40e200e61d1390629c806f6adaffbcc)
+    in the Cris architecture too (currently, Cris still uses the old
+    private data structure instead of the new one).
 
-
-thanks
--john
-
-
+for a changelog.  Feel free to send better text if that is inappropriate
+or incomplete.
