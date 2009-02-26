@@ -1,52 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbZBZXPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZBZXR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbZBZXPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 18:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbZBZXPi
+	id S1758764AbZBZXR7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 18:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbZBZXRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 18:15:38 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:1669 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758639AbZBZXPh (ORCPT
+	Thu, 26 Feb 2009 18:17:46 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:43976 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbZBZXRp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 18:15:37 -0500
-From: "Bob Copeland" <me@bobcopeland.com>
-To: Jiri Slaby <jirislaby@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       linux-kernel@vger.kernel.org, Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [PATCH 1/1] ath5k: fix hw rate index condition
-Date: Thu, 26 Feb 2009 18:15:10 -0500
-Message-Id: <20090226230338.M86894@bobcopeland.com>
-In-Reply-To: <1235688271-22346-1-git-send-email-jirislaby@gmail.com>
-References: <1235688271-22346-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: OpenWebMail 2.53 
-X-OriginatingIP: 149.101.1.121 (bob)
+	Thu, 26 Feb 2009 18:17:45 -0500
+Date: Thu, 26 Feb 2009 15:17:42 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+Message-ID: <20090226231742.GB19959@ovro.caltech.edu>
+References: <20090224000002.GA578@ovro.caltech.edu> <200902262137.15169.arnd@arndb.de> <20090226214919.GA19959@ovro.caltech.edu> <200902262334.33778.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902262334.33778.arnd@arndb.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 26 Feb 2009 15:17:43 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009 23:44:31 +0100, Jiri Slaby wrote
-> Make sure we print out a warning when the index is out of bounds,
-> i.e. even on hw_rix == AR5K_MAX_RATES.
+On Thu, Feb 26, 2009 at 11:34:33PM +0100, Arnd Bergmann wrote:
+> On Thursday 26 February 2009, Ira Snyder wrote:
+> > On Thu, Feb 26, 2009 at 09:37:14PM +0100, Arnd Bergmann wrote:
+> > 
+> > The registers are part of the board control registers. They don't fit at
+> > all in the message unit. Doing this in the bootloader seems like a
+> > logical place, but that would require any testers to flash a new U-Boot
+> > image into their mpc8349emds boards.
+> > 
+> > The first set of access is used to set up a 1GB region in the memory map
+> > that accesses the host's memory. Any reads/writes to addresses
+> > 0x80000000-0xc0000000 actually hit the host's memory.
+> > 
+> > The last access sets up PCI BAR1 to hit the memory from
+> > dma_alloc_coherent(). The bootloader already sets up the window as 16K,
+> > it just doesn't point it anywhere. Maybe this /should/ go into the
+> > bootloader. Like above, it would require testers to flash a new U-Boot
+> > image into their mpc8349emds boards.
 > 
-> Also change to WARN and print text with the reported hw_rix.
+> Ok, I see.
+> 
+> I guess the best option for doing it in Linux then would be to have
+> a board control driver (not sure if this already exists) that exports
+> high-level functions to set up the inbound and outbound windows.
+> 
 
-ACK.
+Nothing like it exists. The OF device tree doesn't even describe these
+registers. The code in arch/powerpc/sysdev/fsl_pci.c uses some registers
+near these, but it gets their address by masking the low bits off the
+addresses from the device tree and adding the offsets of the new
+registers. Nasty.
 
-Speaking of, I think there's another potential oob array access at:
+I'll do this for now:
+1) Get the message unit registers from my device tree
+2) Encapsulate all use of get_immrbase() to a single function
 
-if (rxs.rate_idx >= 0 && rs.rs_rate == 
-    sc->curband->bitrates[rxs.rate_idx].hw_value_short)
-        rxs.flag |= RX_FLAG_SHORTPRE;
+That way it could be easily replaced in the future when something more
+suitable comes along.
 
-because sc->rate_idx is u8 instead of s8.
+> > Yeah, virtio doesn't work that way.
+> > 
+> > The virtio drivers just call find_vq() with a different index for each
+> > queue they want to use. You have no way of knowing how many queues each
+> > virtio driver will want, unless you go read their source code.
+> > 
+> > virtio-net currently uses 3 queues, but we only support the first two.
+> > The third is optional (for now...), and non-symmetric.
+> 
+> I mean the part of your driver that calls register_virtio_device()
+> could make the decision, this is the one I was referring to
+> as virtio_net glue because it is the only part that actually needs
+> to know about the features etc.
+> 
+> Right now, you just call register_virtio_net from vop_probe(), which
+> is absolutely appropriate for the specific use case. In the most
+> general case though, you would have a user interface on one or
+> both sides that allows a (root) user to trigger the creation of
+> a virtio_net (or other virtio) device with specific characteristics
+> such as MAC address or number of virtqueues.
+> 
 
--- 
-Bob Copeland %% www.bobcopeland.com
+I didn't think about this at all. This driver could be used to boot a
+(guest) system over NFS, so in that case there isn't a userspace running
+yet, to allow configuration. This is essentially my use case, though I
+haven't implemented it yet.
 
+Also, I hate designing user interfaces :) Any concrete suggestions on
+design would be most welcome.
 
+> One idea I had earlier was that there could be a special device
+> with just one virtqueue that is always present and that allows you
+> do communicate configuration changes regarding the available devices
+> to the remote VOP driver.
+> 
+
+That's an interesting idea that I didn't consider, either. It wouldn't
+have to be fast, just reliable. When you're doing small transfers, the
+CPU is just fine.
+
+Ira
