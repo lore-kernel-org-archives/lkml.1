@@ -1,33 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbZBZIWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbZBZIYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754606AbZBZIWZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 03:22:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbZBZIWQ
+	id S1754126AbZBZIYI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 03:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbZBZIXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 03:22:16 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52792 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751344AbZBZIWP (ORCPT
+	Thu, 26 Feb 2009 03:23:55 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42368 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259AbZBZIXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 03:22:15 -0500
-Date: Thu, 26 Feb 2009 17:20:56 +0900
+	Thu, 26 Feb 2009 03:23:54 -0500
+Date: Thu, 26 Feb 2009 17:22:34 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 1/2] New cgroup subsystem API (->initialize())
-Message-Id: <20090226172056.d0e53e98.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <49A64EB8.9020203@cn.fujitsu.com>
-References: <20090225105730.GA4008@in.ibm.com>
-	<20090225105831.GB4008@in.ibm.com>
-	<49A604BA.9090407@cn.fujitsu.com>
-	<20090226075259.GA3312@in.ibm.com>
-	<49A64EB8.9020203@cn.fujitsu.com>
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpuacct: add a branch prediction
+Message-Id: <20090226172234.a931931f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <49A6501B.7040604@cn.fujitsu.com>
+References: <49A6475F.4000502@cn.fujitsu.com>
+	<20090226170738.a982057b.kamezawa.hiroyu@jp.fujitsu.com>
+	<49A6501B.7040604@cn.fujitsu.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -37,31 +32,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009 16:11:36 +0800
+On Thu, 26 Feb 2009 16:17:31 +0800
 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> Bharata B Rao wrote:
-> > On Thu, Feb 26, 2009 at 10:55:54AM +0800, Li Zefan wrote:
-> >> Bharata B Rao wrote:
-> >>> From: Balaji Rao <balajirrao@gmail.com>
-> > Another thing that could be done is to enhance already existing
-> > cpuacct controller to do stime/utime accouting also. cpuacct controller
-> > exists precisely for doing per-cgroup accounting and is there any reason
-> > why these stats shouldn't be part of cpuacct controller. If we do this,
-> > users would be forced to use cpu controller and cpuacct controller
-> > together. Is that a problem ?
+> KAMEZAWA Hiroyuki wrote:
+> > On Thu, 26 Feb 2009 15:40:15 +0800
+> > Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> >> cpuacct_charge() is in fast-path, and checking of !cpuacct_susys.active
+> >> always returns false after cpuacct has been initialized at system boot.
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> >> ---
+> >>  kernel/sched.c |    2 +-
+> >>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/kernel/sched.c b/kernel/sched.c
+> >> index 410eec4..fd2f7fc 100644
+> >> --- a/kernel/sched.c
+> >> +++ b/kernel/sched.c
+> >> @@ -9589,7 +9589,7 @@ static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
+> >>  	struct cpuacct *ca;
+> >>  	int cpu;
+> >>  
+> >> -	if (!cpuacct_subsys.active)
+> >> +	if (unlikely(!cpuacct_subsys.active))
+> >>  		return;
+> >>  
+> > (Just curious)
+> > I wonder "ca = task_ca(tsk)" will return NULL if cpuacct subsys is not initalized.
+> 
+> Yes, it will be NULL, and that's why we need this check.
+> 
+> > Then, can we just remove this check ?
 > > 
 > 
-> I wondered why these stats is part of cpu subsystem but not cpuacct.
-> And I don't see any problem to use these 2 subsystems together. Actually
-> this is one of the advantage of cgroup.
+> cpuacct_charge() can be called before cpuacct is initialized, so we have to check this
+> case here.
 > 
-IMHO, cpuacct subsystem should count utime/stime.
-current statistics is not so useful.
+My point is, 
 
-BTW, I wonde why cpuacct subsys walks up to root at charging...
-I think we can gather all subtree information at read...
+ca = task_ca(tsk)
+for (; ca; ca->parent) {
+   ...
+}
 
-Thanks
+What is problem even if ca is NULL.
+
+Thanks,
 -Kame
+
+
+
+
 
