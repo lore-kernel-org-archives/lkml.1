@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbZBZVKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZBZVM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758376AbZBZVKZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 16:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZBZVKI
+	id S1757777AbZBZVM5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 16:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZBZVMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 16:10:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45520 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754299AbZBZVKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 16:10:06 -0500
-To: Theodore Tso <tytso@mit.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
-References: <20090225025608.956691460@goodmis.org>
-	<20090225025753.798204550@goodmis.org>
-	<20090224194548.3effb746.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com>
-	<20090224203308.8d623e0b.akpm@linux-foundation.org>
-	<20090225081118.GC15303@elte.hu>
-	<20090225002852.5ef5b869.akpm@linux-foundation.org>
-	<20090225135437.GG7064@mit.edu>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Thu, 26 Feb 2009 16:08:54 -0500
-In-Reply-To: <20090225135437.GG7064@mit.edu> (Theodore Tso's message of "Wed, 25 Feb 2009 08:54:37 -0500")
-Message-ID: <y0miqmwoqhl.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 26 Feb 2009 16:12:47 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:33359 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751193AbZBZVMq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 16:12:46 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=wUKG0TPL6nNELynDzDZ4bH0AZwSSQ3YfaStSqVZ/7Qand3asVIDzH/zv9UmK3jQRRGnN6TeIHdmgsI2/BfAZvG1D83bcsRujfLVagAmJNghfjt8cxTHRff+IXt4sDwkxJyJgP360i7t+EYXEVX1eEobj9TIAuahaErPFY/U5uKM=  ;
+X-YMail-OSG: dYMsRIgVM1k0nwEPIKqX9HgnFqnEGBtD7.Zbb7oGqZoTR6zXkVhee0VtY5iQTzjtV4HviOTd2HQLJ4XPsP5Hw1SONTAUauRqP52LaK2wfwj5ROHUeTHbMUFcGewwfQFmyZyj22TZS2RAvcasyyHHF4I8HkMZRTv8fq2DlVTXAWgLkn9pGH45T.rU0SKJjzc9H8.CMoTXlpH8ehdIzc3cyx4vSK.IKnxWaB61jA0-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.29-rc6 1/2] regulator: enumerate voltages (v2)
+Date: Thu, 26 Feb 2009 13:12:42 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200902081037.06645.david-b@pacbell.net> <200902261148.36892.david-b@pacbell.net> <20090226202055.GE8595@sirena.org.uk>
+In-Reply-To: <20090226202055.GE8595@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902261312.42720.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso <tytso@mit.edu> writes:
+On Thursday 26 February 2009, Mark Brown wrote:
+> On Thu, Feb 26, 2009 at 11:48:36AM -0800, David Brownell wrote:
+> 
+> > Updates since previous version:  address feedback, simplify.
+> 
+> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> 
+> This looks good to merge to me - coincidentally I've got a use case for
+> it lined up already.  Might it be worth merging the MMC client along
+> with this patch if the relevant maintainers are OK with that, could help
+> get it in faster?
 
-> [...]  I think it's because we've just been burned so many times
-> with complex user space tools that are built in C++, have
-> impossible-to-understand error handling ("try again with -vvvvvvv"),
-> is hard to build because they have huge dependencies on external
-> libraries, or is filled with distro dependencies and might not build
-> on various distributions, or is dependent on the RPM macros, etc.
-> [...]
+You mean, that example MMC code I sent?  I think it's a bit
+early to merge to mainline ... only the "generate ocr_mask"
+call has really been verified.  I'll send the updated version
+along though.
 
-How many of these concerns have a basis in recent reality / experience?
+I had thought about sending that with patches to convert the
+omap_hsmmc driver over to the regulator framework.  No skin
+off my back if it goes with a different set of patches though.
 
-- FChE
+
+> Just two very minor points which might be nice to fix at some point:
+> 
+> > +			cmin = INT_MIN;
+> > +			cmax = INT_MAX;
+> > +		}
+> > +
+> > +		/* else require explicit machine-level constraints */
+> > +		else if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
+> 
+> That indentation is going to catch some people out :)
+
+Maybe.
+
+
+> > +		/* final: [min_uV..max_uV] valid iff constraints valid */
+> > +		if (max_uV < min_uV) {
+> > +			pr_err("%s: %s '%s' voltage constraints\n",
+> > +				       __func__, "unsupportable", name);
+> > +			ret = -EINVAL;
+> 
+> That style is going to hurt grepability for the error.
+
+"grep unsupportable" ... :)
+
+Sharing the primary string saves about three dozen bytes,
+and I'm not keen on needless bloat.
+
