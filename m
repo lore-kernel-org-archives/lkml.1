@@ -1,106 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751374AbZBZGnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752963AbZBZGsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751374AbZBZGnD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 01:43:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZBZGmk
+	id S1752963AbZBZGsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 01:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbZBZGsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 01:42:40 -0500
-Received: from mail-gx0-f174.google.com ([209.85.217.174]:56586 "EHLO
-	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420AbZBZGmh (ORCPT
+	Thu, 26 Feb 2009 01:48:13 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:45954 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750784AbZBZGsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 01:42:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=G1xhVJ0ccEizLuOGt+CIDdYrN+WOExrm4auNgrDnyk5q4cJDocW8NyWJPJPpFI3ZoB
-         MHOodZCnyUwSQ5vkv5CTupdyggMGmUk6aXVxdxDMgvolTWCaC5czDKisNuFcsP++ptOJ
-         EGvB+nm2uky7DH5xmdwuQU8AhXmUxpphUgTW0=
-Subject: Re: Linux kernel programming
-From: Sabin <linuxguru75@gmail.com>
-To: Ramakrishna Rao Guntupalli <rkrao.guntupalli@gmail.com>
-Cc: pradeep singh <pradeep.rautela@gmail.com>, linux-hotplug@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernelnewbies@nl.linux.org
-In-Reply-To: <72b2863b0902250923h5e2d7968ka7a89fcd53382ce8@mail.gmail.com>
-References: <da7e65af0902200117s58f315ebqb0d5ef834e3175d9@mail.gmail.com>
-	 <a901b49a0902200131u75115cabyb608a1d0c92010e9@mail.gmail.com>
-	 <72b2863b0902250923h5e2d7968ka7a89fcd53382ce8@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 12:12:06 +0000
-Message-Id: <1235650326.8034.5.camel@linux.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 01:48:12 -0500
+Date: Wed, 25 Feb 2009 22:48:06 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       shai@scalex86.org
+Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
+Message-ID: <20090226064806.GC27240@localdomain>
+References: <49A626B2.8090205@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A626B2.8090205@kernel.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rama,
+On Wed, Feb 25, 2009 at 09:20:50PM -0800, Yinghai Lu wrote:
+>
+>Impact: cleanup
+>
+>that is only needed when CONFIG_X86_VSMP is defined with 64bit
+>also remove dead code about PCI, because CONFIG_X86_VSMP depends on PCI
+>
+>Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>
 
-Some wonderful docs to start of kernel programming. (in the same order):
-1. The Linux Kernel Module Programming Guide - Peter Jay Salzman
-2. Kernel Development 2ndEdn - Robert Love
-3. The Linux Kernel - David A Rusling
-4. Understanding the Linux kernel - O'Reilly pub - Cessati
+NAK!
+vsmp64.c is compiled unconditionally for a reason.  There are ifdefs in the
+file to avoid code compilation based on config options. is_vsmp_box() is
+needed even when CONFIG_X86_VSMP is not enabled, since distro kernels don't ship
+with CONFIG_X86_VSMP, and since is_vsmp_box() is used to determine  whether
+tsc's can be considered synced or not, this is needed.
 
-  Check out this link:
-http://jungla.dit.upm.es/~jmseyas/linux/kernel/hackers-docs.html
+In the future, I would appreciate if you copy me on cleanups/changes involving
+vsmp64.c
 
-You can get tonnes of stuff from net on kernel development.
--Sabin
+Thanks,
+Kiran
 
- On Wed, 2009-02-25 at 22:53 +0530, wilson bright wrote:
-> http://tldp.org/LDP/lkmpg/2.6/html/
+>---
+> arch/x86/include/asm/apic.h  |    7 +++++++
+> arch/x86/include/asm/setup.h |    4 ++++
+> arch/x86/kernel/Makefile     |    2 +-
+> arch/x86/kernel/setup.c      |    2 --
+> arch/x86/kernel/vsmp_64.c    |   12 +-----------
+> 5 files changed, 13 insertions(+), 14 deletions(-)
+>
+>Index: linux-2.6/arch/x86/include/asm/apic.h
+>===================================================================
+>--- linux-2.6.orig/arch/x86/include/asm/apic.h
+>+++ linux-2.6/arch/x86/include/asm/apic.h
+>@@ -75,7 +75,14 @@ static inline void default_inquire_remot
+> #define setup_secondary_clock setup_secondary_APIC_clock
+> #endif
 > 
-> This link provides the basic Linux kernel programming. It starts with
-> a simple hello world kernel module and goes on. It is a good guide.
+>+#ifdef CONFIG_X86_VSMP
+> extern int is_vsmp_box(void);
+>+#else
+>+static inline int is_vsmp_box(void)
+>+{
+>+	return 0;
+>+}
+>+#endif
+> extern void xapic_wait_icr_idle(void);
+> extern u32 safe_xapic_wait_icr_idle(void);
+> extern void xapic_icr_write(u32, u32);
+>Index: linux-2.6/arch/x86/include/asm/setup.h
+>===================================================================
+>--- linux-2.6.orig/arch/x86/include/asm/setup.h
+>+++ linux-2.6/arch/x86/include/asm/setup.h
+>@@ -64,7 +64,11 @@ extern void x86_quirk_time_init(void);
+> #include <asm/bootparam.h>
 > 
+> /* Interrupt control for vSMPowered x86_64 systems */
+>+#ifdef CONFIG_X86_VSMP
+> void vsmp_init(void);
+>+#else
+>+static inline void vsmp_init(void) { }
+>+#endif
 > 
-> On Fri, Feb 20, 2009 at 3:01 PM, pradeep singh
-> <pradeep.rautela@gmail.com> wrote:
->         http://kernelnewbies.org/
->         
->         Hope this helps you.
->         
->         Thanks,
->            --Pradeep
->         
->         
->         On Fri, Feb 20, 2009 at 2:47 PM, Ramakrishna Rao Guntupalli
->         <rkrao.guntupalli@gmail.com> wrote:
->         > Dear Sir,
->         > as i am very interested in kernel programming and
->         programming of linux and
->         > other kernel please suggest as i am new to this field and i
->         am good in C,
->         > C++, if any document for writting the program please forward
->         me so that i
->         > can learn and start. Please This is a request from my
->         side.last thing is I
->         > am unix admin in indian company. and i use Solaris as a
->         mother Operating
->         > System.
->         >
->         > Regards/rama
->         
->         
->         
->         
->         --
->         Pradeep
->         
->         --
->         To unsubscribe from this list: send an email with
->         "unsubscribe kernelnewbies" to ecartis@nl.linux.org
->         Please read the FAQ at http://kernelnewbies.org/FAQ
->         
+> void setup_bios_corruption_check(void);
 > 
+>Index: linux-2.6/arch/x86/kernel/Makefile
+>===================================================================
+>--- linux-2.6.orig/arch/x86/kernel/Makefile
+>+++ linux-2.6/arch/x86/kernel/Makefile
+>@@ -70,7 +70,7 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= f
+> obj-$(CONFIG_KEXEC)		+= machine_kexec_$(BITS).o
+> obj-$(CONFIG_KEXEC)		+= relocate_kernel_$(BITS).o crash.o
+> obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
+>-obj-y				+= vsmp_64.o
+>+obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
+> obj-$(CONFIG_KPROBES)		+= kprobes.o
+> obj-$(CONFIG_MODULES)		+= module_$(BITS).o
+> obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
+>Index: linux-2.6/arch/x86/kernel/setup.c
+>===================================================================
+>--- linux-2.6.orig/arch/x86/kernel/setup.c
+>+++ linux-2.6/arch/x86/kernel/setup.c
+>@@ -863,9 +863,7 @@ void __init setup_arch(char **cmdline_p)
 > 
+> 	reserve_initrd();
 > 
-> -- 
-> J.Wilson Bright,
-> Room No 272,JMR
-> Karunya University.
-
+>-#ifdef CONFIG_X86_64
+> 	vsmp_init();
+>-#endif
+> 
+> 	io_delay_init();
+> 
+>Index: linux-2.6/arch/x86/kernel/vsmp_64.c
+>===================================================================
+>--- linux-2.6.orig/arch/x86/kernel/vsmp_64.c
+>+++ linux-2.6/arch/x86/kernel/vsmp_64.c
+>@@ -22,7 +22,7 @@
+> #include <asm/paravirt.h>
+> #include <asm/setup.h>
+> 
+>-#if defined CONFIG_PCI && defined CONFIG_PARAVIRT
+>+#ifdef CONFIG_PARAVIRT
+> /*
+>  * Interrupt control on vSMPowered systems:
+>  * ~AC is a shadow of IF.  If IF is 'on' AC should be 'off'
+>@@ -114,7 +114,6 @@ static void __init set_vsmp_pv_ops(void)
+> }
+> #endif
+> 
+>-#ifdef CONFIG_PCI
+> static int is_vsmp = -1;
+> 
+> static void __init detect_vsmp_box(void)
+>@@ -139,15 +138,6 @@ int is_vsmp_box(void)
+> 		return 0;
+> 	}
+> }
+>-#else
+>-static void __init detect_vsmp_box(void)
+>-{
+>-}
+>-int is_vsmp_box(void)
+>-{
+>-	return 0;
+>-}
+>-#endif
+> 
+> void __init vsmp_init(void)
+> {
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
