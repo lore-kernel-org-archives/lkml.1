@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbZBZCSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbZBZCTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757690AbZBZCSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 21:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZBZCSM
+	id S1757913AbZBZCTT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 21:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZBZCTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 21:18:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40048 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbZBZCSK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 21:18:10 -0500
-Message-ID: <49A5FADB.30002@zytor.com>
-Date: Wed, 25 Feb 2009 18:13:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/4] uaccess: add copy_word_from_user
-References: <20090225203007.582030664@goodmis.org> <20090225203427.382137706@goodmis.org> <49A5F81F.6060604@zytor.com> <20090226021031.GA7553@nowhere>
-In-Reply-To: <20090226021031.GA7553@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 25 Feb 2009 21:19:08 -0500
+Received: from gate.crashing.org ([63.228.1.57]:46720 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752377AbZBZCTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 21:19:07 -0500
+Subject: Re: ATI Radeon DIRECTCOLOR -> TRUECOLOR patch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jonathan Campbell <jon@nerdgrounds.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <49A5B150.8070703@nerdgrounds.com>
+References: <49A52A73.2000406@nerdgrounds.com>
+	 <20090225.035712.103590506.davem@davemloft.net>
+	 <1235594524.8805.326.camel@pasglop>  <49A5B150.8070703@nerdgrounds.com>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 13:18:56 +1100
+Message-Id: <1235614736.8805.338.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Wed, Feb 25, 2009 at 06:02:07PM -0800, H. Peter Anvin wrote:
->> Steven Rostedt wrote:
->>> This patch creates a copy_word_from_user function that can copy
->>> a space delimited word from user space. This puts the code in
->>> a new lib/uaccess.c file. This keeps the code in a single location
->>> and may be optimized in the future.
->> I have a bit of an issue with the naming... at least *I* read this as  
->> copying a machine word, which made me wonder why you didn't just use  
->> "get_user".  I would suggest copy_token_from_user or something like that.
->>
->> 	-hpa
-> 
-> That was the first impression I had too (the sense of a machine word).
-> But token seems to me imprecise as well, too much generic.
-> 
-> Well, since it is well commented, I guess it's not so much an issue...
-> 
+On Wed, 2009-02-25 at 13:00 -0800, Jonathan Campbell wrote:
+> But at the very least could radeonfb default to truecolor-like
+> behavior and leave the bizarre ramp mapping for programs that want it?
 
-Well, "word" has the problem that someone looking at a call site is 
-likely to get the wrong idea.  "token" may make them confused, but that 
-means they'll try to look it up.  However, I'm sure we could do better.
+I don't understand your problem. Radeonfb does like other fbdev's in
+that area. It has settable gamma ramp for which there's an API, and the
+fbdev core is making use of it....
 
-	-hpa
+Just stick a linear ramp in from your program, that's the way to do go.
+
+Cheers,
+Ben.
+
+> > On Wed, 2009-02-25 at 03:57 -0800, David Miller wrote:
+> >   
+> > > From: Jonathan Campbell <jon@nerdgrounds.com>
+> > > Date: Wed, 25 Feb 2009 03:24:35 -0800
+> > > 
+> > > [ Ben H. is the Radeon driver maintainer, as listed in
+> > >   linux/MAINTAINERS, you might want to CC: him ]
+> > > 
+> > >     
+> > > > I don't know about you but when I ask the framebuffer to set up
+> > > > 16-bit or 32-bit RGB modes I expect a video mode to be set up with
+> > > > R, G, and B mapped linearly so that I can display images properly,
+> > > > not some odd "directcolor" mode that seems to serve no other purpose
+> > > > than to avoid a few shifts converting the fbcon palette to an RGB
+> > > > triplet.
+> > > >       
+> > > It might be using DIRECTCOLOR for compatibility with openfirmware,
+> > > BOOTX, or similar on PowerPC.
+> > >     
+> > 
+> > Hrm, the kernel fb layer does seem to do strange things with the palette
+> > for >8bpp stuff indeed. I'm not entirely sure why.
+> > 
+> > The problem if you switch to truecolor is that you remove the ability to
+> > set the gamma ramp completely which some apps use.
+> > 
+> > Normally, I'd say it's the responsibility of your application, when it's
+> > displaying pictures, to set an appropriate cmap. If you don't like the
+> > one set by fbcon for displaying text, just set another one. Ie. You
+> > aren't -supposed- to mix graphics and fbcon text from an application...
+> > if you're going to blast to the fb, you should switch to KD_GRAPHICS (ie
+> > take ownership of the VT) and set a linear ramp yourself.
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> > 
+> >   
+> 
 
