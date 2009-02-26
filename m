@@ -1,104 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZBZHRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbZBZHhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbZBZHRh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 02:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZBZHR1
+	id S1753677AbZBZHhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 02:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZBZHhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 02:17:27 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:41157 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbZBZHR1 (ORCPT
+	Thu, 26 Feb 2009 02:37:10 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54299 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751592AbZBZHhJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 02:17:27 -0500
-Subject: Re: [PATCH] kmemcheck: Disable SLUB and SLAB debugging when
-	kmemcheck is enabled
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0902251622460.13795@qirst.com>
-References: <1235381712.6216.22.camel@penberg-laptop>
-	 <alpine.DEB.1.10.0902231039580.7298@qirst.com>
-	 <1235410406.6216.69.camel@penberg-laptop>
-	 <19f34abd0902251117h7a4a6e9ao34e972110d8b40a1@mail.gmail.com>
-	 <alpine.DEB.1.10.0902251622460.13795@qirst.com>
-Date: Thu, 26 Feb 2009 09:17:23 +0200
-Message-Id: <1235632643.5465.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 26 Feb 2009 02:37:09 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+RLRNR/5aRUedFg+61VhWeipSlOe2ykTkXvrBAuF
+	NHtbO+uj0LaIxP
+Date: Thu, 26 Feb 2009 08:37:07 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Dan Williams <dan.j.williams@intel.com>
+cc: Sascha Hauer <s.hauer@pengutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/4 v9] i.MX31: framebuffer driver
+In-Reply-To: <e9c3a7c20902251354x5512c222h41c2c9ebfa290e0b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0902260833001.5238@axis700.grange>
+References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange> 
+ <e9c3a7c20901051143m37c0d7c0x5779475ddc7c5dc2@mail.gmail.com> 
+ <Pine.LNX.4.64.0901161106100.4940@axis700.grange> 
+ <e9c3a7c20901160939y6b3906fp41531730d4b752a@mail.gmail.com> 
+ <Pine.LNX.4.64.0901162048400.9060@axis700.grange>  <4974F208.3020407@intel.com>
+  <Pine.LNX.4.64.0901201048090.5126@axis700.grange> 
+ <Pine.LNX.4.64.0902191533090.5156@axis700.grange> 
+ <1235068604.18650.16.camel@dwillia2-linux.ch.intel.com>
+ <e9c3a7c20902251354x5512c222h41c2c9ebfa290e0b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009, Vegard Nossum wrote:
-> > Can you rethink whether SLUB_DEBUG or SLUB_DEBUG_ON is the one we
-> > really want to depend on !KMEMCHECK, and either submit a new patch or
-> > convince me that this is sufficient?
+On Wed, 25 Feb 2009, Dan Williams wrote:
 
-On Wed, 2009-02-25 at 16:23 -0500, Christoph Lameter wrote:
-> !SLUB_DEBUG_ON is the right thing to depend on.
+> On Thu, Feb 19, 2009 at 11:36 AM, Dan Williams <dan.j.williams@intel.com> wrote:
+> > On Thu, 2009-02-19 at 07:41 -0700, Guennadi Liakhovetski wrote:
+> >> Please, oh, please, wake me up if I'm dreaming... In the patch below all
+> >> the indentation in _both_ mx3fb.h and mx3fb.c is with TABs (ok, didn't
+> >> check all, a couple). Nun im Linus' git-tree - _ALL_ (that I checked)
+> >> indentation is with... BLANKS!!!??? Could someone, please, tell me what
+> >> was in that cup of tee I've drunk an hour ago?... Dan, you pushed this
+> >> patch via your tree, right? Could you double-check, please?
+> >>
+> >
+> > What a mess.  The other patches in your series were applied and
+> > checkpatched from the tarball you sent.  This last fix up patch was not
+> > cc'd to lkml so I fell back to applying it from a saved Thunderbird
+> > message.  The real issue is that I did not have checkpatch automated
+> > from StackedGIT's import command.  Please double check the fix below...
+> >
+> 
+> Sascha,
+> 
+> Will you be taking this clean-up through your tree?  I don't think it
+> is suitable for 2.6.29 and in my opinion it belongs with other IMX
+> platform driver fixups targeted for 2.6.30.
 
-Here's a patch to do that.
+__NO__. Please don't. Dan, can you please get my original patch somehow in 
+its _original_ form - with TABs and spaces as they were? Please, fix your 
+mailer or get another one. In this patch you fixed all spaces at the 
+beginning of lines, but not indentation inside lines. E.g.
 
-			Pekka
+-#define MX3FB_NAME             "mx3_sdc_fb"
++#define MX3FB_NAME		"mx3_sdc_fb"
 
->From bae2afd233c24d766e20e09bb92c67c0e5ea16e3 Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Mon, 23 Feb 2009 11:35:13 +0200
-Subject: [PATCH] kmemcheck: Disable SLUB and SLAB debugging when kmemcheck is enabled
+the first line (with spaces) is after applying this your patch to the 
+current tree, the below line (with TABs) is my original version. Please, 
+fix!
 
-Enabling kmemcheck in Kconfig is a painful experience. Lets make it a
-tad bit easier by inverting the dependencies to SLUB and SLAB debugging.
-As kmemcheck is more powerful than slab debugging, disable the latter
-functionality if an user enables kmemcheck.
-
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Thanks
+Guennadi
 ---
- arch/x86/Kconfig.debug |    2 +-
- lib/Kconfig.debug      |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index de186c5..3d1d593 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -276,7 +276,7 @@ menuconfig KMEMCHECK
- 	bool "kmemcheck: trap use of uninitialized memory"
- 	depends on X86
- 	depends on !X86_USE_3DNOW
--	depends on (SLUB && !SLUB_DEBUG_ON) || (SLAB && !DEBUG_SLAB)
-+	depends on SLUB || SLAB
- 	depends on !CC_OPTIMIZE_FOR_SIZE
- 	depends on !DEBUG_PAGEALLOC
- 	depends on !FUNCTION_TRACER
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 29044f5..e9a930c 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -262,7 +262,7 @@ config DEBUG_OBJECTS_ENABLE_DEFAULT
- 
- config DEBUG_SLAB
- 	bool "Debug slab memory allocations"
--	depends on DEBUG_KERNEL && SLAB
-+	depends on DEBUG_KERNEL && SLAB && !KMEMCHECK
- 	help
- 	  Say Y here to have the kernel do limited verification on memory
- 	  allocation as well as poisoning memory on free to catch use of freed
-@@ -274,7 +274,7 @@ config DEBUG_SLAB_LEAK
- 
- config SLUB_DEBUG_ON
- 	bool "SLUB debugging on by default"
--	depends on SLUB && SLUB_DEBUG
-+	depends on SLUB && SLUB_DEBUG && !KMEMCHECK
- 	default n
- 	help
- 	  Boot with debugging on by default. SLUB boots by default with
--- 
-1.5.4.3
-
-
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
