@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbZBZWpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZBZWyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759529AbZBZWpk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZBZWpX
+	id S1756916AbZBZWyJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:54:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZBZWx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:45:23 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:55041 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751891AbZBZWpV (ORCPT
+	Thu, 26 Feb 2009 17:53:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36805 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753792AbZBZWxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:45:21 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>
-Subject: [PATCH 1/1] ath5k: fix hw rate index condition
-Date: Thu, 26 Feb 2009 23:44:31 +0100
-Message-Id: <1235688271-22346-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1.3
+	Thu, 26 Feb 2009 17:53:55 -0500
+Date: Thu, 26 Feb 2009 14:53:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel/fork.c: define reset_task_cputimes()
+Message-Id: <20090226145346.8a778d98.akpm@linux-foundation.org>
+In-Reply-To: <1235625475-21218-1-git-send-email-gustavo@las.ic.unicamp.br>
+References: <1235625475-21218-1-git-send-email-gustavo@las.ic.unicamp.br>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure we print out a warning when the index is out of bounds,
-i.e. even on hw_rix == AR5K_MAX_RATES.
+On Thu, 26 Feb 2009 02:17:55 -0300
+"Gustavo F. Padovan" <gustavo@las.ic.unicamp.br> wrote:
 
-Also change to WARN and print text with the reported hw_rix.
+> Group all vars that receive cputime_zero in the same static function.
+> This also cleans the code.
+> 
+> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+> ---
+>  include/linux/sched.h |   11 +++++++++++
+>  kernel/fork.c         |    8 +-------
+>  2 files changed, 12 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 8981e52..1a64587 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1595,6 +1595,17 @@ extern cputime_t task_utime(struct task_struct *p);
+>  extern cputime_t task_stime(struct task_struct *p);
+>  extern cputime_t task_gtime(struct task_struct *p);
+>  
+> +static inline void reset_task_cputimes(struct task_struct *t)
+> +{
+> +	t->utime = cputime_zero;
+> +	t->stime = cputime_zero;
+> +	t->gtime = cputime_zero;
+> +	t->utimescaled = cputime_zero;
+> +	t->stimescaled = cputime_zero;
+> +	t->prev_utime = cputime_zero;
+> +	t->prev_stime = cputime_zero;
+> +}
+> +
+>  /*
+>   * Per process flags
+>   */
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index a66fbde..9856abe 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -1031,13 +1031,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  	clear_tsk_thread_flag(p, TIF_SIGPENDING);
+>  	init_sigpending(&p->pending);
+>  
+> -	p->utime = cputime_zero;
+> -	p->stime = cputime_zero;
+> -	p->gtime = cputime_zero;
+> -	p->utimescaled = cputime_zero;
+> -	p->stimescaled = cputime_zero;
+> -	p->prev_utime = cputime_zero;
+> -	p->prev_stime = cputime_zero;
+> +	reset_task_cputimes(p);
+>  
+>  	p->default_timer_slack_ns = current->timer_slack_ns;
+>  
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Luis R. Rodriguez <lrodriguez@atheros.com>
-Cc: Bob Copeland <me@bobcopeland.com>
----
- drivers/net/wireless/ath5k/base.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+I cannot see much point in doing this, unless you have some other patch
+which adds a second caller of reset_task_cputimes()?
 
-diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
-index c06d1cc..08d691d 100644
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -1100,7 +1100,8 @@ ath5k_mode_setup(struct ath5k_softc *sc)
- static inline int
- ath5k_hw_to_driver_rix(struct ath5k_softc *sc, int hw_rix)
- {
--	WARN_ON(hw_rix < 0 || hw_rix > AR5K_MAX_RATES);
-+	WARN(hw_rix < 0 || hw_rix >= AR5K_MAX_RATES,
-+			"hw_rix out of bounds: %x\n", hw_rix);
- 	return sc->rate_idx[sc->curband->band][hw_rix];
- }
- 
--- 
-1.6.1.3
 
