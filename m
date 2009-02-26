@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbZBZOik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbZBZOtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbZBZOik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 09:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZBZOi3
+	id S1756756AbZBZOtQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 09:49:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbZBZOtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 09:38:29 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:36546 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754088AbZBZOi1 convert rfc822-to-8bit (ORCPT
+	Thu, 26 Feb 2009 09:49:00 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47307 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752969AbZBZOs7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 09:38:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=bFSmi6NbBJF9+W7r+l4G0yaaC/SKvtTJ5Smu8VoX1PgvLFdXw/qgdbN+HotfPb7Uyv
-         DpQExt/NN5GJQwWyPnni2DbU7TpaHglnPq8xc+qP5YyTL8SuDp+8iBg8wvzl4sg6nZWh
-         e21rB67Osi+uWWnKmK6i8cuNiVyA7SZKkIa6U=
+	Thu, 26 Feb 2009 09:48:59 -0500
+Date: Thu, 26 Feb 2009 09:48:57 -0500
+To: Alex Buell <alex.buell@munted.org.uk>
+Cc: Michael Tokarev <mjt@tls.msk.ru>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Unused modules in 2.6.x
+Message-ID: <20090226144856.GA23246@csclub.uwaterloo.ca>
+References: <20090225175249.30e47b85@lithium.local.net> <49A59082.5040209@msgid.tls.msk.ru> <20090226102939.42c92d34@lithium.local.net>
 MIME-Version: 1.0
-In-Reply-To: <20090226141946.GE7227@mit.edu>
-References: <b637ec0b0902251203i1fe5f081vfd06350dbf5060e9@mail.gmail.com>
-	 <b637ec0b0902260118o19f74acal567440a6f049512@mail.gmail.com>
-	 <20090226141946.GE7227@mit.edu>
-Date: Thu, 26 Feb 2009 15:38:24 +0100
-Message-ID: <b637ec0b0902260638u2a07433ayf0ea56fd3e41ec5a@mail.gmail.com>
-Subject: Re: Crash in 2.6.28.7 - ext4 related
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Fabio Comolli <fabio.comolli@gmail.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090226102939.42c92d34@lithium.local.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can you try http://www.megaupload.com/?d=3UVSWP54 ?
+On Thu, Feb 26, 2009 at 10:29:39AM +0000, Alex Buell wrote:
+> I'd have thought that hotplugging i.e. plug in an USB device in this
+> case would load the modules as and when required. 
+> 
+> If the interface is up, then it shouldn't have to be unloaded, I think.
+> I know I could just hack my initrds to remove any modules that I don't
+> want loaded at bootup but surely... :-D
 
-It's the first time I'm using such a service so please be patient :-)
+So how about if you plug in a usb drive, and the module is loaded to
+provide disk access, but you aren't using it right now.  The next module
+clean would remove the now unused module, and then when you do want to
+use it, there is no longer any way to reach teh device, and since there
+is no fixed device node to refer to that would cause the module to be
+loaded again, now the device doesn't work.  That would be very annoying.
 
-And yes, I cc'ed you in the first message.
+I think the big problem is that the kernel and the module utils can not
+know if a module is actually being used or not since it is more a matter
+of 'will it be needed' not 'is it in use right now'.
 
-Regards,
-Fabio
-
-
-
-On Thu, Feb 26, 2009 at 3:19 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Thu, Feb 26, 2009 at 10:18:29AM +0100, Fabio Comolli wrote:
->> OK, I see that my message didn't reach neither linux-kernel nor
->> linux-fsdevel, maybe because of the image size (484K).
->>
->> If anyone is interested in details, please let me know.
->
-> Yes, we're interested.  I've changed the cc list to be the linux-ext4
-> list, though.  That's a better list for tracking such things than the
-> more general linux-fsdevel list.
->
-> Can you post the image (I assume of the kernel oops message, I hope)
-> somewhere?  If you cc'ed directly on your first e-mail posting, it
-> apparently never arrived to my inbox, either....
->
->                                               - Ted
->
->
+-- 
+Len Sorensen
