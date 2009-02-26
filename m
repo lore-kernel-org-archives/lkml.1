@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbZBZQ3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbZBZQbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757078AbZBZQ3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 11:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZBZQ3C
+	id S1757486AbZBZQbr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 11:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbZBZQbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 11:29:02 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:9284 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbZBZQ3A (ORCPT
+	Thu, 26 Feb 2009 11:31:38 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:33009 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754283AbZBZQbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 11:29:00 -0500
-Date: Thu, 26 Feb 2009 09:28:58 -0700
-From: David Altobelli <david.altobelli@hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, david.altobelli@hp.com
-Subject: [PATCH] new pci device for hpilo
-Message-ID: <20090226162858.GA29790@ldl.fc.hp.com>
+	Thu, 26 Feb 2009 11:31:37 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 26 Feb 2009 08:31:34 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Tony Battersby <tonyb@cybernetics.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/6] [-mm] epoll: clean up ep_modify
+In-Reply-To: <49A42E58.50805@cybernetics.com>
+Message-ID: <alpine.DEB.2.00.0902260830380.31638@alien.or.mcafeemobile.com>
+References: <49A42E58.50805@cybernetics.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Future iLO devices will have an HP vendor id, applies to 2.6.29.
+On Tue, 24 Feb 2009, Tony Battersby wrote:
 
-Please CC me on any replies.
+> ep_modify() doesn't need to set event.data from within the ep->lock
+> spinlock as the comment suggests.  The only place event.data is used
+> is ep_send_events_proc(), and this is protected by ep->mtx instead
+> of ep->lock.  Also update the comment for mutex_lock() at the top
+> of ep_scan_ready_list(), which mentions epoll_ctl(EPOLL_CTL_DEL)
+> but not epoll_ctl(EPOLL_CTL_MOD).
+> 
+> ep_modify() can also use spin_lock_irq() instead of
+> spin_lock_irqsave().
 
-Signed-off-by: David Altobelli <david.altobelli@hp.com>
----
+Pre-mtx stuff.
 
---- linux-2.6.28/drivers/misc/hpilo.c.orig	2009-02-20 13:59:42.000000000 -0600
-+++ linux-2.6.28/drivers/misc/hpilo.c	2009-02-20 14:02:46.000000000 -0600
-@@ -710,6 +710,7 @@ out:
- 
- static struct pci_device_id ilo_devices[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3307) },
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, ilo_devices);
-@@ -758,7 +759,7 @@ static void __exit ilo_exit(void)
- 	class_destroy(ilo_class);
- }
- 
--MODULE_VERSION("0.06");
-+MODULE_VERSION("1.0");
- MODULE_ALIAS(ILO_NAME);
- MODULE_DESCRIPTION(ILO_NAME);
- MODULE_AUTHOR("David Altobelli <david.altobelli@hp.com>");
+Acked-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+- Davide
+
+
