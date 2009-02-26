@@ -1,53 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbZBZWcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbZBZWbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760227AbZBZWcj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758833AbZBZWcT
+	id S1760033AbZBZWbt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZBZWba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:32:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38853 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759582AbZBZWcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:32:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
-Date: Thu, 26 Feb 2009 23:32:17 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.7wC.xozoJB@chimera> <20090226214325.GA14218@silver.sucs.org>
-In-Reply-To: <20090226214325.GA14218@silver.sucs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 26 Feb 2009 17:31:30 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:40650 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755361AbZBZWb3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 17:31:29 -0500
+Subject: Re: Linux 2.6.29-rc6
+From: john stultz <johnstul@us.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+In-Reply-To: <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
+	 <49A6F39F.9040801@krogh.cc>
+	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
+	 <49A6FEE2.90700@krogh.cc>
+	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
+	 <49A70B24.6090706@krogh.cc>
+	 <1235685269.6811.11.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 14:31:23 -0800
+Message-Id: <1235687483.6811.26.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902262332.17543.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, Sitsofe Wheeler wrote:
-> On Mon, Feb 23, 2009 at 10:48:18PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
+On Thu, 2009-02-26 at 23:06 +0100, Thomas Gleixner wrote:
+> On Thu, 26 Feb 2009, john stultz wrote:
+> > On Thu, 2009-02-26 at 22:35 +0100, Jesper Krogh wrote:
+> > > > Also mind sending the full dmesg for both kernels?
+> > > 
+> > > http://krogh.cc/~jesper/dmesg-2.6.29-rc6.txt
+> > > http://krogh.cc/~jesper/dmesg-2.6.26.8.txt
 > > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
+> > So one interesting difference:
+> > 2.6.26.8:	TSC calibrated against PM_TIMER
+> > 2.6.29-rc6:	Fast TSC calibration using PIT
 > > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
-> > Subject		: i915 VT switch with AIGLX causes X lock up
-> > Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-> > Date		: 2009-02-21 15:38 (3 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+> > Thomas, any thoughts as to why we might be calibrating off the PIT
+> > instead of the PM_TIMER w/ 2.6.29?
 > 
-> Yes, this should be still listed -
-> http://marc.info/?l=dri-devel&m=123546141010034&w=4 (occurs with
-> 2.6.29-rc6).
+> Yup, because we introduced the Fast PIT calibration in 2.6.28.
 
-Thanks for the update.
+Ah. Ok.
 
-Rafael
+> Is the delta anything NTP might get upset about:
+> 
+> 2.6.26: time.c: Detected 2311.847 MHz processor.
+> 2.6.29: Detected 2310.029 MHz processor.
+
+I wouldn't think so.
+
+Although, I'm recalling on some systems here right after we deploy them
+we'll see something similar to the originally reported ntpd "time reset"
+noise for a period of time while ntpd tries to find the right freq. For
+some reason, I've noticed, having multiple servers in your ntp.conf
+seems to increase NTP's difficulty at picking a time and converging. 
+
+So this may be just the slight calibration change is confusing ntp or it
+may be the NTP_INTERVAL_LENGTH change from awhile back which would cause
+the drift value to change could be doing the same thing (although I
+thought that landed in the 2.6.24 timeframe, but I may be forgetting).
+
+I'll kick up some of my own testing between these two releases to see if
+I can't find something similar.
+
+Jesper: How long was the box up for when you noticed the ntpd noise?
+
+Also what's the output of the following under the different kernels:
+ntpdc -c peers
+ntpdc -c kerninfo
+
+thanks
+-john
+
