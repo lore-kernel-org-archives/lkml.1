@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZBZLTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZBZLWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbZBZLTV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 06:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZBZLTG
+	id S1755861AbZBZLWt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 06:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZBZLWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 06:19:06 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55479 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753410AbZBZLTE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 06:19:04 -0500
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
+	Thu, 26 Feb 2009 06:22:40 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:47856 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751391AbZBZLWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 06:22:40 -0500
+Date: Thu, 26 Feb 2009 11:22:36 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Lin Ming <ming.m.lin@intel.com>,
        Linux Memory Management List <linux-mm@kvack.org>,
        Rik van Riel <riel@redhat.com>,
@@ -22,81 +21,92 @@ Cc: Lin Ming <ming.m.lin@intel.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <20090226110336.GC32756@csn.ul.ie>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
-	 <1235639427.11390.11.camel@minggr>  <20090226110336.GC32756@csn.ul.ie>
-Date: Thu, 26 Feb 2009 13:18:59 +0200
-Message-Id: <1235647139.16552.34.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
+Message-ID: <20090226112232.GE32756@csn.ul.ie>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie> <1235647139.16552.34.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1235647139.16552.34.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 11:03 +0000, Mel Gorman wrote:
-> On Thu, Feb 26, 2009 at 05:10:27PM +0800, Lin Ming wrote:
-> > We tested this v2 patch series with 2.6.29-rc6 on different machines.
+On Thu, Feb 26, 2009 at 01:18:59PM +0200, Pekka Enberg wrote:
+> On Thu, 2009-02-26 at 11:03 +0000, Mel Gorman wrote:
+> > On Thu, Feb 26, 2009 at 05:10:27PM +0800, Lin Ming wrote:
+> > > We tested this v2 patch series with 2.6.29-rc6 on different machines.
+> > > 
 > > 
-> 
-> Wonderful, thanks.
-> 
-> > 		4P qual-core	2P qual-core	2P qual-core HT
-> > 		tigerton	stockley	Nehalem
-> > 		------------------------------------------------
-> > tbench		+3%		+2%		0%
-> 
-> Nice.
-> 
-> > oltp		-2%		0%		0%
-> 
-> This is a big disappointment and somewhat confusing that it is so
-> severe. For sysbench I was seeing on six different machines;
-> 
-> 	50834.14        51763.08    1.79%
-> 	61852.08        61966.58    0.18%
-> 	5935.98         5980.06     0.74%
-> 	29227.78        30167.72    3.12%
-> 	66702.67        66534.76   -0.25%
-> 	26643.18        26542.59   -0.38%
-> 
-> So, two smallish regressions but mainly gains. Then again, I'm becoming
-> more and more convinced that sysbench doesn't really represent a proper
-> OLTP workload.
-> 
-> I'd like to understand more how the page allocator at least was being used
-> during your tests. Would it be possible to get a full profile (including
-> instruction if possible and the vmlinux file) for both kernels please?
-> 
-> If you can get the profiles, confirm the regression is still there as
-> sometimes profiling can alter the outcome. Even if this happens, the
-> profile will tell me where time is being spent.
-> 
-> > aim7		0%		0%		0%
-> > specjbb2005	+3%		0%		0%
-> > hackbench	0%		0%		0%	
+> > Wonderful, thanks.
 > > 
-> > netperf:
-> > TCP-S-112k	0%		-1%		0%
-> > TCP-S-64k	0%		-1%		+1%
-> > TCP-RR-1	0%		0%		+1%
-> > UDP-U-4k	-2%		0%		-2%
-> 
-> Pekka, for this test was SLUB or the page allocator handling the 4K
-> allocations?
-
-The page allocator. The pass-through revert is not in 2.6.29-rc6 and I
-won't be sending it until 2.6.30 opens up.
-
-> 
-> > UDP-U-1k	+3%		0%		0%
-> > UDP-RR-1	0%		0%		0%
-> > UDP-RR-512	-1%		0%		+1%
+> > > 		4P qual-core	2P qual-core	2P qual-core HT
+> > > 		tigerton	stockley	Nehalem
+> > > 		------------------------------------------------
+> > > tbench		+3%		+2%		0%
 > > 
-> > Lin Ming
+> > Nice.
 > > 
+> > > oltp		-2%		0%		0%
+> > 
+> > This is a big disappointment and somewhat confusing that it is so
+> > severe. For sysbench I was seeing on six different machines;
+> > 
+> > 	50834.14        51763.08    1.79%
+> > 	61852.08        61966.58    0.18%
+> > 	5935.98         5980.06     0.74%
+> > 	29227.78        30167.72    3.12%
+> > 	66702.67        66534.76   -0.25%
+> > 	26643.18        26542.59   -0.38%
+> > 
+> > So, two smallish regressions but mainly gains. Then again, I'm becoming
+> > more and more convinced that sysbench doesn't really represent a proper
+> > OLTP workload.
+> > 
+> > I'd like to understand more how the page allocator at least was being used
+> > during your tests. Would it be possible to get a full profile (including
+> > instruction if possible and the vmlinux file) for both kernels please?
+> > 
+> > If you can get the profiles, confirm the regression is still there as
+> > sometimes profiling can alter the outcome. Even if this happens, the
+> > profile will tell me where time is being spent.
+> > 
+> > > aim7		0%		0%		0%
+> > > specjbb2005	+3%		0%		0%
+> > > hackbench	0%		0%		0%	
+> > > 
+> > > netperf:
+> > > TCP-S-112k	0%		-1%		0%
+> > > TCP-S-64k	0%		-1%		+1%
+> > > TCP-RR-1	0%		0%		+1%
+> > > UDP-U-4k	-2%		0%		-2%
+> > 
+> > Pekka, for this test was SLUB or the page allocator handling the 4K
+> > allocations?
 > 
-> Thanks a million for testing.
+> The page allocator. The pass-through revert is not in 2.6.29-rc6 and I
+> won't be sending it until 2.6.30 opens up.
 > 
 
+In that case, Lin, could I also get the profiles for UDP-U-4K please so I
+can see how time is being spent and why it might have gotten worse?
+
+Thanks
+
+> > 
+> > > UDP-U-1k	+3%		0%		0%
+> > > UDP-RR-1	0%		0%		0%
+> > > UDP-RR-512	-1%		0%		+1%
+> > > 
+> > > Lin Ming
+> > > 
+> > 
+> > Thanks a million for testing.
+> > 
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
