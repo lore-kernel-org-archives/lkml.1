@@ -1,79 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZBZTYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZBZT3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbZBZTYt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:24:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZBZTYZ
+	id S1754838AbZBZT3Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZBZT24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:24:25 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35105 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752419AbZBZTYY (ORCPT
+	Thu, 26 Feb 2009 14:28:56 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:7400 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751679AbZBZT2z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:24:24 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2/2] regulator: Fix get_mode() for WM835x DCDCs
-Date: Thu, 26 Feb 2009 19:24:20 +0000
-Message-Id: <1235676260-19696-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Thu, 26 Feb 2009 14:28:55 -0500
+Message-ID: <49A6ED6D.3090508@hp.com>
+Date: Thu, 26 Feb 2009 14:28:45 -0500
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: David Miller <davem@davemloft.net>, arvidjaar@mail.ru,
+       vladislav.yasevich@hp.com, chuck.lever@oracle.com, tytso@mit.edu,
+       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel
+ module
+References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com>
+In-Reply-To: <22876.1235672073@death.nxdomain.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------080805060702040309020702"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM835x regulators need a different register checking for force
-mode on each DCDC. Previously the force mode status for DCDC1 was
-checked.
+This is a multi-part message in MIME format.
+--------------080805060702040309020702
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/regulator/wm8350-regulator.c |   24 ++++++++++++++++++------
- 1 files changed, 18 insertions(+), 6 deletions(-)
+Jay Vosburgh wrote:
+>>>> 	I've been fooling with the disable_ipv6 sysctl, and one issue is
+>>>> that, at least on the distro I'm testing on (SLES), it's not picked up
+>>>> from /etc/sysctl.conf at boot time (presumably because ipv6 isn't loaded
+>>>> yet, although I haven't really checked).
+>>> Correct, that's the problem.
+>>>
+>>> We could create a blocker bitmap.  Two sysctls, "block_af" and
+>>> "unblock_af".  You write the AF_foo value for the protocol there and
+>>> it sets or clears the assosciated bit in the internal blocker bitmap.
+>>>
+>>> Things like sys_socket() et al. key off of this.
+>> I'm open to suggestions at this point in time, I just don't see how this
+>> will solve the bonding problem since it still wouldn't load, right?
+> 
+> 	It would permit users to load ipv6 (thus allowing bonding to
+> load), but prevent ipv6 from actually doing anything.  (because
+> sys_socket, e.g., won't open an ipv6 socket if block_af includes ipv6).
 
-diff --git a/drivers/regulator/wm8350-regulator.c b/drivers/regulator/wm8350-regulator.c
-index 93e0ce5..261db94 100644
---- a/drivers/regulator/wm8350-regulator.c
-+++ b/drivers/regulator/wm8350-regulator.c
-@@ -1031,18 +1031,30 @@ static unsigned int wm8350_dcdc_get_mode(struct regulator_dev *rdev)
- 	int dcdc = rdev_get_id(rdev);
- 	u16 mask, sleep, active, force;
- 	int mode = REGULATOR_MODE_NORMAL;
-+	int reg;
+Right, but it doesn't help someone that changed /etc/modprobe.conf to have 
+"install ipv6 /bin/true" - they'll have to stop doing that.
+
+I think changing ipv6 to support a disable_ipv6 module parameter like Vlad 
+suggested would work, as long as we're not worried about someone opening an 
+AF_INET6 socket - even if they do they won't get anywhere.  That, along with the 
+patch below to actually not add the addresses, would work (sorry in advance for 
+using an attachment).  I'll get started on that...
+
+-Brian
+
+
+--
+
+The disable_ipv6 knob was meant to be used for the kernel to disable IPv6 on an 
+interface when DAD failed for the link-local address based on the MAC, but we 
+should also be able to administratively disable it on an interface, or the 
+entire system.  This patch fixes the per-interface problem.
+
+Signed-off-by: Brian Haley <brian.haley@hp.com>
+
+--------------080805060702040309020702
+Content-Type: text/x-diff;
+ name="noipv6.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="noipv6.patch"
+
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index f8f76d6..90f2a81 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -603,6 +603,11 @@ ipv6_add_addr(struct inet6_dev *idev, const struct in6_addr *addr, int pfxlen,
+ 		goto out2;
+ 	}
  
--	if (dcdc < WM8350_DCDC_1 || dcdc > WM8350_DCDC_6)
--		return -EINVAL;
--
--	if (dcdc == WM8350_DCDC_2 || dcdc == WM8350_DCDC_5)
-+	switch (dcdc) {
-+	case WM8350_DCDC_1:
-+		reg = WM8350_DCDC1_FORCE_PWM;
-+		break;
-+	case WM8350_DCDC_3:
-+		reg = WM8350_DCDC3_FORCE_PWM;
-+		break;
-+	case WM8350_DCDC_4:
-+		reg = WM8350_DCDC4_FORCE_PWM;
-+		break;
-+	case WM8350_DCDC_6:
-+		reg = WM8350_DCDC6_FORCE_PWM;
-+		break;
-+	default:
- 		return -EINVAL;
++	if (idev->cnf.disable_ipv6) {
++		err = -EPERM;
++		goto out2;
 +	}
- 
- 	mask = 1 << (dcdc - WM8350_DCDC_1);
- 	active = wm8350_reg_read(wm8350, WM8350_DCDC_ACTIVE_OPTIONS) & mask;
-+	force = wm8350_reg_read(wm8350, reg) & WM8350_DCDC1_FORCE_PWM_ENA;
- 	sleep = wm8350_reg_read(wm8350, WM8350_DCDC_SLEEP_OPTIONS) & mask;
--	force = wm8350_reg_read(wm8350, WM8350_DCDC1_FORCE_PWM)
--	    & WM8350_DCDC1_FORCE_PWM_ENA;
 +
- 	dev_dbg(wm8350->dev, "mask %x active %x sleep %x force %x",
- 		mask, active, sleep, force);
+ 	write_lock(&addrconf_hash_lock);
  
--- 
-1.6.1.3
+ 	/* Ignore adding duplicate addresses on an interface */
 
+--------------080805060702040309020702--
