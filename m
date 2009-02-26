@@ -1,165 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbZBZQiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbZBZQln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbZBZQiL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 11:38:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZBZQhz
+	id S1757443AbZBZQln (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 11:41:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbZBZQld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 11:37:55 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:33000 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754986AbZBZQhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 11:37:54 -0500
-Date: Thu, 26 Feb 2009 16:37:51 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
-       hannes@cmpxchg.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
-Message-ID: <20090226163751.GG32756@csn.ul.ie>
-References: <1235344649-18265-1-git-send-email-mel@csn.ul.ie> <1235344649-18265-21-git-send-email-mel@csn.ul.ie> <20090223013723.1d8f11c1.akpm@linux-foundation.org> <20090223233030.GA26562@csn.ul.ie> <20090223155313.abd41881.akpm@linux-foundation.org> <20090224115126.GB25151@csn.ul.ie> <20090224160103.df238662.akpm@linux-foundation.org> <20090225160124.GA31915@csn.ul.ie> <20090225081954.8776ba9b.akpm@linux-foundation.org>
+	Thu, 26 Feb 2009 11:41:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40696 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754986AbZBZQlc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 11:41:32 -0500
+Date: Thu, 26 Feb 2009 08:40:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       linux-media@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Ben Backx <ben@bbackx.com>, Henrik Kurelid <henrik@kurelid.se>
+Subject: Re: [git pull] DVB + ieee1394: firedtv driver
+In-Reply-To: <49A6BC72.5050206@s5r6.in-berlin.de>
+Message-ID: <alpine.LFD.2.00.0902260824470.3111@localhost.localdomain>
+References: <tkrat.847a062a8a488f0d@s5r6.in-berlin.de> <20090226013708.GA16892@elte.hu> <49A6BC72.5050206@s5r6.in-berlin.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090225081954.8776ba9b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 08:19:54AM -0800, Andrew Morton wrote:
-> On Wed, 25 Feb 2009 16:01:25 +0000 Mel Gorman <mel@csn.ul.ie> wrote:
+
+
+On Thu, 26 Feb 2009, Stefan Richter wrote:
 > 
-> > ...
-> >
-> > > That would rub out the benefit which that microbenchmark
-> > > demonstrated?
-> > > 
-> > 
-> > It'd impact it for sure. Due to the non-temporal stores, I'm surprised
-> > there is any measurable impact from the patch.  This has likely been the
-> > case since commit 0812a579c92fefa57506821fa08e90f47cb6dbdd. My reading of
-> > this (someone correct/enlighten) is that even if the data was cache hot,
-> > it is pushed out as a result of the non-temporal access.
+> Alas I have no Linux box at hand before Saturday.  I wonder, was
+> ieee1394_bus_type not yet registered (i.e. ieee1394's ieee1394_init() not yet
+> called) at the moment when fdtv_init is executed?
 > 
-> yup, that's my understanding.
-> 
-> > The changelog doesn't give the reasoning for using uncached accesses but maybe
-> > it's because for filesystem writes, it is not expected that the data will be
-> > accessed by the CPU any more and the storage device driver has less work to
-> > do to ensure the data in memory is not dirty in cache (this is speculation,
-> > I don't know for sure what the expected benefit is meant to be but it might
-> > be in the manual, I'll check later).
-> > 
-> > Thinking of alternative microbenchmarks that might show this up....
-> 
-> Well, 0812a579c92fefa57506821fa08e90f47cb6dbdd is beeing actively
-> discussed over in the "Performance regression in write() syscall"
-> thread.  There are patches there which disable the movnt for
-> less-than-PAGE_SIZE copies.  Perhaps adapt those to disable movnt
-> altogether to then see whether the use of movnt broke the advantages
-> which hot-cold-pages gave us?
-> 
+> Or what else could have been the NULL pointer dereference in driver_find?
 
-I checked just what that patch was doing with write-truncate and the results
-show that using temporal access for small files appeared to have a huge
-positive difference for the microbenchmark. It also showed that hot/cold
-freeing (i.e. the current code) was a gain when temporal accesses were used
-but then I saw a big problem with the benchmark.
+Afaik, the only way that NULL pointer dereference can happen is if
 
-The deviations between runs are huge - really huge and I had missed that
-before. I redid the test to run a larger number of iterations and then 20
-times in a row on a kernel with hot/cold freeing and I got;
+	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);
 
-size          avg   stddev
-      64 3.337564 0.619085
-     128 2.753963 0.461398
-     256 2.556934 0.461848
-     512 2.736831 0.475484
-    1024 2.561668 0.470887
-    2048 2.719766 0.478039
-    4096 2.963039 0.407311
-    8192 4.043475 0.236713
-   16384 6.098094 0.249132
-   32768 9.439190 0.143978
+gets a NULL pointer exception either because of a NULL "bus" pointer as 
+the argument, or if "bus->p" is NULL.
 
-where size is the size of the write/truncate, avg is the average time and the
-stddev is the standard deviation. For small sizes, it's too massive to draw
-any reasonable conclusion from the microbenchmark. Factors like scheduling,
-whether sync happened and a host of other issues muck up the results.
+And in this case, it's the latter. The Code: decode shows the whole 
+function in this case:
 
-More importantly, I then checked how many times we freed cold pages during
-the test and the answer is ..... *never*. They were all hot page releases
-which is what my patch originally forced and the profiles agreed because they
-showed no samples in the "if (cold)" branch. Cold pages were only freed if I
-made kswapd kick off which was my original expectation as a system reclaiming
-is currently polluting cache with scanning so it's not important.
+  1c:	55                   	push   %rbp
+  1d:	89 e5                	mov    %esp,%ebp
+  1f:	e8 34 5f c8 ff       	callq  0xffffffffffc85f58
+  24:	89 c1                	mov    %eax,%ecx
+  26:	8b 42 38             	mov    0x38(%rdx),%eax
+  29:	89 ca                	mov    %ecx,%edx
+  2b:*	8b 40 54             	mov    0x54(%rax),%eax     <-- trapping instruction
+  2e:	e8 6c 48 f9 ff       	callq  0xfffffffffff9489f
+  33:	31 d2                	xor    %edx,%edx
+  35:	85 c0                	test   %eax,%eax
+  37:	74 03                	je     0x3c
+  39:	8b 50 6c             	mov    0x6c(%rax),%edx
+  3c:	5d                   	pop    %rbp
+  3d:	89 d0                	mov    %edx,%eax
+  3f:	c3                   	retq   
 
-Based on that nugget, the patch makes common sense because we never take the
-cold branch at a time we care. Common sense also tells me the patch should
-be an improvement because pagevec is smaller. Proving it's a good change is
-not working out very well at all.
+and that first "callq" seems to be due to Ingo having function tracing on, 
+while the second callq would have been that 'kset_find_obj()' thing.
 
-> argh.
-> 
-> Sorry to be pushing all this kernel archeology at you.
+So it does look like "&ieee1394_bus_type" has simply not been initialized 
+yet. It looks like ieee1394_init() is called too late.
 
-Don't be. This was time well spent in my opinion.
+Two choices that I can see:
 
-> Sometimes I
-> think we're insufficiently careful about removing old stuff - it can
-> turn out that it wasn't that bad after all!  (cf slab.c...)
-> 
+ - do the ieee1394_init() as a fs_initcall(), earlier
 
-Agreed. Better safe than sorry.
+ - move drivers/ieee1394 linking up to before drivers/media
 
-> > Repeated setup, populate and teardown of pagetables might show up something
-> > as it should benefit if the pages were cache hot but the cost of faulting
-> > and zeroing might hide it.
-> 
-> Well, pagetables have been churning for years, with special-cased
-> magazining, quicklists, magazining of known-to-be-zeroed pages, etc.
-> 
+but I suspect that drivers/media wants to be early, in order to do the 
+_media_ layer initialization early.
 
-The known-to-be-zeroed pages is interesting and something I tried but didn't
-get far enough with. One patch I did but didn't release would zero pages on
-the free path if the was process exiting or if it was kswapd.  It tracked if
-the page was zero using page->index to record the order of the zerod page. On
-allocation, it would check index and if a matching order, would not zero a
-second time. I got this working for order-0 pages reliably but it didn't gain
-anything because we were zeroing even more than we had to in the free path.
+Does this work?
 
-I should have gone at the pagetable pages as a source of zerod pages that
-required no additional work and said "screw it, I'll release what I have
-and see what happens".
+		Linus
 
-> I've always felt that we're doing that wrong, or at least awkwardly. 
-> If the magazining which the core page allocator does is up-to-snuff
-> then it _should_ be usable for pagetables.
-> 
+---
+ drivers/ieee1394/ieee1394_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-If pagetable pages were known to be zero and handed back to the allocator
-that remember zerod pages, I bet we'd get a win.
-
-> The magazining of known-to-be-zeroed pages is a new requirement. 
-
-They don't even need a separate magazine. Put them back on the lists and
-record if they are zero with page->index. Granted, it means a caller will
-sometimes get pages that are zerod when they don't need to be but I think
-it'd be better than larger structures or searches.
-
-> But
-> it absolutely should not be done private to the pagetable page
-> allocator (if it still is - I forget), because there are other
-> callsites in the kernel which want cache-hot zeroed pages, and there
-> are probably other places which free up known-to-be-zeroed pages.
-> 
-
-Agreed. I believe we can do it in the allocator too using page->index if I
-am understanding you properly.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff --git a/drivers/ieee1394/ieee1394_core.c b/drivers/ieee1394/ieee1394_core.c
+index 1028e72..8723380 100644
+--- a/drivers/ieee1394/ieee1394_core.c
++++ b/drivers/ieee1394/ieee1394_core.c
+@@ -1275,7 +1275,7 @@ static void __exit ieee1394_cleanup(void)
+ 	unregister_chrdev_region(IEEE1394_CORE_DEV, 256);
+ }
+ 
+-module_init(ieee1394_init);
++fs_initcall(ieee1394_init);
+ module_exit(ieee1394_cleanup);
+ 
+ /* Exported symbols */
