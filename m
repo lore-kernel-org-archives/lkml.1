@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbZBZWcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbZBZWd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbZBZWcW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbZBZWcH
+	id S1759338AbZBZWd5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZBZWds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:32:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41292 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752849AbZBZWcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:32:04 -0500
-Date: Thu, 26 Feb 2009 14:31:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: john stultz <johnstul@us.ibm.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: Linux 2.6.29-rc6
-In-Reply-To: <alpine.LFD.2.00.0902261413400.3111@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902261426310.3111@localhost.localdomain>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> 
- <49A70B24.6090706@krogh.cc> <1235685269.6811.11.camel@localhost.localdomain> <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain> <alpine.LFD.2.00.0902261413400.3111@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 26 Feb 2009 17:33:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46549 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751743AbZBZWdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 17:33:47 -0500
+Date: Thu, 26 Feb 2009 23:30:31 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Evans <scarybeasts@gmail.com>,
+       David Howells <dhowells@redhat.com>, Don Howard <dhoward@redhat.com>,
+       Eugene Teo <eugene@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] copy_process: fix CLONE_PARENT && ->exit_signal
+	interaction
+Message-ID: <20090226223031.GA14477@redhat.com>
+References: <20090225190211.GA7445@redhat.com> <20090225193927.1ED25FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902251156160.3111@localhost.localdomain> <20090225212039.GA11883@redhat.com> <20090226215945.GA12520@redhat.com> <alpine.LFD.2.00.0902261410581.3111@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902261410581.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/26, Linus Torvalds wrote:
+>
+> On Thu, 26 Feb 2009, Oleg Nesterov wrote:
+> >
+> > Really, how CLONE_PARENT + exit_signal==0 can be useful?
+>
+> Umm? For the reason I already stated?
 
+But I can not understand that reason... As I said, the thread does not
+go away if exit_signal == 0. Yes, the parent does not see it has a new
+zombie, but why this is useful?
 
-On Thu, 26 Feb 2009, Linus Torvalds wrote:
+> > But because the current behaviour is just silly. Imho.
+>
+> So? If there are people using it, you calling it silly is immaterial.
+>
+> The fact is, it's an existing user space interface. We don't break them.
+>
+> > But of course, if this change can break the user-space applications, then
+> > it should not be applied.
+>
+> That's the point. Nobody has shown that there aren't any users.
 
-> 
-> 
-> On Thu, 26 Feb 2009, Thomas Gleixner wrote:
-> > 
-> > Is the delta anything NTP might get upset about:
-> > 
-> > 2.6.26: time.c: Detected 2311.847 MHz processor.
-> > 2.6.29: Detected 2310.029 MHz processor.
-> > 
-> > If yes, then we need to fix NTP not the calibration code :)
-> 
-> Well, that _is_ about 500ppm difference
+Yes, yes, sure...
 
-Doing the math rather than just eyeballing it, I think it's closer to 
-800ppm than 500ppm. But maybe I did that wrong too.
+I sent another patch, perhaps someone can comment. Or suggest something
+else.
 
-Which is definitely pretty far out. The theory is that if we can catch the 
-edge of the PIT timer to 1us, and even if we get it maximally wrong at 
-beginning/end (ie the difference is off by 2us), a 2us error over 15ms 
-should be on the order of just a 133ppm error.
+Oleg.
 
-So 800ppm looks too big. We're clearly not getting to within 1us of the 
-PIT timer event edge. But it would be interesting to hear whether making 
-teh 15ms be 30ms will get us to a better place, and make ntp happier.
-
-And maybe my math is just wrong, and it's not the "within 1us" assumption 
-that was wrong.
-
-		Linus
