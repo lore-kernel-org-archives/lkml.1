@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbZBZHDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZBZHE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752718AbZBZHDx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 02:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZBZHDl
+	id S1754708AbZBZHE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 02:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZBZHEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 02:03:41 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54449 "EHLO song.cn.fujitsu.com"
+	Thu, 26 Feb 2009 02:04:10 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61484 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751849AbZBZHDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 02:03:40 -0500
-Message-ID: <49A63EE0.3030406@cn.fujitsu.com>
-Date: Thu, 26 Feb 2009 15:04:00 +0800
+	id S1751010AbZBZHEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 02:04:08 -0500
+Message-ID: <49A63EFB.8070701@cn.fujitsu.com>
+Date: Thu, 26 Feb 2009 15:04:27 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/4] cpuset: avoid changing cpuset's mems when errno returned
+Subject: [PATCH 4/4] cpuset: remove struct cpuset_hotplug_scanner
 References: <49A63E77.9060603@cn.fujitsu.com>
 In-Reply-To: <49A63E77.9060603@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -25,99 +25,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When writing to cpuset.mems, cpuset has to update its mems_allowed before
-calling update_tasks_nodemask(), but this function might return -ENOMEM.
-
-To avoid this rare case, we allocate the memory before changing mems_allowed,
-and then pass to update_tasks_nodemask(). Similar to what update_cpumask()
-does.
+Use cgroup_scanner.data, instead of introducing cpuset_hotplug_scanner.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/cpuset.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
+ kernel/cpuset.c |   23 +++++++++--------------
+ 1 files changed, 9 insertions(+), 14 deletions(-)
 
 diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 01a111f..3202364 100644
+index 3202364..a46d693 100644
 --- a/kernel/cpuset.c
 +++ b/kernel/cpuset.c
-@@ -1057,13 +1057,15 @@ static void *cpuset_being_rebound;
-  * update_tasks_nodemask - Update the nodemasks of tasks in the cpuset.
-  * @cs: the cpuset in which each task's mems_allowed mask needs to be changed
-  * @oldmem: old mems_allowed of cpuset cs
-+ * @heap: if NULL, defer allocating heap memory to cgroup_scan_tasks()
-  *
-  * Called with cgroup_mutex held
-- * Return 0 if successful, -errno if not.
-+ * No return value. It's guaranteed that cgroup_scan_tasks() always returns 0
-+ * if @heap != NULL.
+@@ -128,10 +128,6 @@ static inline struct cpuset *task_cs(struct task_struct *task)
+ 	return container_of(task_subsys_state(task, cpuset_subsys_id),
+ 			    struct cpuset, css);
+ }
+-struct cpuset_hotplug_scanner {
+-	struct cgroup_scanner scan;
+-	struct cgroup *to;
+-};
+ 
+ /* bits in struct cpuset flags field */
+ typedef enum {
+@@ -1889,10 +1885,9 @@ int __init cpuset_init(void)
+ static void cpuset_do_move_task(struct task_struct *tsk,
+ 				struct cgroup_scanner *scan)
+ {
+-	struct cpuset_hotplug_scanner *chsp;
++	struct cgroup *new_cgroup = scan->data;
+ 
+-	chsp = container_of(scan, struct cpuset_hotplug_scanner, scan);
+-	cgroup_attach_task(chsp->to, tsk);
++	cgroup_attach_task(new_cgroup, tsk);
+ }
+ 
+ /**
+@@ -1908,15 +1903,15 @@ static void cpuset_do_move_task(struct task_struct *tsk,
   */
--static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
-+static void update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem,
-+				 struct ptr_heap *heap)
+ static void move_member_tasks_to_cpuset(struct cpuset *from, struct cpuset *to)
  {
--	int retval;
- 	struct cgroup_scanner scan;
+-	struct cpuset_hotplug_scanner scan;
++	struct cgroup_scanner scan;
  
- 	cpuset_being_rebound = cs;		/* causes mpol_dup() rebind */
-@@ -1071,7 +1073,7 @@ static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
- 	scan.cg = cs->css.cgroup;
- 	scan.test_task = NULL;
- 	scan.process_task = cpuset_change_nodemask;
--	scan.heap = NULL;
-+	scan.heap = heap;
- 	scan.data = (nodemask_t *)oldmem;
+-	scan.scan.cg = from->css.cgroup;
+-	scan.scan.test_task = NULL; /* select all tasks in cgroup */
+-	scan.scan.process_task = cpuset_do_move_task;
+-	scan.scan.heap = NULL;
+-	scan.to = to->css.cgroup;
++	scan.cg = from->css.cgroup;
++	scan.test_task = NULL; /* select all tasks in cgroup */
++	scan.process_task = cpuset_do_move_task;
++	scan.heap = NULL;
++	scan.data = to->css.cgroup;
  
- 	/*
-@@ -1084,12 +1086,10 @@ static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
- 	 * It's ok if we rebind the same mm twice; mpol_rebind_mm()
- 	 * is idempotent.  Also migrate pages in each mm to new nodes.
- 	 */
--	retval = cgroup_scan_tasks(&scan);
-+	cgroup_scan_tasks(&scan);
- 
- 	/* We're done rebinding vmas to this cpuset's new mems_allowed. */
- 	cpuset_being_rebound = NULL;
--
--	return retval;
- }
- 
- /*
-@@ -1110,6 +1110,7 @@ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
- {
- 	nodemask_t oldmem;
- 	int retval;
-+	struct ptr_heap heap;
- 
- 	/*
- 	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
-@@ -1144,12 +1145,18 @@ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
- 	if (retval < 0)
- 		goto done;
- 
-+	retval = heap_init(&heap, PAGE_SIZE, GFP_KERNEL, NULL);
-+	if (retval < 0)
-+		goto done;
-+
- 	mutex_lock(&callback_mutex);
- 	cs->mems_allowed = trialcs->mems_allowed;
- 	cs->mems_generation = cpuset_mems_generation++;
- 	mutex_unlock(&callback_mutex);
- 
--	retval = update_tasks_nodemask(cs, &oldmem);
-+	update_tasks_nodemask(cs, &oldmem, &heap);
-+
-+	heap_free(&heap);
- done:
- 	return retval;
- }
-@@ -2002,7 +2009,7 @@ static void scan_for_empty_cpusets(struct cpuset *root)
- 			remove_tasks_in_empty_cpuset(cp);
- 		else {
- 			update_tasks_cpumask(cp, NULL);
--			update_tasks_nodemask(cp, &oldmems);
-+			update_tasks_nodemask(cp, &oldmems, NULL);
- 		}
- 	}
+-	if (cgroup_scan_tasks(&scan.scan))
++	if (cgroup_scan_tasks(&scan))
+ 		printk(KERN_ERR "move_member_tasks_to_cpuset: "
+ 				"cgroup_scan_tasks failed\n");
  }
 -- 1.5.4.rc3 
