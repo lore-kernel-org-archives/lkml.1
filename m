@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbZBZILf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbZBZIQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbZBZILf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 03:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZBZILW
+	id S1753685AbZBZIQX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 03:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZBZIQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 03:11:22 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64391 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbZBZILV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 03:11:21 -0500
-Message-ID: <49A64EB8.9020203@cn.fujitsu.com>
-Date: Thu, 26 Feb 2009 16:11:36 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 26 Feb 2009 03:16:15 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:56459 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259AbZBZIQO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 03:16:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Y8ayDNjyRoG9m7+mILOTdXRdWpRNwjEj3fXnOWLq4ZIp/hf+kYPiQ3s03ai9AvOAOC
+         G7UHoCpKy6eeMFg4YFQosvJ712/gUMINukF6uyOLFtGt6jJSq+FKDAjVW2YKuuLypAQp
+         RApHWknD20XgHEpqWbRJMxcL4dZiKjWbvLRtI=
 MIME-Version: 1.0
-To: bharata@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 1/2] New cgroup subsystem API (->initialize())
-References: <20090225105730.GA4008@in.ibm.com> <20090225105831.GB4008@in.ibm.com> <49A604BA.9090407@cn.fujitsu.com> <20090226075259.GA3312@in.ibm.com>
-In-Reply-To: <20090226075259.GA3312@in.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1235632643.5465.0.camel@penberg-laptop>
+References: <1235381712.6216.22.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0902231039580.7298@qirst.com>
+	 <1235410406.6216.69.camel@penberg-laptop>
+	 <19f34abd0902251117h7a4a6e9ao34e972110d8b40a1@mail.gmail.com>
+	 <alpine.DEB.1.10.0902251622460.13795@qirst.com>
+	 <1235632643.5465.0.camel@penberg-laptop>
+Date: Thu, 26 Feb 2009 09:16:10 +0100
+Message-ID: <19f34abd0902260016x1b354583o418d5f77fe51ae4e@mail.gmail.com>
+Subject: Re: [PATCH] kmemcheck: Disable SLUB and SLAB debugging when kmemcheck 
+	is enabled
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bharata B Rao wrote:
-> On Thu, Feb 26, 2009 at 10:55:54AM +0800, Li Zefan wrote:
->> Bharata B Rao wrote:
->>> From: Balaji Rao <balajirrao@gmail.com>
->>>
->>> cgroup: Add ->initialize() to cgroup_subsys structure
->>>
->>> Some cgroup subsystems (like cpu controller) would need subsystem
->>> specific initialization. Such subsystems can define ->initialize()
->>> which gets called during cgroup_init() (and not cgroup_init_early()).
->>>
->> I think it's better to avoid adding this.
->>
->> It would be best if we can add a hook to initialize init_task_group.stat where
->> kmalloc is available but acount_xxx_time() hasn't been called. Otherwise, we
->> have to check (tg->stat == NULL) in account_task_group_time(), then why not add
->> a hook in smp_init_smp() to do initialization?
-> 
-> account_xxx_time() is called from scheduler ticks and AFAICS they end up
-> getting called much before kmalloc is available. In any case, I would think
-> any hook to just initialize stats for init_task_group would be
-> very very (cpu controller) subsytem specific. Isn't that bad ?
-> 
+2009/2/26 Pekka Enberg <penberg@cs.helsinki.fi>:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> Date: Mon, 23 Feb 2009 11:35:13 +0200
+> Subject: [PATCH] kmemcheck: Disable SLUB and SLAB debugging when kmemcheck is enabled
+>
+> Enabling kmemcheck in Kconfig is a painful experience. Lets make it a
+> tad bit easier by inverting the dependencies to SLUB and SLAB debugging.
+> As kmemcheck is more powerful than slab debugging, disable the latter
+> functionality if an user enables kmemcheck.
+>
+> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Since it's very very cpu subsystem specific, so it's better to use it's own hook.
-(and because the initialize() API is not so elegant..)
+Thanks, applied!
 
-> Another solution I see which can prevent all this is not to collect
-> stats for init_task_group at all with the understanding that system wide
 
-This came to my mind too. ;)
+Vegard
 
-> stime/utime accounting (which is already present) is essentially the
-> accounting for init_task_group because init_task_group comprises of all
-> the tasks in the system. But this would necessiate us to make collection
-> of cpu controller stats hierarchial. This was one of the questions I asked
-> in my 0/2 thread. Shouldn't we be doing hierarchial accounting for
-> cpu controller ?
-> 
-
-Don't know. I have no strong opinion about this. I'm a bit doubt how useful
-this is.
-
-> Another thing that could be done is to enhance already existing
-> cpuacct controller to do stime/utime accouting also. cpuacct controller
-> exists precisely for doing per-cgroup accounting and is there any reason
-> why these stats shouldn't be part of cpuacct controller. If we do this,
-> users would be forced to use cpu controller and cpuacct controller
-> together. Is that a problem ?
-> 
-
-I wondered why these stats is part of cpu subsystem but not cpuacct.
-And I don't see any problem to use these 2 subsystems together. Actually
-this is one of the advantage of cgroup.
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
