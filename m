@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbZBZWKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbZBZWL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758858AbZBZWKm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZBZWKc
+	id S1759438AbZBZWL2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZBZWLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:10:32 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:51215 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753281AbZBZWKb (ORCPT
+	Thu, 26 Feb 2009 17:11:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45508 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752314AbZBZWLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:10:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=l6lvtEMQmleWAhG2E4Ok+X5z1ikTbKLcXRFN8UxzcZDaWzCQPWJ4uFykZ1uikf6NJh
-         0SU/ZIKs1Jyrax7pkLl3bQGi+RKAa+IVwXWIyW/W4l1CUfodCM/kdtZzmFodWfsrqkWU
-         ejmbIauibWSh0HxdbLqO97nGDYxTA+IaPBFpA=
-Date: Fri, 27 Feb 2009 01:17:09 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Greg Kurz <gkurz@fr.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mpm@selenic.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090226221709.GA2924@x200.localdomain>
-References: <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu> <1235673016.5877.62.camel@bahia>
+	Thu, 26 Feb 2009 17:11:19 -0500
+Date: Thu, 26 Feb 2009 14:10:39 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during
+ suspend-resume
+In-Reply-To: <200902262258.55835.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl> <200902261050.50531.rjw@sisk.pl> <d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com> <200902262258.55835.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235673016.5877.62.camel@bahia>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 07:30:16PM +0100, Greg Kurz wrote:
-> On Thu, 2009-02-26 at 18:33 +0100, Ingo Molnar wrote:
-> > I think the main question is: will we ever find ourselves in the 
-> > future saying that "C/R sucks, nobody but a small minority uses 
-> > it, wish we had never merged it"? I think the likelyhood of that 
-> > is very low. I think the current OpenVZ stuff already looks very 
-> 
-> We've been maintaining for some years now a C/R middleware with only a
-> few hooks in the kernel. Our strategy is to leverage existing kernel
-> paths as they do most of the work right.
-> 
-> Most of the checkpoint is performed from userspace, using regular
-> syscalls in a signal handler or /proc parsing. Restart is a bit trickier
-> and needs some kernel support to bypass syscall checks and enforce a
-> specific id for a resource. At the end, we support C/R and live
-> migration of networking apps (websphere application server for example).
-> 
-> >From our experience, we can tell:
-> 
-> Pros: mostly not-so-tricky userland code, independent from kernel
-> internals
-> Cons: sub-optimal for some resources
 
-How do you restore struct task_struct::did_exec ?
+
+On Thu, 26 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> Well, how exactly the $subject patch does cause this problem to happen?
+
+Rafael, the problem is that if an interrupt happens while it's disabled - 
+but before the CPU has actually turned all interrupts off - the CPU will 
+ACK the interrupt (but just set a flag for it being PENDING), so now the 
+chipset logic around it will not see it as pending any more, so now the 
+chipset won't auto-wake the CPU immediately (or more likely, it won't 
+even suspend it).
+
+It's trivial to fix multiple ways, so I wouldn't worry. The most trivial 
+way is to just have some sysdev drievr code simply do something like
+
+  static int sysdev_suspend()
+  {
+	for_each_irq(irq,desc) {
+		if (!(desc->flags & IRQF_WAKE))
+			continue;
+		if (desc->flags & IRQ_PENDING)
+			return -EBUSY;
+	}
+	return 0;
+  }
+
+and that should automatically mean that if any irq is pending, the suspend 
+will fail and we'll immediately wake up again.
+
+It looks trivial, and I don't understand why Arve can't just do the sysdev 
+thing.
+
+		Linus
