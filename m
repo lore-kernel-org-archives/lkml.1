@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbZBZFk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbZBZFnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760556AbZBZFk6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 00:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZBZFkr
+	id S1759504AbZBZFnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 00:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZBZFnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 00:40:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49441 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Feb 2009 00:43:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35587 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753200AbZBZFkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 00:40:46 -0500
-Date: Thu, 26 Feb 2009 06:40:23 +0100
+	id S1751747AbZBZFnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 00:43:15 -0500
+Date: Thu, 26 Feb 2009 06:43:05 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yinghai@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-Message-ID: <20090226054023.GA30543@elte.hu>
-References: <49A626B2.8090205@kernel.org>
+Subject: Re: [PATCH] x86: remove update_apic from x86_quirks
+Message-ID: <20090226054305.GA13545@elte.hu>
+References: <49A61FA9.5080706@kernel.org> <20090226053254.GA11806@elte.hu> <20090226053426.GA23744@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A626B2.8090205@kernel.org>
+In-Reply-To: <20090226053426.GA23744@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,24 +35,11 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+except that it doesnt build:
 
-> 
-> Impact: cleanup
-> 
-> that is only needed when CONFIG_X86_VSMP is defined with 64bit
-> also remove dead code about PCI, because CONFIG_X86_VSMP depends on PCI
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/include/asm/apic.h  |    7 +++++++
->  arch/x86/include/asm/setup.h |    4 ++++
->  arch/x86/kernel/Makefile     |    2 +-
->  arch/x86/kernel/setup.c      |    2 --
->  arch/x86/kernel/vsmp_64.c    |   12 +-----------
->  5 files changed, 13 insertions(+), 14 deletions(-)
-
-Applied to tip:x86/apic, thanks Yinghai!
+arch/x86/kernel/built-in.o:(.data+0x8c08): undefined reference to `wakeup_secondary_cpu_via_init'
+arch/x86/kernel/built-in.o:(.data+0x8d68): undefined reference to `wakeup_secondary_cpu_via_init'
+arch/x86/kernel/built-in.o:(.data+0x8ec8): undefined reference to `wakeup_secondary_cpu_via_init'
+arch/x86/kernel/built-in.o:(.data+0x9038): undefined reference to `wakeup_secondary_cpu_via_init'
 
 	Ingo
