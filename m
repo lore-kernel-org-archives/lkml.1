@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZBZN3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbZBZNgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbZBZN3y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 08:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZBZN2t
+	id S1756541AbZBZNgq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 08:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZBZNgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 08:28:49 -0500
-Received: from www.tglx.de ([62.245.132.106]:46809 "EHLO www.tglx.de"
+	Thu, 26 Feb 2009 08:36:36 -0500
+Received: from www.tglx.de ([62.245.132.106]:55712 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753171AbZBZN2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 08:28:47 -0500
-Message-Id: <20090226131719.502810659@linutronix.de>
+	id S1751651AbZBZNgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 08:36:36 -0500
+Message-Id: <20090226133339.875832967@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 26 Feb 2009 13:28:14 -0000
+Date: Thu, 26 Feb 2009 13:35:20 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: [patch 2/4] genirq: use kzalloc instead of explicit zero
-	initialization
-References: <20090226131336.423054348@linutronix.de>
-Content-Disposition: inline; filename=genirq-kzalloc-irq-action.patch
+Cc: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 0/3] add rt_tgsigqueueinfo syscall [RESEND]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: simplification
+sys_kill has a counterpart sys_tgkill which allows to send signals to
+a particular thread. sys_rt_sigqueueinfo is lacking such a counterpart.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Reviewed-by: Peter Zijlstra <peterz@infradead.org>
----
- kernel/irq/manage.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Aside of the asymetry it is a show stopper for migrating applications
+from other unix-alike RTOSes.
 
-Index: linux-2.6-tip/kernel/irq/manage.c
-===================================================================
---- linux-2.6-tip.orig/kernel/irq/manage.c
-+++ linux-2.6-tip/kernel/irq/manage.c
-@@ -714,15 +714,13 @@ int request_irq(unsigned int irq, irq_ha
- 	if (!handler)
- 		return -EINVAL;
- 
--	action = kmalloc(sizeof(struct irqaction), GFP_KERNEL);
-+	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
- 	if (!action)
- 		return -ENOMEM;
- 
- 	action->handler = handler;
- 	action->flags = irqflags;
--	cpus_clear(action->mask);
- 	action->name = devname;
--	action->next = NULL;
- 	action->dev_id = dev_id;
- 
- 	retval = __setup_irq(irq, desc, action);
+The following patch series implements rt_tgsigqueueinfo and hooks it
+up for x86.
 
+Find below the raw documentation.
+
+Thanks,
+
+        tglx
+----
+
+NAME
+       rt_tgsigqueueinfo - Send signal information to a signal to a thread
+
+SYNOPSIS
+       long sys_rt_tgsigqueueinfo (int tgid, int tid, int sig, siginfo_t *uinfo);
+
+DESCRIPTION
+
+       rt_tgsigqueueinfo sends signal sig information uinfo to the
+       thread with the thread ID tid in the thread group tgid.  (By
+       contrast, rt_sigqueueinfo(2) can only be used to send a signal
+       info to a process (i.e., thread group) as a whole, and the
+       signal will be delivered to an arbitrary thread within that
+       process.)
+
+RETURN VALUE
+
+       rt_tgsigqueueinfo returns 0 on success; otherwise,
+       rt_sigqueueinfo returns one of the errors listed in the
+       "Errors" section.
+
+ERRORS
+       -EFAULT
+              An invalid value for uinfo was specified.
+
+       -EINVAL
+              An invalid TID, TGID or signal was specified.
+
+       -EPERM
+              Permission denied.  For the required permissions,
+              see rt_sigqueueinfo(2).
+
+       -ESRCH
+              No process with the specified thread ID and thread group
+              ID exists. 
 
