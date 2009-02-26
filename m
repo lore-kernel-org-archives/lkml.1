@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbZBZSGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZBZSJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750894AbZBZSGu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 13:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZBZSGl
+	id S1753219AbZBZSJm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 13:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZBZSJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 13:06:41 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:49650 "EHLO minas.ics.muni.cz"
+	Thu, 26 Feb 2009 13:09:33 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48562 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261AbZBZSGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 13:06:40 -0500
-Date: Thu, 26 Feb 2009 19:06:36 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-       jbarnes@virtuousgeek.org, eric@anholt.net
-Subject: Re: [Bug #12210] 2.6.28-rc8 big regression in VM
-Message-ID: <20090226180636.GE4374@ics.muni.cz>
-References: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera> <T1gm2CtAHBF.A.2vG.c4_QJB@chimera> <20081225112017.GB16080@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081225112017.GB16080@localhost>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 26 Feb 2009 19:06:28 +0100 (CET)
+	id S1751777AbZBZSJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 13:09:32 -0500
+Subject: Re: [tip:timers/ntp] time: apply NTP frequency/tick changes
+ immediately, fix
+From: John Stultz <johnstul@us.ibm.com>
+To: hpa@zytor.com, mingo@redhat.com, williams@redhat.com, tglx@linutronix.de,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <tip-a66a97da747f7a119f45626c9d8170f8cac61b37@kernel.org>
+References: <tip-a66a97da747f7a119f45626c9d8170f8cac61b37@kernel.org>
+Content-Type: text/plain
+Date: Thu, 26 Feb 2009 10:08:05 -0800
+Message-Id: <1235671685.3793.31.camel@jstultz-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 2009-02-26 at 17:57 +0000, John Stultz wrote:
+> Author:     John Stultz <johnstul@us.ibm.com>
+> AuthorDate: Thu, 26 Feb 2009 09:46:14 -0800
+> Commit:     Ingo Molnar <mingo@elte.hu>
+> CommitDate: Thu, 26 Feb 2009 18:55:36 +0100
+> 
+> time: apply NTP frequency/tick changes immediately, fix
 
-you may remember that I reported regression in VM. I used you filecache module
-and discovered that the leaks are caused by these items:
-# filecache 1.0
-#      ino       size   cached cached% refcnt state dev          file
-    167302         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
-    167301         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
-    167300         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
-    167299          4        4     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
-    167290          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
-    167289          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
-    167288         16       16     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
-    167287         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+Sorry, the commit name isn't quite right there. I should have added the
+patch name explicitly. This patch was a fix to the following patch in
+-tip:
 
-there are tons of those items:
-cat /proc/filecache  | grep drm | wc -l
-14224
+time: ntp: fix bug in ntp_update_offset() & do_adjtimex()
 
-Do you have any clues what happens here? Is it a bug in kernel VM system or it
-is more likely a bug in Intel's GEM drm driver? Right now it results in 500MB
-of undropable cache.
 
-Also lsof reports many leaked file descriptors:
-lsof | grep drm | wc -l
-7326
+thanks
+-john
 
--- 
-Luká¹ Hejtmánek
+
+
+> The time_status conditional was accidentally placed right after we clear
+> the checked time_status bits, which causes us to take the conditional
+> every time through. This fixes it by moving the conditional to before we
+> clear the time_status bits.
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> Cc: Clark Williams <williams@redhat.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  kernel/time/ntp.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+> index c74eb7d..7fc6437 100644
+> --- a/kernel/time/ntp.c
+> +++ b/kernel/time/ntp.c
+> @@ -365,8 +365,6 @@ static inline void process_adj_status(struct timex *txc, struct timespec *ts)
+>  		time_state = TIME_OK;
+>  		time_status = STA_UNSYNC;
+>  	}
+> -	/* only set allowed bits */
+> -	time_status &= STA_RONLY;
+> 
+>  	/*
+>  	 * If we turn on PLL adjustments then reset the
+> @@ -375,6 +373,8 @@ static inline void process_adj_status(struct timex *txc, struct timespec *ts)
+>  	if (!(time_status & STA_PLL) && (txc->status & STA_PLL))
+>  		time_reftime = xtime.tv_sec;
+> 
+> +	/* only set allowed bits */
+> +	time_status &= STA_RONLY;
+>  	time_status |= txc->status & ~STA_RONLY;
+> 
+>  	switch (time_state) {
+
