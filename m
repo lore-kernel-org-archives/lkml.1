@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbZBZBJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZBZBLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756572AbZBZBJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 20:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZBZBJe
+	id S1756897AbZBZBLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 20:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZBZBLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 20:09:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:34429 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964AbZBZBJd (ORCPT
+	Wed, 25 Feb 2009 20:11:45 -0500
+Received: from mail.deathmatch.net ([70.167.247.36]:1048 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752922AbZBZBLp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 20:09:33 -0500
-Message-ID: <49A5EA1E.5@zytor.com>
-Date: Wed, 25 Feb 2009 17:02:22 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Feb 2009 20:11:45 -0500
+Date: Wed, 25 Feb 2009 20:11:36 -0500
+From: Bob Copeland <me@bobcopeland.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Nick Kossifidis <mickflemm@gmail.com>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090226011136.GB10577@hash.localnet>
+References: <20090222144742.GA6078@nowhere> <20090222170201.GA27360@silver.sucs.org> <49A1CA01.9030501@gmail.com> <49A1DDD2.7040706@gmail.com> <20090223152724.M82409@bobcopeland.com> <49A321BA.2040500@gmail.com> <49A326A4.8090103@gmail.com> <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: arnd@arndb.de, Sam Ravnborg <sam@ravnborg.org>,
-       Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       coreteam@netfilter.org
-Subject: Re: [patch 5/7] make netfilter use strict integer types
-References: <20090225235138.062045835@arndb.de> <20090225235515.682333715@arndb.de> <alpine.LSU.2.00.0902260104220.20789@fbirervta.pbzchgretzou.qr> <49A5DECD.7090809@zytor.com> <alpine.LSU.2.00.0902260137001.23768@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LSU.2.00.0902260137001.23768@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A46AD4.3060007@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Thursday 2009-02-26 01:14, H. Peter Anvin wrote:
->>> [...]
->>> IMHO, __uXX should be replaced by uintX_t, but a move this great I
->>> will leave to future generations because there is just too much
->>> persisting opinions wrt. such proposal. As such I'd like to join
->>> and persist on my position and that uintX that we have should be kept.
->> We *CAN'T* replace __uXX with uintX_t.  Period, full stop, end of story.
-> 
-> Would the mindful master please elaborate why this is so, if it is
-> indeed not a personal decision.
+On Tue, Feb 24, 2009 at 10:47:00PM +0100, Jiri Slaby wrote:
+> I added a check for this in rx tasklet some time ago, because I hit it.  
+> So no fireworks really should happen ;).
+>
+> And yes, we ought to use this much better test (I knew nothing about  
+> AR_RXDP reg) than mine.
 
-POSIX has strict rules as to what symbols you are allowed to present 
-into the user-visible namespace.  This means you can't use these types 
-for any header that may be indirectly included.
+Indeed, it lasted all day for me with only 3 buffers under load, lots of
+packet loss though :)
 
-Since we can't use them in general, it's silly to use them for a 
-minority of headers, which would then have different exposure rules than 
-people otherwise can expect.
-
-	-hpa
+-- 
+Bob Copeland %% www.bobcopeland.com
 
