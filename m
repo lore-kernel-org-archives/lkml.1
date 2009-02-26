@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZBZQVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbZBZQ3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758026AbZBZQVb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 11:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZBZQVU
+	id S1757078AbZBZQ3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 11:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZBZQ3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 11:21:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:10450 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754894AbZBZQVS (ORCPT
+	Thu, 26 Feb 2009 11:29:02 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:9284 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753578AbZBZQ3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 11:21:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Nju91Hkb2YFnoEfReS41gar1v6sm5STaDjpSbe338SxIfj4LRFzuyu57+9U39eEkdb
-         wq3BF4sFr6dlHQhWlzkpUTz0qmJcj0GkhTWzwIsJrqnVc14T3NxX1m1e3hgmXmYk1EIA
-         jfNapc6cbgc26+pD2fdo1pxqWwOjcL7Eo4fpw=
-Date: Thu, 26 Feb 2009 19:27:56 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, mpm@selenic.com,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090226162755.GB1456@x200.localdomain>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz>
+	Thu, 26 Feb 2009 11:29:00 -0500
+Date: Thu, 26 Feb 2009 09:28:58 -0700
+From: David Altobelli <david.altobelli@hp.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, david.altobelli@hp.com
+Subject: [PATCH] new pci device for hpilo
+Message-ID: <20090226162858.GA29790@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234479845.30155.220.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regarding interactions of C/R with other code:
+Future iLO devices will have an HP vendor id, applies to 2.6.29.
 
-1. trivia
-1a. field in some datastructure is removed
+Please CC me on any replies.
 
-	technically, compilation breaks
+Signed-off-by: David Altobelli <david.altobelli@hp.com>
+---
 
-	Need to decide what to do -- from trivial compile fix
-	by removing code to ignoring some fields in dump image.
-
-1b. field is added
-
-	This is likely to happen silently, so maintainers
-	will have to keep an eye on critical data structures
-	and general big changes in core kernel.
-
-	Need to decide what to do with new field --
-	anything from 'doesn't matter' to 'yeah, needs C/R part'
-	with dump format change.
-
-2. non-trivia
-2a. standalone subsystem added (say, network protocol)
-
-    If submitter sends C/R part -- excellent.
-    If he doesn't, well, don't forget to add tiny bit of check
-	and abort if said subsystem is in use.
-
-2b. massacre inside some subsystem (say, struct cred introduction)
-
-	Likely, C/R non-trivially breaks both in compilation and
-	in working, requires non-trivial changes in algorithms and in
-	C/R dump image.
-
-For some very core data structures dump file images should be made
-fatter than needed to more future-proof, like
-a) statistics in u64 regardless of in-kernel width.
-b) ->vm_flags in image should be at least u64 and bits made append-only
-	so dump format would survive flags addition, removal and
-	renumbering.
-and so on.
-
-
-
-So I guess, at first C/R maintainers will take care of all of these issues
-with default policy being 'return -E, implement C/R later',
-but, ideally, C/R will have same rights as other kernel subsystem, so people
-will make non-trivial changes in C/R as they make their own non-trivial
-changes.
-
-If last statement isn't acceptable, in-kernel C/R is likely doomed from
-the start (especially given lack of in-kernel testsuite).
+--- linux-2.6.28/drivers/misc/hpilo.c.orig	2009-02-20 13:59:42.000000000 -0600
++++ linux-2.6.28/drivers/misc/hpilo.c	2009-02-20 14:02:46.000000000 -0600
+@@ -710,6 +710,7 @@ out:
+ 
+ static struct pci_device_id ilo_devices[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3307) },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, ilo_devices);
+@@ -758,7 +759,7 @@ static void __exit ilo_exit(void)
+ 	class_destroy(ilo_class);
+ }
+ 
+-MODULE_VERSION("0.06");
++MODULE_VERSION("1.0");
+ MODULE_ALIAS(ILO_NAME);
+ MODULE_DESCRIPTION(ILO_NAME);
+ MODULE_AUTHOR("David Altobelli <david.altobelli@hp.com>");
