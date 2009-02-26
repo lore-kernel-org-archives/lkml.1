@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbZBZD72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZBZEEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbZBZD72 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZBZD7S
+	id S1757370AbZBZEEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 23:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBZEEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:59:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40599 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752250AbZBZD7S (ORCPT
+	Wed, 25 Feb 2009 23:04:31 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:38891 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbZBZEEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:59:18 -0500
-Date: Wed, 25 Feb 2009 19:57:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
- suspend-resume
-In-Reply-To: <d6200be20902251950l34d5968q4b553ce8305ebd4b@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0902251956450.3111@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <20090224230935.GA15165@elte.hu>  <200902250029.16107.rjw@sisk.pl>  <d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>  <alpine.LFD.2.00.0902251724220.3111@localhost.localdomain> 
- <d6200be20902251813o3ff4a065nb0a54321e27c512d@mail.gmail.com>  <alpine.LFD.2.00.0902251848120.3111@localhost.localdomain>  <20090226030050.GA3361@elte.hu>  <d6200be20902251931lf563c2aw43d5266e9677e168@mail.gmail.com>  <alpine.LFD.2.00.0902251935190.3111@localhost.localdomain>
- <d6200be20902251950l34d5968q4b553ce8305ebd4b@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 25 Feb 2009 23:04:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SXMByjkMJEQ+BwAg17dlrdQ1k0tpErFqF/21+JtUqqToM1Rk1J9YoT6X/u1oR6c6X9
+         JUL2chN+P42tRCFEV1t2zsyFxmOTRJvbezdiVWYzX8aN4FA9T2by3+6YEsrB6nGxhcAW
+         /bW7CtRkefs8gDI5qu8kQdK+aJXWX9lhHQOwk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090226032544.GB22223@elte.hu>
+References: <20090225205920.GA22091@localhost> <20090226030315.GB7526@elte.hu>
+	 <1235617541.5610.0.camel@brick> <20090226031301.GE7526@elte.hu>
+	 <1235618574.5610.1.camel@brick> <20090226032544.GB22223@elte.hu>
+Date: Thu, 26 Feb 2009 07:04:27 +0300
+Message-ID: <aa79d98a0902252004n2d9d06fcpf2b2ff20f1c8442a@mail.gmail.com>
+Subject: Re: [RFC] introduce pr_cont macro
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/26/09, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+>
+>> On Thu, 2009-02-26 at 04:13 +0100, Ingo Molnar wrote:
+>> > * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+>> >
+>> > > On Thu, 2009-02-26 at 04:03 +0100, Ingo Molnar wrote:
+>> > > > * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>> > > >
+>> > > > > We cover all log-levels by pr_... macros except
+>> > > > > KERN_CONT one. Add it for convenience.
+>> > > > >
+>> > > > > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+>> > > > > ---
+>> > > > >
+>> > > > > I think start printing with some pr_... macro
+>> > > > > and continue with printk(KERN_CONT ...) look
+>> > > > > not that clear -- better to continue with
+>> > > > > same pr_... slogan. Thoughts? I hope I didn't
+>> > > > > miss anything.
+>> > > > >
+>> > > > >  include/linux/kernel.h |    2 ++
+>> > > > >  1 file changed, 2 insertions(+)
+>> > > > >
+>> > > > > Index: linux-2.6.git/include/linux/kernel.h
+>> > > > > ===================================================================
+>> > > > > --- linux-2.6.git.orig/include/linux/kernel.h
+>> > > > > +++ linux-2.6.git/include/linux/kernel.h
+>> > > > > @@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
+>> > > > >          printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
+>> > > > >  #define pr_info(fmt, ...) \
+>> > > > >          printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+>> > > > > +#define pr_cont(fmt, ...) \
+>> > > > > +        printk(KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> > > >
+>> > > > Makes sense.
+>> > > >
+>> > > > Acked-by: Ingo Molnar <mingo@elte.hu>
+>> > > >
+>> > >
+>> > > Don't you want to omit the pr_fmt() from the KERN_CONT case?
+>> >
+>> > indeed, good catch. It should be:
+>> >
+>> > #define pr_cont(fmt, ...) \
+>> > 	printk(KERN_CONT ##__VA_ARGS__)
+>>
+>> Missing fmt entirely?
+>
+> yeah ...
+>
+> Btw., why do those macros use ##__VA_ARGS__ ? Why not a
+> straightforward:
+>
+>  #define __pr_cont(args...) \
+>  	printk(KERN_CONT args)
+>
+> ?
+>
+> 	Ingo
 
-
-On Wed, 25 Feb 2009, Arve Hjønnevåg wrote:
-> 
-> I don't think this is a oddball case. It is very common to connect
-> keys or keypads to gpios. If these keys are wakeup keys, it is not OK
-> to loose interrupts during the suspend phase.
-
-.. and how many drivers is that? Is it one or two "gpio input drivers" or 
-is it a hundred?
-
-The "common" is not so much about "how many machines", but "in how many 
-drivers would you actually do this".
-
-			Linus
+Grr... Thanks for catching me! Ingo, Harvey could you drop this patch
+and make new one in good shape?
