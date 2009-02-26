@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZBZHE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZBZHF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZBZHE2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 02:04:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZBZHEK
+	id S1754286AbZBZHF6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 02:05:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbZBZHFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 02:04:10 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61484 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbZBZHEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 02:04:08 -0500
-Message-ID: <49A63EFB.8070701@cn.fujitsu.com>
-Date: Thu, 26 Feb 2009 15:04:27 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 26 Feb 2009 02:05:49 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:32262 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbZBZHFs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 02:05:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lNFSpv/4SWkpM+lU6i0+CcvzeLAnrWRp43UrRTgofVX2VgvaRuwpBcz3iKRNvHBqhP
+         UjnfMxcDfGSR2hMZmYgbcRSvX2fgFrY3DDeGxsoaGf9YEh3R41p9wSJIw3q2MN5QZooY
+         6KQpOuy9YqaJkXWYWg2K5d0JxKwmzBX0CAoc4=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4] cpuset: remove struct cpuset_hotplug_scanner
-References: <49A63E77.9060603@cn.fujitsu.com>
-In-Reply-To: <49A63E77.9060603@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090225093440.GA5414@july>
+References: <20090225093440.GA5414@july>
+Date: Thu, 26 Feb 2009 12:35:45 +0530
+Message-ID: <5d5443650902252305h6e221b4epd724d8331607eebb@mail.gmail.com>
+Subject: Re: [PATCH] LED key trigger support
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com, rpurdie@rpsys.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use cgroup_scanner.data, instead of introducing cpuset_hotplug_scanner.
+Hi Kyungmin,
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/cpuset.c |   23 +++++++++--------------
- 1 files changed, 9 insertions(+), 14 deletions(-)
+> +
+> +static int key_notifier_callback(struct notifier_block *nb,
+> +                               unsigned long event, void *data)
+> +{
+> +       struct key_trigger_notifier *kn = container_of(nb,
+> +                                       struct key_trigger_notifier, notifier);
+> +       struct led_classdev *led = kn->led;
+> +       unsigned int *key_value = (unsigned int *) data;
 
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 3202364..a46d693 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -128,10 +128,6 @@ static inline struct cpuset *task_cs(struct task_struct *task)
- 	return container_of(task_subsys_state(task, cpuset_subsys_id),
- 			    struct cpuset, css);
- }
--struct cpuset_hotplug_scanner {
--	struct cgroup_scanner scan;
--	struct cgroup *to;
--};
- 
- /* bits in struct cpuset flags field */
- typedef enum {
-@@ -1889,10 +1885,9 @@ int __init cpuset_init(void)
- static void cpuset_do_move_task(struct task_struct *tsk,
- 				struct cgroup_scanner *scan)
- {
--	struct cpuset_hotplug_scanner *chsp;
-+	struct cgroup *new_cgroup = scan->data;
- 
--	chsp = container_of(scan, struct cpuset_hotplug_scanner, scan);
--	cgroup_attach_task(chsp->to, tsk);
-+	cgroup_attach_task(new_cgroup, tsk);
- }
- 
- /**
-@@ -1908,15 +1903,15 @@ static void cpuset_do_move_task(struct task_struct *tsk,
-  */
- static void move_member_tasks_to_cpuset(struct cpuset *from, struct cpuset *to)
- {
--	struct cpuset_hotplug_scanner scan;
-+	struct cgroup_scanner scan;
- 
--	scan.scan.cg = from->css.cgroup;
--	scan.scan.test_task = NULL; /* select all tasks in cgroup */
--	scan.scan.process_task = cpuset_do_move_task;
--	scan.scan.heap = NULL;
--	scan.to = to->css.cgroup;
-+	scan.cg = from->css.cgroup;
-+	scan.test_task = NULL; /* select all tasks in cgroup */
-+	scan.process_task = cpuset_do_move_task;
-+	scan.heap = NULL;
-+	scan.data = to->css.cgroup;
- 
--	if (cgroup_scan_tasks(&scan.scan))
-+	if (cgroup_scan_tasks(&scan))
- 		printk(KERN_ERR "move_member_tasks_to_cpuset: "
- 				"cgroup_scan_tasks failed\n");
- }
--- 1.5.4.rc3 
+No need of casting from void *.
+
+> +
+> +       /* In case of touchscreen, just skip it */
+> +       if (*key_value == BTN_TOUCH)
+> +               return 0;
+
+I think this filtering is already done by notification patch.
+
+> +
+> +       led_set_brightness(led, event);
+> +       return 0;
+> +
+> +}
+> +
+> +static void key_led_activate(struct led_classdev *led)
+> +{
+> +       struct key_trigger_notifier *kn;
+> +       int ret;
+> +
+> +       kn = kzalloc(sizeof(struct key_trigger_notifier), GFP_KERNEL);
+> +       if (!kn) {
+> +               dev_err(led->dev, "unable to allocatate key trigger\n");
+
+s/allocatate/allocate
+
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
