@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbZBZWlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760308AbZBZWl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758471AbZBZWlH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 17:41:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZBZWkR
+	id S1760308AbZBZWl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 17:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759961AbZBZWk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 17:40:17 -0500
-Received: from mga14.intel.com ([143.182.124.37]:13323 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755714AbZBZWkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 17:40:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,273,1233561600"; 
-   d="scan'208";a="114859254"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [git pull] PCI fixes
-Date: Thu, 26 Feb 2009 14:39:54 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-References: <200902261424.28906.jesse.barnes@intel.com> <20090226223602.GH16891@parisc-linux.org>
-In-Reply-To: <20090226223602.GH16891@parisc-linux.org>
+	Thu, 26 Feb 2009 17:40:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38437 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759839AbZBZWkz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 17:40:55 -0500
+Date: Thu, 26 Feb 2009 14:40:09 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: john stultz <johnstul@us.ibm.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+In-Reply-To: <1235687483.6811.26.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0902261434390.3111@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> 
+ <49A70B24.6090706@krogh.cc>  <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain> <1235687483.6811.26.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902261439.55260.jesse.barnes@intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, February 26, 2009 2:36:03 pm Matthew Wilcox wrote:
-> On Thu, Feb 26, 2009 at 02:24:28PM -0800, Jesse Barnes wrote:
-> > Matthew Wilcox (1):
-> >       PCI/MSI: fix msi_mask() shift fix
->
-> This one already appears to be in Linus' tree ... did you drive git
-> request-pull badly?
 
-No I just haven't merged his tree since then.  But then no one else should be 
-touching these PCI bits, right? :)
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+On Thu, 26 Feb 2009, john stultz wrote:
+> 
+> I'll kick up some of my own testing between these two releases to see if
+> I can't find something similar.
+
+Since the PIT timer read is possibly hw-dependent, it might be that you 
+can't necessarily reproduce it on some random hardware.
+
+How sensitive is ntpd to (stable) drift? IOW, if we get the calibration 
+wrong, the TSC should still hopefully be very _stable_, it's just that the 
+initial guesstimate for the frequency is off and ntp would have to correct 
+for that.
+
+The easiest way to test might be to just force a 1000ppm estimation error 
+with something like this total hack (indented just so that nobody would 
+ever apply this by mistake):
+
+	 arch/x86/kernel/tsc.c |    4 ++++
+	 1 files changed, 4 insertions(+), 0 deletions(-)
+
+	diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+	index 599e581..b80a0c4 100644
+	--- a/arch/x86/kernel/tsc.c
+	+++ b/arch/x86/kernel/tsc.c
+	@@ -350,6 +350,10 @@ static unsigned long quick_pit_calibrate(void)
+	 		delta = (t2 - t1)*PIT_TICK_RATE;
+	 		do_div(delta, QUICK_PIT_ITERATIONS*256*1000);
+	 		printk("Fast TSC calibration using PIT\n");
+	+
+	+		/* HACK! */
+	+		delta -= delta >> 10;
+	+
+	 		return delta;
+	 	}
+	 failed:
+
+which wouldn't be hardware-dependent.
+
+			Linus
