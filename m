@@ -1,177 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZBZJOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZBZJSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbZBZJOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 04:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZBZJOI
+	id S1754810AbZBZJSv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 04:18:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZBZJSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 04:14:08 -0500
-Received: from mga11.intel.com ([192.55.52.93]:22165 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752956AbZBZJOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 04:14:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,270,1233561600"; 
-   d="scan'208";a="434311314"
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 17:10:27 +0800
-Message-Id: <1235639427.11390.11.camel@minggr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	Thu, 26 Feb 2009 04:18:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:29796 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbZBZJSc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 04:18:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KZubYNkvjBmqfep6gfAA62IKPtj6nWJagMWZ8exYJsdhgWCOk3YulPpWBv1zCsK6rr
+         JU7eVSrYW5uVA8DbeDAtYFIUbsryTcPGQ7sDPBEmVqas5hnJ7FVctf/A3pa7KewIptiW
+         bAkVHXa339bFo1eqGhZmaXZYSybpwp7jfm5Tw=
+MIME-Version: 1.0
+In-Reply-To: <b637ec0b0902251203i1fe5f081vfd06350dbf5060e9@mail.gmail.com>
+References: <b637ec0b0902251203i1fe5f081vfd06350dbf5060e9@mail.gmail.com>
+Date: Thu, 26 Feb 2009 10:18:29 +0100
+Message-ID: <b637ec0b0902260118o19f74acal567440a6f049512@mail.gmail.com>
+Subject: Re: Crash in 2.6.28.7 - ext4 related
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Theodore Tso <tytso@mit.edu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We tested this v2 patch series with 2.6.29-rc6 on different machines.
+OK, I see that my message didn't reach neither linux-kernel nor
+linux-fsdevel, maybe because of the image size (484K).
 
-		4P qual-core	2P qual-core	2P qual-core HT
-		tigerton	stockley	Nehalem
-		------------------------------------------------
-tbench		+3%		+2%		0%
-oltp		-2%		0%		0%
-aim7		0%		0%		0%
-specjbb2005	+3%		0%		0%
-hackbench	0%		0%		0%	
+If anyone is interested in details, please let me know.
 
-netperf:
-TCP-S-112k	0%		-1%		0%
-TCP-S-64k	0%		-1%		+1%
-TCP-RR-1	0%		0%		+1%
-UDP-U-4k	-2%		0%		-2%
-UDP-U-1k	+3%		0%		0%
-UDP-RR-1	0%		0%		0%
-UDP-RR-512	-1%		0%		+1%
+Regards,
+Fabio
 
-Lin Ming
 
-On Tue, 2009-02-24 at 20:16 +0800, Mel Gorman wrote:
-> Still a work in progress but enough has changed that I want to show what
-> it current looks like. Performance is still improved a little but there are
-> some large outstanding pieces of fruit
-> 
-> 1. Improving free_pcppages_bulk() does a lot of looping, maybe could be better
-> 2. gfp_zone() is still using a cache line for data. I wasn't able to translate
->    Kamezawa-sans suggestion into usable code
-> 
-> The following two items should be picked up in a second or third pass at
-> improving the page allocator
-> 
-> 1. Working out if knowing whether pages are cold/hot on free is worth it or
->    not
-> 2. Precalculating zonelists for cpusets (Andi described how it could be done,
->    it's straight-forward, just will take time but it doesn't affect the
->    majority of users)
-> 
-> Changes since V1
->   o Remove the ifdef CONFIG_CPUSETS from inside get_page_from_freelist()
->   o Use non-lock bit operations for clearing the mlock flag
->   o Factor out alloc_flags calculation so it is only done once (Peter)
->   o Make gfp.h a bit prettier and clear-cut (Peter)
->   o Instead of deleting a debugging check, replace page_count() in the
->     free path with a version that does not check for compound pages (Nick)
->   o Drop the alteration for hot/cold page freeing until we know if it
->     helps or not
-> 
-> The complexity of the page allocator has been increasing for some time
-> and it has now reached the point where the SLUB allocator is doing strange
-> tricks to avoid the page allocator. This is obviously bad as it may encourage
-> other subsystems to try avoiding the page allocator as well.
-> 
-> This series of patches is intended to reduce the cost of the page
-> allocator by doing the following.
-> 
-> Patches 1-3 iron out the entry paths slightly and remove stupid sanity
-> checks from the fast path.
-> 
-> Patch 4 uses a lookup table instead of a number of branches to decide what
-> zones are usable given the GFP flags.
-> 
-> Patch 5 tidies up some flags
-> 
-> Patch 6 avoids repeated checks of the zonelist
-> 
-> Patch 7 breaks the allocator up into a fast and slow path where the fast
-> path later becomes one long inlined function.
-> 
-> Patches 8-12 avoids calculating the same things repeatedly and instead
-> calculates them once.
-> 
-> Patches 13-14 inline parts of the allocator fast path
-> 
-> Patch 15 avoids calling get_pageblock_migratetype() potentially twice on
-> every page free
-> 
-> Patch 16 reduces the number of times interrupts are disabled by reworking
-> what free_page_mlock() does and not using locked versions of bit operations.
-> 
-> Patch 17 avoids using the zonelist cache on non-NUMA machines
-> 
-> Patch 18 simplifies some debugging checks made during alloc and free.
-> 
-> Patch 19 avoids a list search in the allocator fast path.
-> 
-> Running all of these through a profiler shows me the cost of page allocation
-> and freeing is reduced by a nice amount without drastically altering how the
-> allocator actually works. Excluding the cost of zeroing pages, the cost of
-> allocation is reduced by 25% and the cost of freeing by 12%.  Again excluding
-> zeroing a page, much of the remaining cost is due to counters, debugging
-> checks and interrupt disabling.  Of course when a page has to be zeroed,
-> the dominant cost of a page allocation is zeroing it.
-> 
-> These patches reduce the text size of the kernel by 180 bytes on the one
-> x86-64 machine I checked.
-> 
-> Range of results (positive is good) on 7 machines that completed tests.
-> 
-> o Kernbench elapsed time	-0.04	to	0.79%
-> o Kernbench system time		0 	to	3.74%
-> o tbench			-2.85%  to	5.52%
-> o Hackbench-sockets		all differences within  noise
-> o Hackbench-pipes		-2.98%  to	9.11%
-> o Sysbench			-0.04%  to	5.50%
-> 
-> With hackbench-pipes, only 2 machines out of 7 showed results outside of
-> the noise. In almost all cases the strandard deviation between runs of
-> hackbench-pipes was reduced with the patches.
-> 
-> I still haven't run a page-allocator micro-benchmark to see what sort of
-> figures that gives.
-> 
->  arch/ia64/hp/common/sba_iommu.c   |    2 
->  arch/ia64/kernel/mca.c            |    3 
->  arch/ia64/kernel/uncached.c       |    3 
->  arch/ia64/sn/pci/pci_dma.c        |    3 
->  arch/powerpc/platforms/cell/ras.c |    2 
->  arch/x86/kvm/vmx.c                |    2 
->  drivers/misc/sgi-gru/grufile.c    |    2 
->  drivers/misc/sgi-xp/xpc_uv.c      |    2 
->  include/linux/cpuset.h            |    2 
->  include/linux/gfp.h               |   62 +--
->  include/linux/mm.h                |    1 
->  include/linux/mmzone.h            |    8 
->  init/main.c                       |    1 
->  kernel/profile.c                  |    8 
->  mm/filemap.c                      |    2 
->  mm/hugetlb.c                      |    4 
->  mm/internal.h                     |   11 
->  mm/mempolicy.c                    |    2 
->  mm/migrate.c                      |    2 
->  mm/page_alloc.c                   |  642 +++++++++++++++++++++++++-------------
->  mm/slab.c                         |    4 
->  mm/slob.c                         |    4 
->  mm/vmalloc.c                      |    1 
->  23 files changed, 490 insertions(+), 283 deletions(-)
 
+On Wed, Feb 25, 2009 at 9:03 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> Hi all.
+> I experience hard crashes with latest stable kernel (but also in every
+> 2.6.28.y release). This time I was trying to remove a large directory
+> (a kernel tree) in a clean (fsck -f from a previous crash) ext4
+> partition.
+>
+> The partition is an ext3 converted one, with extents enabled. It's
+> about 20gb in size.
+>
+> When the crash happened the sistem was just booted in single user;
+> fsck -f; mount; rm -rf <dir>; bang. Please look at the attached
+> picture.
+>
+> The kernel is vanilla 2.6.28.7 + opensuse bootsplash patch.
+>
+> Please let me know if you need more details. Unfortunately for me it
+> seems to be pretty easily reproduceable. By the way, some of the
+> previous crashes did not involve file removals.
+>
+> Regards,
+> Fabio
+>
