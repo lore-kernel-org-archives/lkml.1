@@ -1,152 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZBZDN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZBZDSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbZBZDN5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZBZDNr
+	id S1757148AbZBZDSS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBZDSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:13:47 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54531 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751590AbZBZDNq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:13:46 -0500
-Date: Wed, 25 Feb 2009 22:13:41 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] make CALLER_ADDRx overwriteable
-In-Reply-To: <20090226030218.GA7526@elte.hu>
-Message-ID: <alpine.DEB.2.00.0902252211190.12697@gandalf.stny.rr.com>
-References: <1235594749-24585-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090226030218.GA7526@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 25 Feb 2009 22:18:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45519 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbZBZDSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 22:18:03 -0500
+Message-ID: <49A609E0.5040807@kernel.org>
+Date: Thu, 26 Feb 2009 12:17:52 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Luck, Tony" <tony.luck@intel.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hpa@zytor.com" <hpa@zytor.com>, "jeremy@goop.org" <jeremy@goop.org>,
+       "cpw@sgi.com" <cpw@sgi.com>, "mingo@elte.hu" <mingo@elte.hu>
+Subject: Re: [PATCH 09/10] percpu: implement new dynamic percpu allocator
+References: <1234958676-27618-1-git-send-email-tj@kernel.org> <200902192221.52835.rusty@rustcorp.com.au> <499E1D01.2040408@kernel.org> <200902241326.23605.rusty@rustcorp.com.au> <49A389F7.9030002@kernel.org> <57C9024A16AD2D4C97DC78E552063EA361924956@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA361924956@orsmsx505.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 26 Feb 2009 03:17:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Thu, 26 Feb 2009, Ingo Molnar wrote:
-
+Luck, Tony wrote:
+> ia64 started out with a pinned TLB entry to map the percpu space to the
+> top 64K of address space (so that the compiler can generate ld/st instructions
+> with a small negative offset from register r0 to access local-to-this-cpu
+> objects).
 > 
-> * Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de> wrote:
+> Then we started using a one of the ar.k* registers to hold the base
+> physical address for each cpus per-cpu area so that early parts of
+> machine check code (which runs with MMU off) can access per-cpu variables.
 > 
-> > The current definition of CALLER_ADDRx isn't suitable for all platforms.
-> > E.g. for ARM __builtin_return_address(N) doesn't work for N > 0 and
-> > AFAIK for powerpc there are no frame pointers needed to have a working
-> > __builtin_return_address.  This patch allows defining the CALLER_ADDRx
-> > macros in <asm/ftrace.h> and let these take precedence.
-> > 
-> > Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
-> > ---
-> > Hello,
-> > 
-> > I think I don't break any architecture with this patch:
-> > 
-> > 	$ for arch in $(ls arch/); do if test ! -d arch/$arch; then continue; fi; test -f arch/$arch/include/asm/ftrace.h || test -f include/asm-$arch/ftrace.h || { echo -n "$arch: "; git grep FTRACE arch/$arch | wc -l; } done
-> > 	alpha: 0
-> > 	avr32: 0
-> > 	blackfin: 0
-> > 	cris: 0
-> > 	frv: 0
-> > 	h8300: 0
-> > 	m32r: 0
-> > 	m68k: 0
-> > 	m68knommu: 0
-> > 	mips: 0
-> > 	mn10300: 0
-> > 	parisc: 0
-> > 	um: 0
-> > 	xtensa: 0
-> > 
-> > So all archs that don't have <asm/ftrace.h> seem not to use FTRACE.
-> > 
-> > Best regards
-> > Uwe
-> > 
-> >  include/linux/ftrace.h |   41 +++++++++++++++++++++--------------------
-> >  1 files changed, 21 insertions(+), 20 deletions(-)
-> > 
-> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> > index 847bb3c..9d8d362 100644
-> > --- a/include/linux/ftrace.h
-> > +++ b/include/linux/ftrace.h
-> > @@ -11,6 +11,8 @@
-> >  #include <linux/bitops.h>
-> >  #include <linux/sched.h>
-> >  
-> > +#include <asm/ftrace.h>
-> > +
-> >  #ifdef CONFIG_FUNCTION_TRACER
-> >  
-> >  extern int ftrace_enabled;
-> > @@ -103,8 +105,6 @@ struct ftrace_func_command {
-> >  };
-> >  
-> >  #ifdef CONFIG_DYNAMIC_FTRACE
-> > -/* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
-> > -#include <asm/ftrace.h>
-> >  
-> >  int ftrace_arch_code_modify_prepare(void);
-> >  int ftrace_arch_code_modify_post_process(void);
-> > @@ -282,24 +282,25 @@ static inline void __ftrace_enabled_restore(int enabled)
-> >  #endif
-> >  }
-> >  
-> > -#ifdef CONFIG_FRAME_POINTER
-> > -/* TODO: need to fix this for ARM */
-> > -# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-> > -# define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-> > -# define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-> > -# define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
-> > -# define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
-> > -# define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
-> > -# define CALLER_ADDR6 ((unsigned long)__builtin_return_address(6))
-> > -#else
-> > -# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-> > -# define CALLER_ADDR1 0UL
-> > -# define CALLER_ADDR2 0UL
-> > -# define CALLER_ADDR3 0UL
-> > -# define CALLER_ADDR4 0UL
-> > -# define CALLER_ADDR5 0UL
-> > -# define CALLER_ADDR6 0UL
-> > -#endif
-> > +#ifndef CALLER_ADDR0
-> > +# ifdef CONFIG_FRAME_POINTER
-> > +#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-> > +#  define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-> > +#  define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-> > +#  define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
-> > +#  define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
-> > +#  define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
-> > +#  define CALLER_ADDR6 ((unsigned long)__builtin_return_address(6))
-> > +# else
-> > +#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-> > +#  define CALLER_ADDR1 0UL
-> > +#  define CALLER_ADDR2 0UL
-> > +#  define CALLER_ADDR3 0UL
-> > +#  define CALLER_ADDR4 0UL
-> > +#  define CALLER_ADDR5 0UL
-> > +#  define CALLER_ADDR6 0UL
-> > +# endif
-> > +#endif /* ifndef CALLER_ADDR0 */
+> Finally we found that certain transaction processing benchmarks ran faster
+> if we let the cpu have free access to one extra TLB entry ... so we
+> stopped pinning the per-cpu area, and wrote a s/w fault handler to
+> insert the mapping on demand (using the ar.k3 register to get the
+> physical address for the mapping).
 > 
-> Makes sense!
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+> N.B. ar.k3 is a medium-slow register ... I wouldn't want to use it
+> in the code sequence for *every* per-cpu variable access.
 
-Thanks Ingo,
+Ah... I see, so the 64k limit for small offset.  I think what we can
+do is using the first chunk for static percpu variables.  We'll still
+be able to use the same accessor by doing something like...
 
-Uwe, I never got your email (but I can get it from my LKML mail box). I'm 
-not sure if my ISP blocked you (I've been having issues with Hover.com 
-ever since they bought out domaindirect.com), or my own email server.
+#define unified_percpu_accessor(ptr) ({ \
+	if (__builtin_constant_p(ptr)) \
+		return r0 - unit_size + ptr; \
+	else \
+		do ar.k3 + ptr; \
+	})
 
-But I'll grab it from LKML and test it out.
+So, dynamic ones will be slower than normal ones but faster than what
+we currently have (it will be faster than indirect pointer
+derferencing, right?) while keeping static accesses fast.  Does it
+sound okay to you?  Also, does anyone know whether there's a working
+ia64 emulator?  There doesn't seem to be any and it seems almost
+impossible to get hold of an actual ia64 machine over here.  :-(
 
-Thanks,
+Thanks.
 
--- Steve
-
+-- 
+tejun
