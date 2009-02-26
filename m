@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbZBZJ0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZBZJa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754522AbZBZJ0v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 04:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZBZJ0e
+	id S1754526AbZBZJa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 04:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbZBZJam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 04:26:34 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:45587 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbZBZJ0c (ORCPT
+	Thu, 26 Feb 2009 04:30:42 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:57164 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751827AbZBZJal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 04:26:32 -0500
+	Thu, 26 Feb 2009 04:30:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fykIi/woznlrjGTBmpVQVL9I7xoCN0xhLNwgv+2WnCmeWZrAxF0lUq47F6a2DIagfJ
-         5yHZ/H9KafhEoHGbxB58irhvx8cnUplU/lMhRB/Rl8xVV+cR7KWWYCUqAXk8s57fryM2
-         rUAZi5wkIXKD6BMpDO5hL/hZC0df8nv5eoSb8=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KlhHkRgCC4ykF889aEQbcGDQUMykS19R8mwCVMswo3ALRus3otwjm8Gj0OD1PTxpHU
+         GUpfIcq7MoB2cKePK+QmPoErFMHakkUoBTdVU+NYHD5chgTxHbTlNlW09GHLqr8T+xaw
+         RfgqQNWzLnAjsO9iLIZWPDHTl/7MgKaPayKT0=
+Date: Thu, 26 Feb 2009 12:31:00 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] introduce pr_cont macro
+Message-ID: <20090226093100.GB8111@localhost>
+References: <20090225205920.GA22091@localhost> <20090226030315.GB7526@elte.hu> <1235617541.5610.0.camel@brick> <20090226031301.GE7526@elte.hu> <1235618574.5610.1.camel@brick> <20090226032544.GB22223@elte.hu> <49A62899.4080001@zytor.com>
 MIME-Version: 1.0
-In-Reply-To: <1235639427.11390.11.camel@minggr>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
-	 <1235639427.11390.11.camel@minggr>
-Date: Thu, 26 Feb 2009 11:26:29 +0200
-X-Google-Sender-Auth: 72650230b27ffcb5
-Message-ID: <84144f020902260126g589be187j5c5f52e1d8e13abf@mail.gmail.com>
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Mel Gorman <mel@csn.ul.ie>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A62899.4080001@zytor.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n1Q9QswM021630
 
-On Thu, Feb 26, 2009 at 11:10 AM, Lin Ming <ming.m.lin@intel.com> wrote:> We tested this v2 patch series with 2.6.29-rc6 on different machines.
-What .config is this? Specifically, is SLUB or SLAB used here?
->>                4P qual-core    2P qual-core    2P qual-core HT>                tigerton        stockley        Nehalem>                ------------------------------------------------> tbench          +3%             +2%             0%> oltp            -2%             0%              0%> aim7            0%              0%              0%> specjbb2005     +3%             0%              0%> hackbench       0%              0%              0%>> netperf:> TCP-S-112k      0%              -1%             0%> TCP-S-64k       0%              -1%             +1%> TCP-RR-1        0%              0%              +1%> UDP-U-4k        -2%             0%              -2%> UDP-U-1k        +3%             0%              0%> UDP-RR-1        0%              0%              0%> UDP-RR-512      -1%             0%              +1%ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+[H. Peter Anvin - Wed, Feb 25, 2009 at 09:28:57PM -0800]
+> Ingo Molnar wrote:
+>>
+>> Btw., why do those macros use ##__VA_ARGS__ ? Why not a  
+>> straightforward:
+>>
+>>  #define __pr_cont(args...) \
+>>  	printk(KERN_CONT args)
+>>
+>
+> Don't know if anyone cares, but __VA_ARGS__ is C99 whereas args... is a  
+> gcc extension, AFAIK.
+>
+> 	-hpa
+>
+
+This one should be fine.
+
+	- Cyrill -
+---
+
+Subject: [PATCH] introduce pr_cont macro v2
+
+We cover all log-levels by pr_... macros except
+KERN_CONT one. Add it for convenience.
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+
+Using 'fmt' here make this macro look similar
+to others (same missioned) macros. Which is
+good :)
+
+ include/linux/kernel.h |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6.git/include/linux/kernel.h
+===================================================================
+--- linux-2.6.git.orig/include/linux/kernel.h
++++ linux-2.6.git/include/linux/kernel.h
+@@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
+         printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
+ #define pr_info(fmt, ...) \
+         printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_cont(fmt, ...) \
++        printk(KERN_CONT fmt, ##__VA_ARGS__)
+ 
+ /* If you are writing a driver, please use dev_dbg instead */
+ #if defined(DEBUG)
