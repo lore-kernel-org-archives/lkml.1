@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZBZI6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbZBZI7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810AbZBZI6q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 03:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZBZI6h
+	id S1755561AbZBZI7G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 03:59:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZBZI6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 03:58:37 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:61861 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbZBZI6g (ORCPT
+	Thu, 26 Feb 2009 03:58:39 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:37015 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752731AbZBZI6h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 03:58:36 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH] fix duplicate include in emu10k1.h
-Date: Thu, 26 Feb 2009 09:57:27 +0100
-User-Agent: KMail/1.9.9
-References: <tip-57b4b9d7b56d283b6619a893341be16d1a0467a6@kernel.org> <s5h4oyhk2j5.wl%tiwai@suse.de>
-In-Reply-To: <s5h4oyhk2j5.wl%tiwai@suse.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-Cc: hpa@zytor.com, mingo@redhat.com, dwmw2@infradead.org,
-       acme@ghostprotocols.net, airlied@linux.ie, perex@perex.cz,
-       yoshfuji@linux-ipv6.org, mchehab@redhat.com, arnd@arndb.de,
-       tglx@linutronix.de, hpa@linux.intel.com, linux-kernel@vger.kernel.org
+	Thu, 26 Feb 2009 03:58:37 -0500
+Date: Thu, 26 Feb 2009 14:28:31 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+       ego@in.ibm.com, tglx@linutronix.de, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
+       arun@linux.vnet.ibm.com, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration between CPU
+Message-ID: <20090226085831.GA28397@in.ibm.com>
+Reply-To: dipankar@in.ibm.com
+References: <20090220132145.GF26418@elte.hu> <20090220141415.GA27381@dirshya.in.ibm.com> <20090220160737.GC11294@elte.hu> <20090220115745.43d202d6@infradead.org> <20090220215318.GA30665@elte.hu> <20090223075521.GA3725@balbir.in.ibm.com> <20090223091158.GJ9582@elte.hu> <20090223094850.GA10226@balbir.in.ibm.com> <20090223103814.GB8817@dirshya.in.ibm.com> <20090223110725.GB17312@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902260957.30007.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18NNe2ftw32ixSrylNZyaaj/VdQVHLd8Qm6xR1
- xCPGwi/3tcEoEhAyYbRBLVIReZuM04OIcwyvYYuJ8qmFnS3KhR
- U7rflxRD77EER0mCG4QYw==
+In-Reply-To: <20090223110725.GB17312@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The earlier patch 'make most exported headers use strict integer types'
-accidentally includes <types.h> both from the common and from the
-kernel-only parts.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
----
-On Thursday 26 February 2009, you wrote:
-
-> > @@ -34,6 +36,8 @@
-> >  #include <sound/timer.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/mutex.h>
-> > +#include <linux/types.h>
-> > +
+On Mon, Feb 23, 2009 at 12:07:25PM +0100, Ingo Molnar wrote:
 > 
-> Isn't the second inclusion superfluous?
+> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 > 
-Yes, I must have introduced the second one first, but in the
-wrong section (kernel only), and then didn't notice it when
-introducing it again to fix headers_check.
+> > * Identify set of idle CPUs (CPU package) from which timers 
+> >   can be removed
+> > * Identify a semi-idle or idle CPU package to which the timers
+> >   can be moved
+> > * Decide when to start moving timers as the system has large
+> >   number of idle CPUs
+> > * Decide when to stop migrating as system becomes less idle
+> >   and utilisation increases
+> > 
+> > Guiding all of the above decisions from user space may not be 
+> > fast enough.
+> 
+> Exactly.
 
---- a/include/sound/emu10k1.h
-+++ b/include/sound/emu10k1.h
-@@ -36,7 +36,6 @@
- #include <sound/timer.h>
- #include <linux/interrupt.h>
- #include <linux/mutex.h>
--#include <linux/types.h>
- 
- #include <asm/io.h>
- 
+That is true for power management. However there are other
+situations where we may need targeted avoidance of timers.
+Certain type of applications - HPC for example - prefer avoidance
+of jitters due to periodic timers. It would be good to be
+able to say "avoid these CPUs for timers" while they are being
+used for HPC tasks.
+
+Thanks
+Dipankar
