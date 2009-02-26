@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbZBZURS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZBZUSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbZBZURS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZBZURG
+	id S1756841AbZBZUSR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZBZUR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:17:06 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:37824 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752065AbZBZURF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:17:05 -0500
-Subject: Re: [PATCH 2/2] regulator: Fix get_mode() for WM835x DCDCs
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1235676260-19696-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1235676260-19696-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1235676260-19696-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 20:17:00 +0000
-Message-Id: <1235679420.31223.50.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Thu, 26 Feb 2009 15:17:58 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:10840 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751771AbZBZUR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 15:17:57 -0500
+Message-ID: <49A6F8F1.4060104@hp.com>
+Date: Thu, 26 Feb 2009 15:17:53 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Chuck Lever <chuck.lever@oracle.com>
+CC: Brian Haley <brian.haley@hp.com>, Jay Vosburgh <fubar@us.ibm.com>,
+       David Miller <davem@davemloft.net>, arvidjaar@mail.ru, tytso@mit.edu,
+       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel
+ module
+References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com> <F613EEFD-2332-4C75-A486-73CDF2BAADDE@oracle.com> <49A6F50E.3070100@hp.com> <2FBB0F50-8763-4A17-8734-5940FC3FF26A@oracle.com>
+In-Reply-To: <2FBB0F50-8763-4A17-8734-5940FC3FF26A@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 19:24 +0000, Mark Brown wrote:
-> The WM835x regulators need a different register checking for force
-> mode on each DCDC. Previously the force mode status for DCDC1 was
-> checked.
+Chuck Lever wrote:
+> On Feb 26, 2009, at Feb 26, 2009, 3:01 PM, Brian Haley wrote:
+>> Chuck Lever wrote:
+>>>> I think changing ipv6 to support a disable_ipv6 module parameter
+>>>> like Vlad suggested would work, as long as we're not worried about
+>>>> someone opening an AF_INET6 socket - even if they do they won't get
+>>>> anywhere.
+>>> In this case, if IPV6ONLY is set on an AF_INET6 listener, it should
+>>> still get AF_INET traffic, correct?
+>>
+>> No, it should get nothing, and a send should get ENETUNREACH.
 > 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/regulator/wm8350-regulator.c |   24 ++++++++++++++++++------
->  1 files changed, 18 insertions(+), 6 deletions(-)
+> Sorry, I got my logic backwards.  If IPV6ONLY is intentionally cleared
+> on an AF_INET6 socket, it should still be able to handle AF_INET traffic.
+
+Yes. :-)
+
+-vlad
+
 > 
-
-Applied.
-
-Thanks
-
-Liam
+> -- 
+> Chuck Lever
+> chuck[dot]lever[at]oracle[dot]com
+> 
 
