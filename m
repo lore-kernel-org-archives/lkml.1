@@ -1,63 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZBZT5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbZBZT7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbZBZT5u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 14:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZBZT5m
+	id S1756804AbZBZT7t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 14:59:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZBZT7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 14:57:42 -0500
-Received: from ns1.suse.de ([195.135.220.2]:46515 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753545AbZBZT5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 14:57:42 -0500
-Date: Thu, 26 Feb 2009 11:57:39 -0800
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patches] Ocfs2 fixes
-Message-ID: <20090226195739.GX17410@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+	Thu, 26 Feb 2009 14:59:37 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:12474 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753542AbZBZT7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 14:59:36 -0500
+Message-ID: <49A6F4A3.5060500@hp.com>
+Date: Thu, 26 Feb 2009 14:59:31 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Chuck Lever <chuck.lever@oracle.com>
+CC: Brian Haley <brian.haley@hp.com>, Jay Vosburgh <fubar@us.ibm.com>,
+       David Miller <davem@davemloft.net>, arvidjaar@mail.ru, tytso@mit.edu,
+       Valdis.Kletnieks@vt.edu, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] bonding: move IPv6 support into a separate kernel
+ module
+References: <49A5ADB3.2010709@hp.com> <28797.1235599858@death.nxdomain.ibm.com> <20090225.141430.166906161.davem@davemloft.net> <49A6C6ED.3070801@hp.com> <22876.1235672073@death.nxdomain.ibm.com> <49A6ED6D.3090508@hp.com> <F613EEFD-2332-4C75-A486-73CDF2BAADDE@oracle.com>
+In-Reply-To: <F613EEFD-2332-4C75-A486-73CDF2BAADDE@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+Chuck Lever wrote:
+> On Feb 26, 2009, at Feb 26, 2009, 2:28 PM, Brian Haley wrote:
+>> Jay Vosburgh wrote:
+>>>>>>     I've been fooling with the disable_ipv6 sysctl, and one issue is
+>>>>>> that, at least on the distro I'm testing on (SLES), it's not
+>>>>>> picked up
+>>>>>> from /etc/sysctl.conf at boot time (presumably because ipv6 isn't
+>>>>>> loaded
+>>>>>> yet, although I haven't really checked).
+>>>>> Correct, that's the problem.
+>>>>>
+>>>>> We could create a blocker bitmap.  Two sysctls, "block_af" and
+>>>>> "unblock_af".  You write the AF_foo value for the protocol there and
+>>>>> it sets or clears the assosciated bit in the internal blocker bitmap.
+>>>>>
+>>>>> Things like sys_socket() et al. key off of this.
+>>>> I'm open to suggestions at this point in time, I just don't see how
+>>>> this
+>>>> will solve the bonding problem since it still wouldn't load, right?
+>>>     It would permit users to load ipv6 (thus allowing bonding to
+>>> load), but prevent ipv6 from actually doing anything.  (because
+>>> sys_socket, e.g., won't open an ipv6 socket if block_af includes ipv6).
+>>
+>> Right, but it doesn't help someone that changed /etc/modprobe.conf to
+>> have "install ipv6 /bin/true" - they'll have to stop doing that.
+>>
+>> I think changing ipv6 to support a disable_ipv6 module parameter like
+>> Vlad suggested would work, as long as we're not worried about someone
+>> opening an AF_INET6 socket - even if they do they won't get anywhere.
+> 
+> In this case, if IPV6ONLY is set on an AF_INET6 listener, it should
+> still get AF_INET traffic, correct?
 
-to receive the following updates:
+No.  IPV6ONLY means just that, native IPv6 traffic only.  That socket
+would sit idle.
 
- fs/ocfs2/alloc.c         |   27 ++++++++++++++++++++++++++-
- fs/ocfs2/dlm/dlmmaster.c |   12 ++++++------
- fs/ocfs2/dlm/dlmthread.c |    3 +--
- fs/ocfs2/dlm/dlmunlock.c |    4 ++--
- fs/ocfs2/dlmglue.c       |   11 ++++++++---
- fs/ocfs2/ocfs2.h         |    3 +++
- fs/ocfs2/super.c         |    8 ++++++++
- fs/ocfs2/xattr.c         |   27 +++++++++++++++++----------
- 8 files changed, 71 insertions(+), 24 deletions(-)
+-vlad
 
-Sunil Mushran (4):
-      ocfs2/dlm: Retract fix for race between purge and migrate
-      ocfs2: Cleanup the lockname print in dlmglue.c
-      ocfs2/dlm: Use ast_lock to protect ast_list
-      ocfs2/dlm: Make dlm_assert_master_handler() kill itself instead of the asserter
+> 
+>> That, along with the patch below to actually not add the addresses,
+>> would work (sorry in advance for using an attachment).  I'll get
+>> started on that...
+>>
+>> -Brian
+>>
+>>
+>> -- 
+>>
+>> The disable_ipv6 knob was meant to be used for the kernel to disable
+>> IPv6 on an interface when DAD failed for the link-local address based
+>> on the MAC, but we should also be able to administratively disable it
+>> on an interface, or the entire system.  This patch fixes the
+>> per-interface problem.
+>>
+>> Signed-off-by: Brian Haley <brian.haley@hp.com>
+>> diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+>> index f8f76d6..90f2a81 100644
+>> --- a/net/ipv6/addrconf.c
+>> +++ b/net/ipv6/addrconf.c
+>> @@ -603,6 +603,11 @@ ipv6_add_addr(struct inet6_dev *idev, const
+>> struct in6_addr *addr, int pfxlen,
+>>         goto out2;
+>>     }
+>>
+>> +    if (idev->cnf.disable_ipv6) {
+>> +        err = -EPERM;
+>> +        goto out2;
+>> +    }
+>> +
+>>     write_lock(&addrconf_hash_lock);
+>>
+>>     /* Ignore adding duplicate addresses on an interface */
+> 
 
-Tao Ma (3):
-      ocfs2: Access and dirty the buffer_head in mark_written.
-      ocfs2: Use the right access_* method in ctime update of xattr.
-      ocfs2: lock the metaecc process for xattr bucket
-
-Tiger Yang (1):
-      ocfs2: set gap to seperate entry and value when xattr in bucket
-
-wengang wang (1):
-      ocfs2: add IO error check in ocfs2_get_sector()
-
---
-Mark Fasheh
