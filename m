@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZBZLlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZBZLpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762AbZBZLlZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 06:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbZBZLlP
+	id S1755976AbZBZLpb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 06:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZBZLpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 06:41:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56401 "EHLO mx2.mail.elte.hu"
+	Thu, 26 Feb 2009 06:45:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35630 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751929AbZBZLlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 06:41:15 -0500
-Date: Thu, 26 Feb 2009 12:41:03 +0100
+	id S1751929AbZBZLpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 06:45:22 -0500
+Date: Thu, 26 Feb 2009 12:44:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: remove update_apic from x86_quirks
-Message-ID: <20090226114103.GA6651@elte.hu>
-References: <49A61FA9.5080706@kernel.org> <20090226053254.GA11806@elte.hu> <20090226053426.GA23744@elte.hu> <20090226054305.GA13545@elte.hu> <49A650B3.8080902@kernel.org>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       shai@scalex86.org
+Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
+Message-ID: <20090226114457.GB6651@elte.hu>
+References: <49A626B2.8090205@kernel.org> <20090226064806.GC27240@localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A650B3.8080902@kernel.org>
+In-Reply-To: <20090226064806.GC27240@localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,47 +38,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
 
-> Ingo Molnar wrote:
-> > except that it doesnt build:
-> > 
-> > arch/x86/kernel/built-in.o:(.data+0x8c08): undefined reference to `wakeup_secondary_cpu_via_init'
-> > arch/x86/kernel/built-in.o:(.data+0x8d68): undefined reference to `wakeup_secondary_cpu_via_init'
-> > arch/x86/kernel/built-in.o:(.data+0x8ec8): undefined reference to `wakeup_secondary_cpu_via_init'
-> > arch/x86/kernel/built-in.o:(.data+0x9038): undefined reference to `wakeup_secondary_cpu_via_init'
-> > 
+> On Wed, Feb 25, 2009 at 09:20:50PM -0800, Yinghai Lu wrote:
+> >
+> >Impact: cleanup
+> >
+> >that is only needed when CONFIG_X86_VSMP is defined with 64bit
+> >also remove dead code about PCI, because CONFIG_X86_VSMP depends on PCI
+> >
+> >Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >
 > 
-> .config?
+> NAK!
+> vsmp64.c is compiled unconditionally for a reason.  There are ifdefs in the
+> file to avoid code compilation based on config options. is_vsmp_box() is
+> needed even when CONFIG_X86_VSMP is not enabled, since distro kernels don't ship
+> with CONFIG_X86_VSMP, and since is_vsmp_box() is used to determine  whether
+> tsc's can be considered synced or not, this is needed.
 
-There's no need for a config :)
+is_vsmp_box() is always available:
 
-When introducing a widely used symbol as 
-wakeup_secondary_cpu_via_init(), the first thing to check is to 
-make sure it's built in widely enough:
+> >+#ifdef CONFIG_X86_VSMP
+> > extern int is_vsmp_box(void);
+> >+#else
+> >+static inline int is_vsmp_box(void)
+> >+{
+> >+	return 0;
+> >+}
+> >+#endif
 
-$ git grep wakeup_secondary_cpu_via_init
+What this patch does is it reduces the kernel's size when 
+CONFIG_X86_VSMP is turned off and also makes the code arguably 
+cleaner.
 
-arch/x86/include/asm/apic.h:extern int wakeup_secondary_cpu_via_init(int apicid, unsigned long start_eip);
-arch/x86/kernel/apic/apic_flat_64.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/apic/apic_flat_64.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/apic/bigsmp_32.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/apic/es7000_32.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/apic/probe_32.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/apic/summit_32.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/apic/x2apic_cluster.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/apic/x2apic_phys.c:	.wakeup_cpu			= wakeup_secondary_cpu_via_init,
-arch/x86/kernel/smpboot.c:wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+> In the future, I would appreciate if you copy me on 
+> cleanups/changes involving vsmp64.c
 
-as you can see it's defined in arch/x86/kernel/smpboot.c - 
-which, as its name already tells us, is only built on SMP. 
-
-There's other usage though, like 
-arch/x86/kernel/apic/probe_32.c, which is built on 
-CONFIG_X86_LOCAL_APIC=y, which can be enabled on !SMP as well.
-
-Since on SMP we are not likely to boot other CPUs via 
-apic->wakeup_cpu(), i suspect we need a !SMP inline for 
-wakeup_secondary_cpu_via_init()?
+That is what i did when i queued up the change. That is how you 
+became aware of this commit.
 
 	Ingo
