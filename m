@@ -1,55 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbZBZDYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZBZD0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758689AbZBZDYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZBZDYb
+	id S1759009AbZBZD0O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:26:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZBZDZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:24:31 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:51089 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbZBZDYb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:24:31 -0500
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Theodore Tso <tytso@mit.edu>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
-	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
-	<20090226025043.GJ1363@mit.edu>
-	<20090226030735.GA16891@parisc-linux.org>
-Date: Wed, 25 Feb 2009 22:23:25 -0500
-In-Reply-To: <20090226030735.GA16891@parisc-linux.org> (Matthew Wilcox's message of "Wed\, 25 Feb 2009 20\:07\:35 -0700")
-Message-ID: <yq1myc9g9ua.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 25 Feb 2009 22:25:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43326 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752958AbZBZDZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 22:25:58 -0500
+Date: Thu, 26 Feb 2009 04:25:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC] introduce pr_cont macro
+Message-ID: <20090226032544.GB22223@elte.hu>
+References: <20090225205920.GA22091@localhost> <20090226030315.GB7526@elte.hu> <1235617541.5610.0.camel@brick> <20090226031301.GE7526@elte.hu> <1235618574.5610.1.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49A60B31.01AF:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+In-Reply-To: <1235618574.5610.1.camel@brick>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Matthew" == Matthew Wilcox <matthew@wil.cx> writes:
 
-Matthew> Lowest aligned logical block address=0
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Matthew> This disagrees with Martin's assertion.
+> On Thu, 2009-02-26 at 04:13 +0100, Ingo Molnar wrote:
+> > * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> > 
+> > > On Thu, 2009-02-26 at 04:03 +0100, Ingo Molnar wrote:
+> > > > * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> > > > 
+> > > > > We cover all log-levels by pr_... macros except
+> > > > > KERN_CONT one. Add it for convenience.
+> > > > > 
+> > > > > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> > > > > ---
+> > > > > 
+> > > > > I think start printing with some pr_... macro
+> > > > > and continue with printk(KERN_CONT ...) look
+> > > > > not that clear -- better to continue with
+> > > > > same pr_... slogan. Thoughts? I hope I didn't
+> > > > > miss anything.
+> > > > > 
+> > > > >  include/linux/kernel.h |    2 ++
+> > > > >  1 file changed, 2 insertions(+)
+> > > > > 
+> > > > > Index: linux-2.6.git/include/linux/kernel.h
+> > > > > ===================================================================
+> > > > > --- linux-2.6.git.orig/include/linux/kernel.h
+> > > > > +++ linux-2.6.git/include/linux/kernel.h
+> > > > > @@ -370,6 +370,8 @@ static inline char *pack_hex_byte(char *
+> > > > >          printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
+> > > > >  #define pr_info(fmt, ...) \
+> > > > >          printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+> > > > > +#define pr_cont(fmt, ...) \
+> > > > > +        printk(KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+> > > > 
+> > > > Makes sense.
+> > > > 
+> > > > Acked-by: Ingo Molnar <mingo@elte.hu>
+> > > > 
+> > > 
+> > > Don't you want to omit the pr_fmt() from the KERN_CONT case?
+> > 
+> > indeed, good catch. It should be:
+> > 
+> > #define pr_cont(fmt, ...) \
+> > 	printk(KERN_CONT ##__VA_ARGS__)
+> 
+> Missing fmt entirely?
 
-The original roadmap was to transition to 4KB sectors in 2006,
-coinciding with the Vista release.
+yeah ...
 
-Given how long this has taken (we're now talking ~2011 for GA) it may
-very well be that the alignment knobs will be unused because everybody
-will be using Vista or 7 by then.
+Btw., why do those macros use ##__VA_ARGS__ ? Why not a 
+straightforward:
 
-That doesn't change the RAID array alignment problem, however.  And we
-need to prepare our partitioning tools to align correctly regardless.
+ #define __pr_cont(args...) \
+ 	printk(KERN_CONT args)
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+?
+
+	Ingo
