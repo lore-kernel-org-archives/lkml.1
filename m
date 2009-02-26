@@ -1,174 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZBZUeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbZBZUek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbZBZUeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 15:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbZBZUeA
+	id S1758793AbZBZUek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 15:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZBZUe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 15:34:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47603 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753745AbZBZUd7 (ORCPT
+	Thu, 26 Feb 2009 15:34:28 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:64244 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754934AbZBZUe1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 15:33:59 -0500
-Date: Thu, 26 Feb 2009 12:33:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: dbrownell@users.sourceforge.net
-Cc: david-b@pacbell.net, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source@linux.davincidsp.com
-Subject: Re: [patch/RESEND 2.6.29-rc3-git] NAND: davinci_nand driver
-Message-Id: <20090226123341.a2421733.akpm@linux-foundation.org>
-In-Reply-To: <200902241509.54649.david-b@pacbell.net>
-References: <200902241509.54649.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Feb 2009 15:34:27 -0500
+MIME-Version: 1.0
+In-Reply-To: <200902261050.50531.rjw@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200902250029.16107.rjw@sisk.pl>
+	 <d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
+	 <200902261050.50531.rjw@sisk.pl>
+Date: Thu, 26 Feb 2009 12:34:25 -0800
+Message-ID: <d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
+	suspend-resume
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Feb 2009 15:09:54 -0800
-David Brownell <david-b@pacbell.net> wrote:
-
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> This is a device driver for the NAND flash controller found on the
-> various DaVinci family chips.  It handles up to four SoC chipselects,
-> and some flavors of secondary chipselect (e.g. based on upper bits
-> of the address bus) as used with some multichip packages.  (Including
-> the 2 GByte chips used on some TI devel boards.)
-> 
-> The 1-bit ECC hardware is supported (3 bytes ECC per 512 bytes data);
-> but not yet the newer 4-bit ECC (10 bytes ECC per 512 bytes data), as
-> available on chips like the DM355 or OMAP-L137 and needed with the
-> more error-prone MLC NAND chips.
-> 
-> This is a cleaned-up version of code that's been in use for several
-> years now; sanity checked with the new drivers/mtd/tests.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+On Thu, Feb 26, 2009 at 1:50 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday 26 February 2009, Arve Hjønnevåg wrote:
+>> On Tue, Feb 24, 2009 at 3:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > BTW, appended is the current (3rd) version of the $subject patch with some
+>> > of your comments taken into account.  In particular, I did the following:
+>> > - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
+>> > - fixed interrupt.h so that their headers are at a better place
+>> > - made enable_irq() clear IRQ_SUSPENDED
+>> > - made device_power_down() and device_power_up() call
+>> >  suspend_device_irqs() and resume_device_irqs(), respectively, which
+>> >  simplified the callers quite a bit (it changed the Xen code ordering, though,
+>> >  but I _think_ it still should work).
+>>
+>> Do you plan to fix edge triggered wakeup interrupts? It still looks
+>> like edge triggered wakeup interrupts that occur between
+>> suspend_device_irqs and local_irq_disable will not cause a wakeup.
 >
-> ...
->
-> + * Copyright (C) 2006 Texas Instruments.
-> + *
-> + * Ported to 2.6.23 Copyright (C) 2008 by
-> + *   Sander Huijsen <Shuijsen@optelecom-nkf.com>
-> + *   Troy Kisky <troy.kisky@boundarydevices.com>
-> + *   Dirk Behme <Dirk.Behme@gmail.com>
+> In the current version of the patch the interrupts that have IRQ_WAKEUP set
+> in status are not disabled.  Is this not enough?
 
-hm.  What's the story with authorship, attributions and signoffs here?
+That is enough for drivers that use wakelocks to abort suspend (if I
+fix the wakelock code to not use a platform device as its last abort
+point). It is not enough if you don't have wakelocks, since the
+interrupt can occur after suspend_late has been called and the driver
+has no way to abort suspend.
 
->
-> ...
->
-> +#ifdef CONFIG_MTD_PARTITIONS
-> +static inline int mtd_has_partitions(void) { return 1; }
-> +#else
-> +static inline int mtd_has_partitions(void) { return 0; }
-> +#endif
-> +
-> +#ifdef CONFIG_MTD_CMDLINE_PARTS
-> +static inline int mtd_has_cmdlinepart(void) { return 1; }
-> +#else
-> +static inline int mtd_has_cmdlinepart(void) { return 0; }
-> +#endif
-
-These definitions shouldn't be buried in a .c file.
-
->
-> ...
->
-> +static void nand_davinci_hwctl_1bit(struct mtd_info *mtd, int mode)
-> +{
-> +	struct davinci_nand_info *info;
-> +	u32 retval;
-
-The identifier `retval' is usually used to identify the value which
-this function will return.
-
-> +	unsigned long flags;
-> +
-> +	info = to_davinci_nand(mtd);
-> +
-> +	/* Reset ECC hardware */
-> +	nand_davinci_readecc_1bit(mtd);
-> +
-> +	spin_lock_irqsave(&davinci_nand_lock, flags);
-> +
-> +	/* Restart ECC hardware */
-> +	retval = davinci_nand_readl(info, NANDFCR_OFFSET);
-> +	retval |= BIT(8 + info->core_chipsel);
-> +	davinci_nand_writel(info, NANDFCR_OFFSET, retval);
-> +
-> +	spin_unlock_irqrestore(&davinci_nand_lock, flags);
-> +}
-> +
-> +/*
-> + * Read hardware ECC value and pack into three bytes
-> + */
-> +static int nand_davinci_calculate_1bit(struct mtd_info *mtd,
-> +				      const u_char *dat, u_char *ecc_code)
-> +{
-> +	unsigned int ecc_val = nand_davinci_readecc_1bit(mtd);
-> +	unsigned int tmp = (ecc_val & 0x0fff) | ((ecc_val & 0x0fff0000) >> 4);
-
-argh.
-
-> +	/* invert so that erased block ecc is correct */
-> +	tmp = ~tmp;
-> +	ecc_code[0] = (u_char)(tmp);
-> +	ecc_code[1] = (u_char)(tmp >> 8);
-> +	ecc_code[2] = (u_char)(tmp >> 16);
-
-Is there some library facility which is being open-coded here?
-
-> +	return 0;
-> +}
-> +
->
-> ...
->
-> +static int __init nand_davinci_probe(struct platform_device *pdev)
-> +{
-> +	struct davinci_nand_pdata	*pdata = pdev->dev.platform_data;
-> +	struct davinci_nand_info	*info;
-> +	struct resource			*res1;
-> +	struct resource			*res2;
-> +	void __iomem			*vaddr;
-> +	void __iomem			*base;
-> +	int				ret;
-> +	u32				val;
-> +	nand_ecc_modes_t		ecc_mode;
-> +
-> +	/* which external chipselect will we be managing? */
-> +	if (pdev->id < 0 || pdev->id > 3)
-> +		return -ENODEV;
-> +
-> +	info = kzalloc(sizeof(*info), GFP_KERNEL);
-> +	if (!info) {
-> +		dev_err(&pdev->dev, "unable to allocate memory\n");
-> +		ret = -ENOMEM;
-> +		goto err_nomem;
-> +	}
-> +
-> +	platform_set_drvdata(pdev, info);
-> +
-> +	res1 = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> +	if (!res1 || !res2) {
-> +		dev_err(&pdev->dev, "resource missing\n");
-> +		ret = -EINVAL;
-> +		goto err_res;
-
-This leaks `info'.
-
-Please check all the error path unwinding here.
-
-> +	}
-> +
->
-> ...
->
-
+-- 
+Arve Hjønnevåg
