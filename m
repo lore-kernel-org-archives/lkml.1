@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764183AbZBZAI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762828AbZBZAKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764183AbZBZAI0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 19:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbZBZAIP
+	id S1762828AbZBZAKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 19:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZBZAK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 19:08:15 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:31598 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbZBZAIO (ORCPT
+	Wed, 25 Feb 2009 19:10:29 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37360 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbZBZAK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 19:08:14 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
-	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
-	<49A5D76A.3010301@zytor.com> <yq11vtmhy0x.fsf@sermon.lab.mkp.net>
-	<49A5DAE7.3060409@zytor.com>
-Date: Wed, 25 Feb 2009 19:07:49 -0500
-In-Reply-To: <49A5DAE7.3060409@zytor.com> (H. Peter Anvin's message of "Wed\, 25 Feb 2009 15\:57\:27 -0800")
-Message-ID: <yq1skm2giwa.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 25 Feb 2009 19:10:28 -0500
+Date: Thu, 26 Feb 2009 01:10:25 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: arnd@arndb.de
+cc: "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>, mingo@redhat.com,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       coreteam@netfilter.org
+Subject: Re: [patch 5/7] make netfilter use strict integer types
+In-Reply-To: <20090225235515.682333715@arndb.de>
+Message-ID: <alpine.LSU.2.00.0902260104220.20789@fbirervta.pbzchgretzou.qr>
+References: <20090225235138.062045835@arndb.de> <20090225235515.682333715@arndb.de>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49A5DD59.0130:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
 
-hpa> Martin K. Petersen wrote:
->> 
->> Modern Windows aligns the first partition on a 1 MB boundary.
->> 
->> As far as disks go, initially the plan was to have "legacy" branded
->> drives with 63-sector alignment.  But I think that has been abandoned
->> in favor of instant one-time formatting.  I.e. you can pick your
->> poison *once* and that formatting will be done in constant time.  Any
->> subsequent changes to blocking and alignment will require a real
->> low-level format.
->> 
+On Thursday 2009-02-26 00:51, arnd@arndb.de wrote:
 
-hpa> Why one-time?
+>Netfilter traditionally uses BSD integer types in its
+>interface headers. This changes it to use the Linux
+>strict integer types, like everyone else.
 
-It's a compromise to avoid hours of low-level formatting before you can
-use a drive.  New drives will come from the factory formatted in a
-special way that can be switched instantaneously.  But once you start
-writing you're stuck with it.
+I _strongly disagree_ with this move. Userspace also has the uintX
+types via <stdint.h>/<cstdint>, and now you are adding a dependency
+on linux/types.h, not to mention that your step can lead to compile
+time piling up.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+IMHO, __uXX should be replaced by uintX_t, but a move this great I
+will leave to future generations because there is just too much
+persisting opinions wrt. such proposal. As such I'd like to join
+and persist on my position and that uintX that we have should be kept.
+
+
+>index a049df4..3066789 100644
+>--- a/include/linux/netfilter/nf_conntrack_tcp.h
+>+++ b/include/linux/netfilter/nf_conntrack_tcp.h
+>@@ -2,6 +2,8 @@
+> #define _NF_CONNTRACK_TCP_H
+> /* TCP tracking. */
+> 
+>+#include <linux/types.h>
+>+
+> /* This is exposed to userspace (ctnetlink) */
+> enum tcp_conntrack {
+> 	TCP_CONNTRACK_NONE,
+>@@ -34,8 +36,8 @@ enum tcp_conntrack {
+> #define IP_CT_TCP_FLAG_DATA_UNACKNOWLEDGED	0x10
+> 
+> struct nf_ct_tcp_flags {
+>-	u_int8_t flags;
+>-	u_int8_t mask;
+>+	__u8 flags;
+>+	__u8 mask;
+> };
+> 
+> #ifdef __KERNEL__
