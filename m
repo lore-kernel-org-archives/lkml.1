@@ -1,172 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752963AbZBZGsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753133AbZBZGvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752963AbZBZGsW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 01:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbZBZGsN
+	id S1753133AbZBZGvs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 01:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZBZGvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 01:48:13 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:45954 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbZBZGsM (ORCPT
+	Thu, 26 Feb 2009 01:51:40 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:61311 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZBZGvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 01:48:12 -0500
-Date: Wed, 25 Feb 2009 22:48:06 -0800
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       shai@scalex86.org
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-Message-ID: <20090226064806.GC27240@localdomain>
-References: <49A626B2.8090205@kernel.org>
+	Thu, 26 Feb 2009 01:51:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vuDcdd3Nsf0zjzkvCPSMsQuElq9HxvqV0y5t4lWYs9vP01f4xdTG2VK6PmPdAdyxm5
+         5QqSnacTWHLVLv2t0ATbdnMQ/10UADB2HghtZ1x7w8ayv0N1hHmHRcrXEAofUuDv1Lma
+         UvsQ1ml6dQGnoAS88NxD5CKmfhgm+bdP2Q3y8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A626B2.8090205@kernel.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+In-Reply-To: <49A62899.4080001@zytor.com>
+References: <20090225205920.GA22091@localhost> <20090226030315.GB7526@elte.hu>
+	 <1235617541.5610.0.camel@brick> <20090226031301.GE7526@elte.hu>
+	 <1235618574.5610.1.camel@brick> <20090226032544.GB22223@elte.hu>
+	 <49A62899.4080001@zytor.com>
+Date: Thu, 26 Feb 2009 09:51:36 +0300
+Message-ID: <aa79d98a0902252251p4476fa83ndc2d3286e7b27094@mail.gmail.com>
+Subject: Re: [RFC] introduce pr_cont macro
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 09:20:50PM -0800, Yinghai Lu wrote:
+On Thu, Feb 26, 2009 at 8:28 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Ingo Molnar wrote:
+>>
+>> Btw., why do those macros use ##__VA_ARGS__ ? Why not a straightforward:
+>>
+>>  #define __pr_cont(args...) \
+>>        printk(KERN_CONT args)
+>>
 >
->Impact: cleanup
+> Don't know if anyone cares, but __VA_ARGS__ is C99 whereas args... is a gcc
+> extension, AFAIK.
 >
->that is only needed when CONFIG_X86_VSMP is defined with 64bit
->also remove dead code about PCI, because CONFIG_X86_VSMP depends on PCI
->
->Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>        -hpa
 >
 
-NAK!
-vsmp64.c is compiled unconditionally for a reason.  There are ifdefs in the
-file to avoid code compilation based on config options. is_vsmp_box() is
-needed even when CONFIG_X86_VSMP is not enabled, since distro kernels don't ship
-with CONFIG_X86_VSMP, and since is_vsmp_box() is used to determine  whether
-tsc's can be considered synced or not, this is needed.
-
-In the future, I would appreciate if you copy me on cleanups/changes involving
-vsmp64.c
-
-Thanks,
-Kiran
-
->---
-> arch/x86/include/asm/apic.h  |    7 +++++++
-> arch/x86/include/asm/setup.h |    4 ++++
-> arch/x86/kernel/Makefile     |    2 +-
-> arch/x86/kernel/setup.c      |    2 --
-> arch/x86/kernel/vsmp_64.c    |   12 +-----------
-> 5 files changed, 13 insertions(+), 14 deletions(-)
->
->Index: linux-2.6/arch/x86/include/asm/apic.h
->===================================================================
->--- linux-2.6.orig/arch/x86/include/asm/apic.h
->+++ linux-2.6/arch/x86/include/asm/apic.h
->@@ -75,7 +75,14 @@ static inline void default_inquire_remot
-> #define setup_secondary_clock setup_secondary_APIC_clock
-> #endif
-> 
->+#ifdef CONFIG_X86_VSMP
-> extern int is_vsmp_box(void);
->+#else
->+static inline int is_vsmp_box(void)
->+{
->+	return 0;
->+}
->+#endif
-> extern void xapic_wait_icr_idle(void);
-> extern u32 safe_xapic_wait_icr_idle(void);
-> extern void xapic_icr_write(u32, u32);
->Index: linux-2.6/arch/x86/include/asm/setup.h
->===================================================================
->--- linux-2.6.orig/arch/x86/include/asm/setup.h
->+++ linux-2.6/arch/x86/include/asm/setup.h
->@@ -64,7 +64,11 @@ extern void x86_quirk_time_init(void);
-> #include <asm/bootparam.h>
-> 
-> /* Interrupt control for vSMPowered x86_64 systems */
->+#ifdef CONFIG_X86_VSMP
-> void vsmp_init(void);
->+#else
->+static inline void vsmp_init(void) { }
->+#endif
-> 
-> void setup_bios_corruption_check(void);
-> 
->Index: linux-2.6/arch/x86/kernel/Makefile
->===================================================================
->--- linux-2.6.orig/arch/x86/kernel/Makefile
->+++ linux-2.6/arch/x86/kernel/Makefile
->@@ -70,7 +70,7 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= f
-> obj-$(CONFIG_KEXEC)		+= machine_kexec_$(BITS).o
-> obj-$(CONFIG_KEXEC)		+= relocate_kernel_$(BITS).o crash.o
-> obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
->-obj-y				+= vsmp_64.o
->+obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
-> obj-$(CONFIG_KPROBES)		+= kprobes.o
-> obj-$(CONFIG_MODULES)		+= module_$(BITS).o
-> obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
->Index: linux-2.6/arch/x86/kernel/setup.c
->===================================================================
->--- linux-2.6.orig/arch/x86/kernel/setup.c
->+++ linux-2.6/arch/x86/kernel/setup.c
->@@ -863,9 +863,7 @@ void __init setup_arch(char **cmdline_p)
-> 
-> 	reserve_initrd();
-> 
->-#ifdef CONFIG_X86_64
-> 	vsmp_init();
->-#endif
-> 
-> 	io_delay_init();
-> 
->Index: linux-2.6/arch/x86/kernel/vsmp_64.c
->===================================================================
->--- linux-2.6.orig/arch/x86/kernel/vsmp_64.c
->+++ linux-2.6/arch/x86/kernel/vsmp_64.c
->@@ -22,7 +22,7 @@
-> #include <asm/paravirt.h>
-> #include <asm/setup.h>
-> 
->-#if defined CONFIG_PCI && defined CONFIG_PARAVIRT
->+#ifdef CONFIG_PARAVIRT
-> /*
->  * Interrupt control on vSMPowered systems:
->  * ~AC is a shadow of IF.  If IF is 'on' AC should be 'off'
->@@ -114,7 +114,6 @@ static void __init set_vsmp_pv_ops(void)
-> }
-> #endif
-> 
->-#ifdef CONFIG_PCI
-> static int is_vsmp = -1;
-> 
-> static void __init detect_vsmp_box(void)
->@@ -139,15 +138,6 @@ int is_vsmp_box(void)
-> 		return 0;
-> 	}
-> }
->-#else
->-static void __init detect_vsmp_box(void)
->-{
->-}
->-int is_vsmp_box(void)
->-{
->-	return 0;
->-}
->-#endif
-> 
-> void __init vsmp_init(void)
-> {
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+I think in a sake of consistency better would be using __VA_ARGS__ here
+too (since all prevous pr_...'s use it).
