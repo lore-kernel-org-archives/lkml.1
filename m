@@ -1,77 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZBZDSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbZBZDUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbZBZDSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 22:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBZDSF
+	id S1758239AbZBZDUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 22:20:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBZDU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 22:18:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45519 "EHLO hera.kernel.org"
+	Wed, 25 Feb 2009 22:20:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45617 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751564AbZBZDSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 22:18:03 -0500
-Message-ID: <49A609E0.5040807@kernel.org>
-Date: Thu, 26 Feb 2009 12:17:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751564AbZBZDU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 22:20:26 -0500
+Date: Thu, 26 Feb 2009 04:19:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] tracing: add event trace infrastructure
+Message-ID: <20090226031910.GF7526@elte.hu>
+References: <20090224194548.3effb746.akpm@linux-foundation.org> <alpine.DEB.2.00.0902242252480.12697@gandalf.stny.rr.com> <20090224203308.8d623e0b.akpm@linux-foundation.org> <20090225081118.GC15303@elte.hu> <20090225002852.5ef5b869.akpm@linux-foundation.org> <84144f020902250100k41e55dd7w8a9c8d2ca96908ea@mail.gmail.com> <20090225012250.db68e480.akpm@linux-foundation.org> <alpine.DEB.2.00.0902250923360.12697@gandalf.stny.rr.com> <20090225155709.GA12732@elte.hu> <alpine.DEB.2.00.0902251746080.12697@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, "jeremy@goop.org" <jeremy@goop.org>,
-       "cpw@sgi.com" <cpw@sgi.com>, "mingo@elte.hu" <mingo@elte.hu>
-Subject: Re: [PATCH 09/10] percpu: implement new dynamic percpu allocator
-References: <1234958676-27618-1-git-send-email-tj@kernel.org> <200902192221.52835.rusty@rustcorp.com.au> <499E1D01.2040408@kernel.org> <200902241326.23605.rusty@rustcorp.com.au> <49A389F7.9030002@kernel.org> <57C9024A16AD2D4C97DC78E552063EA361924956@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA361924956@orsmsx505.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 26 Feb 2009 03:17:36 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902251746080.12697@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Luck, Tony wrote:
-> ia64 started out with a pinned TLB entry to map the percpu space to the
-> top 64K of address space (so that the compiler can generate ld/st instructions
-> with a small negative offset from register r0 to access local-to-this-cpu
-> objects).
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> Then we started using a one of the ar.k* registers to hold the base
-> physical address for each cpus per-cpu area so that early parts of
-> machine check code (which runs with MMU off) can access per-cpu variables.
 > 
-> Finally we found that certain transaction processing benchmarks ran faster
-> if we let the cpu have free access to one extra TLB entry ... so we
-> stopped pinning the per-cpu area, and wrote a s/w fault handler to
-> insert the mapping on demand (using the ar.k3 register to get the
-> physical address for the mapping).
+> On Wed, 25 Feb 2009, Ingo Molnar wrote:
 > 
-> N.B. ar.k3 is a medium-slow register ... I wouldn't want to use it
-> in the code sequence for *every* per-cpu variable access.
+> > 
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > > #                _------=> CPU#
+> > > > #               / _-----=> irqs-off
+> > > > #              | / _----=> need-resched
+> > > > #              || / _---=> hardirq/softirq
+> > > > #              ||| / _--=> preempt-depth
+> > > > #              |||| /
+> > > > #              |||||     delay
+> > > > #  cmd     pid ||||| time  |   caller
+> > > > #     \   /    |||||   \   |   /
+> > > >   <idle>-0     0d..1    0us+: trace_hardirqs_off_thunk (apic_timer_interrupt)
+> > > >   <idle>-0     0d.s.   97us : __do_softirq (do_softirq)
+> > > >   <idle>-0     0d.s1   98us : trace_hardirqs_on (do_softirq)
+> > [...]
+> > > > 
+> > > > your time starts now.
+> > > 
+> > > Note, that is a legacy format, that works great for the 
+> > > latency tracers. Those include (the example you used) irqsoff, 
+> > > the preempt off, wake up latencies. This gives us a nice 
+> > > listing of why we are hitting a latency. All other plugins 
+> > > generally use the trace file, although they could also use 
+> > > that file too.
+> > > 
+> > > As for your English comment. I showed the header to my wife, 
+> > > and she had no idea what irqs-off means, nor need-resched, nor 
+> > > preempt-depth ;-) They are not quite English as they are 
+> > > technical terms. Most of the names are hard coded into the 
+> > > kernel too.
+> > > 
+> > > Yeah, maybe that file (latency_trace) is a bit too much. I for 
+> > > one love it. It is great to load a kernel on some remote box, 
+> > > and run the irqs off latency tracer to see where the 
+> > > interrupts are disabled for the longest time. This format is 
+> > > really nice because it shows me when we are in an interrupt, 
+> > > or interrupts are disabled, and when the task should have been 
+> > > rescheduled.
+> > > 
+> > > This has help find places that we miss a preemption check too.
+> > 
+> > Could we get that, as PeterZ has suggested, as a trace_option 
+> > column in the 'trace' file? It would be default off for 
+> > non-latency tracers, with latency tracing plugins turning it on 
+> > by default. Would that work?
+> 
+> I guess adding options will be a high priority for me now. I 
+> can't parse irqsoff output anymore :-(
+> 
+> Besides the information of the ..... area, the times were all 
+> based off of the start of the trace, not global. This allowed 
+> you to see the latency in the trace.
 
-Ah... I see, so the 64k limit for small offset.  I think what we can
-do is using the first chunk for static percpu variables.  We'll still
-be able to use the same accessor by doing something like...
+That is something that is sane to have as a default anyway. It 
+always annoys me that i have to start looking at a trace by 
+subtracting the first timestamp from the last timestamp.
 
-#define unified_percpu_accessor(ptr) ({ \
-	if (__builtin_constant_p(ptr)) \
-		return r0 - unit_size + ptr; \
-	else \
-		do ar.k3 + ptr; \
-	})
-
-So, dynamic ones will be slower than normal ones but faster than what
-we currently have (it will be faster than indirect pointer
-derferencing, right?) while keeping static accesses fast.  Does it
-sound okay to you?  Also, does anyone know whether there's a working
-ia64 emulator?  There doesn't seem to be any and it seems almost
-impossible to get hold of an actual ia64 machine over here.  :-(
-
-Thanks.
-
--- 
-tejun
+	Ingo
