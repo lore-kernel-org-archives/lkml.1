@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbZBZEHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZBZEKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758621AbZBZEHw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Feb 2009 23:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBZEHn
+	id S1758830AbZBZEKH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Feb 2009 23:10:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZBZEJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Feb 2009 23:07:43 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45858 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbZBZEHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Feb 2009 23:07:43 -0500
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 15:07:24 +1100
-Message-Id: <1235621244.8805.340.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Feb 2009 23:09:53 -0500
+Received: from vsmtp03.dti.ne.jp ([202.216.231.138]:63660 "EHLO
+	vsmtp03.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbZBZEJx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Feb 2009 23:09:53 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: New filesystem for Linux kernel 
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: tomas@slax.org, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1LcH0H-00016K-Im@pomaz-ex.szeredi.hu>
+References: <7558.1235374266@jrobl> <7769.1235374482@jrobl> <49A268A7.1010708@slax.org> <49A26ACC.90804@slax.org> <49A3AC14.2050107@slax.org> <E1Lbvpf-0006fF-Tg@pomaz-ex.szeredi.hu> <11287.1235481490@jrobl> <E1LbycM-0007FV-Rg@pomaz-ex.szeredi.hu> <15922.1235492819@jrobl> <E1LcH0H-00016K-Im@pomaz-ex.szeredi.hu>
+Date: Thu, 26 Feb 2009 13:09:29 +0900
+Message-ID: <7306.1235621369@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
 
-Please pull a few regression fixes for powerpc.
+Miklos Szeredi:
+> I'd personally be more motivated to review <2000 line chunks (where
+> each step adds new functionality and makes sense in itself), than a
+> 20000 line filesystem all in one.
 
-Cheers,
-Ben.
-
-The following changes since commit 169d418b127b98a3e464e9c4b807ad083760f98c:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../tiwai/sound-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Mark Nelson (2):
-      powerpc: Fix 64bit memcpy() regression
-      powerpc: Fix 64bit __copy_tofrom_user() regression
-
-Michael Neuling (1):
-      powerpc: Fix load/store float double alignment handler
-
- arch/powerpc/kernel/align.c    |   29 +++++++++++++----------------
- arch/powerpc/lib/copyuser_64.S |   38 +++++++++++++++++++++++++++++++-------
- arch/powerpc/lib/memcpy_64.S   |   26 ++++++++++++++++++++------
- 3 files changed, 64 insertions(+), 29 deletions(-)
+That is reasonable. :-)
 
 
+> Perhaps it's easier, but copy-up is a very inefficient operation, both
+> in disk space and in time.  My personal opinion is that a "delta"
+
+I have to agree again.
+
+
+> But that's just a thought, I haven't gone too deeply into this.
+> 
+> > If you say "just a part of write" goes to a new fs, then I don't think
+> > we can support several essential features, for instance mmap.
+> 
+> It should be possible to support mmap.
+
+In a easy way?
+I know you already wrote it is just a thought, but if you have an idea
+to support mmapping a file which is distributed multiple filesystems,
+please let me know.
+
+
+J. R. Okajima
