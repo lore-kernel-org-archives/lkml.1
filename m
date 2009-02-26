@@ -1,101 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbZBZPva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbZBZPvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbZBZPva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 10:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZBZPvU
+	id S1757427AbZBZPvq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 10:51:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbZBZPvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 10:51:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:60772 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753496AbZBZPvT (ORCPT
+	Thu, 26 Feb 2009 10:51:35 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:10037 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756450AbZBZPve (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 10:51:19 -0500
+	Thu, 26 Feb 2009 10:51:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=svV4rZBW0MNxyCdIrRc9XR35CxPslW8PXYJhOOeArVD77OQfhGHZr08cPTzuJqxw+I
-         Q9ZieDUzBz2jkge0Zx7yGn5XUGcL5qNhHYkZPfE41Dh56/+QzWy9WK15sfcCp14Fu6SV
-         8+9WGbTqeQB25jQyYLvpm1dsQBIoPgORZDYFU=
-Date: Thu, 26 Feb 2009 18:57:55 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090226155755.GA1456@x200.localdomain>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz>
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=gixg/2aDp0H3wvCBtCEgXEjnXEYf8HT84bVPzgrRc3NkF2+lFnEdzuH7SbJ4jl+Th+
+         0y4oJoUVJuVtqE/N6OvCCJR4WR8fGgcmMl4ETi2Bv834H9A1WwF8egTT8+hgD/wU/hcE
+         8Zp0JaFad4RGxC9YGoTnhZkfGRTkJsjXmfRvg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234479845.30155.220.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Reply-To: petkovbb@gmail.com
+In-Reply-To: <200902261529.43554.bzolnier@gmail.com>
+References: <200902260229.n1Q2T2lY006773@www262.sakura.ne.jp>
+	 <200902261529.43554.bzolnier@gmail.com>
+Date: Thu, 26 Feb 2009 16:51:30 +0100
+Message-ID: <9ea470500902260751t4221d04cm839765a93300d861@mail.gmail.com>
+Subject: Re: linux-next-20090225: ide-cd triggers BUG at arch/x86/mm/ioremap.c:80!
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 03:04:05PM -0800, Dave Hansen wrote:
-> dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... kernel/cpt/ | diffstat 
->  Makefile        |   53 +
->  cpt_conntrack.c |  365 ++++++++++++
->  cpt_context.c   |  257 ++++++++
->  cpt_context.h   |  215 +++++++
->  cpt_dump.c      | 1250 ++++++++++++++++++++++++++++++++++++++++++
->  cpt_dump.h      |   16 
->  cpt_epoll.c     |  113 +++
->  cpt_exports.c   |   13 
->  cpt_files.c     | 1626 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  cpt_files.h     |   71 ++
->  cpt_fsmagic.h   |   16 
->  cpt_inotify.c   |  144 ++++
->  cpt_kernel.c    |  177 ++++++
->  cpt_kernel.h    |   99 +++
->  cpt_mm.c        |  923 +++++++++++++++++++++++++++++++
->  cpt_mm.h        |   35 +
->  cpt_net.c       |  614 ++++++++++++++++++++
->  cpt_net.h       |    7 
->  cpt_obj.c       |  162 +++++
->  cpt_obj.h       |   62 ++
->  cpt_proc.c      |  595 ++++++++++++++++++++
->  cpt_process.c   | 1369 ++++++++++++++++++++++++++++++++++++++++++++++
->  cpt_process.h   |   13 
->  cpt_socket.c    |  790 ++++++++++++++++++++++++++
->  cpt_socket.h    |   33 +
->  cpt_socket_in.c |  450 +++++++++++++++
->  cpt_syscalls.h  |  101 +++
->  cpt_sysvipc.c   |  403 +++++++++++++
->  cpt_tty.c       |  215 +++++++
->  cpt_ubc.c       |  132 ++++
->  cpt_ubc.h       |   23 
->  cpt_x8664.S     |   67 ++
->  rst_conntrack.c |  283 +++++++++
->  rst_context.c   |  323 ++++++++++
->  rst_epoll.c     |  169 +++++
->  rst_files.c     | 1648 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  rst_inotify.c   |  196 ++++++
->  rst_mm.c        | 1151 +++++++++++++++++++++++++++++++++++++++
->  rst_net.c       |  741 +++++++++++++++++++++++++
->  rst_proc.c      |  580 +++++++++++++++++++
->  rst_process.c   | 1640 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  rst_socket.c    |  918 +++++++++++++++++++++++++++++++
->  rst_socket_in.c |  489 ++++++++++++++++
->  rst_sysvipc.c   |  633 +++++++++++++++++++++
->  rst_tty.c       |  384 +++++++++++++
->  rst_ubc.c       |  131 ++++
->  rst_undump.c    | 1007 ++++++++++++++++++++++++++++++++++
->  47 files changed, 20702 insertions(+)
-> 
-> One important thing that leaves out is the interaction that this code
-> has with the rest of the kernel.  That's critically important when
-> considering long-term maintenance, and I'd be curious how the OpenVZ
-> folks view it. 
+Hi,
 
-OpenVZ as-is in some cases wants some functions to be made global
-(and if C/R code will be modular, exported). Or probably several
-iterators added.
+On Thu, Feb 26, 2009 at 3:29 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> On Thursday 26 February 2009, Tetsuo Handa wrote:
+>> 2.6.29-rc6 is OK.
+>
+> Could you try to narrow down the issue by bisecting linux-next?
 
-But it's negligible amount of changes compared to main code.
+Can you also apply the following patch and send us the output?
+
+Thanks.
+
+--
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 9e19aec..fca6e64 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -918,6 +918,12 @@ static ide_startstop_t
+ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+
+ 	ide_init_sg_cmd(&cmd,
+ 		blk_fs_request(rq) ? (rq->nr_sectors << 9) : rq->data_len);
++
++	blk_dump_rq_flags(rq, "mapping rq to sg");
++
++	if ((unsigned long)rq->data < PAGE_OFFSET)
++		dump_stack();
++
+ 	ide_map_sg(drive, &cmd);
+
+ 	return ide_issue_pc(drive, &cmd);
+
+-- 
+Regards/Gruss,
+Boris
