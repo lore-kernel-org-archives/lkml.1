@@ -1,22 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZBZJB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZBZJEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbZBZJB4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 04:01:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZBZJBr
+	id S1755362AbZBZJEZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 04:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZBZJEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 04:01:47 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34371 "EHLO mx2.suse.de"
+	Thu, 26 Feb 2009 04:04:02 -0500
+Received: from mail.suse.de ([195.135.220.2]:51273 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752610AbZBZJBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 04:01:46 -0500
-Date: Thu, 26 Feb 2009 10:01:44 +0100
-Message-ID: <s5h1vtlk1vr.wl%tiwai@suse.de>
+	id S1752109AbZBZJEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 04:04:00 -0500
+Date: Thu, 26 Feb 2009 10:03:57 +0100
+Message-ID: <s5hzlg9in7m.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] sound: fix sparse warnings
-In-Reply-To: <20090225212551.9226.64699.stgit@vmbox.hanneseder.net>
-References: <20090225212551.9226.64699.stgit@vmbox.hanneseder.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: hpa@zytor.com, mingo@redhat.com, dwmw2@infradead.org,
+       acme@ghostprotocols.net, airlied@linux.ie, perex@perex.cz,
+       yoshfuji@linux-ipv6.org, mchehab@redhat.com, tglx@linutronix.de,
+       hpa@linux.intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix duplicate include in emu10k1.h
+In-Reply-To: <200902260957.30007.arnd@arndb.de>
+References: <tip-57b4b9d7b56d283b6619a893341be16d1a0467a6@kernel.org>
+	<s5h4oyhk2j5.wl%tiwai@suse.de>
+	<200902260957.30007.arnd@arndb.de>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -26,36 +31,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 25 Feb 2009 22:26:34 +0100,
-Hannes Eder wrote:
+At Thu, 26 Feb 2009 09:57:27 +0100,
+Arnd Bergmann wrote:
 > 
-> The following series fixes some sparse warnings in sound/.
+> The earlier patch 'make most exported headers use strict integer types'
+> accidentally includes <types.h> both from the common and from the
+> kernel-only parts.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Applied all patches now.  Thanks!
+To both patches (better merged, though),
+Acked-by: Takashi Iwai <tiwai@suse.de>
 
+
+Thanks!
 
 Takashi
-
 > 
 > ---
+> On Thursday 26 February 2009, you wrote:
 > 
-> Hannes Eder (7):
->       sound/oss: fix sparse warning: symbol shadows an earlier one
->       sound/oss: fix sparse warnings: different signedness
->       sound/drivers/vx: fix sparse warning: different signedness
->       sound/pci/emu10k1: fix sparse warning: different signedness
->       sound/pci/hda: fix sparse warning: different signedness
->       sound/usb/usx2y: fix sparse warning: do-while statement is not a compound ...
->       sound/usb/usx2y: fix sparse warning: Should it be static?
+> > > @@ -34,6 +36,8 @@
+> > >  #include <sound/timer.h>
+> > >  #include <linux/interrupt.h>
+> > >  #include <linux/mutex.h>
+> > > +#include <linux/types.h>
+> > > +
+> > 
+> > Isn't the second inclusion superfluous?
+> > 
+> Yes, I must have introduced the second one first, but in the
+> wrong section (kernel only), and then didn't notice it when
+> introducing it again to fix headers_check.
 > 
-> 
->  sound/drivers/vx/vx_uer.c        |    2 +-
->  sound/oss/pss.c                  |   12 ++++++------
->  sound/oss/sequencer.c            |    3 +--
->  sound/pci/emu10k1/emu10k1_main.c |   10 ++++------
->  sound/pci/hda/hda_local.h        |    2 +-
->  sound/usb/usx2y/usX2Yhwdep.c     |    3 ---
->  sound/usb/usx2y/usbusx2y.c       |    4 ++--
->  sound/usb/usx2y/usx2yhwdeppcm.h  |    2 ++
->  8 files changed, 17 insertions(+), 21 deletions(-)
+> --- a/include/sound/emu10k1.h
+> +++ b/include/sound/emu10k1.h
+> @@ -36,7 +36,6 @@
+>  #include <sound/timer.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/mutex.h>
+> -#include <linux/types.h>
+>  
+>  #include <asm/io.h>
+>  
 > 
