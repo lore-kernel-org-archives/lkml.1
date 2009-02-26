@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbZBZRqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbZBZRqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbZBZRqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 12:46:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZBZRq1
+	id S1754828AbZBZRqy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 12:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbZBZRq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 12:46:27 -0500
-Received: from kroah.org ([198.145.64.141]:42874 "EHLO coco.kroah.org"
+	Thu, 26 Feb 2009 12:46:28 -0500
+Received: from kroah.org ([198.145.64.141]:42882 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751900AbZBZRq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751783AbZBZRq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Feb 2009 12:46:26 -0500
-Date: Thu, 26 Feb 2009 09:35:31 -0800
+Date: Thu, 26 Feb 2009 09:42:43 -0800
 From: Greg KH <greg@kroah.com>
 To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: "Sachin P. Sant" <sachinp@in.ibm.com>,
        Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>, ashwin.ganti@gmail.com
 Subject: Re: [Staging/p9auth] Feb 26 Next: build failure
-Message-ID: <20090226173531.GB23465@kroah.com>
+Message-ID: <20090226174243.GC23465@kroah.com>
 References: <20090226193022.adb78235.sfr@canb.auug.org.au> <49A67892.8060006@in.ibm.com> <20090226155355.GA22194@kroah.com> <49A6CA74.7000809@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -52,9 +52,7 @@ On Thu, Feb 26, 2009 at 08:59:32AM -0800, Randy Dunlap wrote:
 > 
 > Even if it were, that's not what we want.  We want explicit #includes
 > for macros or structs etc. that are used in a source file.
-
-I agree, sorry, I didn't mean to assume otherwise.
-
+> 
 > > With this .config, if you add:
 > > 	#include <linux/cred.h>
 > > to drivers/staging/p9auth/p9auth.c does it solve the build error?
@@ -63,7 +61,7 @@ I agree, sorry, I didn't mean to assume otherwise.
 > 
 > It needs both cred.h and sched.h in my testing.
 
-Ok, I'll go add both.
+Now done, it will show up in tomorrow's -next tree.
 
 thanks,
 
