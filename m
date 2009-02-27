@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbZB0XdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760389AbZB0XeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459AbZB0XdU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 18:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZB0XdK
+	id S1760389AbZB0XeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 18:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZB0XeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 18:33:10 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49608 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755371AbZB0XdJ (ORCPT
+	Fri, 27 Feb 2009 18:34:09 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46041 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbZB0XeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 18:33:09 -0500
-Date: Fri, 27 Feb 2009 15:32:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: me@felipebalbi.com, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, felipe.balbi@nokia.com,
-       dmitry.torokhov@gmail.com, sameo@openedhand.com, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de
-Subject: Re: lockdep and threaded IRQs (was: ...)
-Message-Id: <20090227153204.fc9c579c.akpm@linux-foundation.org>
-In-Reply-To: <200902271518.58246.david-b@pacbell.net>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-	<200902271350.32380.david-b@pacbell.net>
-	<20090227140907.f159be9b.akpm@linux-foundation.org>
-	<200902271518.58246.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Feb 2009 18:34:08 -0500
+Message-ID: <b0f5e75d938ffb61bdda7c88b962d3fe.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <b040c32a0902271213q3dd1931foc2b955d8a028eb6f@mail.gmail.com>
+References: <20090227140537.390905c4.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090227162928.6225fc80.kamezawa.hiroyu@jp.fujitsu.com>
+    <b040c32a0902271213q3dd1931foc2b955d8a028eb6f@mail.gmail.com>
+Date: Sat, 28 Feb 2009 08:34:02 +0900 (JST)
+Subject: Re: [PATCH] change cpuacct usage percpu format v2
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Ken Chen" <kenchen@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>, mingo@elte.hu,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Feb 2009 15:18:57 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Ken Chen さんは書きました：
+> On Thu, Feb 26, 2009 at 11:29 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>> cpuacct.usage_percpu shows per cpu usage information via cgroupfs.
+>> It shows all "present" cpus information and "whose information ?"
+>> is explained just by index of data implicitly.
+>>
+>> IIRC, there is physical cpu hotplug system and it can remove
+>> cpus and change map. Considering a software which records
+>> this information pediodically(like sar), its better to show id of cpu
+>> in explict way.
+>
+> The new format carries a lot of overhead.  I would think user space
+> software can record /sys/devices/system/cpu/present and use that to
+> map cpu index.
+>
+"a lot of" ? I talking about cpu hotplug and reading another file as
+/sys/devices/system/cpu/present every time before reading this file
+gives much much much more overhead ;)
 
-> On Friday 27 February 2009, Andrew Morton wrote:
-> > 
-> > > There are actually two issues. __The lockdep issue is
-> > > one ... the above #ifdef suffices to work around it
-> > > for all the TWL4030 (family) IRQs.
-> 
-> (And other similar cases, of course, including those
-> MMC cases that crap out in the ARM memory management
-> code when lockdep wrongly disables IRQs.)
-> 
-> 
-> > > The other is that Linux needs real support for threaded
-> > > interrupts. __Almost every I2C (or SPI) device that raises
-> > > an IRQ needs its IRQ handler to run in a thread, and most
-> > > of them have the same type of workqueue-based hack to
-> > > get such a thread. __(Some others have bugs instead...)
-> > > 
-> > > Obviously, if any threaded IRQ handler grabs a mutex,
-> > > but lockdep has disabled IRQs, trouble ensues...
-> > 
-> > What's going on here? __hardirq handlers cannot take mutexes and cannot
-> > sleep, period. __
-> 
-> But these handlers are *NOT* running in hardirq context;
-> so such thought doesn't apply.
+A program which handles this kind of information tend to ignore hotplug
+event and continue to use informaton which it gathers at start-up and
+will not see updated information....as libnuma etc.
 
-But you just told me that this code (which is an IRQ handler) needs to
-sleep and take sleeping locks.
+Thanks,
+-Kame
 
-Let us start again.  Why does this function:
-
-static irqreturn_t powerbutton_irq(int irq, void *dev_id)
-{
-	int err;
-	u8 value;
-
-#ifdef CONFIG_LOCKDEP
-	/* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
-	 * we don't want and can't tolerate.  Although it might be
-	 * friendlier not to borrow this thread context...
-	 */
-	local_irq_enable();
-#endif
-
-	err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &value,
-				  STS_HW_CONDITIONS);
-	if (!err)  {
-		input_report_key(powerbutton_dev, KEY_POWER,
-				 value & PWR_PWRON_IRQ);
-	} else {
-		dev_err(dbg_dev, "twl4030: i2c error %d while reading TWL4030"
-			" PM_MASTER STS_HW_CONDITIONS register\n", err);
-	}
-
-	return IRQ_HANDLED;
-}
-
-Which is connected up via this statement:
-
-	err = request_irq(irq, powerbutton_irq,
-			IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
-			"twl4030-pwrbutton", NULL);
-
-reenable local interrupts?
 
 
