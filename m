@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbZB0DIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZB0DOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbZB0DIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 22:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZB0DIe
+	id S1755674AbZB0DOU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 22:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZB0DOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 22:08:34 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53656 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbZB0DId (ORCPT
+	Thu, 26 Feb 2009 22:14:09 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42341 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752273AbZB0DOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 22:08:33 -0500
+	Thu, 26 Feb 2009 22:14:07 -0500
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
+To: "Dominique Toupin" <dominique.toupin@ericsson.com>
 Subject: Re: [PATCH] new irq tracer
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jason Baron <jbaron@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net, fweisbec@gmail.com
-In-Reply-To: <49A57D85.4090201@redhat.com>
-References: <20090225165849.GA13463@Krystal> <49A57D85.4090201@redhat.com>
-Message-Id: <20090227120225.1528.A69D9226@jp.fujitsu.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, "Steven Rostedt" <rostedt@goodmis.org>,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Frederic Weisbecker" <fweisbec@gmail.com>,
+       "Jason Baron" <jbaron@redhat.com>,
+       "Masami Hiramatsu" <mhiramat@redhat.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>, <acme@ghostprotocols.net>
+In-Reply-To: <806EF3041844884CAC68E1E16026AB8905CE58DA@ecamlmw720.eamcs.ericsson.se>
+References: <alpine.DEB.2.00.0902252040210.12697@gandalf.stny.rr.com> <806EF3041844884CAC68E1E16026AB8905CE58DA@ecamlmw720.eamcs.ericsson.se>
+Message-Id: <20090227121053.152B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50 [ja]
-Date: Fri, 27 Feb 2009 12:08:26 +0900 (JST)
+Date: Fri, 27 Feb 2009 12:14:01 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>>>  /**
-> >>>>   * handle_IRQ_event - irq action chain handler
-> >>>>   * @irq:	the interrupt number
-> >>>> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
-> >>>>  		local_irq_enable_in_hardirq();
-> >>>>  
-> >>>>  	do {
-> >>>> +		trace_irq_entry(irq);
-> >>>>  		ret = action->handler(irq, action->dev_id);
-> >>>> +		trace_irq_exit(irq, ret);
-> >>>>  		if (ret == IRQ_HANDLED)
-> >>>>  			status |= action->flags;
-> >>>>  		retval |= ret;
-> >>> Nobdy want unnecessary redundant tracepoint.
-> >>> Please discuss with mathieu, and merge his tracepoint.
-> >> Hmm, from the viewpoint of trouble shooting, the place of LTTng's tracepoint
-> >> is enough. However, from the same viewpoint, it should pass irq-number
-> >> to irq-exit event too, because we may lost some previous events by buffer-overflow
-> >> etc.
-> >>
-> >>          trace_irq_entry(irq, NULL);
-> >>          ret = _handle_IRQ_event(irq, action);
-> >>          trace_irq_exit(irq, ret);
-> >>                         ^^^^
-> >>
+> > > Given this scenario :
+> > > 
+> > > A telecommunication system runs, but the client notices 
+> > something wrong.
+> > > They call their service provider. The provider enables tracing 
+> > > _remotely_ on the _production system_ while it's _active in 
+> > the field_.
+> > > 
+> > > Bam, those few milliseconds interrupt latencies become unacceptable.
+> > > 
+> > > Hopefully this scenario makes the use-case clearer. The 
+> > problem is not 
+> > > that interrupt latencies would occur while tracing is on, 
+> > but rather 
+> > > that it would happen on a running production system when switching 
+> > > tracing on. This is what is totally unacceptable for this use-case.
+> > > 
+> > > For more details about such requirements, I'm CCing 
+> > Dominique Toupin 
+> > > from Ericsson who I'm sure would be happy to give more 
+> > details about 
+> > > this if needed.
 > > 
-> > I seriously doubt we should consider a trace with missing events as
-> > "reliable". If your only argument is that when the buffers are not large
-> > enough we could lose events, then I think we should just hint people at
-> > doing the right thing, which is to tweak the tracer parameters (e.g.
-> > larger buffers) so they stop losing events.
-> 
-> Hi Mathieu,
-> 
-> I think it depends on what events we'd like to trace on what environment
-> (not have so much memories).
-> Someone(like me) may want "reliability" for those events, someone not.
+> > Hmm, so this system in the field is running Linux with the 
+> > Real-Time Patch?  Because if it isn't it will suffer from 
+> > millisecond latencies in normal operation.
+>
+> In many cases we don't use Linux real-time, we have many systems that
+> are soft-real-time an non real-time Linux is good enough.
+>  
 
-I don't think this viewpoint is valueable.
-buffer overflow problem depend on the number of AVERAGE output from tracer.
-typically, one irq has only one irq handler. 
+Agreed, rt-patch seems off topics. we discuss to mainline kernel.
 
-if this change makes buffer overflow, the tracer buffer management is too silly.
-Just change it.
+Steven, I sitll think nobody use ftrace on production system now yet.
+Do you know actual production user?
 
 
-
-> > A trace with events lost is really a scenario close to a corrupted
-> > trace because we don't know which event has been lost, nor where. I
-> > don't think we should increase the event size to support that kind of
-> > broken scenario.
-> 
-> Why LTTng doesn't filter those unused arguments inside their handlers?
-> Is there no room for compromise on sharing tracepoints with other
-> tracers? IMHO, tracepoints in the kernel should be a common
-> infrastructure for many users.
-
-Agreed. last mathieu's mail only talk about lttng issue.
-I can imazine systemtap folks need explicit irq number argument.
 
 
