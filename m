@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbZB0Mft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbZB0Mgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756944AbZB0Mft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 07:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZB0Mfk
+	id S1757986AbZB0Mgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 07:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZB0Mg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 07:35:40 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:2000 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbZB0Mfj convert rfc822-to-8bit (ORCPT
+	Fri, 27 Feb 2009 07:36:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48097 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755401AbZB0Mg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 07:35:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cwjylcNzkeLtVC18hfRT7MZNWsdSP3F/ZXNA9Sk6TiC4VDqQ/Gdd67pVrp8dHa1blE
-         50u741FmzCX3xoNy46Okj22+uxrXcpRkTNZZ1rVej1OSQH8LZwaKEboTLlCIz1NuNWgI
-         VaPo2KSn9O8afkAkwjryW3g0K2CTtnnOBzpS8=
+	Fri, 27 Feb 2009 07:36:27 -0500
+Message-ID: <49A7DE0D.5090205@zytor.com>
+Date: Fri, 27 Feb 2009 04:35:25 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-In-Reply-To: <9c9fda240902261811g49483f9fk9ac7945834b8764@mail.gmail.com>
-References: <20090225044730.GA9106@july>
-	 <5d5443650902252301l19d08e67t54c1cea004442be2@mail.gmail.com>
-	 <9c9fda240902261811g49483f9fk9ac7945834b8764@mail.gmail.com>
-Date: Fri, 27 Feb 2009 18:05:37 +0530
-Message-ID: <5d5443650902270435y38a006datc6767524e7290fb0@mail.gmail.com>
-Subject: Re: [PATCH] Input notifier support
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       dmitry.torokhov@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Anders Kaseorg <andersk@MIT.EDU>
+CC: Tim Abbott <tabbott@MIT.EDU>, linux-kernel@vger.kernel.org,
+       Jeff Arnold <jbarnold@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] modpost: Check the section flags, not name, to catch
+ missing "ax"/"aw"
+References: <1235521315-3424-1-git-send-email-tabbott@mit.edu> <1235521315-3424-2-git-send-email-tabbott@mit.edu> <1235521315-3424-3-git-send-email-tabbott@mit.edu> <49A49D2B.8050701@zytor.com> <alpine.DEB.2.00.0902262057080.9996@vinegar-pot.mit.edu>
+In-Reply-To: <alpine.DEB.2.00.0902262057080.9996@vinegar-pot.mit.edu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kyungmin,
+Anders Kaseorg wrote:
+> On Tue, 24 Feb 2009, H. Peter Anvin wrote:
+>> This is a pretty critical set of warnings, that often represent real 
+>> bugs.  I don't think it's acceptable to lose them.  However, you already 
+>> have (prior in the sequence) changed those section names to not conflict 
+>> with the automatically generated ones, so it seems to me that this 
+>> should be fixable without too much pain.
+> 
+> Actually, the problem arises from a conflict between two classes of 
+> automatically generated section names, one from ld, and one from gcc.  
+> Instead of basing the warning on section names (the existing heuristic 
+> also fails to warn on some cases where it should, as it turns out), what 
+> do you think about this patch?  I've tested that it still triggers the 
+> warning when an "ax" or "aw" is incorrectly removed, and it should handle 
+> even more cases than before.
+> 
 
-On Fri, Feb 27, 2009 at 7:41 AM, Kyungmin Park <kmpark@infradead.org> wrote:
-> Hi,
->
-> On Thu, Feb 26, 2009 at 4:01 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
->> Hi Kyungmin,
->>
->>> diff --git a/drivers/input/input.c b/drivers/input/input.c
->>> index 1730d73..7e96635 100644
->>> --- a/drivers/input/input.c
->>> +++ b/drivers/input/input.c
->>> @@ -274,6 +274,8 @@ void input_event(struct input_dev *dev,
->>>                add_input_randomness(type, code, value);
->>>                input_handle_event(dev, type, code, value);
->>>                spin_unlock_irqrestore(&dev->event_lock, flags);
->>> +               if (type == EV_KEY)
->>> +                       input_notifier_call_chain(value, &code);
->>
->> This check will be done for every input_report_xxx calls, even for
->> touchscreen events (in which case of course it will fail), and I don't
->> think this is optimal solution. Users should be given an option to
->> disable this if they don't need this notification mechanism.
->>
->> How about moving this to input_report_key?
->
-> Good, Thank you for point it. I will move it to input_report_key.
+Seems reasonable to me.
 
-As most of the other platforms may not need input_notify as standard
-in-built feature, it is better to add Kconfig symbol for this, so that
-it can be compiled out when not needed.
+	-hpa
 
 
 -- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
