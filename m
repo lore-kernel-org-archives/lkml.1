@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZB0G6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbZB0HCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbZB0G6B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 01:58:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZB0G5s
+	id S1757475AbZB0HCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 02:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZB0HB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 01:57:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49179 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758241AbZB0G5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 01:57:47 -0500
-Date: Fri, 27 Feb 2009 07:57:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>, rusty@rustcorp.com.au,
-       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, jeremy@goop.org, cpw@sgi.com
-Subject: Re: [patch] x86: optimize __pa() to be linear again on 64-bit x86
-Message-ID: <20090227065717.GA5207@elte.hu>
-References: <1234958676-27618-1-git-send-email-tj@kernel.org> <20090223101741.GP9582@elte.hu> <20090223133804.GA20468@elte.hu> <200902240108.54892.nickpiggin@yahoo.com.au> <20090223145358.GB3377@elte.hu> <49A780E0.7020508@kernel.org>
+	Fri, 27 Feb 2009 02:01:58 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:41574 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753662AbZB0HB6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 02:01:58 -0500
+Date: Fri, 27 Feb 2009 12:31:48 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kenchen@google.com, "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>, mingo@elte.hu,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] change cpuacct usage percpu format
+Message-ID: <20090227070148.GU11421@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090227140537.390905c4.kamezawa.hiroyu@jp.fujitsu.com> <20090227063955.GS11421@balbir.in.ibm.com> <20090227155517.9283641b.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <49A780E0.7020508@kernel.org>
+In-Reply-To: <20090227155517.9283641b.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-27 15:55:17]:
 
-* Tejun Heo <tj@kernel.org> wrote:
-
-> Hello,
+> On Fri, 27 Feb 2009 12:09:55 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Ingo Molnar wrote:
-> > Yeah, we can do this complete conversion.
-> >
-> > I'll clean it up some more. I think the best representation of 
-> > this will be via a virt_to_sym() and sym_to_virt() space. That 
-> > makes it really clear when we are moving from the symbol space 
-> > to the linear space and back.
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-27 14:05:37]:
+> > 
+> > > I'd like to change cpuacct.usage_percpu format before it's widely used.
+> > > Current format is not easy to use in hardware with DR feature.
+> > > 
+> > > ==
+> > > cpuacct.usage_percpu shows per cpu usage information via cgroupfs.
+> > > It shows all present cpus information and "whose information ?"
+> > > is explained just by index of data implicitly.
+> > > 
+> > > IIRC, there is physical cpu hotplug and it can remove
+> > > cpus and change present map. Considering a software which records
+> > > this information pediodically(like sar.), its better to show id of cpu
+> > > in explict way.
+> > > 
+> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > ---
+> > >  kernel/sched.c |    2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > Index: mmotm-2.6.29-Feb24/kernel/sched.c
+> > > ===================================================================
+> > > --- mmotm-2.6.29-Feb24.orig/kernel/sched.c
+> > > +++ mmotm-2.6.29-Feb24/kernel/sched.c
+> > > @@ -9719,7 +9719,7 @@ static int cpuacct_percpu_seq_read(struc
+> > > 
+> > >  	for_each_present_cpu(i) {
+> > >  		percpu = cpuacct_cpuusage_read(ca, i);
+> > > -		seq_printf(m, "%llu ", (unsigned long long) percpu);
+> > > +		seq_printf(m, "%d %llu\n", i, (unsigned long long) percpu);
+> > 
+> > Seems like a reasonable change, but I wonder if " " should the
+> > separator between the CPU and data, I wounder if we should use
+> > cpu:usage_per_cpu.
 > 
-> For arch code, maybe it's maintainable but with my driver developer
-> hat on I gotta say virt_to_page() not working on .data/.bss is quite
-> scary. [...]
+> Ah, no strong reason for " ". 
+> 
+> Hmm, like this ?
+> ==
+> seq_printf(m, "%d: %llu\n", i, (unsigned long long) percpu);
+> or
+> seq_printf(m, "%d\t: %llu\n", i, (unsigned long long) percpu);
+> ==
+> 
+>
 
-Well, we have a debug mechanism in place.
+I'd like to see : and not space after it so something like
 
-As i suggested it in my first mail we can run with debug enabled 
-for a cycle and then turn on the optimization by default (with 
-the debug option still available too).
-
-Drivers doing DMA on .data/.bss items is rather questionable 
-anyway (and dangerous as well, on any platform where there's 
-coherency problems if DMA is misaligned, etc.), and a quick look 
-shows there's at most 2-3 dozen examples of that in all of 
-drivers/*.
-
-	Ingo
+seq_printf(m, "%d:%llu\n", i, (unsigned long long) percpu);
+-- 
+	Balbir
