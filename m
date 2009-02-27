@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750722AbZB0FJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZB0FMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750722AbZB0FJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 00:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZB0FJK
+	id S1755517AbZB0FMl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 00:12:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZB0FMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 00:09:10 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:40030 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbZB0FJJ (ORCPT
+	Fri, 27 Feb 2009 00:12:33 -0500
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:47099 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbZB0FMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 00:09:09 -0500
-Date: Fri, 27 Feb 2009 10:38:24 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+	Fri, 27 Feb 2009 00:12:32 -0500
+Date: Fri, 27 Feb 2009 10:42:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, menage@google.com,
-       lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 1/2] cgroup allow subsys to set default mode of its own
 	file
-Message-ID: <20090227050823.GA11860@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Message-ID: <20090227051225.GR11421@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
 References: <20090225163555.d2a0b24c.kamezawa.hiroyu@jp.fujitsu.com> <20090226130005.3282cb02.akpm@linux-foundation.org> <20090227092031.f42cbbbe.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 In-Reply-To: <20090227092031.f42cbbbe.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
@@ -30,7 +29,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 09:20:31AM +0900, KAMEZAWA Hiroyuki wrote:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-27 09:20:31]:
+
 > On Thu, 26 Feb 2009 13:00:05 -0800
 > Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
@@ -61,11 +61,12 @@ On Fri, Feb 27, 2009 at 09:20:31AM +0900, KAMEZAWA Hiroyuki wrote:
 > But I think distro's tools for cgroup is not as old as...
 > Hmm, backport to 2.6.25 is enough ?
 > Balbir, how do you think ? I think you are familiar with libcgroup.
-> 
+>
 
-I would like to have this backported to at least the distro kernels.
+Actually this problem fixes an issue that we've seen in libcgroup,
+where a file would have read permission (force_empty), but reading it
+would fail, Porting back to 2.6.25 would be nice (since the memcg
+merge) 
 
-thanks,
 -- 
-regards,
-Dhaval
+	Balbir
