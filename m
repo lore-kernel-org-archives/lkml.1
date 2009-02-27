@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZB0McY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbZB0Mft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZB0McY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 07:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZB0McP
+	id S1756944AbZB0Mft (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 07:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZB0Mfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 07:32:15 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:58516 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753020AbZB0McO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 07:32:14 -0500
-Subject: Re: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage
- enumeration (v2)
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-In-Reply-To: <200902261602.58832.david-b@pacbell.net>
-References: <200902081037.06645.david-b@pacbell.net>
-	 <200902261150.15125.david-b@pacbell.net>
-	 <1235686618.31223.107.camel@vega.slimlogic.co.uk>
-	 <200902261602.58832.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Fri, 27 Feb 2009 12:32:10 +0000
-Message-Id: <1235737930.31223.117.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Feb 2009 07:35:40 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:2000 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZB0Mfj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 07:35:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cwjylcNzkeLtVC18hfRT7MZNWsdSP3F/ZXNA9Sk6TiC4VDqQ/Gdd67pVrp8dHa1blE
+         50u741FmzCX3xoNy46Okj22+uxrXcpRkTNZZ1rVej1OSQH8LZwaKEboTLlCIz1NuNWgI
+         VaPo2KSn9O8afkAkwjryW3g0K2CTtnnOBzpS8=
+MIME-Version: 1.0
+In-Reply-To: <9c9fda240902261811g49483f9fk9ac7945834b8764@mail.gmail.com>
+References: <20090225044730.GA9106@july>
+	 <5d5443650902252301l19d08e67t54c1cea004442be2@mail.gmail.com>
+	 <9c9fda240902261811g49483f9fk9ac7945834b8764@mail.gmail.com>
+Date: Fri, 27 Feb 2009 18:05:37 +0530
+Message-ID: <5d5443650902270435y38a006datc6767524e7290fb0@mail.gmail.com>
+Subject: Re: [PATCH] Input notifier support
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 16:02 -0800, David Brownell wrote:
-> On Thursday 26 February 2009, Liam Girdwood wrote:
-> > > 
-> > > Note that the twl4030 regulator patch referred to will need a
-> > > minor patch to work with the -next tree, because of interface
-> > > change in the regulator framework.
-> > > 
-> > >  drivers/regulator/twl4030-regulator.c |   62 +++++++++++---------------------
-> > >  1 file changed, 23 insertions(+), 39 deletions(-)
-> > 
-> > Applied.
-> 
-> .... and here's that "minor patch".
-> 
-> ====== CUT HERE
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> Catch up the twl4030 regulator driver to the regulator
-> interface change adding another parameter.  Also, fix
-> some comments, and take this opportunity to shrink the
-> associated per-regulator memory usage by a word.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  drivers/regulator/twl4030-regulator.c |   17 +++++++++--------
->  1 file changed, 9 insertions(+), 8 deletions(-)
+Hi Kyungmin,
+
+On Fri, Feb 27, 2009 at 7:41 AM, Kyungmin Park <kmpark@infradead.org> wrote:
+> Hi,
+>
+> On Thu, Feb 26, 2009 at 4:01 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
+>> Hi Kyungmin,
+>>
+>>> diff --git a/drivers/input/input.c b/drivers/input/input.c
+>>> index 1730d73..7e96635 100644
+>>> --- a/drivers/input/input.c
+>>> +++ b/drivers/input/input.c
+>>> @@ -274,6 +274,8 @@ void input_event(struct input_dev *dev,
+>>>                add_input_randomness(type, code, value);
+>>>                input_handle_event(dev, type, code, value);
+>>>                spin_unlock_irqrestore(&dev->event_lock, flags);
+>>> +               if (type == EV_KEY)
+>>> +                       input_notifier_call_chain(value, &code);
+>>
+>> This check will be done for every input_report_xxx calls, even for
+>> touchscreen events (in which case of course it will fail), and I don't
+>> think this is optimal solution. Users should be given an option to
+>> disable this if they don't need this notification mechanism.
+>>
+>> How about moving this to input_report_key?
+>
+> Good, Thank you for point it. I will move it to input_report_key.
+
+As most of the other platforms may not need input_notify as standard
+in-built feature, it is better to add Kconfig symbol for this, so that
+it can be compiled out when not needed.
 
 
-Sorry, this didn't apply. It looks like I'm missing an earlier patch(s)
-here. Could you regenerate this and your core patch against latest
-for-next.
-
-Thanks
-
-Liam
-
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
