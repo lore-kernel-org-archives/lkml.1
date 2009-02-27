@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbZB0A3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbZB0Aac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761009AbZB0A3b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760727AbZB0A2n
+	id S1760582AbZB0Aac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbZB0AaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:28:43 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47043 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760714AbZB0A2m (ORCPT
+	Thu, 26 Feb 2009 19:30:14 -0500
+Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:38201 "HELO
+	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752846AbZB0AaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:28:42 -0500
-Date: Thu, 26 Feb 2009 16:27:29 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
- suspend-resume
-In-Reply-To: <d6200be20902261600t7531568ekd9a7aa9215f53263@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0902261620370.3111@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl>  <alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>  <d6200be20902261430w19ea3e6fye014f8443d9ab5ca@mail.gmail.com>  <200902270010.38291.rjw@sisk.pl>
- <d6200be20902261600t7531568ekd9a7aa9215f53263@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 26 Feb 2009 19:30:12 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=aBfCqQGFwF6x8e3u+5U4Duie1uGH6B12611b9zjbgGjaryv2Cd7Sf4Z1smCN71cYH5pMzbb4WhG4DVpFnCj+XALe5L5zGtXZUmIsQ8xGOfeoz0qByr5ooEvfpEM8pFIN;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] PCI: AMD 813x B2 devices do not need quirk
+Date: Thu, 26 Feb 2009 16:29:54 -0800
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
+Cc: Stefan Assmann <sassmann@novell.com>,
+       Jamie Wellnitz <Jamie.Wellnitz@emulex.com>, stable@kernel.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090226184648.GA5564@kroah.com>
+In-Reply-To: <20090226184648.GA5564@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902261629.55287.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, February 26, 2009 10:46:48 am Greg KH wrote:
+> From: Stefan Assmann <sassmann@novell.com>
+>
+> Turns out that the new AMD 813x devices do not need the
+> quirk_disable_amd_813x_boot_interrupt quirk to be run on them, if it is,
+> no interrupts are seen on the PCI-X adapter.
 
+Applied to my for-linus branch and pushed to Linus.
 
-On Thu, 26 Feb 2009, Arve Hjønnevåg wrote:
-> 
-> How many sysdevs use interrupts?
-> 
-> I found may drivers in the mainline kernel that use enable_irq_wake,
-> but I did not see any that handle this race condition.
-
-The _only_ driver that does enable_irq_wake() on x86 is the cmos timer 
-driver, and even there it actually doesn't use irq_wake, but ACPI. Why? 
-Because I don't think irq wakeup even _works_ on x86.
-
-So the whole enable_irq_wake is largely some embedded ARM platform issue, 
-and a very special case, and doesn't exist anywhere else.
-
-Maybe I'm missing something, but it's definitely not the normal case.
-
-		Linus
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
