@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbZB0DhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbZB0Dhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757749AbZB0DhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 22:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZB0DhJ
+	id S1755249AbZB0Dhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 22:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZB0Dha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 22:37:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48212 "EHLO mx2.redhat.com"
+	Thu, 26 Feb 2009 22:37:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39071 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754201AbZB0DhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 22:37:08 -0500
-Date: Fri, 27 Feb 2009 00:36:52 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: [GIT PATCHES for 2.6.29] V4L/DVB updates
-Message-ID: <20090227003652.2895e62c@pedra.chehab.org>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1758146AbZB0Dh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 22:37:29 -0500
+Message-ID: <49A75FBD.6050602@kernel.org>
+Date: Thu, 26 Feb 2009 19:36:29 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: only set warm_reset_vector for NMI
+References: <49A752D2.50404@kernel.org>
+In-Reply-To: <49A752D2.50404@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+please discard this one. it doesn't consider system with integrated apic.
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+YH
 
-For a few fixes:
+Yinghai Lu wrote:
+> Impact: cleanup
+> 
+> don't need to set that for INIT etc
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/kernel/smpboot.c |   17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/kernel/smpboot.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/smpboot.c
+> +++ linux-2.6/arch/x86/kernel/smpboot.c
+> @@ -609,7 +609,7 @@ wakeup_secondary_cpu_via_nmi(int logical
+>  	return (send_status | accept_status);
+>  }
+>  
+> -int __devinit
+> +static int __devinit
+>  wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+>  {
+>  	unsigned long send_status, accept_status = 0;
+> @@ -816,11 +816,14 @@ do_rest:
+>  
+>  	atomic_set(&init_deasserted, 0);
+>  
+> -	if (get_uv_system_type() != UV_NON_UNIQUE_APIC) {
+> +	if (apic->wakeup_secondary_cpu == wakeup_secondary_cpu_via_nmi) {
+>  
+>  		pr_debug("Setting warm reset code and vector.\n");
+>  
+>  		smpboot_setup_warm_reset_vector(start_ip);
+> +	}
+> +
+> +	if (get_uv_system_type() != UV_NON_UNIQUE_APIC) {
+>  		/*
+>  		 * Be paranoid about clearing APIC errors.
+>  		*/
+> @@ -893,10 +896,12 @@ do_rest:
+>  	/* mark "stuck" area as not stuck */
+>  	*((volatile unsigned long *)trampoline_base) = 0;
+>  
+> -	/*
+> -	 * Cleanup possible dangling ends...
+> -	 */
+> -	smpboot_restore_warm_reset_vector();
+> +	if (apic->wakeup_secondary_cpu == wakeup_secondary_cpu_via_nmi) {
+> +		/*
+> +		 * Cleanup possible dangling ends...
+> +		 */
+> +		smpboot_restore_warm_reset_vector();
+> +	}
+>  
+>  	return boot_error;
+>  }
+> 
 
-   - em28xx: register device to soundcard for sysfs;
-   - soc-camera: fix S_CROP breakage on PXA and SuperH;
-   - b2c2: fix software IRQ watchdog and update documentation to reflect the
-     current usage of Technisat.
-
-Cheers,
-Mauro.
-
----
-
- Documentation/dvb/README.flexcop           |  205 ----------------------------
- Documentation/dvb/technisat.txt            |   34 +++--
- drivers/media/dvb/b2c2/flexcop-hw-filter.c |    1 +
- drivers/media/dvb/b2c2/flexcop-pci.c       |   65 ++++++---
- drivers/media/dvb/b2c2/flexcop.c           |    3 +-
- drivers/media/video/em28xx/em28xx-audio.c  |    2 +
- drivers/media/video/pxa_camera.c           |   26 ++--
- drivers/media/video/sh_mobile_ceu_camera.c |   13 +-
- 8 files changed, 84 insertions(+), 265 deletions(-)
- delete mode 100644 Documentation/dvb/README.flexcop
-
-Guennadi Liakhovetski (1):
-      V4L/DVB (10663): soc-camera: fix S_CROP breakage on PXA and SuperH
-
-Nicola Soranzo (1):
-      V4L/DVB (10659): em28xx: register device to soundcard for sysfs
-
-Patrick Boettcher (1):
-      V4L/DVB (10694): [PATCH] software IRQ watchdog for Flexcop B2C2 DVB PCI cards
-
-Uwe Bugla (2):
-      V4L/DVB (10695): Update Technisat card documentation
-      V4L/DVB (10696): Remove outdated README for the flexcop-driver
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
