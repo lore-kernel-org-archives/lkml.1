@@ -1,93 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZB0JgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZB0JhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbZB0JgQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 04:36:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZB0Jf7
+	id S1754739AbZB0JhH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 04:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZB0Jgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 04:35:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34205 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZB0Jf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 04:35:58 -0500
-Date: Fri, 27 Feb 2009 10:35:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
-	3 users
-Message-ID: <20090227093531.GA24674@elte.hu>
-References: <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere> <20090226185208.GA6658@nowhere> <20090226185635.GA12895@elte.hu> <20090227061936.GA5318@nowhere> <20090226224656.5785de9e.akpm@linux-foundation.org> <20090227071212.GC5318@nowhere> <20090226233950.0cfcf883.akpm@linux-foundation.org> <20090227083212.GE3609@elte.hu> <20090227004513.f53ed532.akpm@linux-foundation.org>
+	Fri, 27 Feb 2009 04:36:53 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:65476 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753657AbZB0Jgw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 04:36:52 -0500
+Message-ID: <49A7B425.4010606@fr.ibm.com>
+Date: Fri, 27 Feb 2009 10:36:37 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090227004513.f53ed532.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Greg Kurz <gkurz@fr.ibm.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       hpa@zytor.com, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+ do?
+References: <20090211141434.dfa1d079.akpm@linux-foundation.org>	<1234462282.30155.171.camel@nimitz>	<1234467035.3243.538.camel@calx>	<20090212114207.e1c2de82.akpm@linux-foundation.org>	<1234475483.30155.194.camel@nimitz>	<20090212141014.2cd3d54d.akpm@linux-foundation.org>	<1234479845.30155.220.camel@nimitz>	<20090226162755.GB1456@x200.localdomain>	<20090226173302.GB29439@elte.hu> <1235673016.5877.62.camel@bahia> <20090226221709.GA2924@x200.localdomain>
+In-Reply-To: <20090226221709.GA2924@x200.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 27 Feb 2009 09:32:12 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+Alexey Dobriyan wrote:
+> On Thu, Feb 26, 2009 at 07:30:16PM +0100, Greg Kurz wrote:
+>> On Thu, 2009-02-26 at 18:33 +0100, Ingo Molnar wrote:
+>>> I think the main question is: will we ever find ourselves in the 
+>>> future saying that "C/R sucks, nobody but a small minority uses 
+>>> it, wish we had never merged it"? I think the likelyhood of that 
+>>> is very low. I think the current OpenVZ stuff already looks very 
+>> We've been maintaining for some years now a C/R middleware with only a
+>> few hooks in the kernel. Our strategy is to leverage existing kernel
+>> paths as they do most of the work right.
+>>
+>> Most of the checkpoint is performed from userspace, using regular
+>> syscalls in a signal handler or /proc parsing. Restart is a bit trickier
+>> and needs some kernel support to bypass syscall checks and enforce a
+>> specific id for a resource. At the end, we support C/R and live
+>> migration of networking apps (websphere application server for example).
+>>
+>> >From our experience, we can tell:
+>>
+>> Pros: mostly not-so-tricky userland code, independent from kernel
+>> internals
+>> Cons: sub-optimal for some resources
 > 
-> > a printf variant that outputs not into a string buffer but 
-> > into a binary-values buffer.
-> 
-> Oh, OK.
-> 
-> Of course, parsing a printf string (using our 
-> nobody-bothered-optimising-it parser) isn't particularly 
-> efficient either.
-> 
-> Is there a case here for adding a new way of describing how to 
-> serialise the incoming data?  Perhaps with a new and simpler 
-> control string or perhaps even
-> 
-> 	struct ftrace_thing ft;
-> 
-> 	init_ftrace_thing(&ft, "%d %l %s");
-> 	add_ftrace_thing_int(&ft, some_int);
-> 	add_ftrace_thing_long(&ft, some_long);
-> 	add_ftrace_thing_string(&ft, some_string);
-> 	emit_ftrace_thing(&ft);
-> 
-> or some similar thing.
+> How do you restore struct task_struct::did_exec ?
 
-Maybe - but i think it misses the main point.
+greg didn't say there was _no_ kernel support.
 
-If we care about a tracepoint from a performance POV we wont use 
-printf. When it comes to raw performance then we already have 
-direct, non-string ways of describing data: the C language and 
-function calls straight to a tracepoint function. No "inbetween" 
-solution will be able to beat that.
+without discussing the pros and cons of such and such implemention, full 
+C/R from kernel means more maintenance work from kernel maintainers, so
+it seems a good idea to leverage existing API when they exist. less work.
 
-The beauty (and pretty much only point) of trace_printk() is the 
-convenience of the well-known printf usage. It might be slow to 
-parse but it is what we are using in:
+duplicating the get/set of the cpu state which is already done in the
+signal handling is one example of extra work.
 
-  earth4:~/tip> git grep printk | wc -l
-  68603
+now, there's a definitely a need for kernel support for some resources. the 
+question now is finding the right path, this is still work in progress IMHO.
 
-... tens of thousands of places in the kernel.
+C.
 
-We could invent something inbetween but why? We wont be able to 
-beat the performance of tracepoints that leave out the format 
-string middle-man, and we dont want to.
-
-So what Lai and Frederic is trying is to offer a transparent 
-speedup for trace_printk().
-
-	Ingo
+ 
