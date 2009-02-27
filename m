@@ -1,35 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbZB0Ue1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZB0Ues@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759505AbZB0Ue1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 15:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZB0UeR
+	id S1757325AbZB0Ues (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 15:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbZB0UeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 15:34:17 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:60572 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755665AbZB0UeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 15:34:17 -0500
-Subject: [RFC][PATCH] track files for checkpointability
-To: Ingo Molnar <mingo@elte.hu>
-Cc: containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Alexey Dobriyan <adobriyan@gmail.com>, hch@infradead.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Fri, 27 Feb 2009 12:34:12 -0800
-Message-Id: <20090227203412.BB254624@kernel>
+	Fri, 27 Feb 2009 15:34:21 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41672 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756747AbZB0UeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 15:34:19 -0500
+Date: Fri, 27 Feb 2009 12:33:44 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dbrownell@users.sourceforge.net,
+       dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 1/2] input: misc: add twl4030-pwrbutton driver
+Message-Id: <20090227123344.33196e99.akpm@linux-foundation.org>
+In-Reply-To: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This takes a suggestion of Ingo's along with comments from lots of
-other people.  It can track whether a given file is able to be
-checkpointed.  It has sane default assumptions for new filesystems
-and introduces a f_op to allow easy overriding of behavior just
-like the reset of the VFS.
+On Fri, 27 Feb 2009 21:28:02 +0200
+Felipe Balbi <me@felipebalbi.com> wrote:
 
-You can also find these patches in git:
+> +static irqreturn_t powerbutton_irq(int irq, void *dev_id)
+> +{
+> +	int err;
+> +	u8 value;
+> +
+> +#ifdef CONFIG_LOCKDEP
+> +	/* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
+> +	 * we don't want and can't tolerate.  Although it might be
+> +	 * friendlier not to borrow this thread context...
+> +	 */
+> +	local_irq_enable();
+> +#endif
+> +
+> +	err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &value,
+> +				  STS_HW_CONDITIONS);
+> +	if (!err)  {
+> +		input_report_key(powerbutton_dev, KEY_POWER,
+> +				 value & PWR_PWRON_IRQ);
+> +	} else {
+> +		dev_err(dbg_dev, "twl4030: i2c error %d while reading TWL4030"
+> +			" PM_MASTER STS_HW_CONDITIONS register\n", err);
+> +	}
+> +
+> +	return IRQ_HANDLED;
+> +}
 
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/daveh/linux-2.6-cr.git;a=shortlog;h=dave-v13.1
+Tell us some more about this lockdep thing ;)
