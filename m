@@ -1,72 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZB0FMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZB0F1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbZB0FMl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 00:12:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZB0FMd
+	id S1755341AbZB0F1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 00:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZB0F1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 00:12:33 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:47099 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbZB0FMc (ORCPT
+	Fri, 27 Feb 2009 00:27:36 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46417 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbZB0F1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 00:12:32 -0500
-Date: Fri, 27 Feb 2009 10:42:25 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] cgroup allow subsys to set default mode of its own
-	file
-Message-ID: <20090227051225.GR11421@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090225163555.d2a0b24c.kamezawa.hiroyu@jp.fujitsu.com> <20090226130005.3282cb02.akpm@linux-foundation.org> <20090227092031.f42cbbbe.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090227092031.f42cbbbe.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Feb 2009 00:27:36 -0500
+Date: Thu, 26 Feb 2009 21:27:52 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, peterz@infradead.org, rostedt@goodmis.org,
+       jonathan@jonmasters.org
+Subject: Re: [patch 4/4] genirq: add support for threaded interrupt handlers
+Message-ID: <20090226212752.332ba546@infradead.org>
+In-Reply-To: <20090226153216.5db66bc3.akpm@linux-foundation.org>
+References: <20090226131336.423054348@linutronix.de>
+	<20090226131719.760899560@linutronix.de>
+	<20090226153216.5db66bc3.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-27 09:20:31]:
+On Thu, 26 Feb 2009 15:32:16 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Thu, 26 Feb 2009 13:00:05 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 26 Feb 2009 13:28:23 -0000
+> Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> > On Wed, 25 Feb 2009 16:35:55 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > Add suppport for threaded interrupt handlers. This is a more strict
+> > separation of the primary interrupt handler, which runs in hard
+> > interrupt context, and the real interrupt handler, which handles the
+> > real device functionality, than the existing hardirq/softirq
+> > separation.
 > > 
-> > >  When I wrote tools for maintain cgroup, I can't find which file is
-> > >  writable intarfece or not via cgroup file systems. (finally, I did
-> > >  dirty approach.)
-> > >  IMHO, showing "this file is read-only" in explicit way is useful
-> > >  for user-land (tools). In other story, a file whose name sounds read-only
-> > >  may have "trigger" operation and support reseting. In this case,
-> > >  "writable" is informative.
+> > The primary hard interrupt context handler solely checks whether the
+> > interrupt originates from the device or not. In case the interrupt
+> > is asserted by the device the handler disables the interrupt on the
+> > device level. This must be the only functionality of the primary
+> > handler and this restriction has to be carefully monitored to avoid
+> > unresolvable locking scenarios with a fully preemptible kernel.
 > > 
-> > Well, we have compatibility issues here.  If we make this change, and
-> > people write tools which depend upon that change then those tools might
-> > break when run upon older kernels.  Or they need back-compatibility
-> > additions, which increases the testing burden of those tools.
+> > The threaded handler allows to integrate hardware related
+> > functionality and softirq/tasklet functions in the handler
+> > thread.
 > > 
-> > One way in which we could improve this situation is to backport these
-> > changes into earlier kernels, although I don't know which versions.
-> > 
-> > What do we think?
-> > 
-> It sounds problem to me.
 > 
-> Hmm..1st commit to kernel/cgroup.c is 2007-10-19, then 2.6.24 is the oldest one.
-> But I think distro's tools for cgroup is not as old as...
-> Hmm, backport to 2.6.25 is enough ?
-> Balbir, how do you think ? I think you are familiar with libcgroup.
->
+> A typical device driver will do:
+> 
+> some_function(...)
+> {
+> 	spin_lock_irqsave(&dev->lock);
+> }
+> 
+> irq_handler(...)
+> {
+> 	spin_lock(&dev->lock);
+> }
+> 
+> and this does not deadlock, because the driver "knows" that the IRQ is
+> disabled during the execution of the IRQ handler.
+> 
+> But how is this optimisation supported with IRQ threads?  Do we leave
+> the IRQ disabled during the thread execution?  Or does the driver need
+> to be changed?
+> 
+> Bearing in mind that the driver might choose to split the IRQ handling
+> between hard-irq context fastpath and process-context slowpath (I
+> hope), and that each path might want to take the same lock.
+> 
 
-Actually this problem fixes an issue that we've seen in libcgroup,
-where a file would have read permission (force_empty), but reading it
-would fail, Porting back to 2.6.25 would be nice (since the memcg
-merge) 
+
+Realistically, for the "we go threaded interrupts" case (which is
+opt-in), I think the only sane option is
+* the quickhandler runs with irqs off
+* the "slow" threaded handler runs with irqs on
+And we guarantee both of these conditions from the core, to the point
+that I think we should not allow any other combination.
+
+This also should be fine for basically all cases; the quick handler
+really needs to be quick so irq off makes sense, and the slow handler
+can, worst case, turn off interrupts by itself, but normally is
+preemptable etc etc.
+
 
 -- 
-	Balbir
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
