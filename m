@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbZB0PvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZB0Px6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758295AbZB0PvW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 10:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbZB0PvI
+	id S1758068AbZB0Px6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 10:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbZB0Pxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 10:51:08 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:42486 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755659AbZB0PvH (ORCPT
+	Fri, 27 Feb 2009 10:53:49 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:49936 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754516AbZB0Pxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 10:51:07 -0500
-Date: Fri, 27 Feb 2009 10:40:17 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, penberg@cs.helsinki.fi, riel@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, hannes@cmpxchg.org,
-       linux-kernel@vger.kernel.org, ming.m.lin@intel.com,
-       yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH 20/20] Get rid of the concept of hot/cold page freeing
-In-Reply-To: <20090227113333.GA21296@wotan.suse.de>
-Message-ID: <alpine.DEB.1.10.0902271039440.31801@qirst.com>
-References: <20090223233030.GA26562@csn.ul.ie> <20090223155313.abd41881.akpm@linux-foundation.org> <20090224115126.GB25151@csn.ul.ie> <20090224160103.df238662.akpm@linux-foundation.org> <20090225160124.GA31915@csn.ul.ie> <20090225081954.8776ba9b.akpm@linux-foundation.org>
- <20090226163751.GG32756@csn.ul.ie> <alpine.DEB.1.10.0902261157100.7472@qirst.com> <20090226171549.GH32756@csn.ul.ie> <alpine.DEB.1.10.0902261226370.26440@qirst.com> <20090227113333.GA21296@wotan.suse.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 27 Feb 2009 10:53:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=L+1g8rwLo3ewrT4sjDkkDp7Z3kMPJBIXbYGkSjpMO9wnivPKUzir17V2HbSojM3ku/
+         svDwEjwdRUf92io/rBAohb98jF2eMWDFBkve1DsSqoUxiroMV/iqQ9f4OSiuj3kdO7V+
+         YAbWMWKCp9ZMNpYwWxeKkhIuO2ObO2HQ7vAIQ=
+Message-ID: <49A80C89.9000608@gmail.com>
+Date: Fri, 27 Feb 2009 16:53:45 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: lkml <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] chg cannot become less than 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Feb 2009, Nick Piggin wrote:
+chg is unsigned, so it cannot be less than 0.
 
-> > I hope we can get rid of various ugly elements of the quicklists if the
-> > page allocator would offer some sort of support. I would think that the
->
-> Only if it provides significant advantages over existing quicklists or
-> adds *no* extra overhead to the page allocator common cases. :)
+Also, since region_chg returns long, let vma_needs_reservation() forward
+this to alloc_huge_page(). Store it as long as well. all callers cast it
+to long anyway. 
 
-And only if the page allocator gets fast enough to be usable for
-allocs instead of quicklists.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 618e983..f0eec5e 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -918,7 +918,7 @@ static void return_unused_surplus_pages(struct hstate *h,
+  * an instantiated the change should be committed via vma_commit_reservation.
+  * No action is required on failure.
+  */
+-static int vma_needs_reservation(struct hstate *h,
++static long vma_needs_reservation(struct hstate *h,
+ 			struct vm_area_struct *vma, unsigned long addr)
+ {
+ 	struct address_space *mapping = vma->vm_file->f_mapping;
+@@ -933,7 +933,7 @@ static int vma_needs_reservation(struct hstate *h,
+ 		return 1;
+ 
+ 	} else  {
+-		int err;
++		long err;
+ 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
+ 		struct resv_map *reservations = vma_resv_map(vma);
+ 
+@@ -969,7 +969,7 @@ static struct page *alloc_huge_page(struct vm_area_struct *vma,
+ 	struct page *page;
+ 	struct address_space *mapping = vma->vm_file->f_mapping;
+ 	struct inode *inode = mapping->host;
+-	unsigned int chg;
++	long chg;
+ 
+ 	/*
+ 	 * Processes that did not create the mapping will have no reserves and
+
 
