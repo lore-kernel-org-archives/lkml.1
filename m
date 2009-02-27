@@ -1,132 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZB0D25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZB0DaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZB0D25 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 22:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZB0D2s
+	id S1756653AbZB0DaR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 22:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZB0DaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 22:28:48 -0500
-Received: from n69.bullet.mail.sp1.yahoo.com ([98.136.44.41]:20904 "HELO
-	n69.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753295AbZB0D2r (ORCPT
+	Thu, 26 Feb 2009 22:30:01 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54866 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753385AbZB0DaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 22:28:47 -0500
-X-Yahoo-Newman-Id: 547789.91543.bm@omp402.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ySlj4vuUHRp3j+0murpgiSlvrOjMoVbnWIvF218lS5WUuxqltELDQdFnnZmUqZn/wKTEZTzZzc7P2I3fx3X7dAL7k8Rd7L2NofxkR5/ZVZFfdbwJkS9gi6LafBjytk8A8DQoDIUtwE//bhOHIlLwO5QVyvPdbsiDPA+lBSU8LBE=  ;
-X-YMail-OSG: tB7raAYVM1naE5NmkIIz.P.RCylaqWofqfEEGEulVkSg.fX7SgULnznPTiiHfNh0vQJJ07.n0N63J9A7C_wVnTByP2ff4XqN9hH7jGTOS.j9cF0hh.W1vGIOgzdRitGwbpTz0xBCWnhZu_RE6eGUk242midHsjP9JmFazFUBrQFGpxurMd8beNfeYYsr5QOmerGZveAeRwiehOCau2AgVzZ19ubnvVVopVmyXA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch/RESEND 2.6.29-rc6] NAND:  fix "raw" reads with ECC syndrome layouts
-Date: Thu, 26 Feb 2009 19:28:43 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <200902241508.13835.david-b@pacbell.net> <20090226122543.797eac77.akpm@linux-foundation.org>
-In-Reply-To: <20090226122543.797eac77.akpm@linux-foundation.org>
+	Thu, 26 Feb 2009 22:30:01 -0500
+Date: Thu, 26 Feb 2009 22:29:56 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Dominique Toupin <dominique.toupin@ericsson.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, acme@ghostprotocols.net
+Subject: Re: [PATCH] new irq tracer
+In-Reply-To: <20090227121053.152B.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0902262223550.19122@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0902252040210.12697@gandalf.stny.rr.com> <806EF3041844884CAC68E1E16026AB8905CE58DA@ecamlmw720.eamcs.ericsson.se> <20090227121053.152B.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902261928.43642.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, Andrew Morton wrote:
-> > +     temp = chip->ecc.steps;
-> > +     do {
-> > +             ...
-> > +     } while (--temp);
+
+On Fri, 27 Feb 2009, KOSAKI Motohiro wrote:
+> > > > Given this scenario :
+> > > > 
+> > > > A telecommunication system runs, but the client notices 
+> > > something wrong.
+> > > > They call their service provider. The provider enables tracing 
+> > > > _remotely_ on the _production system_ while it's _active in 
+> > > the field_.
+> > > > 
+> > > > Bam, those few milliseconds interrupt latencies become unacceptable.
+> > > > 
+> > > > Hopefully this scenario makes the use-case clearer. The 
+> > > problem is not 
+> > > > that interrupt latencies would occur while tracing is on, 
+> > > but rather 
+> > > > that it would happen on a running production system when switching 
+> > > > tracing on. This is what is totally unacceptable for this use-case.
+> > > > 
+> > > > For more details about such requirements, I'm CCing 
+> > > Dominique Toupin 
+> > > > from Ericsson who I'm sure would be happy to give more 
+> > > details about 
+> > > > this if needed.
+> > > 
+> > > Hmm, so this system in the field is running Linux with the 
+> > > Real-Time Patch?  Because if it isn't it will suffer from 
+> > > millisecond latencies in normal operation.
+> >
+> > In many cases we don't use Linux real-time, we have many systems that
+> > are soft-real-time an non real-time Linux is good enough.
+> >  
 > 
-> It would be clearer to code this as a plain old up-counting for loop.
+> Agreed, rt-patch seems off topics. we discuss to mainline kernel.
+> 
+> Steven, I sitll think nobody use ftrace on production system now yet.
+> Do you know actual production user?
 
-Downside:  GCC adds a pointless jump-to-loop-test instruction at
-the top of the loop ... but we know there's at least one step,
-so there's no need to do that.  And up-counting needs an extra
-variable, with initialization etc.
+First lets separate out "ftrace" and the function tracer. ftrace is the 
+infrastructure that has schedule tracing, event tracing and lots and lots 
+of other kinds of tracing.
 
+The "stop_machine" talked about in this thread is specific for 
+dynamic_ftrace (which is used for the function and graph tracers).
 
-======== CUT HERE
-From: David Brownell <dbrownell@users.sourceforge.net>
+Your question about "production user" is a little unfair, since function 
+tracing did not appear till 2.6.28. (I'm ignoring 2.6.27, since the
+version of the function tracer there had a notorious bug).
 
-Cosmetic fixes to the patch fixing raw HW_SYNDROME read/write.
+No distribution is shipping a production 2.6.28 AFIAK. Which means, I do 
+not know of any production use of the function tracer. I have already 
+recommended that people enable the function tracer if they are using 
+2.6.28 in a production environment. Given some time, when 2.6.28 is more 
+in use, my answer would probably be "Yes, I do know it is used in a 
+production environment".
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/mtd/nand/nand_base.c |   28 +++++++++++++---------------
- 1 file changed, 13 insertions(+), 15 deletions(-)
-
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -773,10 +773,9 @@ static int nand_read_page_raw_syndrome(s
- 	int eccsize = chip->ecc.size;
- 	int eccbytes = chip->ecc.bytes;
- 	uint8_t *oob = chip->oob_poi;
--	int temp;
-+	int steps, size;
- 
--	temp = chip->ecc.steps;
--	do {
-+	for (steps = chip->ecc.steps; steps > 0; steps--) {
- 		chip->read_buf(mtd, buf, eccsize);
- 		buf += eccsize;
- 
-@@ -792,11 +791,11 @@ static int nand_read_page_raw_syndrome(s
- 			chip->read_buf(mtd, oob, chip->ecc.postpad);
- 			oob += chip->ecc.postpad;
- 		}
--	} while (--temp);
-+	}
- 
--	temp = mtd->oobsize - (oob - chip->oob_poi);
--	if (temp)
--		chip->read_buf(mtd, oob, temp);
-+	size = mtd->oobsize - (oob - chip->oob_poi);
-+	if (size)
-+		chip->read_buf(mtd, oob, size);
- 
- 	return 0;
- }
-@@ -1542,7 +1541,7 @@ static void nand_write_page_raw(struct m
-  * @chip:	nand chip info structure
-  * @buf:	data buffer
-  *
-- * We need a special oob layout and handling even when ECC isn't used.
-+ * We need a special oob layout and handling even when ECC isn't checked.
-  */
- static void nand_write_page_raw_syndrome(struct mtd_info *mtd, struct nand_chip *chip,
- 				const uint8_t *buf)
-@@ -1550,10 +1549,9 @@ static void nand_write_page_raw_syndrome
- 	int eccsize = chip->ecc.size;
- 	int eccbytes = chip->ecc.bytes;
- 	uint8_t *oob = chip->oob_poi;
--	int temp;
-+	int steps, size;
- 
--	temp = chip->ecc.steps;
--	do {
-+	for (steps = chip->ecc.steps; steps > 0; steps--) {
- 		chip->write_buf(mtd, buf, eccsize);
- 		buf += eccsize;
- 
-@@ -1569,11 +1567,11 @@ static void nand_write_page_raw_syndrome
- 			chip->write_buf(mtd, oob, chip->ecc.postpad);
- 			oob += chip->ecc.postpad;
- 		}
--	} while (--temp);
-+	}
- 
--	temp = mtd->oobsize - (oob - chip->oob_poi);
--	if (temp)
--		chip->write_buf(mtd, oob, temp);
-+	size = mtd->oobsize - (oob - chip->oob_poi);
-+	if (size)
-+		chip->write_buf(mtd, oob, size);
- }
- /**
-  * nand_write_page_swecc - [REPLACABLE] software ecc based page write function
-
+-- Steve
 
