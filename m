@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbZB0Azo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZB0A7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760103AbZB0Azo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZB0Aze
+	id S1758894AbZB0A7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZB0A7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:55:34 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:43340 "EHLO
+	Thu, 26 Feb 2009 19:59:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:53573 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751807AbZB0Azd convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752731AbZB0A7B convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:55:33 -0500
+	Thu, 26 Feb 2009 19:59:01 -0500
 MIME-Version: 1.0
-In-Reply-To: <20090118152856.4179.91855.stgit@vmbox.hanneseder.net>
-References: <20090118152725.4179.40835.stgit@vmbox.hanneseder.net>
-	 <20090118152856.4179.91855.stgit@vmbox.hanneseder.net>
-Date: Fri, 27 Feb 2009 01:55:30 +0100
-Message-ID: <154e089b0902261655j17cf1fc3vaf254d0c2af74616@mail.gmail.com>
-Subject: Re: [PATCH 3/3] drivers/gpu/drm: comment out dead code
+In-Reply-To: <20090222000150.17557.8753.stgit@vmbox.hanneseder.net>
+References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>
+	 <20090222000150.17557.8753.stgit@vmbox.hanneseder.net>
+Date: Fri, 27 Feb 2009 01:58:57 +0100
+Message-ID: <154e089b0902261658t14c1339dj55e7f4ff4aede372@mail.gmail.com>
+Subject: Re: [PATCH 04/16] ide: fix sparse warnings: Using plain integer as 
+	NULL pointer
 From: Hannes Eder <hannes@hanneseder.net>
-To: dri-devel@lists.sourceforge.net, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: trivial@kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
@@ -28,59 +29,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 [Added To]
 
-On Sun, Jan 18, 2009 at 4:28 PM, Hannes Eder <hannes@hanneseder.net> wrote:
-> The functions:
->
->  drm_crtc_from_fb
->  drm_mode_validate_clocks
->
-> are not used, so comment them out.
+On Sun, Feb 22, 2009 at 1:01 AM, Hannes Eder <hannes@hanneseder.net> wrote:
+> Fix this sparse warnings:
+>  drivers/ide/ide-disk_proc.c:130:11: warning: Using plain integer as NULL pointer
+>  drivers/ide/ide-floppy_proc.c:32:11: warning: Using plain integer as NULL pointer
+>  drivers/ide/ide-proc.c:234:11: warning: Using plain integer as NULL pointer
+>  drivers/ide/ide-tape.c:2141:11: warning: Using plain integer as NULL pointer
 >
 > Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 > ---
->  drivers/gpu/drm/drm_crtc.c  |    2 ++
->  drivers/gpu/drm/drm_modes.c |    2 ++
->  2 files changed, 4 insertions(+), 0 deletions(-)
+>  drivers/ide/ide-disk_proc.c   |    2 +-
+>  drivers/ide/ide-floppy_proc.c |    2 +-
+>  drivers/ide/ide-proc.c        |    2 +-
+>  drivers/ide/ide-tape.c        |    2 +-
+>  4 files changed, 4 insertions(+), 4 deletions(-)
 >
-> diff --git a/drivers/gpu/drm/drm_crtc.c b/drivers/gpu/drm/drm_crtc.c
-> index d378306..c44bbde 100644
-> --- a/drivers/gpu/drm/drm_crtc.c
-> +++ b/drivers/gpu/drm/drm_crtc.c
-> @@ -254,6 +254,7 @@ void *drm_mode_object_find(struct drm_device *dev, uint32_t id, uint32_t type)
->  }
->  EXPORT_SYMBOL(drm_mode_object_find);
+> diff --git a/drivers/ide/ide-disk_proc.c b/drivers/ide/ide-disk_proc.c
+> index 3f2a078..eaea3be 100644
+> --- a/drivers/ide/ide-disk_proc.c
+> +++ b/drivers/ide/ide-disk_proc.c
+> @@ -127,5 +127,5 @@ const struct ide_proc_devset ide_disk_settings[] = {
+>        IDE_PROC_DEVSET(multcount,      0,    16),
+>        IDE_PROC_DEVSET(nowerr,         0,     1),
+>        IDE_PROC_DEVSET(wcache,         0,     1),
+> -       { 0 },
+> +       { NULL },
+>  };
+> diff --git a/drivers/ide/ide-floppy_proc.c b/drivers/ide/ide-floppy_proc.c
+> index 3ec762c..fcd4d81 100644
+> --- a/drivers/ide/ide-floppy_proc.c
+> +++ b/drivers/ide/ide-floppy_proc.c
+> @@ -29,5 +29,5 @@ const struct ide_proc_devset ide_floppy_settings[] = {
+>        IDE_PROC_DEVSET(bios_head, 0,  255),
+>        IDE_PROC_DEVSET(bios_sect, 0,   63),
+>        IDE_PROC_DEVSET(ticks,     0,  255),
+> -       { 0 },
+> +       { NULL },
+>  };
+> diff --git a/drivers/ide/ide-proc.c b/drivers/ide/ide-proc.c
+> index 0ee8887..10a88bf 100644
+> --- a/drivers/ide/ide-proc.c
+> +++ b/drivers/ide/ide-proc.c
+> @@ -231,7 +231,7 @@ static const struct ide_proc_devset ide_generic_settings[] = {
+>        IDE_PROC_DEVSET(pio_mode, 0, 255),
+>        IDE_PROC_DEVSET(unmaskirq, 0, 1),
+>        IDE_PROC_DEVSET(using_dma, 0, 1),
+> -       { 0 },
+> +       { NULL },
+>  };
 >
-> +#ifdef UNUSED
->  /**
->  * drm_crtc_from_fb - find the CRTC structure associated with an fb
->  * @dev: DRM device
-> @@ -278,6 +279,7 @@ static struct drm_crtc *drm_crtc_from_fb(struct drm_device *dev,
->        }
->        return NULL;
->  }
-> +#endif /* UNUSED */
+>  static void proc_ide_settings_warn(void)
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index 1b97d7a..e9e570f 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -2138,7 +2138,7 @@ static const struct ide_proc_devset idetape_settings[] = {
+>        __IDE_PROC_DEVSET(speed,        0, 0xffff, NULL, NULL),
+>        __IDE_PROC_DEVSET(tdsc,         IDETAPE_DSC_RW_MIN, IDETAPE_DSC_RW_MAX,
+>                                        mulf_tdsc, divf_tdsc),
+> -       { 0 },
+> +       { NULL },
+>  };
+>  #endif
 >
->  /**
->  * drm_framebuffer_init - initialize a framebuffer
-> diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-> index c0cfe39..8ebcf51 100644
-> --- a/drivers/gpu/drm/drm_modes.c
-> +++ b/drivers/gpu/drm/drm_modes.c
-> @@ -341,6 +341,7 @@ void drm_mode_validate_size(struct drm_device *dev,
->  }
->  EXPORT_SYMBOL(drm_mode_validate_size);
->
-> +#ifdef UNUSED
->  /**
->  * drm_mode_validate_clocks - validate modes against clock limits
->  * @dev: DRM device
-> @@ -376,6 +377,7 @@ static void drm_mode_validate_clocks(struct drm_device *dev,
->                        mode->status = MODE_CLOCK_RANGE;
->        }
->  }
-> +#endif /* UNUSED */
->
->  /**
->  * drm_mode_prune_invalid - remove invalid modes from mode list
 >
 >
