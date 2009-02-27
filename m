@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbZB0Uj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbZB0Ujp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760625AbZB0Uj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 15:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbZB0Uh2
+	id S1760720AbZB0Ujp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 15:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760176AbZB0Uho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 15:37:28 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:57315 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760740AbZB0Uh0 (ORCPT
+	Fri, 27 Feb 2009 15:37:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59785 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760225AbZB0Uhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 15:37:26 -0500
-Date: Fri, 27 Feb 2009 22:37:18 +0200
-From: Felipe Balbi <me@felipebalbi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, felipe.balbi@nokia.com,
-       dbrownell@users.sourceforge.net, dmitry.torokhov@gmail.com,
-       sameo@openedhand.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1/2] input: misc: add twl4030-pwrbutton driver
-Message-ID: <20090227203717.GL16801@frodo>
-Reply-To: me@felipebalbi.com
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <20090227123344.33196e99.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090227123344.33196e99.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Fri, 27 Feb 2009 15:37:42 -0500
+Date: Fri, 27 Feb 2009 12:36:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, sameo@openedhand.com,
+       dbrownell@users.sourceforge.net
+Subject: Re: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
+Message-Id: <20090227123649.d2d6408c.akpm@linux-foundation.org>
+In-Reply-To: <1235762883-20870-2-git-send-email-me@felipebalbi.com>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+	<1235762883-20870-2-git-send-email-me@felipebalbi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 12:33:44PM -0800, Andrew Morton wrote:
-> On Fri, 27 Feb 2009 21:28:02 +0200
-> Felipe Balbi <me@felipebalbi.com> wrote:
+On Fri, 27 Feb 2009 21:28:03 +0200
+Felipe Balbi <me@felipebalbi.com> wrote:
+
+> From: Felipe Balbi <felipe.balbi@nokia.com>
 > 
-> > +static irqreturn_t powerbutton_irq(int irq, void *dev_id)
-> > +{
-> > +	int err;
-> > +	u8 value;
-> > +
-> > +#ifdef CONFIG_LOCKDEP
-> > +	/* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
-> > +	 * we don't want and can't tolerate.  Although it might be
-> > +	 * friendlier not to borrow this thread context...
-> > +	 */
-> > +	local_irq_enable();
-> > +#endif
-> > +
-> > +	err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &value,
-> > +				  STS_HW_CONDITIONS);
-> > +	if (!err)  {
-> > +		input_report_key(powerbutton_dev, KEY_POWER,
-> > +				 value & PWR_PWRON_IRQ);
-> > +	} else {
-> > +		dev_err(dbg_dev, "twl4030: i2c error %d while reading TWL4030"
-> > +			" PM_MASTER STS_HW_CONDITIONS register\n", err);
-> > +	}
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
+> Make that twl4030-pwrbutton.c driver probe with current
+> child creation api for twl4030.
 > 
-> Tell us some more about this lockdep thing ;)
+> Cc: Samuel Ortiz <sameo@openedhand.com>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+> ---
+> This part is better off going via mfd.
+> 
+>  drivers/mfd/twl4030-core.c |   13 +++++++++++++
+>  1 files changed, 13 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+> index 68826f1..c86bc3b 100644
+> --- a/drivers/mfd/twl4030-core.c
+> +++ b/drivers/mfd/twl4030-core.c
+> @@ -101,6 +101,12 @@
+>  #define twl_has_usb()	false
+>  #endif
+>  
+> +#if defined(CONFIG_INPUT_TWL4030_PWRBUTTON) \
+> +	|| defined(CONFIG_INPUT_TWL4030_PWBUTTON_MODULE)
 
-David Brownell can comment better about it, that came from him when we
-were converting twl4030 driver(s) to a more readable form :-)
+OK, this is "wrong".  The core shouldn't need to know about specific
+clients.
 
-If you take a look at all twl4030's children, you'll all of them needed
-that.
+> +#define twl_has_pwrbutton()	true
+> +#else
+> +#define twl_has_pwrbutton()	false
+> +#endif
+>  
+>  /* Triton Core internal information (BEGIN) */
+>  
+> @@ -526,6 +532,13 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+>  		usb_transceiver = child;
+>  	}
+>  
+> +	if (twl_has_pwrbutton()) {
+> +		child = add_child(1, "twl4030_pwrbutton",
+> +				NULL, 0, true, pdata->irq_base + 8 + 0, 0);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+> +	}
+> +
+>  	if (twl_has_regulator()) {
+>  		/*
+>  		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
 
-Dave, could you comment, please ?
+The client module should register itself with the core, rather than the core
+registering the client.
 
--- 
-balbi
+What has gone wrong here?
