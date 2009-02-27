@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbZB0V0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbZB0V2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760036AbZB0V0v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 16:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbZB0V0k
+	id S1760905AbZB0V2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 16:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbZB0V2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 16:26:40 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:36636 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758748AbZB0V0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 16:26:39 -0500
-Subject: Re: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage
- enumeration (v2)
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-In-Reply-To: <200902271239.44558.david-b@pacbell.net>
-References: <200902081037.06645.david-b@pacbell.net>
-	 <200902261602.58832.david-b@pacbell.net>
-	 <1235737930.31223.117.camel@vega.slimlogic.co.uk>
-	 <200902271239.44558.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Fri, 27 Feb 2009 21:26:33 +0000
-Message-Id: <1235769993.31223.165.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Feb 2009 16:28:13 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:38374 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757624AbZB0V2M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 16:28:12 -0500
+Date: Fri, 27 Feb 2009 22:28:09 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@rostedt.homelinux.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Don't profile branches in arm's boot decompressor
+Message-ID: <20090227212809.GA5338@pengutronix.de>
+References: <1235768983-4830-1-git-send-email-u.kleine-koenig@pengutronix.de> <1235769587.8233.1.camel@desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1235769587.8233.1.camel@desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-27 at 12:39 -0800, David Brownell wrote:
-> On Friday 27 February 2009, Liam Girdwood wrote:
+Hi Daniel,
 
-> > Sorry, this didn't apply. It looks like I'm missing an earlier patch(s)
-> > here. Could you regenerate this and your core patch against latest
-> > for-next.
+On Fri, Feb 27, 2009 at 01:19:47PM -0800, Daniel Walker wrote:
+> On Fri, 2009-02-27 at 22:09 +0100, Uwe Kleine-König wrote:
+> > This fixes many compile errors for arch/arm/boot/compressed/misc.c of
+> > the type:
+> > 
+> > 	arch/arm/boot/compressed/misc.c:127: error: section attribute cannot be specified for local variables
 > 
-> The regulator -next tree seems to be missing a bunch of stuff...
-> I generated this patch against a "twl4030-regulator.c" which I
-> extracted *from that tree* yesterday.  But today it's different.
-> 
-> In this case, the current code doesn't have the $SUBJECT patch,
-> which at that time you had applied.  But it does have a small
-> snippet from that "minor patch"...
-> 
-> 
-> Color me confused.  Are you asking for a "v3" of $SUBJECT, or
-> is the "v2" going to re-appear? 
+> Why do you think this error showed up just in that one file? It looks
+> like the branch tracer puts section tags on non-globals all over the
+> kernel..
+With this patch I was able to compile an ARM kernel with profiling
+enabled.  Is that enough justification?
 
-Applied the "v2".
+Best regards
+Uwe
 
->  And when will that -next tree
-> acquire the rest of
-> 
->  http://marc.info/?l=linux-kernel&m=123567791402469&w=2
-> 
-
-Applied and re-based this one into original patch.
-
-Thanks
-
-Liam
-
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
