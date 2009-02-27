@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758353AbZB0KbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbZB0Kba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758353AbZB0KbA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbZB0K1X
+	id S1759508AbZB0Kba (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbZB0K1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:27:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53562 "EHLO mx2.redhat.com"
+	Fri, 27 Feb 2009 05:27:33 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53572 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755328AbZB0K1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:27:09 -0500
+	id S1755401AbZB0K1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 05:27:10 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/37] KVM: ppc: Add dbsr in kvm_vcpu_arch
-Date: Fri, 27 Feb 2009 12:26:28 +0200
-Message-Id: <1235730420-7929-6-git-send-email-avi@redhat.com>
+Subject: [PATCH 17/37] KVM: x86 emulator: implement 'ret far' instruction (opcode 0xcb)
+Date: Fri, 27 Feb 2009 12:26:40 +0200
+Message-Id: <1235730420-7929-18-git-send-email-avi@redhat.com>
 In-Reply-To: <1235730420-7929-1-git-send-email-avi@redhat.com>
 References: <1235730420-7929-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hollis Blanchard <hollisb@us.ibm.com>
-
-Kernel for E500 need clear dbsr when startup.
-So add dbsr register in kvm_vcpu_arch for BOOKE.
-
-Signed-off-by: Liu Yu <yu.liu@freescale.com>
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/powerpc/include/asm/kvm_host.h |    1 +
- arch/powerpc/kvm/booke_emulate.c    |    4 ++++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ arch/x86/kvm/x86_emulate.c |   26 +++++++++++++++++++++++++-
+ 1 files changed, 25 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 65c4d49..50e5ce1 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -163,6 +163,7 @@ struct kvm_vcpu_arch {
- 	u32 ccr1;
- 	u32 dbcr0;
- 	u32 dbcr1;
-+	u32 dbsr;
+diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+index 94459f3..ca91749 100644
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -178,7 +178,7 @@ static u32 opcode_table[256] = {
+ 	0, ImplicitOps | Stack, 0, 0,
+ 	ByteOp | DstMem | SrcImm | ModRM | Mov, DstMem | SrcImm | ModRM | Mov,
+ 	/* 0xC8 - 0xCF */
+-	0, 0, 0, 0, 0, 0, 0, 0,
++	0, 0, 0, ImplicitOps | Stack, 0, 0, 0, 0,
+ 	/* 0xD0 - 0xD7 */
+ 	ByteOp | DstMem | SrcImplicit | ModRM, DstMem | SrcImplicit | ModRM,
+ 	ByteOp | DstMem | SrcImplicit | ModRM, DstMem | SrcImplicit | ModRM,
+@@ -1278,6 +1278,25 @@ static inline int emulate_grp9(struct x86_emulate_ctxt *ctxt,
+ 	return 0;
+ }
  
- #ifdef CONFIG_KVM_EXIT_TIMING
- 	struct kvmppc_exit_timing timing_exit;
-diff --git a/arch/powerpc/kvm/booke_emulate.c b/arch/powerpc/kvm/booke_emulate.c
-index 8aa78f1..aebc65e 100644
---- a/arch/powerpc/kvm/booke_emulate.c
-+++ b/arch/powerpc/kvm/booke_emulate.c
-@@ -111,6 +111,8 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
- 		vcpu->arch.dbcr0 = vcpu->arch.gpr[rs]; break;
- 	case SPRN_DBCR1:
- 		vcpu->arch.dbcr1 = vcpu->arch.gpr[rs]; break;
-+	case SPRN_DBSR:
-+		vcpu->arch.dbsr &= ~vcpu->arch.gpr[rs]; break;
- 	case SPRN_TSR:
- 		vcpu->arch.tsr &= ~vcpu->arch.gpr[rs]; break;
- 	case SPRN_TCR:
-@@ -204,6 +206,8 @@ int kvmppc_booke_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
- 		vcpu->arch.gpr[rt] = vcpu->arch.dbcr0; break;
- 	case SPRN_DBCR1:
- 		vcpu->arch.gpr[rt] = vcpu->arch.dbcr1; break;
-+	case SPRN_DBSR:
-+		vcpu->arch.gpr[rt] = vcpu->arch.dbsr; break;
- 
- 	case SPRN_IVOR0:
- 		vcpu->arch.gpr[rt] = vcpu->arch.ivor[BOOKE_IRQPRIO_CRITICAL];
++static int emulate_ret_far(struct x86_emulate_ctxt *ctxt,
++			   struct x86_emulate_ops *ops)
++{
++	struct decode_cache *c = &ctxt->decode;
++	int rc;
++	unsigned long cs;
++
++	rc = emulate_pop(ctxt, ops, &c->eip, c->op_bytes);
++	if (rc)
++		return rc;
++	if (c->op_bytes == 4)
++		c->eip = (u32)c->eip;
++	rc = emulate_pop(ctxt, ops, &cs, c->op_bytes);
++	if (rc)
++		return rc;
++	rc = kvm_load_segment_descriptor(ctxt->vcpu, (u16)cs, 1, VCPU_SREG_CS);
++	return rc;
++}
++
+ static inline int writeback(struct x86_emulate_ctxt *ctxt,
+ 			    struct x86_emulate_ops *ops)
+ {
+@@ -1735,6 +1754,11 @@ special_insn:
+ 	mov:
+ 		c->dst.val = c->src.val;
+ 		break;
++	case 0xcb:		/* ret far */
++		rc = emulate_ret_far(ctxt, ops);
++		if (rc)
++			goto done;
++		break;
+ 	case 0xd0 ... 0xd1:	/* Grp2 */
+ 		c->src.val = 1;
+ 		emulate_grp2(ctxt);
 -- 
 1.6.0.6
 
