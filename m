@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbZB0FxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZB0F6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbZB0FxW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 00:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZB0FxN
+	id S1756807AbZB0F6q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 00:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZB0F6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 00:53:13 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:51434 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbZB0FxN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 00:53:13 -0500
-Date: Fri, 27 Feb 2009 06:55:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Chris Leech <christopher.leech@intel.com>
-Cc: linux-netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net headers: export dcbnl.h
-Message-ID: <20090227055506.GA7020@uranus.ravnborg.org>
-References: <20090227004635.10247.60814.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090227004635.10247.60814.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 27 Feb 2009 00:58:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34028 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752664AbZB0F6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 00:58:37 -0500
+Message-ID: <49A780E0.7020508@kernel.org>
+Date: Fri, 27 Feb 2009 14:57:52 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, jeremy@goop.org, cpw@sgi.com
+Subject: Re: [patch] x86: optimize __pa() to be linear again on 64-bit x86
+References: <1234958676-27618-1-git-send-email-tj@kernel.org> <20090223101741.GP9582@elte.hu> <20090223133804.GA20468@elte.hu> <200902240108.54892.nickpiggin@yahoo.com.au> <20090223145358.GB3377@elte.hu>
+In-Reply-To: <20090223145358.GB3377@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 27 Feb 2009 05:57:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 04:46:35PM -0800, Chris Leech wrote:
-> The DCB netlink interface is required for building the userspace tools
-> available at e1000.sourceforge.net
+Hello,
 
-Hmmm, is that file ready for export....
+Ingo Molnar wrote:
+> Yeah, we can do this complete conversion.
+>
+> I'll clean it up some more. I think the best representation of 
+> this will be via a virt_to_sym() and sym_to_virt() space. That 
+> makes it really clear when we are moving from the symbol space 
+> to the linear space and back.
 
->From dcbnl.h:
-#ifndef __LINUX_DCBNL_H__
-#define __LINUX_DCBNL_H__
+For arch code, maybe it's maintainable but with my driver developer
+hat on I gotta say virt_to_page() not working on .data/.bss is quite
+scary.  We can try to convert whatever which could be affected but
 
-#define DCB_PROTO_VERSION 1
+* They aren't clear at all not only when the code is being written but
+  also when someone tries to use the code which can be buried several
+  layers under.
 
-struct dcbmsg {
-        unsigned char      dcb_family;
-        __u8               cmd;
-        __u16              dcb_pad;
-};
+* The failure cases can be hidden very well so that they can pass most
+  tests unnoticed.  For example, buffer reserved for exception cases
+  allocated statically which is usually used by PIO (no problem) but
+  on a few selected controllers DMA is used.
 
-1) It uses __u8/__u16 so it would be nice it is included <linux/types.h>
-so these are actually defined.
-2) Why does it use "unsigned char" for one member and __u8 for another.
-It looks inconsistent.
+* The failure mode is unobvious and very nasty.  With the debug code
+  left out, the failure simply is mistranslated address or page
+  pointer.  We might end up feeding the wrong address to controllers.
+  The addresses are likely to be invalid but we really have no idea
+  how the controllers would react.  If it ever happens, it's gonna be
+  nasty.
 
+* There isn't any point in trying to save a few cycles when we're deep
+  in the IO path.  The cost simply is negligible compared to all the
+  stuff necessary for programing devices.
 
-We export headers that are much worse but we better raise the bar a little.
+So, I really think we should do what Nick suggested.  Make a fast
+version and use it where the saved few cycles actually matter.  A
+postfix which is more descriptive than _fast would be better tho.
 
-	Sam
+Thanks.
 
-
-> 
-> Signed-off-by: Chris Leech <christopher.leech@intel.com>
-> ---
-> 
->  include/linux/Kbuild |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-> index b97cdc5..106c3ba 100644
-> --- a/include/linux/Kbuild
-> +++ b/include/linux/Kbuild
-> @@ -52,6 +52,7 @@ header-y += const.h
->  header-y += cgroupstats.h
->  header-y += cramfs_fs.h
->  header-y += cycx_cfm.h
-> +header-y += dcbnl.h
->  header-y += dlmconstants.h
->  header-y += dlm_device.h
->  header-y += dlm_netlink.h
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+tejun
