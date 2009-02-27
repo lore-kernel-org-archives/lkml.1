@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbZB0VUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760683AbZB0VUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbZB0VUB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 16:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbZB0VTx
+	id S1760683AbZB0VUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 16:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbZB0VTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 27 Feb 2009 16:19:53 -0500
-Received: from gw.goop.org ([64.81.55.164]:57524 "EHLO mail.goop.org"
+Received: from fifo99.com ([67.223.236.141]:39956 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753576AbZB0VTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755376AbZB0VTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Feb 2009 16:19:52 -0500
-Message-ID: <49A858E8.3070707@goop.org>
-Date: Fri, 27 Feb 2009 13:19:36 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: add brk allocation for very, very early allocations
-References: <49A829CE.9020509@goop.org> <49A84C5A.3020304@kernel.org> <49A855B7.4090204@zytor.com>
-In-Reply-To: <49A855B7.4090204@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] Don't profile branches in arm's boot decompressor
+From: Daniel Walker <dwalker@fifo99.com>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@rostedt.homelinux.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1235768983-4830-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1235768983-4830-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 27 Feb 2009 13:19:47 -0800
+Message-Id: <1235769587.8233.1.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> That would make sense.  init_memory_mapping() needs to know what not to
-> step on, and that would include the brk at this stage.  For 64-bit mode,
-> Xen is the only user of !PSE, and so may be particularly vulnerable to
-> this issue (because of massively larger direct mapping tables.)
->   
+On Fri, 2009-02-27 at 22:09 +0100, Uwe Kleine-König wrote:
+> This fixes many compile errors for arch/arm/boot/compressed/misc.c of
+> the type:
+> 
+> 	arch/arm/boot/compressed/misc.c:127: error: section attribute cannot be specified for local variables
 
-Yep.
+Why do you think this error showed up just in that one file? It looks
+like the branch tracer puts section tags on non-globals all over the
+kernel..
 
-> This reminds me... is your intent that the BRK is permanent (unless
-> explicitly freed on a page by page basis) or part of the init memory
-> that is flushed?
->   
+Daniel
 
-Permanent.  I'm using it to allocate things which are the moral 
-equivalent of the kernel pagetables.
-
-    J
