@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbZB0AhC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbZB0AkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbZB0AhC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:37:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbZB0Agw
+	id S1759429AbZB0AkH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZB0Ajz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:36:52 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:15398 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059AbZB0Agv (ORCPT
+	Thu, 26 Feb 2009 19:39:55 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46968 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbZB0Ajz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:36:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=WP+wRBsRVjj+SB9DXA04t3g1Z9BjXvSGHbtMsfCvTrDq7I4mJI6tPeSVSw5CPAl6u5
-         2WyQCFaz2Kb3mC6SN9y6KYdiuG8H72BZ6HWGlBeu/OJstZu9+nSvssnfy1omDOv6pUa7
-         frnCr/nuE2roSvx5/33Ct/5ps5cRuUbnvod0g=
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0902262119570.5238@axis700.grange>
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
-	 <Pine.LNX.4.64.0901162048400.9060@axis700.grange>
-	 <4974F208.3020407@intel.com>
-	 <Pine.LNX.4.64.0901201048090.5126@axis700.grange>
-	 <Pine.LNX.4.64.0902191533090.5156@axis700.grange>
-	 <1235068604.18650.16.camel@dwillia2-linux.ch.intel.com>
-	 <e9c3a7c20902251354x5512c222h41c2c9ebfa290e0b@mail.gmail.com>
-	 <Pine.LNX.4.64.0902260833001.5238@axis700.grange>
-	 <e9c3a7c20902261041t7e483c24m1151b89d79b5f718@mail.gmail.com>
-	 <Pine.LNX.4.64.0902262119570.5238@axis700.grange>
-Date: Thu, 26 Feb 2009 17:36:48 -0700
-X-Google-Sender-Auth: efdadd8719fe2887
-Message-ID: <e9c3a7c20902261636u7bea73f3j33d270b787779bdd@mail.gmail.com>
-Subject: Re: [PATCH 3/4 v9] i.MX31: framebuffer driver
-From: Dan Williams <dan.j.williams@intel.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Feb 2009 19:39:55 -0500
+Date: Fri, 27 Feb 2009 09:38:35 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, lizf@cn.fujitsu.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] cgroup allow subsys to set default mode of its own
+  file
+Message-Id: <20090227093835.8c7e6f23.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830902261628k4ce8e1aflb7981672562801fb@mail.gmail.com>
+References: <20090225163555.d2a0b24c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090226130005.3282cb02.akpm@linux-foundation.org>
+	<6599ad830902261628k4ce8e1aflb7981672562801fb@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 1:34 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> From: Guennadi Liakhovetski <lg@denx.de>
->
-> This is a framebuffer driver for i.MX31 SoCs. It only supports synchronous
-> displays, vertical panning supported, no overlay support.
->
-> Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
+On Thu, 26 Feb 2009 16:28:11 -0800
+Paul Menage <menage@google.com> wrote:
+
+> On Thu, Feb 26, 2009 at 1:00 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Wed, 25 Feb 2009 16:35:55 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >
+> >>  When I wrote tools for maintain cgroup, I can't find which file is
+> >>  writable intarfece or not via cgroup file systems. (finally, I did
+> >>  dirty approach.)
+> >>  IMHO, showing "this file is read-only" in explicit way is useful
+> >>  for user-land (tools). In other story, a file whose name sounds read-only
+> >>  may have "trigger" operation and support reseting. In this case,
+> >>  "writable" is informative.
+> >
+> > Well, we have compatibility issues here.  If we make this change, and
+> > people write tools which depend upon that change then those tools might
+> > break when run upon older kernels.
+> 
+> I don't think that's too big a deal - a write can always fail at the
+> whim of a cgroups subsystem, so this would just be a hint to a tool
+> that it shouldn't even bother trying to write to the file. It should
+> be able to handle a failure.
+> 
+> But I don't see why we can't figure out the mode automatically based
+> on whether or not there's a write handler defined for the control
+> file.
+> 
+That's because I wanted to allow -w------- or -w--w---- or some
 
 Thanks,
+-Kame
 
-I'll queue the following branch to -next:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git imx-fb-fix
 
-Dan Williams (1):
-      Revert "i.MX31: framebuffer driver"
+> Paul
+> 
 
-Guennadi Liakhovetski (1):
-      i.MX31: framebuffer driver
-
- arch/arm/plat-mxc/include/mach/mx3fb.h |   26 +-
- drivers/video/Kconfig                  |   20 +-
- drivers/video/Makefile                 |    2 +-
- drivers/video/mx3fb.c                  | 2300 ++++++++++++++++----------------
- 4 files changed, 1174 insertions(+), 1174 deletions(-)
-
---
-Dan
