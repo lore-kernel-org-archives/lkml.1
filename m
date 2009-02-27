@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbZB0Snx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbZB0SrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758765AbZB0Snx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 13:43:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZB0Snp
+	id S1758851AbZB0SrW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 13:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZB0SrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 13:43:45 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:46767 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755037AbZB0Sno (ORCPT
+	Fri, 27 Feb 2009 13:47:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47509 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755713AbZB0SrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 13:43:44 -0500
-Message-ID: <49A834A3.5000302@oracle.com>
-Date: Fri, 27 Feb 2009 10:44:51 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 27 Feb 2009 13:47:13 -0500
+Message-ID: <49A8345F.8020800@zytor.com>
+Date: Fri, 27 Feb 2009 10:43:43 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Bart Trojanowski <bart@jukie.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: where is Documentation/REPORTING-BUGS ?
-References: <20090227183326.GC23376@jukie.net>
-In-Reply-To: <20090227183326.GC23376@jukie.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] x86: add brk allocation for very, very early allocations
+References: <49A829CE.9020509@goop.org>
+In-Reply-To: <49A829CE.9020509@goop.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.49A83455.0168:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Trojanowski wrote:
-> I ran into a regression in 2.6.28..2.6.29-rc6 in vlan code.  I am
-> bisecting it right now.
+Jeremy Fitzhardinge wrote:
+> I'd like to add a mechanism like this so I can dynamically allocate some
+> Xen-related structures, rather than statically allocating them in the bss,
+> both so that Xen has less overhead when it isn't being used, and so I can
+> scale better to things like memory size.
 > 
-> While that happens, I wanted to check if the proper way to report it is:
-> via bugzilla or email.  I went to Documentation and looked for related
-> material.
+> I think this is more widely useful; it would supplant dmi_alloc_data[], for
+> example, and I'm sure there's other cases.
 > 
-> From Documentation/BUG-HUNTING...
->> Before you submit a bug report read REPORTING-BUGS.
+> This is fundimentally the same as head_32.S's extension of the bss to build
+> the initial kernel mapping, but 64-bit doesn't currently do anything
+> analogous
+> to this.
 > 
-> I'd love to, but it's not there.
+> Unfortunately when I use this code as-is I'm getting crashes when the slab
+> allocator starts up.  I think this is all correct, but I'm wondering if
+> there's something I'm overlooking which is broken in principle.
 
-It's in the top-level of the kernel tree, not in the Documentation/
-directory.
+First of all, I like the concept.  As far as getting crashes, I suspect
+what you're finding is some use of this type of extended memory space
+that just isn't documented.  I would try this in a simulator, setting a
+watchpoint on _end to see if you get any hits before the slab allocator
+starts.
 
-> The only thing I can find is text from 2003, that predates bugzilla.k.o.
-> 
->         http://www.kernel.org/pub/linux/docs/lkml/reporting-bugs.html
-> 
-> If that is still official, maybe it could make its way back into the git
-> tree.  If not, what's today's preferred bug reporting method?
-
-
-
+	-hpa
 -- 
-~Randy
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
