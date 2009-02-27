@@ -1,174 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbZB0U1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbZB0UaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758939AbZB0U1P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 15:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZB0U1F
+	id S1759311AbZB0UaX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 15:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZB0UaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 15:27:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35272 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752793AbZB0U1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 15:27:04 -0500
-Message-ID: <49A84C5A.3020304@kernel.org>
-Date: Fri, 27 Feb 2009 12:26:02 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 27 Feb 2009 15:30:09 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48878 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755359AbZB0UaH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 15:30:07 -0500
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] make CALLER_ADDRx overwriteable
+Date: Fri, 27 Feb 2009 21:30:03 +0100
+Message-Id: <1235766603-25206-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <alpine.DEB.2.00.0902271021370.25593@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0902271021370.25593@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: add brk allocation for very, very early allocations
-References: <49A829CE.9020509@goop.org>
-In-Reply-To: <49A829CE.9020509@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> [
-> I'd like to add a mechanism like this so I can dynamically allocate some
-> Xen-related structures, rather than statically allocating them in the bss,
-> both so that Xen has less overhead when it isn't being used, and so I can
-> scale better to things like memory size.
-> 
-> I think this is more widely useful; it would supplant dmi_alloc_data[], for
-> example, and I'm sure there's other cases.
-> 
-> This is fundimentally the same as head_32.S's extension of the bss to build
-> the initial kernel mapping, but 64-bit doesn't currently do anything
-> analogous
-> to this.
-> 
-> Unfortunately when I use this code as-is I'm getting crashes when the slab
-> allocator starts up.  I think this is all correct, but I'm wondering if
-> there's something I'm overlooking which is broken in principle.
-> 
-> So, what am I missing?
-> 
-> Thanks,
->     J
-> ]
-> 
-> 
-> Add a brk()-like allocator which effectively extends the bss
-> in order to allow very early code to do dynamic allocations.
-> This is better than using statically allocated arrays for
-> data in subsystems which may never get used.
-> 
-> The amount of space available depends on how much the initial
-> kernel mappings have covered, and so is fairly limited.
-> 
-> Not-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> 
-> diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
-> index 66801cb..e6b754b 100644
-> --- a/arch/x86/include/asm/setup.h
-> +++ b/arch/x86/include/asm/setup.h
-> @@ -99,6 +99,11 @@ extern struct boot_params boot_params;
->  */
-> #define LOWMEMSIZE()    (0x9f000)
-> 
-> +/* exceedingly early brk-like allocator */
-> +extern unsigned long _brk_start, _brk_end;
-> +void init_brk(unsigned long start);
-> +void *extend_brk(size_t size, size_t align);
-> +
-> #ifdef __i386__
-> 
-> void __init i386_start_kernel(void);
-> diff --git a/arch/x86/kernel/head32.c b/arch/x86/kernel/head32.c
-> index ac108d1..fa9ae31 100644
-> --- a/arch/x86/kernel/head32.c
-> +++ b/arch/x86/kernel/head32.c
-> @@ -34,6 +34,8 @@ void __init i386_start_kernel(void)
-> 
->     reserve_ebda_region();
-> 
-> +    init_brk((unsigned long)__va(init_pg_tables_end));
-> +
->     /*
->      * At this point everything still needed from the boot loader
->      * or BIOS or kernel text should be early reserved or marked not
-> diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-> index f5b2722..4b29802 100644
-> --- a/arch/x86/kernel/head64.c
-> +++ b/arch/x86/kernel/head64.c
-> @@ -91,6 +91,8 @@ void __init x86_64_start_kernel(char * real_mode_data)
->     if (console_loglevel == 10)
->         early_printk("Kernel alive\n");
-> 
-> +    init_brk((unsigned long)&_end);
-> +
->     x86_64_start_reservations(real_mode_data);
-> }
-> 
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 0d051b4..8899cfa 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -113,6 +113,7 @@
-> #endif
-> 
-> unsigned int boot_cpu_id __read_mostly;
-> +__initdata unsigned long _brk_start, _brk_end;
-> 
-> #ifdef CONFIG_X86_64
-> int default_cpu_present_to_apicid(int mps_cpu)
-> @@ -335,6 +336,26 @@ static void __init relocate_initrd(void)
-> }
-> #endif
-> 
-> +void __init init_brk(unsigned long brk)
-> +{
-> +    _brk_start = _brk_end = brk;
-> +}
-> +
-> +void * __init extend_brk(size_t size, size_t align)
-> +{
-> +    size_t mask = align - 1;
-> +    void *ret;
-> +
-> +    BUG_ON(align & mask);
-> +
-> +    _brk_end = (_brk_end + mask) & ~mask;
-> +
-> +    ret = (void *)_brk_end;
-> +    _brk_end += size;
-> +
-> +    return ret;
-> +}
-> +
-> static void __init reserve_initrd(void)
-> {
->     u64 ramdisk_image = boot_params.hdr.ramdisk_image;
-> @@ -727,11 +748,7 @@ void __init setup_arch(char **cmdline_p)
->     init_mm.start_code = (unsigned long) _text;
->     init_mm.end_code = (unsigned long) _etext;
->     init_mm.end_data = (unsigned long) _edata;
-> -#ifdef CONFIG_X86_32
-> -    init_mm.brk = init_pg_tables_end + PAGE_OFFSET;
-> -#else
-> -    init_mm.brk = (unsigned long) &_end;
-> -#endif
-> +    init_mm.brk = _brk_end;
-> 
->     code_resource.start = virt_to_phys(_text);
->     code_resource.end = virt_to_phys(_etext)-1;
-> @@ -897,6 +914,9 @@ void __init setup_arch(char **cmdline_p)
->     acpi_numa_init();
-> #endif
-> 
-> +    if (_brk_end > _brk_start)
-> +        reserve_early(__pa(_brk_start), __pa(_brk_end), "BRK");
-> +
->     initmem_init(0, max_pfn);
+The current definition of CALLER_ADDRx isn't suitable for all platforms.
+E.g. for ARM __builtin_return_address(N) doesn't work for N > 0 and
+AFAIK for powerpc there are no frame pointers needed to have a working
+__builtin_return_address.  This patch allows defining the CALLER_ADDRx
+macros in <asm/ftrace.h> and let these take precedence.
 
-it seems reserve _brk_end is some late?
+Because now <asm/ftrace.h> is included unconditionally in
+<linux/ftrace.h> all archs that don't already had this include get an
+empty one for free.
 
-init_memory_mapping(0,...) could get some for direct mapping page table. and it could start from _end...
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+--
+Hello,
 
-YH
+OK, changed to check for HAVE_ARCH_CALLER_ADDR instead of CALLER_ADDR0.
 
+Best regards
+Uwe
+
+---
+ arch/alpha/include/asm/ftrace.h    |    1 +
+ arch/avr32/include/asm/ftrace.h    |    1 +
+ arch/blackfin/include/asm/ftrace.h |    1 +
+ arch/cris/include/asm/ftrace.h     |    1 +
+ arch/h8300/include/asm/ftrace.h    |    1 +
+ arch/m68k/include/asm/ftrace.h     |    1 +
+ arch/mips/include/asm/ftrace.h     |    1 +
+ arch/parisc/include/asm/ftrace.h   |    1 +
+ arch/um/include/asm/ftrace.h       |    1 +
+ arch/xtensa/include/asm/ftrace.h   |    1 +
+ include/asm-frv/ftrace.h           |    1 +
+ include/asm-m32r/ftrace.h          |    1 +
+ include/asm-mn10300/ftrace.h       |    1 +
+ include/linux/ftrace.h             |   41 ++++++++++++++++++-----------------
+ 14 files changed, 34 insertions(+), 20 deletions(-)
+
+diff --git a/arch/alpha/include/asm/ftrace.h b/arch/alpha/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/alpha/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/avr32/include/asm/ftrace.h b/arch/avr32/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/avr32/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/blackfin/include/asm/ftrace.h b/arch/blackfin/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/blackfin/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/cris/include/asm/ftrace.h b/arch/cris/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/cris/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/h8300/include/asm/ftrace.h b/arch/h8300/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/h8300/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/m68k/include/asm/ftrace.h b/arch/m68k/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/m68k/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/mips/include/asm/ftrace.h b/arch/mips/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/mips/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/parisc/include/asm/ftrace.h b/arch/parisc/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/parisc/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/um/include/asm/ftrace.h b/arch/um/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/um/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/arch/xtensa/include/asm/ftrace.h b/arch/xtensa/include/asm/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/arch/xtensa/include/asm/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/include/asm-frv/ftrace.h b/include/asm-frv/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/include/asm-frv/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/include/asm-m32r/ftrace.h b/include/asm-m32r/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/include/asm-m32r/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/include/asm-mn10300/ftrace.h b/include/asm-mn10300/ftrace.h
+new file mode 100644
+index 0000000..40a8c17
+--- /dev/null
++++ b/include/asm-mn10300/ftrace.h
+@@ -0,0 +1 @@
++/* empty */
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 847bb3c..1f69ac7 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -11,6 +11,8 @@
+ #include <linux/bitops.h>
+ #include <linux/sched.h>
+ 
++#include <asm/ftrace.h>
++
+ #ifdef CONFIG_FUNCTION_TRACER
+ 
+ extern int ftrace_enabled;
+@@ -103,8 +105,6 @@ struct ftrace_func_command {
+ };
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+-/* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
+-#include <asm/ftrace.h>
+ 
+ int ftrace_arch_code_modify_prepare(void);
+ int ftrace_arch_code_modify_post_process(void);
+@@ -282,24 +282,25 @@ static inline void __ftrace_enabled_restore(int enabled)
+ #endif
+ }
+ 
+-#ifdef CONFIG_FRAME_POINTER
+-/* TODO: need to fix this for ARM */
+-# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+-# define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+-# define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
+-# define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
+-# define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
+-# define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
+-# define CALLER_ADDR6 ((unsigned long)__builtin_return_address(6))
+-#else
+-# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+-# define CALLER_ADDR1 0UL
+-# define CALLER_ADDR2 0UL
+-# define CALLER_ADDR3 0UL
+-# define CALLER_ADDR4 0UL
+-# define CALLER_ADDR5 0UL
+-# define CALLER_ADDR6 0UL
+-#endif
++#ifndef HAVE_ARCH_CALLER_ADDR
++# ifdef CONFIG_FRAME_POINTER
++#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
++#  define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
++#  define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
++#  define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
++#  define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
++#  define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
++#  define CALLER_ADDR6 ((unsigned long)__builtin_return_address(6))
++# else
++#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
++#  define CALLER_ADDR1 0UL
++#  define CALLER_ADDR2 0UL
++#  define CALLER_ADDR3 0UL
++#  define CALLER_ADDR4 0UL
++#  define CALLER_ADDR5 0UL
++#  define CALLER_ADDR6 0UL
++# endif
++#endif /* ifndef HAVE_ARCH_CALLER_ADDR */
+ 
+ #ifdef CONFIG_IRQSOFF_TRACER
+   extern void time_hardirqs_on(unsigned long a0, unsigned long a1);
+-- 
+tg: (db50eec..) t/ftrace/make_CALLER_ADDRx_overwriteable (depends on: tip/master)
