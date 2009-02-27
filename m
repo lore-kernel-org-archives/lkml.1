@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbZB0K00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZB0K1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbZB0K00 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:26:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZB0K0Q
+	id S1755434AbZB0K1h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:27:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbZB0K1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:26:16 -0500
-Received: from home.innominate.com ([77.245.32.75]:33681 "EHLO
-	home.innominate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753336AbZB0K0P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:26:15 -0500
-Date: Fri, 27 Feb 2009 11:26:10 +0100
-From: Christian Hohnstaedt <chohnstaedt@innominate.com>
-To: Karl Hiramoto <karl@hiramoto.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       chohnstaedt@innominate.com, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] ixp4xx_crypto panic with fragmented packets in
-	scatterlist
-Message-ID: <20090227102609.GD6283@elara.bln.innominate.local>
-Mail-Followup-To: Christian Hohnstaedt <chohnstaedt@innominate.com>,
-	Karl Hiramoto <karl@hiramoto.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.arm.linux.org.uk
-References: <20090226121043.GA13749@gondor.apana.org.au> <49A6FB1D.2030807@hiramoto.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49A6FB1D.2030807@hiramoto.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Feb 2009 05:27:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53557 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754881AbZB0K1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 05:27:07 -0500
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 02/37] KVM: ppc: remove last 44x-specific bits from booke.c
+Date: Fri, 27 Feb 2009 12:26:25 +0200
+Message-Id: <1235730420-7929-3-git-send-email-avi@redhat.com>
+In-Reply-To: <1235730420-7929-1-git-send-email-avi@redhat.com>
+References: <1235730420-7929-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 09:27:09PM +0100, Karl Hiramoto wrote:
-> Herbert Xu wrote:
->> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
->>   
->>> We can't merge this until _all_ of ARM has been fixed for walking
->>> scatterlist chains.
->>>     
->>
->> Right, this is definitely not the way to fix this bug.  Because
->> even if ARM completely supported chaining, you still have to fix
->> all the other architectures as well.
->>
->> So please just fix the driver to remove the chaining before doing
->> DMA.
->>
->>   
-> Is there an example of how to do this somewhere? 
->
+From: Hollis Blanchard <hollisb@us.ibm.com>
 
-Not needed.
+Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/powerpc/kvm/booke.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-Now that I know the details about the different ways of chaining
-and their scope, I know how to fix my driver properly.
-
-Patch follows, soon...
-
-best regards
-Christian
-
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 1e692ac..a73b395 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -30,10 +30,8 @@
+ #include <asm/kvm_ppc.h>
+ #include "timing.h"
+ #include <asm/cacheflush.h>
+-#include <asm/kvm_44x.h>
+ 
+ #include "booke.h"
+-#include "44x_tlb.h"
+ 
+ unsigned long kvmppc_booke_handlers;
+ 
+@@ -284,7 +282,6 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+-	/* XXX move to a 440-specific file. */
+ 	case BOOKE_INTERRUPT_DTLB_MISS: {
+ 		unsigned long eaddr = vcpu->arch.fault_dear;
+ 		int gtlb_index;
+@@ -327,7 +324,6 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
+ 	}
+ 
+-	/* XXX move to a 440-specific file. */
+ 	case BOOKE_INTERRUPT_ITLB_MISS: {
+ 		unsigned long eaddr = vcpu->arch.pc;
+ 		gpa_t gpaddr;
 -- 
-The iMac is just evidence of how dangerous vi is. Obviously Steve came up with
-the name by accident after forgetting he was *already* in insert mode.
- — dagbrown on #emacs
+1.6.0.6
+
