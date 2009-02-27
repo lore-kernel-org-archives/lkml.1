@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZB0UHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759390AbZB0UN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759278AbZB0UHv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 15:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbZB0UHn
+	id S1759390AbZB0UN1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 15:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbZB0UNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 15:07:43 -0500
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:48635 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756839AbZB0UHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 15:07:42 -0500
-Message-ID: <49A84802.7030502@krogh.cc>
-Date: Fri, 27 Feb 2009 21:07:30 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 27 Feb 2009 15:13:18 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:49795 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755489AbZB0UNR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 15:13:17 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=X/2v48qYPPzP9h5RxzThldEOYKpb1K6dOv7YfsU5ZbBlaz/sNO4VYz9KVR3c/5zLZ
+	UgwEbV8F0tIJrUA6XPwzg==
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, aowi@novozymes.com
-Subject: Re: Regression in bonding between 2.6.26.8 and 2.6.27.6 - bisected
-References: <491FEAD5.4090205@krogh.cc> <49A7B17F.2020408@krogh.cc> <16084.1235752119@death.nxdomain.ibm.com>
-In-Reply-To: <16084.1235752119@death.nxdomain.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090227162928.6225fc80.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090227140537.390905c4.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090227162928.6225fc80.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 27 Feb 2009 12:13:10 -0800
+Message-ID: <b040c32a0902271213q3dd1931foc2b955d8a028eb6f@mail.gmail.com>
+Subject: Re: [PATCH] change cpuacct usage percpu format v2
+From: Ken Chen <kenchen@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>, mingo@elte.hu,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Vosburgh wrote:
-> Jesper Krogh <jesper@krogh.cc> wrote:
-> [...]
->> The offending commit seems to be:
->>
->> A test with a fresh 2.6.29-rc6 revealed that the problem has been fixed
->> subsequently.. but still exists in 2.6.27-newest.  (havent tested
->> 2.6.28-newest yet).
->>
->> Any ideas of what the "fixing" commit is .. or should that also be
->> bisected?
-> 
-> 	I went back and looked at your earlier mail.  Since you're using
-> 802.3ad mode, my first guess would be this commit:
-> 
-> commit fd989c83325cb34795bc4d4aa6b13c06f90eac99
-> Author: Jay Vosburgh <fubar@us.ibm.com>
-> Date:   Tue Nov 4 17:51:16 2008 -0800
-> 
->     bonding: alternate agg selection policies for 802.3ad
+On Thu, Feb 26, 2009 at 11:29 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> cpuacct.usage_percpu shows per cpu usage information via cgroupfs.
+> It shows all "present" cpus information and "whose information ?"
+> is explained just by index of data implicitly.
+>
+> IIRC, there is physical cpu hotplug system and it can remove
+> cpus and change map. Considering a software which records
+> this information pediodically(like sar), its better to show id of cpu
+> in explict way.
 
-That didn't do it.. I applied it to 2.6.27.19 but it didnt make that work.
-dmesg | grep bond (2.6.27.19 + above patch).
+The new format carries a lot of overhead.  I would think user space
+software can record /sys/devices/system/cpu/present and use that to
+map cpu index.
 
-[   13.643301] bonding: MII link monitoring set to 100 ms
-[   13.730455] bonding: bond0: enslaving eth0 as a backup interface with 
-an up link.
-[   13.781934] bonding: bond0: enslaving eth1 as a backup interface with 
-an up link.
-[   13.904665] bonding: bond0: enslaving eth2 as a backup interface with 
-a down link.
-[   16.945264] bonding: bond0: link status definitely up for interface eth2.
-[   75.040290] bond0: no IPv6 routers present
-
-dmesg | grep bond (2.6.29-rc6)
-
-$ ssh quad02 dmesg | grep bond
-[   27.437877] bonding: MII link monitoring set to 100 ms
-[   27.445246] ADDRCONF(NETDEV_UP): bond0: link is not ready
-[   27.493260] bonding: bond0: enslaving eth0 as a backup interface with 
-a down link.
-[   27.521397] bonding: bond0: enslaving eth1 as a backup interface with 
-a down link.
-[   27.542332] bonding: bond0: Warning: No 802.3ad response from the 
-link partner for any adapters in the bond
-[   27.611509] bonding: bond0: enslaving eth2 as a backup interface with 
-a down link.
-[   27.617017] ADDRCONF(NETDEV_CHANGE): bond0: link becomes ready
-[   27.642330] bonding: bond0: Warning: No 802.3ad response from the 
-link partner for any adapters in the bond
-[   30.042501] bonding: bond0: link status definitely up for interface eth1.
-[   30.142505] bonding: bond0: link status definitely up for interface eth0.
-[   30.742547] bonding: bond0: link status definitely up for interface eth2.
-[   37.875044] bond0: no IPv6 routers present
-
-I just tested 2.6.28.7.. it still broken. So the fix probably has to be 
-somewhere in the post 2.6.28 sets.
-
-
-
--- 
-Jesper
+- Ken
