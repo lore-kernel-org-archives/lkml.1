@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbZB0Hkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZB0Hsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbZB0Hkv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 02:40:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZB0Hkn
+	id S1756169AbZB0Hsi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 02:48:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZB0Hs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 02:40:43 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40219 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752583AbZB0Hkm (ORCPT
+	Fri, 27 Feb 2009 02:48:28 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55188 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751646AbZB0Hs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 02:40:42 -0500
-Date: Thu, 26 Feb 2009 23:39:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
- 3 users
-Message-Id: <20090226233950.0cfcf883.akpm@linux-foundation.org>
-In-Reply-To: <20090227071212.GC5318@nowhere>
-References: <20090226130243.GA22460@elte.hu>
-	<20090226170524.GB5889@nowhere>
-	<20090226174303.GC29439@elte.hu>
-	<20090226174547.GC5889@nowhere>
-	<20090226175225.GA4527@elte.hu>
-	<20090226183415.GE5889@nowhere>
-	<20090226185208.GA6658@nowhere>
-	<20090226185635.GA12895@elte.hu>
-	<20090227061936.GA5318@nowhere>
-	<20090226224656.5785de9e.akpm@linux-foundation.org>
-	<20090227071212.GC5318@nowhere>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Feb 2009 02:48:27 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] new irq tracer
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, acme@ghostprotocols.net
+In-Reply-To: <alpine.DEB.2.00.0902262230130.19122@gandalf.stny.rr.com>
+References: <20090227121053.152B.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0902262230130.19122@gandalf.stny.rr.com>
+Message-Id: <20090227123806.1537.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri, 27 Feb 2009 16:48:22 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Feb 2009 08:12:13 +0100 Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> > Why does the current ftrace_bprintk() need to hack around in (or
-> > duplicate) vprintk() internals?  It's a bit grubby, but by placing an
-> > upper bound on the number of args, it could simply call vscnprintf()
-> > directly?
-> >
 > 
-> The problem is more in the way to save the parameters.
+> On Fri, 27 Feb 2009, KOSAKI Motohiro wrote:
+> > >
+> > > In many cases we don't use Linux real-time, we have many systems that
+> > > are soft-real-time an non real-time Linux is good enough.
+> > >  
+> > 
+> > Agreed, rt-patch seems off topics. we discuss to mainline kernel.
 > 
-> You have two functions:
+> The reason I brought up the rt-patch is that Mathieu is concerned about 
+> the small latency that happens when we run stop_machine to switch the nops 
+> to pointers to trace functions. This latency can be a couple of millisecs, 
+> but I can easily make a normal kernel suffer a couple of millisec latency 
+> by simply running hackbench (as a normal user).
 > 
-> _int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args)
-> 
-> 
-> This one creates a compact binary packet of all args described in the format.
-> The result is a binary set of random values on bin_buf.
-> 
-> 
-> _int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
-> 
-> 
-> This one lately parses the buffer filled by vbin_printf() and eventually format
-> this binary contiguous set of binary values according to the format in fmt (which is the
-> same that was passed to vbin_printf()
-> The result is formatted in buf.
-> 
-> vbin uses too much specific write-to-bin_buf operations to allow us to wrap
-> vsnprintf()
+> The point being, I think Mathieu's point about the latency of enabling the 
+> function tracer is frivolous. It is a one time shot that happens when the 
+> sysadmin purposely enables the function tracing.  If this is unacceptable, 
+> then the system had better be running the rt patch because it will be 
+> hitting this unacceptable latency in normal operation.
 
-I don't know what vbin is.
+ok, I missed last thread. thanks.
 
-On little-endian architecture you could do something like
+I think you talk about "ftrace, x86: make kernel text writable only for
+conversions" thread, right?
+hm, it seems very good discussion.
 
-	u32 *p = bin_buf;
-	char *fmt;
-	u32 a0, a1, a2, a3, a4;
+My concern is, both your and Mathieu's point is fairly reasonable and
+good direction.
 
-#ifdef CONFIG_32BIT
-	fmt = (char *)(*bin_buf++);
-#else
-	<exercise for the reader>
-#endif
+However, I would bring up another viewpoint. so, 
 
-	a0 = *bin_buf++;
-	a1 = *bin_buf++;
-	a2 = *bin_buf++;
-	a3 = *bin_buf++;
-	a4 = *bin_buf++;
+  - the latency issue can happen actual production server?
 
-	snprintf(somewhere, some_size, fmt, a0, a1, a2, a3, a4, a5);
 
-(as I said, ugly).
+Mathieu and Dominique explained ACTUAL production server problem.
+but I believe Dominique's server never run hackbench.
 
-but that won't work for 64-bit values on big-endian architectures.  And
-it's hacky (and might not even work) for 64-bit on little endian.
+In other word, I agree mainline kernel has many latency corner case problems.
+but I don't agree corner case existing indicate no need latency improvement.
+Generally, actual experience indicate it's valuable to hear them reqirement.
 
-Perhaps this is the secret problem which you haven't described yet?
+
+
+HOWEVER, I still also agree with your disliking messiness.
+Then, I would suggest we go into next step.
+
+I mean make the patch of mathieu's plan and mesure it. Then
+we can mesure number by number. my number mean,
+
+  (1) How much increasing line and messiness
+  (2) How much improving latency
+
+that's fairly comparision and typical lkml discussion style, imho.
+
+What do you think?
+
+
+
