@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbZB0Klo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZB0Kms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759724AbZB0Klo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758923AbZB0KdE
+	id S1757678AbZB0Kms (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbZB0Kmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:33:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41796 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758302AbZB0KdB (ORCPT
+	Fri, 27 Feb 2009 05:42:33 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:43472 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207AbZB0Kmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:33:01 -0500
-Date: Fri, 27 Feb 2009 02:32:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: airlied@linux.ie, eric@anholt.net, keithp@keithp.com,
-       dri-devel@lists.sourceforge.net,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: i915 X lockup
-Message-Id: <20090227023231.76e7c65f.akpm@linux-foundation.org>
-In-Reply-To: <49A7B253.906@gmail.com>
-References: <49A7B253.906@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Feb 2009 05:42:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=gueECvr4MlOgH8Ctv41CdFAbPuWtfGtZyaVaYepSlcHspAxmESAFAJv0ozrB+I0A80
+         m0051AHETqXxCGCi+qn7qHEetjDiLfnMsUR0Ggrqk+tbrMmORUjWjEANNNFPuCvET2iL
+         xQejSAF6Churyw68w7fcFBc+16dB1gv+l/m5Q=
+MIME-Version: 1.0
+Date: Fri, 27 Feb 2009 16:12:31 +0530
+Message-ID: <f1c9d250902270242j64cc9f59g56ce68ca2a832564@mail.gmail.com>
+Subject: [PATCH] Add proper list function
+From: Tej <bewith.tej@gmail.com>
+To: Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Feb 2009 10:28:51 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+Trivial cleanup, where list_del and list_add_tail is replaced by
+list_move_tail...
 
-> everytime I run X, it gets stuck. Currently running on mmotm 
-> 2009-02-26-16-58, but I think this is wider problem. I had i915 disabled 
-> for a long time (until I noticed today).
-> 
-> SysRq : Show Locks Held
-> 
-> Showing all locks held in the system:
-> 3 locks held by events/0/10:
->   #0:  (events){+.+.+.}, at: [<ffffffff8025223d>] worker_thread+0x19d/0x340
->   #1:  (&(&dev_priv->mm.retire_work)->work){+.+...}, at: 
-> [<ffffffff8025223d>] worker_thread+0x19d/0x340
->   #2:  (&dev->struct_mutex){+.+.+.}, at: [<ffffffff804057ba>] 
-> i915_gem_retire_work_handler+0x3a/0x90
-> 1 lock held by mingetty/3899:
->   #0:  (&tty->atomic_read_lock){+.+.+.}, at: [<ffffffff803cb5de>] 
-> n_tty_read+0x48e/0x8e0
-> 1 lock held by mingetty/3900:
->   #0:  (&tty->atomic_read_lock){+.+.+.}, at: [<ffffffff803cb5de>] 
-> n_tty_read+0x48e/0x8e0
-> 1 lock held by mingetty/3901:
->   #0:  (&tty->atomic_read_lock){+.+.+.}, at: [<ffffffff803cb5de>] 
-> n_tty_read+0x48e/0x8e0
-> 1 lock held by X/4007:
->   #0:  (&dev->struct_mutex){+.+.+.}, at: [<ffffffff8040563c>] 
-> i915_gem_throttle_ioctl+0x2c/0x60
-> 2 locks held by bash/4105:
->   #0:  (sysrq_key_table_lock){......}, at: [<ffffffff803de366>] 
-> __handle_sysrq+0x26/0x190
->   #1:  (tasklist_lock){.+.+..}, at: [<ffffffff80266c1f>] 
-> debug_show_all_locks+0x3f/0x1c0
 
-I assume that i915_gem_throttle_ioctl->i915_gem_ring_throttle is stuck
-in i915_wait_request(), holding struct_mutex.  That of course makes
-keventd block.
+Signed-off-by: Tej Parkash <tej.parkash@hcl.in>
 
-Perhaps i915_wait_request() is waiting for keventd to do something,
-which is the deadlock.  That "something" could be to simply finish its
-current call to i915_gem_retire_work_handler().
-
-But worse, it could be some completely other keventd handler which
-isn't getting run, because that keventd instance is stuck over in
-i915_gem_retire_work_handler().
-
-IOW, the usual keventd problem.
+diff --git a/arch/arm/mach-msm/dma.c b/arch/arm/mach-msm/dma.c
+index f5420f9..30f52c2 100644
+--- a/arch/arm/mach-msm/dma.c
++++ b/arch/arm/mach-msm/dma.c
+@@ -208,8 +208,7 @@ static irqreturn_t msm_datamover_irq_handler(int
+irq, void *dev_id)
+                        PRINT_FLOW("msm_datamover_irq_handler id %d,
+status %x\n", id, ch_status);
+                        if ((ch_status & DMOV_STATUS_CMD_PTR_RDY) &&
+!list_empty(&ready_commands[id])) {
+                                cmd =
+list_entry(ready_commands[id].next, typeof(*cmd), list);
+-                               list_del(&cmd->list);
+-                               list_add_tail(&cmd->list, &active_commands[id]);
++                               list_move_tail(&cmd->list,
+&active_commands[id]);
+                                PRINT_FLOW("msm_datamover_irq_handler
+id %d, start command\n", id);
+                                writel(cmd->cmdptr, DMOV_CMD_PTR(id));
+                        }
