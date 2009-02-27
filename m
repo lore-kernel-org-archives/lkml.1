@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbZB0KP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZB0KZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757117AbZB0KP4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZB0KPr
+	id S1756888AbZB0KZk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZB0KZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:15:47 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35705 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbZB0KPq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:15:46 -0500
-Date: Fri, 27 Feb 2009 11:18:18 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arve Hj?nnev?g <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090227101818.GH4582@elf.ucw.cz>
-References: <200902191356.53584.rjw@sisk.pl> <Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org> <20090222140311.GF1387@ucw.cz> <200902231504.27879.oliver@neukum.org>
+	Fri, 27 Feb 2009 05:25:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40395 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753336AbZB0KZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 05:25:30 -0500
+Date: Fri, 27 Feb 2009 11:25:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Chris Friesen <cfriesen@nortel.com>, mingo@linux.vnet.ibm.com,
+       Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, mtk.manpages@gmail.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] sched: Don't allow setuid to succeed if the user does
+	not have rt bandwidth
+Message-ID: <20090227102512.GA14530@elte.hu>
+References: <20090217050033.GA10409@linux.vnet.ibm.com> <20090217101542.GB15989@linux.vnet.ibm.com> <1234869339.4744.77.camel@laptop> <20090223114541.GD31277@linux.vnet.ibm.com> <1235390396.4645.87.camel@laptop> <20090224091849.GA18693@linux.vnet.ibm.com> <874oyj4yiz.fsf@basil.nowhere.org> <1235493365.4645.2061.camel@laptop> <49A44A86.2030409@nortel.com> <20090227094354.GA6444@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902231504.27879.oliver@neukum.org>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20090227094354.GA6444@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-02-23 15:04:22, Oliver Neukum wrote:
-> Am Sonntag 22 Februar 2009 15:03:11 schrieb Pavel Machek:
-> > Hi!
-> >
-> > > > Again, the decision to trigger automatic suspend has to be based on
-> > > > some well defined criteria and the (in)activity of devices seems to be
-> > > > one of them.
-> > >
-> > > I don't know what criteria the system monitor would use.  It might have
-> > > to be platform-specific.  The Android people seem to have a pretty good
-> > > idea of what criteria will work for them.
-> > >
-> > > Inactivity of devices isn't always a good criterion.  There might be a
-> > > background task which wakes up every few seconds to do something as
-> > > long as the system is awake, thereby keeping some device always active.
-> > > The activity from this background task shouldn't prevent an auto-sleep.
-> >
-> > Then we'd need a interface to mark such background task... and what is
-> > reasonable use for such task, anyway? Either its job is neccessary, or
-> > it should not waste power.
-> 
-> Why? We have decided that some tasks are more important than
-> other tasks, to the point of starving some tasks. Posix real time
-> already does that.
-> 
-> We can just as well have a class of tasks less important than power
-> saving. They'd just run when power saving is not active for some other
-> reason. Just like other such schemes we end up with the problem
-> of priority inversion with locking.
 
-Ok, I guess this could be interesting in some cases... maybe. What are
-real examples of such tasks?
+* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-Note that this will be fairly hard to implement due to all the
-priority inversions; so it better be pretty important.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
+> Corey Hickey reported that on using setuid to change the uid of a
+> rt process, the process would be unkillable and not be running.
+> This is because there was no rt runtime for that user group. Add
+> in a check to see if a user can attach an rt task to its task group.
+> On failure, return EINVAL, which is also returned in
+> CONFIG_CGROUP_SCHED.
+> 
+> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  include/linux/sched.h |    4 ++++
+>  kernel/sched.c        |   13 +++++++++++--
+>  kernel/sys.c          |   31 ++++++++++++++++++++-----------
+>  kernel/user.c         |   18 ++++++++++++++++++
+>  4 files changed, 53 insertions(+), 13 deletions(-)
+
+Applied to tip:sched/urgent, thanks Dhaval!
+
+	Ingo
