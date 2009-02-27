@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbZB0VkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbZB0VlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbZB0VkW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 16:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbZB0VkI
+	id S1760154AbZB0VlS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 16:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZB0VlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 16:40:08 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37598 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757412AbZB0VkH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 16:40:07 -0500
-Date: Fri, 27 Feb 2009 16:40:03 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Daniel Walker <dwalker@fifo99.com>
-cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@rostedt.homelinux.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Don't profile branches in arm's boot decompressor
-In-Reply-To: <1235769587.8233.1.camel@desktop>
-Message-ID: <alpine.DEB.2.00.0902271638510.13395@gandalf.stny.rr.com>
-References: <1235768983-4830-1-git-send-email-u.kleine-koenig@pengutronix.de> <1235769587.8233.1.camel@desktop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 27 Feb 2009 16:41:08 -0500
+Received: from gw.goop.org ([64.81.55.164]:56441 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755049AbZB0VlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 16:41:08 -0500
+Message-ID: <49A85DED.9050605@goop.org>
+Date: Fri, 27 Feb 2009 13:41:01 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] x86: add brk allocation for very, very early allocations
+References: <49A829CE.9020509@goop.org> <49A84C5A.3020304@kernel.org> <49A855B7.4090204@zytor.com> <49A858E8.3070707@goop.org> <49A85AF8.8030009@zytor.com>
+In-Reply-To: <49A85AF8.8030009@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> Cool; just wanted it noted what the rules were.  Even more so the reason
+> to fold as many possible uses as possible into this new mechanism.
+>   
 
-On Fri, 27 Feb 2009, Daniel Walker wrote:
+Yes, I just converted i386 pagetable construction and dmi_alloc().  
+Boots under qemu.
 
-> On Fri, 2009-02-27 at 22:09 +0100, Uwe Kleine-K?nig wrote:
-> > This fixes many compile errors for arch/arm/boot/compressed/misc.c of
-> > the type:
-> > 
-> > 	arch/arm/boot/compressed/misc.c:127: error: section attribute cannot be specified for local variables
-> 
-> Why do you think this error showed up just in that one file? It looks
-> like the branch tracer puts section tags on non-globals all over the
-> kernel..
+> P.S. Could you send me the updates to the dom0 patches you said you had?
+>   
 
-The problem was with the -Dstatic= in the CFLAGS of the boot parameters. 
-Since the branch profiler requires a static variable in the section, this 
-would simply fail. That was the issue, and the solution was to disable the 
-branch profiler for the boot code. No need for it there anyway.
+Was just tidying them up for posting but got slightly sidetracked.  (The 
+TSS/io-bitmap changes are a prelude to the dom0 patches though.)
 
--- Steve
-
+    J
