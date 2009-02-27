@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759571AbZB0BQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbZB0BTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759571AbZB0BQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 20:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZB0BPu
+	id S1759271AbZB0BTJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 20:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZB0BSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 20:15:50 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:58673 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752962AbZB0BPt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 20:15:49 -0500
+	Thu, 26 Feb 2009 20:18:55 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41285 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbZB0BSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 20:18:54 -0500
+Date: Thu, 26 Feb 2009 22:22:22 -0300
+From: Glauber Costa <glommer@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] remove static declaration from wall clock version
+Message-ID: <20090227012222.GA5979@poweredge.glommer>
+References: <1235677340-3139-1-git-send-email-glommer@redhat.com> <200902262050.27555.arnd@arndb.de>
 MIME-Version: 1.0
-In-Reply-To: <20090222000532.17557.52930.stgit@vmbox.hanneseder.net>
-References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>
-	 <20090222000532.17557.52930.stgit@vmbox.hanneseder.net>
-Date: Fri, 27 Feb 2009 02:15:46 +0100
-Message-ID: <154e089b0902261715p3d1a865ep845e0f1345549ebb@mail.gmail.com>
-Subject: Re: [PATCH 14/16] memcg: fix sparse warning: Using plain integer as 
-	NULL pointer
-From: Hannes Eder <hannes@hanneseder.net>
-To: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200902262050.27555.arnd@arndb.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added To]
+On Thu, Feb 26, 2009 at 08:50:26PM +0100, Arnd Bergmann wrote:
+> On Thursday 26 February 2009, Glauber Costa wrote:
+> > @@ -548,15 +548,13 @@ static int do_set_msr(struct kvm_vcpu *vcpu, unsigned index, u64 *data)
+> >  
+> >  static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock)
+> >  {
+> > -       static int version;
+> > +       int version = 1;
+> >         struct pvclock_wall_clock wc;
+> >         struct timespec now, sys, boot;
+> >  
+> >         if (!wall_clock)
+> >                 return;
+> >  
+> > -       version++;
+> > -
+> >         kvm_write_guest(kvm, wall_clock, &version, sizeof(version));
+> >  
+> >         /*
+> 
+> Doesn't this mean that kvm_write_guest now writes an uninitialized value
+> to the guest?
+No. If you look closely, it's now initialized to 1.
 
-On Sun, Feb 22, 2009 at 1:05 AM, Hannes Eder <hannes@hanneseder.net> wrote:
-> Fix this sparse warning:
->  mm/memcontrol.c:1637:32: warning: Using plain integer as NULL pointer
->
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> ---
->  mm/memcontrol.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 8e4be9c..09d6650 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1634,7 +1634,7 @@ static int mem_cgroup_force_empty_list(struct mem_cgroup *mem,
->                pc = list_entry(list->prev, struct page_cgroup, lru);
->                if (busy == pc) {
->                        list_move(&pc->lru, list);
-> -                       busy = 0;
-> +                       busy = NULL;
->                        spin_unlock_irqrestore(&zone->lru_lock, flags);
->                        continue;
->                }
->
->
+> 
+> I think what you need here is a 'static atomic_t version;' so you can
+> do an atomic_inc instead of the ++.
+
+I don't see the need for atomicity. This is just called once, at boot time.
+The only thing we're protecting here is one guest from another. The stack
+will do fine for this.
