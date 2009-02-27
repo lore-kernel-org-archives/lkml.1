@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZB0Tlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbZB0Tlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbZB0Tlb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 14:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbZB0TlW
+	id S1759323AbZB0Tlp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 14:41:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbZB0Tl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 14:41:22 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:51749 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755619AbZB0TlV (ORCPT
+	Fri, 27 Feb 2009 14:41:28 -0500
+Received: from mga11.intel.com ([192.55.52.93]:39509 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757990AbZB0Tl1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 14:41:21 -0500
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [PATCH] n411: add missing Makefile entry
-Date: Fri, 27 Feb 2009 16:41:31 -0300
-User-Agent: KMail/1.11.0 (Linux/2.6.29-desktop-0.rc6.1.1mnb; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+	Fri, 27 Feb 2009 14:41:27 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,278,1233561600"; 
+   d="scan'208";a="434794830"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Tejun Heo <tj@kernel.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hpa@zytor.com" <hpa@zytor.com>, "jeremy@goop.org" <jeremy@goop.org>,
+       "cpw@sgi.com" <cpw@sgi.com>, "mingo@elte.hu" <mingo@elte.hu>
+Date: Fri, 27 Feb 2009 11:41:19 -0800
+Subject: RE: [PATCH 09/10] percpu: implement new dynamic percpu allocator
+Thread-Topic: [PATCH 09/10] percpu: implement new dynamic percpu allocator
+Thread-Index: AcmXwM5l8v/kfNxlSNimiu+apqx0GABUFi5Q
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA361A02359@orsmsx505.amr.corp.intel.com>
+References: <1234958676-27618-1-git-send-email-tj@kernel.org>
+ <200902192221.52835.rusty@rustcorp.com.au> <499E1D01.2040408@kernel.org>
+ <200902241326.23605.rusty@rustcorp.com.au> <49A389F7.9030002@kernel.org>
+ <57C9024A16AD2D4C97DC78E552063EA361924956@orsmsx505.amr.corp.intel.com>
+ <49A609E0.5040807@kernel.org>
+In-Reply-To: <49A609E0.5040807@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902271641.32060.herton@mandriva.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no entry for n411.c to be built, include one in Makefile.
+> Ah... I see, so the 64k limit for small offset.  I think what we can
 
-Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
----
- drivers/video/Makefile |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+The 64k currently in use is detemined by the TLB page size that was chosen
+for the percpu area.  We can move up to a larger size (but supported page
+sizes increase in even powers of two, so next up from 64K is 256K, then 1M).
+Just changing PERCPU_PAGE_SHIFT in asm/page.h is sufficient to use a different
+page size.
 
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 2a998ca..4bd8050 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -76,6 +76,7 @@ obj-$(CONFIG_FB_ATARI)            += atafb.o c2p_iplan2.o 
-atafb_mfb.o \
-                                      atafb_iplan2p2.o atafb_iplan2p4.o 
-atafb_iplan2p8.o
- obj-$(CONFIG_FB_MAC)              += macfb.o
- obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
-+obj-$(CONFIG_FB_N411)             += n411.o
- obj-$(CONFIG_FB_HGA)              += hgafb.o
- obj-$(CONFIG_FB_XVR500)           += sunxvr500.o
- obj-$(CONFIG_FB_XVR2500)          += sunxvr2500.o
--- 
-1.6.1.3
+> do is using the first chunk for static percpu variables.  We'll still
+> be able to use the same accessor by doing something like...
+>
+> #define unified_percpu_accessor(ptr) ({ \
+>       if (__builtin_constant_p(ptr)) \
+>               return r0 - unit_size + ptr; \
+>       else \
+>               do ar.k3 + ptr; \
+>       })
+>
+> So, dynamic ones will be slower than normal ones but faster than what
+> we currently have (it will be faster than indirect pointer
+> derferencing, right?)
 
+Depends on how many dynamic percpu accesses are being done, and how close
+together they are.  The read of ar.k3 looks to take about 30ns on my test
+machine.  Faster than a memory access, but slower than a cache-hit. So
+a small sequence of close together dynamic percpu accesses will go
+faster with dereferencing than looking at ar.k3 for each one.
+
+ while keeping static accesses fast.  Does it
+> sound okay to you?  Also, does anyone know whether there's a working
+> ia64 emulator?  There doesn't seem to be any and it seems almost
+> impossible to get hold of an actual ia64 machine over here.  :-(
+
+The HP "ski" simulator: http://www.hpl.hp.com/research/linux/ski/ might
+do what you want ... but I haven't actually booted a kernel on it in
+a very long time.
+
+-Tony
 
