@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbZB0XVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761153AbZB0XYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760978AbZB0XVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 18:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974AbZB0XVA
+	id S1761153AbZB0XYv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 18:24:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbZB0XYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 18:21:00 -0500
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:38262 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753336AbZB0XU7 (ORCPT
+	Fri, 27 Feb 2009 18:24:43 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:58316 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754600AbZB0XYm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 18:20:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Rd43r1PU+tkb+eXbBKy/gDfB8B4iF0P3pJmW7aqu7Bm3xZj4AjJErMgH0pmRlr1SIDkQ9mQiEncOE9xiuYQjaL2A+SxqfATv0k507LFQPBsvKBMwIa0BrBj3XMjixbLAo4u89ou6Ddz/Krtwzjj6A28Gqn+bD3BaDtaMDkQWohA=  ;
-X-YMail-OSG: hx_bpuwVM1kZcWOXoW7sbcwuQH2oMGoZDjkJSPtf7xHVoQnXRrtFFuj5p0DKDBo5mcDjjfpMbHE887ASl42v_uRnhyBwvlJbahUP3HaUaFy0Bx2LvaI.B1eZACRTK.Lf86m3tSIVYZUjR22eBhvHNSBq
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
-Date: Fri, 27 Feb 2009 15:20:56 -0800
-User-Agent: KMail/1.9.10
-Cc: me@felipebalbi.com, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, felipe.balbi@nokia.com,
-       sameo@openedhand.com
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200902271358.46863.david-b@pacbell.net> <20090227141212.a2bc4a01.akpm@linux-foundation.org>
-In-Reply-To: <20090227141212.a2bc4a01.akpm@linux-foundation.org>
+	Fri, 27 Feb 2009 18:24:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Zrvy142bw4cp6dV7ciJuI+H/hxADIcCjApEMaCfxJJrRn/ia9bcpTdacRiP3VPoGag
+         gnsOJk3OUiwhR8PCbFynDUE5sicNF4FyhFykHbrwpQzSLpSirr4EjXFP8I35AZPSyh9c
+         8osW8i+sR0TCQMYiSiUoo3urUdVyFmnnAES+w=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902271520.56696.david-b@pacbell.net>
+In-Reply-To: <b6a2187b0902251738pd7be00ftf415ea6b6bf10329@mail.gmail.com>
+References: <20090224160346.5FF5E10800E@picon.linux-foundation.org>
+	 <200902252339.10129.rjw@sisk.pl>
+	 <b6a2187b0902251738pd7be00ftf415ea6b6bf10329@mail.gmail.com>
+Date: Sat, 28 Feb 2009 07:24:39 +0800
+Message-ID: <b6a2187b0902271524h781300f3kec327de34ab7ccb5@mail.gmail.com>
+Subject: Re: [Bug 12414] iwl4965 cannot use "ap auto" on latest 2.6.28/29?
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: bugme-daemon@bugzilla.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 February 2009, Andrew Morton wrote:
-> > > 
-> > > What has gone wrong here?
-> > 
-> > Not much I can see.  It's registering a platform_device,
-> > but only if it could be used on this system.
-> 
-> Again, that all gets fixed if this is done the right way around.  Run
-> your probe function.  If the hardware is there, register with the core
-> and all the nodes appear.  If the hardware is not present: bale.
+On Thu, Feb 26, 2009 at 9:38 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+> On Thu, Feb 26, 2009 at 6:39 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>> http://bugzilla.kernel.org/show_bug.cgi?id=12414
+>> Jeff, this is a "NEEDINFO" for you, please respond.
+>
+> I just tried it and still doesn't work. May be it's this particular
+> AP, but I tried on another hidden AP and it's not much better.
+>
+> I'll try to bisect it. I know it works in 2.6.28.
 
-Right.  If there's no button hooked up to its "power button"
-signal, don't register that "twl4030-pwrbutton" node.
+Here's the commit that causes the Intel 4965 to not associate with a
+hidden AP. Reverting this commit make 2.6.28-rc3 works again very
+reliably -- getting associated to the AP after every iwlagn module
+reload.
+
+But when I reverted this commit in 2.6.29-rc6, my X61 can't associate
+with the hidden AP. Some other thing is broken in between 2.6.28 -
+2.6.29.
+
+The only way to associate in 2.6.29-rcX is to force it manually with
+"iwconfig wlan0 ap <mac addr of hidden ap>".
+
+In 2.6.28, I could just specify the ssid and encrypted key using
+iwconfig, and then set "iwconfig wlan0 ap auto channel auto" and
+"iwlist scan" will find the hidden ap.
+
+Test on both 2.6.28 and 2.6.29-rcx using same
+iwlwifi-4965-ucode-228.57.2.23 and wireless_tools.30.pre7.
+
+What's the best way to get this fixed? I've tried git bisect and
+trying to revert the bad commit, but it doesn't compile.
+
+drivers/net/wireless/iwlwifi/iwl-scan.c:746: error: 'struct iwl_priv'
+has no member named 'essid_len'
+drivers/net/wireless/iwlwifi/iwl-scan.c:750: error: 'struct iwl_priv'
+has no member named 'essid_len'
+drivers/net/wireless/iwlwifi/iwl-scan.c:751: error: 'struct iwl_priv'
+has no member named 'essid_len'
 
 
-> The design of the whole subsystem appears to be upside down :(
+Thanks,
+Jeff.
 
-You seem to be missing something.  Is it only the lack of that
-tweak Felipe sent?
 
+
+commit a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Tue Oct 28 18:21:05 2008 +0100
+
+    iwlwifi: remove implicit direct scan
+
+    When an undirected scan is requested and iwlwifi is not associated but
+    the user has set an SSID (and maybe was associated with that network at
+    some point) then iwlwifi will assume the user wanted to scan for this
+    SSID which seems wrong. Remove this code.
+
+    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
