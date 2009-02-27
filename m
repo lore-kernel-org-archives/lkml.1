@@ -1,126 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbZB0SOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbZB0SQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758297AbZB0SOV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 13:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZB0SOM
+	id S1758659AbZB0SQW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 13:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZB0SQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 13:14:12 -0500
-Received: from alcalazamora.dti2.net ([81.24.162.8]:3663 "EHLO
-	alcalazamora.dti2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753610AbZB0SOL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 13:14:11 -0500
-X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Feb 2009 13:14:10 EST
-X-Spam-Processed: alcalazamora.dti2.net, Fri, 27 Feb 2009 19:09:02 +0100
-	(not processed: message from valid local sender)
-X-MDOP-RefID: str=0001.0A0B0202.49A82C3B.021C,ss=1,fgs=0 (_st=1 _vt=0 _iwf=0)
-X-Authenticated-Sender: jorge@dti2.net
-X-MDRemoteIP: 81.24.161.20
-X-Return-Path: jorge@dti2.net
-X-Envelope-From: jorge@dti2.net
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Message-ID: <49A82C2E.4030903@dti2.net>
-Date: Fri, 27 Feb 2009 19:08:46 +0100
-From: "Jorge Boncompte [DTI2]" <jorge@dti2.net>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: ext-adrian.hunter@nokia.com
-CC: LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de
-Subject: Re: Error testing ext3 on brd ramdisk
-References: <491D7C4C.3090907@nokia.com>
-In-Reply-To: <491D7C4C.3090907@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-Reply-To: jorge@dti2.net
-X-MDAV-Processed: alcalazamora.dti2.net, Fri, 27 Feb 2009 19:09:04 +0100
+	Fri, 27 Feb 2009 13:16:08 -0500
+Received: from mga02.intel.com ([134.134.136.20]:10312 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751918AbZB0SQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 13:16:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,277,1233561600"; 
+   d="scan'208";a="390337510"
+Subject: Re: [PATCH] net headers: export dcbnl.h
+From: Chris Leech <christopher.leech@intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: "sam@ravnborg.org" <sam@ravnborg.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090227.024635.51509388.davem@davemloft.net>
+References: <20090227004635.10247.60814.stgit@localhost.localdomain>
+	 <20090227055506.GA7020@uranus.ravnborg.org>
+	 <20090227.024635.51509388.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 27 Feb 2009 10:16:01 -0800
+Message-Id: <1235758561.4774.25.camel@cleech-mobl1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Hunter escribió:
-> Hi
+On Fri, 2009-02-27 at 02:46 -0800, David Miller wrote:
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Fri, 27 Feb 2009 06:55:06 +0100
 > 
-> I am trying to test EXT3 on a ramdisk and after some number of mounts
-> (anywhere from 7 to 603 so far), I get errors from e2fsck like this:
-> 
-> /dev/ram0: HTREE directory inode 137 has an invalid root node.
-> HTREE INDEX CLEARED.
-> /dev/ram0: Entry 'f1770' in /work/p0/da/d1c61 (137) has deleted/unused 
-> inode 692.  CLEARED.
-> /dev/ram0: Entry 'fa37' in /work/p0/da/d1c61 (137) has deleted/unused 
-> inode 799.  CLEARED.
-> /dev/ram0: Entry 'c1686' in /work/p0/da/d1c61 (137) has deleted/unused 
-> inode 470.  CLEARED.
-> /dev/ram0: Entry 'c19b8' in /work/p0/da/d1c61 (137) has an incorrect 
-> filetype (was 3, should be 1).
-> 
-> /dev/ram0: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
->       (i.e., without -a or -p options)
-> 
-> 
-> This is what I do:
-> 
-> 
-> modprobe brd rd_nr=1 rd_size=4096
-> mkfs.ext3 /dev/ram0
-> dmesg -n8
-> i=0
-> while (true); do
->     i=`expr $i + 1`
->     echo -------------------------------------------------------------
->     echo Cycle $i
->     date
->     echo Mounting
->     sleep 1
->     mount -t ext3 /dev/ram0 /mnt/test_file_system || exit 1
->     echo Removing old fsstress data
->     rm -rf /mnt/test_file_system/work
->     mkdir /mnt/test_file_system/work || exit 1
->     echo Starting fsstress
->     fsstress -d /mnt/test_file_system/work -p 3 -l 0 -n 100000000 &
->     echo Sleeping 30 seconds
->     sleep 30
->     echo Stopping fsstress
->     while (ps -e | grep fsstress);do
->         pkill fsstress
->         sleep 1
->     done
->     echo Unmounting
->     umount /mnt/test_file_system || exit 1
->     echo Checking
->     sleep 1
->     e2fsck -fvp /dev/ram0 || exit 1
-> done
-> 
-> 
-> It seems to happen ever since the introduction of brd (Feb '08).
-> 
-> Does anyone know what is going on?
-> 
-	Hi,
+> > On Thu, Feb 26, 2009 at 04:46:35PM -0800, Chris Leech wrote:
+> > > The DCB netlink interface is required for building the userspace tools
+> > > available at e1000.sourceforge.net
+> > 
+> > Hmmm, is that file ready for export....
+> > 
+> > >From dcbnl.h:
+> > #ifndef __LINUX_DCBNL_H__
+> > #define __LINUX_DCBNL_H__
+> > 
+> > #define DCB_PROTO_VERSION 1
+> > 
+> > struct dcbmsg {
+> >         unsigned char      dcb_family;
+> >         __u8               cmd;
+> >         __u16              dcb_pad;
+> > };
+> > 
+> > 1) It uses __u8/__u16 so it would be nice it is included <linux/types.h>
+> > so these are actually defined.
 
-	I have added Nick Piggin to the CC: as maintainer of the brd driver.
+OK, I'll send again with a patch to add <linux/types.h>
 
-	After switching an embedded distribution that /etc on a ramdisk based 
-minix filesystem from 2.6.23.17 to 2.6.29-rcX i am too getting errors 
-ant the filesystem is corrupted. Does not happen always. The visible 
-effect with text files after reboot is getting the old version of the 
-file and "\0"'s at the end.
+> > 2) Why does it use "unsigned char" for one member and __u8 for another.
+> > It looks inconsistent.
 
-	Did you found a solution?
+My guess is that the first member was made to be unsigned char to match
+struct rtgenmsg, but other rtnetlink users define family as __u8
+(fib_rule_hdr, ndmsg, ndtmsg) so it should be OK to change it.
 
-	Regards,
-
-	Jorge
--- 
-==============================================================
-Jorge Boncompte - Ingenieria y Gestion de RED
-DTI2 - Desarrollo de la Tecnologia de las Comunicaciones
---------------------------------------------------------------
-C/ Abogado Enriquez Barrios, 5   14004 CORDOBA (SPAIN)
-Tlf: +34 957 761395 / FAX: +34 957 450380
-==============================================================
-- Sin pistachos no hay Rock & Roll...
-- Without wicker a basket cannot be made.
-==============================================================
+> > We export headers that are much worse but we better raise the bar a little.
+> 
+> Agreed, we should sort out these issues before exporting.
 
