@@ -1,62 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbZB0Wh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbZB0WsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760086AbZB0Wh3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 17:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbZB0WhO
+	id S1759439AbZB0WsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 17:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZB0Wr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 17:37:14 -0500
-Received: from el-out-1112.google.com ([209.85.162.182]:44051 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753430AbZB0WhN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 17:37:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=agqMFHErD9IPNnMq4H5h9naeW7Hje0v61n7B7w98ZU8eF8izaTzGRfta/xE6T/r+eD
-         goyqHfRtuTRQVFJzrkYAXMQYUNSRGCyQTKdZzlJW/50saExt0BVRkAWiQ7BqlGE2UJ4a
-         Mns8IMYChzvVHS7o4W0itAPRv5DuZXwzkeS40=
+	Fri, 27 Feb 2009 17:47:58 -0500
+Received: from kroah.org ([198.145.64.141]:50780 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753602AbZB0Wr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 17:47:57 -0500
+Date: Fri, 27 Feb 2009 14:45:50 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6-git
+Message-ID: <20090227224550.GA19545@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <20090225181611.GL31792@frodo>
-References: <1233915810-18616-1-git-send-email-cooloney@kernel.org>
-	 <20090225181611.GL31792@frodo>
-Date: Fri, 27 Feb 2009 17:37:09 -0500
-Message-ID: <8bd0f97a0902271437q7f380e8dl53265832ea240280@mail.gmail.com>
-Subject: Re: [PATCH] usb: musb: - kill the compile warning
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: me@felipebalbi.com
-Cc: Bryan Wu <cooloney@kernel.org>, felipe.balbi@nokia.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 13:16, Felipe Balbi wrote:
-> On Fri, Feb 06, 2009 at 06:23:30PM +0800, Bryan Wu wrote:
->> drivers/usb/musb/musb_core.c:1433: warning: assignment makes pointer
->> from integer without a cast
->>       hw_ep->target_regs = musb_read_target_reg_base(i, mbase);
->>
->> static inline u16 musb_read_target_reg_base(u8 i, void __iomem *mbase);
->>
->> this is a common bug, but a bug still ?  mbase is a 32/64 bit pointer,
->> but we return a u16 to assign to a pointer ?  seems odd :)
->>
->> So return right pointer in the stub.
->>
->> Cc: Mike Frysinger <vapier.adi@gmail.com>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->
-> any new version coming ??
+Here are some USB fixes for your 2.6-git tree.
 
-so we're all on the same page ...
+Mostly musb driver bugfixes here, but there are some device id updates
+and a ehci fix that some v4l drivers need, as well as other minor fixes.
 
-we agree the first hunk is redundant as MUSB_BUSCTL_OFFSET() is an
-integer constant and mbase is of the type that is returned.  which
-means the first hunk can be dropped.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-the 2nd hunk is 100% correct though ...
--mike
+All of these patches have been in the -next and -mm releases for a while.
+
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------
+
+ arch/arm/mach-davinci/board-evm.c  |    6 +-
+ arch/arm/mach-davinci/clock.c      |    5 ++
+ arch/arm/mach-davinci/usb.c        |    1 +
+ drivers/usb/class/cdc-acm.c        |    9 ++++
+ drivers/usb/core/message.c         |   11 +++-
+ drivers/usb/gadget/Kconfig         |    1 +
+ drivers/usb/gadget/f_obex.c        |    4 +-
+ drivers/usb/gadget/file_storage.c  |    6 ++-
+ drivers/usb/gadget/fsl_usb2_udc.c  |    3 +
+ drivers/usb/host/ehci-hcd.c        |    2 +
+ drivers/usb/host/ehci-mem.c        |    1 +
+ drivers/usb/host/ehci-sched.c      |   56 ++++++++++++++++++---
+ drivers/usb/host/ehci.h            |    6 ++
+ drivers/usb/musb/davinci.c         |   15 ++----
+ drivers/usb/musb/musb_core.c       |   13 +++--
+ drivers/usb/musb/musb_gadget.c     |    4 +-
+ drivers/usb/musb/musb_host.c       |   93 ++++++++++++++++++++++-------------
+ drivers/usb/serial/option.c        |   11 ++++-
+ drivers/usb/storage/unusual_devs.h |    4 +-
+ 19 files changed, 176 insertions(+), 75 deletions(-)
+
+---------------
+
+Adam Richter (1):
+      USB: Quirk for Hummingbird huc56s / Conexant ACM modem
+
+Alan Stern (3):
+      USB: usb-storage: add IGNORE_RESIDUE flag for Genesys Logic adapters
+      USB: g_file_storage: automatically disable stalls under Atmel
+      USB: usb_get_string should check the descriptor type
+
+Anand Gadiyar (1):
+      USB: musb: resume suspended root hub on disconnect
+
+David Brownell (2):
+      USB: gadget: fix build error in omap_apollon_2420_defconfig
+      usb: musb: make Davinci *work* in mainline
+
+Dmitriy Taychenachev (1):
+      USB: cdc-acm: add usb id for motomagx phones
+
+Dmitry Krivoschekov (1):
+      USB: musb: fix musb_host_tx() for shared endpoint FIFO
+
+Felipe Balbi (2):
+      usb: gadget: obex: select correct ep descriptors
+      USB: musb: be careful with 64K+ transfer lengths (gadget side)
+
+Jesse Sung (1):
+      USB: option: add BenQ 3g modem information
+
+Karsten Wiese (1):
+      USB: EHCI: slow down ITD reuse
+
+Li Yang (1):
+      USB: fsl_usb2_udc: fix potential queue head corruption
+
+Patrik Kullman (1):
+      USB: serial: add support for second revision of Ericsson F3507G WWAN card
+
+Sergei Shtylyov (5):
+      USB: musb: fix urb_dequeue() method
+      USB: musb: host endpoint_disable() oops fixes
+      USB: musb: fix data toggle saving with shared FIFO
+      USB: musb: be careful with 64K+ transfer lengths, host side
+      USB: musb: use right poll limit for low speed devices
+
+Vikram Pandita (1):
+      USB: musb: fix srp sysfs entry deletion
+
