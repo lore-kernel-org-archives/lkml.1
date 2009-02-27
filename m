@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZB0C7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZB0DG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbZB0C7T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 21:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZB0C7I
+	id S1755168AbZB0DG5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 22:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZB0DGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 21:59:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46464 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752414AbZB0C7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 21:59:04 -0500
-Message-ID: <49A756CF.7080309@kernel.org>
-Date: Fri, 27 Feb 2009 11:58:23 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 26 Feb 2009 22:06:49 -0500
+Received: from mail.deathmatch.net ([70.167.247.36]:4552 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbZB0DGt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 22:06:49 -0500
+Date: Thu, 26 Feb 2009 22:06:08 -0500
+From: Bob Copeland <me@bobcopeland.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, "proski@gnu.org" <proski@gnu.org>,
+       "ath5k-devel@venema.h4ckr.net" <ath5k-devel@venema.h4ckr.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [ath5k-devel] [PATCH 1/1] ath5k: fix hw rate index condition
+Message-ID: <20090227030608.GA29974@hash.localnet>
+References: <1235688271-22346-1-git-send-email-jirislaby@gmail.com> <20090226230338.M86894@bobcopeland.com> <49A7236E.2020807@gmail.com> <b6c5339f0902261528i7b581125k29927c3c5ac4fe4c@mail.gmail.com> <49A726A7.6090809@gmail.com> <20090227022704.GA29850@hash.localnet> <20090227023912.GF13456@tesla>
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/percpu] bootmem: clean up arch-specific bootmem wrapping
-References: <tip-c132937556f56ee4b831ef4b23f1846e05fde102@kernel.org> <20090224214638.GA2049@cmpxchg.org> <20090224214932.GC12601@elte.hu> <20090224234949.GA1778@cmpxchg.org> <49A4ACAE.4020104@kernel.org> <20090225024316.GA1738@cmpxchg.org> <49A4CE93.3070908@kernel.org> <49A4CEE1.7090003@kernel.org>
-In-Reply-To: <49A4CEE1.7090003@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 27 Feb 2009 02:58:28 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090227023912.GF13456@tesla>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Tejun Heo wrote:
->> This patch drops the generic wrapping around alloc_bootmem_core() and
->> add alloc_bootmem_core() instead.  If necessary, arch can define
->       ^^^^^^^^^^^^^^^^^^^^
-> should have been alloc_arch_preferred_bootmem()
-> 
->> bootmem_arch_referred_node() macro or function which takes all
->> allocation information and returns the preferred node.  bootmem
->> generic code will always try the preferred node first and then
->> fallback to other nodes as usual.
+On Thu, Feb 26, 2009 at 06:39:12PM -0800, Luis R. Rodriguez wrote:
+> Might be worth adding a note why this is the case. Can't we simply avoid
+> this by checking earlier for the error or simply assigning it an actual
+> default _good_ hw rate value?
 
-Ping. Johannes, can you please review the patch?
-
-Thanks.
+I guess an alternative is to initialize to 0, that would count any rx
+packets whose hw rate we don't know about as the base rate, so it would
+probably bias the RC to 1mb, but this is already one of those 'should 
+never happen' cases.  Also I can't forsee having a rate index > 127 so
+changing the sign is pretty low risk.
 
 -- 
-tejun
+Bob Copeland %% www.bobcopeland.com
+
