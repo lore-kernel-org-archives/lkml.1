@@ -1,212 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758405AbZB0R6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZB0SFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758405AbZB0R6u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 12:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZB0R6m
+	id S1757337AbZB0SFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 13:05:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZB0SFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 12:58:42 -0500
-Received: from gw.goop.org ([64.81.55.164]:45305 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754617AbZB0R6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 12:58:41 -0500
-Message-ID: <49A829CE.9020509@goop.org>
-Date: Fri, 27 Feb 2009 09:58:38 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC] x86: add brk allocation for very, very early allocations
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Feb 2009 13:05:33 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1839 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbZB0SFc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 13:05:32 -0500
+From: Mark Brown <broonie@sirena.org.uk>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: linux-kernel@vger.kernel.org, Mark Brown <broonie@sirena.org.uk>
+Date: Fri, 27 Feb 2009 18:05:20 +0000
+Message-Id: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk>
+X-Mailer: git-send-email 1.5.6.3
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH] checkpatch: Warn on empty commit log bodies
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
- I'd like to add a mechanism like this so I can dynamically allocate some
- Xen-related structures, rather than statically allocating them in the bss,
- both so that Xen has less overhead when it isn't being used, and so I can
- scale better to things like memory size.
+Try to help ensure that e-mailed patches have some commit log text in
+the body of the e-mail by warning if we can't find any lines that look
+like a header of some kind prior to the Signed-off-by.
 
- I think this is more widely useful; it would supplant dmi_alloc_data[], for
- example, and I'm sure there's other cases.
+Signed-off-by: Mark Brown <broonie@sirena.org.uk>
+---
+ scripts/checkpatch.pl |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
- This is fundimentally the same as head_32.S's extension of the bss to build
- the initial kernel mapping, but 64-bit doesn't currently do anything analogous
- to this.
-
- Unfortunately when I use this code as-is I'm getting crashes when the slab
- allocator starts up.  I think this is all correct, but I'm wondering if
- there's something I'm overlooking which is broken in principle.
-
- So, what am I missing?
-
- Thanks,
-	J
-]
-
-
-Add a brk()-like allocator which effectively extends the bss
-in order to allow very early code to do dynamic allocations.
-This is better than using statically allocated arrays for
-data in subsystems which may never get used.
-
-The amount of space available depends on how much the initial
-kernel mappings have covered, and so is fairly limited.
-
-Not-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
-diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
-index 66801cb..e6b754b 100644
---- a/arch/x86/include/asm/setup.h
-+++ b/arch/x86/include/asm/setup.h
-@@ -99,6 +99,11 @@ extern struct boot_params boot_params;
-  */
- #define LOWMEMSIZE()	(0x9f000)
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 45eb0ae..d162421 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1072,6 +1072,7 @@ sub process {
  
-+/* exceedingly early brk-like allocator */
-+extern unsigned long _brk_start, _brk_end;
-+void init_brk(unsigned long start);
-+void *extend_brk(size_t size, size_t align);
+ 	our $clean = 1;
+ 	my $signoff = 0;
++	my $headers = 0;
+ 	my $is_patch = 0;
+ 
+ 	our @report = ();
+@@ -1258,6 +1259,11 @@ sub process {
+ 
+ 		$cnt_lines++ if ($realcnt != 0);
+ 
++		# Check for a RFC822 style header
++		if ($line =~ /^([a-z0-9-]+:|From )/i) {
++			$headers++;
++		}
 +
- #ifdef __i386__
- 
- void __init i386_start_kernel(void);
-diff --git a/arch/x86/kernel/head32.c b/arch/x86/kernel/head32.c
-index ac108d1..fa9ae31 100644
---- a/arch/x86/kernel/head32.c
-+++ b/arch/x86/kernel/head32.c
-@@ -34,6 +34,8 @@ void __init i386_start_kernel(void)
- 
- 	reserve_ebda_region();
- 
-+	init_brk((unsigned long)__va(init_pg_tables_end));
+ #check the patch for a signoff:
+ 		if ($line =~ /^\s*signed-off-by:/i) {
+ 			# This is a signoff, if ugly, so do not double report.
+@@ -1270,6 +1276,14 @@ sub process {
+ 				WARN("space required after Signed-off-by:\n" .
+ 					$herecurr);
+ 			}
 +
- 	/*
- 	 * At this point everything still needed from the boot loader
- 	 * or BIOS or kernel text should be early reserved or marked not
-diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-index f5b2722..4b29802 100644
---- a/arch/x86/kernel/head64.c
-+++ b/arch/x86/kernel/head64.c
-@@ -91,6 +91,8 @@ void __init x86_64_start_kernel(char * real_mode_data)
- 	if (console_loglevel == 10)
- 		early_printk("Kernel alive\n");
++			# There should be at least 1 line of ordinary
++			# text for the body of the commit log prior to
++			# the signoff.
++			if ($linenr - $headers < 2) {
++				print $headers . $linenr . "\n";
++				WARN("no body for commit log");
++			}
+ 		}
  
-+	init_brk((unsigned long)&_end);
-+
- 	x86_64_start_reservations(real_mode_data);
- }
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 0d051b4..8899cfa 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -113,6 +113,7 @@
- #endif
- 
- unsigned int boot_cpu_id __read_mostly;
-+__initdata unsigned long _brk_start, _brk_end;
- 
- #ifdef CONFIG_X86_64
- int default_cpu_present_to_apicid(int mps_cpu)
-@@ -335,6 +336,26 @@ static void __init relocate_initrd(void)
- }
- #endif
- 
-+void __init init_brk(unsigned long brk)
-+{
-+	_brk_start = _brk_end = brk;
-+}
-+
-+void * __init extend_brk(size_t size, size_t align)
-+{
-+	size_t mask = align - 1;
-+	void *ret;
-+
-+	BUG_ON(align & mask);
-+
-+	_brk_end = (_brk_end + mask) & ~mask;
-+
-+	ret = (void *)_brk_end;
-+	_brk_end += size;
-+
-+	return ret;
-+}
-+
- static void __init reserve_initrd(void)
- {
- 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
-@@ -727,11 +748,7 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.start_code = (unsigned long) _text;
- 	init_mm.end_code = (unsigned long) _etext;
- 	init_mm.end_data = (unsigned long) _edata;
--#ifdef CONFIG_X86_32
--	init_mm.brk = init_pg_tables_end + PAGE_OFFSET;
--#else
--	init_mm.brk = (unsigned long) &_end;
--#endif
-+	init_mm.brk = _brk_end;
- 
- 	code_resource.start = virt_to_phys(_text);
- 	code_resource.end = virt_to_phys(_etext)-1;
-@@ -897,6 +914,9 @@ void __init setup_arch(char **cmdline_p)
- 	acpi_numa_init();
- #endif
- 
-+	if (_brk_end > _brk_start)
-+		reserve_early(__pa(_brk_start), __pa(_brk_end), "BRK");
-+
- 	initmem_init(0, max_pfn);
- 
- #ifdef CONFIG_ACPI_SLEEP
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index dd5df65..4222ed6 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -16,6 +16,7 @@
- #include <asm/processor.h>
- #include <asm/tlbflush.h>
- #include <asm/sections.h>
-+#include <asm/setup.h>
- #include <asm/uaccess.h>
- #include <asm/pgalloc.h>
- #include <asm/proto.h>
-@@ -95,7 +96,7 @@ static inline unsigned long highmap_start_pfn(void)
- 
- static inline unsigned long highmap_end_pfn(void)
- {
--	return __pa(roundup((unsigned long)_end, PMD_SIZE)) >> PAGE_SHIFT;
-+	return __pa(roundup(_brk_end, PMD_SIZE)) >> PAGE_SHIFT;
- }
- 
- #endif
-@@ -707,7 +708,7 @@ static int cpa_process_alias(struct cpa_data *cpa)
- 	 * No need to redo, when the primary call touched the high
- 	 * mapping already:
- 	 */
--	if (within(vaddr, (unsigned long) _text, (unsigned long) _end))
-+	if (within(vaddr, (unsigned long) _text, _brk_end))
- 		return 0;
- 
- 	/*
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 1815b8a..a3cc9ff 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -975,6 +975,9 @@ asmlinkage void __init xen_start_kernel(void)
- 
- 	init_mm.pgd = pgd;
- 
-+	/* Set up very early brk allocator after Xen pagetables */
-+	init_brk(xen_start_info->pt_base + xen_start_info->nr_pt_frames * PAGE_SIZE);
-+
- 	/* keep using Xen gdt for now; no urgent need to change it */
- 
- 	pv_info.kernel_rpl = 1;
-
+ # Check for wrappage within a valid hunk of the file
+-- 
+1.5.6.3
 
