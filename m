@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZB0KK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZB0KMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbZB0KK2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZB0KKQ
+	id S1756252AbZB0KMk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:12:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZB0KMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:10:16 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43367 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbZB0KKP (ORCPT
+	Fri, 27 Feb 2009 05:12:32 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:59289 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbZB0KMb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:10:15 -0500
-Date: Fri, 27 Feb 2009 11:12:47 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Arve Hj?nnev?g <arve@android.com>, Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090227101247.GF4582@elf.ucw.cz>
-References: <200902192215.18365.rjw@sisk.pl> <200902210057.27781.rjw@sisk.pl> <d6200be20902201708g45540f60ib024c3365c85aef4@mail.gmail.com> <200902211047.26787.rjw@sisk.pl>
+	Fri, 27 Feb 2009 05:12:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=OSitzd4FpJoYGV4qnypO8vBvzpysDYI6AEgdnbIdxSeKPUJGYQJBU/qrXzea3hNPIp
+         uhCAIzP90oDAbhkooYi2ZcKWortIYfF61qhV0VGzHvFRrWSci1z5UixHjw1YzX2ze/lA
+         EWBshgd9iayFZ6wEpoTeLgJjX4JH32heA+Mdo=
+Message-ID: <49A7BC89.6040407@gmail.com>
+Date: Fri, 27 Feb 2009 11:12:25 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902211047.26787.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Jiri Slaby <jirislaby@gmail.com>, airlied@linux.ie, eric@anholt.net,
+       keithp@keithp.com, dri-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: i915 X lockup
+References: <49A7B253.906@gmail.com> <1235728867.24401.82.camel@laptop>
+In-Reply-To: <1235728867.24401.82.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 27.2.2009 11:01, Peter Zijlstra wrote:
+> would be good to have sysrq-w output
 
-> > > And if the kernel is supposed to start automatic suspend, it has to monitor
-> > > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
-> > > kernel if it refuses to suspend.
-> > 
-> > What is better about polling in userspace?
-> 
-> One kernel thread less, for example?
+There was nothing but events. So this is rather an intel driver 
+userspace bug?
 
-One kernel thread is about as costly as one userland thread. And I
-believe we should not design new code that _needs_ polling.
-
-I think it is better to have kernel thread than userland polling us
-all the time.
-
-Now... on PC it will be "interesting". Your solution has great
-advantage of being able to work with s2ram quirks... But s2ram quirks
-are not an issue on embedded hardware or OLPC, and hopefully kernel
-mode setting will fix it on PCs, too...
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+SysRq : Show Blocked State
+   task                        PC stack   pid father
+events/1      D 0000000000000000     0    11      2
+  ffff8801cb231da0 0000000000000046 ffff8801cb231d00 ffffffff80231ef8
+  0000003800000010 0000000000010180 ffff880028053840 ffff880028057180
+  ffff8801cb20c790 ffff8801cb20ca38 00000001ca3f90e8 00000000ffff7a0e
+Call Trace:
+  [<ffffffff80231ef8>] ? dequeue_entity+0x18/0x1a0
+  [<ffffffff80230b50>] ? dequeue_task+0xb0/0xf0
+  [<ffffffff805fca2a>] __mutex_lock_slowpath+0xea/0x170
+  [<ffffffff803f60a0>] ? i915_gem_retire_work_handler+0x0/0x90
+  [<ffffffff805fc6f6>] mutex_lock+0x26/0x50
+  [<ffffffff803f60d8>] i915_gem_retire_work_handler+0x38/0x90
+  [<ffffffff80250792>] worker_thread+0x172/0x250
+  [<ffffffff80254da0>] ? autoremove_wake_function+0x0/0x40
+  [<ffffffff80250620>] ? worker_thread+0x0/0x250
+  [<ffffffff802549be>] kthread+0x9e/0xb0
+  [<ffffffff8020d3da>] child_rip+0xa/0x20
+  [<ffffffff80254920>] ? kthread+0x0/0xb0
+  [<ffffffff8020d3d0>] ? child_rip+0x0/0x20
