@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZB0B2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbZB0B3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759500AbZB0B2u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 20:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbZB0B2l
+	id S1755230AbZB0B3O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 20:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZB0B2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 20:28:41 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44184 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbZB0B2l (ORCPT
+	Thu, 26 Feb 2009 20:28:54 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:62799 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759880AbZB0B2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 20:28:41 -0500
-Date: Fri, 27 Feb 2009 01:28:37 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: trivial@kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/16] fs/super.c: fix sparse warning: Using plain
-	integer as NULL pointer
-Message-ID: <20090227012837.GQ28946@ZenIV.linux.org.uk>
-References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net> <20090222000459.17557.20005.stgit@vmbox.hanneseder.net> <154e089b0902261710ybebe696p2c87334b29bf08a0@mail.gmail.com>
+	Thu, 26 Feb 2009 20:28:53 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Glauber Costa <glommer@redhat.com>
+Subject: Re: [PATCH] remove static declaration from wall clock version
+Date: Fri, 27 Feb 2009 02:28:37 +0100
+User-Agent: KMail/1.9.9
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+References: <1235677340-3139-1-git-send-email-glommer@redhat.com> <200902262050.27555.arnd@arndb.de> <20090227012222.GA5979@poweredge.glommer>
+In-Reply-To: <20090227012222.GA5979@poweredge.glommer>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <154e089b0902261710ybebe696p2c87334b29bf08a0@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200902270228.38047.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+aaqv2RV/uNOC0MsqvclSI+dX80UDFRdPl+T0
+ D//tLFLQ7NCV7+2Gvl6t4442gkjXIZrpJ0/a8iQJFZVtLQyUex
+ mtikf8jqCUgnH4mKnylSQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 02:10:14AM +0100, Hannes Eder wrote:
-> [Added To]
+On Friday 27 February 2009, Glauber Costa wrote:
 > 
-> On Sun, Feb 22, 2009 at 1:05 AM, Hannes Eder <hannes@hanneseder.net> wrote:
-> > Fix this sparse warning:
-> > ?fs/super.c:849:26: warning: Using plain integer as NULL pointer
+> > Doesn't this mean that kvm_write_guest now writes an uninitialized value
+> > to the guest?
+> No. If you look closely, it's now initialized to 1.
 
-May I suggest a better subject for those?  Namely,
+Right, I didn't see that change at first.
 
-Subject: NULL noise: <filename or glob>
-
-Nobody _cares_ which tool generates that and boilerplates in subjects should
-be as short as possible.
+	Arnd <><
