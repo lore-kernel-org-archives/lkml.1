@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbZB0KvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbZB0KxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760476AbZB0KvA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758961AbZB0Kuf
+	id S1758614AbZB0KxQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZB0Kw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:50:35 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46554 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758789AbZB0Kue (ORCPT
+	Fri, 27 Feb 2009 05:52:57 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:55694 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755472AbZB0Kwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:50:34 -0500
-Date: Fri, 27 Feb 2009 11:53:08 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Eric Piel <eric.piel@tremplin-utc.net>, Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Vladimir Botka <vbotka@suse.cz>, Quoc.Pham@hp.com
-Subject: hp_accel: small documentation updates
-Message-ID: <20090227105308.GA26101@elf.ucw.cz>
+	Fri, 27 Feb 2009 05:52:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dii3DKZHZXXOZmSSz9iK8zQRw5MqTudtPC0g+BK1t5ig0V0pmexiH3BohYnElz6geM
+         G9+kQre+2irjJ4r4PRweB5IXQuZEP6Mcd3Myui7YWccQzn2aNwV/Ib08tjMUT3hTjymg
+         rQ+zvWQgmqdRBL//HyGD5yo2IGYTArhF0jyWQ=
+Date: Fri, 27 Feb 2009 13:59:35 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       mpm@selenic.com, containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+	do?
+Message-ID: <20090227105935.GD2939@x200.localdomain>
+References: <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu> <20090226223112.GA2939@x200.localdomain> <20090227090323.GC16211@elte.hu> <20090227012209.65401324.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20090227012209.65401324.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 27, 2009 at 01:22:09AM -0800, Andrew Morton wrote:
+> On Fri, 27 Feb 2009 10:03:23 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > >  arch/x86/include/asm/unistd_32.h   |    2 
+> > >  arch/x86/kernel/syscall_table_32.S |    2 
+> > >  include/linux/Kbuild               |    1 
+> > >  include/linux/cr.h                 |   56 ++++++
+> > >  include/linux/ipc_namespace.h      |    3 
+> > >  include/linux/syscalls.h           |    5 
+> > >  init/Kconfig                       |    2 
+> > >  kernel/Makefile                    |    1 
+> > >  kernel/cr/Kconfig                  |   11 +
+> > >  kernel/cr/Makefile                 |    8 
+> > >  kernel/cr/cpt-cred.c               |  115 +++++++++++++
+> > >  kernel/cr/cpt-fs.c                 |  122 +++++++++++++
+> > >  kernel/cr/cpt-mm.c                 |  134 +++++++++++++++
+> > >  kernel/cr/cpt-ns.c                 |  324 +++++++++++++++++++++++++++++++++++++
+> > >  kernel/cr/cpt-signal.c             |  121 +++++++++++++
+> > >  kernel/cr/cpt-sys.c                |  228 ++++++++++++++++++++++++++
+> > >  kernel/cr/cr-ctx.c                 |  141 ++++++++++++++++
+> > >  kernel/cr/cr.h                     |   61 ++++++
+> > >  kernel/cr/rst-sys.c                |    9 +
+> > >  kernel/sys_ni.c                    |    3 
+> > >  20 files changed, 1349 insertions(+)
+> > 
+> > That does not look scary to me at all. Andrew?
+> 
+> btw, why is there no need for a kernel/cr/cpt-net.c?
 
-Fix english in Documentation, add "how to test" description.
+Too early :-) There is no rst-*.c counterparts either :-) But I'm
+working on this.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/Documentation/hwmon/lis3lv02d b/Documentation/hwmon/lis3lv02d
-index 287f8c9..effe949 100644
---- a/Documentation/hwmon/lis3lv02d
-+++ b/Documentation/hwmon/lis3lv02d
-@@ -1,11 +1,11 @@
- Kernel driver lis3lv02d
--==================
-+=======================
- 
- Supported chips:
- 
-   * STMicroelectronics LIS3LV02DL and LIS3LV02DQ
- 
--Author:
-+Authors:
-         Yan Burman <burman.yan@gmail.com>
- 	Eric Piel <eric.piel@tremplin-utc.net>
- 
-@@ -15,7 +15,7 @@ Description
- 
- This driver provides support for the accelerometer found in various HP
- laptops sporting the feature officially called "HP Mobile Data
--Protection System 3D" or "HP 3D DriveGuard". It detect automatically
-+Protection System 3D" or "HP 3D DriveGuard". It detects automatically
- laptops with this sensor. Known models (for now the HP 2133, nc6420,
- nc2510, nc8510, nc84x0, nw9440 and nx9420) will have their axis
- automatically oriented on standard way (eg: you can directly play
-@@ -27,7 +27,7 @@ position - 3D position that the accelerometer reports. Format: "(x,y,z)"
- calibrate - read: values (x, y, z) that are used as the base for input
- 		  class device operation.
-             write: forces the base to be recalibrated with the current
--		  position.
-+		   position.
- rate - reports the sampling rate of the accelerometer device in HZ
- 
- This driver also provides an absolute input class device, allowing
-@@ -48,7 +48,7 @@ For better compatibility between the various laptops. The values reported by
- the accelerometer are converted into a "standard" organisation of the axes
- (aka "can play neverball out of the box"):
-  * When the laptop is horizontal the position reported is about 0 for X and Y
--and a positive value for Z
-+	and a positive value for Z
-  * If the left side is elevated, X increases (becomes positive)
-  * If the front side (where the touchpad is) is elevated, Y decreases
- 	(becomes negative)
-@@ -59,3 +59,13 @@ email to the authors to add it to the database.  When reporting a new
- laptop, please include the output of "dmidecode" plus the value of
- /sys/devices/platform/lis3lv02d/position in these four cases.
- 
-+Q&A
-+---
-+
-+Q: How do I safely simulate freefall? I have an HP "portable
-+workstation" which has about 3.5kg and a plastic case, so letting it
-+fall to the ground is out of question...
-+
-+A: The sensor is pretty sensitive, so your hands can do it. Lift it
-+into free space, follow the fall with your hands for like 10
-+centimeters. That should be enough to trigger the detection.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+But, yes, cpt-net.c will be definitely: all sorts of sockets, virtual
+netdevices, iptables, ...
