@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZB0JhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbZB0Jis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZB0JhH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 04:37:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZB0Jgx
+	id S1756643AbZB0Jis (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 04:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbZB0Jij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 04:36:53 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:65476 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753657AbZB0Jgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 04:36:52 -0500
-Message-ID: <49A7B425.4010606@fr.ibm.com>
-Date: Fri, 27 Feb 2009 10:36:37 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Greg Kurz <gkurz@fr.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
-       hpa@zytor.com, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
- do?
-References: <20090211141434.dfa1d079.akpm@linux-foundation.org>	<1234462282.30155.171.camel@nimitz>	<1234467035.3243.538.camel@calx>	<20090212114207.e1c2de82.akpm@linux-foundation.org>	<1234475483.30155.194.camel@nimitz>	<20090212141014.2cd3d54d.akpm@linux-foundation.org>	<1234479845.30155.220.camel@nimitz>	<20090226162755.GB1456@x200.localdomain>	<20090226173302.GB29439@elte.hu> <1235673016.5877.62.camel@bahia> <20090226221709.GA2924@x200.localdomain>
-In-Reply-To: <20090226221709.GA2924@x200.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Feb 2009 04:38:39 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:52195 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753799AbZB0Jii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 04:38:38 -0500
+Date: Fri, 27 Feb 2009 01:38:35 -0800
+From: Jeremy Higdon <jeremy@sgi.com>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Cc: jesse.barnes@intel.com, habeck@sgi.com
+Subject: [PATCH 1/1] Fix PCI DMA flag propagation on SN (Altix) with PICs
+Message-ID: <20090227093835.GA306198@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Thu, Feb 26, 2009 at 07:30:16PM +0100, Greg Kurz wrote:
->> On Thu, 2009-02-26 at 18:33 +0100, Ingo Molnar wrote:
->>> I think the main question is: will we ever find ourselves in the 
->>> future saying that "C/R sucks, nobody but a small minority uses 
->>> it, wish we had never merged it"? I think the likelyhood of that 
->>> is very low. I think the current OpenVZ stuff already looks very 
->> We've been maintaining for some years now a C/R middleware with only a
->> few hooks in the kernel. Our strategy is to leverage existing kernel
->> paths as they do most of the work right.
->>
->> Most of the checkpoint is performed from userspace, using regular
->> syscalls in a signal handler or /proc parsing. Restart is a bit trickier
->> and needs some kernel support to bypass syscall checks and enforce a
->> specific id for a resource. At the end, we support C/R and live
->> migration of networking apps (websphere application server for example).
->>
->> >From our experience, we can tell:
->>
->> Pros: mostly not-so-tricky userland code, independent from kernel
->> internals
->> Cons: sub-optimal for some resources
-> 
-> How do you restore struct task_struct::did_exec ?
+We recently discovered a problem with passing of DMA attributes on
+SN systems with the older PIC chips.
 
-greg didn't say there was _no_ kernel support.
+Signed-off-by: Jeremy Higdon <jeremy@sgi.com>
 
-without discussing the pros and cons of such and such implemention, full 
-C/R from kernel means more maintenance work from kernel maintainers, so
-it seems a good idea to leverage existing API when they exist. less work.
-
-duplicating the get/set of the cpu state which is already done in the
-signal handling is one example of extra work.
-
-now, there's a definitely a need for kernel support for some resources. the 
-question now is finding the right path, this is still work in progress IMHO.
-
-C.
-
+--- a/arch/ia64/sn/pci/pcibr/pcibr_dma.c	2009-02-25 23:29:21.000000000 -0800
++++ b/arch/ia64/sn/pci/pcibr/pcibr_dma.c	2009-02-25 23:29:09.318611870 -0800
+@@ -135,11 +135,10 @@ pcibr_dmatrans_direct64(struct pcidev_in
+ 	if (SN_DMA_ADDRTYPE(dma_flags) == SN_DMA_ADDR_PHYS)
+ 		pci_addr = IS_PIC_SOFT(pcibus_info) ?
+ 				PHYS_TO_DMA(paddr) :
+-		    		PHYS_TO_TIODMA(paddr) | dma_attributes;
++		    		PHYS_TO_TIODMA(paddr);
+ 	else
+-		pci_addr = IS_PIC_SOFT(pcibus_info) ?
+-				paddr :
+-				paddr | dma_attributes;
++		pci_addr = paddr;
++	pci_addr |= dma_attributes;
  
+ 	/* Handle Bus mode */
+ 	if (IS_PCIX(pcibus_info))
