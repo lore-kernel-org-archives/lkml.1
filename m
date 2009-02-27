@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbZB0KHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZB0KK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756836AbZB0KHY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZB0KHK
+	id S1756080AbZB0KK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZB0KKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:07:10 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36120 "EHLO
+	Fri, 27 Feb 2009 05:10:16 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43367 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbZB0KHJ (ORCPT
+	with ESMTP id S1751776AbZB0KKP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:07:09 -0500
-Date: Fri, 27 Feb 2009 11:09:41 +0100
+	Fri, 27 Feb 2009 05:10:15 -0500
+Date: Fri, 27 Feb 2009 11:12:47 +0100
 From: Pavel Machek <pavel@ucw.cz>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Arve Hj?nnev?g <arve@android.com>, Alan Stern <stern@rowland.harvard.edu>,
@@ -26,12 +26,12 @@ Cc: Arve Hj?nnev?g <arve@android.com>, Alan Stern <stern@rowland.harvard.edu>,
        Igor Stoppa <igor.stoppa@nokia.com>,
        Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
 Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090227100941.GE4582@elf.ucw.cz>
-References: <200902192215.18365.rjw@sisk.pl> <200902201657.01145.rjw@sisk.pl> <d6200be20902201503m59a13cddn59adfc47d0c2ed1e@mail.gmail.com> <200902210057.27781.rjw@sisk.pl>
+Message-ID: <20090227101247.GF4582@elf.ucw.cz>
+References: <200902192215.18365.rjw@sisk.pl> <200902210057.27781.rjw@sisk.pl> <d6200be20902201708g45540f60ib024c3365c85aef4@mail.gmail.com> <200902211047.26787.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902210057.27781.rjw@sisk.pl>
+In-Reply-To: <200902211047.26787.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,25 +40,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > > Then, the decision making logic will be able to use /sys/power/sleep whenever
-> > > it wishes to and the kernel will be able to refuse to suspend if it's not
-> > > desirable at the moment.
-> > >
-> > > It seems to be flexible enough to me.
+> > > And if the kernel is supposed to start automatic suspend, it has to monitor
+> > > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
+> > > kernel if it refuses to suspend.
 > > 
-> > This seems flexible enough to avoid race conditions, but it forces the
-> > user space power manager to poll when the kernel refuse suspend.
+> > What is better about polling in userspace?
 > 
-> And if the kernel is supposed to start automatic suspend, it has to monitor
-> all of the wakelocks.  IMO, it's better to allow the power manager to poll the
-> kernel if it refuses to suspend.
+> One kernel thread less, for example?
 
-polling is evil -- it keeps CPU wake up => wastes power.
+One kernel thread is about as costly as one userland thread. And I
+believe we should not design new code that _needs_ polling.
 
-Wakelocks done right are single atomic_t... and if you set it to 0,
-you just unblock "sleeper" thread or something. Zero polling and very
-simple...
-									Pavel
+I think it is better to have kernel thread than userland polling us
+all the time.
+
+Now... on PC it will be "interesting". Your solution has great
+advantage of being able to work with s2ram quirks... But s2ram quirks
+are not an issue on embedded hardware or OLPC, and hopefully kernel
+mode setting will fix it on PCs, too...
+								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
