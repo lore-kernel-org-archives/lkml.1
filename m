@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760917AbZB0WMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbZB0WXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760917AbZB0WMk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 17:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758444AbZB0WMc
+	id S1760336AbZB0WXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 17:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZB0WXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 17:12:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57646 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755281AbZB0WMa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 17:12:30 -0500
-Date: Fri, 27 Feb 2009 14:12:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: me@felipebalbi.com, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, felipe.balbi@nokia.com,
-       sameo@openedhand.com
-Subject: Re: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
-Message-Id: <20090227141212.a2bc4a01.akpm@linux-foundation.org>
-In-Reply-To: <200902271358.46863.david-b@pacbell.net>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-	<1235762883-20870-2-git-send-email-me@felipebalbi.com>
-	<20090227123649.d2d6408c.akpm@linux-foundation.org>
-	<200902271358.46863.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Feb 2009 17:23:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36039 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755237AbZB0WXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 17:23:14 -0500
+Message-ID: <49A867CD.70807@redhat.com>
+Date: Fri, 27 Feb 2009 17:23:09 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20080915)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: filesystem time stamp resolution
+References: <49A7232C.6050808@redhat.com> <87r61k2rl4.fsf@basil.nowhere.org> <49A862CD.2000409@redhat.com>
+In-Reply-To: <49A862CD.2000409@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Feb 2009 13:58:46 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> Andi Kleen wrote:
+>   
+>> One issue is network file systems. The kernel has no idea what a
+>> remote NFS (or other network) file system will support, because it
+>> depends on the file system on the remote server.
+>>     
+>
+> Hence my point in the initial mail saying this would be nice to have a
+> solution for.
+>
+> Possibly some of the people working on the next NFS protocol revision
+> (or similar protocols) read this and add appropriate requests to the
+> protocol.
 
-> On Friday 27 February 2009, Andrew Morton wrote:
-> > > --- a/drivers/mfd/twl4030-core.c
-> > > +++ b/drivers/mfd/twl4030-core.c
-> > > @@ -101,6 +101,12 @@
-> > > __#define twl_has_usb()________________false
-> > > __#endif
-> > > __
-> > > +#if defined(CONFIG_INPUT_TWL4030_PWRBUTTON) \
-> > > +__________|| defined(CONFIG_INPUT_TWL4030_PWBUTTON_MODULE)
-> > 
-> > OK, this is "wrong". __The core shouldn't need to know about specific
-> > clients.
-> 
-> This is a pretty standard idiom:
+The NFSv3 and NFSv4 protocols already contain such support.
+NFSv2 implementations which also support the MOUNTv2
+protocol can also support this facility too, I believe.
 
-That doesn't make it right.
-
->  only create the device
-> nodes a system actually uses.
-
-That happens automatically if the nodes are made when the client
-registers itself with the core.
-
-> > 
-> > What has gone wrong here?
-> 
-> Not much I can see.  It's registering a platform_device,
-> but only if it could be used on this system.
-
-Again, that all gets fixed if this is done the right way around.  Run
-your probe function.  If the hardware is there, register with the core
-and all the nodes appear.  If the hardware is not present: bale.
-
-The design of the whole subsystem appears to be upside down :(
+       ps
