@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZB0KZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbZB0K00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbZB0KZk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZB0KZb
+	id S1757427AbZB0K00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZB0K0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:25:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40395 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbZB0KZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:25:30 -0500
-Date: Fri, 27 Feb 2009 11:25:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, mingo@linux.vnet.ibm.com,
-       Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, mtk.manpages@gmail.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] sched: Don't allow setuid to succeed if the user does
-	not have rt bandwidth
-Message-ID: <20090227102512.GA14530@elte.hu>
-References: <20090217050033.GA10409@linux.vnet.ibm.com> <20090217101542.GB15989@linux.vnet.ibm.com> <1234869339.4744.77.camel@laptop> <20090223114541.GD31277@linux.vnet.ibm.com> <1235390396.4645.87.camel@laptop> <20090224091849.GA18693@linux.vnet.ibm.com> <874oyj4yiz.fsf@basil.nowhere.org> <1235493365.4645.2061.camel@laptop> <49A44A86.2030409@nortel.com> <20090227094354.GA6444@linux.vnet.ibm.com>
+	Fri, 27 Feb 2009 05:26:16 -0500
+Received: from home.innominate.com ([77.245.32.75]:33681 "EHLO
+	home.innominate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336AbZB0K0P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 05:26:15 -0500
+Date: Fri, 27 Feb 2009 11:26:10 +0100
+From: Christian Hohnstaedt <chohnstaedt@innominate.com>
+To: Karl Hiramoto <karl@hiramoto.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       chohnstaedt@innominate.com, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] ixp4xx_crypto panic with fragmented packets in
+	scatterlist
+Message-ID: <20090227102609.GD6283@elara.bln.innominate.local>
+Mail-Followup-To: Christian Hohnstaedt <chohnstaedt@innominate.com>,
+	Karl Hiramoto <karl@hiramoto.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Russell King - ARM Linux <linux@arm.linux.org.uk>,
+	linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.arm.linux.org.uk
+References: <20090226121043.GA13749@gondor.apana.org.au> <49A6FB1D.2030807@hiramoto.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090227094354.GA6444@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49A6FB1D.2030807@hiramoto.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 26, 2009 at 09:27:09PM +0100, Karl Hiramoto wrote:
+> Herbert Xu wrote:
+>> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+>>   
+>>> We can't merge this until _all_ of ARM has been fixed for walking
+>>> scatterlist chains.
+>>>     
+>>
+>> Right, this is definitely not the way to fix this bug.  Because
+>> even if ARM completely supported chaining, you still have to fix
+>> all the other architectures as well.
+>>
+>> So please just fix the driver to remove the chaining before doing
+>> DMA.
+>>
+>>   
+> Is there an example of how to do this somewhere? 
+>
 
-* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+Not needed.
 
-> 
-> Corey Hickey reported that on using setuid to change the uid of a
-> rt process, the process would be unkillable and not be running.
-> This is because there was no rt runtime for that user group. Add
-> in a check to see if a user can attach an rt task to its task group.
-> On failure, return EINVAL, which is also returned in
-> CONFIG_CGROUP_SCHED.
-> 
-> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/linux/sched.h |    4 ++++
->  kernel/sched.c        |   13 +++++++++++--
->  kernel/sys.c          |   31 ++++++++++++++++++++-----------
->  kernel/user.c         |   18 ++++++++++++++++++
->  4 files changed, 53 insertions(+), 13 deletions(-)
+Now that I know the details about the different ways of chaining
+and their scope, I know how to fix my driver properly.
 
-Applied to tip:sched/urgent, thanks Dhaval!
+Patch follows, soon...
 
-	Ingo
+best regards
+Christian
+
+-- 
+The iMac is just evidence of how dangerous vi is. Obviously Steve came up with
+the name by accident after forgetting he was *already* in insert mode.
+ — dagbrown on #emacs
