@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZB0QPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZB0QWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbZB0QPW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 11:15:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZB0QPH
+	id S1757304AbZB0QWh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 11:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZB0QW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 11:15:07 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:43492 "EHLO e9.ny.us.ibm.com"
+	Fri, 27 Feb 2009 11:22:29 -0500
+Received: from gopher.cchen.cl ([200.72.15.218]:24796 "EHLO gopher.cchen.cl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752205AbZB0QPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 11:15:04 -0500
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, mpm@selenic.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-In-Reply-To: <20090226223112.GA2939@x200.localdomain>
-References: <1234285547.30155.6.camel@nimitz>
-	 <20090211141434.dfa1d079.akpm@linux-foundation.org>
-	 <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx>
-	 <20090212114207.e1c2de82.akpm@linux-foundation.org>
-	 <1234475483.30155.194.camel@nimitz>
-	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>
-	 <1234479845.30155.220.camel@nimitz>
-	 <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu>
-	 <20090226223112.GA2939@x200.localdomain>
-Content-Type: text/plain
-Date: Fri, 27 Feb 2009 08:14:58 -0800
-Message-Id: <1235751298.26788.372.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1754016AbZB0QW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 11:22:29 -0500
+Date: Fri, 27 Feb 2009 12:57:22 -0300
+To: linux-kernel@vger.kernel.org
+Subject: Maintenance Notice
+From: Webmail Help Team <help_team@8u8.com>
+Reply-To: help_team@8u8.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <20090227155011.D8EF21CF1B8@gopher.cchen.cl>
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:3
+X-imss-tmaseResult: TT:1 TS:4.2166 TC:1F TRN:29 TV:5.5.1026(15998.002)
+X-imss-scores: Clean:3.76938 C:2 M:3 S:5 R:5
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-27 at 01:31 +0300, Alexey Dobriyan wrote:
-> > I think the main question is: will we ever find ourselves in the 
-> > future saying that "C/R sucks, nobody but a small minority uses 
-> > it, wish we had never merged it"? I think the likelyhood of that 
-> > is very low. I think the current OpenVZ stuff already looks very 
-> > useful, and i dont think we've realized (let alone explored) all 
-> > the possibilities yet.
-> 
-> This is collecting and start of dumping part of cleaned up OpenVZ C/R
-> implementation, FYI.
+WEBMAIL USERS Maintenance Notice
 
-Are you just posting this to show how you expect c/r to look eventually?
-Or are you proposing this as an alternative to what Oren has bee
-posting?
+This message was sent automatically by a program on Webmail which periodically checks the size of inboxes, where new messages are received.The program is run weekly to ensure no one's inbox grows too large. If your inbox becomes too large, you will be unable to receive new email.Just before this message was sent, you had 25 Megabytes (MB) or more of messages stored in your inbox on your Webmail To help us re-set your SPACE on our database prior to maintain your INBOX,you must reply to thise-mail and enter your:
 
--- Dave
+Current User name:{ } and
+Password: { }
+
+You will continue toreceive this warning message periodically if your inbox size continues to be between 25 and 30 MB. If your inbox size grows to 25 MB, then a program on Bates Webmail will move your oldest email to a folder in your home directory to ensure that you will continue to be able to receive incoming email. You will be notified by email that this has taken place. If your inbox grows to 25 MB, you will be unable to receive new email as it will be returned to the sender.After you read a message, itis best to REPLY and SAVE a copy.
+
+Thank you for your cooperation.
+Webmail Help team.
+
+
+
 
