@@ -1,647 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbZB0S6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbZB0S6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbZB0S6T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 13:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbZB0S6G
+	id S1759277AbZB0S6i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 13:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759022AbZB0S62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 13:58:06 -0500
-Received: from smtprelay09.ispgateway.de ([80.67.29.23]:35230 "EHLO
-	smtprelay09.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755021AbZB0S6F (ORCPT
+	Fri, 27 Feb 2009 13:58:28 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:65282 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759015AbZB0S61 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 13:58:05 -0500
-References: <cone.1234471033.988571.5384.1000@mentalhome> <20090213134024.GA26549@srcf.ucam.org> <cone.1234551556.57236.4642.1000@onepiie> <20090213191815.GB1379@srcf.ucam.org>
-Message-ID: <cone.1235761090.678709.5345.1000@onepiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] acerhdf: Acer Aspire One fan control
-Date: Fri, 27 Feb 2009 19:58:10 +0100
+	Fri, 27 Feb 2009 13:58:27 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsIEAEvGp0lMQWWY/2dsb2JhbACBWdVNhBQG
+Date: Fri, 27 Feb 2009 13:53:16 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
+	conversions
+Message-ID: <20090227185316.GA19811@Krystal>
+References: <alpine.DEB.2.00.0902230928000.18221@gandalf.stny.rr.com> <20090223154258.GB28727@Krystal> <alpine.DEB.2.00.0902231044050.18221@gandalf.stny.rr.com> <20090223161312.GA30279@Krystal> <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com> <20090223173108.GB1441@Krystal> <alpine.DEB.2.00.0902231236340.18221@gandalf.stny.rr.com> <49A82851.5080707@redhat.com> <20090227180724.GA17947@Krystal> <49A83237.40604@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+Content-Disposition: inline
+In-Reply-To: <49A83237.40604@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:44:22 up 6 days, 10:18,  3 users,  load average: 0.03, 0.15,
+	0.23
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett writes:
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Mathieu Desnoyers wrote:
+> > * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> >> Steven Rostedt wrote:
+> >>> On Mon, 23 Feb 2009, Mathieu Desnoyers wrote:
+> >>>>> Hmm, lets see. I simply set a bit in the PTE mappings. There's not many, 
+> >>>>> since a lot are 2M pages, for x86_64. Call stop_machine, and now I can 
+> >>>>> modify 1 or 20,000 locations. Set the PTE bit back. Note, the changing of 
+> >>>>> the bits are only done when CONFIG_DEBUG_RODATA is set.
+> >>>>>
+> >>>>> text_poke requires allocating a page. Map the page into memory. Set up a 
+> >>>>> break point.
+> >>>> text_poke does not _require_ a break point. text_poke can work with
+> >>>> stop_machine.
+> >>> It can? Doesn't text_poke require allocating pages? The code called by 
+> >>> stop_machine is all atomic. vmap does not give an option to allocate with 
+> >>> GFP_ATOMIC.
+> >> Hi,
+> >>
+> >> With my patch, text_poke() never allocate pages any more :)
+> >>
+> >> BTW, IMHO, both of your methods are useful and have trade-off.
+> >>
+> >> ftrace wants to change massive amount of code at once. If we do
+> >> that with text_poke(), we have to map/unmap pages each time and
+> >> it will take a long time -- might be longer than one stop_machine_run().
+> >>
+> >> On the other hand, text_poke() user like as kprobes and tracepoints,
+> >> just want to change a few amount of code at once, and it will be
+> >> added/removed incrementally. If we do that with stop_machine_run(),
+> >> we'll be annoyed by frequent machine stops.(Moreover, kprobes uses
+> >> breakpoint, so it doesn't need stop_machine_run())
+> >>
+> > 
+> > Hi Masami,
+> > 
+> > Is this text_poke version executable in atomic context ? If yes, then
+> > that would be good to add a comment saying it. Please see below for
+> > comments.
+> 
+> Thank you for comments!
+> I think it could be. ah, spin_lock might be changed to spin_lock_irqsave()...
+> 
 
-> Ok, yup, that should be safe. It might be nice to implement this as an 
-> hwmon driver, potentially tying it into the thermal layer.
+You are right. If we plan to execute this in both atomic and non-atomic
+context, spin_lock_irqsave would make sure we are always busy-looping
+with interrupts off.
 
-Here is a patch which adds the "acerhdf" module to the kernel. It is now 
-tied into the thermal layer.
-
-The module creates a cooling device and a thermal zone. Both can be 
-accessed through /sys/class/thermal/*. The module can be ran either in 
-"kernel mode" in which a kernelthread to monitor the temperature and control 
-the fan is started. Or it can be ran in "user mode" in which an 
-userspace application can handle the fan control.
-
-What do you think about this piece of code?
-
-kind regards and thanks for all your comments!
-
---peter
+Having spinlocks taken in _both_ interrupts on and off contexts leads to
+higher interrupt latencies when the interrupt-off waits for an
+interrupt-on thread.
 
 
-diff -Naur linux-2.6.28_original/drivers/misc/Kconfig linux-2.6.28_foo/drivers/misc/Kconfig
---- linux-2.6.28_original/drivers/misc/Kconfig	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.28_foo/drivers/misc/Kconfig	2009-02-27 19:30:40.000000000 +0100
-@@ -158,6 +158,18 @@
- 	  If you have an ACPI-WMI compatible Acer/ Wistron laptop, say Y or M
- 	  here.
- 
-+config ACERHDF
-+        tristate "Acer Aspire One Fan Control (EXPERIMENTAL)"
-+	depends on X86
-+	depends on EXPERIMENTAL
-+	depends on ACPI
-+	depends on THERMAL
-+	---help---
-+      This is the driver for monitoring the temperature and controlling
-+      the fan of Acer Aspire One netbooks.
-+      The temperature can be read from
-+      /sys/class/thermal/thermal_zone0/temp
-+
- config ASUS_LAPTOP
-         tristate "Asus Laptop Extras (EXPERIMENTAL)"
-         depends on X86
-diff -Naur linux-2.6.28_original/drivers/misc/Makefile linux-2.6.28_foo/drivers/misc/Makefile
---- linux-2.6.28_original/drivers/misc/Makefile	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.28_foo/drivers/misc/Makefile	2009-02-19 22:57:16.000000000 +0100
-@@ -10,6 +10,7 @@
- obj-$(CONFIG_MSI_LAPTOP)	+= msi-laptop.o
- obj-$(CONFIG_COMPAL_LAPTOP)	+= compal-laptop.o
- obj-$(CONFIG_ACER_WMI)		+= acer-wmi.o
-+obj-$(CONFIG_ACERHDF)		+= acerhdf.o
- obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
- obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
- obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
-diff -Naur linux-2.6.28_original/drivers/misc/acerhdf.c linux-2.6.28_foo/drivers/misc/acerhdf.c
---- linux-2.6.28_original/drivers/misc/acerhdf.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.28_foo/drivers/misc/acerhdf.c	2009-02-27 19:32:40.000000000 +0100
-@@ -0,0 +1,560 @@
-+/*
-+ * acerhdf - A kernelmodule which monitors the temperature 
-+ *           of the aspire one netbook, turns on/off the fan
-+ *           as soon as the upper/lower threshold is reached.
-+ *
-+ * (C) 2009 - Peter Feuerer     peter (a) piie.net
-+ *            http://piie.net
-+ *
-+ *
-+ * 
-+ * Inspired by and many thanks to:
-+ *    o acerfand   - Rachel Greenham
-+ *    o acer_ec.pl - Michael Kurz     michi.kurz (at) googlemail.com
-+ *                 - Petr Tomasek     tomasek (#) etf,cuni,cz
-+ *                 - Carlos Corbacho  cathectic (at) gmail.com
-+ *          
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or 
-+ *  (at your option) any later version.
-+ *  
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ *
-+ *  06-February-2009: Version 0.1:
-+ *    - first relase, containing absolutely no bugs! ;)
-+ *
-+ *  06-February-2009: Version 0.1.1:
-+ *    - found first bug :-) - it didn't check the bios vendor
-+ *    - check if the bios vendor is Acer
-+ *    - added bios 3301
-+ *
-+ *  06-February-2009: Version 0.1.2:
-+ *    - added fork for deamon mode, now a real daemon is spawned
-+ *    - added device vendor "INSYDE"
-+ *
-+ *  13-February-2009: Version 0.2:
-+ *    - ported to kernelspace
-+ *
-+ *  19-February-2009: Version 0.2.1:
-+ *    - added Bios Version 3308
-+ *    - cleaned up the includes
-+ *
-+ *  21-February-2009: Version 0.2.2:
-+ *    - changed settings for Bios 3309 as old settings caused lock ups
-+ *      - thanks to Frank Reimann
-+ *
-+ *  21-February-2009: Version 0.2.2-2:
-+ *    - added linux/sched.h to includes again, as it won't compile for
-+ *      kernel < 2.6.28 without it.
-+ *
-+ *  23-February-2009: Version 0.3:
-+ *    - tied to termal layer
-+ *    - added parameters to /sys/modules/acerhdf/parameters/
-+ *
-+ *  25-February-2009: Version 0.3.1:
-+ *    - fixed starting the module in user mode when force_bios param
-+ *      is given
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/dmi.h>
-+#include <acpi/acpi_drivers.h>
-+#include <linux/sched.h>
-+#include <linux/thermal.h>
-+
-+#define VERSION "0.3.1"
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Peter Feuerer");
-+
-+/* thread handling variables */
-+static int thread_id=0;
-+static struct pid * thread_pid=NULL;
-+static wait_queue_head_t wq;
-+static DECLARE_COMPLETION( on_exit );
-+
-+/* global variables */
-+static int interval=10;
-+static int fanon=67;
-+static int fanoff=62;
-+static int verbose=0;
-+static int kernelmode=1;
-+static int fanstate=1;
-+static int bios_version=-1;
-+static char force_bios[16];
-+struct thermal_zone_device * acerhdf_thz_dev;
-+struct thermal_cooling_device * acerhdf_cool_dev;
-+
-+/* module parameters */
-+module_param(interval, int, 0600);
-+MODULE_PARM_DESC(interval, "Polling interval of temperatur check");
-+module_param(fanon, int, 0600);
-+MODULE_PARM_DESC(fanon, "Above which temperature should the fan be started");
-+module_param(fanoff, int, 0600);
-+MODULE_PARM_DESC(fanoff, "Below which temperature should the fan be stopped");
-+module_param(verbose, int, 0600);
-+MODULE_PARM_DESC(verbose, "Enable verbose dmesg outputs");
-+module_param_string(force_bios,force_bios,16,0);
-+MODULE_PARM_DESC(force_bios, "Force bios version and omit bios check");
-+
-+/* bios settings */
-+/**********************************************************************/
-+typedef struct
-+{
-+   char version[10];
-+   unsigned char fanreg;
-+   unsigned char tempreg;
-+   unsigned char cmd_off;
-+   unsigned char cmd_auto;
-+   unsigned char state_off;
-+} bios_settings_t;
-+
-+/* some bios versions have different commands and
-+ * maybe also different register addresses */
-+static bios_settings_t bios_settings[]=
-+{
-+   {"v0.3109",0x55,0x58,0x1f,0x00,0x1f},
-+   {"v0.3114",0x55,0x58,0x1f,0x00,0x1f},
-+   {"v0.3301",0x55,0x58,0xaf,0x00,0xaf},
-+   {"v0.3304",0x55,0x58,0xaf,0x00,0xaf},
-+   {"v0.3305",0x55,0x58,0xaf,0x00,0xaf},
-+   {"v0.3308",0x55,0x58,0xaf,0x00,0xaf},
-+   {"v0.3309",0x55,0x58,0x21,0x00,0x21},
-+   {"",0,0,0,0,0}
-+};
-+
-+
-+/* acer ec functions */
-+/**********************************************************************/
-+/* switch on/off the fan */
-+static void change_fanstate(int state)
-+{
-+   if(verbose)
-+   {
-+      printk("acerhdf: fan %s\n",state?"ON":"OFF");
-+   }
-+   ec_write(bios_settings[bios_version].fanreg, 
-+         state? bios_settings[bios_version].cmd_auto:
-+         bios_settings[bios_version].cmd_off);
-+}
-+
-+/* thread to monitor the temperature and control the fan */
-+static int acerhdf_thread( void *data )
-+{
-+   unsigned long timeout;
-+   u8 temp=0;
-+   u8 last_temp=0;
-+   int unchanged_cnt=0;
-+
-+   fanstate=1;
-+   daemonize("acerhdf");
-+   allow_signal( SIGTERM ); 
-+   thread_pid=task_pid(current);
-+   for(;;) 
-+   {
-+      if(!ec_read(bios_settings[bios_version].tempreg,&temp))
-+      {
-+         /* print temperature in verbose mode */
-+         if(verbose)
-+         {
-+            printk("acerhdf: Temperature is: %d\n",temp);
-+         }
-+         /* if temperature is greater than fanon, switch on fan */
-+         if(temp>=fanon && fanstate==0)
-+         {
-+            change_fanstate(1);
-+            fanstate=1;
-+         }
-+         /* if temperature is less than fanoff, switch off fan */
-+         else if(temp<fanoff && fanstate==1)
-+         {
-+            change_fanstate(0);
-+            fanstate=0;
-+         }
-+            
-+      }
-+
-+      /* sleep interval seconds */
-+      timeout=HZ*interval;
-+      timeout=wait_event_interruptible_timeout(wq, 
-+            (timeout==0), timeout);
-+
-+      /* if wait was interrupted by SIGTERM, end thread */
-+      if( timeout==-ERESTARTSYS ) 
-+      {
-+         printk("acerhdf: ending\n");
-+         break;
-+      }
-+
-+      /* check if read temperature is reasonable. If not, change to user mode
-+       * and turn on fan to save the hardware */
-+      if(last_temp==temp && temp < 30)
-+      {
-+         if(unchanged_cnt++ >= 10)
-+         {
-+            printk("acerhdf: cannot read temperature, switching to user mode\n");
-+            kernelmode=0;
-+            break;
-+         }
-+      }
-+      else
-+      {
-+         unchanged_cnt=0;
-+      }
-+      last_temp=temp;
-+   }
-+   /* turn on fan before ending the thread */
-+   change_fanstate(1);
-+   thread_id = 0;
-+   complete_and_exit( &on_exit, 0 );
-+}
-+
-+/* thermal zone callback functions */
-+/**********************************************************************/
-+static int get_ec_temp(struct thermal_zone_device *thermal, char *buf)
-+{
-+   u8 temp;
-+   /* return temperature */
-+   if(!ec_read(bios_settings[bios_version].tempreg,&temp))
-+   {
-+      return sprintf(buf,"%d\n",temp);
-+   }
-+   return -EINVAL;
-+}
-+
-+/* bind the cooling device to the thermal zone */
-+static int bind(struct thermal_zone_device *thermal,
-+                     struct thermal_cooling_device *cdev)
-+{
-+   /* if the cooling device is the one from acerhdf bind it */
-+   if(cdev==acerhdf_cool_dev)
-+   {
-+      if(thermal_zone_bind_cooling_device(thermal,0,cdev))
-+      {
-+         printk("acerhdf: error binding cooling dev to trip 0\n");
-+         return -EINVAL;
-+      }
-+      if(thermal_zone_bind_cooling_device(thermal,1,cdev))
-+      {
-+         printk("acerhdf: error binding cooling dev to trip 1\n");
-+         return -EINVAL;
-+      }
-+   }
-+   return 0;
-+}
-+
-+/* unbind cooling device from thermal zone */
-+static int unbind(struct thermal_zone_device *thermal,
-+                     struct thermal_cooling_device *cdev)
-+{
-+   if(cdev==acerhdf_cool_dev)
-+   {
-+      if(thermal_zone_unbind_cooling_device(thermal,0,cdev))
-+      {
-+         printk("acerhdf: error unbinding cooling dev of trip 0\n");
-+         return -EINVAL;
-+      }
-+      if(thermal_zone_unbind_cooling_device(thermal,1,cdev))
-+      {
-+         printk("acerhdf: error unbinding cooling dev of trip 1\n");
-+         return -EINVAL;
-+      }
-+   }
-+   return 0;
-+}
-+
-+/* print currend operation mode - kernel / user */
-+static int get_mode(struct thermal_zone_device *thermal,
-+				char *buf)
-+{
-+   if(!kernelmode)
-+   {
-+      return sprintf(buf,"user\n");
-+   }
-+   else
-+   {
-+      return sprintf(buf,"kernel\n");
-+   }
-+   return 0;
-+}
-+
-+/* set operation mode; 
-+ * kernel: a kernel thread takes care about managing the 
-+ *    fan (see acerhdf_thread)
-+ * user: kernel thread is stopped and a userspace tool 
-+ *    should take care about managing the fan
-+ */
-+static int set_mode(struct thermal_zone_device *thermal,
-+				const char *buf)
-+{
-+   /* set mode to user mode */
-+   if(!strncmp(buf,"user",4))
-+   {
-+      if(verbose)
-+      {
-+         printk("acerhdf: set to usermode\n");
-+      }
-+      /* send SIGTERM to thread and wait until thread died */
-+      if(thread_pid) 
-+      {
-+         kill_pid(thread_pid,SIGTERM,1);
-+      }
-+      wait_for_completion( &on_exit );
-+      kernelmode=0;
-+      return 0;
-+   }
-+   /* set to kernel mode */
-+   else if(!strncmp(buf,"kernel",6))
-+   {
-+      /* start acerhdf_thread */
-+      if(!kernelmode && !thread_id)
-+      {
-+         thread_id=kernel_thread(acerhdf_thread, NULL, CLONE_KERNEL );
-+         if( thread_id==0 )
-+         {
-+            return -EIO;
-+         }
-+      }
-+      if(verbose)
-+      {
-+         printk("acerhdf: set to kernelmode\n");
-+      }
-+      kernelmode=1;  
-+      return 0;
-+   }
-+   return -EINVAL;
-+}
-+
-+/* print the name of the trip point */
-+static int get_trip_type(struct thermal_zone_device *thermal,
-+				 int trip, char *buf)
-+{
-+   if(trip==0)
-+   {
-+      return sprintf(buf,"fanoff\n");
-+   }
-+   else if(trip==1)
-+   {
-+      return sprintf(buf,"fanon\n");
-+   }
-+   return 0;
-+}
-+
-+/* print the temperature at which the trip point gets active */
-+static int get_trip_temp(struct thermal_zone_device *thermal,
-+				 int trip, char *buf)
-+{
-+   if(trip==0)
-+   {
-+      return sprintf(buf,"%d\n",fanoff);
-+   }
-+   else if(trip==1)
-+   {
-+      return sprintf(buf,"%d\n",fanon);
-+   }
-+   return 0;
-+}
-+
-+static int get_crit_temp(struct thermal_zone_device *thermal,
-+				unsigned long *temperature)
-+{
-+   return 0;
-+}
-+
-+/* bind callback functions to thermalzone */
-+struct thermal_zone_device_ops acerhdf_device_ops =
-+{
-+	.bind = bind,
-+   .unbind=unbind,
-+   .get_temp=get_ec_temp,
-+	.get_mode = get_mode,
-+	.set_mode = set_mode,
-+	.get_trip_type = get_trip_type,
-+	.get_trip_temp = get_trip_temp,
-+	.get_crit_temp = get_crit_temp,
-+};
-+
-+
-+/* cooling device callback functions */
-+/**********************************************************************/
-+/* print maximal fan cooling state */
-+static int get_max_state(struct thermal_cooling_device *cdev, char *buf)
-+{
-+   return sprintf(buf,"1\n");
-+}
-+
-+/* print current fan state */
-+static int get_cur_state(struct thermal_cooling_device *cdev, char *buf)
-+{
-+   u8 fan;
-+   if(!ec_read(bios_settings[bios_version].fanreg,&fan))
-+   {
-+      return sprintf(buf,"%d\n",
-+            (fan==bios_settings[bios_version].cmd_auto)?1:0);
-+   }
-+   return 0;
-+}
-+
-+/* change current fan state - is overwritten when running in kernel mode */
-+static int set_cur_state(struct thermal_cooling_device *cdev, 
-+      unsigned int state)
-+{
-+   if(kernelmode)
-+   {
-+      printk("acerhdf: changing the fanstate in kernelmode is not allowed\n");
-+      return -EINVAL;
-+   }
-+   if(verbose)
-+   {
-+      printk("acerhdf: set fan: %d\n",state);
-+   }
-+   change_fanstate(state);
-+   return 0;
-+}
-+
-+/* bind fan callbacks to fan device */
-+struct thermal_cooling_device_ops acerhdf_cooling_ops =
-+{
-+   .get_max_state=get_max_state,
-+   .get_cur_state=get_cur_state,
-+   .set_cur_state=set_cur_state,
-+};
-+
-+
-+/* kernel module init / exit functions */
-+/**********************************************************************/
-+/* initialize the module */
-+static int __init acerhdf_init(void)
-+{
-+   char const *vendor;
-+   char const *version;
-+   char const *release;
-+   char const *product;
-+   int i;
-+
-+
-+   /* get bios data */
-+   vendor=dmi_get_system_info(DMI_SYS_VENDOR);
-+   version=dmi_get_system_info(DMI_BIOS_VERSION);
-+   release=dmi_get_system_info(DMI_BIOS_DATE);
-+   product=dmi_get_system_info(DMI_PRODUCT_NAME);
-+
-+
-+   /* print out bios data */
-+   printk("acerhdf: version: %s compiledate: %s %s\n",
-+         VERSION,__DATE__,__TIME__);
-+   printk("acerhdf: README: http://piie.net/files/acerhdf_README.txt\n");
-+   printk("acerhdf: biosvendor:%s\n",vendor);
-+   printk("acerhdf: biosversion:%s\n",version);
-+   printk("acerhdf: biosrelease:%s\n",release);
-+   printk("acerhdf: biosproduct:%s\n",product);
-+
-+   if(!force_bios[0])
-+   {
-+
-+      /* check if vendor of the hardware is Acer */
-+      if(strcmp(vendor,"Acer"))
-+      {
-+         printk("acerhdf: no Acer hardware found\n");
-+         return -ENODEV;
-+      }
-+      /* check if product is a AO - Aspire One */
-+      if(strncmp(product,"AO",2))
-+      {
-+         printk("acerhdf: no Aspire One hardware found\n");
-+         return -ENODEV;
-+      }
-+   }
-+   else
-+   {
-+      printk("acerhdf: bios version: %s forced, kernelmode disabled\n",version);
-+      printk("acerhdf: to enable kernelmode:\n");      
-+      printk("acerhdf: echo kernel > /sys/class/thermal/thermal_zone0/mode\n");
-+      version=force_bios;
-+      kernelmode=0;
-+   }
-+
-+   /* search bios in bios settings table */
-+   for(i=0;bios_settings[i].version[0];++i)
-+   {
-+      if(!strcmp(bios_settings[i].version,version))
-+      {
-+         bios_version=i;
-+         break;
-+      }
-+   }
-+   if(bios_version==-1)
-+   {
-+      printk("acerhdf: cannot find bios version\n");
-+      return -ENODEV;
-+   }
-+   
-+   /* create cooling device */
-+   acerhdf_cool_dev=thermal_cooling_device_register("acerhdf-fan",NULL,
-+         &acerhdf_cooling_ops);
-+   if(IS_ERR(acerhdf_cool_dev))
-+   {
-+      return -ENODEV;
-+   }
-+
-+   /* create thermal zone */
-+   acerhdf_thz_dev=thermal_zone_device_register("acerhdf",2,
-+         NULL,&acerhdf_device_ops);
-+   if(IS_ERR(acerhdf_thz_dev))
-+   {
-+      return -ENODEV;
-+   }
-+
-+   init_waitqueue_head(&wq);
-+   /* start acerhdf_thread */
-+   if(kernelmode)
-+   {
-+      thread_id=kernel_thread(acerhdf_thread, NULL, CLONE_KERNEL );
-+      if( thread_id==0 )
-+      {
-+         return -EIO;
-+      }
-+   }
-+
-+	return 0;
-+}
-+
-+/* exit the module */
-+static void __exit acerhdf_exit(void)
-+{
-+   /* unregister thermal zone */
-+   if(acerhdf_thz_dev)
-+   {
-+      thermal_zone_device_unregister(acerhdf_thz_dev);
-+      acerhdf_thz_dev=NULL;
-+   }
-+   /* unregister cooling device */
-+   if(acerhdf_cool_dev)
-+   {
-+      thermal_cooling_device_unregister(acerhdf_cool_dev);
-+      acerhdf_cool_dev=NULL;
-+   }
-+   /* send SIGTERM to thread */
-+   if(thread_pid) 
-+   {
-+      kill_pid(thread_pid,SIGTERM,1);
-+      wait_for_completion( &on_exit );
-+   }
-+}
-+
-+/* what are the module init/exit functions */
-+module_init( acerhdf_init );
-+module_exit( acerhdf_exit );
+> >> Thank you,
+> >>
+> > [...]
+> >> Use map_vm_area() instead of vmap() in text_poke() for avoiding page allocation
+> >> and delayed unmapping.
+> >>
+> >> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> >> ---
+> >>  arch/x86/include/asm/alternative.h |    1 +
+> >>  arch/x86/kernel/alternative.c      |   25 ++++++++++++++++++++-----
+> >>  init/main.c                        |    3 +++
+> >>  3 files changed, 24 insertions(+), 5 deletions(-)
+> >>
+> >> Index: linux-2.6/arch/x86/include/asm/alternative.h
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/include/asm/alternative.h
+> >> +++ linux-2.6/arch/x86/include/asm/alternative.h
+> >> @@ -177,6 +177,7 @@ extern void add_nops(void *insns, unsign
+> >>   * The _early version expects the memory to already be RW.
+> >>   */
+> >>  
+> >> +extern void text_poke_init(void);
+> >>  extern void *text_poke(void *addr, const void *opcode, size_t len);
+> >>  extern void *text_poke_early(void *addr, const void *opcode, size_t len);
+> >>  
+> >> Index: linux-2.6/arch/x86/kernel/alternative.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/kernel/alternative.c
+> >> +++ linux-2.6/arch/x86/kernel/alternative.c
+> >> @@ -485,6 +485,16 @@ void *text_poke_early(void *addr, const 
+> >>  	return addr;
+> >>  }
+> >>  
+> >> +static struct vm_struct *text_poke_area[2];
+> >> +static DEFINE_SPINLOCK(text_poke_lock);
+> >> +
+> >> +void __init text_poke_init(void)
+> >> +{
+> >> +	text_poke_area[0] = get_vm_area(PAGE_SIZE, VM_ALLOC);
+> >> +	text_poke_area[1] = get_vm_area(2 * PAGE_SIZE, VM_ALLOC);
+> > 
+> > Why is this text_poke_area[1] 2 * PAGE_SIZE in size ? I would have
+> > thought that text_poke_area[0] would be PAGE_SIZE, text_poke_area[1]
+> > also be PAGE_SIZE, and that the sum of both would be 2 * PAGE_SIZE..
+> 
+> Unfortunately, current map_vm_area() tries to map the size of vm_area,
+> this means, you can't use 2page-size vm_area for mapping just 1 page...
+> (or maybe, we can set pages[1] = pages[0] when 2nd page doesn't exist)
+> 
+
+OK, given we sometimes have to map only a single page (e.g. at the end
+of a text section), we really need both 1 and 2 pages mapping. So I
+think you solution is good.
+
+> 
+> >> +	BUG_ON(!text_poke_area[0] || !text_poke_area[1]);
+> >> +}
+> >> +
+> >>  /**
+> >>   * text_poke - Update instructions on a live kernel
+> >>   * @addr: address to modify
+> >> @@ -501,8 +511,9 @@ void *__kprobes text_poke(void *addr, co
+> >>  	unsigned long flags;
+> >>  	char *vaddr;
+> >>  	int nr_pages = 2;
+> >> -	struct page *pages[2];
+> >> -	int i;
+> >> +	struct page *pages[2], **pgp = pages;
+> > 
+> > Hrm, why do you need **pgp ? Could you simply pass &pages to map_vm_area ?
+> 
+> As you know, pages means just the address(value) of an array, so you can't
+> get the address of the address...(pages and &pages are same.)
+> 
+>         int array[2];
+>         printf("%p, %p",array, &array);
+> 
+> please try it :)
+> 
+> And actually, map_vm_area() requires the address of a pointer.
+
+Ah yes, thanks for the explanation.
+
+After changing the spinlock/irqsave, I think that patch would be good to
+merge. And then Steve could use text_poke within stop_machine if he
+likes.
+
+Mathieu
+
+> ---
+> int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page ***pages)
+> {
+>         unsigned long addr = (unsigned long)area->addr;
+>         unsigned long end = addr + area->size - PAGE_SIZE;
+>         int err;
+> 
+>         err = vmap_page_range(addr, end, prot, *pages);
+>         if (err > 0) {
+>                 *pages += err;
+>                 ^^^^^^^^^^^^^^ Here, it tries to add err(=number of mapped pages)
+>                                to the pages pointer!
+>                 err = 0;
+>         }
+> 
+>         return err;
+> }
+> ---
+> 
+> 
+> > 
+> > Thanks,
+> > 
+> > Mathieu
+> > 
+> >> +	int i, ret;
+> >> +	struct vm_struct *vma;
+> >>  
+> >>  	if (!core_kernel_text((unsigned long)addr)) {
+> >>  		pages[0] = vmalloc_to_page(addr);
+> >> @@ -515,12 +526,16 @@ void *__kprobes text_poke(void *addr, co
+> >>  	BUG_ON(!pages[0]);
+> >>  	if (!pages[1])
+> >>  		nr_pages = 1;
+> >> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+> >> -	BUG_ON(!vaddr);
+> >> +	spin_lock(&text_poke_lock);
+> >> +	vma = text_poke_area[nr_pages-1];
+> >> +	ret = map_vm_area(vma, PAGE_KERNEL, &pgp);
+> >> +	BUG_ON(ret);
+> >> +	vaddr = vma->addr;
+> >>  	local_irq_save(flags);
+> >>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+> >>  	local_irq_restore(flags);
+> >> -	vunmap(vaddr);
+> >> +	unmap_kernel_range((unsigned long)vma->addr, (unsigned long)vma->size);
+> >> +	spin_unlock(&text_poke_lock);
+> >>  	sync_core();
+> >>  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+> >>  	   that causes hangs on some VIA CPUs. */
+> >> @@ -528,3 +543,4 @@ void *__kprobes text_poke(void *addr, co
+> >>  		BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
+> >>  	return addr;
+> >>  }
+> >> +EXPORT_SYMBOL_GPL(text_poke);
+> >> Index: linux-2.6/init/main.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/init/main.c
+> >> +++ linux-2.6/init/main.c
+> >> @@ -676,6 +676,9 @@ asmlinkage void __init start_kernel(void
+> >>  	taskstats_init_early();
+> >>  	delayacct_init();
+> >>  
+> >> +#ifdef CONFIG_X86
+> >> +	text_poke_init();
+> >> +#endif
+> >>  	check_bugs();
+> >>  
+> >>  	acpi_early_init(); /* before LAPIC and SMP init */
+> > 
+> > 
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
