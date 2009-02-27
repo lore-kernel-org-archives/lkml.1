@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZB0Gh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZB0Ghn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZB0Gh2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 01:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZB0GhP
+	id S1757453AbZB0Ghn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 01:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbZB0Gha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 01:37:15 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51303 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753277AbZB0GhN (ORCPT
+	Fri, 27 Feb 2009 01:37:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41084
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755702AbZB0Gh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 01:37:13 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Subject: Re: [Bug #12210] 2.6.28-rc8 big regression in VM
-Cc: kosaki.motohiro@jp.fujitsu.com, Wu Fengguang <fengguang.wu@intel.com>,
-       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-       jbarnes@virtuousgeek.org, eric@anholt.net
-In-Reply-To: <20090226180636.GE4374@ics.muni.cz>
-References: <20081225112017.GB16080@localhost> <20090226180636.GE4374@ics.muni.cz>
-Message-Id: <20090227153149.154B.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 27 Feb 2009 01:37:29 -0500
+Date: Thu, 26 Feb 2009 22:37:13 -0800 (PST)
+Message-Id: <20090226.223713.92203280.davem@davemloft.net>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
+       davem@davemlloft.net, heiko.carstens@de.ibm.com, stable@kernel.org
+Subject: Re: [PATCH 1/2] clean up for early_pfn_to_nid
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090216095042.95f4a6d0.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090213142032.09b4a4da.akpm@linux-foundation.org>
+	<20090213.221226.264144345.davem@davemloft.net>
+	<20090216095042.95f4a6d0.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Fri, 27 Feb 2009 15:37:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 16 Feb 2009 09:50:42 +0900
 
-> Hello,
+> On Fri, 13 Feb 2009 22:12:26 -0800 (PST)
+> David Miller <davem@davemloft.net> wrote:
 > 
-> you may remember that I reported regression in VM. I used you filecache module
-> and discovered that the leaks are caused by these items:
-> # filecache 1.0
-> #      ino       size   cached cached% refcnt state dev          file
->     167302         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
->     167301         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
->     167300         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
->     167299          4        4     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
->     167290          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
->     167289          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
->     167288         16       16     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
->     167287         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> > Date: Fri, 13 Feb 2009 14:20:32 -0800
+> > 
+> > > I queued these as
+> > > 
+> > > mm-clean-up-for-early_pfn_to_nid.patch
+> > > mm-fix-memmap-init-for-handling-memory-hole.patch
+> > > 
+> > > and tagged them as needed-in-2.6.28.x.  I don't recall whether they are
+> > > needed in earlier -stable releases?
+> > 
+> > Every kernel going back to at least 2.6.24 has this bug.  It's likely
+> > been around even longer, I didn't bother checking.
+> > 
 > 
-> there are tons of those items:
-> cat /proc/filecache  | grep drm | wc -l
-> 14224
+> Sparc64's one is broken from this commit.
 > 
-> Do you have any clues what happens here? Is it a bug in kernel VM system or it
-> is more likely a bug in Intel's GEM drm driver? Right now it results in 500MB
-> of undropable cache.
+> 09337f501ebdd224cd69df6d168a5c4fe75d86fa
+> sparc64: Kill CONFIG_SPARC32_COMPAT
 > 
-> Also lsof reports many leaked file descriptors:
-> lsof | grep drm | wc -l
-> 7326
+> CONFIG_NODES_SPAN_OTEHR_NODES is set and config allows following kind of NUMA
+> This is requirements from powerpc.
 
-lsof output indicate any process don't close this files.
-I would like to hear drm driver developer's opinion.
-if many mapped file is unclosed, it seems misdesigned memory wasting.
-
-
-
-
+Well, actually this means that what broke sparc64 was the addition of
+NUMA support then.  Users could and were enabling these options
+on sparc64 beforehand, I just updated defconfig to reflect the
+fact that my workstation was NUMA capable :)
