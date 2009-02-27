@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZB0T2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZB0Tlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbZB0T2j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 14:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbZB0T2R
+	id S1758870AbZB0Tlb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 14:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbZB0TlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 14:28:17 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:37304 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756760AbZB0T2Q (ORCPT
+	Fri, 27 Feb 2009 14:41:22 -0500
+Received: from perninha.conectiva.com.br ([200.140.247.100]:51749 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755619AbZB0TlV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 14:28:16 -0500
-From: Felipe Balbi <me@felipebalbi.com>
-To: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>,
-       Samuel Ortiz <sameo@openedhand.com>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
-Date: Fri, 27 Feb 2009 21:28:03 +0200
-Message-Id: <1235762883-20870-2-git-send-email-me@felipebalbi.com>
-X-Mailer: git-send-email 1.6.2.rc0.61.g5cd12
-In-Reply-To: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Fri, 27 Feb 2009 14:41:21 -0500
+From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Organization: Mandriva
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [PATCH] n411: add missing Makefile entry
+Date: Fri, 27 Feb 2009 16:41:31 -0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-desktop-0.rc6.1.1mnb; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902271641.32060.herton@mandriva.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Felipe Balbi <felipe.balbi@nokia.com>
+There is no entry for n411.c to be built, include one in Makefile.
 
-Make that twl4030-pwrbutton.c driver probe with current
-child creation api for twl4030.
-
-Cc: Samuel Ortiz <sameo@openedhand.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
 ---
-This part is better off going via mfd.
+ drivers/video/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
- drivers/mfd/twl4030-core.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-index 68826f1..c86bc3b 100644
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -101,6 +101,12 @@
- #define twl_has_usb()	false
- #endif
- 
-+#if defined(CONFIG_INPUT_TWL4030_PWRBUTTON) \
-+	|| defined(CONFIG_INPUT_TWL4030_PWBUTTON_MODULE)
-+#define twl_has_pwrbutton()	true
-+#else
-+#define twl_has_pwrbutton()	false
-+#endif
- 
- /* Triton Core internal information (BEGIN) */
- 
-@@ -526,6 +532,13 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
- 		usb_transceiver = child;
- 	}
- 
-+	if (twl_has_pwrbutton()) {
-+		child = add_child(1, "twl4030_pwrbutton",
-+				NULL, 0, true, pdata->irq_base + 8 + 0, 0);
-+		if (IS_ERR(child))
-+			return PTR_ERR(child);
-+	}
-+
- 	if (twl_has_regulator()) {
- 		/*
- 		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 2a998ca..4bd8050 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -76,6 +76,7 @@ obj-$(CONFIG_FB_ATARI)            += atafb.o c2p_iplan2.o 
+atafb_mfb.o \
+                                      atafb_iplan2p2.o atafb_iplan2p4.o 
+atafb_iplan2p8.o
+ obj-$(CONFIG_FB_MAC)              += macfb.o
+ obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
++obj-$(CONFIG_FB_N411)             += n411.o
+ obj-$(CONFIG_FB_HGA)              += hgafb.o
+ obj-$(CONFIG_FB_XVR500)           += sunxvr500.o
+ obj-$(CONFIG_FB_XVR2500)          += sunxvr2500.o
 -- 
-1.6.2.rc0.61.g5cd12
+1.6.1.3
+
 
