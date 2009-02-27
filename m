@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZB0OXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbZB0O1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbZB0OXX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 09:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbZB0OXO
+	id S1757285AbZB0O1u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 09:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZB0O1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 09:23:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43945 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753822AbZB0OXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 09:23:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 27 Feb 2009 15:22:39 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: "Arve Hj?nnev?g" <arve@android.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902192215.18365.rjw@sisk.pl> <200902210057.27781.rjw@sisk.pl> <20090227100941.GE4582@elf.ucw.cz>
-In-Reply-To: <20090227100941.GE4582@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902271522.41915.rjw@sisk.pl>
+	Fri, 27 Feb 2009 09:27:40 -0500
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:44810 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbZB0O1k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 09:27:40 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC 0/8] Aufs2 documents 
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1235668827.15148.422.camel@moss-terrapins.epoch.ncsc.mil>
+References: <7558.1235374266@jrobl> <1235584254.15148.86.camel@moss-terrapins.epoch.ncsc.mil> <7390.1235624062@jrobl> <1235668827.15148.422.camel@moss-terrapins.epoch.ncsc.mil>
+Date: Fri, 27 Feb 2009 23:27:17 +0900
+Message-ID: <16503.1235744837@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 February 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > > > Then, the decision making logic will be able to use /sys/power/sleep whenever
-> > > > it wishes to and the kernel will be able to refuse to suspend if it's not
-> > > > desirable at the moment.
-> > > >
-> > > > It seems to be flexible enough to me.
-> > > 
-> > > This seems flexible enough to avoid race conditions, but it forces the
-> > > user space power manager to poll when the kernel refuse suspend.
-> > 
-> > And if the kernel is supposed to start automatic suspend, it has to monitor
-> > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
-> > kernel if it refuses to suspend.
-> 
-> polling is evil -- it keeps CPU wake up => wastes power.
-> 
-> Wakelocks done right are single atomic_t... and if you set it to 0,
-> you just unblock "sleeper" thread or something. Zero polling and very
-> simple...
 
-Except that you have to check all of the wakelocks periodically in a loop =>
-polling.  So?
+"David P. Quigley":
+> an EOPNOTSUPP back. Considering things such as ACLs and SELinux labels
+> are stored in xattrs it seems that failing a copyup on EOPNOTSUPP is a
+> very reasonable thing to do.
 
-Rafael
+Do you mean ... ?
+- if aufs and its lower branch fs support xattr but its upper branch
+  doesn't, then some of copyup will fail.
+- that is user's choice.
+
+
+> > Finally I am considering to make some levels to support xattr.
+> > - support minimum common set of key only (if such set exists)
+> >   Here "minimum common set" means a group of key which are surely
+> >   supported by all filesystems. Aufs will filter-out other keys.
+> > - create a new internal status flag
+> >   This flag is set when the type of all branches are same. When the flag
+> >   is set, aufs will handle xattr by simply redirecting.
+> > - create a new aufs mount option
+> >   the option will select two behaviours (above).
+> 
+> So I don't think this is a good way of going about it. The idea of
+> having some flag which indicates just relay to the lower filesystems if
+> they are all the same completely ignores that you may have several file
+> systems which all support the required namespaces. One example I can
+
+When all branch filesystems support the required xattr even if thier
+filesystem-type differ, user can specify the mount option (the thrid
+level above) and all xattr will be handled. When any of xattr are not
+supported by the upper branch fs, then copyup will fail.
+Do I make my clear, or do I misunderstand you?
+
+
+> If you have more questions about this feel free to ask. I don't have
+> time to actually do work in this space but I can answer whatever
+> questions you have.
+
+I am afraid I don't fully understand what you wrote.
+According to linux/Documentation/Smack.txt, "xattr support is not
+strictly required". But for selinux (or other security mechanism), xattr
+is neccessary as you wrote.
+Please tell me the url where I should know about security label or
+type. Particulary "iso9660_t" type, I don't know what it is.
+And do you believe the lack of supporting xattr is critical for aufs to
+be merged?
+
+
+J. R. Okajima
