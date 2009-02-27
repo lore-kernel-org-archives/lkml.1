@@ -1,60 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZB0IlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZB0Ioj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbZB0IlW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 03:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZB0IlJ
+	id S1754788AbZB0Ioj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 03:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZB0Ioa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 03:41:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59737 "EHLO mx2.redhat.com"
+	Fri, 27 Feb 2009 03:44:30 -0500
+Received: from sh.osrg.net ([192.16.179.4]:40989 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbZB0IlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 03:41:08 -0500
-Message-ID: <49A7A71E.50702@redhat.com>
-Date: Fri, 27 Feb 2009 09:41:02 +0100
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: Bug of dm-crypt?
-References: <1235712716.6204.100.camel@yhuang-dev.sh.intel.com> <20090227054147.GA22159@gondor.apana.org.au>
-In-Reply-To: <20090227054147.GA22159@gondor.apana.org.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752062AbZB0Io3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 03:44:29 -0500
+Date: Fri, 27 Feb 2009 17:35:43 +0900
+To: jgarzik@pobox.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bzolnier@gmail.com, tj@kernel.org
+Subject: [PATCH] libata: fix dma_unmap_sg misuse
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090227173520W.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 27 Feb 2009 17:35:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Fri, Feb 27, 2009 at 01:31:56PM +0800, Huang Ying wrote:
->> I had ever heard from you that the only thing guaranteed in the
->> completion function of async ablkcipher cryption is the req->data has
->> the value you set before. The request pointer itself may be changed. But
->> in dm-crypt, I found they rely on request pointer in completion
->> function: kcryptd_async_done. This makes my AES-NI cryptd usage panic.
->>
->> Do you think that is a bug?
-> 
-> Absolutely.
-> 
-> It should use cc->req instead.
+This is a repost of:
 
-ok, I'll check it and try to fix that. 
+http://marc.info/?l=linux-ide&m=123484533504307&w=2
 
-Can you send me backtrace from that panic?
+I sent this 10 days ago but seems that I can't find this in linux-next
+yet. I guess that all the IOMMUs can handle this misuse for now so
+it's not urgent.
 
-What's wrong in async callback now - mempool_free using async_req directly?
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] libata: fix dma_unmap_sg misuse
 
-(Btw in some previous discussuion I asked if cryptd can be used
-for some kind of parallel speedup for dm-crypt in async mode and response
-was that cryptd "is only meant to be a demo showing how an async
-implementation should be written".
+libata passes the returned value of dma_map_sg() to
+dma_unmap_sg(),which is the misuse of dma_unmap_sg().
 
-So this changed to real working thread for AES-NI?)
+DMA-mapping.txt says:
 
-Milan
---
-mbroz@redhat.com
+To unmap a scatterlist, just call:
+
+	pci_unmap_sg(pdev, sglist, nents, direction);
+
+Again, make sure DMA activity has already finished.
+
+PLEASE NOTE:  The 'nents' argument to the pci_unmap_sg call must be
+              the _same_ one you passed into the pci_map_sg call,
+	      it should _NOT_ be the 'count' value _returned_ from the
+              pci_map_sg call.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Acked-by: Tejun Heo <tj@kernel.org>
+---
+ drivers/ata/libata-core.c |    4 ++--
+ include/linux/libata.h    |    1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 8167381..17a274a 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -4612,7 +4612,7 @@ void ata_sg_clean(struct ata_queued_cmd *qc)
+ 	VPRINTK("unmapping %u sg elements\n", qc->n_elem);
+ 
+ 	if (qc->n_elem)
+-		dma_unmap_sg(ap->dev, sg, qc->n_elem, dir);
++		dma_unmap_sg(ap->dev, sg, qc->orig_n_elem, dir);
+ 
+ 	qc->flags &= ~ATA_QCFLAG_DMAMAP;
+ 	qc->sg = NULL;
+@@ -4727,7 +4727,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
+ 		return -1;
+ 
+ 	DPRINTK("%d sg elements mapped\n", n_elem);
+-
++	qc->orig_n_elem = qc->n_elem;
+ 	qc->n_elem = n_elem;
+ 	qc->flags |= ATA_QCFLAG_DMAMAP;
+ 
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index c953e17..337d1bd 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -530,6 +530,7 @@ struct ata_queued_cmd {
+ 	unsigned long		flags;		/* ATA_QCFLAG_xxx */
+ 	unsigned int		tag;
+ 	unsigned int		n_elem;
++	unsigned int		orig_n_elem;
+ 
+ 	int			dma_dir;
+ 
+-- 
+1.6.0.6
 
