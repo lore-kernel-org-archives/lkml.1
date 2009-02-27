@@ -1,103 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbZB0ABH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbZB0AEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759335AbZB0ABH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:01:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZB0AAz
+	id S1758594AbZB0AEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZB0AEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:00:55 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:11115 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755394AbZB0AAy convert rfc822-to-8bit (ORCPT
+	Thu, 26 Feb 2009 19:04:11 -0500
+Received: from n6b.bullet.sp1.yahoo.com ([69.147.64.163]:45032 "HELO
+	n6b.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754494AbZB0AEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:00:54 -0500
+	Thu, 26 Feb 2009 19:04:10 -0500
+X-yahoo-newman-spamcop: yes
+X-Yahoo-Newman-Id: 867290.89402.bm@omp403.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=qzeYW57o0kfdBdPdIhJGxO/zv1Tk6PXFapRXDpsV6RxGv+ebHu1DixrbkucApA16iXVWjxUn5CF0v5UZyE08DPJWzri99FI1Ffx1TJHap+d2EGU7Id1c+PsyDPRV0v+4em16QxL/y97CNO5P8R7lHVSadX8BeQBSMg0LWEZ/5lM=  ;
+X-YMail-OSG: 1wFvOZIVM1kXNnprMx4hi_KngbOrXkKH_Gc3w0FatAqgP9NwXORc37gCqhCkmvbRSl4hHtgo1EOjyfPYWpYU1Yut66op_JNK1rW5I0vTqR0yQ4Cu7udgHyb5jr1KD1X6a42wyZb4L8DsdalHUAapKOtrVQFFnLa5VDaWm2LsA3Whid1SOg6xGNLdjaALSMcCx8INp4xggBdrTa1zUglNiF1ZNUvBpK8-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage enumeration (v2)
+Date: Thu, 26 Feb 2009 16:02:58 -0800
+User-Agent: KMail/1.9.10
+Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200902081037.06645.david-b@pacbell.net> <200902261150.15125.david-b@pacbell.net> <1235686618.31223.107.camel@vega.slimlogic.co.uk>
+In-Reply-To: <1235686618.31223.107.camel@vega.slimlogic.co.uk>
 MIME-Version: 1.0
-In-Reply-To: <200902270010.38291.rjw@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>
-	 <d6200be20902261430w19ea3e6fye014f8443d9ab5ca@mail.gmail.com>
-	 <200902270010.38291.rjw@sisk.pl>
-Date: Thu, 26 Feb 2009 16:00:52 -0800
-Message-ID: <d6200be20902261600t7531568ekd9a7aa9215f53263@mail.gmail.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
-	suspend-resume
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200902261602.58832.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday 26 February 2009, Arve Hjønnevåg wrote:
->> On Thu, Feb 26, 2009 at 2:10 PM, Linus Torvalds
->> <torvalds@linux-foundation.org> wrote:
->> >
->> >
->> > On Thu, 26 Feb 2009, Rafael J. Wysocki wrote:
->> >>
->> >> Well, how exactly the $subject patch does cause this problem to happen?
->> >
->> > Rafael, the problem is that if an interrupt happens while it's disabled -
->> > but before the CPU has actually turned all interrupts off - the CPU will
->> > ACK the interrupt (but just set a flag for it being PENDING), so now the
->> > chipset logic around it will not see it as pending any more, so now the
->> > chipset won't auto-wake the CPU immediately (or more likely, it won't
->> > even suspend it).
->> >
->> > It's trivial to fix multiple ways, so I wouldn't worry. The most trivial
->> > way is to just have some sysdev drievr code simply do something like
->> >
->> >  static int sysdev_suspend()
->> >  {
->> >        for_each_irq(irq,desc) {
->> >                if (!(desc->flags & IRQF_WAKE))
->> >                        continue;
->> >                if (desc->flags & IRQ_PENDING)
->> >                        return -EBUSY;
->> >        }
->> >        return 0;
->> >  }
->> >
->> > and that should automatically mean that if any irq is pending, the suspend
->> > will fail and we'll immediately wake up again.
->> >
->> > It looks trivial, and I don't understand why Arve can't just do the sysdev
->> > thing.
->>
->> I can. My point is that the patch breaks our existing code.
->
-> Is that a mainline kernel code?
+On Thursday 26 February 2009, Liam Girdwood wrote:
+> > 
+> > Note that the twl4030 regulator patch referred to will need a
+> > minor patch to work with the -next tree, because of interface
+> > change in the regulator framework.
+> > 
+> >  drivers/regulator/twl4030-regulator.c |   62 +++++++++++---------------------
+> >  1 file changed, 23 insertions(+), 39 deletions(-)
+> 
+> Applied.
 
-No, the msm suspend support has not been merged.
+..... and here's that "minor patch".
 
->
->> If anyone else uses edge triggered wakeup interrupt it may break from them as
->> well. The main question if this should be fixed separately for every
->> platform that needs it, or if pending wakeup interrupts should always
->> abort sleep.
->
-> Well, I'm not really sure if this is the problem.  In fact the problem is that
-> you have a regular device the interrupt of which can be a wake-up one.  I think
+====== CUT HERE
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-Is that not a common case and what enable_irq_wake is for?
+Catch up the twl4030 regulator driver to the regulator
+interface change adding another parameter.  Also, fix
+some comments, and take this opportunity to shrink the
+associated per-regulator memory usage by a word.
 
-> the problem wouldn't have existed at all if it had been a sysdev.  Is that
-> correct?
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/regulator/twl4030-regulator.c |   17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-How many sysdevs use interrupts?
+--- a/drivers/regulator/twl4030-regulator.c
++++ b/drivers/regulator/twl4030-regulator.c
+@@ -36,13 +36,13 @@ struct twlreg_info {
+ 	/* twl4030 resource ID, for resource control state machine */
+ 	u8			id;
+ 
++	/* FIXED_LDO voltage */
++	u8			deciV;
++
+ 	/* voltage in mV = table[VSEL]; table_len must be a power-of-two */
+ 	u8			table_len;
+ 	const u16		*table;
+ 
+-	/* chip constraints on regulator behavior */
+-	u16			min_mV;
+-
+ 	/* used by regulator core */
+ 	struct regulator_desc	desc;
+ };
+@@ -329,14 +329,14 @@ static int twl4030fixed_list_voltage(str
+ {
+ 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
+ 
+-	return info->min_mV * 1000;
++	return info->deciV * 100 * 1000;
+ }
+ 
+ static int twl4030fixed_get_voltage(struct regulator_dev *rdev)
+ {
+ 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
+ 
+-	return info->min_mV * 1000;
++	return info->deciV * 100 * 1000;
+ }
+ 
+ static struct regulator_ops twl4030fixed_ops = {
+@@ -373,7 +373,7 @@ static struct regulator_ops twl4030fixed
+ #define TWL_FIXED_LDO(label, offset, mVolts, num) { \
+ 	.base = offset, \
+ 	.id = num, \
+-	.min_mV = mVolts, \
++	.deciV = mVolts / 100 , \
+ 	.desc = { \
+ 		.name = #label, \
+ 		.id = TWL4030_REG_##label, \
+@@ -385,7 +385,7 @@ static struct regulator_ops twl4030fixed
+ 	}
+ 
+ /*
+- * We list regulators here if systems need some level of
++ * We expose regulators here if systems need some level of
+  * software control over them after boot.
+  */
+ static struct twlreg_info twl4030_regs[] = {
+@@ -439,6 +439,7 @@ static int twl4030reg_probe(struct platf
+ 
+ 	/* Constrain board-specific capabilities according to what
+ 	 * this driver and the chip itself can actually do.
++	 * (Regulator core now does this for voltage constraints.)
+ 	 */
+ 	c = &initdata->constraints;
+ 	c->valid_modes_mask &= REGULATOR_MODE_NORMAL | REGULATOR_MODE_STANDBY;
+@@ -446,7 +447,7 @@ static int twl4030reg_probe(struct platf
+ 				| REGULATOR_CHANGE_MODE
+ 				| REGULATOR_CHANGE_STATUS;
+ 
+-	rdev = regulator_register(&info->desc, &pdev->dev, info);
++	rdev = regulator_register(&info->desc, &pdev->dev, initdata, info);
+ 	if (IS_ERR(rdev)) {
+ 		dev_err(&pdev->dev, "can't register %s, %ld\n",
+ 				info->desc.name, PTR_ERR(rdev));
 
-I found may drivers in the mainline kernel that use enable_irq_wake,
-but I did not see any that handle this race condition.
 
--- 
-Arve Hjønnevåg
+
