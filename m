@@ -1,194 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbZB0IPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbZB0IQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757689AbZB0IPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 03:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbZB0IPY
+	id S1758116AbZB0IQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 03:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZB0IQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 03:15:24 -0500
-Received: from cmpxchg.org ([85.214.51.133]:55678 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbZB0IPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 03:15:23 -0500
-Date: Fri, 27 Feb 2009 09:16:50 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/percpu] bootmem: clean up arch-specific bootmem wrapping
-Message-ID: <20090227081650.GA2009@cmpxchg.org>
-References: <tip-c132937556f56ee4b831ef4b23f1846e05fde102@kernel.org> <20090224214638.GA2049@cmpxchg.org> <20090224214932.GC12601@elte.hu> <20090224234949.GA1778@cmpxchg.org> <49A4ACAE.4020104@kernel.org> <20090225024316.GA1738@cmpxchg.org> <49A4CE93.3070908@kernel.org>
+	Fri, 27 Feb 2009 03:16:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51628 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755026AbZB0IQ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 03:16:26 -0500
+Date: Fri, 27 Feb 2009 00:15:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rostedt@goodmis.org, jonathan@jonmasters.org
+Subject: Re: [patch 4/4] genirq: add support for threaded interrupt handlers
+Message-Id: <20090227001532.5dd84c2d.akpm@linux-foundation.org>
+In-Reply-To: <1235721910.4948.1321.camel@laptop>
+References: <20090226131336.423054348@linutronix.de>
+	<20090226131719.760899560@linutronix.de>
+	<20090226153216.5db66bc3.akpm@linux-foundation.org>
+	<20090226212752.332ba546@infradead.org>
+	<20090226214514.f8a58731.akpm@linux-foundation.org>
+	<1235719113.4948.1252.camel@laptop>
+	<20090226234800.4977fca5.akpm@linux-foundation.org>
+	<1235721910.4948.1321.camel@laptop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A4CE93.3070908@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 01:52:35PM +0900, Tejun Heo wrote:
-> Commit c132937556f56ee4b831ef4b23f1846e05fde102 tried to clean up
-> bootmem arch wrapper but it wasn't quite correct.  Before the commit,
-> the followings were broken.
-> 
-> * Low level interface functions prefixed with __ ignored arch
->   preference.
-> 
-> * reserve_bootmem(...) can't be mapped into
->   reserve_bootmem_node(NODE_DATA(0)->bdata, ...) because the node is
->   not preference here.  The region specified MUST fall into the
->   specified region; otherwise, it will panic.
-> 
-> After the commit,
-> 
-> * If allocation fails for the arch preferred node, it should fallback
->   to whatever is available.  Instead, it simply failed allocation.
-> 
-> There are too many internal details to allow generic wrapping and
-> still keep things simple for archs.  Plus, all that arch wants is a
-> way to prefer certain node over another.
-> 
-> This patch drops the generic wrapping around alloc_bootmem_core() and
-> add alloc_bootmem_core() instead.  If necessary, arch can define
-> bootmem_arch_referred_node() macro or function which takes all
-> allocation information and returns the preferred node.  bootmem
-> generic code will always try the preferred node first and then
-> fallback to other nodes as usual.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Johannes Weiner <hannes@cmpxchg.org>
-> ---
-> It turns out reserve_bootmem() shouldn't be wrapped in the first
-> place.  I hope I got it right this time.  Can you please review this
-> one?  And I didn't think your comment was rude at all, no worries.
+On Fri, 27 Feb 2009 09:05:10 +0100 Peter Zijlstra <peterz@infradead.org> wrote:
 
-You are right!  Sorry, I missed that.  Yes, reserve_bootmem() operates
-on ranges disregarding nodes.
-
->  arch/x86/include/asm/mmzone_32.h |    8 +-----
->  mm/bootmem.c                     |   45 ++++++++++++++++++++++++++-------------
->  2 files changed, 32 insertions(+), 21 deletions(-)
+> > What is the plan (if any) for integrating threaded interrupt handlers
+> > with softirqs?  I guess things will "just work" at present, and
+> > threaded softirqs happen in a later patch?
 > 
-> diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
-> index eeacf67..ede6998 100644
-> --- a/arch/x86/include/asm/mmzone_32.h
-> +++ b/arch/x86/include/asm/mmzone_32.h
-> @@ -92,12 +92,8 @@ static inline int pfn_valid(int pfn)
->  
->  #ifdef CONFIG_NEED_MULTIPLE_NODES
->  /* always use node 0 for bootmem on this numa platform */
-> -#define alloc_bootmem_core(__bdata, size, align, goal, limit)		\
-> -({									\
-> -	bootmem_data_t __maybe_unused *	__abm_bdata_dummy = (__bdata);	\
-> -	__alloc_bootmem_core(NODE_DATA(0)->bdata,			\
-> -			     (size), (align), (goal), (limit));		\
-> -})
-> +#define bootmem_arch_preferred_node(__bdata, size, align, goal, limit)	\
-> +	(NODE_DATA(0)->bdata)
->  #endif /* CONFIG_NEED_MULTIPLE_NODES */
->  
->  #endif /* _ASM_X86_MMZONE_32_H */
-> diff --git a/mm/bootmem.c b/mm/bootmem.c
-> index d7140c0..daf9271 100644
-> --- a/mm/bootmem.c
-> +++ b/mm/bootmem.c
-> @@ -37,16 +37,6 @@ static struct list_head bdata_list __initdata = LIST_HEAD_INIT(bdata_list);
->  
->  static int bootmem_debug;
->  
-> -/*
-> - * If an arch needs to apply workarounds to bootmem allocation, it can
-> - * set CONFIG_HAVE_ARCH_BOOTMEM and define a wrapper around
-> - * __alloc_bootmem_core().
-> - */
-> -#ifndef CONFIG_HAVE_ARCH_BOOTMEM
-> -#define alloc_bootmem_core(bdata, size, align, goal, limit)		\
-> -	__alloc_bootmem_core((bdata), (size), (align), (goal), (limit))
-> -#endif
-> -
->  static int __init bootmem_debug_setup(char *buf)
->  {
->  	bootmem_debug = 1;
-> @@ -436,9 +426,9 @@ static unsigned long align_off(struct bootmem_data *bdata, unsigned long off,
->  	return ALIGN(base + off, align) - base;
->  }
->  
-> -static void * __init __alloc_bootmem_core(struct bootmem_data *bdata,
-> -				unsigned long size, unsigned long align,
-> -				unsigned long goal, unsigned long limit)
-> +static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
-> +					unsigned long size, unsigned long align,
-> +					unsigned long goal, unsigned long limit)
->  {
->  	unsigned long fallback = 0;
->  	unsigned long min, max, start, sidx, midx, step;
-> @@ -538,17 +528,34 @@ find_block:
->  	return NULL;
->  }
->  
-> +static void * __init alloc_arch_preferred_bootmem(bootmem_data_t *bdata,
-> +					unsigned long size, unsigned long align,
-> +					unsigned long goal, unsigned long limit)
-> +{
-> +#ifdef CONFIG_HAVE_ARCH_BOOTMEM
-> +	bootmem_data_t *p_bdata;
-> +
-> +	p_bdata = bootmem_arch_preferred_node(bdata, size, align, goal, limit);
-> +	if (p_bdata)
-> +		return alloc_bootmem_core(p_bdata, size, align, goal, limit);
-> +#endif
-> +	return NULL;
-> +}
-> +
->  static void * __init ___alloc_bootmem_nopanic(unsigned long size,
->  					unsigned long align,
->  					unsigned long goal,
->  					unsigned long limit)
->  {
->  	bootmem_data_t *bdata;
-> +	void *region;
->  
->  restart:
-> -	list_for_each_entry(bdata, &bdata_list, list) {
-> -		void *region;
-> +	region = alloc_arch_preferred_bootmem(NULL, size, align, goal, limit);
-> +	if (region)
-> +		return region;
->  
-> +	list_for_each_entry(bdata, &bdata_list, list) {
->  		if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
->  			continue;
->  		if (limit && bdata->node_min_pfn >= PFN_DOWN(limit))
-> @@ -626,6 +633,10 @@ static void * __init ___alloc_bootmem_node(bootmem_data_t *bdata,
->  {
->  	void *ptr;
->  
-> +	ptr = alloc_arch_preferred_bootmem(bdata, size, align, goal, limit);
-> +	if (ptr)
-> +		return ptr;
-> +
->  	ptr = alloc_bootmem_core(bdata, size, align, goal, limit);
->  	if (ptr)
->  		return ptr;
-> @@ -682,6 +693,10 @@ void * __init __alloc_bootmem_node_nopanic(pg_data_t *pgdat, unsigned long size,
->  {
->  	void *ptr;
->  
-> +	ptr = alloc_arch_preferred_bootmem(pgdat->bdata, size, align, goal, 0);
-> +	if (ptr)
-> +		return ptr;
-> +
->  	ptr = alloc_bootmem_core(pgdat->bdata, size, align, goal, 0);
->  	if (ptr)
->  		return ptr;
+> Thing is, stuff that now needs softirq could be directly done in the
+> threaded handler, ergo softirq usage should decline (and hopefully
+> disappear all together - famous last words).
+> 
+> We only use softirq/workqueues/tasklets because we need a preemptible
+> environment, which the traditional irq handler didn't provide. With
+> threaded interrupts we do have that.
 
-Well, okay.
+ah.  I was specifically thinking of net/core/dev.c.  That's our
+heaviest user of interrupts and softirqs, I expect?
 
-It is a bugfix for preferring the arch node even with the __interface.
-But it brings ifdeffery/special casing to bootmem that was before in a
-header file and is only for a very rare hardware setup, so I don't
-think it is a cleanup, rather a necessity.
+> > I'd have thought that the softirq latency could get quite a bit worse
+> > with this proposed threaded-irq patch?
+> 
+> Due to the propagation of wakeups? irq wakes up thread, thread wakes up
+> softirq, etc?
+> 
+> Yes it would, another good reason to simply use the threaded handler to
+> do whatever the softirq used to do, no?
+> 
+> > I suppose we could just run the softirq handlers directly after running
+> > the irq handler, from the IRQ thread.  Rather than having to poke
+> > softirqd all the time?
+> 
+> One could I suppose, except that softirqs are per-cpu and threaded
+> interrupts are not, so they don't map that well. We played around with
+> this on preempt-rt for a while, but it kept on breaking stuff.
+> 
+> Its all a lot more tracktable when you get to change the driver, as you
+> have more information.
+> 
+> > Thwap me if this was all in whatever-changelog-that-was as well ;)
+> 
+> Hehe, no you got some good points this time around ;-)
+> 
+> > Also...
+> > 
+> > Given that this threaded-irq code appears to be new and not very tested
+> > in -rt, I think it would be a good idea to convert some popular drivers
+> > (e1000/e1000e) so that the core code gets a good thrashing before we
+> > merge it.
+> 
+> Right, Thomas did the EHCI usb driver, the network driver you propose is
+> a tad hard since it relies on the whole network stack softirq stuff.
+> Re-working the whole net-stack to make use of threaded handlers is a
+> massive undertaking
 
-For now, let's just go with it.
+oh.  That rather changes the perspective on the whole exercise.  hrm.
 
-Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+> -- although I seem to remember someone doing it a
+> few years back and seeing a general performance improvement, Thomas
+> still got a link to that work?
+> 
+> But yes, it would be prudent to convert a few frequently used driver to
+> this model before merging I suppose.
