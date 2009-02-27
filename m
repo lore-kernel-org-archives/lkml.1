@@ -1,101 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZB0F1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZB0FcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZB0F1q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 00:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZB0F1g
+	id S1755498AbZB0FcR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 00:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZB0FcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 00:27:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46417 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbZB0F1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 00:27:36 -0500
-Date: Thu, 26 Feb 2009 21:27:52 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, peterz@infradead.org, rostedt@goodmis.org,
-       jonathan@jonmasters.org
-Subject: Re: [patch 4/4] genirq: add support for threaded interrupt handlers
-Message-ID: <20090226212752.332ba546@infradead.org>
-In-Reply-To: <20090226153216.5db66bc3.akpm@linux-foundation.org>
-References: <20090226131336.423054348@linutronix.de>
-	<20090226131719.760899560@linutronix.de>
-	<20090226153216.5db66bc3.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Fri, 27 Feb 2009 00:32:00 -0500
+Received: from mga01.intel.com ([192.55.52.88]:11018 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751735AbZB0FcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 00:32:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,274,1233561600"; 
+   d="asc'?scan'208";a="668936826"
+Subject: Bug of dm-crypt?
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Milan Broz <mbroz@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-C8aD9h2TUTjVKanprVlB"
+Date: Fri, 27 Feb 2009 13:31:56 +0800
+Message-Id: <1235712716.6204.100.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Feb 2009 15:32:16 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Thu, 26 Feb 2009 13:28:23 -0000
-> Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > Add suppport for threaded interrupt handlers. This is a more strict
-> > separation of the primary interrupt handler, which runs in hard
-> > interrupt context, and the real interrupt handler, which handles the
-> > real device functionality, than the existing hardirq/softirq
-> > separation.
-> > 
-> > The primary hard interrupt context handler solely checks whether the
-> > interrupt originates from the device or not. In case the interrupt
-> > is asserted by the device the handler disables the interrupt on the
-> > device level. This must be the only functionality of the primary
-> > handler and this restriction has to be carefully monitored to avoid
-> > unresolvable locking scenarios with a fully preemptible kernel.
-> > 
-> > The threaded handler allows to integrate hardware related
-> > functionality and softirq/tasklet functions in the handler
-> > thread.
-> > 
-> 
-> A typical device driver will do:
-> 
-> some_function(...)
-> {
-> 	spin_lock_irqsave(&dev->lock);
-> }
-> 
-> irq_handler(...)
-> {
-> 	spin_lock(&dev->lock);
-> }
-> 
-> and this does not deadlock, because the driver "knows" that the IRQ is
-> disabled during the execution of the IRQ handler.
-> 
-> But how is this optimisation supported with IRQ threads?  Do we leave
-> the IRQ disabled during the thread execution?  Or does the driver need
-> to be changed?
-> 
-> Bearing in mind that the driver might choose to split the IRQ handling
-> between hard-irq context fastpath and process-context slowpath (I
-> hope), and that each path might want to take the same lock.
-> 
+--=-C8aD9h2TUTjVKanprVlB
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Hi, Herbert,
+
+I had ever heard from you that the only thing guaranteed in the
+completion function of async ablkcipher cryption is the req->data has
+the value you set before. The request pointer itself may be changed. But
+in dm-crypt, I found they rely on request pointer in completion
+function: kcryptd_async_done. This makes my AES-NI cryptd usage panic.
+
+Do you think that is a bug?
+
+Best Regards,
+Huang Ying
 
 
-Realistically, for the "we go threaded interrupts" case (which is
-opt-in), I think the only sane option is
-* the quickhandler runs with irqs off
-* the "slow" threaded handler runs with irqs on
-And we guarantee both of these conditions from the core, to the point
-that I think we should not allow any other combination.
+--=-C8aD9h2TUTjVKanprVlB
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-This also should be fine for basically all cases; the quick handler
-really needs to be quick so irq off makes sense, and the slow handler
-can, worst case, turn off interrupts by itself, but normally is
-preemptable etc etc.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEABECAAYFAkmneskACgkQKhFGF+eHlphtiwCfQ9im6KaQMLtOzmVh3i++vMum
+KNEAn2iRukI6aTTMK19O6JcRkHW4GPQf
+=36Y9
+-----END PGP SIGNATURE-----
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--=-C8aD9h2TUTjVKanprVlB--
+
