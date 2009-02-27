@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbZB0UCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZB0UHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbZB0UCE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 15:02:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758797AbZB0UBp
+	id S1759278AbZB0UHv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 15:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbZB0UHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 15:01:45 -0500
-Received: from mga09.intel.com ([134.134.136.24]:15329 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757934AbZB0UBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 15:01:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,278,1233561600"; 
-   d="scan'208";a="390363288"
-From: Chris Leech <christopher.leech@intel.com>
-Subject: [PATCH 2/2] net headers: export dcbnl.h
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Fri, 27 Feb 2009 12:01:42 -0800
-Message-ID: <20090227200141.31557.37591.stgit@localhost.localdomain>
-In-Reply-To: <20090227200136.31557.53143.stgit@localhost.localdomain>
-References: <20090227200136.31557.53143.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Fri, 27 Feb 2009 15:07:43 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:48635 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756839AbZB0UHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 15:07:42 -0500
+Message-ID: <49A84802.7030502@krogh.cc>
+Date: Fri, 27 Feb 2009 21:07:30 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, aowi@novozymes.com
+Subject: Re: Regression in bonding between 2.6.26.8 and 2.6.27.6 - bisected
+References: <491FEAD5.4090205@krogh.cc> <49A7B17F.2020408@krogh.cc> <16084.1235752119@death.nxdomain.ibm.com>
+In-Reply-To: <16084.1235752119@death.nxdomain.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The DCB netlink interface is required for building the userspace tools
-available at e1000.sourceforge.net
+Jay Vosburgh wrote:
+> Jesper Krogh <jesper@krogh.cc> wrote:
+> [...]
+>> The offending commit seems to be:
+>>
+>> A test with a fresh 2.6.29-rc6 revealed that the problem has been fixed
+>> subsequently.. but still exists in 2.6.27-newest.  (havent tested
+>> 2.6.28-newest yet).
+>>
+>> Any ideas of what the "fixing" commit is .. or should that also be
+>> bisected?
+> 
+> 	I went back and looked at your earlier mail.  Since you're using
+> 802.3ad mode, my first guess would be this commit:
+> 
+> commit fd989c83325cb34795bc4d4aa6b13c06f90eac99
+> Author: Jay Vosburgh <fubar@us.ibm.com>
+> Date:   Tue Nov 4 17:51:16 2008 -0800
+> 
+>     bonding: alternate agg selection policies for 802.3ad
 
-Signed-off-by: Chris Leech <christopher.leech@intel.com>
----
+That didn't do it.. I applied it to 2.6.27.19 but it didnt make that work.
+dmesg | grep bond (2.6.27.19 + above patch).
 
- include/linux/Kbuild |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+[   13.643301] bonding: MII link monitoring set to 100 ms
+[   13.730455] bonding: bond0: enslaving eth0 as a backup interface with 
+an up link.
+[   13.781934] bonding: bond0: enslaving eth1 as a backup interface with 
+an up link.
+[   13.904665] bonding: bond0: enslaving eth2 as a backup interface with 
+a down link.
+[   16.945264] bonding: bond0: link status definitely up for interface eth2.
+[   75.040290] bond0: no IPv6 routers present
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index b97cdc5..106c3ba 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -52,6 +52,7 @@ header-y += const.h
- header-y += cgroupstats.h
- header-y += cramfs_fs.h
- header-y += cycx_cfm.h
-+header-y += dcbnl.h
- header-y += dlmconstants.h
- header-y += dlm_device.h
- header-y += dlm_netlink.h
+dmesg | grep bond (2.6.29-rc6)
 
+$ ssh quad02 dmesg | grep bond
+[   27.437877] bonding: MII link monitoring set to 100 ms
+[   27.445246] ADDRCONF(NETDEV_UP): bond0: link is not ready
+[   27.493260] bonding: bond0: enslaving eth0 as a backup interface with 
+a down link.
+[   27.521397] bonding: bond0: enslaving eth1 as a backup interface with 
+a down link.
+[   27.542332] bonding: bond0: Warning: No 802.3ad response from the 
+link partner for any adapters in the bond
+[   27.611509] bonding: bond0: enslaving eth2 as a backup interface with 
+a down link.
+[   27.617017] ADDRCONF(NETDEV_CHANGE): bond0: link becomes ready
+[   27.642330] bonding: bond0: Warning: No 802.3ad response from the 
+link partner for any adapters in the bond
+[   30.042501] bonding: bond0: link status definitely up for interface eth1.
+[   30.142505] bonding: bond0: link status definitely up for interface eth0.
+[   30.742547] bonding: bond0: link status definitely up for interface eth2.
+[   37.875044] bond0: no IPv6 routers present
+
+I just tested 2.6.28.7.. it still broken. So the fix probably has to be 
+somewhere in the post 2.6.28 sets.
+
+
+
+-- 
+Jesper
