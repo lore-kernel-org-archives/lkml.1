@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbZB0PDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbZB0PG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbZB0PDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 10:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZB0PDJ
+	id S1757676AbZB0PG3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 10:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZB0PGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 10:03:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56274 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754517AbZB0PDI (ORCPT
+	Fri, 27 Feb 2009 10:06:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44599 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbZB0PGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 10:03:08 -0500
-Date: Fri, 27 Feb 2009 10:03:03 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
- 3 users
-In-Reply-To: <20090226224656.5785de9e.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0902270955100.25593@gandalf.stny.rr.com>
-References: <49a38304.0506d00a.1f4b.406d@mx.google.com> <20090226130243.GA22460@elte.hu> <20090226170524.GB5889@nowhere> <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere>
- <20090226185208.GA6658@nowhere> <20090226185635.GA12895@elte.hu> <20090227061936.GA5318@nowhere> <20090226224656.5785de9e.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Feb 2009 10:06:18 -0500
+Date: Fri, 27 Feb 2009 07:06:33 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rostedt@goodmis.org, jonathan@jonmasters.org
+Subject: Re: [patch 4/4] genirq: add support for threaded interrupt handlers
+Message-ID: <20090227070633.2c3fc04e@infradead.org>
+In-Reply-To: <1235721910.4948.1321.camel@laptop>
+References: <20090226131336.423054348@linutronix.de>
+	<20090226131719.760899560@linutronix.de>
+	<20090226153216.5db66bc3.akpm@linux-foundation.org>
+	<20090226212752.332ba546@infradead.org>
+	<20090226214514.f8a58731.akpm@linux-foundation.org>
+	<1235719113.4948.1252.camel@laptop>
+	<20090226234800.4977fca5.akpm@linux-foundation.org>
+	<1235721910.4948.1321.camel@laptop>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 27 Feb 2009 09:05:10 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-On Thu, 26 Feb 2009, Andrew Morton wrote:
-
-> On Fri, 27 Feb 2009 07:19:37 +0100 Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> > 
-> > An new optimization is making its way to ftrace. Its purpose is to
-> > make ftrace_printk() consuming less memory and be faster.
-> > 
-> > Written by Lai Jiangshan, the approach is to delay the formatting
-> > job from tracing time to output time.
-> > Currently, a call to ftrace_printk will format the whole string and
-> > insert it into the ring buffer.
-> 
-> It does that?   eek.
+> Right, Thomas did the EHCI usb driver, the network driver you propose
+> is a tad hard since it relies on the whole network stack softirq
+> stuff. Re-working the whole net-stack to make use of threaded
+> handlers is a massive undertaking -- although I seem to remember
+> someone doing it a few years back and seeing a general performance
+> improvement, Thomas still got a link to that work?
 
-Yes, I remember when Linus suggested having a pointer to the format and
-the args saved. There was two issues I found.
 
-1) You still needed to read the format string to find out what arguments 
-   to save.
+we shouldn't have to; just running the softirq handler from the irq
+thread should work, and not lose real performance.
+Sure you're not going to get a performance gain that you could get
+but it still works.
+or am I missing something?
 
-2) The format string could be part of module data, and if the module is
-   unloaded between the time of recording and the time of reading the 
-   trace, we now have a format pointer pointing to God knows what.
+(and esp for things like wireless drivers, that should be just fine; I
+can understand hesitation to do 10g ethernet drivers right away ;-)
 
-When posting ftrace_printk, I said this was for debugging purposes only,
-and I was not about to work on optimizations there of. But Frederic and
-Lai are doing a great job in that aspect ;-)
 
-HAHAHAHHAAAA!!!! My evil scheme is working! I post some sub-optimal code, 
-and have others do the nasty work for me!!!!
-
-Oh, did I just say that out loud?
-
--- Steve
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
