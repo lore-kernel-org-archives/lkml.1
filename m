@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbZB0Ujp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbZB0Uk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760720AbZB0Ujp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 15:39:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760176AbZB0Uho
+	id S1760764AbZB0Uk3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 15:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759088AbZB0UkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 15:37:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59785 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760225AbZB0Uhm (ORCPT
+	Fri, 27 Feb 2009 15:40:09 -0500
+Received: from n8b.bullet.sp1.yahoo.com ([69.147.64.169]:42595 "HELO
+	n8b.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758427AbZB0UkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 15:37:42 -0500
-Date: Fri, 27 Feb 2009 12:36:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, sameo@openedhand.com,
-       dbrownell@users.sourceforge.net
-Subject: Re: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
-Message-Id: <20090227123649.d2d6408c.akpm@linux-foundation.org>
-In-Reply-To: <1235762883-20870-2-git-send-email-me@felipebalbi.com>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-	<1235762883-20870-2-git-send-email-me@felipebalbi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Feb 2009 15:40:08 -0500
+X-yahoo-newman-spamcop: yes
+X-Yahoo-Newman-Id: 460771.33200.bm@omp418.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=0KjFuWT4v/72sQnmMqDaLLLH/PLMmPIGWsu9ggCTMtY+k7mexMh6x6LnlcsILqD88dAGI9dVyQpEmYqBi08xrK3OSAXDcxdFxbKz4KBjNLJscrFm9LY+UDXeaZR4Eo2fqyit+LX+iXhwHql+axBh2dNyHMWjH77Q3NK/a2mRVF0=  ;
+X-YMail-OSG: 8BDLQ3kVM1mOdoo_KKwF60KstcfPgDyZynmL5AFOmiUY81SVaHThM7drxbqmXB1F0p7Mfws4eIs1uP8Wk578cu9FXeAugsnpEdsYnrMLCXucrfZsCs7uGjLfTMOI8GzKUSzzPyXnuxYtdBZx_LfKQNDdQO3zlTNpfLK.Uyb3rA2p1jDvQhbg.fdqyQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage enumeration (v2)
+Date: Fri, 27 Feb 2009 12:39:44 -0800
+User-Agent: KMail/1.9.10
+Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200902081037.06645.david-b@pacbell.net> <200902261602.58832.david-b@pacbell.net> <1235737930.31223.117.camel@vega.slimlogic.co.uk>
+In-Reply-To: <1235737930.31223.117.camel@vega.slimlogic.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902271239.44558.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Feb 2009 21:28:03 +0200
-Felipe Balbi <me@felipebalbi.com> wrote:
-
-> From: Felipe Balbi <felipe.balbi@nokia.com>
+On Friday 27 February 2009, Liam Girdwood wrote:
+> On Thu, 2009-02-26 at 16:02 -0800, David Brownell wrote:
+> > On Thursday 26 February 2009, Liam Girdwood wrote:
+> > > > 
+> > > > Note that the twl4030 regulator patch referred to will need a
+> > > > minor patch to work with the -next tree, because of interface
+> > > > change in the regulator framework.
+> > > 
+> > > Applied.
+> > 
+> > .... and here's that "minor patch".
+> > 
+> > ...
 > 
-> Make that twl4030-pwrbutton.c driver probe with current
-> child creation api for twl4030.
-> 
-> Cc: Samuel Ortiz <sameo@openedhand.com>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
-> ---
-> This part is better off going via mfd.
-> 
->  drivers/mfd/twl4030-core.c |   13 +++++++++++++
->  1 files changed, 13 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-> index 68826f1..c86bc3b 100644
-> --- a/drivers/mfd/twl4030-core.c
-> +++ b/drivers/mfd/twl4030-core.c
-> @@ -101,6 +101,12 @@
->  #define twl_has_usb()	false
->  #endif
->  
-> +#if defined(CONFIG_INPUT_TWL4030_PWRBUTTON) \
-> +	|| defined(CONFIG_INPUT_TWL4030_PWBUTTON_MODULE)
+> Sorry, this didn't apply. It looks like I'm missing an earlier patch(s)
+> here. Could you regenerate this and your core patch against latest
+> for-next.
 
-OK, this is "wrong".  The core shouldn't need to know about specific
-clients.
+The regulator -next tree seems to be missing a bunch of stuff...
+I generated this patch against a "twl4030-regulator.c" which I
+extracted *from that tree* yesterday.  But today it's different.
 
-> +#define twl_has_pwrbutton()	true
-> +#else
-> +#define twl_has_pwrbutton()	false
-> +#endif
->  
->  /* Triton Core internal information (BEGIN) */
->  
-> @@ -526,6 +532,13 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
->  		usb_transceiver = child;
->  	}
->  
-> +	if (twl_has_pwrbutton()) {
-> +		child = add_child(1, "twl4030_pwrbutton",
-> +				NULL, 0, true, pdata->irq_base + 8 + 0, 0);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
-> +	}
-> +
->  	if (twl_has_regulator()) {
->  		/*
->  		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
+In this case, the current code doesn't have the $SUBJECT patch,
+which at that time you had applied.  But it does have a small
+snippet from that "minor patch"...
 
-The client module should register itself with the core, rather than the core
-registering the client.
 
-What has gone wrong here?
+Color me confused.  Are you asking for a "v3" of $SUBJECT, or
+is the "v2" going to re-appear?  And when will that -next tree
+acquire the rest of
+
+ http://marc.info/?l=linux-kernel&m=123567791402469&w=2
+
+Having only the driver.h part of that patch breaks things
+(your 0ae0e667c8a2bacfe066b90f8f2ee3b4a83a120d).
+
+- Dave
+
+
