@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760759AbZB0VVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbZB0VXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760759AbZB0VVO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 16:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759052AbZB0VU5
+	id S1760473AbZB0VXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 16:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbZB0VXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 16:20:57 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:48084 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756080AbZB0VU4 (ORCPT
+	Fri, 27 Feb 2009 16:23:37 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:51353 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757710AbZB0VXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 16:20:56 -0500
-Subject: Re: [RFC][PATCH 3/8] create fs flags to mark c/r supported fs's
+	Fri, 27 Feb 2009 16:23:37 -0500
+Subject: Re: [RFC][PATCH 2/8] breakout fdinfo sprintf() into its own
+	function
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       containers <containers@lists.linux-foundation.org>,
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: containers <containers@lists.linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Oren Laadan <orenl@cs.columbia.edu>, hch@infradead.org
-In-Reply-To: <20090227211620.GA3326@x200.localdomain>
+       hch@infradead.org, Ingo Molnar <mingo@elte.hu>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <19f34abd0902271256r49a06336rcba56234c06645a7@mail.gmail.com>
 References: <20090227203425.F3B51176@kernel>
-	 <20090227203428.556600DA@kernel>  <20090227211620.GA3326@x200.localdomain>
+	 <20090227203426.9F73083F@kernel>
+	 <19f34abd0902271256r49a06336rcba56234c06645a7@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 27 Feb 2009 13:20:50 -0800
-Message-Id: <1235769650.26788.388.camel@nimitz>
+Date: Fri, 27 Feb 2009 13:23:33 -0800
+Message-Id: <1235769813.26788.391.camel@nimitz>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -31,22 +32,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-02-28 at 00:16 +0300, Alexey Dobriyan wrote:
-> On Fri, Feb 27, 2009 at 12:34:28PM -0800, Dave Hansen wrote:
-> > +#define FS_CHECKPOINTABLE 8
+On Fri, 2009-02-27 at 21:56 +0100, Vegard Nossum wrote:
+> > +static void proc_fd_write_info(struct file *file, char *info)
+> > +{
+> > +       int max = PROC_FDINFO_MAX;
+> > +       int p = 0;
+> > +       if (!info)
+> > +               return;
+> > +
+> > +       p += snprintf(info+p, max-p, "pos:\t%lli\n", (long long) file->f_pos);
+> > +       p += snprintf(info+p, max-p, "flags:\t0%o\n", file->f_flags);
 > 
-> This will ban all sockets, for instance, until all of them are
-> C/R-ready. And every new socket type must be made C/R-ready from
-> the very beginning, or risk major C/R breakage.
+> Actually, snprintf() is not the right function to use here.
+> scnprintf(), perhaps?
 
-Yes, it is very important to have fine-grained control over what is
-checkpointable and not.  We can't simply say "all sockets are OK" all at
-once.  I meant this as a high-level things so that I didn't have to go
-chase down the several f_ops for each in and every filesystem that is
-supported.
-
-Did you look farther down in the patches to see how this can be
-overridden with an f_op?
+Yes, that does look more appropriate.  I'll double-check what happens
+when we overrun the buffer.
 
 -- Dave
 
