@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbZB0KrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759944AbZB0Kuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760657AbZB0KrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:47:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbZB0Kqz
+	id S1759944AbZB0Kuj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbZB0Ku2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:46:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46535
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756345AbZB0Kqy (ORCPT
+	Fri, 27 Feb 2009 05:50:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:45426 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751872AbZB0Ku1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 05:46:54 -0500
-Date: Fri, 27 Feb 2009 02:46:35 -0800 (PST)
-Message-Id: <20090227.024635.51509388.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: christopher.leech@intel.com, linux-netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net headers: export dcbnl.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090227055506.GA7020@uranus.ravnborg.org>
-References: <20090227004635.10247.60814.stgit@localhost.localdomain>
-	<20090227055506.GA7020@uranus.ravnborg.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Feb 2009 05:50:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iO8IWpsVMqtV2cM//CwI87mdR167nNzCru7Nt/4HI3LBPY1E/1PyPuQcTGxVYLVpHk
+         42LJh8E573dO16fwKy2VPARmuHuZP157KuDBj62n5P8l0oDbCg2Ay3x/CneDObZ2k4XH
+         HPPvSOSmgpXVCGANDyyuJiibYCgSVZWjJmi6A=
+Date: Fri, 27 Feb 2009 13:57:06 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       mpm@selenic.com, containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+	do?
+Message-ID: <20090227105706.GC2939@x200.localdomain>
+References: <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu> <20090226223112.GA2939@x200.localdomain> <20090227090323.GC16211@elte.hu> <20090227011901.8598d7f0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090227011901.8598d7f0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Fri, 27 Feb 2009 06:55:06 +0100
+On Fri, Feb 27, 2009 at 01:19:01AM -0800, Andrew Morton wrote:
+> On Fri, 27 Feb 2009 10:03:23 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > 
+> > > > I think the main question is: will we ever find ourselves in 
+> > > > the future saying that "C/R sucks, nobody but a small 
+> > > > minority uses it, wish we had never merged it"? I think the 
+> > > > likelyhood of that is very low. I think the current OpenVZ 
+> > > > stuff already looks very useful, and i dont think we've 
+> > > > realized (let alone explored) all the possibilities yet.
+> > > 
+> > > This is collecting and start of dumping part of cleaned up 
+> > > OpenVZ C/R implementation, FYI.
+> > > 
+> > >  arch/x86/include/asm/unistd_32.h   |    2 
+> > >  arch/x86/kernel/syscall_table_32.S |    2 
+> > >  include/linux/Kbuild               |    1 
+> > >  include/linux/cr.h                 |   56 ++++++
+> > >  include/linux/ipc_namespace.h      |    3 
+> > >  include/linux/syscalls.h           |    5 
+> > >  init/Kconfig                       |    2 
+> > >  kernel/Makefile                    |    1 
+> > >  kernel/cr/Kconfig                  |   11 +
+> > >  kernel/cr/Makefile                 |    8 
+> > >  kernel/cr/cpt-cred.c               |  115 +++++++++++++
+> > >  kernel/cr/cpt-fs.c                 |  122 +++++++++++++
+> > >  kernel/cr/cpt-mm.c                 |  134 +++++++++++++++
+> > >  kernel/cr/cpt-ns.c                 |  324 +++++++++++++++++++++++++++++++++++++
+> > >  kernel/cr/cpt-signal.c             |  121 +++++++++++++
+> > >  kernel/cr/cpt-sys.c                |  228 ++++++++++++++++++++++++++
+> > >  kernel/cr/cr-ctx.c                 |  141 ++++++++++++++++
+> > >  kernel/cr/cr.h                     |   61 ++++++
+> > >  kernel/cr/rst-sys.c                |    9 +
+> > >  kernel/sys_ni.c                    |    3 
+> > >  20 files changed, 1349 insertions(+)
+> > 
+> > That does not look scary to me at all. Andrew?
+> 
+> I think we'd need to look into the details.  Sure, it's isolated from a
+> where-it-is-in-the-tree POV.  But I assume that each of those files has
+> intimate and intrusive knowledge of the internals of data structures?
 
-> On Thu, Feb 26, 2009 at 04:46:35PM -0800, Chris Leech wrote:
-> > The DCB netlink interface is required for building the userspace tools
-> > available at e1000.sourceforge.net
-> 
-> Hmmm, is that file ready for export....
-> 
-> >From dcbnl.h:
-> #ifndef __LINUX_DCBNL_H__
-> #define __LINUX_DCBNL_H__
-> 
-> #define DCB_PROTO_VERSION 1
-> 
-> struct dcbmsg {
->         unsigned char      dcb_family;
->         __u8               cmd;
->         __u16              dcb_pad;
-> };
-> 
-> 1) It uses __u8/__u16 so it would be nice it is included <linux/types.h>
-> so these are actually defined.
-> 2) Why does it use "unsigned char" for one member and __u8 for another.
-> It looks inconsistent.
-> 
-> We export headers that are much worse but we better raise the bar a little.
-
-Agreed, we should sort out these issues before exporting.
+Yes, and this is by design.
