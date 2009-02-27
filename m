@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZB0Ioj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbZB0Ipq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbZB0Ioj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 03:44:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZB0Ioa
+	id S1755505AbZB0Ipq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 03:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZB0Ipg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 03:44:30 -0500
-Received: from sh.osrg.net ([192.16.179.4]:40989 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752062AbZB0Io3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 03:44:29 -0500
-Date: Fri, 27 Feb 2009 17:35:43 +0900
-To: jgarzik@pobox.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bzolnier@gmail.com, tj@kernel.org
-Subject: [PATCH] libata: fix dma_unmap_sg misuse
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	Fri, 27 Feb 2009 03:45:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49309 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752963AbZB0Ipf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 03:45:35 -0500
+Date: Fri, 27 Feb 2009 00:45:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
+ 3 users
+Message-Id: <20090227004513.f53ed532.akpm@linux-foundation.org>
+In-Reply-To: <20090227083212.GE3609@elte.hu>
+References: <20090226174303.GC29439@elte.hu>
+	<20090226174547.GC5889@nowhere>
+	<20090226175225.GA4527@elte.hu>
+	<20090226183415.GE5889@nowhere>
+	<20090226185208.GA6658@nowhere>
+	<20090226185635.GA12895@elte.hu>
+	<20090227061936.GA5318@nowhere>
+	<20090226224656.5785de9e.akpm@linux-foundation.org>
+	<20090227071212.GC5318@nowhere>
+	<20090226233950.0cfcf883.akpm@linux-foundation.org>
+	<20090227083212.GE3609@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090227173520W.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 27 Feb 2009 17:35:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a repost of:
+On Fri, 27 Feb 2009 09:32:12 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-http://marc.info/?l=linux-ide&m=123484533504307&w=2
+> 
+> 
+> a printf variant that outputs not into a string buffer but into 
+> a binary-values buffer.
 
-I sent this 10 days ago but seems that I can't find this in linux-next
-yet. I guess that all the IOMMUs can handle this misuse for now so
-it's not urgent.
+Oh, OK.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] libata: fix dma_unmap_sg misuse
+Of course, parsing a printf string (using our
+nobody-bothered-optimising-it parser) isn't particularly efficient
+either.
 
-libata passes the returned value of dma_map_sg() to
-dma_unmap_sg(),which is the misuse of dma_unmap_sg().
+Is there a case here for adding a new way of describing how to
+serialise the incoming data?  Perhaps with a new and simpler control
+string or perhaps even
 
-DMA-mapping.txt says:
+	struct ftrace_thing ft;
 
-To unmap a scatterlist, just call:
+	init_ftrace_thing(&ft, "%d %l %s");
+	add_ftrace_thing_int(&ft, some_int);
+	add_ftrace_thing_long(&ft, some_long);
+	add_ftrace_thing_string(&ft, some_string);
+	emit_ftrace_thing(&ft);
 
-	pci_unmap_sg(pdev, sglist, nents, direction);
-
-Again, make sure DMA activity has already finished.
-
-PLEASE NOTE:  The 'nents' argument to the pci_unmap_sg call must be
-              the _same_ one you passed into the pci_map_sg call,
-	      it should _NOT_ be the 'count' value _returned_ from the
-              pci_map_sg call.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Acked-by: Tejun Heo <tj@kernel.org>
----
- drivers/ata/libata-core.c |    4 ++--
- include/linux/libata.h    |    1 +
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 8167381..17a274a 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -4612,7 +4612,7 @@ void ata_sg_clean(struct ata_queued_cmd *qc)
- 	VPRINTK("unmapping %u sg elements\n", qc->n_elem);
- 
- 	if (qc->n_elem)
--		dma_unmap_sg(ap->dev, sg, qc->n_elem, dir);
-+		dma_unmap_sg(ap->dev, sg, qc->orig_n_elem, dir);
- 
- 	qc->flags &= ~ATA_QCFLAG_DMAMAP;
- 	qc->sg = NULL;
-@@ -4727,7 +4727,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
- 		return -1;
- 
- 	DPRINTK("%d sg elements mapped\n", n_elem);
--
-+	qc->orig_n_elem = qc->n_elem;
- 	qc->n_elem = n_elem;
- 	qc->flags |= ATA_QCFLAG_DMAMAP;
- 
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index c953e17..337d1bd 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -530,6 +530,7 @@ struct ata_queued_cmd {
- 	unsigned long		flags;		/* ATA_QCFLAG_xxx */
- 	unsigned int		tag;
- 	unsigned int		n_elem;
-+	unsigned int		orig_n_elem;
- 
- 	int			dma_dir;
- 
--- 
-1.6.0.6
-
+or some similar thing.
