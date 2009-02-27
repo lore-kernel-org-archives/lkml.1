@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZB0EWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbZB0Ea5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZB0EWx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 23:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZB0EWl
+	id S1756274AbZB0Ea5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 23:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZB0Ear
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 23:22:41 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:23207 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753618AbZB0EWk (ORCPT
+	Thu, 26 Feb 2009 23:30:47 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:57828 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754798AbZB0Eaq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 23:22:40 -0500
-Message-ID: <49A76A6B.7020709@oracle.com>
-Date: Thu, 26 Feb 2009 20:22:03 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Thu, 26 Feb 2009 23:30:46 -0500
+Date: Fri, 27 Feb 2009 12:30:35 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Crypto Fixes for 2.6.29
+Message-ID: <20090227043035.GA21665@gondor.apana.org.au>
+References: <20080501102812.GA7151@gondor.apana.org.au> <20080727063659.GA936@gondor.apana.org.au> <20090115044020.GA29891@gondor.apana.org.au> <20090127061546.GA27962@gondor.apana.org.au> <20090209033924.GA31250@gondor.apana.org.au> <20090217121252.GA22812@gondor.apana.org.au> <20090223095428.GA11076@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] net: fix hp-plus build error
-References: <20090224212949.0dacb59f.sfr@canb.auug.org.au> <49A4248F.6090202@oracle.com>
-In-Reply-To: <49A4248F.6090202@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49A76A7B.001A:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090223095428.GA11076@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi Linus:
 
-hp-plus needs to call __alloc_eip_netdev() instead of
-__alloc_ei_netdev() since it is linked with 8390p.o.
+This push fixes a 2.6.27 regression where the new test mechanism
+can cause the optimised AES implementation on s390 to hang on
+initial module load.  The same thing can affect the VIA PadLock,
+although modprobe alias ordering may have prevented it from
+occurring.
 
-Fixes this build error:
-ERROR: "__alloc_ei_netdev" [drivers/net/hp-plus.ko] undefined!
+Please pull from
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/hp-plus.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
---- mmotm-2009-0226-1658.orig/drivers/net/hp-plus.c
-+++ mmotm-2009-0226-1658/drivers/net/hp-plus.c
-@@ -467,7 +467,7 @@ init_module(void)
- 			if (this_dev != 0) break; /* only autoprobe 1st one */
- 			printk(KERN_NOTICE "hp-plus.c: Presently autoprobing (not recommended) for a single card.\n");
- 		}
--		dev = alloc_ei_netdev();
-+		dev = alloc_eip_netdev();
- 		if (!dev)
- 			break;
- 		dev->irq = irq[this_dev];
+or
+
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+
+Herbert Xu (1):
+      crypto: api - Fix module load deadlock with fallback algorithms
+
+ arch/s390/crypto/aes_s390.c  |    2 +-
+ crypto/api.c                 |   15 +++++++++++++--
+ drivers/crypto/padlock-aes.c |    2 +-
+ drivers/crypto/padlock-sha.c |    4 ++--
+ 4 files changed, 17 insertions(+), 6 deletions(-)
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
