@@ -1,46 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbZB0B3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760616AbZB0B3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230AbZB0B3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 20:29:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZB0B2y
+	id S1760616AbZB0B3c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 20:29:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760378AbZB0B3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 20:28:54 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:62799 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759880AbZB0B2x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 20:28:53 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Glauber Costa <glommer@redhat.com>
-Subject: Re: [PATCH] remove static declaration from wall clock version
-Date: Fri, 27 Feb 2009 02:28:37 +0100
-User-Agent: KMail/1.9.9
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-References: <1235677340-3139-1-git-send-email-glommer@redhat.com> <200902262050.27555.arnd@arndb.de> <20090227012222.GA5979@poweredge.glommer>
-In-Reply-To: <20090227012222.GA5979@poweredge.glommer>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 26 Feb 2009 20:29:19 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:44424 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755646AbZB0B3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 20:29:18 -0500
+Date: Thu, 26 Feb 2009 17:29:15 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Bharata B Rao <bharata.rao@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpuacct: add a branch prediction
+Message-ID: <20090227012915.GF6634@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49A65455.4030204@cn.fujitsu.com> <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com> <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com> <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com> <1235645076.4645.4781.camel@laptop> <934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com> <1235647682.4948.15.camel@laptop> <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com> <20090226164509.GB6634@linux.vnet.ibm.com> <20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200902270228.38047.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+aaqv2RV/uNOC0MsqvclSI+dX80UDFRdPl+T0
- D//tLFLQ7NCV7+2Gvl6t4442gkjXIZrpJ0/a8iQJFZVtLQyUex
- mtikf8jqCUgnH4mKnylSQ==
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 February 2009, Glauber Costa wrote:
+On Fri, Feb 27, 2009 at 09:58:56AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 26 Feb 2009 08:45:09 -0800
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> > Doesn't this mean that kvm_write_guest now writes an uninitialized value
-> > to the guest?
-> No. If you look closely, it's now initialized to 1.
+> > On Thu, Feb 26, 2009 at 09:06:24PM +0900, KAMEZAWA Hiroyuki wrote:
+> > > Peter Zijlstra wrote：
+> > > > On Thu, 2009-02-26 at 20:17 +0900, KAMEZAWA Hiroyuki wrote:
+> > > >> Peter Zijlstra wrote：
+> > > >> > On Thu, 2009-02-26 at 19:28 +0900, KAMEZAWA Hiroyuki wrote:
+> > > >> >
+> > > >> >> Taking hierarchy mutex while reading will make read-side stable.
+> > > >> >
+> > > >> > We're talking about scheduling here, taking a mutex to stop scheduling
+> > > >> > won't work, nor will it be acceptible to use anything that will.
+> > > >> >
+> > > >> No mutex is necessary, anyway.
+> > > >> hierarchy-walker function completely works well under rcu read lock,
+> > > >> if small jitter is allowed.
+> > > >
+> > > > Right, should be doable -- and looking at the code, we have this
+> > > > horrible 32 bit exception in there that locks the rq in order to read
+> > > > the 64bit value.
+> > > >
+> > > > Would be grand to get rid of that,. how bad would it be for userspace to
+> > > > get the occasionally fubarred value?
+> > > >
+> > > >From view of user-support saler, if terrible broken value is reported,
+> > > it will be user-incident and annoy me(us) ;)
+> > > 
+> > > I'd like to get rid of rq->lock, too..Hmm.. some routine like
+> > > atomic64_read() can help this ? (But I don't want to use atomic_t here..)
+> > 
+> > atomic64_read() will not help you on a 32-bit machine.  Here is the
+> > sequence of events that will cause the aforementioned user incidents and
+> > consequent annoyance:
+> > 
+> > o	The value of the counter is (2^32)-1, or 0xffffffff.
+> > 
+> > o	CPU 0 reads the high-order 32 bits of the counter, getting zero.
+> > 
+> > o	CPU 1 increments the low-order 32 bits of the counter, resulting
+> > 	in zero, but notes that there is a carry out of this field.
+> > 
+> > o	CPU 0 reads the low-order 32 bits of the counter, getting zero.
+> > 
+> > o	CPU 1 increments the high-order 32 bits of the counter, so that
+> > 	the new value of the counter is 2^32, or 0x100000000.
+> > 
+> > So CPU 0 gets a value that is -way- off.
+> > 
+> > The usual trick is something like the following for counter read:
+> > 
+> > 1.	Read the high-order 32 bits of the counter.
+> > 
+> > 2.	Do a memory barrier, smp_mb().
+> > 
+> > 3.	Read the low-order 32 bits of the counter.
+> > 
+> > 4.	Do another memory barrier, again smp_mb().
+> > 
+> > 5.	Read the high-order 32 bits of the counter again.
+> > 
+> > 	If it is the same as the value obtained in step 1 (or the previous
+> > 	execution of step 5), then we are done.  (This works even in case
+> > 	of complete 64-bit overflow, though we should be very lucky to
+> > 	live that long!)  Otherwise, go to step 2.
+> > 
+> > But it is also necessary to modify the counter update:
+> > 
+> > 1.	Increment the low-order 32 bits of the counter.  If no overflow
+> > 	occurred, we are done, otherwise, continue through this sequence
+> > 	of steps.
+> > 
+> > 2.	Do a memory barrier, smp_mb().
+> > 
+> > 3.	Increment the high-order 32 bits of the counter.
+> > 
+> > How to detect overflow in step 1?  Well, if we are incrementing, we can
+> > just test for the new value being zero.  Otherwise, if we are adding
+> > a 32-bit number, if the new value of the low-order 32 bits of counter
+> > is less than the old value, overflow occurred (but make sure that the
+> > comparison is unsigned!).
+> > 
+> > This all assumes that you are adding a 32-bit quantity to the counter.
+> > Adding 64-bit values is not much harder.
+> > 
+> > Does this approach work for you?
+> > 
+> 
+> Thank you. I'll try some and post if it seems easy to read/merge.
+> Hmm, but in your approach, can't we see the counter goes backword ?
+> (if the reader see only low 32 bit is incremtend.)
 
-Right, I didn't see that change at first.
+Ouch, indeed!  The update would need to be atomic for my approach to
+work.  My apologies for my confusion!
 
-	Arnd <><
+> Can't we use seq_counter in include/linux/seqlock.h ?
+> There is only one writer and we don't need write-side lock.
+
+Yes, seqlock should work fine, good point!
+
+							Thanx, Paul
