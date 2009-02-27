@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbZB0Iql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZB0Ise@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbZB0Iql (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 03:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZB0Iqc
+	id S1755553AbZB0Ise (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 03:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbZB0IsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 03:46:32 -0500
-Received: from mailgate5.9netweb.it ([66.71.190.74]:47514 "EHLO
-	mailgate5.9netweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbZB0Iqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 03:46:31 -0500
-Message-ID: <49A7A845.2030709@evidence.eu.com>
-Date: Fri, 27 Feb 2009 09:45:57 +0100
-From: Claudio Scordino <claudio@evidence.eu.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: alan@lxorguk.ukuu.org.uk, alan@redhat.com, hinko.kocevar@cetrtapot.si,
-       janez.cufer@cetrtapot.si, starvik@axis.com, jesper.nilsson@axis.com,
-       apw@canonical.com, linux-kernel@vger.kernel.org, dev-etrax@axis.com
-Subject: Re: [PATCH]  Cleanup patch for RS485 on Cris architecture
-References: <49A51878.7020206@evidence.eu.com> <20090226134924.e4d88605.akpm@linux-foundation.org>
-In-Reply-To: <20090226134924.e4d88605.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 27 Feb 2009 03:48:25 -0500
+Received: from mga11.intel.com ([192.55.52.93]:35074 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbZB0IsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 03:48:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,275,1233561600"; 
+   d="scan'208";a="668968249"
+Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
+From: Lin Ming <ming.m.lin@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <20090226112232.GE32756@csn.ul.ie>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
+	 <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie>
+	 <1235647139.16552.34.camel@penberg-laptop>
+	 <20090226112232.GE32756@csn.ul.ie>
+Content-Type: text/plain
+Date: Fri, 27 Feb 2009 16:44:43 +0800
+Message-Id: <1235724283.11610.212.camel@minggr>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton ha scritto:
-> On Wed, 25 Feb 2009 11:07:52 +0100
-> Claudio Scordino <claudio@evidence.eu.com> wrote:
-> 
->> Dear Alan, dear Andrew,
->>
->>      around one month ago I submitted a cleanup patch to use the new 
->> general RS485 Linux data structure (introduced by Alan with commit 
->> number c26c56c0f40e200e61d1390629c806f6adaffbcc) in the Cris 
->> architecture too (currently, Cris still uses the old private data 
->> structure instead of the new one).
->>
->> The code compiled, but I couldn't test it at that time.
->>
->> Now, the code has been tested by Hinko Kocevar and Janez Cufer 
->> (CC:-ed) from the AXIS group, who also fixed a bug.
->>
->> Therefore, can you please commit the patch in attachment ?
->>
->> Many thanks,
->>
->>              Claudio Scordino
->>
->>
->> [0001-RS485-support-on-Cris-rewritten-in-order-to-use-new.patch  text/x-diff (9.9KB)]
->> >From 9d4397feff9773820e158693aa73621c0c20f017 Mon Sep 17 00:00:00 2001
->> From: Claudio Scordino <claudio@evidence.eu.com>
->> Date: Tue, 24 Feb 2009 18:00:44 +0100
->> Subject: [PATCH 1/1] RS485 support on Cris rewritten in order to use new serial_rs485 data structure
->>
->>
->> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
->> Tested-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
->> Tested-by: Janez Cufer <janez.cufer@cetrtapot.si>
-> 
-> The patch had no changelog - please always provide one.
+On Thu, 2009-02-26 at 19:22 +0800, Mel Gorman wrote: 
+> In that case, Lin, could I also get the profiles for UDP-U-4K please so I
+> can see how time is being spent and why it might have gotten worse?
 
-Sorry, my apologies... Next time I'll keep in mind!
+I have done the profiling (oltp and UDP-U-4K) with and without your v2
+patches applied to 2.6.29-rc6.
+I also enabled CONFIG_DEBUG_INFO so you can translate address to source
+line with addr2line.
 
-> 
-> I scraped some text from your covering comment and made this:
-> 
->     Use the new general RS485 Linux data structure (introduced by
->     Alan with commit number c26c56c0f40e200e61d1390629c806f6adaffbcc)
->     in the Cris architecture too (currently, Cris still uses the old
->     private data structure instead of the new one).
-> 
-> for a changelog.  Feel free to send better text if that is inappropriate
-> or incomplete.
+You can download the oprofile data and vmlinux from below link,
+http://www.filefactory.com/file/af2330b/
 
-This changelog is perfect.
+Lin Ming
 
-Many thanks,
 
-          Claudio
+
