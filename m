@@ -1,100 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbZB0DiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbZB0D5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759580AbZB0DiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 22:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZB0DiC
+	id S1756375AbZB0D5Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 22:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZB0D5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 22:38:02 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39091 "EHLO hera.kernel.org"
+	Thu, 26 Feb 2009 22:57:16 -0500
+Received: from mail.anarazel.de ([217.115.131.40]:52440 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754398AbZB0DiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 22:38:00 -0500
-Message-ID: <49A75FE6.3090902@kernel.org>
-Date: Thu, 26 Feb 2009 19:37:10 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1753912AbZB0D5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 22:57:15 -0500
+Message-ID: <49A7648D.2080705@anarazel.de>
+Date: Fri, 27 Feb 2009 04:57:01 +0100
+From: Andres Freund <andres@anarazel.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20081210 Shredder/3.0b1
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: only set warm_reset_vector for NMI
-References: <49A752D2.50404@kernel.org> <49A75FBD.6050602@kernel.org>
-In-Reply-To: <49A75FBD.6050602@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Theodore Tso <tytso@mit.edu>, Alex Buell <alex.buell@munted.org.uk>,
+       adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: EXT4 ENOSPC Bug
+References: <20090216162028.3032666a@lithium.local.net> <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de> <49994FEF.2020908@anarazel.de> <20090216150156.GD22619@mini-me.lan> <499985C7.8010302@anarazel.de> <20090216190001.GB11788@mini-me.lan> <499AF598.7080400@anarazel.de> <499C7B41.1090800@anarazel.de> <20090218212957.GR3600@mini-me.lan>
+In-Reply-To: <20090218212957.GR3600@mini-me.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-it doesn't consider system with integrated apic.
+On 02/18/2009 10:29 PM, Theodore Tso wrote:
+>> [10379.575904] ext4: find_group_flex failed, fallback succeeded dir 416319
+>> [10379.576002] ext4: find_group_flex failed, fallback succeeded dir 416319
+>> [10379.579981] ext4: find_group_flex failed, fallback succeeded dir 416319
+>> [10379.580097] ext4: find_group_flex failed, fallback succeeded dir 416319
+>> (with different directories)
+> Can you send me a dumpe2fs of the filesystem in question?  I'm curious
+> what was going on...
+Unfortunately the system was rebooted, before I had the chance to do the 
+dump - since then the problem has not reemerged.
+Would a dump after reboot still be usefull?
 
-==>
-it doesn't consider system without integrated apic.
-
-Yinghai Lu wrote:
-> please discard this one. it doesn't consider system with integrated apic.
-> 
-> YH
-> 
-> Yinghai Lu wrote:
->> Impact: cleanup
->>
->> don't need to set that for INIT etc
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
->> ---
->>  arch/x86/kernel/smpboot.c |   17 +++++++++++------
->>  1 file changed, 11 insertions(+), 6 deletions(-)
->>
->> Index: linux-2.6/arch/x86/kernel/smpboot.c
->> ===================================================================
->> --- linux-2.6.orig/arch/x86/kernel/smpboot.c
->> +++ linux-2.6/arch/x86/kernel/smpboot.c
->> @@ -609,7 +609,7 @@ wakeup_secondary_cpu_via_nmi(int logical
->>  	return (send_status | accept_status);
->>  }
->>  
->> -int __devinit
->> +static int __devinit
->>  wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
->>  {
->>  	unsigned long send_status, accept_status = 0;
->> @@ -816,11 +816,14 @@ do_rest:
->>  
->>  	atomic_set(&init_deasserted, 0);
->>  
->> -	if (get_uv_system_type() != UV_NON_UNIQUE_APIC) {
->> +	if (apic->wakeup_secondary_cpu == wakeup_secondary_cpu_via_nmi) {
->>  
->>  		pr_debug("Setting warm reset code and vector.\n");
->>  
->>  		smpboot_setup_warm_reset_vector(start_ip);
->> +	}
->> +
->> +	if (get_uv_system_type() != UV_NON_UNIQUE_APIC) {
->>  		/*
->>  		 * Be paranoid about clearing APIC errors.
->>  		*/
->> @@ -893,10 +896,12 @@ do_rest:
->>  	/* mark "stuck" area as not stuck */
->>  	*((volatile unsigned long *)trampoline_base) = 0;
->>  
->> -	/*
->> -	 * Cleanup possible dangling ends...
->> -	 */
->> -	smpboot_restore_warm_reset_vector();
->> +	if (apic->wakeup_secondary_cpu == wakeup_secondary_cpu_via_nmi) {
->> +		/*
->> +		 * Cleanup possible dangling ends...
->> +		 */
->> +		smpboot_restore_warm_reset_vector();
->> +	}
->>  
->>  	return boot_error;
->>  }
->>
-> 
-> 
-
+Andres
