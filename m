@@ -1,47 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbZB0HOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZB0HTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759466AbZB0HOY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 02:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZB0HOK
+	id S1758165AbZB0HTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 02:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbZB0HTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 02:14:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42489
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754923AbZB0HOJ (ORCPT
+	Fri, 27 Feb 2009 02:19:09 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38656 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754304AbZB0HTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 02:14:09 -0500
-Date: Thu, 26 Feb 2009 23:13:53 -0800 (PST)
-Message-Id: <20090226.231353.238232825.davem@davemloft.net>
-To: hannes@hanneseder.net
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8] net: fix (sparse) warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090225203012.6251.32002.stgit@vmbox.hanneseder.net>
-References: <20090225203012.6251.32002.stgit@vmbox.hanneseder.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 27 Feb 2009 02:19:08 -0500
+Subject: Re: [patch 4/4] genirq: add support for threaded interrupt handlers
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rostedt@goodmis.org, jonathan@jonmasters.org
+In-Reply-To: <20090226214514.f8a58731.akpm@linux-foundation.org>
+References: <20090226131336.423054348@linutronix.de>
+	 <20090226131719.760899560@linutronix.de>
+	 <20090226153216.5db66bc3.akpm@linux-foundation.org>
+	 <20090226212752.332ba546@infradead.org>
+	 <20090226214514.f8a58731.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 27 Feb 2009 08:18:33 +0100
+Message-Id: <1235719113.4948.1252.camel@laptop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.25.91 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Wed, 25 Feb 2009 21:31:10 +0100
-
-> The following series fixes some (sparse) warnings in net/.
+On Thu, 2009-02-26 at 21:45 -0800, Andrew Morton wrote:
+> On Thu, 26 Feb 2009 21:27:52 -0800 Arjan van de Ven <arjan@infradead.org> wrote:
 > 
-> ---
+> > > 
+> > > Bearing in mind that the driver might choose to split the IRQ handling
+> > > between hard-irq context fastpath and process-context slowpath (I
+> > > hope), and that each path might want to take the same lock.
+> > > 
+> > 
+> > 
+> > Realistically, for the "we go threaded interrupts" case (which is
+> > opt-in), I think the only sane option is
+> > * the quickhandler runs with irqs off
+> > * the "slow" threaded handler runs with irqs on
+> > And we guarantee both of these conditions from the core, to the point
+> > that I think we should not allow any other combination.
+> > 
+> > This also should be fine for basically all cases; the quick handler
+> > really needs to be quick so irq off makes sense, and the slow handler
+> > can, worst case, turn off interrupts by itself, but normally is
+> > preemptable etc etc.
 > 
-> Hannes Eder (8):
->       wanrouter: fix sparse warnings: context imbalance
->       inet fragments: fix sparse warning: context imbalance
->       decnet: fix sparse warnings: symbol shadows an earlier one
->       decnet: fix sparse warnings: context imbalance
->       [NET] sysctl: fix sparse warning: Should it be static?
->       appletalk: fix warning: format not a string literal and no ...
->       9p: fix sparse warning: cast adds address space
->       net/802: fix sparse warnings: context imbalance
+> I was actually kinda surprised by the patch - it needs moderate changes
+> to each driver.  I'd have thought that it would be possible to arrange for
+> _all_ drivers to have their interrupt handlers automagically called from
+> process context with no driver changes.
+> 
+> Did anyone ever try that?  I think they did...
 
-All applied to net-next-2.6, thanks!
+Yes, current preempt-rt does exactly that, as mentioned in the
+changelog. That same changelog also mentions why this isn't such a hot
+idea:
+
+
+"The implementation provides an opt-in mechanism to convert drivers to
+the threaded interrupt handler model contrary to the preempt-rt patch
+where the threaded handlers are enabled by a brute force switch. The
+brute force switch is suboptimal as it does not change the interrupt
+handler -> tasklet/softirq interaction problems, but was the only way
+which was possible for the limited man power of the preempt-rt
+developers."
+
+
+So the idea is that we want people to re-think and change their
+interrupt routines to take advantage of the benefits of threaded
+interrupts and avoid the endless context switching between threaded
+interrupts handler, softirq/tasklet/workqueue contexts, which preempt-rt
+now has.
+
+The only way to avoid that is by pushing all softirq/tasklet/worklet
+code into the threaded handler, and the only way to do that is by
+reworking the drivers.
+
+Since there are too many drivers to count on our few hands, we need an
+opt-in, so that we can gradually migrate towards this scheme.
+
+
+
