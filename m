@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760415AbZB0A3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbZB0A3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760415AbZB0A3I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbZB0A2T
+	id S1761009AbZB0A3b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760727AbZB0A2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:28:19 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:51817 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760505AbZB0A2R (ORCPT
+	Thu, 26 Feb 2009 19:28:43 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47043 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760714AbZB0A2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:28:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ydxy1u/XCXwfPAazg4ry8jcSeNdiGIjqJYpcXqzNk4zG9Vzt21zwqsAK55pC3l6xm
-	egiKVrZi/Y/0h3iKVAK3A==
+	Thu, 26 Feb 2009 19:28:42 -0500
+Date: Thu, 26 Feb 2009 16:27:29 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts during 
+ suspend-resume
+In-Reply-To: <d6200be20902261600t7531568ekd9a7aa9215f53263@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0902261620370.3111@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl>  <alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>  <d6200be20902261430w19ea3e6fye014f8443d9ab5ca@mail.gmail.com>  <200902270010.38291.rjw@sisk.pl>
+ <d6200be20902261600t7531568ekd9a7aa9215f53263@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090226130005.3282cb02.akpm@linux-foundation.org>
-References: <20090225163555.d2a0b24c.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090226130005.3282cb02.akpm@linux-foundation.org>
-Date: Thu, 26 Feb 2009 16:28:11 -0800
-Message-ID: <6599ad830902261628k4ce8e1aflb7981672562801fb@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cgroup allow subsys to set default mode of its own 
-	file
-From: Paul Menage <menage@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 1:00 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 25 Feb 2009 16:35:55 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
->>  When I wrote tools for maintain cgroup, I can't find which file is
->>  writable intarfece or not via cgroup file systems. (finally, I did
->>  dirty approach.)
->>  IMHO, showing "this file is read-only" in explicit way is useful
->>  for user-land (tools). In other story, a file whose name sounds read-only
->>  may have "trigger" operation and support reseting. In this case,
->>  "writable" is informative.
->
-> Well, we have compatibility issues here.  If we make this change, and
-> people write tools which depend upon that change then those tools might
-> break when run upon older kernels.
 
-I don't think that's too big a deal - a write can always fail at the
-whim of a cgroups subsystem, so this would just be a hint to a tool
-that it shouldn't even bother trying to write to the file. It should
-be able to handle a failure.
 
-But I don't see why we can't figure out the mode automatically based
-on whether or not there's a write handler defined for the control
-file.
+On Thu, 26 Feb 2009, Arve Hjønnevåg wrote:
+> 
+> How many sysdevs use interrupts?
+> 
+> I found may drivers in the mainline kernel that use enable_irq_wake,
+> but I did not see any that handle this race condition.
 
-Paul
+The _only_ driver that does enable_irq_wake() on x86 is the cmos timer 
+driver, and even there it actually doesn't use irq_wake, but ACPI. Why? 
+Because I don't think irq wakeup even _works_ on x86.
+
+So the whole enable_irq_wake is largely some embedded ARM platform issue, 
+and a very special case, and doesn't exist anywhere else.
+
+Maybe I'm missing something, but it's definitely not the normal case.
+
+		Linus
