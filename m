@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbZB0VoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbZB0VrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759145AbZB0VoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 16:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756772AbZB0VoI
+	id S1760055AbZB0VrS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 16:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbZB0VrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 16:44:08 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55695 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756621AbZB0VoH (ORCPT
+	Fri, 27 Feb 2009 16:47:01 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56873 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756068AbZB0VrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 16:44:07 -0500
-Date: Fri, 27 Feb 2009 16:44:03 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@rostedt.homelinux.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Don't profile branches in arm's boot decompressor
-Message-ID: <20090227214403.GD25589@goodmis.org>
-References: <1235768983-4830-1-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235768983-4830-1-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Feb 2009 16:47:00 -0500
+Date: Fri, 27 Feb 2009 13:46:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: roel.kluin@gmail.com, garyhade@us.ibm.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, y-goto@jp.fujitsu.com
+Subject: Re: [PATCH] mm: get_nid_for_pfn() returns int
+Message-Id: <20090227134616.982fb73a.akpm@linux-foundation.org>
+In-Reply-To: <20090227213340.GB7174@us.ibm.com>
+References: <4973AEEC.70504@gmail.com>
+	<20090119175919.GA7476@us.ibm.com>
+	<20090126223350.610b0283.akpm@linux-foundation.org>
+	<20090127210727.GA9592@us.ibm.com>
+	<25e057c00902270656x1781d04er5703058e47df455f@mail.gmail.com>
+	<20090227213340.GB7174@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Uwe!
+On Fri, 27 Feb 2009 13:33:40 -0800
+Gary Hade <garyhade@us.ibm.com> wrote:
 
-
-
-On Fri, Feb 27, 2009 at 10:09:43PM +0100, Uwe Kleine-K??nig wrote:
-> This fixes many compile errors for arch/arm/boot/compressed/misc.c of
-> the type:
+> On Fri, Feb 27, 2009 at 03:56:40PM +0100, roel kluin wrote:
+> > >> > > get_nid_for_pfn() returns int
+> > 
+> > >> > My mistake. __Good catch.
+> > 
+> > >> Presumably the (nid < 0) case has never happened.
+> > >
+> > > We do know that it is happening on one system while creating
+> > > a symlink for a memory section so it should also happen on
+> > > the same system if unregister_mem_sect_under_nodes() were
+> > > called to remove the same symlink.
+> > >
+> > > The test was actually added in response to a problem with an
+> > > earlier version reported by Yasunori Goto where one or more
+> > > of the leading pages of a memory section on the 2nd node of
+> > > one of his systems was uninitialized because I believe they
+> > > coincided with a memory hole. __The earlier version did not
+> > > ignore uninitialized pages and determined the nid by considering
+> > > only the 1st page of each memory section. __This caused the
+> > > symlink to the 1st memory section on the 2nd node to be
+> > > incorrectly created in /sys/devices/system/node/node0 instead
+> > > of /sys/devices/system/node/node1. __The problem was fixed by
+> > > adding the test to skip over uninitialized pages.
+> > >
+> > > I suspect we have not seen any reports of the non-removal
+> > > of a symlink due to the incorrect declaration of the nid
+> > > variable in unregister_mem_sect_under_nodes() because
+> > > __- systems where a memory section could have an uninitialized
+> > > __ __range of leading pages are probably rare.
+> > > __- memory remove is probably not done very frequently on the
+> > > __ __systems that are capable of demonstrating the problem.
+> > > __- lingering symlink(s) that should have been removed may
+> > > __ __have simply gone unnoticed.
+> > >>
+> > >> Should we retain the test?
+> > >
+> > > Yes.
+> > >
+> > >>
+> > >> Is silently skipping the node in that case desirable behaviour?
+> > >
+> > > It actually silently skips pages (not nodes) in it's quest
+> > > for valid nids for all the nodes that the memory section scans.
+> > > This is definitely desirable.
+> > >
+> > > I hope this answers your questions.
+> > 
+> > This still isn't applied, was it lost?
 > 
-> 	arch/arm/boot/compressed/misc.c:127: error: section attribute cannot be specified for local variables
+> It is still lingering in -mm:
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/mm-get_nid_for_pfn-returns-int.patch
 > 
-> Fix was suggested by Steven Rostedt in #linux-rt.
-> 
-> Signed-off-by: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
-> Cc: Steven Rostedt <rostedt@home.goodmis.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> 
-> ---
->  arch/arm/boot/compressed/Makefile |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-> index fbe5eef..0bcc98c 100644
-> --- a/arch/arm/boot/compressed/Makefile
-> +++ b/arch/arm/boot/compressed/Makefile
-> @@ -89,7 +89,7 @@ LDFLAGS_vmlinux += -p --no-undefined -X \
->  
->  # Don't allow any static data in misc.o, which
->  # would otherwise mess up our GOT table
-> -CFLAGS_misc.o := -Dstatic=
-> +CFLAGS_misc.o := -Dstatic= -DDISABLE_BRANCH_PROFILING
 
-Could you also add a comment saying something to the effect:
-
-# The branch profiler requires static variables.
-# No need to profile the boot up code, so simply disable it.
-
-Thanks,
-
--- Steve
-
->  
->  $(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.o \
->  	 	$(addprefix $(obj)/, $(OBJS)) FORCE
-> -- 
-> tg: (db50eec..) t/ftrace/fix-PROFILE_ALL_BRANCHES (depends on: tip/master)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Should it unlinger?  I have it in the 2.6.30 pile.  Does it actually
+fix a demonstrable bug?  
