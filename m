@@ -1,73 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbZB0B2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZB0B2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756871AbZB0B2H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 20:28:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZB0B1y
+	id S1759500AbZB0B2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 20:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbZB0B2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 20:27:54 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45914 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166AbZB0B1x (ORCPT
+	Thu, 26 Feb 2009 20:28:41 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44184 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753370AbZB0B2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 20:27:53 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [TOMOYO #15 0/8] TOMOYO Linux
-Cc: kosaki.motohiro@jp.fujitsu.com, Toshiharu Harada <haradats@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, jmorris@namei.org,
-       takedakn@nttdata.co.jp, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20090225194615.GE2645@elf.ucw.cz>
-References: <49A2521E.5030805@nttdata.co.jp> <20090225194615.GE2645@elf.ucw.cz>
-Message-Id: <20090227100350.1515.A69D9226@jp.fujitsu.com>
+	Thu, 26 Feb 2009 20:28:41 -0500
+Date: Fri, 27 Feb 2009 01:28:37 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: trivial@kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/16] fs/super.c: fix sparse warning: Using plain
+	integer as NULL pointer
+Message-ID: <20090227012837.GQ28946@ZenIV.linux.org.uk>
+References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net> <20090222000459.17557.20005.stgit@vmbox.hanneseder.net> <154e089b0902261710ybebe696p2c87334b29bf08a0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Fri, 27 Feb 2009 10:27:47 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <154e089b0902261710ybebe696p2c87334b29bf08a0@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
-
-> >>>>>> TOMOYO Linux is a name-based MAC extension (LSM module) for the Linux kernel.
-> >>>>>>
-> >>>>> Applied to  
-> >>>>> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
-> >>>>>
-> >>>> Does that mean tomoyo is scheduled for 2.6.30?
-> >>>>
-> >>> TOMOYO is already in linux-next tree and ready to go into 2.6.30 .
-> >>
-> >> Last time I looked it included script parser and some
-> >> interpretter... Was that solved?
+On Fri, Feb 27, 2009 at 02:10:14AM +0100, Hannes Eder wrote:
+> [Added To]
 > 
-> >
-> > Are you talking about the interface between
-> > userland and kernel regarding string data?
-> 
-> Yes. maybe ioctl() is worse, but I don't think c-like language parser
-> in kernel is acceptable.
+> On Sun, Feb 22, 2009 at 1:05 AM, Hannes Eder <hannes@hanneseder.net> wrote:
+> > Fix this sparse warning:
+> > ?fs/super.c:849:26: warning: Using plain integer as NULL pointer
 
-for just clarification to me.
+May I suggest a better subject for those?  Namely,
 
-IIUC, many developers said UNNECESSARY parser is BAD (yes, I also think so),
-but nobody said any parser is bad.
+Subject: NULL noise: <filename or glob>
 
-Therefore, I think point is that the patch have enough reasonable reason or not.
-and, I thought "pavel, good job. you're right" at you oppositing time because
-tomoyo did't explain any reason at that time.
-
-However, they changed. the patch description of the "[TOMOYO #15 3/8] Common functions for TOMOYO Linux."
-explain the reason.
-for me, I feel it's reasonable reason. then I didn't oppose current tomoyo posting.
-
-So, I don't understand which you oppose
-   (1) ANY parser is bad.
-   (2) current description still don't explain enough reason.
-
-May I ask you?
-
-
-
+Nobody _cares_ which tool generates that and boilerplates in subjects should
+be as short as possible.
