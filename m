@@ -1,97 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZB0JrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZB0Jta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZB0JrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 04:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZB0Jq6
+	id S1757154AbZB0Jta (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 04:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZB0JtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 04:46:58 -0500
-Received: from mga09.intel.com ([134.134.136.24]:56858 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754092AbZB0Jq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 04:46:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,275,1233561600"; 
-   d="asc'?scan'208";a="493573517"
-Subject: Re: Bug of dm-crypt?
-From: Huang Ying <ying.huang@intel.com>
-To: Milan Broz <mbroz@redhat.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <49A7A71E.50702@redhat.com>
-References: <1235712716.6204.100.camel@yhuang-dev.sh.intel.com>
-	 <20090227054147.GA22159@gondor.apana.org.au>  <49A7A71E.50702@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ecLmkjQIuQlB3mvqbKe9"
-Date: Fri, 27 Feb 2009 17:46:53 +0800
-Message-Id: <1235728013.6204.139.camel@yhuang-dev.sh.intel.com>
+	Fri, 27 Feb 2009 04:49:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49526 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbZB0JtU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 04:49:20 -0500
+Subject: Re: iozone regression with 2.6.29-rc6
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: npiggin@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1235726039.11610.243.camel@minggr>
+References: <1235726039.11610.243.camel@minggr>
+Content-Type: text/plain
+Date: Fri, 27 Feb 2009 10:49:14 +0100
+Message-Id: <1235728154.24401.55.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-02-27 at 17:13 +0800, Lin Ming wrote:
+> bisect locates below commits,
+> 
+> commit 1cf6e7d83bf334cc5916137862c920a97aabc018
+> Author: Nick Piggin <npiggin@suse.de>
+> Date:   Wed Feb 18 14:48:18 2009 -0800
+> 
+>     mm: task dirty accounting fix
+> 
+>     YAMAMOTO-san noticed that task_dirty_inc doesn't seem to be called properly for
+>     cases where set_page_dirty is not used to dirty a page (eg. mark_buffer_dirty).
+> 
+>     Additionally, there is some inconsistency about when task_dirty_inc is
+>     called.  It is used for dirty balancing, however it even gets called for
+>     __set_page_dirty_no_writeback.
+> 
+>     So rather than increment it in a set_page_dirty wrapper, move it down to
+>     exactly where the dirty page accounting stats are incremented.
+> 
+>     Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+>     Signed-off-by: Nick Piggin <npiggin@suse.de>
+>     Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> 
+> below data in parenthesis is the result after above commit reverted, for example,
+> -10% (+2%) means,
+> iozone has ~10% regression with 2.6.29-rc6 compared with 2.6.29-rc5.
+> and
+> iozone has ~2% improvement with 2.6.29-rc6-revert-1cf6e7d compared with 2.6.29-rc5.
+> 
+> 
+> 			4P dual-core HT	 	2P qual-core  	2P qual-core HT
+> 			tulsa		   	stockley	Nehalem
+> 			--------------------------------------------------------
+> iozone-rewrite		-10% (+2%)		-8% (0%)	-10% (-7%)
+> iozone-rand-write	-50% (0%)		-20% (+10%)
+> iozone-read					-13% (0%)
+> iozone-write					-28% (-1%)
+> iozone-reread							-5% (-1%)
+> iozone-mmap-read						-7% (+2%)
+> iozone-mmap-reread						-7% (+2%)
+> iozone-mmap-rand-read						-7% (+3%)
+> iozone-mmap-rand-write						-5% (0%)
 
---=-ecLmkjQIuQlB3mvqbKe9
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ugh, that's unexpected..
 
-Hi, Milan,
+So 'better' accounting leads to worse performance, which would indicate
+we throttle more.
 
-On Fri, 2009-02-27 at 16:41 +0800, Milan Broz wrote:
-> Herbert Xu wrote:
-> > On Fri, Feb 27, 2009 at 01:31:56PM +0800, Huang Ying wrote:
-> >> I had ever heard from you that the only thing guaranteed in the
-> >> completion function of async ablkcipher cryption is the req->data has
-> >> the value you set before. The request pointer itself may be changed. B=
-ut
-> >> in dm-crypt, I found they rely on request pointer in completion
-> >> function: kcryptd_async_done. This makes my AES-NI cryptd usage panic.
-> >>
-> >> Do you think that is a bug?
-> >=20
-> > Absolutely.
-> >=20
-> > It should use cc->req instead.
->=20
-> ok, I'll check it and try to fix that.=20
->=20
-> Can you send me backtrace from that panic?
+I take it you machine has gobs of memory.
 
-The panic backtrace is just some random kernel page fault or general
-protection fault, because the freed pointer is not the allocated one.
+Does something like the below help any?
 
-> What's wrong in async callback now - mempool_free using async_req directl=
-y?
+---
+Subject: mm: bdi: tweak task dirty penalty
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Fri Feb 27 10:41:22 CET 2009
 
-Yes. I have a fix by storing real allocated async_req in
-async_req->data. Can you help me to review that?
+Penalizing heavy dirtiers with 1/8-th the total dirty limit might be rather
+excessive on large memory machines. Use sqrt to scale it sub-linearly.
 
-> (Btw in some previous discussuion I asked if cryptd can be used
-> for some kind of parallel speedup for dm-crypt in async mode and response
-> was that cryptd "is only meant to be a demo showing how an async
-> implementation should be written".
->=20
-> So this changed to real working thread for AES-NI?)
+Update the comment while we're there.
 
-Yes. Now AES-NI uses it. And because a Per-CPU thread implementation is
-used for cryptd, it can be used to speedup dm-crypt in some situation
-too I think.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ mm/page-writeback.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-Best Regards,
-Huang Ying
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -293,17 +293,21 @@ static inline void task_dirties_fraction
+ }
+ 
+ /*
+- * scale the dirty limit
++ * Task specific dirty limit:
+  *
+- * task specific dirty limit:
++ *   dirty -= 8 * sqrt(dirty) * p_{t}
+  *
+- *   dirty -= (dirty/8) * p_{t}
++ * Penalize tasks that dirty a lot of pages by lowering their dirty limit. This
++ * avoids infrequent dirtiers from getting stuck in this other guys dirty
++ * pages.
++ *
++ * Use a sub-linear function to scale the penalty, we only need a little room.
+  */
+ static void task_dirty_limit(struct task_struct *tsk, long *pdirty)
+ {
+ 	long numerator, denominator;
+ 	long dirty = *pdirty;
+-	u64 inv = dirty >> 3;
++	u64 inv = 8*int_sqrt(dirty);
+ 
+ 	task_dirties_fraction(tsk, &numerator, &denominator);
+ 	inv *= numerator;
 
-
---=-ecLmkjQIuQlB3mvqbKe9
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmntoQACgkQKhFGF+eHlpgVrgCggyM7Vvd4YWPI5OT4kaIlBWqw
-nVEAn3EqEJt66bsM35Ew5zQCsmeIm4j0
-=+qbn
------END PGP SIGNATURE-----
-
---=-ecLmkjQIuQlB3mvqbKe9--
 
