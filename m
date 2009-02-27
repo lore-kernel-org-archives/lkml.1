@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZB0ArA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757758AbZB0Asc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZB0ArA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbZB0Aqt
+	id S1757758AbZB0Asc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZB0AsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:46:49 -0500
-Received: from mga02.intel.com ([134.134.136.20]:31500 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbZB0Aqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:46:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,273,1233561600"; 
-   d="scan'208";a="493480011"
-From: Chris Leech <christopher.leech@intel.com>
-Subject: [PATCH] net headers: export dcbnl.h
-To: linux-netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 26 Feb 2009 16:46:35 -0800
-Message-ID: <20090227004635.10247.60814.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Thu, 26 Feb 2009 19:48:23 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:51466 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZB0AsW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 19:48:22 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090222000051.17557.85888.stgit@vmbox.hanneseder.net>
+References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>
+	 <20090222000051.17557.85888.stgit@vmbox.hanneseder.net>
+Date: Fri, 27 Feb 2009 01:48:19 +0100
+Message-ID: <154e089b0902261648s614be164hf4d4340543f9f0d5@mail.gmail.com>
+Subject: Re: [PATCH 01/16] kexec/i386: fix sparse warnings: Using plain 
+	integer as NULL pointer
+From: Hannes Eder <hannes@hanneseder.net>
+To: Ingo Molnar <mingo@elte.hu>, trivial@kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The DCB netlink interface is required for building the userspace tools
-available at e1000.sourceforge.net
+Added To: Ingo Molnar <mingo@elte.hu>
 
-Signed-off-by: Chris Leech <christopher.leech@intel.com>
----
-
- include/linux/Kbuild |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index b97cdc5..106c3ba 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -52,6 +52,7 @@ header-y += const.h
- header-y += cgroupstats.h
- header-y += cramfs_fs.h
- header-y += cycx_cfm.h
-+header-y += dcbnl.h
- header-y += dlmconstants.h
- header-y += dlm_device.h
- header-y += dlm_netlink.h
-
+On Sun, Feb 22, 2009 at 1:00 AM, Hannes Eder <hannes@hanneseder.net> wrote:
+> Fix this sparse warnings:
+>  arch/x86/kernel/machine_kexec_32.c:124:22: warning: Using plain integer as NULL pointer
+>  arch/x86/kernel/traps.c:950:24: warning: Using plain integer as NULL pointer
+>
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  arch/x86/kernel/machine_kexec_32.c |    2 +-
+>  arch/x86/kernel/traps.c            |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
+> index 37f4200..f5fc8c7 100644
+> --- a/arch/x86/kernel/machine_kexec_32.c
+> +++ b/arch/x86/kernel/machine_kexec_32.c
+> @@ -121,7 +121,7 @@ static void machine_kexec_page_table_set_one(
+>  static void machine_kexec_prepare_page_tables(struct kimage *image)
+>  {
+>        void *control_page;
+> -       pmd_t *pmd = 0;
+> +       pmd_t *pmd = NULL;
+>
+>        control_page = page_address(image->control_code_page);
+>  #ifdef CONFIG_X86_PAE
+> diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+> index ba90406..6882089 100644
+> --- a/arch/x86/kernel/traps.c
+> +++ b/arch/x86/kernel/traps.c
+> @@ -947,7 +947,7 @@ dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code)
+>        info.si_signo = SIGILL;
+>        info.si_errno = 0;
+>        info.si_code = ILL_BADSTK;
+> -       info.si_addr = 0;
+> +       info.si_addr = NULL;
+>        if (notify_die(DIE_TRAP, "iret exception",
+>                        regs, error_code, 32, SIGILL) == NOTIFY_STOP)
+>                return;
+>
+>
