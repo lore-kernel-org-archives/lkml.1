@@ -1,92 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759523AbZB0KeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbZB0Ke2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759523AbZB0KeE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 05:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbZB0K1u
+	id S1760736AbZB0Ke2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 05:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbZB0K1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 05:27:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53590 "EHLO mx2.redhat.com"
+	Fri, 27 Feb 2009 05:27:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53588 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756080AbZB0K1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756056AbZB0K1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Feb 2009 05:27:11 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 33/37] KVM: ppc: Fix e500 warnings and some spelling problems
-Date: Fri, 27 Feb 2009 12:26:56 +0200
-Message-Id: <1235730420-7929-34-git-send-email-avi@redhat.com>
+Subject: [PATCH 21/37] KVM: Add support to disable MSI for assigned device
+Date: Fri, 27 Feb 2009 12:26:44 +0200
+Message-Id: <1235730420-7929-22-git-send-email-avi@redhat.com>
 In-Reply-To: <1235730420-7929-1-git-send-email-avi@redhat.com>
 References: <1235730420-7929-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Liu Yu <yu.liu@freescale.com>
+From: Sheng Yang <sheng@linux.intel.com>
 
+MSI is always enabled by default for msi2intx=1. But if msi2intx=0, we
+have to disable MSI if guest require to do so.
+
+The patch also discard unnecessary msi2intx judgment if guest want to update
+MSI state.
+
+Notice KVM_DEV_IRQ_ASSIGN_MSI_ACTION is a mask which should cover all MSI
+related operations, though we only got one for now.
+
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/powerpc/kvm/e500_emulate.c |    2 --
- arch/powerpc/kvm/e500_tlb.c     |    6 +++---
- arch/powerpc/kvm/e500_tlb.h     |    2 +-
- 3 files changed, 4 insertions(+), 6 deletions(-)
+ include/linux/kvm.h |    1 +
+ virt/kvm/kvm_main.c |   18 ++++++++++++++++--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index d3c0c7c..7a98d4a 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -30,8 +30,6 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	int emulated = EMULATE_DONE;
- 	int ra;
- 	int rb;
--	int rs;
--	int rt;
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index ae7a12c..73f3480 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -550,6 +550,7 @@ struct kvm_assigned_irq {
  
- 	switch (get_op(inst)) {
- 	case 31:
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 6a50340..e3daf57 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -260,7 +260,7 @@ static inline void kvmppc_e500_deliver_tlb_miss(struct kvm_vcpu *vcpu,
- 	unsigned int victim, pidsel, tsized;
- 	int tlbsel;
+ #define KVM_DEV_ASSIGN_ENABLE_IOMMU	(1 << 0)
  
--	/* since we only have tow TLBs, only lower bit is used. */
-+	/* since we only have two TLBs, only lower bit is used. */
- 	tlbsel = (vcpu_e500->mas4 >> 28) & 0x1;
- 	victim = (tlbsel == 0) ? tlb0_get_next_victim(vcpu_e500) : 0;
- 	pidsel = (vcpu_e500->mas4 >> 16) & 0xf;
-@@ -402,7 +402,7 @@ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb)
++#define KVM_DEV_IRQ_ASSIGN_MSI_ACTION	KVM_DEV_IRQ_ASSIGN_ENABLE_MSI
+ #define KVM_DEV_IRQ_ASSIGN_ENABLE_MSI	(1 << 0)
  
- 	ia = (ea >> 2) & 0x1;
+ #endif
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index f83ef9c..04401e1 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -343,6 +343,14 @@ static int assigned_device_update_msi(struct kvm *kvm,
+ 		adev->irq_requested_type &= ~KVM_ASSIGNED_DEV_GUEST_MSI;
+ 		adev->guest_irq = airq->guest_irq;
+ 		adev->ack_notifier.gsi = airq->guest_irq;
++	} else {
++		/*
++		 * Guest require to disable device MSI, we disable MSI and
++		 * re-enable INTx by default again. Notice it's only for
++		 * non-msi2intx.
++		 */
++		assigned_device_update_intx(kvm, adev, airq);
++		return 0;
+ 	}
  
--	/* since we only have tow TLBs, only lower bit is used. */
-+	/* since we only have two TLBs, only lower bit is used. */
- 	tlbsel = (ea >> 3) & 0x1;
- 
- 	if (ia) {
-@@ -471,7 +471,7 @@ int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb)
- 	} else {
- 		int victim;
- 
--		/* since we only have tow TLBs, only lower bit is used. */
-+		/* since we only have two TLBs, only lower bit is used. */
- 		tlbsel = vcpu_e500->mas4 >> 28 & 0x1;
- 		victim = (tlbsel == 0) ? tlb0_get_next_victim(vcpu_e500) : 0;
- 
-diff --git a/arch/powerpc/kvm/e500_tlb.h b/arch/powerpc/kvm/e500_tlb.h
-index d8833f9..ab49e93 100644
---- a/arch/powerpc/kvm/e500_tlb.h
-+++ b/arch/powerpc/kvm/e500_tlb.h
-@@ -126,7 +126,7 @@ static inline unsigned int get_tlb_tlbsel(
+ 	if (adev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI)
+@@ -379,6 +387,7 @@ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
  {
- 	/*
- 	 * Manual says that tlbsel has 2 bits wide.
--	 * Since we only have tow TLBs, only lower bit is used.
-+	 * Since we only have two TLBs, only lower bit is used.
- 	 */
- 	return (vcpu_e500->mas0 >> 28) & 0x1;
- }
+ 	int r = 0;
+ 	struct kvm_assigned_dev_kernel *match;
++	u32 current_flags = 0, changed_flags;
+ 
+ 	mutex_lock(&kvm->lock);
+ 
+@@ -416,8 +425,13 @@ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 		}
+ 	}
+ 
+-	if ((!msi2intx &&
+-	     (assigned_irq->flags & KVM_DEV_IRQ_ASSIGN_ENABLE_MSI)) ||
++	if ((match->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI) &&
++		 (match->irq_requested_type & KVM_ASSIGNED_DEV_GUEST_MSI))
++		current_flags |= KVM_DEV_IRQ_ASSIGN_ENABLE_MSI;
++
++	changed_flags = assigned_irq->flags ^ current_flags;
++
++	if ((changed_flags & KVM_DEV_IRQ_ASSIGN_MSI_ACTION) ||
+ 	    (msi2intx && match->dev->msi_enabled)) {
+ #ifdef CONFIG_X86
+ 		r = assigned_device_update_msi(kvm, match, assigned_irq);
 -- 
 1.6.0.6
 
