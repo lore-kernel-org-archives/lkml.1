@@ -1,139 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbZB0AEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbZB0AEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758594AbZB0AEU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZB0AEL
+	id S1760098AbZB0AEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758294AbZB0AEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:04:11 -0500
-Received: from n6b.bullet.sp1.yahoo.com ([69.147.64.163]:45032 "HELO
-	n6b.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754494AbZB0AEK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:04:10 -0500
-X-yahoo-newman-spamcop: yes
-X-Yahoo-Newman-Id: 867290.89402.bm@omp403.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qzeYW57o0kfdBdPdIhJGxO/zv1Tk6PXFapRXDpsV6RxGv+ebHu1DixrbkucApA16iXVWjxUn5CF0v5UZyE08DPJWzri99FI1Ffx1TJHap+d2EGU7Id1c+PsyDPRV0v+4em16QxL/y97CNO5P8R7lHVSadX8BeQBSMg0LWEZ/5lM=  ;
-X-YMail-OSG: 1wFvOZIVM1kXNnprMx4hi_KngbOrXkKH_Gc3w0FatAqgP9NwXORc37gCqhCkmvbRSl4hHtgo1EOjyfPYWpYU1Yut66op_JNK1rW5I0vTqR0yQ4Cu7udgHyb5jr1KD1X6a42wyZb4L8DsdalHUAapKOtrVQFFnLa5VDaWm2LsA3Whid1SOg6xGNLdjaALSMcCx8INp4xggBdrTa1zUglNiF1ZNUvBpK8-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage enumeration (v2)
-Date: Thu, 26 Feb 2009 16:02:58 -0800
-User-Agent: KMail/1.9.10
-Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200902081037.06645.david-b@pacbell.net> <200902261150.15125.david-b@pacbell.net> <1235686618.31223.107.camel@vega.slimlogic.co.uk>
-In-Reply-To: <1235686618.31223.107.camel@vega.slimlogic.co.uk>
+	Thu, 26 Feb 2009 19:04:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39150 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757445AbZB0AES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 19:04:18 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902261602.58832.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: mtk.manpages@gmail.com
+X-Fcc: ~/Mail/linus
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Linux API <linux-api@vger.kernel.org>
+Subject: Re: [patch 0/3] add rt_tgsigqueueinfo syscall [RESEND]
+In-Reply-To: Michael Kerrisk's message of  Friday, 27 February 2009 10:19:08 +1300 <cfd18e0f0902261319v20ba7bd1pcc91ccc4b2c7d577@mail.gmail.com>
+References: <20090226133339.875832967@linutronix.de>
+	<cfd18e0f0902261319v20ba7bd1pcc91ccc4b2c7d577@mail.gmail.com>
+X-Shopping-List: (1) Psychiatric generic hootenanny bugs
+   (2) Electronic Johnny Carson lookalikes
+   (3) Insolent momentous persecuters
+   (4) Diplomatic meretricious lion defusers
+   (5) Indigent lotion
+Message-Id: <20090227000352.7D32BFC339@magilla.sf.frob.com>
+Date: Thu, 26 Feb 2009 16:03:52 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 February 2009, Liam Girdwood wrote:
-> > 
-> > Note that the twl4030 regulator patch referred to will need a
-> > minor patch to work with the -next tree, because of interface
-> > change in the regulator framework.
-> > 
-> >  drivers/regulator/twl4030-regulator.c |   62 +++++++++++---------------------
-> >  1 file changed, 23 insertions(+), 39 deletions(-)
-> 
-> Applied.
+I don't see any rationale for rt_tgsigqueueinfo and rt_sigqueueinfo to
+differ in their treatment of si_pid/si_uid (whatever that is).  It just
+seems like common sense that they would match.
 
-..... and here's that "minor patch".
+Oleg and/or Sukadev have some patches floating around (maybe all in -mm?)
+that relate to setting those.
 
-====== CUT HERE
-From: David Brownell <dbrownell@users.sourceforge.net>
+I notice that POSIX says that si_pid and si_uid have reliable values
+whenever si_code <= 0 (what we call SI_FROMUSER() in asm/siginfo.h).
+(POSIX only has sigqueue() and kill() et al to send these, so a POSIX
+application never explicitly supplies the values.  libc/libpthread do.
+The {t,tg,}kill syscalls all set si_pid to tgid already.)
+This means a POSIX-conformant application might check si_pid and si_uid and
+rely on them not being forged by some other process/user.  Firstly this
+means that si_pid must be the POSIX PID, i.e. tgid, not the Linux TID
+(which is not a useful value in POSIX interfaces).  Secondly it means the
+kernel should guarantee the correctness of these values (at least when
+crossing processes, might as well do always).
 
-Catch up the twl4030 regulator driver to the regulator
-interface change adding another parameter.  Also, fix
-some comments, and take this opportunity to shrink the
-associated per-regulator memory usage by a word.
+I don't recall if the pending changes already use tgid, I think they do.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/regulator/twl4030-regulator.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+I think what both calls should do is set si_pid to tgid and si_uid to uid
+whenever SI_FROMUSER().  This satisfies the POSIX and security trust
+concern, and makes them uniform.  (In Sukadev's version, what si_pid value
+they fill in here depends on pid_ns details of sender and recipient.)
 
---- a/drivers/regulator/twl4030-regulator.c
-+++ b/drivers/regulator/twl4030-regulator.c
-@@ -36,13 +36,13 @@ struct twlreg_info {
- 	/* twl4030 resource ID, for resource control state machine */
- 	u8			id;
- 
-+	/* FIXED_LDO voltage */
-+	u8			deciV;
-+
- 	/* voltage in mV = table[VSEL]; table_len must be a power-of-two */
- 	u8			table_len;
- 	const u16		*table;
- 
--	/* chip constraints on regulator behavior */
--	u16			min_mV;
--
- 	/* used by regulator core */
- 	struct regulator_desc	desc;
- };
-@@ -329,14 +329,14 @@ static int twl4030fixed_list_voltage(str
- {
- 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
- 
--	return info->min_mV * 1000;
-+	return info->deciV * 100 * 1000;
- }
- 
- static int twl4030fixed_get_voltage(struct regulator_dev *rdev)
- {
- 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
- 
--	return info->min_mV * 1000;
-+	return info->deciV * 100 * 1000;
- }
- 
- static struct regulator_ops twl4030fixed_ops = {
-@@ -373,7 +373,7 @@ static struct regulator_ops twl4030fixed
- #define TWL_FIXED_LDO(label, offset, mVolts, num) { \
- 	.base = offset, \
- 	.id = num, \
--	.min_mV = mVolts, \
-+	.deciV = mVolts / 100 , \
- 	.desc = { \
- 		.name = #label, \
- 		.id = TWL4030_REG_##label, \
-@@ -385,7 +385,7 @@ static struct regulator_ops twl4030fixed
- 	}
- 
- /*
-- * We list regulators here if systems need some level of
-+ * We expose regulators here if systems need some level of
-  * software control over them after boot.
-  */
- static struct twlreg_info twl4030_regs[] = {
-@@ -439,6 +439,7 @@ static int twl4030reg_probe(struct platf
- 
- 	/* Constrain board-specific capabilities according to what
- 	 * this driver and the chip itself can actually do.
-+	 * (Regulator core now does this for voltage constraints.)
- 	 */
- 	c = &initdata->constraints;
- 	c->valid_modes_mask &= REGULATOR_MODE_NORMAL | REGULATOR_MODE_STANDBY;
-@@ -446,7 +447,7 @@ static int twl4030reg_probe(struct platf
- 				| REGULATOR_CHANGE_MODE
- 				| REGULATOR_CHANGE_STATUS;
- 
--	rdev = regulator_register(&info->desc, &pdev->dev, info);
-+	rdev = regulator_register(&info->desc, &pdev->dev, initdata, info);
- 	if (IS_ERR(rdev)) {
- 		dev_err(&pdev->dev, "can't register %s, %ld\n",
- 				info->desc.name, PTR_ERR(rdev));
+Vis a vis Sukadev's changes, I also notice that si_uid ought to be
+translated for the recipient user_ns.
 
 
-
+Thanks,
+Roland
