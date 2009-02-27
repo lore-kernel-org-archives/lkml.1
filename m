@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbZB0Aac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbZB0Abg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760582AbZB0Aac (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Feb 2009 19:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbZB0AaO
+	id S1760720AbZB0Abg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Feb 2009 19:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZB0Ab1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 19:30:14 -0500
-Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:38201 "HELO
-	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752846AbZB0AaM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 19:30:12 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=aBfCqQGFwF6x8e3u+5U4Duie1uGH6B12611b9zjbgGjaryv2Cd7Sf4Z1smCN71cYH5pMzbb4WhG4DVpFnCj+XALe5L5zGtXZUmIsQ8xGOfeoz0qByr5ooEvfpEM8pFIN;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] PCI: AMD 813x B2 devices do not need quirk
-Date: Thu, 26 Feb 2009 16:29:54 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: Stefan Assmann <sassmann@novell.com>,
-       Jamie Wellnitz <Jamie.Wellnitz@emulex.com>, stable@kernel.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090226184648.GA5564@kroah.com>
-In-Reply-To: <20090226184648.GA5564@kroah.com>
+	Thu, 26 Feb 2009 19:31:27 -0500
+Received: from tundra.namei.org ([65.99.196.166]:4674 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753360AbZB0Ab0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Feb 2009 19:31:26 -0500
+Date: Fri, 27 Feb 2009 11:30:00 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: David Howells <dhowells@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] keys: work correctly with user namespaces
+In-Reply-To: <20090227002709.GA31049@us.ibm.com>
+Message-ID: <alpine.LRH.2.00.0902271129160.18109@tundra.namei.org>
+References: <20090227002709.GA31049@us.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902261629.55287.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, February 26, 2009 10:46:48 am Greg KH wrote:
-> From: Stefan Assmann <sassmann@novell.com>
->
-> Turns out that the new AMD 813x devices do not need the
-> quirk_disable_amd_813x_boot_interrupt quirk to be run on them, if it is,
-> no interrupts are seen on the PCI-X adapter.
+On Thu, 26 Feb 2009, Serge E. Hallyn wrote:
 
-Applied to my for-linus branch and pushed to Linus.
+> Hi James,
+> 
+> the following 4 patches apply on top of current security-testing-2.6 next
+> branch.  They implement strict separation of keys in different user
+> namespaces.  Do you mind sticking these in the security-testing tree?
 
-Thanks,
+No problem, once they're reviewed appropriately.
+
+> 
+> With these patches I can run the keyutils-tests simultaneously in two
+> namespaces with no problems or failures.
+> 
+> thanks,
+> -serge
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+James Morris
+<jmorris@namei.org>
