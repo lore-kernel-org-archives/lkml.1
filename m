@@ -1,90 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZB0TD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZB0TIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758848AbZB0TD1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 14:03:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbZB0TDT
+	id S1758932AbZB0TIm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 14:08:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbZB0TIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 14:03:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60741 "EHLO hera.kernel.org"
+	Fri, 27 Feb 2009 14:08:32 -0500
+Received: from mga03.intel.com ([143.182.124.21]:50493 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753721AbZB0TDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 14:03:18 -0500
-Subject: [PATCH -tip] x86: remove double copy of show_cpuinfo_core for 32
- and 64 bit
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 28 Feb 2009 00:32:41 +0530
-Message-Id: <1235761361.7332.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	id S1752720AbZB0TIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 14:08:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,277,1233561600"; 
+   d="scan'208";a="115165181"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Jeremy Higdon <jeremy@sgi.com>
+Subject: Re: [PATCH 1/1] Fix PCI DMA flag propagation on SN (Altix) with PICs
+Date: Fri, 27 Feb 2009 11:08:08 -0800
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "habeck@sgi.com" <habeck@sgi.com>
+References: <20090227093835.GA306198@sgi.com>
+In-Reply-To: <20090227093835.GA306198@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902271108.08750.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday, February 27, 2009 1:38:35 am Jeremy Higdon wrote:
+> We recently discovered a problem with passing of DMA attributes on
+> SN systems with the older PIC chips.
+>
+> Signed-off-by: Jeremy Higdon <jeremy@sgi.com>
 
-show_cpuinfo_core copy is unnecessary for 32 and 64 bit
-and CONFIG_X86_HT depends on CONFIG_X86_SMP
+Hm, doubt it will apply (it came through my Exchange account so probably not); 
+I usually have people send to my personal addr for that reason.  Do you need 
+this in 2.6.29?
 
-Impact: cleanup
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/proc.c |   20 ++------------------
- 1 files changed, 2 insertions(+), 18 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 01b1244..d67e0e4 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -7,11 +7,10 @@
- /*
-  *	Get CPU information for use by the procfs.
-  */
--#ifdef CONFIG_X86_32
- static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
- 			      unsigned int cpu)
- {
--#ifdef CONFIG_X86_HT
-+#ifdef CONFIG_SMP
- 	if (c->x86_max_cores * smp_num_siblings > 1) {
- 		seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
- 		seq_printf(m, "siblings\t: %d\n",
-@@ -24,6 +23,7 @@ static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
- #endif
- }
- 
-+#ifdef CONFIG_X86_32
- static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- {
- 	/*
-@@ -50,22 +50,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   c->wp_works_ok ? "yes" : "no");
- }
- #else
--static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
--			      unsigned int cpu)
--{
--#ifdef CONFIG_SMP
--	if (c->x86_max_cores * smp_num_siblings > 1) {
--		seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
--		seq_printf(m, "siblings\t: %d\n",
--			   cpus_weight(per_cpu(cpu_core_map, cpu)));
--		seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
--		seq_printf(m, "cpu cores\t: %d\n", c->booted_cores);
--		seq_printf(m, "apicid\t\t: %d\n", c->apicid);
--		seq_printf(m, "initial apicid\t: %d\n", c->initial_apicid);
--	}
--#endif
--}
--
- static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- {
- 	seq_printf(m,
+Thanks,
 -- 
-1.6.0.6
-
-
-
+Jesse Barnes, Intel Open Source Technology Center
