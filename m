@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755740AbZB0FIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750722AbZB0FJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755740AbZB0FIW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 00:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZB0FIL
+	id S1750722AbZB0FJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 00:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZB0FJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 00:08:11 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:46587 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbZB0FIK (ORCPT
+	Fri, 27 Feb 2009 00:09:10 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:40030 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbZB0FJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 00:08:10 -0500
-Message-ID: <49A77503.8040900@nokia.com>
-Date: Fri, 27 Feb 2009 07:07:15 +0200
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 27 Feb 2009 00:09:09 -0500
+Date: Fri, 27 Feb 2009 10:38:24 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, menage@google.com,
+       lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] cgroup allow subsys to set default mode of its own
+	file
+Message-ID: <20090227050823.GA11860@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20090225163555.d2a0b24c.kamezawa.hiroyu@jp.fujitsu.com> <20090226130005.3282cb02.akpm@linux-foundation.org> <20090227092031.f42cbbbe.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Hannes Eder <hannes@hanneseder.net>
-CC: "trivial@kernel.org" <trivial@kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/16] MTD: tests: fix sparse warnings: Using plain 	integer
- as NULL pointer
-References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>	 <20090222000216.17557.92413.stgit@vmbox.hanneseder.net> <154e089b0902261702r52432481q6a0561de9576ed71@mail.gmail.com>
-In-Reply-To: <154e089b0902261702r52432481q6a0561de9576ed71@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Feb 2009 05:07:23.0022 (UTC) FILETIME=[4618D2E0:01C99899]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090227092031.f42cbbbe.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Eder wrote:
-> [Added To]
+On Fri, Feb 27, 2009 at 09:20:31AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 26 Feb 2009 13:00:05 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> On Sun, Feb 22, 2009 at 1:02 AM, Hannes Eder <hannes@hanneseder.net> wrote:
->> Fix this sparse warnings:
->>  drivers/mtd/tests/mtd_oobtest.c:139:33: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:192:33: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:219:41: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:284:25: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:525:25: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:545:25: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:569:33: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:589:33: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:613:33: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:633:33: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:673:41: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_oobtest.c:701:33: warning: Using plain integer as NULL pointer
->>  drivers/mtd/tests/mtd_readtest.c:74:41: warning: Using plain integer as NULL pointer
->>
->> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> > On Wed, 25 Feb 2009 16:35:55 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> > >  When I wrote tools for maintain cgroup, I can't find which file is
+> > >  writable intarfece or not via cgroup file systems. (finally, I did
+> > >  dirty approach.)
+> > >  IMHO, showing "this file is read-only" in explicit way is useful
+> > >  for user-land (tools). In other story, a file whose name sounds read-only
+> > >  may have "trigger" operation and support reseting. In this case,
+> > >  "writable" is informative.
+> > 
+> > Well, we have compatibility issues here.  If we make this change, and
+> > people write tools which depend upon that change then those tools might
+> > break when run upon older kernels.  Or they need back-compatibility
+> > additions, which increases the testing burden of those tools.
+> > 
+> > One way in which we could improve this situation is to backport these
+> > changes into earlier kernels, although I don't know which versions.
+> > 
+> > What do we think?
+> > 
+> It sounds problem to me.
+> 
+> Hmm..1st commit to kernel/cgroup.c is 2007-10-19, then 2.6.24 is the oldest one.
+> But I think distro's tools for cgroup is not as old as...
+> Hmm, backport to 2.6.25 is enough ?
+> Balbir, how do you think ? I think you are familiar with libcgroup.
+> 
 
-Acked-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+I would like to have this backported to at least the distro kernels.
 
+thanks,
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+regards,
+Dhaval
