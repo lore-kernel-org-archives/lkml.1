@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbZB0Uqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759693AbZB0Uub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759728AbZB0Uqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 15:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbZB0Uqe
+	id S1759693AbZB0Uub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 15:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbZB0UuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 15:46:34 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37097 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755616AbZB0Uqe (ORCPT
+	Fri, 27 Feb 2009 15:50:22 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53041 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755747AbZB0UuV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 15:46:34 -0500
-Date: Fri, 27 Feb 2009 21:46:15 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Arve Hj?nnev?g <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090227204615.GC1387@ucw.cz>
-References: <200902191356.53584.rjw@sisk.pl> <Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org> <20090222140311.GF1387@ucw.cz> <200902231504.27879.oliver@neukum.org> <20090227101818.GH4582@elf.ucw.cz> <49A81E59.6010105@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A81E59.6010105@nortel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Feb 2009 15:50:21 -0500
+Subject: Re: Linux 2.6.29-rc6
+From: john stultz <johnstul@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+In-Reply-To: <20090227073321.GB13850@elte.hu>
+References: <49A6F39F.9040801@krogh.cc>
+	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
+	 <49A6FEE2.90700@krogh.cc>
+	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
+	 <49A70B24.6090706@krogh.cc>
+	 <1235685269.6811.11.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
+	 <1235687483.6811.26.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0902261434390.3111@localhost.localdomain>
+	 <1235689182.6811.34.camel@localhost.localdomain>
+	 <20090227073321.GB13850@elte.hu>
+Content-Type: text/plain
+Date: Fri, 27 Feb 2009 12:50:00 -0800
+Message-Id: <1235767800.7402.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-02-27 11:09:45, Chris Friesen wrote:
-> Pavel Machek wrote:
->> On Mon 2009-02-23 15:04:22, Oliver Neukum wrote:
->
->>> We can just as well have a class of tasks less important than power
->>> saving. They'd just run when power saving is not active for some other
->>> reason. Just like other such schemes we end up with the problem
->>> of priority inversion with locking.
->>
->> Ok, I guess this could be interesting in some cases... maybe. What are
->> real examples of such tasks?
->
-> Some people might put casual system monitoring tools into this  
-> category--top, xload, gkrellm, xclock, etc.
+On Fri, 2009-02-27 at 08:33 +0100, Ingo Molnar wrote:
+> * john stultz <johnstul@us.ibm.com> wrote:
+> 
+> > On Thu, 2009-02-26 at 14:40 -0800, Linus Torvalds wrote:
+> > > 
+> > > On Thu, 26 Feb 2009, john stultz wrote:
+> > > > 
+> > > > I'll kick up some of my own testing between these two releases to see if
+> > > > I can't find something similar.
+> > > 
+> > > Since the PIT timer read is possibly hw-dependent, it might be that you 
+> > > can't necessarily reproduce it on some random hardware.
+> > > 
+> > > How sensitive is ntpd to (stable) drift? IOW, if we get the calibration 
+> > > wrong, the TSC should still hopefully be very _stable_, it's just that the 
+> > > initial guesstimate for the frequency is off and ntp would have to correct 
+> > > for that.
+> >
+> > NTP can adjust the clock about +/-500ppm (so a 1000ppm range). 
+> > Past that it starts throwing errors.
+> 
+> Well, it will start throwing errors but still it will correct 
+> the clock and find the frequency delta between the host clock 
+> and the reference clock just fine, and converge in a couple of 
+> hours, correct?
 
-I guess system monitoring should stop itself when screen is
-blanked... no need to compute list of processes if user can't see the
-output.
+No  NTP spec limits the freq correction to ~+/-500ppm. Once NTPd hits
+that 500ppm wall, it will throw an error and stop trying to sync the
+clock.
 
-But I see that may be slightly hard for command-line tool like
-top. .... but it still seems like right solution. Why waste power/cycles
-displaying xclock at tty9 when user is looking at tty10?
+> 500ppm is 0.05% of a frequency drift which is awfully small - 
+> thermal effects alone can cause such differences so it should 
+> not be anything out of the ordinary for ntpd.
 
-> It'd be nice if the animated banner ad in my web browser could be  
-> treated this way. :)
+Practically I've not seen boxes that vary that much. I've seen very poor
+systems who's crystals are off by ~280ppm, but those don't vary that
+much over time much.
 
-Well, my web browser already has an option 'animate once'. No need to
-waste power with that at all :-).
-							Pavel 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+> > Part of the issue is that if the drift value changes in 
+> > between boots, NTPd can take a while to settle down on the 
+> > right freq. I suspect that's whats happening here, and should 
+> > the box be left alone for a few hours (maybe overnight) NTPd 
+> > will find the new drift correction the issue will go away.
+> 
+> If the default poll interval of 64 seconds is used then it can 
+> take that much time - so i'd sugges to decrease that to below 10 
+> seconds.
+
+Indeed. Shortening the maxpoll value in the ntp.conf greatly improves
+how fast and how close the client will sync to the server, but take
+caution, as that can cause undue load on public time servers.  
+
+thanks
+-john
+
+
