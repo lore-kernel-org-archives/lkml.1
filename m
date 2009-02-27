@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbZB0V2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbZB0Vb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760905AbZB0V2W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 16:28:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbZB0V2N
+	id S1760644AbZB0Vb6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 16:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZB0Vbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 16:28:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:38374 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757624AbZB0V2M (ORCPT
+	Fri, 27 Feb 2009 16:31:49 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33340 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753584AbZB0Vbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 16:28:12 -0500
-Date: Fri, 27 Feb 2009 22:28:09 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@rostedt.homelinux.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Don't profile branches in arm's boot decompressor
-Message-ID: <20090227212809.GA5338@pengutronix.de>
-References: <1235768983-4830-1-git-send-email-u.kleine-koenig@pengutronix.de> <1235769587.8233.1.camel@desktop>
+	Fri, 27 Feb 2009 16:31:49 -0500
+Message-ID: <49A85AF8.8030009@zytor.com>
+Date: Fri, 27 Feb 2009 13:28:24 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1235769587.8233.1.camel@desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] x86: add brk allocation for very, very early allocations
+References: <49A829CE.9020509@goop.org> <49A84C5A.3020304@kernel.org> <49A855B7.4090204@zytor.com> <49A858E8.3070707@goop.org>
+In-Reply-To: <49A858E8.3070707@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
-
-On Fri, Feb 27, 2009 at 01:19:47PM -0800, Daniel Walker wrote:
-> On Fri, 2009-02-27 at 22:09 +0100, Uwe Kleine-König wrote:
-> > This fixes many compile errors for arch/arm/boot/compressed/misc.c of
-> > the type:
-> > 
-> > 	arch/arm/boot/compressed/misc.c:127: error: section attribute cannot be specified for local variables
+Jeremy Fitzhardinge wrote:
 > 
-> Why do you think this error showed up just in that one file? It looks
-> like the branch tracer puts section tags on non-globals all over the
-> kernel..
-With this patch I was able to compile an ARM kernel with profiling
-enabled.  Is that enough justification?
+>> This reminds me... is your intent that the BRK is permanent (unless
+>> explicitly freed on a page by page basis) or part of the init memory
+>> that is flushed?
+> 
+> Permanent.  I'm using it to allocate things which are the moral
+> equivalent of the kernel pagetables.
+> 
 
-Best regards
-Uwe
+Cool; just wanted it noted what the rules were.  Even more so the reason
+to fold as many possible uses as possible into this new mechanism.
+
+	-hpa
+
+P.S. Could you send me the updates to the dom0 patches you said you had?
 
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
