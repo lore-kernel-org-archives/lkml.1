@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbZB0Wsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbZB0Wva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbZB0Wsc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 17:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZB0Wr7
+	id S1760176AbZB0Wva (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 17:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758203AbZB0WvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 17:47:59 -0500
-Received: from kroah.org ([198.145.64.141]:50782 "EHLO coco.kroah.org"
+	Fri, 27 Feb 2009 17:51:20 -0500
+Received: from kroah.org ([198.145.64.141]:53516 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753871AbZB0Wr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 17:47:57 -0500
-Date: Fri, 27 Feb 2009 14:45:55 -0800
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] STAGING patches for 2.6-git
-Message-ID: <20090227224555.GB19545@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1758159AbZB0WvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 17:51:19 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 1/5] Staging: rtl8187se: fix Kconfig dependencies
+Date: Fri, 27 Feb 2009 14:49:18 -0800
+Message-Id: <1235774963-19732-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <20090227224555.GB19545@kroah.com>
+References: <20090227224555.GB19545@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some tiny staging patches that fix some bugs and oopses that
-people have reported, as well as a Kconfig dependancy fix that is
-needed.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+rtl8187se uses wireless extensions so it needs to depend on
+WIRELESS_EXT (or select it).
 
-All of these have been in the -next releases with no known build errors.
+rtl8187se uses fields in struct net_device that are only present
+if CONFIG_COMPAT_NET_DEV_OPS=y, so it needs to depend on
+that symbol also.
 
-The patches will be sent as a follow-on to this message to lkml for people
-to see.
+drivers/staging/rtl8187se/r8180_core.c:5973: error: 'struct net_device' has no member named 'wireless_handlers'
+drivers/staging/rtl8187se/r8180_core.c:5982: error: 'struct net_device' has no member named 'wireless_handlers'
 
-thanks,
+drivers/staging/rtl8187se/r8180_core.c:201: error: 'struct net_device' has no member named 'stop'
+drivers/staging/rtl8187se/r8180_core.c:4584: error: 'struct net_device' has no member named 'get_stats'
+drivers/staging/rtl8187se/r8180_core.c:5969: error: 'struct net_device' has no member named 'open'
+drivers/staging/rtl8187se/r8180_core.c:5970: error: 'struct net_device' has no member named 'stop'
+drivers/staging/rtl8187se/r8180_core.c:5972: error: 'struct net_device' has no member named 'tx_timeout'
+drivers/staging/rtl8187se/r8180_core.c:5974: error: 'struct net_device' has no member named 'do_ioctl'
+drivers/staging/rtl8187se/r8180_core.c:5975: error: 'struct net_device' has no member named 'set_multicast_list'
+drivers/staging/rtl8187se/r8180_core.c:5976: error: 'struct net_device' has no member named 'set_mac_address'
 
-greg k-h
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/rtl8187se/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---------------
-
-
- drivers/staging/panel/panel.c                      |   23 ++++++++++---------
- drivers/staging/rtl8187se/Kconfig                  |    1 +
- .../staging/rtl8187se/ieee80211/ieee80211_crypt.c  |   19 ++++++++-------
- drivers/staging/rtl8187se/r8180_core.c             |    2 +-
- drivers/staging/winbond/wbusb.c                    |   20 +++++++++++------
- 5 files changed, 37 insertions(+), 28 deletions(-)
-
----------------
-
-Costantino Leandro (1):
-      Staging: panel: fix oops on panel_cleanup_module
-
-Pavel Machek (1):
-      Staging: w35und: fix registration with wlan stack
-
-Pekka Enberg (1):
-      Staging: w35und: fix usb_control_msg() error handling in wb35_probe()
-
-Randy Dunlap (1):
-      Staging: rtl8187se: fix Kconfig dependencies
-
-leandro Costantino (1):
-      Staging: rtl8187se: Fix oops and memory poison caused by builtin ieee80211.
+diff --git a/drivers/staging/rtl8187se/Kconfig b/drivers/staging/rtl8187se/Kconfig
+index 79c225a..f636296 100644
+--- a/drivers/staging/rtl8187se/Kconfig
++++ b/drivers/staging/rtl8187se/Kconfig
+@@ -1,5 +1,6 @@
+ config RTL8187SE
+ 	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
+ 	depends on PCI
++	depends on WIRELESS_EXT && COMPAT_NET_DEV_OPS
+ 	default N
+ 	---help---
+-- 
+1.6.0.2
 
