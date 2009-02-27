@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbZB0WwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbZB0WwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbZB0WwA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 17:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbZB0WvW
+	id S1761467AbZB0WwZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 17:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbZB0WvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 17:51:22 -0500
-Received: from kroah.org ([198.145.64.141]:53520 "EHLO coco.kroah.org"
+	Fri, 27 Feb 2009 17:51:23 -0500
+Received: from kroah.org ([198.145.64.141]:53523 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758591AbZB0WvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 17:51:21 -0500
+	id S1758776AbZB0WvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 17:51:22 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Costantino Leandro <lcostantino@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/5] Staging: panel: fix oops on panel_cleanup_module
-Date: Fri, 27 Feb 2009 14:49:20 -0800
-Message-Id: <1235774963-19732-3-git-send-email-gregkh@suse.de>
+Cc: Pavel Machek <pavel@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 4/5] Staging: w35und: fix registration with wlan stack
+Date: Fri, 27 Feb 2009 14:49:21 -0800
+Message-Id: <1235774963-19732-4-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <20090227224555.GB19545@kroah.com>
 References: <20090227224555.GB19545@kroah.com>
@@ -23,55 +22,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Costantino Leandro <lcostantino@gmail.com>
+From: Pavel Machek <pavel@suse.cz>
 
-Check for null pardevice (not registered, ej: panel never attached,
-inexistent parport, etc. )  before calling parport_release,
-parport_unregister_device, and related funcs on module release.
+Initialize few more fields in wireless device structure so that
+wireless core actually accepts our registration.
 
-Signed-off-by: Costantino Leandro <lcostantino@gmail.com>
-Acked-by: Willy Tarreau <w@1wt.eu>
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/panel/panel.c |   23 ++++++++++++-----------
- 1 files changed, 12 insertions(+), 11 deletions(-)
+ drivers/staging/winbond/wbusb.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/panel/panel.c b/drivers/staging/panel/panel.c
-index ab69c1b..c2747bc 100644
---- a/drivers/staging/panel/panel.c
-+++ b/drivers/staging/panel/panel.c
-@@ -2164,19 +2164,20 @@ static void __exit panel_cleanup_module(void)
- 	if (scan_timer.function != NULL)
- 		del_timer(&scan_timer);
- 
--	if (keypad_enabled)
--		misc_deregister(&keypad_dev);
-+	if (pprt != NULL) {
-+		if (keypad_enabled)
-+			misc_deregister(&keypad_dev);
-+
-+		if (lcd_enabled) {
-+			panel_lcd_print("\x0cLCD driver " PANEL_VERSION
-+					"\nunloaded.\x1b[Lc\x1b[Lb\x1b[L-");
-+			misc_deregister(&lcd_dev);
-+		}
- 
--	if (lcd_enabled) {
--		panel_lcd_print("\x0cLCD driver " PANEL_VERSION
--				"\nunloaded.\x1b[Lc\x1b[Lb\x1b[L-");
--		misc_deregister(&lcd_dev);
-+		/* TODO: free all input signals */
-+		parport_release(pprt);
-+		parport_unregister_device(pprt);
+diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+index b003f9a..49f1bf0 100644
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -369,9 +369,11 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
  	}
--
--	/* TODO: free all input signals */
--
--	parport_release(pprt);
--	parport_unregister_device(pprt);
- 	parport_unregister_driver(&panel_driver);
- }
  
+ 	dev->extra_tx_headroom = 12;	/* FIXME */
+-	dev->flags = 0;
++	dev->flags = IEEE80211_HW_SIGNAL_UNSPEC;
++	dev->wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION);
+ 
+ 	dev->channel_change_time = 1000;
++	dev->max_signal = 100;
+ 	dev->queues = 1;
+ 
+ 	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &wbsoft_band_2GHz;
 -- 
 1.6.0.2
 
