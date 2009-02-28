@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZB1DFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbZB1DI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbZB1DFs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 22:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZB1DFk
+	id S1757610AbZB1DI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 22:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZB1DIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 22:05:40 -0500
-Received: from web33001.mail.mud.yahoo.com ([209.191.69.116]:39292 "HELO
-	web33001.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752090AbZB1DFk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 22:05:40 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Feb 2009 22:05:39 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type;
-  b=AMisM58e+AkUzNr7p7qOTqitIc/kZzMUD/BdrgyXBJbEc48vH8tFA4OUAJ+oLfRpYSYdxniz2kiV6/3o2qJCp+RN04+39kV6nJl4w0+OZtj2+QSDaH2rVpoRuJ1FM+khuBT1ayYVR8oljcbdotoiVkn43HEe0u6raW9ZSJ2JzsY=;
-Message-ID: <968150.85968.qm@web33001.mail.mud.yahoo.com>
-X-YMail-OSG: Np3of7wVM1kc39PMs6kypCA0v2UROCyCJDlVmDJ8vc1ANGLec9AHhcQHtJmxkOO1B2Ax_OJ4MfZGbEBdG.YXgye_mw1bYK1cxDUl9e3IAfEfFLnew4O4VYBwSV1m6KfmqDpDQnUbrlQRhTPWT22FYqGOMeF16JgID6QWvdaC_g8V1w--
-X-Mailer: YahooMailWebService/0.7.289.1
-Date: Fri, 27 Feb 2009 18:58:57 -0800 (PST)
-From: Stephen Cameron <smcameron@yahoo.com>
-Reply-To: smcameron@yahoo.com
-Subject: Re: hpsa: SCSI driver for HP Smart Array controllers
-To: linux-kernel@vger.kernel.org
-Cc: scameron@beardog.cca.cpqcorp.net, mike.miller@hp.com
+	Fri, 27 Feb 2009 22:08:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52777 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751994AbZB1DIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 22:08:51 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 0/2] x86-64: 32/64 syscall arch holes
+Message-Id: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+Date: Fri, 27 Feb 2009 19:02:26 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On x86-64, a 32-bit process (TIF_IA32) can switch to 64-bit mode with
+ljmp, and then use the "syscall" instruction to make a 64-bit system
+call.  A 64-bit process make a 32-bit system call with int $0x80.
 
+Both these uses can confuse some things that think they know what system
+call and arguments the registers mean.  This is easily fixed by checking
+TS_COMPAT ("syscall we are in is 32-bit") instead of TIF_IA32 ("this task
+was started as 32-bit").
 
-I see we botched this in hpsa_pci_init()
-(one of the last things we changed):
+I don't know of any other arch that is susceptible to a similar problem.
+I think on other 32/64 arch's either the syscall table is the same anyway,
+or it's not possible to make an other-wordsize flavored syscall at all,
+or both.
 
-+       if (prod_index == ARRAY_SIZE(products)) {
-+               prod_index--;
-+               if (subsystem_vendor_id == !PCI_VENDOR_ID_HP ||
-+                               !allow_unknown_smartarray) {
-+                       printk(KERN_WARNING "hpsa: Sorry, I don't "
-+                               "know how to access the Smart "
-+                               "Array controller %08lx\n",
+It occurred to me that the audit case was wrong, but I didn't try to test
+it.  A test program similar to the seccomp exploit would be the way to do
+it (but omit the prctl call) and there are many more options of a syscall
+number whose presumed-arch meaning is harmless and not noticed by your
+audit setup, but whose actually-other-arch meaning is something that could
+be malicious and that your audit setup intends to flag.
 
+The following changes since commit 778ef1e6cbb049c9bcbf405936ee6f2b6e451892:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/staging-2.6
 
-That 2nd if should have been, 
+are available in the git repository at:
 
-if (subsystem_vendor_id != PCI_VENDOR_ID_HP ||
+  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-roland.git x86/syscall-arch-holes
 
--- steve
+Roland McGrath (2):
+      x86-64: syscall-audit: fix 32/64 syscall hole
+      x86-64: seccomp: fix 32/64 syscall hole
 
+ arch/x86/include/asm/seccomp_64.h |   14 ++++++++------
+ arch/x86/kernel/ptrace.c          |    2 +-
+ kernel/seccomp.c                  |   11 ++++++++---
+ 3 files changed, 17 insertions(+), 10 deletions(-)
 
-      
+Thanks,
+Roland
