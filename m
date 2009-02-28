@@ -1,151 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZB1XLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZB1XUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbZB1XLx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 18:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZB1XLo
+	id S1755811AbZB1XUP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 18:20:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZB1XT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 18:11:44 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:17430 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754651AbZB1XLn (ORCPT
+	Sat, 28 Feb 2009 18:19:59 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:28155 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751574AbZB1XT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 18:11:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GP0cnxJ9Aos/eRRk2bVLSDmLmpR0pzIU1DL2bUMyT7ksmELE2asrsYO+MCvpd5LK7D
-         geiGCpDYxeTfqAv22XS6jBiDPE+MNkCeM6yH3ZiA41/EnK569gVLQHqzZAkhPuost9Ag
-         AMgFWGsX8AVY7eM3HlqbCYG60QAASiMC4Sneg=
-Date: Sun, 1 Mar 2009 00:11:37 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
-	3 users
-Message-ID: <20090228231137.GB6574@nowhere>
-References: <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere> <20090226185208.GA6658@nowhere> <20090226185635.GA12895@elte.hu> <20090227061936.GA5318@nowhere> <alpine.LFD.2.00.0902271631231.3111@localhost.localdomain> <20090228081123.GA5906@nowhere> <20090228091305.GA20533@elte.hu>
+	Sat, 28 Feb 2009 18:19:58 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=K5Ig5MtEpoixp0hV4WdQuY/AZabSq5N6hiZZxHWwwMFOhCTWweszdST8smBbGwkctzgWOIMj6p163zuJCNwWRbrMVFXgC5e59xeNeQlmEwsApVRn054jQ+KKXlnqqzo9Rbs3ktRFiC/witV79VDUdHStRfn22ELc+pNe4JrhmvA=  ;
+X-YMail-OSG: 69dzUloVM1lnqyU4faEPDY0YJRN6ra44to9REy3s2SVETpHEhGMhEHIaGsGh54M2VHG2Yt5Rbu3gvloRQbU17r_yeU_NJjl8Dw_ohG083rfpGFJGRCGVz3GHqoT7LY7EA34yG.YjFYpabPan737UM7xSNtY7OuItRLXzvPnJ.4JOVb6bUd_jiuGZlERP
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Balaji Rao <balajirrao@openmoko.org>
+Subject: Re: [PATCH 0/2] spi: Add support for non-blocking synchronous transfers
+Date: Sat, 28 Feb 2009 15:19:55 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
+       Andy Green <andy@openmoko.com>
+References: <20090228081036.31964.80618.stgit@fedora.yogi> <200902281233.50612.david-b@pacbell.net> <20090228221247.GA3107@fedora.yogi>
+In-Reply-To: <20090228221247.GA3107@fedora.yogi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090228091305.GA20533@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902281519.55341.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 10:13:05AM +0100, Ingo Molnar wrote:
+On Saturday 28 February 2009, Balaji Rao wrote:
+> On Sat, Feb 28, 2009 at 12:33:50PM -0800, David Brownell wrote:
+> > Note that $SUBJECT concept is nonsense.
+> > Synchronous calls are by definition blocking ones...
 > 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > > instead? Wouldn't that be nicer? I suspect it would make the 
-> > > code look nicer too (instead of doing "*base = x", you'd see 
-> > > "spec->base = x" and it would look less like line noise in 
-> > > the callee, an the caller could just do a single "struct 
-> > > format_spec spec = { 0, }" to initialize that thing).
-> > > 
-> > > 		Linus
+> FWIW, it is exactly this that we want to change.
+
+This seems like
+
+#define UP	DOWN
+#define GOOD	BAD
+#define LEFT	RIGHT
+#define 1	2
+
+... etc ...
+
+How can you possibly be synchronous without blocking the
+caller?
+
+
+> > On Saturday 28 February 2009, Balaji Rao wrote:
+> > > During the course of development of an accelerometer driver, we saw the
+> > > necessity to execute spi transfers synchronously within an interrupt handler.
 > > 
-> > You're right, that's much proper.
-> > See the V2 below:
+> > This sounds like a bad design.  How can you know that no other
+> > transfers are going on ... or are queued in front of the transfer
+> > you're requesting?
+> > 
+> > You'd need to wait for all the other transfers to work their
+> > way through the transfer queue.  There are *much* better things
+> > to do in interrupt handlers.
+> > 
 > 
-> Just a few (very) small code style pet peeves:
-> 
-> > +struct printf_spec {
-> > +	enum format_type type;
-> > +	int flags;			/* flags to number() */
-> > +	int field_width;		/* width of output field */
-> > +	int base;
-> > +	/* min. # of digits for integers; max number of chars for from string */
-> > +	int precision;
-> > +	int qualifier;
-> > +};
-> 
-> doesnt it look a bit tidier this way:
-> 
->  struct printf_spec {
-> 	enum format_type	type;
-> 	int			flags;		/* flags to number()     */
-> 	int			field_width;	/* width of output field */
-> 	int			base;
-> 	int			precision;	/* # of digits/chars     */
-> 	int			qualifier;
->  };
-> 
-> ?
-> 
-> > +		case '+':
-> > +			spec->flags |= PLUS;
-> > +			break;
-> > +		case ' ':
-> > +			spec->flags |= SPACE;
-> > +			break;
-> > +		case '#':
-> > +			spec->flags |= SPECIAL;
-> > +			break;
-> > +		case '0':
-> > +			spec->flags |= ZEROPAD;
-> > +			break;
-> > +		default:
-> > +			found = false;
-> 
-> btw., this is one of the cases where i think the original style 
-> was more useful:
-> 
-> > +		case '+':	spec->flags |= PLUS;  break;
-> > +		case ' ':	spec->flags |= SPACE; break;
-> [etc.]
-> 
-> as it's always good to compress repetitive patterns of code.
-> 
-> (If checkpatch complains about this then ignore checkpatch.)
-> 
-> > +	case 'n':
-> > +		/* FIXME:
-> > +		* What does C99 say about the overflow case here? */
-> 
-> (this comment looks a bit funny.)
-> 
-> > +		default: {
-> > +			enum format_type type = spec.type;
-> > +
-> > +			if (type == FORMAT_TYPE_LONG_LONG)
-> > +				num = get_arg(long long);
-> > +			else if (type == FORMAT_TYPE_ULONG)
-> > +				num = get_arg(unsigned long);
-> > +			else if (type == FORMAT_TYPE_LONG)
-> > +				num = get_arg(unsigned long);
-> > +			else if (type == FORMAT_TYPE_SIZE_T)
-> > +				num = get_arg(size_t);
-> > +			else if (type == FORMAT_TYPE_PTRDIFF)
-> > +				num = get_arg(ptrdiff_t);
-> > +			else if (type == FORMAT_TYPE_USHORT)
-> > +				num = get_arg(unsigned short);
-> > +			else if (type == FORMAT_TYPE_SHORT)
-> > +				num = get_arg(short);
-> > +			else if (type == FORMAT_TYPE_UINT)
-> > +				num = get_arg(unsigned int);
-> > +			else
-> > +				num = get_arg(int);
-> 
-> Wouldnt it be cleaner as a switch() statement and to put into a 
-> helper function?
-> 
-> Also, could you please resend the current stuff with a 0/ 
-> description and a diffstat in the 0 mail so that we can all see 
-> all the patches again and the total impact?
-> 
-> 	Ingo
+> Please do look at the patches. We *don't* use a transfer queue.
 
-Ok, for all these comments. Except I'm not sure that it is needed to export this part
-in a helper, it means 3 new different helpers with two of them having a pointer to a va_list
-in their parameters.
-A pointer to va_list is legal but doesn't seem to me much proper.
+Another example of a conceptual bug.  Because SPI is a shared
+bus, transfers to some other device may be happening when you
+issue a request.  And accordingly, you'd need to wait for that
+transfer to complete.  The SPI I/O queue is at least a logical
+abstraction for that reality.  I have a hard time imagining any
+spi_master driver not having some kind of queue data structure.
 
-Unless you have some objections, I will repost the new addressed version and if you still
-think these parts should be exported to helpers, then I will do it.
+Plus, see Documentation/spi/spi-summary:
 
+| SPI requests always go into I/O queues.  Requests for a given SPI device
+| are always executed in FIFO order, and complete asynchronously through
+| completion callbacks.  There are also some simple synchronous wrappers
+| for those calls, including ones for common transaction types like writing
+| a command and then reading its response.
+
+Note that the queueing discipline is explicitly unspecified,
+except in the context of a given spi_device.  If you want
+your spi_master controller to prioritize one device, that's
+fine ... but it's not part of the interface used by portable
+drivers (it'd be platform-specific).
+
+
+> Transfers requested through our proposed function should/will complete the
+> transfer when it returns without sleeping in between. (Which is the whole
+> point of this patch).
+
+So instead of "non-blocking" you mean "non-sleeping".
+
+That leaves un-answered the question of what to do when
+the SPI bus is busy performing some other transfer.  I
+looked at your [2/2] patch, and saw it ignoring that very
+basic issue ... this new call will just poke at the bus,
+trashing any transfer that was ongoing.
+
+I hope you understand why that would be bad.  It can
+cause data corruption, and in some cases worse (like
+hardware damage).
+
+ 
+> > > When using a workqueue instead, we observed a huge number of overruns
+> > > with very high cpu utlization, which is unacceptable.
+> > 
+> > Sure, but at least part of that seems to be caused by some
+> > broken design assumptions.
+> > 
+> 
+> No, it's not. Read below.
+
+I've already identified several broken assumptions you
+have made; so "part of that" seems pretty clearly right.
+
+ 
+> > Why are you even trying to touch SPI devices from hardirq
+> > context?  That's never going to be OK; "can't-sleep" contexts
+> > don't mix with "must-sleep" calls.
+> 
+> Accelerometers can produce a huge amount of data and we need to quickly
+> read them to avoid overruns. Also, scheduling workers for this greatly
+> increases the number of context switches, unnecessarily.
+
+That sounds like a performance issue with the spi_master driver
+you're using.  Using the bitbang framework, and worker tasks, is
+a good way to get something going quickly.  But if I wanted high
+performance, I'd likely use a more traditional driver structure
+(with no tasks, IRQ driven, DMA).  Or I might just increase the
+priority of the relevant tasks; depends on what bottlenecks turn
+up when I measure things.
+
+That might combine with sub-optimal design for your accelerometer
+driver or hardware.  Can you keep multiple transfers queued?  Are
+you using async messaging intelligently?
+
+
+> > > This series adds a new interface for this and modifies no existing ones.
+> > 
+> > NAK on these two patches.
+> > 
+> 
+> Ok, it will be helpful if you please suggest an alternative keeping in
+> mind the huge amount of data produced by the accelerometer and the need
+> to read them quickly ?
+
+If your spi_master driver isn't using DMA, fix that.  Nothing
+else addresses "huge amount of data" well at all.
+
+If some driver -- spi_master, accelerometer, or whatever -- is
+introducing context switch delays in critical paths, get rid of
+those.  The gap between one DMA transfer and the next can be on
+the order of one IRQ latency, using current interfaces, if the
+drivers are decently written.
+
+- Dave
