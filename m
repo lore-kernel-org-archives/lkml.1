@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZB1Rdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZB1Rjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbZB1Rdu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 12:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZB1Rdk
+	id S1754627AbZB1Rjy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 12:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZB1Rjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 12:33:40 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43488 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752944AbZB1Rdk (ORCPT
+	Sat, 28 Feb 2009 12:39:46 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56786 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbZB1Rjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 12:33:40 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49A97563.6040906@s5r6.in-berlin.de>
-Date: Sat, 28 Feb 2009 18:33:23 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
-MIME-Version: 1.0
+	Sat, 28 Feb 2009 12:39:45 -0500
+Date: Sat, 28 Feb 2009 09:40:12 -0800
+From: Arjan van de Ven <arjan@infradead.org>
 To: Mark Brown <broonie@sirena.org.uk>
-CC: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@sirena.org.uk>
 Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
-References: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk> <49A942F6.3020600@s5r6.in-berlin.de> <20090228155841.GA15127@sirena.org.uk> <49A962F8.30609@s5r6.in-berlin.de> <20090228164627.GC15127@sirena.org.uk>
-In-Reply-To: <20090228164627.GC15127@sirena.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20090228094012.6d98ce05@infradead.org>
+In-Reply-To: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk>
+References: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> It is apparent that they do not consider
-> the subject line of the e-mail (which is the first line of the changelog
-> if you're using git) to be part of the changelog.
+On Fri, 27 Feb 2009 18:05:20 +0000
+Mark Brown <broonie@sirena.org.uk> wrote:
 
-This really surprises me.  ^Subject: .+$ is the title of the log and
-thereby its first part.  Also, I don't see a connection to git.  I
-manage patches with quilt and never loose patch titles.  I still think
-you should count ^Subject: .+$ too if you want to check for presence of
-a changelog.
+> Try to help ensure that e-mailed patches have some commit log text in
+> the body of the e-mail by warning if we can't find any lines that look
+> like a header of some kind prior to the Signed-off-by.
 
-Sometimes I see patch postings with the title appearing twice; I always
-thought these were beginners' mistakes and a nuisance when importing a
-patch.
+maybe we should also spell check the changelog (aspell ?)
 
-(PS:  Granted, many patches come with poorly written changelogs; I
-struggle with it in my own patches all the time too.  But it's something
-which checkpatch just cannot check.)
 -- 
-Stefan Richter
--=====-==--= --=- ===--
-http://arcgraph.de/sr/
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
