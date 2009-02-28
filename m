@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZB1JKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbZB1JKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbZB1JKB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 04:10:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZB1JJm
+	id S1754792AbZB1JKa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 04:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZB1JJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 04:09:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60034 "EHLO
+	Sat, 28 Feb 2009 04:09:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36563 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbZB1JJk (ORCPT
+	with ESMTP id S1752337AbZB1JJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 28 Feb 2009 04:09:40 -0500
-Message-Id: <20090228090936.874671115@goodmis.org>
-References: <20090228090646.265765024@goodmis.org>
+Message-Id: <20090228090646.265765024@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 28 Feb 2009 04:06:47 -0500
+Date: Sat, 28 Feb 2009 04:06:46 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -24,88 +23,45 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       acme@ghostprotocols.net, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 01/10] tracing: move trace point formats to files in include/trace directory
-Content-Disposition: inline; filename=0001-tracing-move-trace-point-formats-to-files-in-includ.patch
+       acme@ghostprotocols.net
+Subject: [PATCH 00/10] [git pull] for tip/tracing/ftrace
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+Ingo,
 
-Impact: clean up
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-To further facilitate the ease of adding trace points for developers, this
-patch creates include/trace/trace_events.h and
-include/trace/trace_event_types.h.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
-The former file will hold the trace/<type>.h files and the latter will hold
-the trace/<type>_event_types.h files.
 
-To create new tracepoints and to have them automatically
-appear in the event tracer, a developer makes the trace/<type>.h file
-which includes <linux/tracepoint.h> and the trace/<type>_event_types.h file.
+Steven Rostedt (10):
+      tracing: move trace point formats to files in include/trace directory
+      tracing: add subsystem level to trace events
+      tracing: make the set_event and available_events subsystem aware
+      tracing: add subsystem irq for irq events
+      tracing: add subsystem sched for sched events
+      tracing: add interface to write into current tracer buffer
+      tracing: add raw trace point recording infrastructure
+      tracing: add raw fast tracing interface for trace events
+      tracing: create the C style tracing for the sched subsystem
+      tracing: create the C style tracing for the irq subsystem
 
-The trace/<type>_event_types.h file will hold the TRACE_FORMAT
-macros.
-
-Then add the trace/<type>.h file to trace/trace_events.h,
-and add the trace/<type>_event_types.h to the trace_event_types.h file.
-
-No need to modify files elsewhere.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/trace/trace_event_types.h |    4 ++++
- include/trace/trace_events.h      |    4 ++++
- kernel/trace/events.c             |   10 ++--------
- 3 files changed, 10 insertions(+), 8 deletions(-)
- create mode 100644 include/trace/trace_event_types.h
- create mode 100644 include/trace/trace_events.h
-
-diff --git a/include/trace/trace_event_types.h b/include/trace/trace_event_types.h
-new file mode 100644
-index 0000000..33c8ed5
---- /dev/null
-+++ b/include/trace/trace_event_types.h
-@@ -0,0 +1,4 @@
-+/* trace/<type>_event_types.h here */
-+
-+#include <trace/sched_event_types.h>
-+#include <trace/irq_event_types.h>
-diff --git a/include/trace/trace_events.h b/include/trace/trace_events.h
-new file mode 100644
-index 0000000..ea2ef20
---- /dev/null
-+++ b/include/trace/trace_events.h
-@@ -0,0 +1,4 @@
-+/* trace/<type>.h here */
-+
-+#include <trace/sched.h>
-+#include <trace/irq.h>
-diff --git a/kernel/trace/events.c b/kernel/trace/events.c
-index 3c75623..46e27ad 100644
---- a/kernel/trace/events.c
-+++ b/kernel/trace/events.c
-@@ -1,15 +1,9 @@
- /*
-  * This is the place to register all trace points as events.
-- * Include the trace/<type>.h at the top.
-- * Include the trace/<type>_event_types.h at the bottom.
-  */
- 
--/* trace/<type>.h here */
--#include <trace/sched.h>
--#include <trace/irq.h>
-+#include <trace/trace_events.h>
- 
- #include "trace_events.h"
- 
--/* trace/<type>_event_types.h here */
--#include <trace/sched_event_types.h>
--#include <trace/irq_event_types.h>
-+#include <trace/trace_event_types.h>
--- 
-1.5.6.5
-
+----
+ include/linux/tracepoint.h          |    3 +
+ include/trace/irq_event_types.h     |   24 +++-
+ include/trace/sched_event_types.h   |  124 ++++++++++++---
+ include/trace/trace_event_types.h   |    4 +
+ include/trace/trace_events.h        |    4 +
+ kernel/trace/events.c               |   20 ++-
+ kernel/trace/trace.c                |   14 ++
+ kernel/trace/trace.h                |   32 ++++
+ kernel/trace/trace_events.c         |  294 +++++++++++++++++++++++++++++++----
+ kernel/trace/trace_events.h         |   55 -------
+ kernel/trace/trace_events_stage_1.h |   34 ++++
+ kernel/trace/trace_events_stage_2.h |   72 +++++++++
+ kernel/trace/trace_events_stage_3.h |  219 ++++++++++++++++++++++++++
+ 13 files changed, 776 insertions(+), 123 deletions(-)
 -- 
