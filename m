@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZB1Rwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbZB1RxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZB1Rwh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 12:52:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZB1Rw3
+	id S1755114AbZB1RxV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 12:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZB1RxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 12:52:29 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1924 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZB1Rw2 (ORCPT
+	Sat, 28 Feb 2009 12:53:12 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46375 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbZB1RxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 12:52:28 -0500
-Date: Sat, 28 Feb 2009 17:52:20 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Message-ID: <20090228175218.GA4606@sirena.org.uk>
-References: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk> <49A942F6.3020600@s5r6.in-berlin.de> <20090228155841.GA15127@sirena.org.uk> <49A962F8.30609@s5r6.in-berlin.de> <20090228164627.GC15127@sirena.org.uk> <49A97563.6040906@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A97563.6040906@s5r6.in-berlin.de>
-X-Cookie: Are you sure the back door is locked?
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Sat, 28 Feb 2009 12:53:11 -0500
+Date: Sat, 28 Feb 2009 09:53:25 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Salman Qazi <sqazi@google.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
+Message-ID: <20090228095325.186f5efc@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0902280935010.3111@localhost.localdomain>
+References: <20090224020304.GA4496@google.com>
+	<200902272305.01867.nickpiggin@yahoo.com.au>
+	<20090228082922.GB11425@elte.hu>
+	<200902282249.57479.nickpiggin@yahoo.com.au>
+	<20090228125816.GA14917@elte.hu>
+	<alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
+	<20090228092450.3ded2db5@infradead.org>
+	<alpine.LFD.2.00.0902280935010.3111@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 06:33:23PM +0100, Stefan Richter wrote:
+On Sat, 28 Feb 2009 09:42:18 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> This really surprises me.  ^Subject: .+$ is the title of the log and
-> thereby its first part.  Also, I don't see a connection to git.  I
-> manage patches with quilt and never loose patch titles.  I still think
-> you should count ^Subject: .+$ too if you want to check for presence of
-> a changelog.
+> 
+> That's almost unacceptable in the long run. With a 8MB L3 cache - and
+> a compile sequence, do we really want to go out to memory to write
+> the .S file, and then have the assembler go out to memory to read it
+> back? For a compile, that _probably_ is all fine (the compiler in
+> particular will have enough data structures around that it's not
+> going to fit in the cache anyway), but I'm seeing leaner compilers
+> and other cases where forcing things out all the way on the bus is
+> simply the wrong thing.
 
-I believe the issue is the UI of a MUA - the subject line of a mail is
-normally presented separately to the body and isn't always as
-immediately prominent as the body so it's harder work to look at it.
-This is sensible for e-mail since the general style is that the subject
-line shouldn't be required in order to comprehend what the message is
-about but that's exactly what's happening when a one line changelog is
-e-mailed.
+non-temporal is almost always wrong
 
-The connection with git is that it doesn't really draw a similar
-distinction so the issue isn't as immediately obvious when you're
-working within it. 
+one of the valid cases is where you KNOW you'll be doing dma for all of
+the memory very shortly (say, an O_SYNC/O_DIRECT write of 4Kb) since
+that would tend to evict it from cache anyway.
+
+but beyond that... not so much.
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
