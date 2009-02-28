@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbZB1Hf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZB1Hgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbZB1Hf0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 02:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbZB1HfM
+	id S1753356AbZB1Hgy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 02:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbZB1Hgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 02:35:12 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42008 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbZB1HfL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 02:35:11 -0500
-Date: Sat, 28 Feb 2009 02:35:07 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-Subject: [PATCH][git pull] tracing: replace kzalloc with kcalloc
-Message-ID: <alpine.DEB.2.00.0902280233410.2116@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 28 Feb 2009 02:36:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47555 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751362AbZB1Hgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 02:36:45 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+In-Reply-To: Ingo Molnar's message of  Saturday, 28 February 2009 08:31:54 +0100 <20090228073154.GG9351@elte.hu>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
+	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+	<20090228073154.GG9351@elte.hu>
+Emacs: the prosecution rests its case.
+Message-Id: <20090228073604.84F3EFC3DA@magilla.sf.frob.com>
+Date: Fri, 27 Feb 2009 23:36:04 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> btw., shouldnt is_compat_task() expand to 0 in the 
+> !CONFIG_COMPAT case? That way we could remove this #ifdef too. 
+> (and move the first #ifdef inside the array initialization so 
+> that we always have a mode1_syscalls_32[] array.)
 
-Ingo,
-
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
+I guess you mean define it in linux/compat.h then?
+Go right ahead.  Whatever you want is fine by me.
 
 
-Steven Rostedt (1):
-      tracing: replace kzalloc with kcalloc
-
-----
- kernel/trace/trace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
----------------------------
-commit 0cfe82451dfa3ebf4e69158f2eb450f2fbb6b715
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Fri Feb 27 10:51:10 2009 -0500
-
-    tracing: replace kzalloc with kcalloc
-    
-    Impact: clean up
-    
-    kcalloc is a better approach to allocate a NULL array.
-    
-    Reported-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 5db7485..9c5987a 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3328,7 +3328,7 @@ create_trace_option_files(struct tracer *tracer)
- 	for (cnt = 0; opts[cnt].name; cnt++)
- 		;
- 
--	topts = kzalloc(sizeof(*topts) * (cnt + 1), GFP_KERNEL);
-+	topts = kcalloc(cnt + 1, sizeof(*topts), GFP_KERNEL);
- 	if (!topts)
- 		return NULL;
- 
-
+Thanks,
+Roland
