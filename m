@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZB1OB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZB1OYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbZB1OB7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 09:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZB1OBv
+	id S1753844AbZB1OYh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 09:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZB1OY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 09:01:51 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49712 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbZB1OBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 09:01:50 -0500
-Date: Fri, 27 Feb 2009 22:08:56 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for
-	conversions
-Message-ID: <20090227210856.GB1476@ucw.cz>
-References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <87y6vyuzsn.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87y6vyuzsn.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 28 Feb 2009 09:24:27 -0500
+Received: from thunk.org ([69.25.196.29]:45888 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752179AbZB1OY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 09:24:26 -0500
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: linux-ext4@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH] Reorder ext4 and ext2 so that ext2 root filesystems are mounted using ext2
+Date: Sat, 28 Feb 2009 09:24:20 -0500
+Message-Id: <1235831060-10086-1-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.3
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-02-22 18:50:00, Andi Kleen wrote:
-> Steven Rostedt <rostedt@goodmis.org> writes:
-> 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> >
-> > Impact: keep kernel text read only
-> >
-> > Because dynamic ftrace converts the calls to mcount into and out of
-> > nops at run time, we needed to always keep the kernel text writable.
-> >
-> > But this defeats the point of CONFIG_DEBUG_RODATA. This patch converts
-> > the kernel code to writable before ftrace modifies the text, and converts
-> > it back to read only afterward.
-> >
-> > The conversion is done via stop_machine and no IPIs may be executed
-> > at that time. The kernel text is set to write just before calling
-> > stop_machine and set to read only again right afterward.
-> 
-> The very old text poke code I had for this just used a dynamic
-> mapping elsewhere instead to modify the code. That's much less
-> intrusive than changing the complete mappings. Any reason you can't use 
-> that too?
+In fs/Makefile, ext3 was placed before ext2 so that a root filesystem
+that possessed a journal, it would be mounted as ext3 instead of ext2.
+This was necessary because a cleanly unmounted ext3 filesystem was
+fully backwards compatible with ext2, and could be mounted by ext2 ---
+but it was desirable that it be mounted with ext3 so that the
+journaling would be enabled.
 
-Is it legal to have two mappings of same page with different
-attributes? IIRC some processors did not like that...
+The ext4 filesystem supports new incompatible features, so there is no
+danger of an ext4 filesystem being mistaken for an ext2 filesystem.
+However, ordering didn't matter until ext4 gained the ability to mount
+filesystems without a journal.  Now that this is the case, given that
+ext4 is before ext2, it means that root filesystems that were only
+using the plain-jane ext2 format are getting mounted using the ext4
+filesystem driver, which is a change in behavior which could be
+surprising to users
 
+It's doubtful that there are that many ext2-only root filesystem users
+that would also have ext4 compiled into the kernel, but to adhere to
+the principle of least surprise, the correct ordering in fs/Makefile
+is ext3, followed by ext2, and finally ext4.
+
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+---
+ fs/Makefile |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/fs/Makefile b/fs/Makefile
+index 38bc735..21c2f50 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -69,10 +69,12 @@ obj-$(CONFIG_DLM)		+= dlm/
+ # Do not add any filesystems before this line
+ obj-$(CONFIG_REISERFS_FS)	+= reiserfs/
+ obj-$(CONFIG_EXT3_FS)		+= ext3/ # Before ext2 so root fs can be ext3
+-obj-$(CONFIG_EXT4_FS)		+= ext4/ # Before ext2 so root fs can be ext4
++obj-$(CONFIG_EXT2_FS)		+= ext2/
++# We place ext4 after ext2 so plain ext2 root fs's are mounted using ext4
++# unless explicitly requested by rootfstype
++obj-$(CONFIG_EXT4_FS)		+= ext4/
+ obj-$(CONFIG_JBD)		+= jbd/
+ obj-$(CONFIG_JBD2)		+= jbd2/
+-obj-$(CONFIG_EXT2_FS)		+= ext2/
+ obj-$(CONFIG_CRAMFS)		+= cramfs/
+ obj-$(CONFIG_SQUASHFS)		+= squashfs/
+ obj-y				+= ramfs/
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.6.3
+
