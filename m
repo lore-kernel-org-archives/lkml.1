@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZB1Sk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZB1Sqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbZB1Sk0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 13:40:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZB1SkP
+	id S1754843AbZB1Sqf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 13:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZB1Sq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 13:40:15 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60332 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbZB1SkO (ORCPT
+	Sat, 28 Feb 2009 13:46:28 -0500
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:35091 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbZB1Sq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 13:40:14 -0500
-Date: Sat, 28 Feb 2009 10:39:58 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Salman Qazi <sqazi@google.com>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-Message-ID: <20090228103958.41fce55b@infradead.org>
-In-Reply-To: <20090228182759.GA28865@elte.hu>
-References: <20090224020304.GA4496@google.com>
-	<200902272305.01867.nickpiggin@yahoo.com.au>
-	<20090228082922.GB11425@elte.hu>
-	<200902282249.57479.nickpiggin@yahoo.com.au>
-	<20090228125816.GA14917@elte.hu>
-	<alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
-	<20090228092450.3ded2db5@infradead.org>
-	<alpine.LFD.2.00.0902280935010.3111@localhost.localdomain>
-	<20090228182759.GA28865@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Sat, 28 Feb 2009 13:46:27 -0500
+Date: Sat, 28 Feb 2009 19:51:43 +0100
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Risto Suominen <risto.suominen@gmail.com>
+Cc: adaplas@pol.net, Andrew Morton <akpm@linux-foundation.org>,
+       geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
+Message-Id: <20090228195143.03b1f600.krzysztof.h1@poczta.fm>
+In-Reply-To: <46e1c7760902222253p34a714bao5c06b0ad4d779337@mail.gmail.com>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
+	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
+	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+	<20090211142409.b88c577e.akpm@linux-foundation.org>
+	<46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
+	<20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
+	<20090222081517.567a29bd.krzysztof.h1@poczta.fm>
+	<46e1c7760902220125l61700421gc4045ca10ea4dd10@mail.gmail.com>
+	<20090222164052.dd5442c4.krzysztof.h1@poczta.fm>
+	<46e1c7760902222253p34a714bao5c06b0ad4d779337@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-EMID: 44e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Feb 2009 19:27:59 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Hi Risto,
 
-> 
-> OTOH, given how draconian non-temporal stores are, i'm leaning 
-> towards removing them from the x86 code altogether. If it matter 
-> to performance somewhere it can be reintroduced, based on really 
-> well backed up numbers.
+I ahve checked xorg server 1.1.1 with kernel 2.6.24
+ and I cannot reproduce your problem (hw cursor
+left in Xfbdev) with two drivers using the hw cursor
+(pm2fb and tdfxfb). Tests were done on x86 (amd 
+k6-2+ cpu).
 
-I think that is mostly the right approach; O_DIRECT could be the
-exception to that (because there we don't only wipe it from the cpu
-cache due to DMA, it even gets wiped from the pagecache!).
-But I can see that being too special of a case to care about in the
-grand scheme of things (although the database people will now get upset
-with me ;-)
+Regards,
+Krzysztof
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+----------------------------------------------------------------------
+Dzien Kobiet dniem wolnym od pracy? Wypowiedz sie i wygraj nagrode! 
+Sprawdz >> http://link.interia.pl/f2076 
+
