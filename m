@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZB1SxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbZB1Szb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZB1SxF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 13:53:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZB1Sw4
+	id S1755216AbZB1Szb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 13:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZB1SzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 13:52:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53019 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752809AbZB1Swz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 13:52:55 -0500
-Date: Sat, 28 Feb 2009 10:52:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Salman Qazi <sqazi@google.com>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to
- __copy_from_user_*nocache()
-In-Reply-To: <20090228182759.GA28865@elte.hu>
-Message-ID: <alpine.LFD.2.00.0902281041160.3111@localhost.localdomain>
-References: <20090224020304.GA4496@google.com> <200902272305.01867.nickpiggin@yahoo.com.au> <20090228082922.GB11425@elte.hu> <200902282249.57479.nickpiggin@yahoo.com.au> <20090228125816.GA14917@elte.hu> <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
- <20090228092450.3ded2db5@infradead.org> <alpine.LFD.2.00.0902280935010.3111@localhost.localdomain> <20090228182759.GA28865@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 28 Feb 2009 13:55:24 -0500
+Received: from zeus.pimb.org ([80.68.88.21]:34414 "EHLO zeus.pimb.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752574AbZB1SzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 13:55:24 -0500
+X-Greylist: delayed 2437 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Feb 2009 13:55:23 EST
+Date: Sat, 28 Feb 2009 18:11:15 +0000
+From: Jody Belka <lists-xen@pimb.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Xen-devel] Re: [PATCH] xen: core dom0 support
+Message-ID: <20090228181115.GU2056@pimb.org>
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <49A8DF28.4050301@goop.org> <200902282309.07576.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902282309.07576.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 28 Feb 2009, Ingo Molnar wrote:
+On Sat, Feb 28, 2009 at 11:09:07PM +1100, Nick Piggin wrote:
+> On Saturday 28 February 2009 17:52:24 Jeremy Fitzhardinge wrote:
+> > Andrew Morton wrote:
 > 
-> OTOH, given how draconian non-temporal stores are, i'm leaning 
-> towards removing them from the x86 code altogether. If it matter 
-> to performance somewhere it can be reintroduced, based on really 
-> well backed up numbers.
+> > > I hate to be the one to say it, but we should sit down and work out
+> > > whether it is justifiable to merge any of this into Linux.  I think
+> > > it's still the case that the Xen technology is the "old" way and that
+> > > the world is moving off in the "new" direction, KVM?
+> >
+> > I don't think that's a particularly useful way to look at it.  They're
+> > different approaches to the problem, and have different tradeoffs.
+> >
+> > The more important question is: are there real users for this stuff?
+> > Does not merging it cause more net disadvantage than merging it?
+> > Despite all the noise made about kvm in kernel circles, Xen has a large
+> > and growing installed base.  At the moment its all running on massive
+> > out-of-tree patches, which doesn't make anyone happy.  It's best that it
+> > be in the mainline kernel.  You know, like we argue for everything else.
+> 
+> OTOH, there are good reasons not to duplicate functionality, and many
+> many times throughout the kernel history competing solutions have been
+> rejected even though the same arguments could be made about them.
 
-It would be interesting to see if we could instead base the decision on 
-what we really do care about, namely going to do IO.
+Is it duplication though? I personally have machines with older processors
+that don't have hvm support. I plan on keeping these around for a good amount
+of time, and would love to be running them on mainline. So for me, unless KVM
+is somehow going to support para-virtualisation, this isn't duplication.
 
-And the thing is, in this path we _do_ kind of know that. The caller 
-(normally generic_perform_write) already does that whole 
-balance_dirty_pages_ratelimited() thing.
-
-So rather than passing in the "total_size" thing, we _could_ pass in 
-something that is based on
-
- - are we O_DIRECT? If so: use uncached
- - perhaps: are we really _really_ large? If so: use uncached, we know the 
-   caches aren't going to capture it.
- - are we starting writeout due to dirty page balancing: if so, use 
-   uncached.
-
-so we could just add a "nocached" flag to that whole 
-__copy_from_user[_inatomic]_nocache thing, and we could make 
-balance_dirty_pages_ratelimited() return a flag satung whether we're 
-starting write-out or not.
-
-Of course, the dirty writeout will always happen to _old_ pages, so we'll 
-actually get notified too late, but assuming you have some steady state 
-"heavy IO", it would presumably still be a reasonable heuristic.
-
-But on the other hand, I could personally certainly also imagine just not 
-doing that whole uncached thing at all. Myself, I tend to care about the 
-peformance of the cached case much more than some odd iozone thing. But 
-others will have different priorities..
-
-		Linus
+Just my own personal viewpoint as a user of xen.
