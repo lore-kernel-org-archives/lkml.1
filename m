@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZB1Rr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZB1Rrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZB1Rr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 12:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZB1RrS
+	id S1753249AbZB1Rrr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 12:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZB1Rrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 12:47:18 -0500
-Received: from kroah.org ([198.145.64.141]:50098 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752809AbZB1RrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 12:47:18 -0500
-Date: Sat, 28 Feb 2009 09:46:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-mips@linux-mips.org,
-       x86@kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       stable@kernel.org
-Subject: Re: [stable] [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-Message-ID: <20090228174601.GB27607@kroah.com>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com> <20090228030413.5B915FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain> <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain> <20090228072554.CFEA6FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+	Sat, 28 Feb 2009 12:47:37 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1220 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754544AbZB1Rrg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 12:47:36 -0500
+Date: Sat, 28 Feb 2009 17:47:22 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Message-ID: <20090228174721.GA4814@sirena.org.uk>
+References: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk> <20090228094012.6d98ce05@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090228094012.6d98ce05@infradead.org>
+X-Cookie: Big book, big bore.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 09:23:36AM -0800, Linus Torvalds wrote:
-> On Fri, 27 Feb 2009, Roland McGrath wrote:
-> > But here is the patch you asked for.
-> 
-> Yes, this looks much more straightforward. 
-> 
-> And I guess the seccomp interaction means that this is potentially a 
-> 2.6.29 thing. Not that I know whether anybody actually _uses_ seccomp. It 
-> does seem to be enabled in at least Fedora kernels, but it might not be 
-> used anywhere.
+On Sat, Feb 28, 2009 at 09:40:12AM -0800, Arjan van de Ven wrote:
+> Mark Brown <broonie@sirena.org.uk> wrote:
 
-It's enabled in SuSE kernels.
+> > Try to help ensure that e-mailed patches have some commit log text in
+> > the body of the e-mail by warning if we can't find any lines that look
+> > like a header of some kind prior to the Signed-off-by.
 
-thanks,
+> maybe we should also spell check the changelog (aspell ?)
 
-greg k-h
+I'd expect that'd lead to a lot of false positives on names and
+technical terms, wouldn't it?
