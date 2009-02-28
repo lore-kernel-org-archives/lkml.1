@@ -1,111 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbZB1WoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZB1WyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615AbZB1WoK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 17:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZB1Wnz
+	id S1755565AbZB1WyT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 17:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZB1WyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 17:43:55 -0500
-Received: from rv-out-0506.google.com ([209.85.198.236]:19251 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754242AbZB1Wny (ORCPT
+	Sat, 28 Feb 2009 17:54:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49680 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751574AbZB1WyB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 17:43:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=QGO3L9vH2QSuWozhxk5Ldtrnec7BIWprCn0rgJv3zE6NdiTUn6m4+XtGDigeEbj723
-         Bxi7iJoDErs8DvBT5ERh1fvpo0DHjaxzk+z8YaWIIJQxlYlEz0NemMfDrrv+xVPFU5nv
-         u9rgDZIpfmBpMTJLSWXSWrSCjpekfb9kEEy2U=
+	Sat, 28 Feb 2009 17:54:01 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [RFD] Automatic suspend
+Date: Sat, 28 Feb 2009 23:53:38 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <200902192215.18365.rjw@sisk.pl> <200902281118.14595.rjw@sisk.pl> <d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
+In-Reply-To: <d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <86802c440902281257r4b7f6ca3w546310581a3fc6b5@mail.gmail.com>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-	 <200902270752.44078.prakash@punnoor.de> <49A8541C.4030601@kernel.org>
-	 <200902280925.56450.prakash@punnoor.de>
-	 <86802c440902281257r4b7f6ca3w546310581a3fc6b5@mail.gmail.com>
-Date: Sat, 28 Feb 2009 14:43:51 -0800
-X-Google-Sender-Auth: 65c518641c91cd8f
-Message-ID: <86802c440902281443g4638dbcby463864df911a50ba@mail.gmail.com>
-Subject: Re: [PATCH] pci: don't enable too many HT MSI mapping
-From: Yinghai Lu <yinghai@kernel.org>
-To: Prakash Punnoor <prakash@punnoor.de>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Content-Type: multipart/mixed; boundary=000e0cd16e80c7e42b046402517e
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200902282353.39763.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd16e80c7e42b046402517e
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Saturday 28 February 2009, Arve Hjønnevåg wrote:
+> On Sat, Feb 28, 2009 at 2:18 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Friday 27 February 2009, Arve Hjønnevåg wrote:
+> >> On Fri, Feb 27, 2009 at 12:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Friday 27 February 2009, Pavel Machek wrote:
+> >> >> On Fri 2009-02-27 15:22:39, Rafael J. Wysocki wrote:
+> >> >> > On Friday 27 February 2009, Pavel Machek wrote:
+> >> >> > > Hi!
+> >> >> > >
+> >> >> > > > > > Then, the decision making logic will be able to use /sys/power/sleep whenever
+> >> >> > > > > > it wishes to and the kernel will be able to refuse to suspend if it's not
+> >> >> > > > > > desirable at the moment.
+> >> >> > > > > >
+> >> >> > > > > > It seems to be flexible enough to me.
+> >> >> > > > >
+> >> >> > > > > This seems flexible enough to avoid race conditions, but it forces the
+> >> >> > > > > user space power manager to poll when the kernel refuse suspend.
+> >> >> > > >
+> >> >> > > > And if the kernel is supposed to start automatic suspend, it has to monitor
+> >> >> > > > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
+> >> >> > > > kernel if it refuses to suspend.
+> >> >> > >
+> >> >> > > polling is evil -- it keeps CPU wake up => wastes power.
+> >> >> > >
+> >> >> > > Wakelocks done right are single atomic_t... and if you set it to 0,
+> >> >> > > you just unblock "sleeper" thread or something. Zero polling and very
+> >> >> > > simple...
+> >> >> >
+> >> >> > Except that you have to check all of the wakelocks periodically in a loop =>
+> >> >> > polling.  So?
+> >> >>
+> >> >> No. I want to have single atomic_t for all the wakelocks... at least
+> >> >> in non-debug version. Debug version will be slower. I believe you
+> >> >> originally suggested that.
+> >> >
+> >> > I did, but please don't call it "wakelocks".  It's confusing.
+> >>
+> >> What you are talking about here is mostly an optimization of the
+> >> wakelock api. You have removed timeout support and made each wakelock
+> >> reference counted.
+> >
+> > I also removed the arbitrary number of wakelocks (I really _hate_ the name,
+> > can we please stop using it from now on?).
+> 
+> What do you mean by this? You removed the struct wake_lock?
 
-please check this one
-v1 is pulled by Linus from Jesse's pci tree already, and v3 is needed
-to be applied on top of v1
+Basically, yes.
 
-YH
+> >> If you ignore wakelocks with timeouts, the current
+> >> wakelock interface can be implemented with a global atomic_t to
+> >> prevent suspend, and a per wakelock atomic_t to prevent a single
+> >> client from changing the global reference count by more than one.
+> >>
+> >> There are a couple of reasons that I have not done this. It removes
+> >> the ability to easily inspect the system when it is not suspending.
+> >
+> > Care to elaborate?
+> 
+> If you have a single atomic_t and it is not 0, you do not know who
+> incremented it.
 
---000e0cd16e80c7e42b046402517e
-Content-Type: text/x-diff; charset=US-ASCII; name="nv_ht_msi_2.patch"
-Content-Disposition: attachment; filename="nv_ht_msi_2.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_frqvohuc0
+That's why it was proposed to use per-process and per-driver flags in addition
+to the refcount.
 
-W1BBVENIXSBwY2k6IGRvbid0IGVuYWJsZSB0b28gbXVjaCBIVCBNU0kgbWFwcGluZyAtdjMKCklt
-cGFjdDogZml4IGJ1ZwoKUHJha2FzaCByZXBvcnRlZCB0aGF0IGhpcyBjNTEtbWNwNTEgc3lzdGVt
-IG9uZGllIHNvdW5kIGNhcmQgZG9lc24ndCB3b3JrIE1TSQpidXQgaWYgaGUgaGFjayBvdXQgdGhl
-IEhULU1TSSBvbiBtY3A1MSwgdGhlIE1TSSB3aWxsIHdvcmsgd2VsbCB3aXRoIHNvdW5kIGNhcmQu
-Cgp0aGlzIHBhdGNoIHJld29yayB0aGUgbnZfbXNpX2h0X2NhcF9xdWlyaygpCmFuZCB3aWxsIG9u
-bHkgdHJ5IHRvIGF2b2lkIHRvIGVuYWJsZSBodF9tc2kgb24gZGV2aWNlIGZvbGxvd2luZyB0aGF0
-IHJvb3QgZGV2LAphbmQgZG9uJ3QgdG91Y2ggdGhhdCByb290IGRldgoKdjM6IHdpbGwgZW5hYmxl
-IGM1MS4uLgoKUmVwb3J0ZWQtYnk6IFByYWthc2ggUHVubm9vciA8cHJha2FzaEBwdW5ub29yLmRl
-PgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+CgotLS0KIGRy
-aXZlcnMvcGNpL3F1aXJrcy5jIHwgICAzMSArKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0t
-CiAxIGZpbGUgY2hhbmdlZCwgMjYgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkKCkluZGV4
-OiBsaW51eC0yLjYvZHJpdmVycy9wY2kvcXVpcmtzLmMKPT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42
-Lm9yaWcvZHJpdmVycy9wY2kvcXVpcmtzLmMKKysrIGxpbnV4LTIuNi9kcml2ZXJzL3BjaS9xdWly
-a3MuYwpAQCAtMjA3Nyw2ICsyMDc3LDEwIEBAIHN0YXRpYyB2b2lkIF9fZGV2aW5pdCBudl9odF9l
-bmFibGVfbXNpX20KIAlpZiAoIWZvdW5kKQogCQlyZXR1cm47CiAKKwkvKiBkb24ndCBlbmFibGUg
-aG9zdF9icmlkZ2UgZGlyZWN0bHkgaGVyZSAqLworCWlmIChob3N0X2JyaWRnZSA9PSBkZXYpCisJ
-CWdvdG8gb3V0OworCiAJLyogcm9vdCBkaWQgdGhhdCAhICovCiAJaWYgKG1zaV9odF9jYXBfZW5h
-YmxlZChob3N0X2JyaWRnZSkpCiAJCWdvdG8gb3V0OwpAQCAtMjA5Nyw3ICsyMTAxLDcgQEAgc3Rh
-dGljIHZvaWQgX19kZXZpbml0IGh0X2Rpc2FibGVfbXNpX21hcAogCiAJCWlmIChwY2lfcmVhZF9j
-b25maWdfYnl0ZShkZXYsIHBvcyArIEhUX01TSV9GTEFHUywKIAkJCQkJICZmbGFncykgPT0gMCkg
-ewotCQkJZGV2X2luZm8oJmRldi0+ZGV2LCAiRW5hYmxpbmcgSFQgTVNJIE1hcHBpbmdcbiIpOwor
-CQkJZGV2X2luZm8oJmRldi0+ZGV2LCAiRGlzYWJsaW5nIEhUIE1TSSBNYXBwaW5nXG4iKTsKIAog
-CQkJcGNpX3dyaXRlX2NvbmZpZ19ieXRlKGRldiwgcG9zICsgSFRfTVNJX0ZMQUdTLAogCQkJCQkg
-ICAgICBmbGFncyAmIH5IVF9NU0lfRkxBR1NfRU5BQkxFKTsKQEAgLTIxMzUsNyArMjEzOSw3IEBA
-IHN0YXRpYyBpbnQgX19kZXZpbml0IGh0X2NoZWNrX21zaV9tYXBwaW4KIAlyZXR1cm4gZm91bmQ7
-CiB9CiAKLXN0YXRpYyB2b2lkIF9fZGV2aW5pdCBudl9tc2lfaHRfY2FwX3F1aXJrKHN0cnVjdCBw
-Y2lfZGV2ICpkZXYpCitzdGF0aWMgdm9pZCBfX2RldmluaXQgX19udl9tc2lfaHRfY2FwX3F1aXJr
-KHN0cnVjdCBwY2lfZGV2ICpkZXYsIGludCBhbGwpCiB7CiAJc3RydWN0IHBjaV9kZXYgKmhvc3Rf
-YnJpZGdlOwogCWludCBwb3M7CkBAIC0yMTY0LDcgKzIxNjgsMTAgQEAgc3RhdGljIHZvaWQgX19k
-ZXZpbml0IG52X21zaV9odF9jYXBfcXVpcgogCQkvKiBIb3N0IGJyaWRnZSBpcyB0byBIVCAqLwog
-CQlpZiAoZm91bmQgPT0gMSkgewogCQkJLyogaXQgaXMgbm90IGVuYWJsZWQsIHRyeSB0byBlbmFi
-bGUgaXQgKi8KLQkJCW52X2h0X2VuYWJsZV9tc2lfbWFwcGluZyhkZXYpOworCQkJaWYgKGFsbCkK
-KwkJCQlodF9lbmFibGVfbXNpX21hcHBpbmcoZGV2KTsKKwkJCWVsc2UKKwkJCQludl9odF9lbmFi
-bGVfbXNpX21hcHBpbmcoZGV2KTsKIAkJfQogCQlyZXR1cm47CiAJfQpAQCAtMjE3Niw4ICsyMTgz
-LDIyIEBAIHN0YXRpYyB2b2lkIF9fZGV2aW5pdCBudl9tc2lfaHRfY2FwX3F1aXIKIAkvKiBIb3N0
-IGJyaWRnZSBpcyBub3QgdG8gSFQsIGRpc2FibGUgSFQgTVNJIG1hcHBpbmcgb24gdGhpcyBkZXZp
-Y2UgKi8KIAlodF9kaXNhYmxlX21zaV9tYXBwaW5nKGRldik7CiB9Ci1ERUNMQVJFX1BDSV9GSVhV
-UF9GSU5BTChQQ0lfVkVORE9SX0lEX05WSURJQSwgUENJX0FOWV9JRCwgbnZfbXNpX2h0X2NhcF9x
-dWlyayk7Ci1ERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lEX0FMLCBQQ0lfQU5Z
-X0lELCBudl9tc2lfaHRfY2FwX3F1aXJrKTsKKworc3RhdGljIHZvaWQgX19kZXZpbml0IG52X21z
-aV9odF9jYXBfcXVpcmtfYWxsKHN0cnVjdCBwY2lfZGV2ICpkZXYpCit7CisJcmV0dXJuIF9fbnZf
-bXNpX2h0X2NhcF9xdWlyayhkZXYsIDEpOworfQorCitzdGF0aWMgdm9pZCBfX2RldmluaXQgbnZf
-bXNpX2h0X2NhcF9xdWlya19sZWFmKHN0cnVjdCBwY2lfZGV2ICpkZXYpCit7CisJcmV0dXJuIF9f
-bnZfbXNpX2h0X2NhcF9xdWlyayhkZXYsIDApOworfQorCisvKiB3ZXJpZD8sIGM1MS9tY3A1MSBu
-ZWVkIGM1MSBodCBtc2kgdG8gYmUgZW5hYmxlIHRvIG1ha2UgbWNwNTEgaHQgbXNpIHdvcmtpbmcg
-Ki8KK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfTlZJRElBLCAweDAyZjAs
-IG52X21zaV9odF9jYXBfcXVpcmtfYWxsKTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9W
-RU5ET1JfSURfTlZJRElBLCBQQ0lfQU5ZX0lELCBudl9tc2lfaHRfY2FwX3F1aXJrX2xlYWYpOwor
-CitERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lEX0FMLCBQQ0lfQU5ZX0lELCBu
-dl9tc2lfaHRfY2FwX3F1aXJrX2FsbCk7CiAKIHN0YXRpYyB2b2lkIF9fZGV2aW5pdCBxdWlya19t
-c2lfaW50eF9kaXNhYmxlX2J1ZyhzdHJ1Y3QgcGNpX2RldiAqZGV2KQogewo=
---000e0cd16e80c7e42b046402517e--
+> >> I do provide an option to turn off the wakelock stats, which makes
+> >> wake_lock/unlock significantly faster, but we never run with wakelock
+> >> stats off. Also, it pushes timeout handling to the drivers. I know may
+> >> of you don't like timeout support, but ignoring the problem is not a
+> >> solution. If each driver that needs timeouts uses its own timer, then
+> >> you will often wakeup from idle just to unlock a wakelock that will
+> >> not trigger suspend. This wakeup is a thousand times as costly on the
+> >> msm platform as a wakelock/unlock pair (with wakelock stats enabled).
+> >
+> > Well, at least a couple of people told you that the timeouts are hardly
+> > acceptable and they told you why.  Please stop repeating the same arguments you
+> > have given already for a couple of times.  They're not convincing.
+> 
+> And you keep ignoring them.
+
+Not ignoring, but considering them as insufficient.  And since they've already
+been considered as insufficient, there's no point repeating them over and over
+again.  That doesn't make them any better.
+
+> > Instead of trying to convince everyone to accept your solution that you're
+> > not willing to change, please try to listen and think how to do things
+> > differently so that everyone is comfortable with them.  I'm sure you're more
+> > than capable of doing that.
+> 
+> Can you summarize what the problems with my current api are? I get the
+> impression that you think the overhead of using a list is too high,
+> and that timeout support should be removed because you think all
+> drivers that use it are broken.
+
+In no particular order:
+1. One user space process can create an unlimited number of wakelocks.  This
+   shouldn't be possible.  Moreover, it is not even necessary for any process
+   to have more than one wakelock held at any time.
+2. Timeouts are wrong, because they don't really _solve_ any problem.  They are
+   useful for working around the fact that you can't or you don't want to
+   modify every piece of code that in principle should take a wakelock and
+   that's it.  However,  entire concept of having one code path acting on
+   behalf of another one on a hunch that it might be doing something making
+   suspend undesirable is conceptually broken IMO.
+3. The overhead of using a list is unnecessary and _therefore_ too high (not
+   just too high).
+4. There seems to be a race between user space wakelocks and the freezer
+   (perhaps I overlooked something, in which case please disregard this item).
+5. The name "wakelocks" is confusing, because they aren't locks and they
+   affect suspend, not wake.
+6. Last time I saw the patches they were barely commented and the changelogs
+   didn't describe the code well (if at all).
+7. There's no clear distinction between debug/stats code and the basic
+   functionality.
+
+I'm sure the other people could add something to the list.
+
+> > I do realize that you consider your current solution as the best thing since
+> > the sliced bread, but please accept the fact that the other people think
+> > differently.
+> 
+> I certainly do not think my current solution is the best, it is very
+> invasive. I do however think your proposed solution is worse. The only
+> proposed alternative that we could actually ship a product on today is
+> to not use suspend at all.
+
+Well, I'm sure your code is useful for the Android platform, but the question
+is whether we want this code in the mainline kernel.  For now, the answer is
+"no, we don't".  Moreover, since you're the one who wants the code to be
+merged, it's your burden to make it acceptable for us.  However you're going
+to do it is up to you, but certainly trying to force your current code on us
+is not going to work.
+
+BTW, I think you handled the thing wrong.  If I were you, I wouldn't even try
+to push the code as you did.  I would instead make it as simple as reasonably
+possible so that the basic idea was clear and understandable to everyone.
+Then, if there were any doubts with respect to the basic idea, I'd try to
+clarify them and I'd consider modifying the code to address objections.
+I'd only try to add more features after the basic idea had been accepted.
+
+Thanks,
+Rafael
