@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZB1RnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZB1Rr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbZB1RnH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 12:43:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZB1Rmz
+	id S1754290AbZB1Rr1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 12:47:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZB1RrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 12:42:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55014 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752809AbZB1Rmy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 12:42:54 -0500
-Date: Sat, 28 Feb 2009 09:42:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Salman Qazi <sqazi@google.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to
- __copy_from_user_*nocache()
-In-Reply-To: <20090228092450.3ded2db5@infradead.org>
-Message-ID: <alpine.LFD.2.00.0902280935010.3111@localhost.localdomain>
-References: <20090224020304.GA4496@google.com> <200902272305.01867.nickpiggin@yahoo.com.au> <20090228082922.GB11425@elte.hu> <200902282249.57479.nickpiggin@yahoo.com.au> <20090228125816.GA14917@elte.hu> <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
- <20090228092450.3ded2db5@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 28 Feb 2009 12:47:18 -0500
+Received: from kroah.org ([198.145.64.141]:50098 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752809AbZB1RrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 12:47:18 -0500
+Date: Sat, 28 Feb 2009 09:46:01 -0800
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-mips@linux-mips.org,
+       x86@kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       stable@kernel.org
+Subject: Re: [stable] [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+Message-ID: <20090228174601.GB27607@kroah.com>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com> <20090228030413.5B915FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain> <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain> <20090228072554.CFEA6FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 28 Feb 2009, Arjan van de Ven wrote:
+On Sat, Feb 28, 2009 at 09:23:36AM -0800, Linus Torvalds wrote:
+> On Fri, 27 Feb 2009, Roland McGrath wrote:
+> > But here is the patch you asked for.
 > 
-> it invalidates all caches in the hierarchy
+> Yes, this looks much more straightforward. 
+> 
+> And I guess the seccomp interaction means that this is potentially a 
+> 2.6.29 thing. Not that I know whether anybody actually _uses_ seccomp. It 
+> does seem to be enabled in at least Fedora kernels, but it might not be 
+> used anywhere.
 
-Yeah, now that I look at the intel pdf's, I see that.
+It's enabled in SuSE kernels.
 
-> afaik this is what Intel cpus do; but I also thought this behavior was
-> quite architectural as well...
+thanks,
 
-Ok, I really think we should definitely not use non-temporal stores for 
-anything smaller than one full page in that case. In fact, I wonder if 
-even any of the old streaming benchmarks are even true. I thought it would 
-still stay in the L3, but yes, it literally seems to make the access 
-totally noncached and WC.
-
-That's almost unacceptable in the long run. With a 8MB L3 cache - and a 
-compile sequence, do we really want to go out to memory to write the .S 
-file, and then have the assembler go out to memory to read it back? For a 
-compile, that _probably_ is all fine (the compiler in particular will have 
-enough data structures around that it's not going to fit in the cache 
-anyway), but I'm seeing leaner compilers and other cases where forcing 
-things out all the way on the bus is simply the wrong thing.
-
-			Linus
+greg k-h
