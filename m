@@ -1,118 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZB1C6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbZB1DCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653AbZB1C6s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 21:58:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZB1C6i
+	id S1756141AbZB1DCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 22:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZB1DCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 21:58:38 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41578 "EHLO e1.ny.us.ibm.com"
+	Fri, 27 Feb 2009 22:02:09 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:55034 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbZB1C6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 21:58:37 -0500
-Date: Fri, 27 Feb 2009 18:57:43 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Alexey Dobriyan <adobriyan@gmail.com>, hch@infradead.org
-Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
-Message-ID: <20090228025743.GA22451@us.ibm.com>
-References: <20090227203425.F3B51176@kernel> <20090227203435.98735E54@kernel>
+	id S1751763AbZB1DCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 22:02:07 -0500
+Date: Fri, 27 Feb 2009 19:02:00 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gary Hade <garyhade@us.ibm.com>, roel.kluin@gmail.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, y-goto@jp.fujitsu.com
+Subject: Re: [PATCH] mm: get_nid_for_pfn() returns int
+Message-ID: <20090228030200.GA7342@us.ibm.com>
+References: <4973AEEC.70504@gmail.com> <20090119175919.GA7476@us.ibm.com> <20090126223350.610b0283.akpm@linux-foundation.org> <20090127210727.GA9592@us.ibm.com> <25e057c00902270656x1781d04er5703058e47df455f@mail.gmail.com> <20090227213340.GB7174@us.ibm.com> <20090227134616.982fb73a.akpm@linux-foundation.org> <20090228001400.GC7174@us.ibm.com> <20090227162249.bcd0813a.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090227203435.98735E54@kernel>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090227162249.bcd0813a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen [dave@linux.vnet.ibm.com] wrote:
-| 
-| Introduce a files_struct counter to indicate whether a particular
-| file_struct has ever contained a file which can not be
-| checkpointed.  This flag is a one-way trip; once it is set, it may
-| not be unset.
-| 
-| We assume at allocation that a new files_struct is clean and may
-| be checkpointed.  However, as soon as it has had its files filled
-| from its parent's, we check it for real in __scan_files_for_cr().
-| At that point, we mark it if it contained any uncheckpointable
-| files.
+On Fri, Feb 27, 2009 at 04:22:49PM -0800, Andrew Morton wrote:
+> On Fri, 27 Feb 2009 16:14:00 -0800
+> Gary Hade <garyhade@us.ibm.com> wrote:
+> 
+> > On Fri, Feb 27, 2009 at 01:46:16PM -0800, Andrew Morton wrote:
+> >
+> > > > It is still lingering in -mm:
+> > > > http://userweb.kernel.org/~akpm/mmotm/broken-out/mm-get_nid_for_pfn-returns-int.patch
+> > > > 
+> > > 
+> > > Should it unlinger?  I have it in the 2.6.30 pile.
+> > 
+> > Yes, that would be good. :)
+> 
+> What would be good?  Your answer is ambiguous.
 
-Hmm. Why not just copy ->may_checkpoint setting from parent (or old)
-files_struct ? If parent is not checkpointable, then child won't be
-and vice-versa - no ?
+Sorry, I was just trying to agree that your plan to wait
+until 2.6.30 works for me.  Unless someone else objects
+leave it in your 2.6.30 pile.
 
-| 
-| We also check each 'struct file' when it is installed in a fd
-| slot.  This way, if anyone open()s or managed to dup() an
-| unsuppored file, we can catch it.
-| 
-| Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-| ---
-| 
-|  linux-2.6.git-dave/fs/file.c                  |   19 +++++++++++++++++++
-|  linux-2.6.git-dave/fs/open.c                  |    5 +++++
-|  linux-2.6.git-dave/include/linux/checkpoint.h |   14 ++++++++++++++
-|  linux-2.6.git-dave/include/linux/fdtable.h    |    3 +++
-|  4 files changed, 41 insertions(+)
-| 
-| diff -puN fs/file.c~track-files_struct-checkpointability fs/file.c
-| --- linux-2.6.git/fs/file.c~track-files_struct-checkpointability	2009-02-27 12:07:41.000000000 -0800
-| +++ linux-2.6.git-dave/fs/file.c	2009-02-27 12:07:41.000000000 -0800
-| @@ -15,6 +15,7 @@
-|  #include <linux/file.h>
-|  #include <linux/fdtable.h>
-|  #include <linux/bitops.h>
-| +#include <linux/checkpoint.h>
-|  #include <linux/interrupt.h>
-|  #include <linux/spinlock.h>
-|  #include <linux/rcupdate.h>
-| @@ -285,6 +286,20 @@ static int count_open_files(struct fdtab
-|  	return i;
-|  }
-| 
-| +static void __scan_files_for_cr(struct files_struct *files)
-| +{
-| +	int i;
-| +
-| +	for (i = 0; i < files->fdtab.max_fds; i++) {
-| +		struct file *f = fcheck_files(files, i);
-| +		if (!f)
-| +			continue;
-| +		if (cr_file_supported(f))
-| +			continue;
-| +		files_deny_checkpointing(files);
-| +	}
-| +}
-| +
+> 
+> > > Does it actually fix a demonstrable bug?  
+> > 
+> > I am not aware of anyone that has actually reproduced the
+> > problem.
+> 
+> What problem?
 
-A version of __scan_files_for_cr() for CONFIG_CHECKPOINT_RESTART=n or...
+During a memory remove operation there is a chance on 
+yet to be discovered system(s) that a mem section symlink
+for a removed memory section could incorrectly persist.
+Earlier in this thread I described the possible problem
+as follows.
+===
+On Mon, Jan 26, 2009 at 10:33:50PM -0800, Andrew Morton wrote:
+            ...
+> Presumably the (nid < 0) case has never happened.
 
-|  /*
-|   * Allocate a new files structure and copy contents from the
-|   * passed in files structure.
-| @@ -303,6 +318,9 @@ struct files_struct *dup_fd(struct files
-|  		goto out;
-| 
-|  	atomic_set(&newf->count, 1);
-| +#ifdef CONFIG_CHECKPOINT_RESTART
-| +	newf->may_checkpoint = 1;
-| +#endif
-| 
-|  	spin_lock_init(&newf->file_lock);
-|  	newf->next_fd = 0;
-| @@ -396,6 +414,7 @@ struct files_struct *dup_fd(struct files
-| 
-|  	rcu_assign_pointer(newf->fdt, new_fdt);
-| 
-| +	__scan_files_for_cr(newf);
+We do know that it is happening on one system while creating
+a symlink for a memory section so it should also happen on
+the same system if unregister_mem_sect_under_nodes() were
+called to remove the same symlink.
 
-... #ifdef CONFIG_CHECKPOINT_RESTART here ?
+The test was actually added in response to a problem with an
+earlier version reported by Yasunori Goto where one or more
+of the leading pages of a memory section on the 2nd node of
+one of his systems was uninitialized because I believe they
+coincided with a memory hole.  The earlier version did not
+ignore uninitialized pages and determined the nid by considering
+only the 1st page of each memory section.  This caused the
+symlink to the 1st memory section on the 2nd node to be
+incorrectly created in /sys/devices/system/node/node0 instead
+of /sys/devices/system/node/node1.  The problem was fixed by
+adding the test to skip over uninitialized pages.
 
-Sukadev
+I suspect we have not seen any reports of the non-removal
+of a symlink due to the incorrect declaration of the nid
+variable in unregister_mem_sect_under_nodes() because
+  - systems where a memory section could have an uninitialized
+    range of leading pages are probably rare.
+  - memory remove is probably not done very frequently on the
+    systems that are capable of demonstrating the problem.
+  - lingering symlink(s) that should have been removed may
+    have simply gone unnoticed.
+===
+
+> 
+> All I gave at present is
+> 
+>   From: Roel Kluin <roel.kluin@gmail.com>
+> 
+>   get_nid_for_pfn() returns int
+> 
+>   Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>   Cc: Gary Hade <garyhade@us.ibm.com>
+> 
+> >  I do not believe that we have any systems where 
+> > it can be reproduced since it would require both
+> >   (1) a memory section with an uninitialized range of
+> >       pages and
+> >   (2) a memory remove event for that memory section.
+> > As far as I know, none of our systems have (1).  Yasunori Goto
+> > has a system with (1) but I am not sure if he can do (2).
+> 
+> Please send a new changelog for this patch.
+
+Can you include the above words? 
+
+> 
+> If you believe this patch should be merged into 2.6.29 then please
+> explain why.
+
+2.6.30 is fine with me.
+
+> Please also consider whether it should be backported into
+> 2.6.28.x and eariler.
+
+The "mm: show node to memory section relationship with symlinks
+in sysfs" code that it improves was not introduced until 2.6.29-rc1.
+
+Thanks,
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
