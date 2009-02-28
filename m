@@ -1,290 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbZB1PZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbZB1Pkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbZB1PZs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 10:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZB1PZi
+	id S1753200AbZB1Pkv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 10:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZB1Pkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 10:25:38 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:55912 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbZB1PZh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 10:25:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=NtayO3owFn0utWe0dAQuK068KLyzT7/ERTrbVTnhUyTzOyYwaX3UgiZ0ieLVZPLXRn
-         v5sQ5Pq6Ytf6DQaiYA+bzgDpYpxx1fG3IkpcyBjYDhINTmAC6pSQ0FcZ0WxRjxa2lNgs
-         N1DahDJLaS7dVZlSKERcEA4RO3uJfOBl+VHxc=
-From: tom.leiming@gmail.com
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH] driver core: implement uevent suppress in kobject
-Date: Sat, 28 Feb 2009 23:25:29 +0800
-Message-Id: <1235834729-14402-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Sat, 28 Feb 2009 10:40:41 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57710 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751736AbZB1Pkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 10:40:40 -0500
+Message-ID: <49A95ACA.9020307@redhat.com>
+Date: Sat, 28 Feb 2009 09:39:54 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+MIME-Version: 1.0
+To: "Theodore Ts'o" <tytso@mit.edu>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Reorder ext4 and ext2 so that ext2 root filesystems are
+ mounted using ext2
+References: <1235831060-10086-1-git-send-email-tytso@mit.edu>
+In-Reply-To: <1235831060-10086-1-git-send-email-tytso@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+Theodore Ts'o wrote:
+> In fs/Makefile, ext3 was placed before ext2 so that a root filesystem
+> that possessed a journal, it would be mounted as ext3 instead of ext2.
+> This was necessary because a cleanly unmounted ext3 filesystem was
+> fully backwards compatible with ext2, and could be mounted by ext2 ---
+> but it was desirable that it be mounted with ext3 so that the
+> journaling would be enabled.
+> 
+> The ext4 filesystem supports new incompatible features, so there is no
+> danger of an ext4 filesystem being mistaken for an ext2 filesystem.
+> However, ordering didn't matter until ext4 gained the ability to mount
+> filesystems without a journal.  Now that this is the case, given that
+> ext4 is before ext2, it means that root filesystems that were only
+> using the plain-jane ext2 format are getting mounted using the ext4
+> filesystem driver, which is a change in behavior which could be
+> surprising to users
+> 
+> It's doubtful that there are that many ext2-only root filesystem users
+> that would also have ext4 compiled into the kernel, but to adhere to
+> the principle of least surprise, the correct ordering in fs/Makefile
+> is ext3, followed by ext2, and finally ext4.
+> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> ---
+>  fs/Makefile |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/Makefile b/fs/Makefile
+> index 38bc735..21c2f50 100644
+> --- a/fs/Makefile
+> +++ b/fs/Makefile
+> @@ -69,10 +69,12 @@ obj-$(CONFIG_DLM)		+= dlm/
+>  # Do not add any filesystems before this line
+>  obj-$(CONFIG_REISERFS_FS)	+= reiserfs/
+>  obj-$(CONFIG_EXT3_FS)		+= ext3/ # Before ext2 so root fs can be ext3
+> -obj-$(CONFIG_EXT4_FS)		+= ext4/ # Before ext2 so root fs can be ext4
+> +obj-$(CONFIG_EXT2_FS)		+= ext2/
+> +# We place ext4 after ext2 so plain ext2 root fs's are mounted using ext4
+> +# unless explicitly requested by rootfstype
 
-This patch implements uevent suppress in kobject and removes it
-from struct device, based on the following ideas:
+Shouldn't that be "aren't mounted using ext4..." ?
 
-1,Uevent sending should be one attribute of kobject, so suppressing it
-in kobject layer is more natural than in device layer. By this way,
-we can do it for other objects embedded with kobject.
+-Eric
 
-2,It may save several bytes for each instance of struct device.(On my
-omap3(32bit ARM) based box, can save 8bytes per device object)
-
-This patch also introduces dev_set|get_uevent_suppress() helpers to
-set and query uevent_suppress attribute in case to help make kobject
-as private part of struct device in future.
-
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- drivers/acpi/dock.c           |    2 +-
- drivers/base/core.c           |    2 --
- drivers/base/firmware_class.c |    4 ++--
- drivers/i2c/i2c-core.c        |    2 +-
- drivers/s390/cio/chsc_sch.c   |    4 ++--
- drivers/s390/cio/css.c        |    4 ++--
- drivers/s390/cio/device.c     |    4 ++--
- fs/partitions/check.c         |   10 +++++-----
- include/linux/device.h        |   10 +++++++++-
- include/linux/kobject.h       |    1 +
- lib/kobject_uevent.c          |    7 +++++++
- 11 files changed, 32 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index 35094f2..7af7db1 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -977,7 +977,7 @@ static int dock_add(acpi_handle handle)
- 		sizeof(struct dock_station *));
- 
- 	/* we want the dock device to send uevents */
--	dock_device->dev.uevent_suppress = 0;
-+	dev_set_uevent_suppress(&dock_device->dev, 0);
- 
- 	if (is_dock(handle))
- 		dock_station->flags |= DOCK_IS_DOCK;
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index f3eae63..685f96e 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -134,8 +134,6 @@ static int dev_uevent_filter(struct kset *kset, struct kobject *kobj)
- 
- 	if (ktype == &device_ktype) {
- 		struct device *dev = to_dev(kobj);
--		if (dev->uevent_suppress)
--			return 0;
- 		if (dev->bus)
- 			return 1;
- 		if (dev->class)
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 44699d9..d3a59c6 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -319,7 +319,7 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
- 	f_dev->parent = device;
- 	f_dev->class = &firmware_class;
- 	dev_set_drvdata(f_dev, fw_priv);
--	f_dev->uevent_suppress = 1;
-+	dev_set_uevent_suppress(f_dev, 1);
- 	retval = device_register(f_dev);
- 	if (retval) {
- 		dev_err(device, "%s: device_register failed\n", __func__);
-@@ -366,7 +366,7 @@ static int fw_setup_device(struct firmware *fw, struct device **dev_p,
- 	}
- 
- 	if (uevent)
--		f_dev->uevent_suppress = 0;
-+		dev_set_uevent_suppress(f_dev, 0);
- 	*dev_p = f_dev;
- 	goto out;
- 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index e7d9848..fbb9030 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -841,7 +841,7 @@ int i2c_attach_client(struct i2c_client *client)
- 
- 	if (client->driver && !is_newstyle_driver(client->driver)) {
- 		client->dev.release = i2c_client_release;
--		client->dev.uevent_suppress = 1;
-+		dev_set_uevent_suppress(&client->dev, 1);
- 	} else
- 		client->dev.release = i2c_client_dev_release;
- 
-diff --git a/drivers/s390/cio/chsc_sch.c b/drivers/s390/cio/chsc_sch.c
-index 0a2f2ed..93eca17 100644
---- a/drivers/s390/cio/chsc_sch.c
-+++ b/drivers/s390/cio/chsc_sch.c
-@@ -84,8 +84,8 @@ static int chsc_subchannel_probe(struct subchannel *sch)
- 		kfree(private);
- 	} else {
- 		sch->private = private;
--		if (sch->dev.uevent_suppress) {
--			sch->dev.uevent_suppress = 0;
-+		if (dev_get_uevent_suppress(&sch->dev)) {
-+			dev_set_uevent_suppress(&sch->dev, 0);
- 			kobject_uevent(&sch->dev.kobj, KOBJ_ADD);
- 		}
- 	}
-diff --git a/drivers/s390/cio/css.c b/drivers/s390/cio/css.c
-index 8019288..427d11d 100644
---- a/drivers/s390/cio/css.c
-+++ b/drivers/s390/cio/css.c
-@@ -272,7 +272,7 @@ static int css_register_subchannel(struct subchannel *sch)
- 	 * the subchannel driver can decide itself when it wants to inform
- 	 * userspace of its existence.
- 	 */
--	sch->dev.uevent_suppress = 1;
-+	dev_set_uevent_suppress(&sch->dev, 1);
- 	css_update_ssd_info(sch);
- 	/* make it known to the system */
- 	ret = css_sch_device_register(sch);
-@@ -287,7 +287,7 @@ static int css_register_subchannel(struct subchannel *sch)
- 		 * a fitting driver module may be loaded based on the
- 		 * modalias.
- 		 */
--		sch->dev.uevent_suppress = 0;
-+		dev_set_uevent_suppress(&sch->dev, 0);
- 		kobject_uevent(&sch->dev.kobj, KOBJ_ADD);
- 	}
- 	return ret;
-diff --git a/drivers/s390/cio/device.c b/drivers/s390/cio/device.c
-index 23d5752..611d2e0 100644
---- a/drivers/s390/cio/device.c
-+++ b/drivers/s390/cio/device.c
-@@ -981,7 +981,7 @@ io_subchannel_register(struct work_struct *work)
- 	 * Now we know this subchannel will stay, we can throw
- 	 * our delayed uevent.
- 	 */
--	sch->dev.uevent_suppress = 0;
-+	dev_set_uevent_suppress(&sch->dev, 0);
- 	kobject_uevent(&sch->dev.kobj, KOBJ_ADD);
- 	/* make it known to the system */
- 	ret = ccw_device_register(cdev);
-@@ -1243,7 +1243,7 @@ static int io_subchannel_probe(struct subchannel *sch)
- 		 * the ccw_device and exit. This happens for all early
- 		 * devices, e.g. the console.
- 		 */
--		sch->dev.uevent_suppress = 0;
-+		dev_set_uevent_suppress(&sch->dev, 0);
- 		kobject_uevent(&sch->dev.kobj, KOBJ_ADD);
- 		cdev->dev.groups = ccwdev_attr_groups;
- 		device_initialize(&cdev->dev);
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 6d72024..38e337d 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -400,7 +400,7 @@ struct hd_struct *add_partition(struct gendisk *disk, int partno,
- 	pdev->devt = devt;
- 
- 	/* delay uevent until 'holders' subdir is created */
--	pdev->uevent_suppress = 1;
-+	dev_set_uevent_suppress(pdev, 1);
- 	err = device_add(pdev);
- 	if (err)
- 		goto out_put;
-@@ -410,7 +410,7 @@ struct hd_struct *add_partition(struct gendisk *disk, int partno,
- 	if (!p->holder_dir)
- 		goto out_del;
- 
--	pdev->uevent_suppress = 0;
-+	dev_set_uevent_suppress(pdev, 0);
- 	if (flags & ADDPART_FLAG_WHOLEDISK) {
- 		err = device_create_file(pdev, &dev_attr_whole_disk);
- 		if (err)
-@@ -422,7 +422,7 @@ struct hd_struct *add_partition(struct gendisk *disk, int partno,
- 	rcu_assign_pointer(ptbl->part[partno], p);
- 
- 	/* suppress uevent if the disk supresses it */
--	if (!ddev->uevent_suppress)
-+	if (!dev_get_uevent_suppress(pdev))
- 		kobject_uevent(&pdev->kobj, KOBJ_ADD);
- 
- 	return p;
-@@ -455,7 +455,7 @@ void register_disk(struct gendisk *disk)
- 	dev_set_name(ddev, disk->disk_name);
- 
- 	/* delay uevents, until we scanned partition table */
--	ddev->uevent_suppress = 1;
-+	dev_set_uevent_suppress(ddev, 1);
- 
- 	if (device_add(ddev))
- 		return;
-@@ -490,7 +490,7 @@ void register_disk(struct gendisk *disk)
- 
- exit:
- 	/* announce disk after possible partitions are created */
--	ddev->uevent_suppress = 0;
-+	dev_set_uevent_suppress(ddev, 0);
- 	kobject_uevent(&ddev->kobj, KOBJ_ADD);
- 
- 	/* announce possible partitions */
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 47f343c..31e3129 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -375,7 +375,6 @@ struct device {
- 
- 	struct kobject kobj;
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
--	unsigned		uevent_suppress:1;
- 	const char		*init_name; /* initial name of the device */
- 	struct device_type	*type;
- 
-@@ -463,6 +462,15 @@ static inline void dev_set_drvdata(struct device *dev, void *data)
- 	dev->driver_data = data;
- }
- 
-+static inline unsigned int dev_get_uevent_suppress(const struct device *dev)
-+{
-+	return dev->kobj.uevent_suppress;
-+}
-+
-+static inline void dev_set_uevent_suppress(struct device *dev, int val)
-+{
-+	dev->kobj.uevent_suppress = val;
-+}
- static inline int device_is_registered(struct device *dev)
- {
- 	return dev->kobj.state_in_sysfs;
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 5437ac0..b689190 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -68,6 +68,7 @@ struct kobject {
- 	unsigned int state_in_sysfs:1;
- 	unsigned int state_add_uevent_sent:1;
- 	unsigned int state_remove_uevent_sent:1;
-+	unsigned int uevent_suppress:1;
- };
- 
- extern int kobject_set_name(struct kobject *kobj, const char *name, ...)
-diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-index 318328d..b2181cc 100644
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -118,6 +118,13 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
- 	kset = top_kobj->kset;
- 	uevent_ops = kset->uevent_ops;
- 
-+	/* skip the event, if uevent_suppress is set*/
-+	if (kobj->uevent_suppress) {
-+		pr_debug("kobject: '%s' (%p): %s: uevent_suppress "
-+				 "caused the event to drop!\n",
-+				 kobject_name(kobj), kobj, __func__);
-+		return 0;
-+	}
- 	/* skip the event, if the filter returns zero. */
- 	if (uevent_ops && uevent_ops->filter)
- 		if (!uevent_ops->filter(kset, kobj)) {
--- 
-1.6.0.GIT
+> +obj-$(CONFIG_EXT4_FS)		+= ext4/
+>  obj-$(CONFIG_JBD)		+= jbd/
+>  obj-$(CONFIG_JBD2)		+= jbd2/
+> -obj-$(CONFIG_EXT2_FS)		+= ext2/
+>  obj-$(CONFIG_CRAMFS)		+= cramfs/
+>  obj-$(CONFIG_SQUASHFS)		+= squashfs/
+>  obj-y				+= ramfs/
 
