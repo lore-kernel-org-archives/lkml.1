@@ -1,25 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZB1JQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbZB1JTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZB1JQK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 04:16:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZB1JOi
+	id S1754889AbZB1JTD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 04:19:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZB1JSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 04:14:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47541 "EHLO mx2.mail.elte.hu"
+	Sat, 28 Feb 2009 04:18:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48063 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755597AbZB1JOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 04:14:36 -0500
-Date: Sat, 28 Feb 2009 10:14:24 +0100
+	id S1752752AbZB1JSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 04:18:42 -0500
+Date: Sat, 28 Feb 2009 10:17:35 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] kmemcheck fixes for -tip
-Message-ID: <20090228091424.GB20533@elte.hu>
-References: <20090228091201.GA28985@damson.getinternet.no>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       acme@ghostprotocols.net
+Subject: Re: [PATCH 00/10] [git pull] for tip/tracing/ftrace
+Message-ID: <20090228091735.GC20533@elte.hu>
+References: <20090228090646.265765024@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090228091201.GA28985@damson.getinternet.no>
+In-Reply-To: <20090228090646.265765024@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,52 +42,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Hi,
+> Ingo,
 > 
-> I hope this fixes all outstanding problems. We'll have to look 
-> more closely at the CPA conflict (just a temporary Kconfig 
-> workaround in place now), but this should allow your testing 
-> to continue.
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
 > 
-> The following changes since commit 42f6e3ebe50cc97ce0459d4be1bed66117d104c1:
->   Ingo Molnar (1):
->         Merge branch 'for-tip' of git://git.kernel.org/.../vegard/kmemcheck into kmemcheck
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
 > 
-> are available in the git repository at:
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git for-tip
-> 
-> Pekka Enberg (1):
->       kmemcheck: make kconfig accessible for other architectures
-> 
-> Vegard Nossum (6):
->       kmemcheck: add opcode self-testing at boot
->       kmemcheck: decode sign/zero-extension move instructions correctly
->       kmemcheck: bitfields: introduce hack to work around gcc bug
->       trace: annotate bitfields in struct ring_buffer_event
->       kmemcheck: fix split_page() of the page allocator
->       kmemcheck: disable CPA self-test
-> 
->  arch/x86/Kconfig                  |    1 +
->  arch/x86/Kconfig.debug            |   89 +-----------------------------------
->  arch/x86/mm/kmemcheck/Makefile    |    2 +-
->  arch/x86/mm/kmemcheck/kmemcheck.c |   38 +++++++++------
->  arch/x86/mm/kmemcheck/opcode.c    |   46 ++++++++++++++-----
->  arch/x86/mm/kmemcheck/selftest.c  |   69 ++++++++++++++++++++++++++++
->  arch/x86/mm/kmemcheck/selftest.h  |    6 +++
->  include/linux/kmemcheck.h         |    9 +++-
->  include/linux/ring_buffer.h       |    6 ++-
->  kernel/trace/ring_buffer.c        |    3 +
->  lib/Kconfig.debug                 |    2 +
->  lib/Kconfig.kmemcheck             |   91 +++++++++++++++++++++++++++++++++++++
->  mm/page_alloc.c                   |    8 +++
->  13 files changed, 252 insertions(+), 118 deletions(-)
->  create mode 100644 arch/x86/mm/kmemcheck/selftest.c
->  create mode 100644 arch/x86/mm/kmemcheck/selftest.h
->  create mode 100644 lib/Kconfig.kmemcheck
+> Steven Rostedt (10):
+>       tracing: move trace point formats to files in include/trace directory
+>       tracing: add subsystem level to trace events
+>       tracing: make the set_event and available_events subsystem aware
+>       tracing: add subsystem irq for irq events
+>       tracing: add subsystem sched for sched events
+>       tracing: add interface to write into current tracer buffer
+>       tracing: add raw trace point recording infrastructure
+>       tracing: add raw fast tracing interface for trace events
+>       tracing: create the C style tracing for the sched subsystem
+>       tracing: create the C style tracing for the irq subsystem
 
-Pulled, thanks Vegard!
+Great stuff!
+
+Pulled into tip:tracing/ftrace, thanks Steve!
 
 	Ingo
