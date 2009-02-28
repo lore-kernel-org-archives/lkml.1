@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZB1UeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZB1UiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZB1UeH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 15:34:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZB1Udz
+	id S1755411AbZB1UiS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 15:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZB1UiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 15:33:55 -0500
-Received: from n10.bullet.mail.mud.yahoo.com ([209.191.125.208]:39282 "HELO
-	n10.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753339AbZB1Udy (ORCPT
+	Sat, 28 Feb 2009 15:38:04 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:51901 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753239AbZB1UiB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 15:33:54 -0500
-X-Greylist: delayed 160244 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Feb 2009 15:33:54 EST
-X-Yahoo-Newman-Id: 439452.66875.bm@omp406.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=i+7KQi4Cy14qGLD4Mk/G7UHLYKSuSFah4fuuJkV3Q7/qjkC1UmYPptxuTW4VtIl3PfX8xW2poBGhDJhFcc8s9JKASnx31PIXNkcG+//ckEnuqrir3kWywiyws7OWUMoPQiJbywSK6u2zBdxkdDQzecg2xJhebSy6tTzKH+DUTMg=  ;
-X-YMail-OSG: 0YEsIkoVM1lp0IPIrR7NcP_8.BkAqqTwgiKC5wUGcoeOr27FMqvtr0mPCBH9qgb4.nd5LDaFN1OhDM.e6qxOyWIFDCVwviYplKpPtMUbPw5Bk7JQ8uDsW7XZMxqJmRmvW7_60am9O_6aMh7uUo2l2xsF
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Balaji Rao <balajirrao@openmoko.org>
-Subject: Re: [PATCH 0/2] spi: Add support for non-blocking synchronous transfers
-Date: Sat, 28 Feb 2009 12:33:50 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       Andy Green <andy@openmoko.com>
-References: <20090228081036.31964.80618.stgit@fedora.yogi>
-In-Reply-To: <20090228081036.31964.80618.stgit@fedora.yogi>
+	Sat, 28 Feb 2009 15:38:01 -0500
+Date: Sat, 28 Feb 2009 21:37:57 +0100
+From: Andreas Mohr <andim2@users.sourceforge.net>
+To: andi@lisas.de
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       bunk@kernel.org, auke-jan.h.kok@intel.com,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: 2.6.29 e100.c non-MII support status? (Re: [GIT]: Networking)
+Message-ID: <20090228203757.GA18850@rhlx01.hs-esslingen.de>
+Reply-To: andi@lisas.de
+References: <20081228.000118.121541932.davem@davemloft.net> <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20081229091728.d869f1c1.akpm@linux-foundation.org> <9929d2390812291515y623d6a51yed1bef021ab6847e@mail.gmail.com> <20081230120756.GA5393@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902281233.50612.david-b@pacbell.net>
+In-Reply-To: <20081230120756.GA5393@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note that $SUBJECT concept is nonsense.
-Synchronous calls are by definition blocking ones...
+Hi,
+
+On Tue, Dec 30, 2008 at 01:07:56PM +0100, Andreas Mohr wrote:
+> On Mon, Dec 29, 2008 at 03:15:37PM -0800, Jeff Kirsher wrote:
+> > He is referring to a patch to add support for devices which do not use
+> > the MII interface which use an Intel MAC.  I have the patch in my
+> > local tree and have been keeping it up-to-date.  I should have an
+> > update on this patch after the New Year.
+> 
+> Thanks!
+> 
+> One idea worth pondering might be to provide a special struct
+> mii_if_info hookup (fully emulated mdio_read()/write())
+> for the case of the non-MII hardware types of this driver,
+> thus eliminating any added penalty in the case of nicely MII-compliant
+> hardware.
+> But this should be tackled later, now let's better move on with eepro100
+> (non-)plans...
+> 
+> Andreas Mohr
+
+Given that 2.6.29-rc now actually has eepro100.c removed (since -rc3 or so)
+and the current -rc6 e100.c does not contain non-MII parts, it looks like
+2.6.29 proper will actually remove support for some PCI-based non-MII
+e100 cards.
+
+Thus I'd like to ask what should be done about this for real.
+Of course we could consciously decide to simply skip e100.c support for those
+non-MII cards entirely (hoping that they're not THAT wide-spread),
+but obviously I'd semi-hate this (nevermind the fact that _locally_
+I'd have to swap cards, too, which is somewhat more of a problem given an
+older network requiring to be served by "combo" cards).
+
+Simply spoken, it all boils down to actively deciding
+what to do in the next, about-to-be _affected_, kernel version
+about support for cards that an older, deprecated driver did support
+and the new one doesn't.
+
+Or one could just let things progress as-is and wait for
+yet unknown (non-)amounts of scorching user feedback to arrive
+after 2.6.29 has hit their machines ;)
 
 
-On Saturday 28 February 2009, Balaji Rao wrote:
-> During the course of development of an accelerometer driver, we saw the
-> necessity to execute spi transfers synchronously within an interrupt handler.
+My description in the mail above was meant to list things to be done
+_after_ an initial non-MII support for e100.c has been added,
+just for clarification.
 
-This sounds like a bad design.  How can you know that no other
-transfers are going on ... or are queued in front of the transfer
-you're requesting?
+Thanks,
 
-You'd need to wait for all the other transfers to work their
-way through the transfer queue.  There are *much* better things
-to do in interrupt handlers.
-
-
-> When using a workqueue instead, we observed a huge number of overruns
-> with very high cpu utlization, which is unacceptable.
-
-Sure, but at least part of that seems to be caused by some
-broken design assumptions.
-
-Why are you even trying to touch SPI devices from hardirq
-context?  That's never going to be OK; "can't-sleep" contexts
-don't mix with "must-sleep" calls.
-
-
-> This series adds a new interface for this and modifies no existing ones.
-
-NAK on these two patches.
-
+Andreas Mohr
