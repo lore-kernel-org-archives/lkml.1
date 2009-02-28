@@ -1,110 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZB1AOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZB1AOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbZB1AOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 19:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZB1AOI
+	id S1753528AbZB1AOn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 19:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZB1AOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 19:14:08 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:37306 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752785AbZB1AOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 19:14:05 -0500
-Date: Fri, 27 Feb 2009 16:14:00 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gary Hade <garyhade@us.ibm.com>, roel.kluin@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, y-goto@jp.fujitsu.com
-Subject: Re: [PATCH] mm: get_nid_for_pfn() returns int
-Message-ID: <20090228001400.GC7174@us.ibm.com>
-References: <4973AEEC.70504@gmail.com> <20090119175919.GA7476@us.ibm.com> <20090126223350.610b0283.akpm@linux-foundation.org> <20090127210727.GA9592@us.ibm.com> <25e057c00902270656x1781d04er5703058e47df455f@mail.gmail.com> <20090227213340.GB7174@us.ibm.com> <20090227134616.982fb73a.akpm@linux-foundation.org>
+	Fri, 27 Feb 2009 19:14:33 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:32843 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbZB1AOc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 19:14:32 -0500
+Message-ID: <661fca240cb094bcf4d261ccebab9848.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <b040c32a0902271600h31785bb8q93acde59f5d15e3d@mail.gmail.com>
+References: <20090227140537.390905c4.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090227162928.6225fc80.kamezawa.hiroyu@jp.fujitsu.com>
+    <b040c32a0902271213q3dd1931foc2b955d8a028eb6f@mail.gmail.com>
+    <b0f5e75d938ffb61bdda7c88b962d3fe.squirrel@webmail-b.css.fujitsu.com>
+    <b040c32a0902271600h31785bb8q93acde59f5d15e3d@mail.gmail.com>
+Date: Sat, 28 Feb 2009 09:14:27 +0900 (JST)
+Subject: Re: [PATCH] change cpuacct usage percpu format v2
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Ken Chen" <kenchen@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>, mingo@elte.hu,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090227134616.982fb73a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 01:46:16PM -0800, Andrew Morton wrote:
-> On Fri, 27 Feb 2009 13:33:40 -0800
-> Gary Hade <garyhade@us.ibm.com> wrote:
-> 
-> > On Fri, Feb 27, 2009 at 03:56:40PM +0100, roel kluin wrote:
-> > > >> > > get_nid_for_pfn() returns int
-> > > 
-> > > >> > My mistake. __Good catch.
-> > > 
-> > > >> Presumably the (nid < 0) case has never happened.
-> > > >
-> > > > We do know that it is happening on one system while creating
-> > > > a symlink for a memory section so it should also happen on
-> > > > the same system if unregister_mem_sect_under_nodes() were
-> > > > called to remove the same symlink.
-> > > >
-> > > > The test was actually added in response to a problem with an
-> > > > earlier version reported by Yasunori Goto where one or more
-> > > > of the leading pages of a memory section on the 2nd node of
-> > > > one of his systems was uninitialized because I believe they
-> > > > coincided with a memory hole. __The earlier version did not
-> > > > ignore uninitialized pages and determined the nid by considering
-> > > > only the 1st page of each memory section. __This caused the
-> > > > symlink to the 1st memory section on the 2nd node to be
-> > > > incorrectly created in /sys/devices/system/node/node0 instead
-> > > > of /sys/devices/system/node/node1. __The problem was fixed by
-> > > > adding the test to skip over uninitialized pages.
-> > > >
-> > > > I suspect we have not seen any reports of the non-removal
-> > > > of a symlink due to the incorrect declaration of the nid
-> > > > variable in unregister_mem_sect_under_nodes() because
-> > > > __- systems where a memory section could have an uninitialized
-> > > > __ __range of leading pages are probably rare.
-> > > > __- memory remove is probably not done very frequently on the
-> > > > __ __systems that are capable of demonstrating the problem.
-> > > > __- lingering symlink(s) that should have been removed may
-> > > > __ __have simply gone unnoticed.
-> > > >>
-> > > >> Should we retain the test?
-> > > >
-> > > > Yes.
-> > > >
-> > > >>
-> > > >> Is silently skipping the node in that case desirable behaviour?
-> > > >
-> > > > It actually silently skips pages (not nodes) in it's quest
-> > > > for valid nids for all the nodes that the memory section scans.
-> > > > This is definitely desirable.
-> > > >
-> > > > I hope this answers your questions.
-> > > 
-> > > This still isn't applied, was it lost?
-> > 
-> > It is still lingering in -mm:
-> > http://userweb.kernel.org/~akpm/mmotm/broken-out/mm-get_nid_for_pfn-returns-int.patch
-> > 
-> 
-> Should it unlinger?  I have it in the 2.6.30 pile.
+Ken Chen さんは書きました：
+> On Fri, Feb 27, 2009 at 3:34 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> "a lot of" ? I talking about cpu hotplug and reading another file as
+>> /sys/devices/system/cpu/present every time before reading this file
+>> gives much much much more overhead ;)
+>
+> yes, really a lot.  CPU hotplug is an uncommon event.  It happens
+> perhaps once a day? maybe once an hour?
+>
+Are you saying the software should have hotplug script and send SIGHUP or
+some to reload the present map ?
 
-Yes, that would be good. :)
+> User monitoring process usually reads usage_percpu at fairly high
+> rate, say once a sec.  At each pass it will need to parse N number of
+> CPU index.  The overhead is N_CPU * T, where T is time in second
+> between cpu hotplug event.  Assume T = one day, on a moderate sized
+> 64-CPU size machine, the overhead is:
+>
+> 64 * 86400 : 1, that's like 5.5 million to 1 ratio.  To me that is
+> *high* overhead.
+>
+Sounds strange. I can't catch hat you want to say.
 
-> Does it actually fix a demonstrable bug?  
+parsing overhead is
+==
+ 1. read cpu.usage_perpu.
+ 2. parse the line to number (separated by " ")
+ 3. tie the number to cpu id which is loadead at startup
+v.s.
+ 1. read cpu.usage_percpu.
+ 2. parse the line to number (sparated by ":" and "\n")
+ 3. record it
+==
+Hmm ? no big difference.
 
-I am not aware of anyone that has actually reproduced the
-problem.  I do not believe that we have any systems where 
-it can be reproduced since it would require both
-  (1) a memory section with an uninitialized range of
-      pages and
-  (2) a memory remove event for that memory section.
-As far as I know, none of our systems have (1).  Yasunori Goto
-has a system with (1) but I am not sure if he can do (2).
+But okay, if you don't want this, I'll just add warning text to
+Documentation/cgroup/cpuacct.txt as the user may have to prepare
+cpu hotplug script if you write flight-recorder like "sar".
 
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Thanks,
+-Kame
 
