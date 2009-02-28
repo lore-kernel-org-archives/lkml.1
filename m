@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbZB1JTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZB1JZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbZB1JTD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 04:19:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZB1JSo
+	id S1754350AbZB1JZm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 04:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbZB1JZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 04:18:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48063 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752752AbZB1JSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 04:18:42 -0500
-Date: Sat, 28 Feb 2009 10:17:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       acme@ghostprotocols.net
-Subject: Re: [PATCH 00/10] [git pull] for tip/tracing/ftrace
-Message-ID: <20090228091735.GC20533@elte.hu>
-References: <20090228090646.265765024@goodmis.org>
+	Sat, 28 Feb 2009 04:25:26 -0500
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:58385 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbZB1JZY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 04:25:24 -0500
+Date: Sat, 28 Feb 2009 14:54:31 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Ken Chen <kenchen@google.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>, mingo@elte.hu,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] change cpuacct usage percpu format v2
+Message-ID: <20090228092431.GA22310@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20090227140537.390905c4.kamezawa.hiroyu@jp.fujitsu.com> <20090227162928.6225fc80.kamezawa.hiroyu@jp.fujitsu.com> <b040c32a0902271213q3dd1931foc2b955d8a028eb6f@mail.gmail.com> <b0f5e75d938ffb61bdda7c88b962d3fe.squirrel@webmail-b.css.fujitsu.com> <b040c32a0902271600h31785bb8q93acde59f5d15e3d@mail.gmail.com> <661fca240cb094bcf4d261ccebab9848.squirrel@webmail-b.css.fujitsu.com> <c73ef954d3030022416d249ba8fefe8e.squirrel@webmail-b.css.fujitsu.com> <20090228011115.GC28769@linux.vnet.ibm.com> <cadbb09620a0d64c1bb3a24ce852c44d.squirrel@webmail-b.css.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090228090646.265765024@goodmis.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cadbb09620a0d64c1bb3a24ce852c44d.squirrel@webmail-b.css.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> Ingo,
+On Sat, Feb 28, 2009 at 02:25:22PM +0900, KAMEZAWA Hiroyuki wrote:
+> Dhaval Giani wrote：
+> > On Sat, Feb 28, 2009 at 09:42:17AM +0900, KAMEZAWA Hiroyuki wrote:
+> >> KAMEZAWA Hiroyuki wrote：
+> >> BTW, current interface to reset cpuacct (write ops) just reset
+> >> specified level of cpuacct and will not clear other hierarchical levels.
+> >> Doesn't this behavior confuse software ?
+> >>
+> >
+> > hmmm. This got missed when we introduced hierarchy. But I wonder if it
+> > is needed?
+> >
+> IIUC, cpuacct.usage just shows sum of itself and all children's usage and
+> its own usage can be calclated by reading all usage of hierarchy.
+> So, reset ops seems to be a bit broken.
+> And by this, parent's usage can be smaller than children.
 > 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (10):
->       tracing: move trace point formats to files in include/trace directory
->       tracing: add subsystem level to trace events
->       tracing: make the set_event and available_events subsystem aware
->       tracing: add subsystem irq for irq events
->       tracing: add subsystem sched for sched events
->       tracing: add interface to write into current tracer buffer
->       tracing: add raw trace point recording infrastructure
->       tracing: add raw fast tracing interface for trace events
->       tracing: create the C style tracing for the sched subsystem
->       tracing: create the C style tracing for the irq subsystem
 
-Great stuff!
+Actually now that I think about it, it does make sense, but when I
+started implementing it, a question popped up, if we reset a child's
+counter, then the parent is going to have a much greater usage than the
+sum of the children. I wonder if this behavior is fine?
 
-Pulled into tip:tracing/ftrace, thanks Steve!
+> How about adding limitation as "you can clear usage only when there are no
+> children" ? Maybe not very strange limitaton under hierarchical system.
+> 
 
-	Ingo
+Just the question I asked. Beyond that I don't think we should have such a
+limitation on reset.
+
+thanks,
+-- 
+regards,
+Dhaval
