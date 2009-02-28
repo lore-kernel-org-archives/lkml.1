@@ -1,175 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZB1IXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZB1Iab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZB1IXv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZB1IXn
+	id S1753867AbZB1Iab (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZB1IaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:23:43 -0500
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:57840 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751761AbZB1IXm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:23:42 -0500
-X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-07.arcor-online.net ADF0F3CA47A
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] pci: don't enable too many HT MSI mapping
-Date: Sat, 28 Feb 2009 09:25:55 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6; KDE/4.2.0; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200902270752.44078.prakash@punnoor.de> <49A8541C.4030601@kernel.org>
-In-Reply-To: <49A8541C.4030601@kernel.org>
+	Sat, 28 Feb 2009 03:30:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38041 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751387AbZB1IaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 03:30:21 -0500
+Date: Sat, 28 Feb 2009 09:29:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Salman Qazi <sqazi@google.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
+Message-ID: <20090228082922.GB11425@elte.hu>
+References: <20090224020304.GA4496@google.com> <20090225072503.GD21903@elte.hu> <alpine.LFD.2.00.0902250753030.3111@localhost.localdomain> <200902272305.01867.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902280925.56450.prakash@punnoor.de>
+In-Reply-To: <200902272305.01867.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Freitag 27 Februar 2009 21:59:08 Yinghai Lu wrote:
-> Prakash Punnoor wrote:
-> > On Dienstag 24 Februar 2009 18:37:35 Jesse Barnes wrote:
-> >> On Monday, February 23, 2009 11:51:59 am Yinghai Lu wrote:
-> >>> Impact: fix bug
-> >>>
-> >>> Prakash reported that his c51-mcp51 system ondie sound card doesn't
-> >>> work MSI but if he hack out the HT-MSI on mcp51, the MSI will work well
-> >>> with sound card.
-> >>>
-> >>> this patch rework the nv_msi_ht_cap_quirk()
-> >>> and will only enable ht_msi on own root device and try to avoid to
-> >>> enable ht_msi on device following that root dev
-> >>>
-> >>> Reported-by: Prakash Punnoor <prakash@punnoor.de>
-> >>> Tested-by: Prakash Punnoor <prakash@punnoor.de>
-> >>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>
-> >> Thanks Yinghai & Prakash, applied this fix to my for-linus branch.
+
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> On Thursday 26 February 2009 03:04:22 Linus Torvalds wrote:
+> > On Wed, 25 Feb 2009, Ingo Molnar wrote:
+> > > The main artifact would be the unaligned edges around a bigger
+> > > write. In particular the tail portion of a big write will be
+> > > cached.
 > >
-> > I am very sorry, but I made a mistake testing this patch. I messed up my
-> > kernels and got a false positive and only noticed this now. The patch
-> > does NOT work and even makes things worse:
+> > .. but I don't really agree that this is a problem.
 > >
-> > dmesg|grep HT
-> > pci 0000:00:09.0: Found disabled HT MSI Mapping
-> > pci 0000:00:09.0: Enabling HT MSI Mapping
-> > pci 0000:00:09.0: Found enabled HT MSI Mapping
-> > pci 0000:00:09.0: Found enabled HT MSI Mapping
-> > pci 0000:00:09.0: Found enabled HT MSI Mapping
-> > pci 0000:00:09.0: Found enabled HT MSI Mapping
+> > Sure, it's "wrong", but does it actually matter? No. Is it worth adding
+> > complexity to existing interfaces for? I think not.
 > >
-> > This is exactly the device which shouldn't be MSI enabled for me. On the
-> > other hand, it doesn't enable the needed devices anymore.
->
-> please check this one, please power off the system before load the kernel
-> with new patch.
+> > In general, I think that software should not mess with nontemporal stores.
+> > The thing is, software almost never knows enough about the CPU cache to
+> > make an intelligent choice.
+> >
+> > So I didn't want to apply the nocache patches in the first place, but the
+> > performance numbers were pretty clear. I'll take "real numbers" over my
+> > personal dislikes any day. But now we have real numbers going the other
+> > way for small writes, and a patch to fix that.
+> >
+> > But we have no amount of real numbers for the edge cases, and I don't
+> > think they matter. In fact, I don't think they _can_ matter, because it is
+> > inevitably always going to be an issue of "which CPU and which memory
+> > subsystem".
+> >
+> > In other words, there is no "right" answer. There is no "perfect". But
+> > there is "we can fix the real numbers".
+> 
+> Well... these are "real" benchmark numbers. Where the benchmark is
+> actually apparently performing an access pattern that seemingly
+> should favour nontemporal stores (the numbers are just measuring the
+> phase were write(2) is being done).
+> 
+> 
+> > At the same time, we also do know:
+> >  - caches work
+> >  - CPU designers will continue to worry about the normal (cached) case,
+> >    and will do reasonable things with cache replacement.
+> >  - ergo: w should always consider the cached case to be the _normal_ mode,
+> >    and it's the nontempral loads/stores that need to explain themselves.
+> >
+> > So I do think we should just apply the simple patch. Not make a big deal
+> > out of it. We have numbers. We use cached memory copies for everything
+> > else. It's always "safe".
+> >
+> > And we pretty much know that the only time we will ever really care about
+> > the nontemporal case is with big writes - where the "edge effects"
+> > essentially become total noise.
+> 
+> I guess so. I wouldn't mind just doing cached stores all the 
+> time for the reasons you say.
+> 
+> But whatever. If it ever becomes *really* important, I guess 
+> we can flag this kind of behaviour from userspace.
 
-Well, the problem now is that MSI doesn't get enabled on the needed host 
-bridge 00.0 (device 10de:02f0), so MSI doesn't work at all on my system (but 
-also doesn't hang my system.) I have no idea how to differentiate the 00.0 
-device from the "forbidden" 09.0 (device 10de:0270) on my system. Perhaps a 
-blacklist is really the best? The original patch by NVidia had a white list, 
-btw, see also here:
-http://kerneltrap.org/mailarchive/linux-kernel/2007/11/25/443612/thread
+Important question: is there a standing NAK for the 'total' 
+parameter addition patch i did? You requested it and Linus didnt 
+like it ... and i've measured it and it's just a single 
+instruction in the whole kernel so it did not seem to be too bad 
+to me.
 
-The output of your current patch:
-pci 0000:00:05.0: Boot video device                                                                                               
-pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
-pci 0000:00:0e.0: Enabling HT MSI Mapping                                                                                         
-pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
-pci 0000:00:0f.0: Enabling HT MSI Mapping                                                                                         
-pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
-pci 0000:00:10.0: Enabling HT MSI Mapping                                                                                         
-pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
-pci 0000:00:10.1: Enabling HT MSI Mapping  
+It might be wrong on the principle though, so will revert it if 
+needed, before it spreads into too many topics.
 
-So, ok, MSI gets enabled on the devices as such (good), not enabled on 09.0 
-(good), but also not on the needed host bridge 00.0 (bad).
-
-BTW, I noticed a typo in the patch. In ht_disable_msi_mapping you want the 
-text to be "Disabling"... instead of
-+                       dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
-
-And a minor simplification in ht_check_msi_mapping would be instead of 
-+                       if (flags & HT_MSI_FLAGS_ENABLE) {
-+                               if (found < 2) {
-+                                       found = 2;
-+                                       break;
-+                               }
-+                       }
-
-just
-
-+                       if (flags & HT_MSI_FLAGS_ENABLE) {
-+                                found = 2;
-+                                break;
-+                       }
-
-as it is the only place where found is set to something higher than 1 and then 
-the function is exited anyway. Or make the return paths clearer by this change 
-from
-
-+       int pos, ttl = 48;
-+       int found = 0;
-+
-+       /* check if there is HT MSI cap or enabled on this device */
-+       pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
-+       while (pos && ttl--) {
-+               u8 flags;
-+
-+               if (found < 1)
-+                       found = 1;
-+               if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
-+                                        &flags) == 0) {
-+                       if (flags & HT_MSI_FLAGS_ENABLE) {
-+                               if (found < 2) {
-+                                       found = 2;
-+                                       break;
-+                               }
-+                       }
-+               }
-+               pos = pci_find_next_ht_capability(dev, pos,
-+                                                 HT_CAPTYPE_MSI_MAPPING);
-+       }
-+
-+       return found;
-
-to
-
-+       int pos, ttl = 48;
-+
-+       /* check if there is HT MSI cap or enabled on this device */
-+       pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
-+       if (!pos)
-+	        return 0;
-+
-+       do {
-+               u8 flags;
-+
-+               if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
-+                                        &flags) == 0) {
-+                       if (flags & HT_MSI_FLAGS_ENABLE)
-+                                         return 2;
-+               }
-+               pos = pci_find_next_ht_capability(dev, pos,
-+                                                 HT_CAPTYPE_MSI_MAPPING);
-+       } while (pos && --ttl);
-+
-+       return 1;
-+}
-
-Then at least I would have to think less, under which conditions found takes 
-the values 0, 1 or 2.
-
-Regards,
-
-Prakash
+	Ingo
