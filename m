@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZB1Wh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbZB1WoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbZB1Wh1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 17:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZB1WhL
+	id S1755615AbZB1WoK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 17:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZB1Wnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 17:37:11 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:33665 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753211AbZB1WhJ (ORCPT
+	Sat, 28 Feb 2009 17:43:55 -0500
+Received: from rv-out-0506.google.com ([209.85.198.236]:19251 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754242AbZB1Wny (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 17:37:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=1dAlde9O0B54TbM/jv1Zz7j2rzHecMl12VC6OL7uOSnBuahC9NFfn594dQgX0AKX2VPyX+vPYUp3w+ZJ0Rg1rCp4Lgsh+4WqjQv1qNjV8RCWDJKUX6wXzd2qLqM7bISua1KZIsovqt16wF4ny4XCcO8vrwJX/LG7DanWHldMDrM=  ;
-X-YMail-OSG: 1FayFRQVM1nuNcFcuBEFMBZryXvI1VpvMfe1Kd.PmTZGofjsj.27fCVJmMv3m2Cfek1SprkpSXtbfq5p_3ukg2X09ikrxoQU2LkxwX8NOrbsltDv24x0i_MdJrTAUFvNhA4iJaxFzA4BywzZcSzYkw0elX6dS7lDDWHGzIEVmaR1e.FPqigVqHBxXY4l
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: lockdep and threaded IRQs (was: ...)
-Date: Sat, 28 Feb 2009 14:37:05 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
-       a.p.zijlstra@chello.nl
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <alpine.LFD.2.00.0902282149290.29264@localhost.localdomain> <alpine.LFD.2.00.0902282209450.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902282209450.29264@localhost.localdomain>
+	Sat, 28 Feb 2009 17:43:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=QGO3L9vH2QSuWozhxk5Ldtrnec7BIWprCn0rgJv3zE6NdiTUn6m4+XtGDigeEbj723
+         Bxi7iJoDErs8DvBT5ERh1fvpo0DHjaxzk+z8YaWIIJQxlYlEz0NemMfDrrv+xVPFU5nv
+         u9rgDZIpfmBpMTJLSWXSWrSCjpekfb9kEEy2U=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902281437.05827.david-b@pacbell.net>
+In-Reply-To: <86802c440902281257r4b7f6ca3w546310581a3fc6b5@mail.gmail.com>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
+	 <200902270752.44078.prakash@punnoor.de> <49A8541C.4030601@kernel.org>
+	 <200902280925.56450.prakash@punnoor.de>
+	 <86802c440902281257r4b7f6ca3w546310581a3fc6b5@mail.gmail.com>
+Date: Sat, 28 Feb 2009 14:43:51 -0800
+X-Google-Sender-Auth: 65c518641c91cd8f
+Message-ID: <86802c440902281443g4638dbcby463864df911a50ba@mail.gmail.com>
+Subject: Re: [PATCH] pci: don't enable too many HT MSI mapping
+From: Yinghai Lu <yinghai@kernel.org>
+To: Prakash Punnoor <prakash@punnoor.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
+       Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Content-Type: multipart/mixed; boundary=000e0cd16e80c7e42b046402517e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 February 2009, Thomas Gleixner wrote:
-> > needs to run in a thread as well. Usually demux handlers just have a
-> > fast path kicking the particular real handlers.
-> 
-> I looked at the code in twl4030-irq.c and I don't think that the demux
-> handler needs to be setup as a chained handler at all. 
-> 
-> Just register it as a standard handler and let it wakeup the other irq
-> threads
+--000e0cd16e80c7e42b046402517e
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Not clear what you mean by that.  Did I miss a "wakeup an
-irq thread" operation?  You've coupled the task to the
-irqaction, not to the irq_desc.
+please check this one
+v1 is pulled by Linus from Jesse's pci tree already, and v3 is needed
+to be applied on top of v1
 
+YH
 
-> or is there a particular requirement that the demuxed handlers 
-> need to run in the same thread context as the demux handler itself ?
+--000e0cd16e80c7e42b046402517e
+Content-Type: text/x-diff; charset=US-ASCII; name="nv_ht_msi_2.patch"
+Content-Disposition: attachment; filename="nv_ht_msi_2.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_frqvohuc0
 
-The toplevel IRQ shouldn't be re-enabled until all the chained
-handlers have actually handled their events ... some of those
-events are level triggered too.  That needs synchronization, and
-the simplest synch is to just process those demuxed events in
-the same thread.
-
-The TWL4030 family chips are a little bit quirky with respect
-to IRQ handling (PIH vs SIH, SIH_CTRL.COR inconsistency, etc),
-but they aren't the only chips with such requirements for their
-internal IRQ controllers.
-
-- Dave
+W1BBVENIXSBwY2k6IGRvbid0IGVuYWJsZSB0b28gbXVjaCBIVCBNU0kgbWFwcGluZyAtdjMKCklt
+cGFjdDogZml4IGJ1ZwoKUHJha2FzaCByZXBvcnRlZCB0aGF0IGhpcyBjNTEtbWNwNTEgc3lzdGVt
+IG9uZGllIHNvdW5kIGNhcmQgZG9lc24ndCB3b3JrIE1TSQpidXQgaWYgaGUgaGFjayBvdXQgdGhl
+IEhULU1TSSBvbiBtY3A1MSwgdGhlIE1TSSB3aWxsIHdvcmsgd2VsbCB3aXRoIHNvdW5kIGNhcmQu
+Cgp0aGlzIHBhdGNoIHJld29yayB0aGUgbnZfbXNpX2h0X2NhcF9xdWlyaygpCmFuZCB3aWxsIG9u
+bHkgdHJ5IHRvIGF2b2lkIHRvIGVuYWJsZSBodF9tc2kgb24gZGV2aWNlIGZvbGxvd2luZyB0aGF0
+IHJvb3QgZGV2LAphbmQgZG9uJ3QgdG91Y2ggdGhhdCByb290IGRldgoKdjM6IHdpbGwgZW5hYmxl
+IGM1MS4uLgoKUmVwb3J0ZWQtYnk6IFByYWthc2ggUHVubm9vciA8cHJha2FzaEBwdW5ub29yLmRl
+PgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+CgotLS0KIGRy
+aXZlcnMvcGNpL3F1aXJrcy5jIHwgICAzMSArKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0t
+CiAxIGZpbGUgY2hhbmdlZCwgMjYgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkKCkluZGV4
+OiBsaW51eC0yLjYvZHJpdmVycy9wY2kvcXVpcmtzLmMKPT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42
+Lm9yaWcvZHJpdmVycy9wY2kvcXVpcmtzLmMKKysrIGxpbnV4LTIuNi9kcml2ZXJzL3BjaS9xdWly
+a3MuYwpAQCAtMjA3Nyw2ICsyMDc3LDEwIEBAIHN0YXRpYyB2b2lkIF9fZGV2aW5pdCBudl9odF9l
+bmFibGVfbXNpX20KIAlpZiAoIWZvdW5kKQogCQlyZXR1cm47CiAKKwkvKiBkb24ndCBlbmFibGUg
+aG9zdF9icmlkZ2UgZGlyZWN0bHkgaGVyZSAqLworCWlmIChob3N0X2JyaWRnZSA9PSBkZXYpCisJ
+CWdvdG8gb3V0OworCiAJLyogcm9vdCBkaWQgdGhhdCAhICovCiAJaWYgKG1zaV9odF9jYXBfZW5h
+YmxlZChob3N0X2JyaWRnZSkpCiAJCWdvdG8gb3V0OwpAQCAtMjA5Nyw3ICsyMTAxLDcgQEAgc3Rh
+dGljIHZvaWQgX19kZXZpbml0IGh0X2Rpc2FibGVfbXNpX21hcAogCiAJCWlmIChwY2lfcmVhZF9j
+b25maWdfYnl0ZShkZXYsIHBvcyArIEhUX01TSV9GTEFHUywKIAkJCQkJICZmbGFncykgPT0gMCkg
+ewotCQkJZGV2X2luZm8oJmRldi0+ZGV2LCAiRW5hYmxpbmcgSFQgTVNJIE1hcHBpbmdcbiIpOwor
+CQkJZGV2X2luZm8oJmRldi0+ZGV2LCAiRGlzYWJsaW5nIEhUIE1TSSBNYXBwaW5nXG4iKTsKIAog
+CQkJcGNpX3dyaXRlX2NvbmZpZ19ieXRlKGRldiwgcG9zICsgSFRfTVNJX0ZMQUdTLAogCQkJCQkg
+ICAgICBmbGFncyAmIH5IVF9NU0lfRkxBR1NfRU5BQkxFKTsKQEAgLTIxMzUsNyArMjEzOSw3IEBA
+IHN0YXRpYyBpbnQgX19kZXZpbml0IGh0X2NoZWNrX21zaV9tYXBwaW4KIAlyZXR1cm4gZm91bmQ7
+CiB9CiAKLXN0YXRpYyB2b2lkIF9fZGV2aW5pdCBudl9tc2lfaHRfY2FwX3F1aXJrKHN0cnVjdCBw
+Y2lfZGV2ICpkZXYpCitzdGF0aWMgdm9pZCBfX2RldmluaXQgX19udl9tc2lfaHRfY2FwX3F1aXJr
+KHN0cnVjdCBwY2lfZGV2ICpkZXYsIGludCBhbGwpCiB7CiAJc3RydWN0IHBjaV9kZXYgKmhvc3Rf
+YnJpZGdlOwogCWludCBwb3M7CkBAIC0yMTY0LDcgKzIxNjgsMTAgQEAgc3RhdGljIHZvaWQgX19k
+ZXZpbml0IG52X21zaV9odF9jYXBfcXVpcgogCQkvKiBIb3N0IGJyaWRnZSBpcyB0byBIVCAqLwog
+CQlpZiAoZm91bmQgPT0gMSkgewogCQkJLyogaXQgaXMgbm90IGVuYWJsZWQsIHRyeSB0byBlbmFi
+bGUgaXQgKi8KLQkJCW52X2h0X2VuYWJsZV9tc2lfbWFwcGluZyhkZXYpOworCQkJaWYgKGFsbCkK
+KwkJCQlodF9lbmFibGVfbXNpX21hcHBpbmcoZGV2KTsKKwkJCWVsc2UKKwkJCQludl9odF9lbmFi
+bGVfbXNpX21hcHBpbmcoZGV2KTsKIAkJfQogCQlyZXR1cm47CiAJfQpAQCAtMjE3Niw4ICsyMTgz
+LDIyIEBAIHN0YXRpYyB2b2lkIF9fZGV2aW5pdCBudl9tc2lfaHRfY2FwX3F1aXIKIAkvKiBIb3N0
+IGJyaWRnZSBpcyBub3QgdG8gSFQsIGRpc2FibGUgSFQgTVNJIG1hcHBpbmcgb24gdGhpcyBkZXZp
+Y2UgKi8KIAlodF9kaXNhYmxlX21zaV9tYXBwaW5nKGRldik7CiB9Ci1ERUNMQVJFX1BDSV9GSVhV
+UF9GSU5BTChQQ0lfVkVORE9SX0lEX05WSURJQSwgUENJX0FOWV9JRCwgbnZfbXNpX2h0X2NhcF9x
+dWlyayk7Ci1ERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lEX0FMLCBQQ0lfQU5Z
+X0lELCBudl9tc2lfaHRfY2FwX3F1aXJrKTsKKworc3RhdGljIHZvaWQgX19kZXZpbml0IG52X21z
+aV9odF9jYXBfcXVpcmtfYWxsKHN0cnVjdCBwY2lfZGV2ICpkZXYpCit7CisJcmV0dXJuIF9fbnZf
+bXNpX2h0X2NhcF9xdWlyayhkZXYsIDEpOworfQorCitzdGF0aWMgdm9pZCBfX2RldmluaXQgbnZf
+bXNpX2h0X2NhcF9xdWlya19sZWFmKHN0cnVjdCBwY2lfZGV2ICpkZXYpCit7CisJcmV0dXJuIF9f
+bnZfbXNpX2h0X2NhcF9xdWlyayhkZXYsIDApOworfQorCisvKiB3ZXJpZD8sIGM1MS9tY3A1MSBu
+ZWVkIGM1MSBodCBtc2kgdG8gYmUgZW5hYmxlIHRvIG1ha2UgbWNwNTEgaHQgbXNpIHdvcmtpbmcg
+Ki8KK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfTlZJRElBLCAweDAyZjAs
+IG52X21zaV9odF9jYXBfcXVpcmtfYWxsKTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9W
+RU5ET1JfSURfTlZJRElBLCBQQ0lfQU5ZX0lELCBudl9tc2lfaHRfY2FwX3F1aXJrX2xlYWYpOwor
+CitERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lEX0FMLCBQQ0lfQU5ZX0lELCBu
+dl9tc2lfaHRfY2FwX3F1aXJrX2FsbCk7CiAKIHN0YXRpYyB2b2lkIF9fZGV2aW5pdCBxdWlya19t
+c2lfaW50eF9kaXNhYmxlX2J1ZyhzdHJ1Y3QgcGNpX2RldiAqZGV2KQogewo=
+--000e0cd16e80c7e42b046402517e--
