@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZB1UiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbZB1Uk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbZB1UiS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 15:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZB1UiE
+	id S1755522AbZB1Uk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 15:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZB1UkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 15:38:04 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:51901 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753239AbZB1UiB (ORCPT
+	Sat, 28 Feb 2009 15:40:11 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:12297 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753339AbZB1UkK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 15:38:01 -0500
-Date: Sat, 28 Feb 2009 21:37:57 +0100
-From: Andreas Mohr <andim2@users.sourceforge.net>
-To: andi@lisas.de
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       bunk@kernel.org, auke-jan.h.kok@intel.com,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: 2.6.29 e100.c non-MII support status? (Re: [GIT]: Networking)
-Message-ID: <20090228203757.GA18850@rhlx01.hs-esslingen.de>
-Reply-To: andi@lisas.de
-References: <20081228.000118.121541932.davem@davemloft.net> <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20081229091728.d869f1c1.akpm@linux-foundation.org> <9929d2390812291515y623d6a51yed1bef021ab6847e@mail.gmail.com> <20081230120756.GA5393@rhlx01.hs-esslingen.de>
+	Sat, 28 Feb 2009 15:40:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=jKPkw+DIm/DLPCg6brBAOkQ5+uDvJGkPBYcdcsnBpTU1FeP0Nmnrvog8LimGbiy3gQ
+         DQRjDnjhlnCGy0cgADoHhMHdE827Xkp2JSUv5MyoeeqCw9/4tUlazHXomcp616Sc/qw8
+         yzBDOpZym6pVVI+2AVkOmB7GSFRYwO9Rn9l5E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081230120756.GA5393@rhlx01.hs-esslingen.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49A8F319.3030802@goop.org>
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org>
+	 <1235785882-17580-4-git-send-email-jeremy@goop.org>
+	 <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com>
+	 <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu>
+	 <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org>
+	 <49A8F319.3030802@goop.org>
+Date: Sat, 28 Feb 2009 12:40:08 -0800
+X-Google-Sender-Auth: 9db1285b52119012
+Message-ID: <86802c440902281240i11423a95l98e330768ac6ca18@mail.gmail.com>
+Subject: Re: brk patches..
+From: Yinghai Lu <yinghai@kernel.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Feb 28, 2009 at 12:17 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Yinghai Lu wrote:
+>>
+>> Yinghai Lu wrote:
+>>
+>>>
+>>> wonder if boot loader check uncompress size aka vmlinux size in bzImage
+>>> before it find one good position for bzImage...?
+>>>
+>>>
+>>
+>> Jeremy's brk patches may break:
+>> 1. kexec load 64bit vmlinux on some ram that near the memory hole etc.
+>> blindly to use ram after _end may have some problem
+>> 2. coreboot aka linux is using elf (by mkelfImage : vmlinux + initrd),
+>> initrd became one section after _end...
+>> could cause initrd get overwrite... by extend _brk
+>>
+>
+> But its no different from what i386 does now to allocate its initial
+> pagetables.  How does this not break now?
+>
 
-On Tue, Dec 30, 2008 at 01:07:56PM +0100, Andreas Mohr wrote:
-> On Mon, Dec 29, 2008 at 03:15:37PM -0800, Jeff Kirsher wrote:
-> > He is referring to a patch to add support for devices which do not use
-> > the MII interface which use an Intel MAC.  I have the patch in my
-> > local tree and have been keeping it up-to-date.  I should have an
-> > update on this patch after the New Year.
-> 
-> Thanks!
-> 
-> One idea worth pondering might be to provide a special struct
-> mii_if_info hookup (fully emulated mdio_read()/write())
-> for the case of the non-MII hardware types of this driver,
-> thus eliminating any added penalty in the case of nicely MII-compliant
-> hardware.
-> But this should be tackled later, now let's better move on with eepro100
-> (non-)plans...
-> 
-> Andreas Mohr
+it will try to use initial page table af first, and it is not big
+enough, it will according to e820 and other reserved_early areas to
+find good positions.
 
-Given that 2.6.29-rc now actually has eepro100.c removed (since -rc3 or so)
-and the current -rc6 e100.c does not contain non-MII parts, it looks like
-2.6.29 proper will actually remove support for some PCI-based non-MII
-e100 cards.
-
-Thus I'd like to ask what should be done about this for real.
-Of course we could consciously decide to simply skip e100.c support for those
-non-MII cards entirely (hoping that they're not THAT wide-spread),
-but obviously I'd semi-hate this (nevermind the fact that _locally_
-I'd have to swap cards, too, which is somewhat more of a problem given an
-older network requiring to be served by "combo" cards).
-
-Simply spoken, it all boils down to actively deciding
-what to do in the next, about-to-be _affected_, kernel version
-about support for cards that an older, deprecated driver did support
-and the new one doesn't.
-
-Or one could just let things progress as-is and wait for
-yet unknown (non-)amounts of scorching user feedback to arrive
-after 2.6.29 has hit their machines ;)
-
-
-My description in the mail above was meant to list things to be done
-_after_ an initial non-MII support for e100.c has been added,
-just for clarification.
-
-Thanks,
-
-Andreas Mohr
+YH
