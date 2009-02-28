@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZB1HVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbZB1HV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883AbZB1HVT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 02:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZB1HVJ
+	id S1753227AbZB1HV4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 02:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZB1HVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 02:21:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47726 "EHLO mx3.mail.elte.hu"
+	Sat, 28 Feb 2009 02:21:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59898 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbZB1HVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 02:21:08 -0500
-Date: Sat, 28 Feb 2009 08:20:55 +0100
+	id S1751423AbZB1HVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 02:21:47 -0500
+Date: Sat, 28 Feb 2009 08:21:37 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH] xen: core dom0 support
-Message-ID: <20090228072055.GC9351@elte.hu>
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <49A8DF28.4050301@goop.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Luis Henriques <henrix@sapo.pt>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] tracing: remove unused code
+Message-ID: <20090228072137.GD9351@elte.hu>
+References: <20090227202923.GA3826@hades.domain.com> <alpine.DEB.2.00.0902271535440.13395@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A8DF28.4050301@goop.org>
+In-Reply-To: <alpine.DEB.2.00.0902271535440.13395@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,28 +36,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> [...] At the moment its all running on massive out-of-tree 
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> patches, which doesn't make anyone happy.  It's best that it 
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> be in the mainline kernel.  You know, like we argue for 
-> everything else.
->
->> In three years time, will we regret having merged this?
->
-> Its a pretty minor amount of extra stuff on top of what's been 
-> added over the last 3 years, so I don't think it's going to 
-> tip the scales on its own.  I wouldn't be comfortable in 
-> trying to merge something that's very intrusive.
+> Thanks Luis,
+> 
+> But before I remove this code, I want to move it to be 
+> activated by tracing options. The irqsoff tracer (and other 
+> latency tracers) are pretty useless without it.
 
-Hm, how can the same code that you call "massive out-of-tree 
-patches which doesn't make anyone happy" in an out of tree 
-context suddenly become non-intrusive "minor amount of extra 
-stuff" in an upstream context?
-
-I wish the upstream kernel was able to do such magic, but i'm 
-afraid it is not.
+sounds good.
 
 	Ingo
