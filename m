@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZB1MJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZB1MQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZB1MJz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 07:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZB1MJr
+	id S1753459AbZB1MQk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 07:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZB1MQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 07:09:47 -0500
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:32069 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751163AbZB1MJq (ORCPT
+	Sat, 28 Feb 2009 07:16:31 -0500
+Received: from n21.bullet.mail.mud.yahoo.com ([68.142.206.160]:47553 "HELO
+	n21.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751163AbZB1MQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 07:09:46 -0500
+	Sat, 28 Feb 2009 07:16:31 -0500
+X-Yahoo-Newman-Id: 916647.87135.bm@omp417.mail.mud.yahoo.com
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
+  s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=X0TAP+SmqtH7nMzWlRwhMbQJxolaNdDq4RsE/zVE7Wi2FyYXi/qHyaf4RDR8bPbFM+LJymQkUsqU9gL2nT491KPQTIbTa8efBfVBUfLg87/5+jyccioTBvkR8DXPCtR1/vyoJfMyIsKETD+zamlMgwVJXfWB4OT+pshMM77eG74=  ;
-X-YMail-OSG: _uZz2OkVM1n7QNBYZmE.sAElhr9Ubc.KD5EDI.WD9BAqlYt42BaeBndEq4WTZr1GJZDj_xeSQ4UfG007_GokY6qvnkJcaC_ZWdr.8MDP9o1JRwJ2c4gCYx_4U.8In2Kp1LX3v0N6UEu22vbwfJVKAlNtW1bhmNN1RWbvRsw4W7xQdBioV9mis4LHQxlSHXuYMqwIF7olQk5KRBNYS_H6xqgtT084
+  b=0zZnuST/1w7kOwTVJodTuKxcHGlf61C1PKmsRbbbSPsiwovnWDGTWZVVikD1KBnA5TVYJ90v68Xh5ObYlwuwAFYAB6XLy9weauTMxLdRSNWFGfMTwur7aspKdoUiG2wG9PDRyx2kLIV5lCp1cql3l7H5dT1Z/a5tJm0n2MkIlcI=  ;
+X-YMail-OSG: .USTwHIVM1kdSDXtIll.y.tZRAGXzfwtFDxB23A9Pus.SI484uVD7FlVqEwTmEMrPmQbmulC.7KOpFKAo6VG6vbOTRWJueJCTPpVwDLnXzZnItNewldJGGsbmK6uExCXCXJAc_.zatEyLryXpOC4.ztz70F75rf3f3lqpWr3KvJulxEcrpqTi7GO4lpO
 X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] xen: core dom0 support
-Date: Sat, 28 Feb 2009 23:09:07 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Xen-devel" <xen-devel@lists.xensource.com>
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <49A8DF28.4050301@goop.org>
-In-Reply-To: <49A8DF28.4050301@goop.org>
+From: David Brownell <david-b@pacbell.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Date: Sat, 28 Feb 2009 04:16:26 -0800
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       a.p.zijlstra@chello.nl
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200902272046.50572.david-b@pacbell.net> <alpine.LFD.2.00.0902281208270.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902281208270.29264@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902282309.07576.nickpiggin@yahoo.com.au>
+Message-Id: <200902280416.26687.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 February 2009 17:52:24 Jeremy Fitzhardinge wrote:
-> Andrew Morton wrote:
+On Saturday 28 February 2009, Thomas Gleixner wrote:
+> On Fri, 27 Feb 2009, David Brownell wrote:
+> >   drivers/mfd/twl4030-irq.c
+> > 
+> > Where you'll observe twl_init_irq() at line 688 setting
+> > up the thread and the Primary IRQ Handler (PIH) dispatch.
+> > That's pretty much bog-standard chained IRQ setup code,
+> > except that it chains through a thread.
+> 
+> So this would be the perfect candidate to test the generic threaded
+> code I posted a few days ago ?
 
-> > I hate to be the one to say it, but we should sit down and work out
-> > whether it is justifiable to merge any of this into Linux.  I think
-> > it's still the case that the Xen technology is the "old" way and that
-> > the world is moving off in the "new" direction, KVM?
->
-> I don't think that's a particularly useful way to look at it.  They're
-> different approaches to the problem, and have different tradeoffs.
->
-> The more important question is: are there real users for this stuff?
-> Does not merging it cause more net disadvantage than merging it?
-> Despite all the noise made about kvm in kernel circles, Xen has a large
-> and growing installed base.  At the moment its all running on massive
-> out-of-tree patches, which doesn't make anyone happy.  It's best that it
-> be in the mainline kernel.  You know, like we argue for everything else.
+Could be.  URL?
 
-OTOH, there are good reasons not to duplicate functionality, and many
-many times throughout the kernel history competing solutions have been
-rejected even though the same arguments could be made about them.
-
-There have also been many times duplicate functionality has been merged,
-although that does often start with the intention of eliminating
-duplicate implementations and ends with pain. So I think Andrew's
-question is pretty important.
-
-The user issue aside -- that is a valid point -- you don't really touch
-on the technical issues. What tradeoffs, and where Xen does better
-than KVM would be interesting to know, can Xen tools and users ever be
-migrated to KVM or vice versa (I know very little about this myself, so
-I'm just an interested observer).
-
-Ideally of course, consensus would be made that one or the other is the
-better technical solution, and we should encourage developers to improve
-that one and users to use it. Although obviously a consensus can't always
-be made (usually when there is no right answer -- different tradeoffs
-etc).
 
