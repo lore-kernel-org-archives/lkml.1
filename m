@@ -1,95 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbZB1AUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbZB1AXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757486AbZB1AUn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 19:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbZB1AUe
+	id S1758402AbZB1AXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 19:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZB1AXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 19:20:34 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:57580 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZB1AUe (ORCPT
+	Fri, 27 Feb 2009 19:23:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60342 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753408AbZB1AXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 19:20:34 -0500
-Subject: Re: i915 X lockup
-From: Eric Anholt <eric@anholt.net>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, airlied@linux.ie,
-       keithp@keithp.com, dri-devel@lists.sourceforge.net,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090227231207.GA4687@silver.sucs.org>
-References: <49A7B253.906@gmail.com>
-	 <20090227023231.76e7c65f.akpm@linux-foundation.org>
-	 <20090227130440.GA24633@silver.sucs.org> <49A7EF52.8080105@gmail.com>
-	 <20090227231207.GA4687@silver.sucs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-fqHtbxjeOFGstfGFGiOA"
-Date: Fri, 27 Feb 2009 16:20:31 -0800
-Message-Id: <1235780431.6992.14.camel@gaiman>
+	Fri, 27 Feb 2009 19:23:37 -0500
+Date: Fri, 27 Feb 2009 16:22:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: garyhade@us.ibm.com, roel.kluin@gmail.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, y-goto@jp.fujitsu.com
+Subject: Re: [PATCH] mm: get_nid_for_pfn() returns int
+Message-Id: <20090227162249.bcd0813a.akpm@linux-foundation.org>
+In-Reply-To: <20090228001400.GC7174@us.ibm.com>
+References: <4973AEEC.70504@gmail.com>
+	<20090119175919.GA7476@us.ibm.com>
+	<20090126223350.610b0283.akpm@linux-foundation.org>
+	<20090127210727.GA9592@us.ibm.com>
+	<25e057c00902270656x1781d04er5703058e47df455f@mail.gmail.com>
+	<20090227213340.GB7174@us.ibm.com>
+	<20090227134616.982fb73a.akpm@linux-foundation.org>
+	<20090228001400.GC7174@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 27 Feb 2009 16:14:00 -0800
+Gary Hade <garyhade@us.ibm.com> wrote:
 
---=-fqHtbxjeOFGstfGFGiOA
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Fri, Feb 27, 2009 at 01:46:16PM -0800, Andrew Morton wrote:
+>
+> > > It is still lingering in -mm:
+> > > http://userweb.kernel.org/~akpm/mmotm/broken-out/mm-get_nid_for_pfn-returns-int.patch
+> > > 
+> > 
+> > Should it unlinger?  I have it in the 2.6.30 pile.
+> 
+> Yes, that would be good. :)
 
-On Fri, 2009-02-27 at 23:12 +0000, Sitsofe Wheeler wrote:
-> On Fri, Feb 27, 2009 at 02:49:06PM +0100, Jiri Slaby wrote:
-> > On 27.2.2009 14:04, Sitsofe Wheeler wrote:
-> > >On Fri, Feb 27, 2009 at 02:32:31AM -0800, Andrew Morton wrote:
-> > >>On Fri, 27 Feb 2009 10:28:51 +0100 Jiri Slaby<jirislaby@gmail.com>  w=
-rote:
-> > >>
-> > >>>everytime I run X, it gets stuck. Currently running on mmotm
-> > >>>2009-02-26-16-58, but I think this is wider problem. I had i915 disa=
-bled
-> > >>>for a long time (until I noticed today).
-> > >
-> > >Which version of X are you using? Does it support kernel modesetting? =
-If
-> > >not, did you disable kernel modesetting in the KConfig file for i915?
-> >=20
-> > xorg-x11-server-7.4-17.3
-> > which is
-> > X.Org X Server 1.5.2
-> >=20
-> > modesetting enabled:
-> > CONFIG_DRM_I915_KMS=3Dy
-> >=20
-> > Which X version is needed for that?
->=20
-> Good question. I can see that 7.4 supports GEM but I see nothing about
-> kernel modesetting (
-> http://www.phoronix.com/scan.php?page=3Darticle&item=3Dxorg_74_final&num=
-=3D1).
-> I know it's enabled in the Fedora (since Fedora 9) xorgs but I have no
-> idea about openSUSE (which I believe is what you are using based on
-> package numbers). Apparently kernel modesetting can be turned off on the
-> kernel command line by using nomodesetting so that might be a quick
-> thing to try...
+What would be good?  Your answer is ambiguous.
 
-KMS support is not a feature of the server but of your 2D driver.  You
-want 2.6.2, or things will be bad.
+> > Does it actually fix a demonstrable bug?  
+> 
+> I am not aware of anyone that has actually reproduced the
+> problem.
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+What problem?
+
+All I gave at present is
+
+  From: Roel Kluin <roel.kluin@gmail.com>
+
+  get_nid_for_pfn() returns int
+
+  Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+  Cc: Gary Hade <garyhade@us.ibm.com>
+
+>  I do not believe that we have any systems where 
+> it can be reproduced since it would require both
+>   (1) a memory section with an uninitialized range of
+>       pages and
+>   (2) a memory remove event for that memory section.
+> As far as I know, none of our systems have (1).  Yasunori Goto
+> has a system with (1) but I am not sure if he can do (2).
+
+Please send a new changelog for this patch.
+
+If you believe this patch should be merged into 2.6.29 then please
+explain why.  Please also consider whether it should be backported into
+2.6.28.x and eariler.
 
 
-
---=-fqHtbxjeOFGstfGFGiOA
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmog08ACgkQHUdvYGzw6vdL8QCfX9eenavLNpZVQECSJXMV+d+f
-iiwAnRQNbmn+i6OdUoTS4hL0nGci3qpJ
-=ML6T
------END PGP SIGNATURE-----
-
---=-fqHtbxjeOFGstfGFGiOA--
