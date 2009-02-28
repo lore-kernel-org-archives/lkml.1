@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbZB1DI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbZB1DK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610AbZB1DI7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 22:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZB1DIv
+	id S1757903AbZB1DK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 22:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZB1DKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 22:08:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52777 "EHLO mx1.redhat.com"
+	Fri, 27 Feb 2009 22:10:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52826 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbZB1DIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 22:08:51 -0500
+	id S1752874AbZB1DKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 22:10:11 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -17,9 +17,12 @@ To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
 X-Fcc: ~/Mail/linus
-Subject: [PATCH 0/2] x86-64: 32/64 syscall arch holes
-Message-Id: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
-Date: Fri, 27 Feb 2009 19:02:26 -0800 (PST)
+Subject: [PATCH 1/2] x86-64: syscall-audit: fix 32/64 syscall hole
+In-Reply-To: Roland McGrath's message of  Friday, 27 February 2009 19:02:26 -0800 <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090228030324.0D84EFC3DA@magilla.sf.frob.com>
+Date: Fri, 27 Feb 2009 19:03:24 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,39 +31,26 @@ On x86-64, a 32-bit process (TIF_IA32) can switch to 64-bit mode with
 ljmp, and then use the "syscall" instruction to make a 64-bit system
 call.  A 64-bit process make a 32-bit system call with int $0x80.
 
-Both these uses can confuse some things that think they know what system
-call and arguments the registers mean.  This is easily fixed by checking
-TS_COMPAT ("syscall we are in is 32-bit") instead of TIF_IA32 ("this task
-was started as 32-bit").
+In both these cases, audit_syscall_entry() will use the wrong system
+call number table and the wrong system call argument registers.  This
+could be used to circumvent a syscall audit configuration that filters
+based on the syscall numbers or argument details.
 
-I don't know of any other arch that is susceptible to a similar problem.
-I think on other 32/64 arch's either the syscall table is the same anyway,
-or it's not possible to make an other-wordsize flavored syscall at all,
-or both.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/kernel/ptrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-It occurred to me that the audit case was wrong, but I didn't try to test
-it.  A test program similar to the seccomp exploit would be the way to do
-it (but omit the prctl call) and there are many more options of a syscall
-number whose presumed-arch meaning is harmless and not noticed by your
-audit setup, but whose actually-other-arch meaning is something that could
-be malicious and that your audit setup intends to flag.
-
-The following changes since commit 778ef1e6cbb049c9bcbf405936ee6f2b6e451892:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../gregkh/staging-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-roland.git x86/syscall-arch-holes
-
-Roland McGrath (2):
-      x86-64: syscall-audit: fix 32/64 syscall hole
-      x86-64: seccomp: fix 32/64 syscall hole
-
- arch/x86/include/asm/seccomp_64.h |   14 ++++++++------
- arch/x86/kernel/ptrace.c          |    2 +-
- kernel/seccomp.c                  |   11 ++++++++---
- 3 files changed, 17 insertions(+), 10 deletions(-)
-
-Thanks,
-Roland
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 5a4c23d..06ca07f 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1388,7 +1388,7 @@ void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
+ #ifdef CONFIG_X86_32
+ # define IS_IA32	1
+ #elif defined CONFIG_IA32_EMULATION
+-# define IS_IA32	test_thread_flag(TIF_IA32)
++# define IS_IA32	is_compat_task()
+ #else
+ # define IS_IA32	0
+ #endif
