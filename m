@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbZB1Uqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZB1Uxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755635AbZB1Uqh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 15:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZB1Uq3
+	id S1755652AbZB1Uxt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 15:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZB1Uxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 15:46:29 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:31954 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753675AbZB1Uq3 (ORCPT
+	Sat, 28 Feb 2009 15:53:40 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33268 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbZB1Uxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 15:46:29 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       John.Linn@xilinx.com, sr@denx.de
-Date: Sat, 28 Feb 2009 13:46:22 -0700
-Message-ID: <20090228204622.29719.55082.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Sat, 28 Feb 2009 15:53:39 -0500
+Date: Sat, 28 Feb 2009 15:53:29 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Alexey Dobriyan <adobriyan@gmail.com>, hch@infradead.org
+Subject: Re: [RFC][PATCH 5/8] add f_op for checkpointability
+Message-ID: <20090228205329.GB4254@infradead.org>
+References: <20090227203425.F3B51176@kernel> <20090227203431.D1E697CB@kernel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090227203431.D1E697CB@kernel>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Fri, Feb 27, 2009 at 12:34:31PM -0800, Dave Hansen wrote:
+> 
+> We have set up sane defaults for how filesystems should
+> be checkpointed.  However, as usual in the VFS, there
+> are specialized places that will always need an ability
+> to override these defaults.
+> 
+> This adds a new 'file_operations' function for
+> checkpointing a file.  I did this under the assumption
+> that we should have a dirt-simple way to make something
+> (un)checkpointable that fits in with current code.
+> 
+> As you can see in the /dev/null patch in a second, all
+> that we have to do to make something like /dev/null
+> supported is add a single "generic" f_op entry.
 
-The SystemACE driver does not handle an empty CF slot gracefully.  An
-empty CF slot ends up hanging the system.  This patch adds a check for
-the CF state and stops trying to process requests if the slot is empty.
+Please don't do the fallback to allow checkpointing without file
+operations.  We've never had luck with these fallbacks, and I'm
+in the process of getting of the last default file operation (llseek,
+which has a very bad default) currently.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Incidentally that should also allow you to get rid of the per-fs flag
+by just checking for the presence of the operation to check if
+checkpointing is allowed.
 
- drivers/block/xsysace.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 381d686..ec5b8ca 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -489,6 +489,28 @@ static void ace_fsm_dostate(struct ace_device *ace)
- 		ace->fsm_state, ace->id_req_count);
- #endif
- 
-+	/* Verify that there is actually a CF in the slot.  If not, then
-+	 * bail out back to the idle state and wake up all the waiters */
-+	status = ace_in32(ace, ACE_STATUS);
-+	if ((status & ACE_STATUS_CFDETECT) == 0) {
-+		ace->fsm_state = ACE_FSM_STATE_IDLE;
-+		ace->media_change = 1;
-+		set_capacity(ace->gd, 0);
-+		dev_info(ace->dev, "No CF in slot\n");
-+ 
-+		/* Drop all pending requests */
-+		while ((req = elv_next_request(ace->queue)) != NULL)
-+			end_request(req, 0);
-+
-+		/* Drop back to IDLE state and notify waiters */
-+		ace->fsm_state = ACE_FSM_STATE_IDLE;
-+		ace->id_result = -EIO;
-+		while (ace->id_req_count) {
-+			complete(&ace->id_completion);
-+			ace->id_req_count--;
-+		}
-+	}
-+
- 	switch (ace->fsm_state) {
- 	case ACE_FSM_STATE_IDLE:
- 		/* See if there is anything to do */
+Also the double-use of the op seem not very nice to me.  Is there any
+real life use case were you would have the operation on a file but
+sometimes not allow checkpoiting?
 
