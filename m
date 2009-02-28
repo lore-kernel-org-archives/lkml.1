@@ -1,107 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbZB1Fvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbZB1Fy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751860AbZB1Fvt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 00:51:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZB1Fvm
+	id S1752071AbZB1Fy3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 00:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbZB1FyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 00:51:42 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:18292 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZB1Fvl convert rfc822-to-8bit (ORCPT
+	Sat, 28 Feb 2009 00:54:21 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:33071 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbZB1FyU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 00:51:41 -0500
+	Sat, 28 Feb 2009 00:54:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Iokeoxm1d6TWXAjRaIs6NeBp05EiMyMKrNBlSw43xdc7HDarZDNE2Ijf51o3wXWlnE
-         7zOGBRLH1ymUQoTXmWK2cWNDarZVwqUAGnNym8mm1Hr/uDM4xSyJzzkKrU/hFZ2oufLY
-         4qFbxQBjcOMJXditipOK5FAOljn7y5YlR+XIo=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=PZVBiXJDv0Xm/Pk7mnmkKE4yXj2f7USRhc8kincpGZJVxO7rD1BdFhLsXATD4pbgXl
+         XvXYhkBYkFAkdFQwztbPsGygFWHFBHfNB1+2Xd4p/AN0L1huN9CwAV2DzTIH/pnot3Mg
+         AJoIueixWWgc5YFkslLoi/s5QXAeXvg0GM6Eg=
 MIME-Version: 1.0
-In-Reply-To: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-Date: Sat, 28 Feb 2009 11:21:39 +0530
-Message-ID: <5d5443650902272151g7595deb4gc91145a4c6938b74@mail.gmail.com>
-Subject: Re: [PATCH 1/2] input: misc: add twl4030-pwrbutton driver
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Samuel Ortiz <sameo@openedhand.com>
+In-Reply-To: <1235797347-1816-1-git-send-email-gustavo@las.ic.unicamp.br>
+References: <1235797347-1816-1-git-send-email-gustavo@las.ic.unicamp.br>
+Date: Sat, 28 Feb 2009 02:54:16 -0300
+X-Google-Sender-Auth: 8cf84e99b0ed8030
+Message-ID: <6b53b1990902272154k3cf6416fr68e53119c9a25ee0@mail.gmail.com>
+Subject: Re: [PATCH 1/3] bluetooth: add write_lock_bh to __l2cap_chan_link
+From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+To: linux-bluetooth@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Felipe,
-
-> +++ b/drivers/input/misc/twl4030-pwrbutton.c
-> @@ -0,0 +1,147 @@
-> +/**
-> + * drivers/i2c/chips/twl4030-pwrbutton.c
-> + *
-
-Please remove this file path.
-
-> +
-> +static struct input_dev *powerbutton_dev;
-> +static struct device *dbg_dev;
-> +
-> +static irqreturn_t powerbutton_irq(int irq, void *dev_id)
-> +{
-> +       int err;
-> +       u8 value;
-> +
-> +#ifdef CONFIG_LOCKDEP
-> +       /* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
-> +        * we don't want and can't tolerate.  Although it might be
-> +        * friendlier not to borrow this thread context...
-> +        */
-> +       local_irq_enable();
-> +#endif
-> +
-> +       err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &value,
-> +                                 STS_HW_CONDITIONS);
-> +       if (!err)  {
-> +               input_report_key(powerbutton_dev, KEY_POWER,
-> +                                value & PWR_PWRON_IRQ);
+On Sat, Feb 28, 2009 at 2:02 AM, Gustavo F. Padovan
+<gustavo@las.ic.unicamp.br> wrote:
+> fix race condition
+>
+> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+> ---
+>  net/bluetooth/l2cap.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/net/bluetooth/l2cap.c b/net/bluetooth/l2cap.c
+> index ca4d3b4..355f375 100644
+> --- a/net/bluetooth/l2cap.c
+> +++ b/net/bluetooth/l2cap.c
+> @@ -175,12 +175,14 @@ static inline void __l2cap_chan_link(struct l2cap_chan_list *l, struct sock *sk)
+>  {
+>        sock_hold(sk);
+>
+> +       write_lock_bh(&l->lock);
+>        if (l->head)
+>                l2cap_pi(l->head)->prev_c = sk;
+>
+>        l2cap_pi(sk)->next_c = l->head;
+>        l2cap_pi(sk)->prev_c = NULL;
+>        l->head = sk;
+> +       write_unlock_bh(&l->lock);
+>  }
+>
+>  static inline void l2cap_chan_unlink(struct l2cap_chan_list *l, struct sock *sk)
 
 
-input_sync(...) please.
 
-> +       } else {
-> +               dev_err(dbg_dev, "twl4030: i2c error %d while reading TWL4030"
-> +                       " PM_MASTER STS_HW_CONDITIONS register\n", err);
-> +       }
-> +
+This patch is wrong, ignore it.
 
-> +static int __devexit twl4030_pwrbutton_remove(struct platform_device *pdev)
-> +{
-> +       int irq = platform_get_irq(pdev, 0);
-> +
-> +       free_irq(irq, NULL);
-> +       input_unregister_device(powerbutton_dev);
-> +       input_free_device(powerbutton_dev);
 
-No need of input_free_device after input_unregister_device.
-
-> +
-> +       return 0;
-> +}
-> +
-> +struct platform_driver twl4030_pwrbutton_driver = {
-> +       .probe          = twl4030_pwrbutton_probe,
-> +       .remove         = twl4030_pwrbutton_remove,
-
-__devexit_p(...)
+> --
+> 1.6.0.6
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-bluetooth" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
 
 
 -- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+Gustavo F. Padovan
+
+Computer Engineering Student
+Institute of Computing - IC
+University of Campinas - UNICAMP
+
+email: gustavo@las.ic.unicamp.br
+gtalk: gfpadovan@gmail.com
+mobile: +55 19 81030803
