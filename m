@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZB1LVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZB1L3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbZB1LVm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 06:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZB1LVd
+	id S1754761AbZB1L3e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 06:29:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZB1L3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 06:21:33 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42003 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbZB1LVc (ORCPT
+	Sat, 28 Feb 2009 06:29:25 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:9052 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752987AbZB1L3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 06:21:32 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49A91DE8.7000700@s5r6.in-berlin.de>
-Date: Sat, 28 Feb 2009 12:20:08 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Sat, 28 Feb 2009 06:29:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mJzYrWpmT5a5XXN77Gp60gPsAUnEjnRHNNShwb8agYD1ruxIE5F2juCg6DUGURyDYG
+         LBbbWXFGOI0JRnGyEJ9CSlmSJjILudbzGXsFoyVpnoGWerBn8Ez+c0n1XRhoR0AzCadT
+         Nfuf0n6guHIrigRVEXd0biuM2oEam4jep1it0=
+Date: Sat, 28 Feb 2009 14:36:00 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jeffrey Mogul <Jeff.Mogul@hp.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] proc: /proc/kpageflags: incorrect arg order in
+	kpf_copy_bits()
+Message-ID: <20090228113559.GA3449@x200.localdomain>
+References: <200902280156.n1S1udEL014057@pobox-pa.hpl.hp.com>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: me@felipebalbi.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: lockdep and threaded IRQs
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <20090227123344.33196e99.akpm@linux-foundation.org> <20090227203717.GL16801@frodo> <200902271350.32380.david-b@pacbell.net>
-In-Reply-To: <200902271350.32380.david-b@pacbell.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902280156.n1S1udEL014057@pobox-pa.hpl.hp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> The other is that Linux needs real support for threaded
-> interrupts.  Almost every I2C (or SPI) device that raises
-> an IRQ needs its IRQ handler to run in a thread, and most
-> of them have the same type of workqueue-based hack to
-> get such a thread.  (Some others have bugs instead...)
+On Fri, Feb 27, 2009 at 05:56:39PM -0800, Jeffrey Mogul wrote:
+> The code in fs/proc/page.c that implements /proc/kpageflags has
 
-Since when is having an IRQ handler scheduling a workqueue job a hack?
-In kernels whose IRQ handlers don't sleep, we don't pretend that they
-could; instead we defer sleeping work to a context which can sleep.
+Already fixed in mainline:
 
-Or from another angle:  If a driver requires a kernel with sleeping IRQ
-handlers, why submit it for inclusion into a kernel which does not
-provide nonatomic context to IRQ handlers?
--- 
-Stefan Richter
--=====-==--= --=- ===--
-http://arcgraph.de/sr/
+commit e07a4b9217d1e97d2f3a62b6b070efdc61212110
+Author: Helge Bahmann <helge.bahmann@secunet.com>
+Date:   Fri Feb 20 16:24:12 2009 +0300
+
+    proc: fix PG_locked reporting in /proc/kpageflags
+    
+    Expr always evaluates to zero.
+    
+    Cc: Matt Mackall <mpm@selenic.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+
+diff --git a/fs/proc/page.c b/fs/proc/page.c
+index 767d95a..2d13451 100644
+--- a/fs/proc/page.c
++++ b/fs/proc/page.c
+@@ -107,7 +107,7 @@ static ssize_t kpageflags_read(struct file *file, char __user *buf,
+ 		else
+ 			kflags = ppage->flags;
+ 
+-		uflags = kpf_copy_bit(KPF_LOCKED, PG_locked, kflags) |
++		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
+ 			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
+ 			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
+ 			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
