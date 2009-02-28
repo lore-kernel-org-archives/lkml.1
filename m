@@ -1,244 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932291AbZB1BxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbZB1Bxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932291AbZB1BxB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 20:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbZB1BnK
+	id S1761505AbZB1Bxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 20:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761885AbZB1Bv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:43:10 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41774 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754594AbZB1Bl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:41:57 -0500
-From: Avi Kivity <avi@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 14/30] KVM: Fix kvmclock on !constant_tsc boxes
-Date: Sat, 28 Feb 2009 03:41:33 +0200
-Message-Id: <1235785309-12835-15-git-send-email-avi@redhat.com>
-In-Reply-To: <1235785309-12835-1-git-send-email-avi@redhat.com>
-References: <1235785309-12835-1-git-send-email-avi@redhat.com>
+	Fri, 27 Feb 2009 20:51:27 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:45524
+	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762934AbZB1Bv0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 20:51:26 -0500
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Simple brk allocator for very early allocations
+Date: Fri, 27 Feb 2009 17:51:17 -0800
+Message-Id: <1235785882-17580-1-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gerd Hoffmann <kraxel@redhat.com>
 
-kvmclock currently falls apart on machines without constant tsc.
-This patch fixes it.  Changes:
+This series adds a very simple brk-like allocator for very early
+allocations.  By default it extends the bss segment, starting at _end.
 
-  * keep tsc frequency in a per-cpu variable.
-  * handle kvmclock update using a new request flag, thus checking
-    whenever we need an update each time we enter guest context.
-  * use a cpufreq notifier to track frequency changes and force
-    kvmclock updates.
-  * send ipis to kick cpu out of guest context if needed to make
-    sure the guest doesn't see stale values.
+This is used to allocate x86-32's initial head_32.S pagetable, removing
+init_pg_table_start/end and pg0, replacing them with brk allocations.
 
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/x86/kvm/x86.c       |  103 ++++++++++++++++++++++++++++++++++++++++++----
- include/linux/kvm_host.h |    1 +
- 2 files changed, 95 insertions(+), 9 deletions(-)
+dmi_alloc() is also changed to use extend_brk.
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 8f83590..05d7be8 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -36,6 +36,7 @@
- #include <linux/highmem.h>
- #include <linux/iommu.h>
- #include <linux/intel-iommu.h>
-+#include <linux/cpufreq.h>
- 
- #include <asm/uaccess.h>
- #include <asm/msr.h>
-@@ -617,6 +618,8 @@ static void kvm_set_time_scale(uint32_t tsc_khz, struct pvclock_vcpu_time_info *
- 		 hv_clock->tsc_to_system_mul);
- }
- 
-+static DEFINE_PER_CPU(unsigned long, cpu_tsc_khz);
-+
- static void kvm_write_guest_time(struct kvm_vcpu *v)
- {
- 	struct timespec ts;
-@@ -627,9 +630,9 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 	if ((!vcpu->time_page))
- 		return;
- 
--	if (unlikely(vcpu->hv_clock_tsc_khz != tsc_khz)) {
--		kvm_set_time_scale(tsc_khz, &vcpu->hv_clock);
--		vcpu->hv_clock_tsc_khz = tsc_khz;
-+	if (unlikely(vcpu->hv_clock_tsc_khz != __get_cpu_var(cpu_tsc_khz))) {
-+		kvm_set_time_scale(__get_cpu_var(cpu_tsc_khz), &vcpu->hv_clock);
-+		vcpu->hv_clock_tsc_khz = __get_cpu_var(cpu_tsc_khz);
- 	}
- 
- 	/* Keep irq disabled to prevent changes to the clock */
-@@ -660,6 +663,16 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 	mark_page_dirty(v->kvm, vcpu->time >> PAGE_SHIFT);
- }
- 
-+static int kvm_request_guest_time_update(struct kvm_vcpu *v)
-+{
-+	struct kvm_vcpu_arch *vcpu = &v->arch;
-+
-+	if (!vcpu->time_page)
-+		return 0;
-+	set_bit(KVM_REQ_KVMCLOCK_UPDATE, &v->requests);
-+	return 1;
-+}
-+
- static bool msr_mtrr_valid(unsigned msr)
- {
- 	switch (msr) {
-@@ -790,7 +803,7 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- 			vcpu->arch.time_page = NULL;
- 		}
- 
--		kvm_write_guest_time(vcpu);
-+		kvm_request_guest_time_update(vcpu);
- 		break;
- 	}
- 	default:
-@@ -1000,6 +1013,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_MMU_SHADOW_CACHE_CONTROL:
- 	case KVM_CAP_SET_TSS_ADDR:
- 	case KVM_CAP_EXT_CPUID:
-+	case KVM_CAP_CLOCKSOURCE:
- 	case KVM_CAP_PIT:
- 	case KVM_CAP_NOP_IO_DELAY:
- 	case KVM_CAP_MP_STATE:
-@@ -1025,9 +1039,6 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_IOMMU:
- 		r = iommu_found();
- 		break;
--	case KVM_CAP_CLOCKSOURCE:
--		r = boot_cpu_has(X86_FEATURE_CONSTANT_TSC);
--		break;
- 	default:
- 		r = 0;
- 		break;
-@@ -1098,7 +1109,7 @@ out:
- void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
- 	kvm_x86_ops->vcpu_load(vcpu, cpu);
--	kvm_write_guest_time(vcpu);
-+	kvm_request_guest_time_update(vcpu);
- }
- 
- void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
-@@ -2642,9 +2653,72 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- }
- EXPORT_SYMBOL_GPL(kvm_emulate_pio_string);
- 
-+static void bounce_off(void *info)
-+{
-+	/* nothing */
-+}
-+
-+static unsigned int  ref_freq;
-+static unsigned long tsc_khz_ref;
-+
-+static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-+				     void *data)
-+{
-+	struct cpufreq_freqs *freq = data;
-+	struct kvm *kvm;
-+	struct kvm_vcpu *vcpu;
-+	int i, send_ipi = 0;
-+
-+	if (!ref_freq)
-+		ref_freq = freq->old;
-+
-+	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
-+		return 0;
-+	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
-+		return 0;
-+	per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
-+
-+	spin_lock(&kvm_lock);
-+	list_for_each_entry(kvm, &vm_list, vm_list) {
-+		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-+			vcpu = kvm->vcpus[i];
-+			if (!vcpu)
-+				continue;
-+			if (vcpu->cpu != freq->cpu)
-+				continue;
-+			if (!kvm_request_guest_time_update(vcpu))
-+				continue;
-+			if (vcpu->cpu != smp_processor_id())
-+				send_ipi++;
-+		}
-+	}
-+	spin_unlock(&kvm_lock);
-+
-+	if (freq->old < freq->new && send_ipi) {
-+		/*
-+		 * We upscale the frequency.  Must make the guest
-+		 * doesn't see old kvmclock values while running with
-+		 * the new frequency, otherwise we risk the guest sees
-+		 * time go backwards.
-+		 *
-+		 * In case we update the frequency for another cpu
-+		 * (which might be in guest context) send an interrupt
-+		 * to kick the cpu out of guest context.  Next time
-+		 * guest context is entered kvmclock will be updated,
-+		 * so the guest will not see stale values.
-+		 */
-+		smp_call_function_single(freq->cpu, bounce_off, NULL, 1);
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block kvmclock_cpufreq_notifier_block = {
-+        .notifier_call  = kvmclock_cpufreq_notifier
-+};
-+
- int kvm_arch_init(void *opaque)
- {
--	int r;
-+	int r, cpu;
- 	struct kvm_x86_ops *ops = (struct kvm_x86_ops *)opaque;
- 
- 	if (kvm_x86_ops) {
-@@ -2675,6 +2749,15 @@ int kvm_arch_init(void *opaque)
- 	kvm_mmu_set_base_ptes(PT_PRESENT_MASK);
- 	kvm_mmu_set_mask_ptes(PT_USER_MASK, PT_ACCESSED_MASK,
- 			PT_DIRTY_MASK, PT64_NX_MASK, 0, 0);
-+
-+	for_each_possible_cpu(cpu)
-+		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
-+	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
-+		tsc_khz_ref = tsc_khz;
-+		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
-+					  CPUFREQ_TRANSITION_NOTIFIER);
-+	}
-+
- 	return 0;
- 
- out:
-@@ -3010,6 +3093,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	if (vcpu->requests) {
- 		if (test_and_clear_bit(KVM_REQ_MIGRATE_TIMER, &vcpu->requests))
- 			__kvm_migrate_timers(vcpu);
-+		if (test_and_clear_bit(KVM_REQ_KVMCLOCK_UPDATE, &vcpu->requests))
-+			kvm_write_guest_time(vcpu);
- 		if (test_and_clear_bit(KVM_REQ_MMU_SYNC, &vcpu->requests))
- 			kvm_mmu_sync_roots(vcpu);
- 		if (test_and_clear_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests))
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 339eda3..18b4df8 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -37,6 +37,7 @@
- #define KVM_REQ_PENDING_TIMER      5
- #define KVM_REQ_UNHALT             6
- #define KVM_REQ_MMU_SYNC           7
-+#define KVM_REQ_KVMCLOCK_UPDATE    8
- 
- #define KVM_USERSPACE_IRQ_SOURCE_ID	0
- 
--- 
-1.6.0.6
-
+	J
