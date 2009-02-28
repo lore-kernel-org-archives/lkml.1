@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760366AbZB0XqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbZB1AAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760366AbZB0XqQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 18:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbZB0Xp7
+	id S1758776AbZB1AAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 19:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbZB1AAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 18:45:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50954 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753194AbZB0Xp6 (ORCPT
+	Fri, 27 Feb 2009 19:00:15 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:4389 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753609AbZB1AAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 18:45:58 -0500
-Date: Fri, 27 Feb 2009 15:45:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com
-Subject: Re: mmotm 2009-02-27-13-54 uploaded (input/misc/twl4030)
-Message-Id: <20090227154516.10885514.akpm@linux-foundation.org>
-In-Reply-To: <49A878BE.4080308@oracle.com>
-References: <200902272212.n1RMClcN007585@imap1.linux-foundation.org>
-	<49A878BE.4080308@oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Feb 2009 19:00:13 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Pxwb5QNyjr5OIgE8DyEs7xHjdAkvRoObxnMa3urGGlozjYeHEGNRgXbDQs0qxsQxj
+	5w93SZERq1uguov4I+ZQA==
+MIME-Version: 1.0
+In-Reply-To: <b0f5e75d938ffb61bdda7c88b962d3fe.squirrel@webmail-b.css.fujitsu.com>
+References: <20090227140537.390905c4.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090227162928.6225fc80.kamezawa.hiroyu@jp.fujitsu.com>
+	 <b040c32a0902271213q3dd1931foc2b955d8a028eb6f@mail.gmail.com>
+	 <b0f5e75d938ffb61bdda7c88b962d3fe.squirrel@webmail-b.css.fujitsu.com>
+Date: Fri, 27 Feb 2009 16:00:06 -0800
+Message-ID: <b040c32a0902271600h31785bb8q93acde59f5d15e3d@mail.gmail.com>
+Subject: Re: [PATCH] change cpuacct usage percpu format v2
+From: Ken Chen <kenchen@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>, mingo@elte.hu,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Feb 2009 15:35:26 -0800
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Fri, Feb 27, 2009 at 3:34 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> "a lot of" ? I talking about cpu hotplug and reading another file as
+> /sys/devices/system/cpu/present every time before reading this file
+> gives much much much more overhead ;)
 
-> akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-02-27-13-54 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://git.zen-sources.org/zen/mmotm.git
-> 
-> 
-> mmotm-2009-0227-1354/drivers/input/misc/twl4030-pwrbutton.c:107: error: 'TWL4030_PWRIRQ_PWRBTN' undeclared (first use in this function)
-> 
+yes, really a lot.  CPU hotplug is an uncommon event.  It happens
+perhaps once a day? maybe once an hour?
 
-this, I guess:
+User monitoring process usually reads usage_percpu at fairly high
+rate, say once a sec.  At each pass it will need to parse N number of
+CPU index.  The overhead is N_CPU * T, where T is time in second
+between cpu hotplug event.  Assume T = one day, on a moderate sized
+64-CPU size machine, the overhead is:
 
---- a/drivers/input/misc/twl4030-pwrbutton.c~input-misc-add-twl4030-pwrbutton-driver-fix
-+++ a/drivers/input/misc/twl4030-pwrbutton.c
-@@ -104,7 +104,7 @@ static int __devinit twl4030_pwrbutton_p
- free_input_dev:
- 	input_free_device(powerbutton_dev);
- free_irq_and_out:
--	free_irq(TWL4030_PWRIRQ_PWRBTN, NULL);
-+	free_irq(irq, NULL);
- out:
- 	return err;
- }
-_
+64 * 86400 : 1, that's like 5.5 million to 1 ratio.  To me that is
+*high* overhead.
 
+- Ken
