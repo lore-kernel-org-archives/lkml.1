@@ -1,139 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZB1WX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbZB1WYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbZB1WX1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 17:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZB1WXS
+	id S1756203AbZB1WYV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 17:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZB1WYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 17:23:18 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:39992 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbZB1WXQ (ORCPT
+	Sat, 28 Feb 2009 17:24:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:35112 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754480AbZB1WYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 17:23:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HUz+uvHrr3qaD86lJaa9S0VAd58P9VQfeyrEnRPLkQtgVjc++02eCMV3ZM6fsNFJZC
-         fGKj5Ty3m24cOM6BjL0z3gQpubQyQNSL9Cve5HPiBRQ3/piEmiyUrf8A+3orJaXZxYAb
-         MTmup+pBj8pPPXWX4pkJwOu8Q4qxZEwYE2IF8=
-Date: Sat, 28 Feb 2009 14:23:03 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Samuel Ortiz <sameo@openedhand.com>
-Subject: Re: [PATCH 1/2] input: misc: add twl4030-pwrbutton driver
-Message-ID: <20090228141725.ZZRA012@mailhub.coreip.homeip.net>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+	Sat, 28 Feb 2009 17:24:12 -0500
+Date: Sat, 28 Feb 2009 17:24:09 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jon Masters <jonathan@jonmasters.org>
+Subject: Re: [patch 3/4] genirq: add a quick check handler
+Message-ID: <20090228222408.GB7797@infradead.org>
+References: <20090226131336.423054348@linutronix.de> <20090226131719.640887792@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+In-Reply-To: <20090226131719.640887792@linutronix.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Felipe,
+I really disagree with the notation of the pre-handler.  Instead of
+adding an additional pre handler method you should add a new threadfn
+method.  The handler could just as now handle/not handle the interrupt,
+or as a third option defer it to the thread.  That makes the different
+semantics a lot clearer, and means ->handler and ->threadfn both have
+very well defined contexts, instead of sometimes calling ->handler
+sometimes from irq and sometimes from thread context.  This also
+makes it much easier for complex hardware that might have simple and
+fast interrupts that it may want to handle directly from hardirq context
+in just a couple of cycles or complex interrupts that might be deferred
+to process context.
 
-On Fri, Feb 27, 2009 at 09:28:02PM +0200, Felipe Balbi wrote:
-> From: Felipe Balbi <felipe.balbi@nokia.com>
-> 
-> This is part of the twl4030 multifunction device driver.
-> 
-> With this driver we add support for reporting KEY_POWER
-> events via the input layer.
-
-...
-
-> 
-> +
-> +	err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &value,
-> +				  STS_HW_CONDITIONS);
-> +	if (!err)  {
-> +		input_report_key(powerbutton_dev, KEY_POWER,
-> +				 value & PWR_PWRON_IRQ);
-
-input_sync() here please.
-
-> +	} else {
-> +		dev_err(dbg_dev, "twl4030: i2c error %d while reading TWL4030"
-> +			" PM_MASTER STS_HW_CONDITIONS register\n", err);
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static int __devinit twl4030_pwrbutton_probe(struct platform_device *pdev)
-> +{
-> +	int err = 0;
-> +	int irq = platform_get_irq(pdev, 0);
-> +
-> +	dbg_dev = &pdev->dev;
-> +
-> +	/* PWRBTN == PWRON */
-> +	err = request_irq(irq, powerbutton_irq,
-> +			IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
-> +			"twl4030-pwrbutton", NULL);
-
-Requesting IRQ before allocating input device seems unsafe. If IRQ
-arrives right now we'll go boom.
+In that model that main loop in handle_IRQ_event would look something
+like this:
 
 
-> +	if (err < 0) {
-> +		dev_dbg(&pdev->dev, "Can't get IRQ for pwrbutton: %d\n", err);
-> +		goto out;
-> +	}
-> +
-> +	powerbutton_dev = input_allocate_device();
-> +	if (!powerbutton_dev) {
-> +		dev_dbg(&pdev->dev, "Can't allocate power button\n");
-> +		err = -ENOMEM;
-> +		goto free_irq_and_out;
-> +	}
-> +
-> +	powerbutton_dev->evbit[0] = BIT_MASK(EV_KEY);
-> +	powerbutton_dev->keybit[BIT_WORD(KEY_POWER)] = BIT_MASK(KEY_POWER);
-> +	powerbutton_dev->name = "triton2-pwrbutton";
-
-powerbutton_dev->dev.parent = &pdev->dev;
-
-Any chance we could set up phys as well? BUS_I2C seems to be in order as
-well.
-
-> +
-> +	err = input_register_device(powerbutton_dev);
-> +	if (err) {
-> +		dev_dbg(&pdev->dev, "Can't register power button: %d\n", err);
-> +		goto free_input_dev;
-> +	}
-> +
-> +	dev_info(&pdev->dev, "triton2 power button driver initialized\n");
-> +
-> +	return 0;
-> +
-> +
-> +free_input_dev:
-> +	input_free_device(powerbutton_dev);
-> +free_irq_and_out:
-> +	free_irq(TWL4030_PWRIRQ_PWRBTN, NULL);
-> +out:
-> +	return err;
-> +}
-> +
-> +static int __devexit twl4030_pwrbutton_remove(struct platform_device *pdev)
-> +{
-> +	int irq = platform_get_irq(pdev, 0);
-> +
-> +	free_irq(irq, NULL);
-> +	input_unregister_device(powerbutton_dev);
-> +	input_free_device(powerbutton_dev);
-
-Do not call free after unregistering, unregister will drop last
-reference and will cause device structure be freed.
-
--- 
-Dmitry
+	do {
+		ret = action->handler(irq, action->dev_id);
+		switch (ret) {
+		case IRQ_HANDLED:
+			status |= action->flags;
+			break;
+		case IRQ_WAKE_THREAD:
+			if (likely(!test_bit(IRQTF_DIED,
+					     &action->thread_flags))) {
+				set_bit(IRQTF_RUNTHREAD, &action->thread_flags);
+				wake_up_process(action->thread);
+			}
+			/*
+			 * Set it to handled so the spurious check
+			 * does not trigger.
+			 */
+			ret = IRQ_HANDLED;
+			break;
+		}
+		retval |= ret;
+		action = action->next;
+	 } while (action);
