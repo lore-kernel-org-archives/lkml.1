@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762542AbZB1Byc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbZB1Bys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762542AbZB1Byc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 20:54:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762951AbZB1Bv3
+	id S932424AbZB1Bys (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 20:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761968AbZB1Bv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 27 Feb 2009 20:51:29 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:45522
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:45523
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762937AbZB1Bv0 (ORCPT
+	with ESMTP id S1762940AbZB1Bv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:51:26 -0500
+	Fri, 27 Feb 2009 20:51:27 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH] x86: reserve brk earlier
-Date: Fri, 27 Feb 2009 17:51:19 -0800
-Message-Id: <1235785882-17580-3-git-send-email-jeremy@goop.org>
+Subject: [PATCH] x86: use brk allocation for DMI
+Date: Fri, 27 Feb 2009 17:51:21 -0800
+Message-Id: <1235785882-17580-5-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1235785882-17580-1-git-send-email-jeremy@goop.org>
 References: <1235785882-17580-1-git-send-email-jeremy@goop.org>
@@ -27,79 +27,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-We need to reserve the brk segment before doing the pagetable
-construction, so that it doesn't allocate the same memory.
-
-Also, pre-initialize brk to _end (but still leave init_brk for cases
-where that's not correct, like i386 (for now) and Xen).
+Use extend_brk() to allocate memory for DMI rather than having an
+ad-hoc allocator.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/head64.c |    2 --
- arch/x86/kernel/setup.c  |   16 ++++++++++++----
- 2 files changed, 12 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/dmi.h |   14 ++------------
+ arch/x86/kernel/setup.c    |    6 ------
+ 2 files changed, 2 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-index 4b29802..f5b2722 100644
---- a/arch/x86/kernel/head64.c
-+++ b/arch/x86/kernel/head64.c
-@@ -91,8 +91,6 @@ void __init x86_64_start_kernel(char * real_mode_data)
- 	if (console_loglevel == 10)
- 		early_printk("Kernel alive\n");
+diff --git a/arch/x86/include/asm/dmi.h b/arch/x86/include/asm/dmi.h
+index bc68212..aa32f7e 100644
+--- a/arch/x86/include/asm/dmi.h
++++ b/arch/x86/include/asm/dmi.h
+@@ -2,21 +2,11 @@
+ #define _ASM_X86_DMI_H
  
--	init_brk((unsigned long)&_end);
+ #include <asm/io.h>
++#include <asm/setup.h>
+ 
+-#define DMI_MAX_DATA 2048
 -
- 	x86_64_start_reservations(real_mode_data);
+-extern int dmi_alloc_index;
+-extern char dmi_alloc_data[DMI_MAX_DATA];
+-
+-/* This is so early that there is no good way to allocate dynamic memory.
+-   Allocate data in an BSS array. */
+ static inline void *dmi_alloc(unsigned len)
+ {
+-	int idx = dmi_alloc_index;
+-	if ((dmi_alloc_index + len) > DMI_MAX_DATA)
+-		return NULL;
+-	dmi_alloc_index += len;
+-	return dmi_alloc_data + idx;
++	return extend_brk(len, sizeof(int));
  }
  
+ /* Use early IO mappings for DMI because it's initialized early */
 diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 6a21423..c246dc4 100644
+index ed02176..1d4fe19 100644
 --- a/arch/x86/kernel/setup.c
 +++ b/arch/x86/kernel/setup.c
-@@ -113,7 +113,8 @@
- #endif
+@@ -215,12 +215,6 @@ unsigned long mmu_cr4_features = X86_CR4_PAE;
+ int bootloader_type;
  
- unsigned int boot_cpu_id __read_mostly;
--__initdata unsigned long _brk_start, _brk_end;
-+__initdata unsigned long _brk_start = (unsigned long)&_end;
-+__initdata unsigned long _brk_end = (unsigned long)&_end;
- 
- #ifdef CONFIG_X86_64
- int default_cpu_present_to_apicid(int mps_cpu)
-@@ -356,6 +357,14 @@ void * __init extend_brk(size_t size, size_t align)
- 	return ret;
- }
- 
-+static void __init reserve_brk(void)
-+{
-+	if (_brk_end > _brk_start)
-+		reserve_early(__pa(_brk_start), __pa(_brk_end), "BRK");
-+
-+	_brk_end = _brk_start = 0xdeadb00c + POISON_POINTER_DELTA;
-+}
-+
- static void __init reserve_initrd(void)
- {
- 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
-@@ -856,6 +865,8 @@ void __init setup_arch(char **cmdline_p)
- 	setup_bios_corruption_check();
- #endif
- 
-+	reserve_brk();
-+
- 	/* max_pfn_mapped is updated here */
- 	max_low_pfn_mapped = init_memory_mapping(0, max_low_pfn<<PAGE_SHIFT);
- 	max_pfn_mapped = max_low_pfn_mapped;
-@@ -898,9 +909,6 @@ void __init setup_arch(char **cmdline_p)
- 	acpi_numa_init();
- #endif
- 
--	if (_brk_end > _brk_start)
--		reserve_early(__pa(_brk_start), __pa(_brk_end), "BRK");
+ /*
+- * Early DMI memory
+- */
+-int dmi_alloc_index;
+-char dmi_alloc_data[DMI_MAX_DATA];
 -
- 	initmem_init(0, max_pfn);
- 
- #ifdef CONFIG_ACPI_SLEEP
+-/*
+  * Setup options
+  */
+ struct screen_info screen_info;
 -- 
 1.6.0.6
 
