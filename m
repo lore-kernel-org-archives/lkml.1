@@ -1,108 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZB1WFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZB1WGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbZB1WFw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 17:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZB1WFn
+	id S1754692AbZB1WGO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 17:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbZB1WFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 17:05:43 -0500
-Received: from everest.las.ic.unicamp.br ([143.106.60.118]:59855 "EHLO
-	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbZB1WFm (ORCPT
+	Sat, 28 Feb 2009 17:05:47 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:29262 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754711AbZB1WFq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 17:05:42 -0500
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-To: linux-bluetooth@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] bluetooth: create macros for channels identifiers
-Date: Sat, 28 Feb 2009 19:04:24 -0300
-Message-Id: <1235858664-32201-1-git-send-email-gustavo@las.ic.unicamp.br>
-X-Mailer: git-send-email 1.6.0.6
+	Sat, 28 Feb 2009 17:05:46 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=thMLcKzcNcLQz3T97V1VByFBGdcN5VSRlFGCVLe9FB7ElvMelp68HpwjCqJucjLipCPqShct/oHwEnJZzuamF/aSNXK0lfvpcFad0oC+clcHV3YBdWAw9fIh6SQYb0agobV67vaBLccfQm+u+cJGfc7ahA0xgCqUUKYHBUINuYA=  ;
+X-YMail-OSG: s9ciiuIVM1mPxDZTd10ZkOMHtjYFBJ7BC0FTWq..nx_jiuGBL33khHnLm_yKZTTeWgpzR1bRfGcdcnWXxaqd1HxugaB9gZbUs0RgDUCnUIpHurQZWQm57IO0K.e.J4yItz3ltOVE4fvWLt.PdnR7Tob1Vx7LOKJYoypy1EOVLL2K.Dqk6V7SgruoBIET_67mnsXOIibhxQP3AWACcEVe9YUMAVmYsQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Date: Sat, 28 Feb 2009 14:05:41 -0800
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       a.p.zijlstra@chello.nl
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200902281202.36804.david-b@pacbell.net> <alpine.LFD.2.00.0902282149290.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902282149290.29264@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902281405.42080.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use macros instead of hardcoded numbers to get a code more readable.
+On Saturday 28 February 2009, Thomas Gleixner wrote:
+> On Sat, 28 Feb 2009, David Brownell wrote:
+> > Got a version that applies to mainline GIT?
+> 
+> http://tglx.de/~tglx/patches.tar.bz2 
 
-Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
----
- include/net/bluetooth/l2cap.h |    6 ++++++
- net/bluetooth/l2cap.c         |   18 +++++++++---------
- 2 files changed, 15 insertions(+), 9 deletions(-)
+Got it, thanks.
 
-diff --git a/include/net/bluetooth/l2cap.h b/include/net/bluetooth/l2cap.h
-index f566aa1..ed4ba91 100644
---- a/include/net/bluetooth/l2cap.h
-+++ b/include/net/bluetooth/l2cap.h
-@@ -106,6 +106,12 @@ struct l2cap_conn_rsp {
- 	__le16     status;
- } __attribute__ ((packed));
- 
-+/* channel indentifier */
-+#define L2CAP_CID_SIGNALING	0x0001
-+#define L2CAP_CID_CONN_LESS	0x0002
-+#define L2CAP_CID_DYN_START	0x0040
-+#define L2CAP_CID_DYN_END	0xffff
-+
- /* connect result */
- #define L2CAP_CR_SUCCESS    0x0000
- #define L2CAP_CR_PEND       0x0001
-diff --git a/net/bluetooth/l2cap.c b/net/bluetooth/l2cap.c
-index ca4d3b4..ff1744e 100644
---- a/net/bluetooth/l2cap.c
-+++ b/net/bluetooth/l2cap.c
-@@ -161,9 +161,9 @@ static inline struct sock *l2cap_get_chan_by_ident(struct l2cap_chan_list *l, u8
- 
- static u16 l2cap_alloc_cid(struct l2cap_chan_list *l)
- {
--	u16 cid = 0x0040;
-+	u16 cid = L2CAP_CID_DYN_START;
- 
--	for (; cid < 0xffff; cid++) {
-+	for (; cid < L2CAP_CID_DYN_END; cid++) {
- 		if(!__l2cap_get_chan_by_scid(l, cid))
- 			return cid;
- 	}
-@@ -215,13 +215,13 @@ static void __l2cap_chan_add(struct l2cap_conn *conn, struct sock *sk, struct so
- 		l2cap_pi(sk)->scid = l2cap_alloc_cid(l);
- 	} else if (sk->sk_type == SOCK_DGRAM) {
- 		/* Connectionless socket */
--		l2cap_pi(sk)->scid = 0x0002;
--		l2cap_pi(sk)->dcid = 0x0002;
-+		l2cap_pi(sk)->scid = L2CAP_CID_CONN_LESS;
-+		l2cap_pi(sk)->dcid = L2CAP_CID_CONN_LESS;
- 		l2cap_pi(sk)->omtu = L2CAP_DEFAULT_MTU;
- 	} else {
- 		/* Raw socket can send/recv signalling messages only */
--		l2cap_pi(sk)->scid = 0x0001;
--		l2cap_pi(sk)->dcid = 0x0001;
-+		l2cap_pi(sk)->scid = L2CAP_CID_SIGNALING;
-+		l2cap_pi(sk)->dcid = L2CAP_CID_SIGNALING;
- 		l2cap_pi(sk)->omtu = L2CAP_DEFAULT_MTU;
- 	}
- 
-@@ -1598,7 +1598,7 @@ static struct sk_buff *l2cap_build_cmd(struct l2cap_conn *conn,
- 
- 	lh = (struct l2cap_hdr *) skb_put(skb, L2CAP_HDR_SIZE);
- 	lh->len = cpu_to_le16(L2CAP_CMD_HDR_SIZE + dlen);
--	lh->cid = cpu_to_le16(0x0001);
-+	lh->cid = cpu_to_le16(L2CAP_CID_SIGNALING);
- 
- 	cmd = (struct l2cap_cmd_hdr *) skb_put(skb, L2CAP_CMD_HDR_SIZE);
- 	cmd->code  = code;
-@@ -2420,11 +2420,11 @@ static void l2cap_recv_frame(struct l2cap_conn *conn, struct sk_buff *skb)
- 	BT_DBG("len %d, cid 0x%4.4x", len, cid);
- 
- 	switch (cid) {
--	case 0x0001:
-+	case L2CAP_CID_SIGNALING:
- 		l2cap_sig_channel(conn, skb);
- 		break;
- 
--	case 0x0002:
-+	case L2CAP_CID_CONN_LESS:
- 		psm = get_unaligned((__le16 *) skb->data);
- 		skb_pull(skb, 2);
- 		l2cap_conless_channel(conn, psm, skb);
--- 
-1.6.0.6
 
+> > At a quick glance it looks like these patches don't cover
+> > set_irq_chained_handler(), which would be trouble since
+> > __setup_irq() doesn't get called in those cases.
+> 
+> Hmm, I did not think about chained handlers where the demux handler
+> needs to run in a thread as well. Usually demux handlers just have a
+> fast path kicking the particular real handlers.
+
+That can't work when the demux needs to access state across
+I2C in order to see which "real" handlers to kick.  :)
+
+
+> > They should however handle simpler cases, like I2C devices
+> > that only expose one IRQ instead of needing to demux several
+> > dozen IRQs going to different drivers and subsystems.
+> > 
+> > And, not touching lockdep, the original ugliness will still
+> > be needed (re-enabling IRQs in threaded handlers).
+> 
+> Err ? The threaded handlers run with interrupts enabled.
+
+Hmm, I'll have a closer look.  You changed handle_IRQ_event()
+which is where the relevant IRQF_DISABLED test kicks in.  In
+your updated code, that pokes any quick_check_handler() and
+then maybe pokes a per-IRQ thread.
+
+That seems to presume a hardirq-to-taskirq handoff.  But the
+problem case is taskirq-to-taskirq chaining, through e.g.
+what set_irq_chip_and_handler() provided.  (Details not very
+amenable to brief emails, just UTSL.)
+
+Thing is, I'm not sure a per-IRQ thread can work easily with
+that chaining.  The chained IRQs can need to be handled before
+the top-level IRQ gets re-enabled.  That's why the twl4030-irq
+code uses just one taskirq thread for all incoming events.
+
+(Which of course is rarely more than one at a time, so there's
+little reason not to share that task between the demuxing code
+and the events being demuxed.  Interrupts that need processing
+via I2C/SPI/etc are more or less by definition not frequent or
+performance-critical.)
+
+- Dave
