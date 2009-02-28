@@ -1,124 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbZB1KSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZB1K7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854AbZB1KSp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 05:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZB1KSh
+	id S1754490AbZB1K7o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 05:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZB1K7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 05:18:37 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47768 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752096AbZB1KSg convert rfc822-to-8bit (ORCPT
+	Sat, 28 Feb 2009 05:59:35 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:52586 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbZB1K7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 05:18:36 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Sat, 28 Feb 2009 11:18:12 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902192215.18365.rjw@sisk.pl> <200902272155.42010.rjw@sisk.pl> <d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
-In-Reply-To: <d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
+	Sat, 28 Feb 2009 05:59:35 -0500
+Date: Sat, 28 Feb 2009 16:29:09 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: Simon Kagstrom <simon.kagstrom@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andy Green <andy@openmoko.com>, spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] spi_bitbang: Add support for non-blocking
+	synchronous transfers
+Message-ID: <20090228105908.GA3150@fedora.yogi>
+References: <20090228081036.31964.80618.stgit@fedora.yogi> <20090228081117.31964.51155.stgit@fedora.yogi> <20090228100914.2ec2ff7f@lska2> <20090228095846.GA32044@fedora.yogi> <20090228111524.1594a58e@lska2>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902281118.14595.rjw@sisk.pl>
+In-Reply-To: <20090228111524.1594a58e@lska2>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 February 2009, Arve Hjønnevåg wrote:
-> On Fri, Feb 27, 2009 at 12:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday 27 February 2009, Pavel Machek wrote:
-> >> On Fri 2009-02-27 15:22:39, Rafael J. Wysocki wrote:
-> >> > On Friday 27 February 2009, Pavel Machek wrote:
-> >> > > Hi!
-> >> > >
-> >> > > > > > Then, the decision making logic will be able to use /sys/power/sleep whenever
-> >> > > > > > it wishes to and the kernel will be able to refuse to suspend if it's not
-> >> > > > > > desirable at the moment.
-> >> > > > > >
-> >> > > > > > It seems to be flexible enough to me.
-> >> > > > >
-> >> > > > > This seems flexible enough to avoid race conditions, but it forces the
-> >> > > > > user space power manager to poll when the kernel refuse suspend.
-> >> > > >
-> >> > > > And if the kernel is supposed to start automatic suspend, it has to monitor
-> >> > > > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
-> >> > > > kernel if it refuses to suspend.
-> >> > >
-> >> > > polling is evil -- it keeps CPU wake up => wastes power.
-> >> > >
-> >> > > Wakelocks done right are single atomic_t... and if you set it to 0,
-> >> > > you just unblock "sleeper" thread or something. Zero polling and very
-> >> > > simple...
-> >> >
-> >> > Except that you have to check all of the wakelocks periodically in a loop =>
-> >> > polling.  So?
-> >>
-> >> No. I want to have single atomic_t for all the wakelocks... at least
-> >> in non-debug version. Debug version will be slower. I believe you
-> >> originally suggested that.
-> >
-> > I did, but please don't call it "wakelocks".  It's confusing.
+On Sat, Feb 28, 2009 at 11:15:24AM +0100, Simon Kagstrom wrote:
+> On Sat, 28 Feb 2009 15:28:48 +0530
+> Balaji Rao <balajirrao@openmoko.org> wrote:
 > 
-> What you are talking about here is mostly an optimization of the
-> wakelock api. You have removed timeout support and made each wakelock
-> reference counted.
-
-I also removed the arbitrary number of wakelocks (I really _hate_ the name,
-can we please stop using it from now on?).
-
-> If you ignore wakelocks with timeouts, the current
-> wakelock interface can be implemented with a global atomic_t to
-> prevent suspend, and a per wakelock atomic_t to prevent a single
-> client from changing the global reference count by more than one.
+> > The master is not spi_s3c24xx but spi_s3x24xx_gpio, whose txrx are
+> > very simple code.
+> > 
+> > Additionally all of this has been tested and found to work. The code,
+> > along with the modified new spi based lis302dl driver is all in
+> > andy-tracking [1].
 > 
-> There are a couple of reasons that I have not done this. It removes
-> the ability to easily inspect the system when it is not suspending.
+> Oh, I didn't notice that. Nice then.
+> 
+> I see from the git logs that this and some other related patches have
+> been added now. Another question I have then is about the name: to me 
+> spi_non_blocking_transfer() sounds like it would do the opposite of
+> what I guess it does - it would go ahead without blocking on the call.
+> 
 
-Care to elaborate?
+Yes, isn't that what it's supposed to do ? It's going to complete
+without putting current to sleep.
 
-> I do provide an option to turn off the wakelock stats, which makes
-> wake_lock/unlock significantly faster, but we never run with wakelock
-> stats off. Also, it pushes timeout handling to the drivers. I know may
-> of you don't like timeout support, but ignoring the problem is not a
-> solution. If each driver that needs timeouts uses its own timer, then
-> you will often wakeup from idle just to unlock a wakelock that will
-> not trigger suspend. This wakeup is a thousand times as costly on the
-> msm platform as a wakelock/unlock pair (with wakelock stats enabled).
+> I guess what the name means is that it will not sleep during the call,
+> but for pushing it upstream, could it be better to name it something
+> else? Perhaps spi_sync and then rename the existing API name (which I
+> think is more than a bit strange), or maybe spi_sync_nowait or
+> something?
 
-Well, at least a couple of people told you that the timeouts are hardly
-acceptable and they told you why.  Please stop repeating the same arguments you
-have given already for a couple of times.  They're not convincing.
+Yes, even I was not terribly happy with 'non_blocking_transfer'.
+But I recommend against changing the behaviour of existing functions.
+spi_sync_nowait seems good though. 
 
-Instead of trying to convince everyone to accept your solution that you're
-not willing to change, please try to listen and think how to do things
-differently so that everyone is comfortable with them.  I'm sure you're more
-than capable of doing that.
+I hope to get more comments soon. Let's see what other people have to
+say.
 
-I do realize that you consider your current solution as the best thing since
-the sliced bread, but please accept the fact that the other people think
-differently.
-
-> I just checked my phone, and over a 24 hour awake time (370 hours
-> uptime) period, it acquired about 5 million wakelocks (mostly for
-> input events). If these were cache hits, and took as long as my
-> benchmark did, that accounts for 20 seconds of overhead (0.023% of
-> awake, 0.1% of not-idle (5.5h).
-
-Which proves what exactly?
-
-Rafael
+Thanks,
+Balaji
