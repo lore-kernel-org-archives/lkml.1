@@ -1,182 +1,549 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZB1WyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbZCAEBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbZB1WyT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 17:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZB1WyE
+	id S1755739AbZCAEBV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 23:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZCAEA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 17:54:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49680 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751574AbZB1WyB convert rfc822-to-8bit (ORCPT
+	Sat, 28 Feb 2009 23:00:59 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:57260 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756895AbZCAEA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 17:54:01 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Sat, 28 Feb 2009 23:53:38 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902192215.18365.rjw@sisk.pl> <200902281118.14595.rjw@sisk.pl> <d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
-In-Reply-To: <d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200902282353.39763.rjw@sisk.pl>
+	Sat, 28 Feb 2009 23:00:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:in-reply-to:references:from:date:subject:to:cc;
+        b=gizyEKdJXA33ni+S2uP+YFYaXlfcqL0rjyp5802fnxgHDSI1//n55iYSJ8Z0EYEB1o
+         p2XF6K+tSmHpPYCBRqYRkA0n8RfvOPh9xp7gPKLJAA8CEmlsdASzM3NnKffKrn97+a1d
+         E55l+ezUm2qP9FrArF0EgLI4uGPGgOR6SRvrw=
+Message-ID: <49aa0875.07ed300a.5a1b.08a7@mx.google.com>
+In-Reply-To: <20090228091305.GA20533@elte.hu>
+References: <20090228091305.GA20533@elte.hu>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Sat, 28 Feb 2009 20:45:21 +0100
+Subject: [PATCH 1/5] add binary printf
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 February 2009, Arve Hjønnevåg wrote:
-> On Sat, Feb 28, 2009 at 2:18 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday 27 February 2009, Arve Hjønnevåg wrote:
-> >> On Fri, Feb 27, 2009 at 12:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Friday 27 February 2009, Pavel Machek wrote:
-> >> >> On Fri 2009-02-27 15:22:39, Rafael J. Wysocki wrote:
-> >> >> > On Friday 27 February 2009, Pavel Machek wrote:
-> >> >> > > Hi!
-> >> >> > >
-> >> >> > > > > > Then, the decision making logic will be able to use /sys/power/sleep whenever
-> >> >> > > > > > it wishes to and the kernel will be able to refuse to suspend if it's not
-> >> >> > > > > > desirable at the moment.
-> >> >> > > > > >
-> >> >> > > > > > It seems to be flexible enough to me.
-> >> >> > > > >
-> >> >> > > > > This seems flexible enough to avoid race conditions, but it forces the
-> >> >> > > > > user space power manager to poll when the kernel refuse suspend.
-> >> >> > > >
-> >> >> > > > And if the kernel is supposed to start automatic suspend, it has to monitor
-> >> >> > > > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
-> >> >> > > > kernel if it refuses to suspend.
-> >> >> > >
-> >> >> > > polling is evil -- it keeps CPU wake up => wastes power.
-> >> >> > >
-> >> >> > > Wakelocks done right are single atomic_t... and if you set it to 0,
-> >> >> > > you just unblock "sleeper" thread or something. Zero polling and very
-> >> >> > > simple...
-> >> >> >
-> >> >> > Except that you have to check all of the wakelocks periodically in a loop =>
-> >> >> > polling.  So?
-> >> >>
-> >> >> No. I want to have single atomic_t for all the wakelocks... at least
-> >> >> in non-debug version. Debug version will be slower. I believe you
-> >> >> originally suggested that.
-> >> >
-> >> > I did, but please don't call it "wakelocks".  It's confusing.
-> >>
-> >> What you are talking about here is mostly an optimization of the
-> >> wakelock api. You have removed timeout support and made each wakelock
-> >> reference counted.
-> >
-> > I also removed the arbitrary number of wakelocks (I really _hate_ the name,
-> > can we please stop using it from now on?).
-> 
-> What do you mean by this? You removed the struct wake_lock?
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Basically, yes.
+Impact: Add APIs for binary trace printk infrastructure
 
-> >> If you ignore wakelocks with timeouts, the current
-> >> wakelock interface can be implemented with a global atomic_t to
-> >> prevent suspend, and a per wakelock atomic_t to prevent a single
-> >> client from changing the global reference count by more than one.
-> >>
-> >> There are a couple of reasons that I have not done this. It removes
-> >> the ability to easily inspect the system when it is not suspending.
-> >
-> > Care to elaborate?
-> 
-> If you have a single atomic_t and it is not 0, you do not know who
-> incremented it.
+vbin_printf(): write args to binary buffer, string is copied
+when "%s" is occurred.
 
-That's why it was proposed to use per-process and per-driver flags in addition
-to the refcount.
+bstr_printf(): read from binary buffer for args and format a string
 
-> >> I do provide an option to turn off the wakelock stats, which makes
-> >> wake_lock/unlock significantly faster, but we never run with wakelock
-> >> stats off. Also, it pushes timeout handling to the drivers. I know may
-> >> of you don't like timeout support, but ignoring the problem is not a
-> >> solution. If each driver that needs timeouts uses its own timer, then
-> >> you will often wakeup from idle just to unlock a wakelock that will
-> >> not trigger suspend. This wakeup is a thousand times as costly on the
-> >> msm platform as a wakelock/unlock pair (with wakelock stats enabled).
-> >
-> > Well, at least a couple of people told you that the timeouts are hardly
-> > acceptable and they told you why.  Please stop repeating the same arguments you
-> > have given already for a couple of times.  They're not convincing.
-> 
-> And you keep ignoring them.
+[fweisbec@gmail.com: rebase against latest -tip]
 
-Not ignoring, but considering them as insufficient.  And since they've already
-been considered as insufficient, there's no point repeating them over and over
-again.  That doesn't make them any better.
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ include/linux/string.h |    7 +
+ lib/Kconfig            |    3 +
+ lib/vsprintf.c         |  442 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 452 insertions(+), 0 deletions(-)
 
-> > Instead of trying to convince everyone to accept your solution that you're
-> > not willing to change, please try to listen and think how to do things
-> > differently so that everyone is comfortable with them.  I'm sure you're more
-> > than capable of doing that.
-> 
-> Can you summarize what the problems with my current api are? I get the
-> impression that you think the overhead of using a list is too high,
-> and that timeout support should be removed because you think all
-> drivers that use it are broken.
+diff --git a/include/linux/string.h b/include/linux/string.h
+index d18fc19..27ac317 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -10,6 +10,7 @@
+ #include <linux/compiler.h>	/* for inline */
+ #include <linux/types.h>	/* for size_t */
+ #include <linux/stddef.h>	/* for NULL */
++#include <stdarg.h>
+ 
+ extern char *strndup_user(const char __user *, long);
+ 
+@@ -111,6 +112,12 @@ extern void argv_free(char **argv);
+ 
+ extern bool sysfs_streq(const char *s1, const char *s2);
+ 
++#ifdef CONFIG_BINARY_PRINTF
++int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
++int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf);
++int bprintf(u32 *bin_buf, size_t size, const char *fmt, ...) __printf(3, 4);
++#endif
++
+ extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
+ 			const void *from, size_t available);
+ 
+diff --git a/lib/Kconfig b/lib/Kconfig
+index fc8ea1c..cd57690 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -2,6 +2,9 @@
+ # Library configuration
+ #
+ 
++config BINARY_PRINTF
++	def_bool n
++
+ menu "Library routines"
+ 
+ config BITREVERSE
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 0fbd012..3543bbe 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -1058,6 +1058,448 @@ int sprintf(char * buf, const char *fmt, ...)
+ }
+ EXPORT_SYMBOL(sprintf);
+ 
++#ifdef CONFIG_BINARY_PRINTF
++/*
++ * bprintf service:
++ * vbin_printf() - VA arguments to binary data
++ * bstr_printf() - Binary data to text string
++ */
++
++/**
++ * vbin_printf - Parse a format string and place args' binary value in a buffer
++ * @bin_buf: The buffer to place args' binary value
++ * @size: The size of the buffer(by words(32bits), not characters)
++ * @fmt: The format string to use
++ * @args: Arguments for the format string
++ *
++ * The format follows C99 vsnprintf, except %n is ignored, and its argument
++ * is skiped.
++ *
++ * The return value is the number of words(32bits) which would be generated for
++ * the given input.
++ *
++ * NOTE:
++ * If the return value is greater than @size, the resulting bin_buf is NOT
++ * valid for bstr_printf().
++ */
++int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args)
++{
++	char *str, *end;
++	int qualifier;
++
++	str = (char *)bin_buf;
++	end = (char *)(bin_buf + size);
++
++#define save_arg(type)							\
++do {									\
++	if (sizeof(type) == 8) {					\
++		unsigned long long value;				\
++		str = PTR_ALIGN(str, sizeof(u32));			\
++		value = va_arg(args, unsigned long long);		\
++		if (str + sizeof(type) <= end) {			\
++			*(u32 *)str = *(u32 *)&value;			\
++			*(u32 *)(str + 4) = *((u32 *)&value + 1);	\
++		}							\
++	} else {							\
++		unsigned long value;					\
++		str = PTR_ALIGN(str, sizeof(type));			\
++		value = va_arg(args, int);				\
++		if (str + sizeof(type) <= end)				\
++			*(typeof(type) *)str = (type)value;		\
++	}								\
++	str += sizeof(type);						\
++} while (0)
++
++	for (; *fmt ; ++fmt) {
++		if (*fmt != '%')
++			continue;
++
++repeat:
++		/* parse flags */
++		++fmt;		/* this also skips first '%' */
++		if (*fmt == '-' || *fmt == '+' || *fmt == ' '
++				|| *fmt == '#' || *fmt == '0')
++			goto repeat;
++
++		/* parse field width */
++		if (isdigit(*fmt))
++			skip_atoi(&fmt);
++		else if (*fmt == '*') {
++			++fmt;
++			/* it's the next argument */
++			save_arg(int);
++		}
++
++		/* parse the precision */
++		if (*fmt == '.') {
++			++fmt;
++			if (isdigit(*fmt))
++				skip_atoi(&fmt);
++			else if (*fmt == '*') {
++				++fmt;
++				/* it's the next argument */
++				save_arg(int);
++			}
++		}
++
++		/* parse the conversion qualifier */
++		qualifier = -1;
++		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
++		    *fmt == 'Z' || *fmt == 'z' || *fmt == 't') {
++			qualifier = *fmt;
++			++fmt;
++			if (qualifier == 'l' && *fmt == 'l') {
++				qualifier = 'L';
++				++fmt;
++			}
++		}
++
++		/* parse format type */
++		switch (*fmt) {
++		case 'c':
++			save_arg(char);
++			continue;
++		case 's': {
++			/* save the string argument */
++			const char *save_str = va_arg(args, char *);
++			size_t len;
++			if ((unsigned long)save_str > (unsigned long)-PAGE_SIZE
++					|| (unsigned long)save_str < PAGE_SIZE)
++				save_str = "<NULL>";
++			len = strlen(save_str);
++			if (str + len + 1 < end)
++				memcpy(str, save_str, len + 1);
++			str += len + 1;
++			continue;
++		}
++		case 'p':
++			save_arg(void *);
++			/* skip all alphanumeric pointer suffixes */
++			while (isalnum(fmt[1]))
++				fmt++;
++			continue;
++		case 'n': {
++			/* skip %n 's argument */
++			void *skip_arg;
++			if (qualifier == 'l')
++				skip_arg = va_arg(args, long *);
++			else if (qualifier == 'Z' || qualifier == 'z')
++				skip_arg = va_arg(args, size_t *);
++			else
++				skip_arg = va_arg(args, int *);
++			continue;
++		}
++		case 'o':
++		case 'x':
++		case 'X':
++		case 'd':
++		case 'i':
++		case 'u':
++			/* save arg for case: 'o', 'x', 'X', 'd', 'i', 'u' */
++			if (qualifier == 'L')
++				save_arg(long long);
++			else if (qualifier == 'l')
++				save_arg(unsigned long);
++			else if (qualifier == 'Z' || qualifier == 'z')
++				save_arg(size_t);
++			else if (qualifier == 't')
++				save_arg(ptrdiff_t);
++			else if (qualifier == 'h')
++				save_arg(short);
++			else
++				save_arg(int);
++			continue;
++		default:
++			if (!*fmt)
++				--fmt;
++			continue;
++		}
++	}
++#undef save_arg
++
++	return (u32 *)(PTR_ALIGN(str, sizeof(u32))) - bin_buf;
++}
++EXPORT_SYMBOL_GPL(vbin_printf);
++
++/**
++ * bstr_printf - Format a string from binary arguments and place it in a buffer
++ * @buf: The buffer to place the result into
++ * @size: The size of the buffer, including the trailing null space
++ * @fmt: The format string to use
++ * @bin_buf: Binary arguments for the format string
++ *
++ * This function like C99 vsnprintf, but the difference is that vsnprintf gets
++ * arguments from stack, and bstr_printf gets arguments from @bin_buf which is
++ * a binary buffer that generated by vbin_printf.
++ *
++ * The format follows C99 vsnprintf, but has some extensions:
++ * %pS output the name of a text symbol
++ * %pF output the name of a function pointer
++ * %pR output the address range in a struct resource
++ * %n is ignored
++ *
++ * The return value is the number of characters which would
++ * be generated for the given input, excluding the trailing
++ * '\0', as per ISO C99. If you want to have the exact
++ * number of characters written into @buf as return value
++ * (not including the trailing '\0'), use vscnprintf(). If the
++ * return is greater than or equal to @size, the resulting
++ * string is truncated.
++ */
++int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
++{
++	unsigned long long num;
++	int base;
++	char *str, *end, c;
++	const char *args = (const char *)bin_buf;
++
++	int flags;
++	int field_width;
++	int precision;
++	int qualifier;
++
++	if (unlikely((int) size < 0)) {
++		/* There can be only one.. */
++		static char warn = 1;
++		WARN_ON(warn);
++		warn = 0;
++		return 0;
++	}
++
++	str = buf;
++	end = buf + size;
++
++#define get_arg(type)							\
++({									\
++	typeof(type) value;						\
++	if (sizeof(type) == 8) {					\
++		args = PTR_ALIGN(args, sizeof(u32));			\
++		*(u32 *)&value = *(u32 *)args;				\
++		*((u32 *)&value + 1) = *(u32 *)(args + 4);		\
++	} else {							\
++		args = PTR_ALIGN(args, sizeof(type));			\
++		value = *(typeof(type) *)args;				\
++	}								\
++	args += sizeof(type);						\
++	value;								\
++})
++
++	/* Make sure end is always >= buf */
++	if (end < buf) {
++		end = ((void *)-1);
++		size = end - buf;
++	}
++
++	for (; *fmt ; ++fmt) {
++		if (*fmt != '%') {
++			if (str < end)
++				*str = *fmt;
++			++str;
++			continue;
++		}
++
++		/* process flags */
++		flags = 0;
++repeat:
++		++fmt;		/* this also skips first '%' */
++		switch (*fmt) {
++		case '-':
++			flags |= LEFT;
++			goto repeat;
++		case '+':
++			flags |= PLUS;
++			goto repeat;
++		case ' ':
++			flags |= SPACE;
++			goto repeat;
++		case '#':
++			flags |= SPECIAL;
++			goto repeat;
++		case '0':
++			flags |= ZEROPAD;
++			goto repeat;
++		}
++
++		/* get field width */
++		field_width = -1;
++		if (isdigit(*fmt))
++			field_width = skip_atoi(&fmt);
++		else if (*fmt == '*') {
++			++fmt;
++			/* it's the next argument */
++			field_width = get_arg(int);
++			if (field_width < 0) {
++				field_width = -field_width;
++				flags |= LEFT;
++			}
++		}
++
++		/* get the precision */
++		precision = -1;
++		if (*fmt == '.') {
++			++fmt;
++			if (isdigit(*fmt))
++				precision = skip_atoi(&fmt);
++			else if (*fmt == '*') {
++				++fmt;
++				/* it's the next argument */
++				precision = get_arg(int);
++			}
++			if (precision < 0)
++				precision = 0;
++		}
++
++		/* get the conversion qualifier */
++		qualifier = -1;
++		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
++		    *fmt == 'Z' || *fmt == 'z' || *fmt == 't') {
++			qualifier = *fmt;
++			++fmt;
++			if (qualifier == 'l' && *fmt == 'l') {
++				qualifier = 'L';
++				++fmt;
++			}
++		}
++
++		/* default base */
++		base = 10;
++
++		switch (*fmt) {
++		case 'c':
++			if (!(flags & LEFT)) {
++				while (--field_width > 0) {
++					if (str < end)
++						*str = ' ';
++					++str;
++				}
++			}
++			c = (unsigned char) get_arg(char);
++			if (str < end)
++				*str = c;
++			++str;
++			while (--field_width > 0) {
++				if (str < end)
++					*str = ' ';
++				++str;
++			}
++			continue;
++
++		case 's':{
++			const char *str_arg = args;
++			size_t len = strlen(str_arg);
++			args += len + 1;
++			str = string(str, end, (char *)str_arg, field_width,
++					precision, flags);
++			continue;
++		}
++
++		case 'p':
++			str = pointer(fmt+1, str, end, get_arg(void *),
++					field_width, precision, flags);
++			/* Skip all alphanumeric pointer suffixes */
++			while (isalnum(fmt[1]))
++				fmt++;
++			continue;
++
++		case 'n':
++			/* skip %n */
++			continue;
++
++		case '%':
++			if (str < end)
++				*str = '%';
++			++str;
++			continue;
++
++		/* integer number formats - set up the flags and "break" */
++		case 'o':
++			base = 8;
++			break;
++
++		case 'x':
++			flags |= SMALL;
++		case 'X':
++			base = 16;
++			break;
++
++		case 'd':
++		case 'i':
++			flags |= SIGN;
++		case 'u':
++			break;
++
++		default:
++			if (str < end)
++				*str = '%';
++			++str;
++			if (*fmt) {
++				if (str < end)
++					*str = *fmt;
++				++str;
++			} else {
++				--fmt;
++			}
++			continue;
++		}
++		if (qualifier == 'L')
++			num = get_arg(long long);
++		else if (qualifier == 'l') {
++			num = get_arg(unsigned long);
++			if (flags & SIGN)
++				num = (signed long) num;
++		} else if (qualifier == 'Z' || qualifier == 'z') {
++			num = get_arg(size_t);
++		} else if (qualifier == 't') {
++			num = get_arg(ptrdiff_t);
++		} else if (qualifier == 'h') {
++			num = (unsigned short) get_arg(short);
++			if (flags & SIGN)
++				num = (signed short) num;
++		} else {
++			num = get_arg(unsigned int);
++			if (flags & SIGN)
++				num = (signed int) num;
++		}
++		str = number(str, end, num, base,
++				field_width, precision, flags);
++	}
++	if (size > 0) {
++		if (str < end)
++			*str = '\0';
++		else
++			end[-1] = '\0';
++	}
++#undef get_arg
++
++	/* the trailing null byte doesn't count towards the total */
++	return str - buf;
++}
++EXPORT_SYMBOL_GPL(bstr_printf);
++
++/**
++ * bprintf - Parse a format string and place args' binary value in a buffer
++ * @bin_buf: The buffer to place args' binary value
++ * @size: The size of the buffer(by words(32bits), not characters)
++ * @fmt: The format string to use
++ * @...: Arguments for the format string
++ *
++ * The function returns the number of words(u32) written
++ * into @bin_buf.
++ */
++int bprintf(u32 *bin_buf, size_t size, const char *fmt, ...)
++{
++	va_list args;
++	int ret;
++
++	va_start(args, fmt);
++	ret = vbin_printf(bin_buf, size, fmt, args);
++	va_end(args);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(bprintf);
++
++#endif /* CONFIG_BINARY_PRINTF */
++
+ /**
+  * vsscanf - Unformat a buffer into a list of arguments
+  * @buf:	input buffer
+-- 
+1.6.1
 
-In no particular order:
-1. One user space process can create an unlimited number of wakelocks.  This
-   shouldn't be possible.  Moreover, it is not even necessary for any process
-   to have more than one wakelock held at any time.
-2. Timeouts are wrong, because they don't really _solve_ any problem.  They are
-   useful for working around the fact that you can't or you don't want to
-   modify every piece of code that in principle should take a wakelock and
-   that's it.  However,  entire concept of having one code path acting on
-   behalf of another one on a hunch that it might be doing something making
-   suspend undesirable is conceptually broken IMO.
-3. The overhead of using a list is unnecessary and _therefore_ too high (not
-   just too high).
-4. There seems to be a race between user space wakelocks and the freezer
-   (perhaps I overlooked something, in which case please disregard this item).
-5. The name "wakelocks" is confusing, because they aren't locks and they
-   affect suspend, not wake.
-6. Last time I saw the patches they were barely commented and the changelogs
-   didn't describe the code well (if at all).
-7. There's no clear distinction between debug/stats code and the basic
-   functionality.
 
-I'm sure the other people could add something to the list.
-
-> > I do realize that you consider your current solution as the best thing since
-> > the sliced bread, but please accept the fact that the other people think
-> > differently.
-> 
-> I certainly do not think my current solution is the best, it is very
-> invasive. I do however think your proposed solution is worse. The only
-> proposed alternative that we could actually ship a product on today is
-> to not use suspend at all.
-
-Well, I'm sure your code is useful for the Android platform, but the question
-is whether we want this code in the mainline kernel.  For now, the answer is
-"no, we don't".  Moreover, since you're the one who wants the code to be
-merged, it's your burden to make it acceptable for us.  However you're going
-to do it is up to you, but certainly trying to force your current code on us
-is not going to work.
-
-BTW, I think you handled the thing wrong.  If I were you, I wouldn't even try
-to push the code as you did.  I would instead make it as simple as reasonably
-possible so that the basic idea was clear and understandable to everyone.
-Then, if there were any doubts with respect to the basic idea, I'd try to
-clarify them and I'd consider modifying the code to address objections.
-I'd only try to add more features after the basic idea had been accepted.
-
-Thanks,
-Rafael
