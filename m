@@ -1,53 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZB1ILM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZB1IL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbZB1ILM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:11:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZB1IK5
+	id S1753982AbZB1IL2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZB1ILM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:10:57 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:38999 "EHLO
-	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbZB1IK5 (ORCPT
+	Sat, 28 Feb 2009 03:11:12 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39382 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753215AbZB1ILK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:10:57 -0500
-Subject: [PATCH 0/2] spi: Add support for non-blocking synchronous transfers
-To: linux-kernel@vger.kernel.org
-From: Balaji Rao <balajirrao@openmoko.org>
-Cc: spi-devel-general@lists.sourceforge.net, Andy Green <andy@openmoko.com>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Date: Sat, 28 Feb 2009 13:40:36 +0530
-Message-ID: <20090228081036.31964.80618.stgit@fedora.yogi>
-User-Agent: StGit/0.14.3.343.g0584
+	Sat, 28 Feb 2009 03:11:10 -0500
+Message-ID: <49A8F0D0.3070201@zytor.com>
+Date: Sat, 28 Feb 2009 00:07:44 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: does boot loader check uncompressed kernel size?
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org> <1235785882-17580-4-git-send-email-jeremy@goop.org> <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com> <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org>
+In-Reply-To: <49A8EA1A.50802@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Yinghai Lu wrote:
+> wonder if boot loader check uncompress size aka vmlinux size in bzImage
+> before it find one good position for bzImage...?
 
-During the course of development of an accelerometer driver, we saw the
-necessity to execute spi transfers synchronously within an interrupt handler.
-When using a workqueue instead, we observed a huge number of overruns with very
-high cpu utlization, which is unacceptable.
+Most boot loaders load the bzImage to a single standard address, 0x100000.
 
-This series adds a new interface for this and modifies no existing ones.
-
-[PATCH 1/2] - Adds synchronous non-blocking transfer support to spi core
-[PATCH 2/2] - Implements this support in spi_bitbang.c
-
-
-Balaji Rao (2):
-      spi_bitbang: Add support for non-blocking synchronous transfers
-      spi: Add support for non-blocking synchronous transfers
-
-
- drivers/spi/spi_bitbang.c       |  227 +++++++++++++++++++++------------------
- include/linux/spi/spi.h         |   31 +++++
- include/linux/spi/spi_bitbang.h |    5 +
- 3 files changed, 156 insertions(+), 107 deletions(-)
-
-
---
-Balaji Rao
+	-hpa
