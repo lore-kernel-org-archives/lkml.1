@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZB1Sqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZB1SxF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZB1Sqf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 13:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZB1Sq2
+	id S1754843AbZB1SxF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 13:53:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZB1Sw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 13:46:28 -0500
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:35091 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbZB1Sq1 (ORCPT
+	Sat, 28 Feb 2009 13:52:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53019 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752809AbZB1Swz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 13:46:27 -0500
-Date: Sat, 28 Feb 2009 19:51:43 +0100
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Risto Suominen <risto.suominen@gmail.com>
-Cc: adaplas@pol.net, Andrew Morton <akpm@linux-foundation.org>,
-       geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
-Message-Id: <20090228195143.03b1f600.krzysztof.h1@poczta.fm>
-In-Reply-To: <46e1c7760902222253p34a714bao5c06b0ad4d779337@mail.gmail.com>
-References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
-	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
-	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
-	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
-	<20090211142409.b88c577e.akpm@linux-foundation.org>
-	<46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
-	<20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
-	<20090222081517.567a29bd.krzysztof.h1@poczta.fm>
-	<46e1c7760902220125l61700421gc4045ca10ea4dd10@mail.gmail.com>
-	<20090222164052.dd5442c4.krzysztof.h1@poczta.fm>
-	<46e1c7760902222253p34a714bao5c06b0ad4d779337@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: 44e2b138
+	Sat, 28 Feb 2009 13:52:55 -0500
+Date: Sat, 28 Feb 2009 10:52:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Salman Qazi <sqazi@google.com>,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] x86, mm: pass in 'total' to
+ __copy_from_user_*nocache()
+In-Reply-To: <20090228182759.GA28865@elte.hu>
+Message-ID: <alpine.LFD.2.00.0902281041160.3111@localhost.localdomain>
+References: <20090224020304.GA4496@google.com> <200902272305.01867.nickpiggin@yahoo.com.au> <20090228082922.GB11425@elte.hu> <200902282249.57479.nickpiggin@yahoo.com.au> <20090228125816.GA14917@elte.hu> <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
+ <20090228092450.3ded2db5@infradead.org> <alpine.LFD.2.00.0902280935010.3111@localhost.localdomain> <20090228182759.GA28865@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Risto,
 
-I ahve checked xorg server 1.1.1 with kernel 2.6.24
- and I cannot reproduce your problem (hw cursor
-left in Xfbdev) with two drivers using the hw cursor
-(pm2fb and tdfxfb). Tests were done on x86 (amd 
-k6-2+ cpu).
 
-Regards,
-Krzysztof
+On Sat, 28 Feb 2009, Ingo Molnar wrote:
+> 
+> OTOH, given how draconian non-temporal stores are, i'm leaning 
+> towards removing them from the x86 code altogether. If it matter 
+> to performance somewhere it can be reintroduced, based on really 
+> well backed up numbers.
 
-----------------------------------------------------------------------
-Dzien Kobiet dniem wolnym od pracy? Wypowiedz sie i wygraj nagrode! 
-Sprawdz >> http://link.interia.pl/f2076 
+It would be interesting to see if we could instead base the decision on 
+what we really do care about, namely going to do IO.
 
+And the thing is, in this path we _do_ kind of know that. The caller 
+(normally generic_perform_write) already does that whole 
+balance_dirty_pages_ratelimited() thing.
+
+So rather than passing in the "total_size" thing, we _could_ pass in 
+something that is based on
+
+ - are we O_DIRECT? If so: use uncached
+ - perhaps: are we really _really_ large? If so: use uncached, we know the 
+   caches aren't going to capture it.
+ - are we starting writeout due to dirty page balancing: if so, use 
+   uncached.
+
+so we could just add a "nocached" flag to that whole 
+__copy_from_user[_inatomic]_nocache thing, and we could make 
+balance_dirty_pages_ratelimited() return a flag satung whether we're 
+starting write-out or not.
+
+Of course, the dirty writeout will always happen to _old_ pages, so we'll 
+actually get notified too late, but assuming you have some steady state 
+"heavy IO", it would presumably still be a reasonable heuristic.
+
+But on the other hand, I could personally certainly also imagine just not 
+doing that whole uncached thing at all. Myself, I tend to care about the 
+peformance of the cached case much more than some odd iozone thing. But 
+others will have different priorities..
+
+		Linus
