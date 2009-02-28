@@ -1,109 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763592AbZB1CRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761922AbZB1CSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763592AbZB1CRs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 21:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbZB1COT
+	id S1761922AbZB1CSP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 21:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761811AbZB1CO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 21:14:19 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:46157
-	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754522AbZB1COM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 21:14:12 -0500
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@f9-builder (none)>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 06/10] xen/apic: identity map gsi->irqs
-Date: Fri, 27 Feb 2009 18:14:04 -0800
-Message-Id: <1235787248-18184-7-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1235787248-18184-1-git-send-email-jeremy@goop.org>
-References: <1235787248-18184-1-git-send-email-jeremy@goop.org>
+	Fri, 27 Feb 2009 21:14:59 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:56031 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761742AbZB1CO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 21:14:58 -0500
+X-Greylist: delayed 1078 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Feb 2009 21:14:57 EST
+Message-Id: <200902280156.n1S1udEL014057@pobox-pa.hpl.hp.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [PATCH] proc: /proc/kpageflags: incorrect arg order in kpf_copy_bits()
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, Jeff.Mogul@hp.com
+From: Jeffrey Mogul <Jeff.Mogul@hp.com>
+X-Organization: Hewlett-Packard Labs, Large Scale Systems group
+Date: Fri, 27 Feb 2009 17:56:39 -0800
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: jeff.mogul@hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@f9-builder.(none)>
+The code in fs/proc/page.c that implements /proc/kpageflags has
+two similar but different bugs in the way that it copies bits
+from the internal page->flags representation to the exported
+representation:
 
-Reserve the lower irq range for use for hardware interrupts so we
-can identity-map them.
+(1) The kpf_copy_bits() macro was defined with argument order
+(flags, srcpos, dstpos), which is the logical order, but all
+but one of the uses of this macro invoke it instead in the order
+(flags, dstpos, srcpos).  This only affects the output for a few
+flags, since in most -- but not all! -- cases, srcpos == dstpos.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+I fixed this by changing the macro definition rather than the macro
+uses, which minimizes the number of lines to change but which might
+not be the most obvious/logical design.
+
+(2) One use of the kpf_copy_bit macro (for the PG_locked flag) had
+the arguments in a random (rotated?) order, and was clearly wrong.
+
+These bugs appear to have been in the code since /proc/kpageflags
+was introduced (2.6.25).
+
+CC: stable@kernel.org
+Signed-off-by: Jeff Mogul <Jeff.Mogul@hp.com>
 ---
- drivers/xen/events.c |   23 +++++++++++++++++------
- 1 files changed, 17 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 81726e8..3477998 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -31,6 +31,7 @@
- #include <asm/ptrace.h>
- #include <asm/irq.h>
- #include <asm/idle.h>
-+#include <asm/io_apic.h>
- #include <asm/sync_bitops.h>
- #include <asm/xen/hypercall.h>
- #include <asm/xen/hypervisor.h>
-@@ -40,9 +41,6 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/event_channel.h>
+ fs/proc/page.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+--- linux-2.6.28.7/fs/proc/page.c.orig	2009-02-26 17:16:42.000000000 -0800
++++ linux-2.6.28.7/fs/proc/page.c	2009-02-26 17:18:04.000000000 -0800
+@@ -80,7 +80,8 @@ static const struct file_operations proc
+ #define KPF_RECLAIM    9
+ #define KPF_BUDDY     10
  
--/* Leave low irqs free for identity mapping */
--#define LEGACY_IRQS	16
--
- /*
-  * This lock protects updates to the following mapping and reference-count
-  * arrays. The lock does not need to be acquired to read the mapping tables.
-@@ -338,12 +336,24 @@ static void unmask_evtchn(int port)
- 	put_cpu();
- }
+-#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
++/* Arg order is dstpos,srcpos because that's how this macro is used below */
++#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
  
-+static int get_nr_hw_irqs(void)
-+{
-+	int ret = 1;
-+
-+#ifdef CONFIG_X86_IO_APIC
-+	ret = get_nr_irqs_gsi();
-+#endif
-+
-+	return ret;
-+}
-+
- static int find_unbound_irq(void)
- {
- 	int irq;
- 	struct irq_desc *desc;
-+	int start = get_nr_hw_irqs();
+ static ssize_t kpageflags_read(struct file *file, char __user *buf,
+ 			     size_t count, loff_t *ppos)
+@@ -107,7 +108,7 @@ static ssize_t kpageflags_read(struct fi
+ 		else
+ 			kflags = ppage->flags;
  
--	for (irq = LEGACY_IRQS; irq < nr_irqs; irq++)
-+	for (irq = start; irq < nr_irqs; irq++)
- 		if (irq_info[irq].type == IRQT_UNBOUND)
- 			break;
- 
-@@ -361,8 +371,8 @@ static int find_unbound_irq(void)
- 
- static bool identity_mapped_irq(unsigned irq)
- {
--	/* only identity map legacy irqs */
--	return irq < LEGACY_IRQS;
-+	/* identity map all the hardware irqs */
-+	return irq < get_nr_hw_irqs();
- }
- 
- static void pirq_unmask_notify(int irq)
-@@ -531,6 +541,7 @@ int xen_allocate_pirq(unsigned gsi)
- 
- 	if (identity_mapped_irq(gsi)) {
- 		irq = gsi;
-+		irq_to_desc_alloc_cpu(irq, 0);
- 		dynamic_irq_init(irq);
- 	} else
- 		irq = find_unbound_irq();
--- 
-1.6.0.6
-
+-		uflags = kpf_copy_bit(KPF_LOCKED, PG_locked, kflags) |
++		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
+ 			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
+ 			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
+ 			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
