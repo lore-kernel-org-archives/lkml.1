@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZB1Xdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZB1Xgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbZB1Xdl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 18:33:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZB1Xdd
+	id S1755964AbZB1Xgj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 18:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZB1Xgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 18:33:33 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34636 "EHLO
+	Sat, 28 Feb 2009 18:36:31 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45223 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085AbZB1Xdc (ORCPT
+	with ESMTP id S1751085AbZB1Xgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 18:33:32 -0500
-Date: Sun, 1 Mar 2009 00:52:01 +0100
+	Sat, 28 Feb 2009 18:36:31 -0500
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com
+Subject: Re: [PATCH] Input notifier support
 From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] ftrace, x86: make kernel text writable only for conversions
-Message-ID: <20090228235201.GE26292@one.firstfloor.org>
-References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <87y6vyuzsn.fsf@basil.nowhere.org> <20090227210856.GB1476@ucw.cz> <20090228165624.GC26292@one.firstfloor.org> <20090228220829.GE21230@elf.ucw.cz> <87wsba1a9f.fsf@basil.nowhere.org> <20090228221944.GG21230@elf.ucw.cz>
-Mime-Version: 1.0
+References: <20090225044730.GA9106@july>
+Date: Sun, 01 Mar 2009 00:34:38 +0100
+In-Reply-To: <20090225044730.GA9106@july> (Kyungmin Park's message of "Wed, 25 Feb 2009 13:47:30 +0900")
+Message-ID: <87skly16gh.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090228221944.GG21230@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So using aliases for kernel text rewriting is bad idea because it
-> would break ia64?
+Kyungmin Park <kmpark@infradead.org> writes:
 
-Nope.
+> Some hardware doesn't connected with key button and led. In this case key should be connected with led by software. Of course each application can control it however it's too big burden to application programmer.
+>
+> So add input notifier and then use it at other frameworks such as led.
+> Of course, other input device can use this one.
+>
+> Any commnets are welcome.
 
-First what you do on x86 kernels doesn't matter to ia64.
-And then kernel text rewriting doesn't require any illegal aliases anyways.
-It would only be a problem if someone set the kernel text uncached,
-which no sane person would do.
+It looks like the perfect interface for a password stealing root kit.
 
-> That was what the thread was about. (Sorry, no ia64
-> or sparc manuals nearby).
-
-google knows them all.
+Yes there are probably other ways to do this, but still this seems to
+make it very easy.
 
 -Andi
+
 -- 
 ak@linux.intel.com -- Speaking for myself only.
