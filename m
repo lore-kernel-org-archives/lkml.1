@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762085AbZB1Br7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbZB1BsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762085AbZB1Br7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 20:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbZB1Bmf
+	id S1762169AbZB1BsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 20:48:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbZB1Bmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:42:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41790 "EHLO mx2.redhat.com"
+	Fri, 27 Feb 2009 20:42:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41781 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754866AbZB1Bl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:41:59 -0500
+	id S1754710AbZB1Bl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 20:41:58 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 26/30] KVM: ia64: Fix the build errors due to lack of macros related to MSI.
-Date: Sat, 28 Feb 2009 03:41:45 +0200
-Message-Id: <1235785309-12835-27-git-send-email-avi@redhat.com>
+Subject: [PATCH 19/30] KVM: SVM: set accessed bit for VMCB segment selectors
+Date: Sat, 28 Feb 2009 03:41:38 +0200
+Message-Id: <1235785309-12835-20-git-send-email-avi@redhat.com>
 In-Reply-To: <1235785309-12835-1-git-send-email-avi@redhat.com>
 References: <1235785309-12835-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiantao Zhang <xiantao.zhang@intel.com>
+From: Andre Przywara <andre.przywara@amd.com>
 
-Include the newly introduced msidef.h to solve the build issues.
+In the segment descriptor _cache_ the accessed bit is always set
+(although it can be cleared in the descriptor itself). Since Intel
+checks for this condition on a VMENTRY, set this bit in the AMD path
+to enable cross vendor migration.
 
-Signed-off-by: Xiantao Zhang <xiantao.zhang@intel.com>
+Cc: stable@kernel.org
+Signed-off-by: Andre Przywara <andre.przywara@amd.com>
+Acked-By: Amit Shah <amit.shah@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/kvm/irq.h |    2 ++
- virt/kvm/irq_comm.c |    2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kvm/svm.c |   41 +++++++++++++++++++++++++++++------------
+ 1 files changed, 29 insertions(+), 12 deletions(-)
 
-diff --git a/arch/ia64/kvm/irq.h b/arch/ia64/kvm/irq.h
-index c6786e8..c0785a7 100644
---- a/arch/ia64/kvm/irq.h
-+++ b/arch/ia64/kvm/irq.h
-@@ -23,6 +23,8 @@
- #ifndef __IRQ_H
- #define __IRQ_H
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 22e88a4..1821c20 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -796,20 +796,37 @@ static void svm_get_segment(struct kvm_vcpu *vcpu,
+ 	var->db = (s->attrib >> SVM_SELECTOR_DB_SHIFT) & 1;
+ 	var->g = (s->attrib >> SVM_SELECTOR_G_SHIFT) & 1;
  
-+#include "lapic.h"
-+
- static inline int irqchip_in_kernel(struct kvm *kvm)
- {
- 	return 1;
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index c516d61..a70d805 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -21,9 +21,7 @@
+-	/*
+-	 * SVM always stores 0 for the 'G' bit in the CS selector in
+-	 * the VMCB on a VMEXIT. This hurts cross-vendor migration:
+-	 * Intel's VMENTRY has a check on the 'G' bit.
+-	 */
+-	if (seg == VCPU_SREG_CS)
++	switch (seg) {
++	case VCPU_SREG_CS:
++		/*
++		 * SVM always stores 0 for the 'G' bit in the CS selector in
++		 * the VMCB on a VMEXIT. This hurts cross-vendor migration:
++		 * Intel's VMENTRY has a check on the 'G' bit.
++		 */
+ 		var->g = s->limit > 0xfffff;
+-
+-	/*
+-	 * Work around a bug where the busy flag in the tr selector
+-	 * isn't exposed
+-	 */
+-	if (seg == VCPU_SREG_TR)
++		break;
++	case VCPU_SREG_TR:
++		/*
++		 * Work around a bug where the busy flag in the tr selector
++		 * isn't exposed
++		 */
+ 		var->type |= 0x2;
++		break;
++	case VCPU_SREG_DS:
++	case VCPU_SREG_ES:
++	case VCPU_SREG_FS:
++	case VCPU_SREG_GS:
++		/*
++		 * The accessed bit must always be set in the segment
++		 * descriptor cache, although it can be cleared in the
++		 * descriptor, the cached bit always remains at 1. Since
++		 * Intel has a check on this, set it here to support
++		 * cross-vendor migration.
++		 */
++		if (!var->unusable)
++			var->type |= 0x1;
++		break;
++	}
  
- #include <linux/kvm_host.h>
- 
--#ifdef CONFIG_X86
- #include <asm/msidef.h>
--#endif
- 
- #include "irq.h"
- 
+ 	var->unusable = !var->present;
+ }
 -- 
 1.6.0.6
 
