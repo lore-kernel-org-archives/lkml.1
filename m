@@ -1,29 +1,52 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbZB0Ofx (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 27 Feb 2009 09:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZB0Ofm
+	id S1755442AbZB1Tco (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 28 Feb 2009 14:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbZB1TcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 09:35:42 -0500
-Received: from [58.137.222.2] ([58.137.222.2]:36159 "HELO
-	your.mail.server.name.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with SMTP id S1752652AbZB0Ofl (ORCPT
+	Sat, 28 Feb 2009 14:32:23 -0500
+Received: from n17c.bullet.sp1.yahoo.com ([69.147.64.126]:48799 "HELO
+	n17c.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753537AbZB1TcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 09:35:41 -0500
-X-Greylist: delayed 1275 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Feb 2009 09:35:40 EST
-Date: Fri, 27 Feb 2009 21:10:26 +0700
-From: Richmal Sidower <dirty-corpse@iespana.es>
-X-Mailer: The Bat! (v2.01)
-Reply-To: Richmal Sidower <10457zbinden.ray@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <00000006C43445F1939216354>
-To: <linux-kernel@vger.kernel.org>
-Subject: =?windows-1251?B?V2F5cyBvZiBNYWtpbmcgTW9uZXkgV2hpbGUgWW91J3JlIFNsZWVwaW5n?=
+	Sat, 28 Feb 2009 14:32:21 -0500
+X-Greylist: delayed 336 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Feb 2009 14:32:21 EST
+Date: Sat, 28 Feb 2009 19:26:42 -0000
+From: "tkfwsdzdghuw" <tkfwsdzdghuw@yahoo.com.cn>
+To: dywc999@pchome.com.tw, a0826@etrealty.com.tw,
+	sp033188@yahoo.com.tw, dlvikes@cox.net, fanny_lam1@hotmail.com,
+	highlanddancermom@cox.net, givemeairconditioner@hotmail.com,
+	n8550032@gmail.com, pvlo_ccs@dld.go.th, yamylee@XXX.com,
+	morfanbi@hotmail.com, ymls2000@gmail.com, oxmnaj@hotmail.com,
+	gomyshop@yahoo.com.tw, km6574@yahoo.com.tw,
+	archives@email.syscom.com.tw, find520@hotmail.com,
+	ken331@ms29.url.com.tw, spvfzxso@dbates.com, qqww2233@hotmail.com,
+	abc7803487@yahoo.com.tw, nne@emmm.tw, eric2005117@xxx.com,
+	moshangmusic@yahoo.com, yoyo9090520@yahoo.com.tw,
+	luoyouming2005@163.com, heartbeatstore@hotmail.com,
+	terry770531@hotmail.com, gn018681442@hotmail.com,
+	from_daisylau@yahoo.com.hk, changheng@wufeng.tari.gov.tw,
+	jmcgowan@uiuc.edu, reh1333@yahoo.com.tw, susie7093@yahoo.com.tw,
+	phorain@sina.com.tw, fhs0508@ms33.hinet.net,
+	linux-kernel@vger.kernel.org, avance@nytimes.com,
+	yihuia0502@yahoo.com.tw, a660711a@yahoo.com.tw,
+	ieesaee@yahoo.com.tw
+Subject: =?big5?B?vsey36fWs3SwT77Qqmulda1uMTYwMKS4ISE=?=
+Message-ID: <goc35i+uv14@eGroups.com>
+User-Agent: eGroups-EW/0.82
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset="BIG5"
 Content-Transfer-Encoding: base64
+X-Mailer: Yahoo Groups Message Poster
+X-Yahoo-Post-IP: 218.172.246.246
+X-Yahoo-Newman-Property: groups-compose
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755581AbZB0Ofx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755442AbZB1Tco@vger.kernel.org>
 
-R29vZCBkYXksIFJlc3BlY3RpdmUgU2lyL01hZGFtIQ0KDQpJZiB5b3UgYXJlIHdvcnJpZWQgYWJvdXQgeW91ciBqb2IgYW5kIGZ1dHVyZSwgeW91IG5lZWQgdG8gbGVhcm4gYXMgbXVjaCBhcyB5b3UgY2FuIGFib3V0IHRoZSBub24tdHJhZGl0aW9uYWwgd2F5cyB0byBicmluZyBpbiBhIHNvbGlkIG1vbnRobHkgaW5jb21lIHdvcmtpbmcgZnJvbSB5b3VyIGhvbWUuIEFscmVhZHksIGxvdHMgb2YgcmVndWxhciBwZW9wbGUganVzdCBsaWtlIHlvdSBhcmUgdXNpbmcgdGhlIEludGVybmV0IHRvIG1ha2UgbW9uZXkuIERvbid0IHlvdSB3YW50IHRvIGtub3cgaWYgeW91IGNhbiB0b28/DQoNCldlIG9mZmVyIHlvdSB0byB3b3JrIGZyb20gdGhlIGNvbWZvcnQgb2YgeW91ciBob21lIGFuZCBlYXJuIGV4Y2VsbGVudCBhbW91bnRzIG9mIGNhc2guIFlvdSBkb24ndCBuZWVkIGFueSBoaWdoIHRlY2ggZXhwZXJ0aXNlIHRvIHVzZSBJbnRlcm5ldCB0byBnZW5lcmF0ZSBpbmNvbWUuIE91ciBGcmVlIEtpdCB3aWxsIHNob3cgeW91IGhvdyBlYXN5IGl0IGNhbiBiZSB0byB1c2UgR29vZ2xlIGZvciBtYWtpbmcgbW9uZXkuDQoNCk1hbnkgcGVvcGxlIGFyZSBtYWtpbmcgbW9uZXkgdXNpbmcgdGhlIHBvd2VyIG9mIEdvb2dsZS4gT3VyIFJpc2stRnJlZSBUcmlhbCBLaXQgd2lsbCBoZWxwIHlvdSBmaW5kIG91dCBpZiBHb29nbGUgaXMgcmlnaHQgZm9yIHlvdSEgT3VyIHN1cHBsaWVzIG9mIFJpc2stRnJlZSBLaXRzIGFyZSBnb2luZyBmYXN0IGFuZCB5b3UgZG9uJ3QgaGF2ZSBtdWNoIHRpbWUgdG8gaGVzaXRhdGUhIEluIG90aGVyIHdvcmRzLCBpZiB5b3Ugd2FudCBpbiwgeW91J2xsIGhhdmUgdG8gbWFrZSB5b3VyIG1vdmUgTk9XLiBBbGwgeW91IGhhdmUgdG8gZG8gaXMgdG8gcmVwbHkgdG8gZ2FsZS5kaWxhdXJvMTgyMjVAZ21haWwuY29tIGFzIHNvb24gYXMgcG9zc2libGUsIGFzIHRoZXNlIG9mZmVycyBhcmUgbGltaXRlZCBhbmQgZXhwaXJpbmcgc29vbi4gWW91IGNhbm5vdCBsb29zZSBhbnl0aGluZyAtIFlPVSBDQU4gT05MWSBXSU4gQU5EIEVBUk4gQ0FTSCENCg0KV2UgYXJlIHNvcnJ5IGZvciBhbnkgaW5jb252ZW5pZW5jZSBjYXVzZWQgYnkgc2VuZGluZyB0aGlzIGVtYWlsIHRvIHlvdSwgYnV0IG91ciBvZmZlciBpcyByZWFsbHkgc2VyaW91cyBhbmQgeW91IGhhdmUgdG8gcmVhY3QgZmFzdCwgaWYgeW91IHdhbnQgdG8gYmUgdGhlIGNob3NlbiBwZXJzb24gYW5kIGVhcm4gZ29vZCBjYXNoIHZlcnkgZmFzdC4NCg0KV2l0aCBSZXNwZWN0LA0KRWFzeS1Hb29nbGUtQ2FzaCBNYW5hZ2VyCgoKCgoKCgoKCgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRoaXMgZW1haWwgaGFzIGJlZW4gd3JpdHRlbiBhbmQgcHJvdmVkIHRvIGJlIGluIGNvbXBsaWFuY2Ugd2l0aCB0aGUgcmVjZW50bHkgZXN0YWJsaXNoZWQgY2FuLXNwYW0gYWN0IGxhdyBpbiBVUy4gV2UgYXJlIG5vdCBwcm92b2tpbmcgb3IgZm9yY2luZyBhbnkgcGVyc29uIGluIGFueSB3YXkgdG8gcGFydGljaXBhdGUgaW4gb3VyIHByb2dyYW1zLiBUbyBwYXJ0aWNpcGF0ZSBpcyB5b3VyIG93biBkZWNpc2lvbiBhbmQgeW91IGNhcnJ5IHRoZSByZXNwb25zaWJpbGl0eSBvZiB0YWtpbmcgZnVydGhlciBwYXJ0IGluIHRoaXMgcHJvbW90aW9uLiBBbnl3YXksIGlmIHlvdSBkb24ndCB3YW50IHRvIHJlY2VpdmUgbW9yZSBnb29kIG9mZmVycyBmcm9tIHVzLCB5b3UgY2FuIHNpbXBseSBVbnN1YnNjcmliZSBieSBzZW5kaW5nIHVzIGEgbm90aWZpY2F0aW9uIGVtYWlsIHRvIGdldC5tZV9vdXRfbm93QHlhaG9vLmNvbSB3aXRoIGEgbWFpbC1zdWJqZWN0IGFuZCB0ZXh0ICJVbnN1YnNjcmliZSBtZSIsIGFuZCB3ZSB3aWxsIGdldCB5b3VyIGVtYWlsIG91dCBvZiBvdXIgbGlzdCB3aXRoaW4gMTAgZGF5cy4KClRoaXMgbWVzc2FnZSBpcyBTVFJJQ1RMWSBDT05GSURFTlRJQUwgYW5kIGlzIHNvbGVseSBmb3IgdGhlIGluZGl2aWR1YWwgb3Igb3JnYW5pc2F0aW9uIHRvIHdob20gaXQgaXMgYWRkcmVzc2VkLiBJdCBtYXkgY29udGFpbiBQUklWSUxFR0VEIGFuZCBDT05GSURFTlRJQUwgaW5mb3JtYXRpb24uIElmIHlvdSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIHlvdSBhcmUgaGVyZWJ5IG5vdGlmaWVkIHRoYXQgYW55IGRpc3NlbWluYXRpb24sIGRpc3RyaWJ1dGlvbiBvciBjb3B5aW5nIG9mIHRoaXMgY29tbXVuaWNhdGlvbiBhbmQgaXRzIGNvbnRlbnRzIGlzIHN0cmljdGx5IHByb2hpYml0ZWQuIElmIHlvdSBhcmUgbm90IGludGVyZXN0ZWQgaW4gdGhlIG9mZmVyZWQgcHJvbW90aW9ucywgcGxlYXNlIGp1c3QgZG9uJ3QgYW5zd2VyLiBJZiB5b3UgdGhpbmsgeW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBtZXNzYWdlIGFuZCBpdHMgY29udGVudHMgaW4gZXJyb3IsIHBsZWFzZSBkZWxldGUgaXQgZnJvbSB5b3VyIGNvbXB1dGVyLCBvciBmb2xsb3cgdGhlIHVuc3Vic2NyaWJpbmcgcHJvY2VkdXJlIHNob3duIGFib3ZlLgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCQk=
+vsey37BPvtCqa691qrqtbqi6u/K2UbbcPwqye6ZisXqms6fzpa2lwaTGqrq/777cISEKptOlQqtL
+qXm1tLnvprOmbrNmISEKq0/D0rDqpd+kar7Hqrqudrjqv8um27/9u3MKq0/D0rDiq+GqQbDIvsnF
+qgqldb3mMTYwMKS4ISEKp7ml/rVMq0+vZKq6sdC+xwq41LLTuc+k5buhqfq90Kv2prkgCmh0dHA6
+Ly95YWhvby56ei50Yy9tZW1vcnkK
+
+
