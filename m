@@ -1,77 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZB1RRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZB1RSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754283AbZB1RRe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 12:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZB1RR0
+	id S1754526AbZB1RSy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 12:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZB1RSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 12:17:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34135 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752662AbZB1RRZ (ORCPT
+	Sat, 28 Feb 2009 12:18:46 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:58338 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbZB1RSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 12:17:25 -0500
-Date: Sat, 28 Feb 2009 09:16:21 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Salman Qazi <sqazi@google.com>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to
- __copy_from_user_*nocache()
-In-Reply-To: <20090228125816.GA14917@elte.hu>
-Message-ID: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
-References: <20090224020304.GA4496@google.com> <200902272305.01867.nickpiggin@yahoo.com.au> <20090228082922.GB11425@elte.hu> <200902282249.57479.nickpiggin@yahoo.com.au> <20090228125816.GA14917@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 28 Feb 2009 12:18:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=C69V9kqu1JWmuSFppec43SuElIIlf2H4WFx+LoBnC8yw6LehJOKUgQccIWFylPPOuq
+         +CpE1NGcadzoRtUSpINRXslVf0XMU7K5htvBM2cpHgXINZwbEPOEhtVzMvEAK/fkO2fH
+         fceUEhzqcBHVNeHA+ElEYyDbQwbWhMLMIZih0=
+Date: Sat, 28 Feb 2009 18:18:39 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
+	3 users
+Message-ID: <20090228171838.GA5821@nowhere>
+References: <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere> <20090226185208.GA6658@nowhere> <20090226185635.GA12895@elte.hu> <20090227061936.GA5318@nowhere> <alpine.LFD.2.00.0902271631231.3111@localhost.localdomain> <20090228081123.GA5906@nowhere> <alpine.LFD.2.00.0902280845580.3111@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902280845580.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 28 Feb 2009, Ingo Molnar wrote:
+On Sat, Feb 28, 2009 at 08:54:15AM -0800, Linus Torvalds wrote:
 > 
-> Can you suggest some other workload that should show sensitivity 
-> to this detail too? Like a simple write() loop of non-4K-sized 
-> files or so?
+> 
+> On Sat, 28 Feb 2009, Frederic Weisbecker wrote:
+> > 
+> > You're right, that's much proper.
+> > See the V2 below:
+> 
+> Good. This looks better.
+> 
+> One final (?) nit:
+> 
+> > +		default: {
+> > +			enum format_type type = spec.type;
+> > +
+> > +			if (type == FORMAT_TYPE_LONG_LONG)
+> > +				num = va_arg(args, long long);
+> > +			else if (type == FORMAT_TYPE_ULONG)
+> > +				num = va_arg(args, unsigned long);
+> > +			else if (type == FORMAT_TYPE_LONG)
+> > +				num = va_arg(args, unsigned long);
+> > +			else if (type == FORMAT_TYPE_SIZE_T)
+> > +				num = va_arg(args, size_t);
+> > +			else if (type == FORMAT_TYPE_PTRDIFF)
+> > +				num = va_arg(args, ptrdiff_t);
+> > +			else if (type == FORMAT_TYPE_USHORT)
+> > +				num = (unsigned short) va_arg(args, int);
+> > +			else if (type == FORMAT_TYPE_SHORT)
+> > +				num = (short) va_arg(args, int);
+> > +			else if (type == FORMAT_TYPE_UINT)
+> > +				num = va_arg(args, unsigned int);
+> > +			else
+> > +				num = va_arg(args, unsigned int);
+> > +
+> > +			str = number(str, end, num, spec.base,
+> > +				spec.field_width, spec.precision, spec.flags);
+> 
+> You've got three copes of these (in the three different users), and that 
+> just looks horrid. I see why you did it, but even something like
+> 
+> 		case FORMAT_TYPE_LONG_LONG:
+> 			num = va_arg(args, long long);
+> 			goto handle_number;
+> 		case FORMAT_TYPE_ULONG:
+> 		...
+> 		case FORMAT_TYPE_INT:
+> 			num = va_arg(args, int);
+> 	handle_number:
+> 		str = number(str, end, num, &spec);
+> 		break;
+> 
+> would be better.
+> 
+> And yes, please do pass in "spec" to the "number()/pointer()/string()" 
+> routines instead of exploding it into the individual numbers. When 
+> cleaning up, let's just do it properly..
+> 
+> 		Linus
 
-I bet you can find it, but I also suspect that it will depend quite a bit 
-on the microarchitecture. What does 'movntq' actually _do_ on different 
-CPU's (bypass L1 or L2 or just turn the L1 cache policy to "write through 
-and invalidate")? How expensive is the sfence when there are still stores 
-in the write buffer? Does 'movqnt' even use the write buffer for cached 
-stores, or is doing some special path the the last-level cache?
 
-If you want to be really subtle, ask questions like what are the 
-implications for last-level caches that are inclusive? The last-level 
-cache would take not just the new write, but it also has logic to make 
-sure that it's a superset of the inner caches, so what does that do to 
-replacement policy for that cache? Or does it cause invalidations in the 
-inner caches?
+Ok, I'm addressing your comments and those from Ingo, then I will rebase
+the whole patchset (with the ftrace_bprintk related things) against latest
+-tip and resend it.
 
-Non-temporal stores are really quite different from normal stores. 
-Depending on microarchitecture, that may be totally a non-issue (bypassing 
-the L1 may be trivial and have no impact on anything else at all). Or it 
-could be that a movntq is really expensive because it needs to do odd 
-things.
+Thanks!
 
-So if you want to test this, I'd suggest using the same program that did 
-the 256-byte writes (Unixbench's fstime thing), but just change the 
-numbers, and just try different things. But I'd _also_ suggest that if 
-you're going for anything more complicated (ie if you really want to 
-have a good argument for that 'total_size' thing), then you should try out 
-at least three different microarchitectures.
-
-The "different" ones would be at a minimum P4, Core2 and Opteron. They 
-really could have very different behavior. 
-
-I suspect Core2 and Core i7 are fairly similar, but at the same time Ci7 
-has that L3 cache thing, so it's quite possible that movntq is actually 
-fundamentally different (does it bypass both L1 and L2? If so, latencies 
-to the L3 are _much_ longer to Ci7 than the very cheap L2 latencies on 
-C2).
-
-			Linus
