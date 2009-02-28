@@ -1,73 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZB1QQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbZB1Q0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbZB1QQW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 11:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZB1QQJ
+	id S1753426AbZB1Q0i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 11:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZB1Q03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 11:16:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:35201 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbZB1QQI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 11:16:08 -0500
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] xen: core dom0 support
-From: Andi Kleen <andi@firstfloor.org>
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org>
-	<20090227212812.26d02f34.akpm@linux-foundation.org>
-	<49A8DF28.4050301@goop.org>
-Date: Sat, 28 Feb 2009 17:14:15 +0100
-In-Reply-To: <49A8DF28.4050301@goop.org> (Jeremy Fitzhardinge's message of "Fri, 27 Feb 2009 22:52:24 -0800")
-Message-ID: <87eixi35ew.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 28 Feb 2009 11:26:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33769 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752309AbZB1Q02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 11:26:28 -0500
+Message-ID: <49A965AD.10701@redhat.com>
+Date: Sat, 28 Feb 2009 11:26:21 -0500
+From: Brian Maly <bmaly@redhat.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix e820 end address with EFI
+Content-Type: multipart/mixed;
+ boundary="------------080503090003010201090000"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+This is a multi-part message in MIME format.
+--------------080503090003010201090000
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Andrew Morton wrote:
->> On Fri, 27 Feb 2009 17:59:06 -0800 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>
->>
->>> This series implements the core parts of Xen dom0 support; that is, just
->>> enough to get the kernel started when booted by Xen as a dom0 kernel.
->>>
->>
->> And what other patches can we expect to see to complete the xen dom0
->> support?
->>
->
-> There's a bit of a gradient.  There's probably another 2-3 similarly
-> sized series to get everything so that you can boot dom0 out of the
-> box (core, apic, swiotlb/agp/drm, backend drivers, tools).  And then a
-> scattering of smaller things which may or may not be upstreamable.
-> The vast majority of it is Xen-specific code, rather than changes to
-> core kernel.  
 
-I would say the more interesting question is less how much additional
-code it is or even how much it changes the main kernel, but more how
-different the code execution paths in interaction with Xen are
-compared to what a native kernel would do. Because such differences
-always would need to be considered in future changes.
+    On some EFI systems (i.e. Apple) EFI runtime is mapped into higher mem
+regions. These EFI mem regions are not always taken into consideration when
+max_pfn is calculated in setup.c being that e820_end_of_ram_pfn() only 
+counts
+mappings types marked as usable (E820_RAM). Currently we only count to 
+the last
+usable e820 address range and nothing beyond. EFI can be mapped anywhere 
+within
+e820 and is not always marked as usable e820, and so EFI runtime may be 
+missed
+if mapped somewhere beyond last usable e820. This patch attempts to resolve
+this problem by including all E820 mappings when EFI is enabled, so that
+the entire e820 (and EFI runtime area) is included in computing max_pfn. 
+Tested
+on a MacBook Pro 3.1 and resolves the issue (system now boots 
+w/elilo+grub & EFI).
 
-For example things like: doesn't use PAT with Xen or apparently very
-different routing are somewhat worrying because it means it's a
-completely different operation modus with Xen that needs to be taken
-care of later, adding to complexity.
+Signed-off-by: Brian Maly <bmaly@redhat>
 
-Unfortunately it also looks like that Xen the HV does things
-more and more different from what mainline kernel does so 
-these differences will likely continue to grow over time.
 
--Andi
+e820.c |   13 +++++++++++--
+1 file changed, 11 insertions(+), 2 deletions(-)
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
+
+
+--------------080503090003010201090000
+Content-Type: text/x-patch;
+ name="apple-include-efi-runtime-in-e820_end-2.6.29.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="apple-include-efi-runtime-in-e820_end-2.6.29.patch"
+
+
+--- a/arch/x86/kernel/e820.c	2009-02-08 15:37:27.000000000 -0500
++++ b/arch/x86/kernel/e820.c	2009-02-28 07:20:09.000000000 -0500
+@@ -51,6 +51,10 @@ unsigned long pci_mem_start = 0xaeedbabe
+ EXPORT_SYMBOL(pci_mem_start);
+ #endif
+ 
++#ifdef CONFIG_EFI
++extern int efi_enabled;
++#endif
++
+ /*
+  * This function checks if any part of the range <start,end> is mapped
+  * with type.
+@@ -1071,7 +1075,7 @@ static unsigned long __init e820_end_pfn
+ 		unsigned long start_pfn;
+ 		unsigned long end_pfn;
+ 
+-		if (ei->type != type)
++		if (type && (ei->type != type))
+ 			continue;
+ 
+ 		start_pfn = ei->addr >> PAGE_SHIFT;
+@@ -1096,7 +1100,12 @@ static unsigned long __init e820_end_pfn
+ }
+ unsigned long __init e820_end_of_ram_pfn(void)
+ {
+-	return e820_end_pfn(MAX_ARCH_PFN, E820_RAM);
++#ifdef CONFIG_EFI
++	if (efi_enabled)
++		return e820_end_pfn(MAX_ARCH_PFN, NULL);
++	else
++#endif
++		return e820_end_pfn(MAX_ARCH_PFN, E820_RAM);
+ }
+ 
+ unsigned long __init e820_end_of_low_ram_pfn(void)
+
+--------------080503090003010201090000--
