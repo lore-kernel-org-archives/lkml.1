@@ -1,76 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZB1IVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZB1IXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbZB1IVq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZB1IVi
+	id S1754072AbZB1IXv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:23:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZB1IXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:21:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39856 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751622AbZB1IVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:21:37 -0500
-Date: Sat, 28 Feb 2009 09:21:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v2 1/2] x86_32: summit_32, use BAD_APICID
-Message-ID: <20090228082120.GA11425@elte.hu>
-References: <20090224175518.GA15616@elte.hu> <1235508093-18063-1-git-send-email-jirislaby@gmail.com> <49A524D3.3090408@gmail.com> <20090225111002.GA15453@elte.hu> <49A71105.4050001@gmail.com>
+	Sat, 28 Feb 2009 03:23:43 -0500
+Received: from mail-in-03.arcor-online.net ([151.189.21.43]:57840 "EHLO
+	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751761AbZB1IXm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 03:23:42 -0500
+X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-07.arcor-online.net ADF0F3CA47A
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] pci: don't enable too many HT MSI mapping
+Date: Sat, 28 Feb 2009 09:25:55 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6; KDE/4.2.0; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
+       Matthew Wilcox <matthew@wil.cx>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200902270752.44078.prakash@punnoor.de> <49A8541C.4030601@kernel.org>
+In-Reply-To: <49A8541C.4030601@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <49A71105.4050001@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902280925.56450.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 25.2.2009 12:10, Ingo Molnar wrote:
->> * Jiri Slaby<jirislaby@gmail.com>  wrote:
->>> In that case, the callers code is buggy, since it passes
->>> online_cpu masks even on machines, where apics are not on the
->>> same clusters.
->>
->> It's most likely confusion in the old code. This used to be
->> copy&paste-ed versions of different snapshots of the
->> mach-default-code, hacked to make work on weird platforms.
->> Mainline fixes/updates werent merged in consistently.
->>
->> So could you please send a patch that fixes this?
+On Freitag 27 Februar 2009 21:59:08 Yinghai Lu wrote:
+> Prakash Punnoor wrote:
+> > On Dienstag 24 Februar 2009 18:37:35 Jesse Barnes wrote:
+> >> On Monday, February 23, 2009 11:51:59 am Yinghai Lu wrote:
+> >>> Impact: fix bug
+> >>>
+> >>> Prakash reported that his c51-mcp51 system ondie sound card doesn't
+> >>> work MSI but if he hack out the HT-MSI on mcp51, the MSI will work well
+> >>> with sound card.
+> >>>
+> >>> this patch rework the nv_msi_ht_cap_quirk()
+> >>> and will only enable ht_msi on own root device and try to avoid to
+> >>> enable ht_msi on device following that root dev
+> >>>
+> >>> Reported-by: Prakash Punnoor <prakash@punnoor.de>
+> >>> Tested-by: Prakash Punnoor <prakash@punnoor.de>
+> >>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>
+> >> Thanks Yinghai & Prakash, applied this fix to my for-linus branch.
+> >
+> > I am very sorry, but I made a mistake testing this patch. I messed up my
+> > kernels and got a false positive and only noticed this now. The patch
+> > does NOT work and even makes things worse:
+> >
+> > dmesg|grep HT
+> > pci 0000:00:09.0: Found disabled HT MSI Mapping
+> > pci 0000:00:09.0: Enabling HT MSI Mapping
+> > pci 0000:00:09.0: Found enabled HT MSI Mapping
+> > pci 0000:00:09.0: Found enabled HT MSI Mapping
+> > pci 0000:00:09.0: Found enabled HT MSI Mapping
+> > pci 0000:00:09.0: Found enabled HT MSI Mapping
+> >
+> > This is exactly the device which shouldn't be MSI enabled for me. On the
+> > other hand, it doesn't enable the needed devices anymore.
 >
-> I've sent 4 more patches, but there are still issues:
-> * es7000 + summit: I haven't solved calling with all bits set (only all  
-> online is sufficient to trigger this). Some of the processors needn't be  
-> on the same apic cluster. It will scream now (again -- it did before  
-> adding the "optimisation"). Actually I don't know how to solve this. How  
-> the caller would know the correct mask, ANDing with a apic->target_cpus  
-> retval?
->
-> * es7000: target_cpus_cluster returns CPU_MASK_ALL and hence it will  
-> choke itself, because es7000_cpu_mask_to_apicid doesn't count with that.  
-> Invoked by setup_timer_IRQ0_pin this way.
->
-> * set_desc_affinity doesn't expect apic->cpu_mask_to_apicid_and to  
-> return BAD_APICID and silently sets desc->affinity. Again, I see no  
-> straightforward solution (rollback of assign_irq_vector and  
-> set_extra_move_desc needed).
+> please check this one, please power off the system before load the kernel
+> with new patch.
 
-Ok, they look good. I got a conflict in 2/4, due to an 
-interacting cleanup from Yinghai - mind resending them against 
-latest tip:master?
+Well, the problem now is that MSI doesn't get enabled on the needed host 
+bridge 00.0 (device 10de:02f0), so MSI doesn't work at all on my system (but 
+also doesn't hang my system.) I have no idea how to differentiate the 00.0 
+device from the "forbidden" 09.0 (device 10de:0270) on my system. Perhaps a 
+blacklist is really the best? The original patch by NVidia had a white list, 
+btw, see also here:
+http://kerneltrap.org/mailarchive/linux-kernel/2007/11/25/443612/thread
 
-Thanks,
+The output of your current patch:
+pci 0000:00:05.0: Boot video device                                                                                               
+pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
+pci 0000:00:0e.0: Enabling HT MSI Mapping                                                                                         
+pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
+pci 0000:00:0f.0: Enabling HT MSI Mapping                                                                                         
+pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
+pci 0000:00:10.0: Enabling HT MSI Mapping                                                                                         
+pci 0000:00:09.0: Found disabled HT MSI Mapping                                                                                   
+pci 0000:00:10.1: Enabling HT MSI Mapping  
 
-	Ingo
+So, ok, MSI gets enabled on the devices as such (good), not enabled on 09.0 
+(good), but also not on the needed host bridge 00.0 (bad).
+
+BTW, I noticed a typo in the patch. In ht_disable_msi_mapping you want the 
+text to be "Disabling"... instead of
++                       dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
+
+And a minor simplification in ht_check_msi_mapping would be instead of 
++                       if (flags & HT_MSI_FLAGS_ENABLE) {
++                               if (found < 2) {
++                                       found = 2;
++                                       break;
++                               }
++                       }
+
+just
+
++                       if (flags & HT_MSI_FLAGS_ENABLE) {
++                                found = 2;
++                                break;
++                       }
+
+as it is the only place where found is set to something higher than 1 and then 
+the function is exited anyway. Or make the return paths clearer by this change 
+from
+
++       int pos, ttl = 48;
++       int found = 0;
++
++       /* check if there is HT MSI cap or enabled on this device */
++       pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++       while (pos && ttl--) {
++               u8 flags;
++
++               if (found < 1)
++                       found = 1;
++               if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++                                        &flags) == 0) {
++                       if (flags & HT_MSI_FLAGS_ENABLE) {
++                               if (found < 2) {
++                                       found = 2;
++                                       break;
++                               }
++                       }
++               }
++               pos = pci_find_next_ht_capability(dev, pos,
++                                                 HT_CAPTYPE_MSI_MAPPING);
++       }
++
++       return found;
+
+to
+
++       int pos, ttl = 48;
++
++       /* check if there is HT MSI cap or enabled on this device */
++       pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++       if (!pos)
++	        return 0;
++
++       do {
++               u8 flags;
++
++               if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++                                        &flags) == 0) {
++                       if (flags & HT_MSI_FLAGS_ENABLE)
++                                         return 2;
++               }
++               pos = pci_find_next_ht_capability(dev, pos,
++                                                 HT_CAPTYPE_MSI_MAPPING);
++       } while (pos && --ttl);
++
++       return 1;
++}
+
+Then at least I would have to think less, under which conditions found takes 
+the values 0, 1 or 2.
+
+Regards,
+
+Prakash
