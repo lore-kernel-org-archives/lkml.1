@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZB1TYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbZB1TZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbZB1TYi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 14:24:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZB1TYa
+	id S1755307AbZB1TZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 14:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZB1TZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 14:24:30 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:55325 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753545AbZB1TY3 (ORCPT
+	Sat, 28 Feb 2009 14:25:21 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44047 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752544AbZB1TZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 14:24:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=jUZkq7qFo0djIkwHg6siUEjiBDJ0hfSSLfWadqoKL/Gk6NYsYHHLsOVgD4NGSu15Yw
-         j54HltRxBnlOX/QYDgI+T63NN96epyPumC7h517O7SHtJMc8uZHp5/xXsejdX3YNwY9m
-         vXnW8OyN/5UNgyFHMJ57vEh+TYyEJFN/s7Ih4=
-Message-ID: <49A98F6A.50702@gmail.com>
-Date: Sat, 28 Feb 2009 19:24:26 +0000
-From: Dave <kilroyd@googlemail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090104)
+	Sat, 28 Feb 2009 14:25:20 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49A98F93.5030206@s5r6.in-berlin.de>
+Date: Sat, 28 Feb 2009 20:25:07 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: dwmw2@infradead.org, orinoco-users@lists.sourceforge.net
-Subject: linux-firmware binary corruption with gitweb
+To: Mark Brown <broonie@sirena.org.uk>
+CC: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+References: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk> <49A942F6.3020600@s5r6.in-berlin.de> <20090228155841.GA15127@sirena.org.uk> <49A962F8.30609@s5r6.in-berlin.de> <20090228164627.GC15127@sirena.org.uk> <49A97563.6040906@s5r6.in-berlin.de> <20090228175218.GA4606@sirena.org.uk>
+In-Reply-To: <20090228175218.GA4606@sirena.org.uk>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm aware of at least a couple users of orinoco who have picked up
-corrupt firmware# from the linux-firmware tree*.
+Mark Brown wrote:
+[some people disregard the patch title in the Subject header]
+> I believe the issue is the UI of a MUA - the subject line of a mail is
+> normally presented separately to the body and isn't always as
+> immediately prominent as the body so it's harder work to look at it.
 
-I've verified that the firmware in the repository itself is correct.
+That's not universally true for all MUA; and in affected MUAs only if
+mails are read one-after-another, not if mails are read by looking at
+the list of messages in a mailbox first, then going to the interesting
+messages.  So if there are people who disregard the patch title for this
+reason, then I dare to say it is because their view is limited by their
+particular MUA and their individual mail reading preferences.  Their
+preferences still don't make the convention go away that the Subject is
+the title.  (And that the title should be a quick intro into what the
+patch is about.)
 
-It appears that downloading the file using the blob/raw links from
-gitweb causes the corruption (0xc3 everywhere). At least it does with
-firefox.
+> This is sensible for e-mail since the general style is that the subject
+> line shouldn't be required in order to comprehend what the message is
+> about
 
-Is this known/expected behaviour?
+No.  The subject is the primary means to establish context for the
+message (along with the mailinglist topic).  We ask people to post with
+a good subject.
 
+And since the subject already established context, there is no need to
+repeat its information in the e-mail body.
 
-Thanks,
+> The connection with git is that it doesn't really draw a similar
+> distinction so the issue isn't as immediately obvious when you're
+> working within it. 
 
-Dave.
+It isn't just a non-obvious issue with git, it is *no issue* with git in
+the first place.  It also is no issue with other patch importing tools
+like quilt.  All those tools either explicitly or implicitly support the
+notion that the RFC 2822 Subject header contains the patch title.  They
+support it because the *people* who use those tools support it.
 
-#<http://marc.info/?l=orinoco-users&m=123411762524637>
-*<http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=shortlog>
+Since "Subject = title = beginning of changelog" is the long established
+norm and since the other patch handling tools (and people who handle
+patches) support this norm, checkpatch should follow this convention as
+well and count a non-empty RFC 2822 Subject header as one non-empty
+changelog line.
+-- 
+Stefan Richter
+-=====-==--= --=- ===--
+http://arcgraph.de/sr/
