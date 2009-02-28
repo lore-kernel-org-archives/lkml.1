@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763301AbZB1CDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932199AbZB1CDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763301AbZB1CDf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 21:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757970AbZB1B7f
+	id S932199AbZB1CDw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 21:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbZB1B7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:59:35 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:59181
+	Fri, 27 Feb 2009 20:59:37 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:59183
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755754AbZB1B7a (ORCPT
+	with ESMTP id S1756459AbZB1B7a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Feb 2009 20:59:30 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,11 +15,11 @@ To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH] xen mtrr: Add mtrr_ops support for Xen mtrr
-Date: Fri, 27 Feb 2009 17:59:12 -0800
-Message-Id: <1235786365-17744-7-git-send-email-jeremy@goop.org>
+Subject: [PATCH] xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
+Date: Fri, 27 Feb 2009 17:59:14 -0800
+Message-Id: <1235786365-17744-9-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1235786365-17744-1-git-send-email-jeremy@goop.org>
 References: <1235786365-17744-1-git-send-email-jeremy@goop.org>
@@ -27,226 +27,182 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Tweedie <sct@redhat.com>
+In a Xen domain, ioremap operates on machine addresses, not
+pseudo-physical addresses.  We use _PAGE_IOMAP to determine whether a
+mapping is intended for machine addresses.
 
-Add a Xen mtrr type, and reorganise mtrr initialisation slightly to allow the
-mtrr driver to set up num_var_ranges (Xen needs to do this by querying the
-hypervisor itself.)
-
-Only the boot path is handled for now: we set up a xen-specific mtrr_if
-and set up the mtrr tables based on hypervisor information, but we don't
-yet handle mtrr entry add/delete.
-
-Signed-off-by: Stephen Tweedie <sct@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/cpu/mtrr/Makefile  |    1 +
- arch/x86/kernel/cpu/mtrr/amd.c     |    1 +
- arch/x86/kernel/cpu/mtrr/centaur.c |    1 +
- arch/x86/kernel/cpu/mtrr/cyrix.c   |    1 +
- arch/x86/kernel/cpu/mtrr/generic.c |    1 +
- arch/x86/kernel/cpu/mtrr/main.c    |   11 +++++--
- arch/x86/kernel/cpu/mtrr/mtrr.h    |    5 +++
- arch/x86/kernel/cpu/mtrr/xen.c     |   59 ++++++++++++++++++++++++++++++++++++
- 8 files changed, 77 insertions(+), 3 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
+ arch/x86/include/asm/xen/page.h |    8 +---
+ arch/x86/xen/enlighten.c        |    4 ++-
+ arch/x86/xen/mmu.c              |   70 +++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 73 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
-index 191fc05..a836f72 100644
---- a/arch/x86/kernel/cpu/mtrr/Makefile
-+++ b/arch/x86/kernel/cpu/mtrr/Makefile
-@@ -1,3 +1,4 @@
- obj-y		:= main.o if.o generic.o state.o
- obj-$(CONFIG_X86_32) += amd.o cyrix.o centaur.o
-+obj-$(CONFIG_XEN_DOM0) += xen.o
- 
-diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
-index ee2331b..7bf23de 100644
---- a/arch/x86/kernel/cpu/mtrr/amd.c
-+++ b/arch/x86/kernel/cpu/mtrr/amd.c
-@@ -108,6 +108,7 @@ static struct mtrr_ops amd_mtrr_ops = {
- 	.get_free_region   = generic_get_free_region,
- 	.validate_add_page = amd_validate_add_page,
- 	.have_wrcomb       = positive_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
- 
- int __init amd_init_mtrr(void)
-diff --git a/arch/x86/kernel/cpu/mtrr/centaur.c b/arch/x86/kernel/cpu/mtrr/centaur.c
-index cb9aa3a..7e3f74f 100644
---- a/arch/x86/kernel/cpu/mtrr/centaur.c
-+++ b/arch/x86/kernel/cpu/mtrr/centaur.c
-@@ -213,6 +213,7 @@ static struct mtrr_ops centaur_mtrr_ops = {
- 	.get_free_region   = centaur_get_free_region,
- 	.validate_add_page = centaur_validate_add_page,
- 	.have_wrcomb       = positive_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
- 
- int __init centaur_init_mtrr(void)
-diff --git a/arch/x86/kernel/cpu/mtrr/cyrix.c b/arch/x86/kernel/cpu/mtrr/cyrix.c
-index ff14c32..c7bb5e3 100644
---- a/arch/x86/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/x86/kernel/cpu/mtrr/cyrix.c
-@@ -263,6 +263,7 @@ static struct mtrr_ops cyrix_mtrr_ops = {
- 	.get_free_region   = cyrix_get_free_region,
- 	.validate_add_page = generic_validate_add_page,
- 	.have_wrcomb       = positive_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
- 
- int __init cyrix_init_mtrr(void)
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 0c0a455..b06febd 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -663,4 +663,5 @@ struct mtrr_ops generic_mtrr_ops = {
- 	.set               = generic_set_mtrr,
- 	.validate_add_page = generic_validate_add_page,
- 	.have_wrcomb       = generic_have_wrcomb,
-+	.num_var_ranges	   = common_num_var_ranges,
- };
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index 236a401..a66a54d 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -99,7 +99,7 @@ static int have_wrcomb(void)
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index 4bd990e..20c3872 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -112,13 +112,9 @@ static inline xpaddr_t machine_to_phys(xmaddr_t machine)
+  */
+ static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
+ {
+-	extern unsigned long max_mapnr;
+ 	unsigned long pfn = mfn_to_pfn(mfn);
+-	if ((pfn < max_mapnr)
+-	    && !xen_feature(XENFEAT_auto_translated_physmap)
+-	    && (get_phys_to_machine(pfn) != mfn))
+-		return max_mapnr; /* force !pfn_valid() */
+-	/* XXX fixme; not true with sparsemem */
++	if (get_phys_to_machine(pfn) != mfn)
++		return -1; /* force !pfn_valid() */
+ 	return pfn;
  }
  
- /*  This function returns the number of variable MTRRs  */
--static void __init set_num_var_ranges(void)
-+int __init common_num_var_ranges(void)
- {
- 	unsigned long config = 0, dummy;
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 1b89d1c..c12a3c8 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -938,7 +938,9 @@ asmlinkage void __init xen_start_kernel(void)
  
-@@ -109,7 +109,7 @@ static void __init set_num_var_ranges(void)
- 		config = 2;
- 	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
- 		config = 8;
--	num_var_ranges = config & 0xff;
-+	return config & 0xff;
+ 	/* Prevent unwanted bits from being set in PTEs. */
+ 	__supported_pte_mask &= ~_PAGE_GLOBAL;
+-	if (!xen_initial_domain())
++	if (xen_initial_domain())
++		__supported_pte_mask |= _PAGE_IOMAP;
++	else
+ 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
+ 
+ 	/* Don't do the full vcpu_info placement stuff until we have a
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 36125ea..6aa6d55 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -336,6 +336,28 @@ static bool xen_page_pinned(void *ptr)
+ 	return PagePinned(page);
  }
  
- static void __init init_table(void)
-@@ -1673,12 +1673,17 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
- void __init mtrr_bp_init(void)
++static bool xen_iomap_pte(pte_t pte)
++{
++	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
++}
++
++static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
++{
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++
++	/* ptep might be kmapped when using 32-bit HIGHPTE */
++	u->ptr = arbitrary_virt_to_machine(ptep).maddr;
++	u->val = pte_val_ma(pteval);
++
++	MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_IO);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++}
++
+ static void xen_extend_mmu_update(const struct mmu_update *update)
  {
- 	u32 phys_addr;
-+
- 	init_ifs();
+ 	struct multicall_space mcs;
+@@ -416,6 +438,11 @@ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 	if (mm == &init_mm)
+ 		preempt_disable();
  
- 	phys_addr = 32;
- 
- 	if (cpu_has_mtrr) {
- 		mtrr_if = &generic_mtrr_ops;
-+#ifdef CONFIG_XEN_DOM0
-+		xen_init_mtrr();
-+#endif
++	if (xen_iomap_pte(pteval)) {
++		xen_set_iomap_pte(ptep, pteval);
++		goto out;
++	}
 +
- 		size_or_mask = 0xff000000;	/* 36 bits */
- 		size_and_mask = 0x00f00000;
- 		phys_addr = 36;
-@@ -1736,7 +1741,7 @@ void __init mtrr_bp_init(void)
+ 	ADD_STATS(set_pte_at, 1);
+ //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(set_pte_at_current, mm == current->mm);
+@@ -488,8 +515,25 @@ static pteval_t pte_pfn_to_mfn(pteval_t val)
+ 	return val;
+ }
+ 
++static pteval_t iomap_pte(pteval_t val)
++{
++	if (val & _PAGE_PRESENT) {
++		unsigned long pfn = (val & PTE_PFN_MASK) >> PAGE_SHIFT;
++		pteval_t flags = val & PTE_FLAGS_MASK;
++
++		/* We assume the pte frame number is a MFN, so
++		   just use it as-is. */
++		val = ((pteval_t)pfn << PAGE_SHIFT) | flags;
++	}
++
++	return val;
++}
++
+ pteval_t xen_pte_val(pte_t pte)
+ {
++	if (xen_initial_domain() && (pte.pte & _PAGE_IOMAP))
++		return pte.pte;
++
+ 	return pte_mfn_to_pfn(pte.pte);
+ }
+ PV_CALLEE_SAVE_REGS_THUNK(xen_pte_val);
+@@ -502,7 +546,11 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_pgd_val);
+ 
+ pte_t xen_make_pte(pteval_t pte)
+ {
+-	pte = pte_pfn_to_mfn(pte);
++	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
++		pte = iomap_pte(pte);
++	else
++		pte = pte_pfn_to_mfn(pte);
++
+ 	return native_make_pte(pte);
+ }
+ PV_CALLEE_SAVE_REGS_THUNK(xen_make_pte);
+@@ -558,6 +606,11 @@ void xen_set_pud(pud_t *ptr, pud_t val)
+ 
+ void xen_set_pte(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	ADD_STATS(pte_update, 1);
+ //	ADD_STATS(pte_update_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(pte_update_batched, paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU);
+@@ -574,6 +627,11 @@ void xen_set_pte(pte_t *ptep, pte_t pte)
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	set_64bit((u64 *)ptep, native_pte_val(pte));
+ }
+ 
+@@ -1770,12 +1828,20 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	case FIX_APIC_BASE:	/* maps dummy local APIC */
+ #endif
++		/* All local page mappings */
+ 		pte = pfn_pte(phys, prot);
+ 		break;
+ 
+-	default:
++	case FIX_PARAVIRT_BOOTMAP:
++		/* This is an MFN, but it isn't an IO mapping from the
++		   IO domain */
+ 		pte = mfn_pte(phys, prot);
+ 		break;
++
++	default:
++		/* By default, set_fixmap is used for hardware mappings */
++		pte = mfn_pte(phys, __pgprot(pgprot_val(prot) | _PAGE_IOMAP));
++		break;
  	}
  
- 	if (mtrr_if) {
--		set_num_var_ranges();
-+		num_var_ranges = mtrr_if->num_var_ranges();
- 		init_table();
- 		if (use_intel()) {
- 			get_mtrr_state();
-diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
-index ffd6040..eb23ca2 100644
---- a/arch/x86/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
-@@ -41,6 +41,8 @@ struct mtrr_ops {
- 	int	(*validate_add_page)(unsigned long base, unsigned long size,
- 				     unsigned int type);
- 	int	(*have_wrcomb)(void);
-+
-+	int	(*num_var_ranges)(void);
- };
- 
- extern int generic_get_free_region(unsigned long base, unsigned long size,
-@@ -52,6 +54,8 @@ extern struct mtrr_ops generic_mtrr_ops;
- 
- extern int positive_have_wrcomb(void);
- 
-+extern int __init common_num_var_ranges(void);
-+
- /* library functions for processor-specific routines */
- struct set_mtrr_context {
- 	unsigned long flags;
-@@ -88,3 +92,4 @@ void mtrr_wrmsr(unsigned, unsigned, unsigned);
- int amd_init_mtrr(void);
- int cyrix_init_mtrr(void);
- int centaur_init_mtrr(void);
-+void xen_init_mtrr(void);
-diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
-new file mode 100644
-index 0000000..db3ef39
---- /dev/null
-+++ b/arch/x86/kernel/cpu/mtrr/xen.c
-@@ -0,0 +1,59 @@
-+#include <linux/init.h>
-+#include <linux/proc_fs.h>
-+#include <linux/ctype.h>
-+#include <linux/module.h>
-+#include <linux/seq_file.h>
-+#include <asm/uaccess.h>
-+#include <linux/mutex.h>
-+
-+#include <asm/mtrr.h>
-+#include "mtrr.h"
-+
-+#include <xen/interface/platform.h>
-+#include <asm/xen/hypervisor.h>
-+#include <asm/xen/hypercall.h>
-+
-+static int __init xen_num_var_ranges(void);
-+
-+/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
-+ * working userland mtrr support. */
-+static struct mtrr_ops xen_mtrr_ops = {
-+	.vendor            = X86_VENDOR_UNKNOWN,
-+//	.set               = xen_set_mtrr,
-+//	.get               = xen_get_mtrr,
-+	.get_free_region   = generic_get_free_region,
-+//	.validate_add_page = xen_validate_add_page,
-+	.have_wrcomb       = positive_have_wrcomb,
-+	.use_intel_if	   = 0,
-+	.num_var_ranges	   = xen_num_var_ranges,
-+};
-+
-+static int __init xen_num_var_ranges(void)
-+{
-+	int ranges;
-+	struct xen_platform_op op;
-+
-+	for (ranges = 0; ; ranges++) {
-+		op.cmd = XENPF_read_memtype;
-+		op.u.read_memtype.reg = ranges;
-+		if (HYPERVISOR_dom0_op(&op) != 0)
-+			break;
-+	}
-+	return ranges;
-+}
-+
-+void __init xen_init_mtrr(void)
-+{
-+	struct cpuinfo_x86 *c = &boot_cpu_data;
-+
-+	if (!xen_initial_domain())
-+		return;
-+
-+	if ((!cpu_has(c, X86_FEATURE_MTRR)) &&
-+	    (!cpu_has(c, X86_FEATURE_K6_MTRR)) &&
-+	    (!cpu_has(c, X86_FEATURE_CYRIX_ARR)) &&
-+	    (!cpu_has(c, X86_FEATURE_CENTAUR_MCR)))
-+		return;
-+
-+	mtrr_if = &xen_mtrr_ops;
-+}
+ 	__native_set_fixmap(idx, pte);
 -- 
 1.6.0.6
 
