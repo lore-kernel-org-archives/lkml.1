@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbZB1CGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbZB1CGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbZB1CGV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 21:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760945AbZB1B7n
+	id S1762944AbZB1CGj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 21:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761054AbZB1B7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 27 Feb 2009 20:59:43 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:59192
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:59180
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757268AbZB1B7c (ORCPT
+	with ESMTP id S1757419AbZB1B7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:59:32 -0500
+	Fri, 27 Feb 2009 20:59:33 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH] xen: allow enable use of VGA console on dom0
-Date: Fri, 27 Feb 2009 17:59:20 -0800
-Message-Id: <1235786365-17744-15-git-send-email-jeremy@goop.org>
+       Mark McLoughlin <markmc@redhat.com>
+Subject: [PATCH] xen mtrr: Use specific cpu_has_foo macros instead of generic cpu_has()
+Date: Fri, 27 Feb 2009 17:59:21 -0800
+Message-Id: <1235786365-17744-16-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1235786365-17744-1-git-send-email-jeremy@goop.org>
 References: <1235786365-17744-1-git-send-email-jeremy@goop.org>
@@ -27,204 +26,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we're booting a privileged domain, then set up the vga console for use.
-Xen provides us with all the information about the current vga state, without
-need to use the BIOS.  We use that information to populate screen_info, which
-allows the rest of the kernel to carry on as normal.
+From: Mark McLoughlin <markmc@redhat.com>
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 ---
- arch/x86/xen/Makefile       |    3 +-
- arch/x86/xen/enlighten.c    |   10 ++++++
- arch/x86/xen/vga.c          |   65 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/xen-ops.h      |   11 +++++++
- include/xen/interface/xen.h |   39 +++++++++++++++++++++++++
- 5 files changed, 127 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/xen/vga.c
+ arch/x86/kernel/cpu/mtrr/xen.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 3b767d0..c4cda96 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -10,4 +10,5 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- 			grant-table.o suspend.o
+diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
+index db3ef39..e03532c 100644
+--- a/arch/x86/kernel/cpu/mtrr/xen.c
++++ b/arch/x86/kernel/cpu/mtrr/xen.c
+@@ -44,15 +44,13 @@ static int __init xen_num_var_ranges(void)
  
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
--obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-\ No newline at end of file
-+obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-+obj-$(CONFIG_XEN_DOM0)		+= vga.o
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 676aaf8..639eeb1 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -995,6 +995,16 @@ asmlinkage void __init xen_start_kernel(void)
- 		add_preferred_console("xenboot", 0, NULL);
- 		add_preferred_console("tty", 0, NULL);
- 		add_preferred_console("hvc", 0, NULL);
-+
-+		boot_params.screen_info.orig_video_isVGA = 0;
-+	} else {
-+		const struct dom0_vga_console_info *info =
-+			(void *)((char *)xen_start_info +
-+			         xen_start_info->console.dom0.info_off);
-+
-+		xen_init_vga(info, xen_start_info->console.dom0.info_size);
-+		xen_start_info->console.domU.mfn = 0;
-+		xen_start_info->console.domU.evtchn = 0;
- 	}
+ void __init xen_init_mtrr(void)
+ {
+-	struct cpuinfo_x86 *c = &boot_cpu_data;
+-
+ 	if (!xen_initial_domain())
+ 		return;
  
- 	pat_disable("PAT disabled on Xen");
-diff --git a/arch/x86/xen/vga.c b/arch/x86/xen/vga.c
-new file mode 100644
-index 0000000..f4a038a
---- /dev/null
-+++ b/arch/x86/xen/vga.c
-@@ -0,0 +1,65 @@
-+#include <linux/screen_info.h>
-+#include <linux/init.h>
-+
-+#include <asm/bootparam.h>
-+#include <asm/setup.h>
-+
-+#include "xen-ops.h"
-+
-+void __init xen_init_vga(const struct dom0_vga_console_info *info, size_t size)
-+{
-+	struct screen_info *screen_info = &boot_params.screen_info;
-+
-+	/* This is drawn from a dump from vgacon:startup in
-+	 * standard Linux. */
-+	screen_info->orig_video_mode = 3;
-+	screen_info->orig_video_isVGA = 1;
-+	screen_info->orig_video_lines = 25;
-+	screen_info->orig_video_cols = 80;
-+	screen_info->orig_video_ega_bx = 3;
-+	screen_info->orig_video_points = 16;
-+	screen_info->orig_y = screen_info->orig_video_lines - 1;
-+
-+	switch (info->video_type) {
-+	case XEN_VGATYPE_TEXT_MODE_3:
-+		if (size < offsetof(struct dom0_vga_console_info, u.text_mode_3)
-+		           + sizeof(info->u.text_mode_3))
-+			break;
-+		screen_info->orig_video_lines = info->u.text_mode_3.rows;
-+		screen_info->orig_video_cols = info->u.text_mode_3.columns;
-+		screen_info->orig_x = info->u.text_mode_3.cursor_x;
-+		screen_info->orig_y = info->u.text_mode_3.cursor_y;
-+		screen_info->orig_video_points =
-+			info->u.text_mode_3.font_height;
-+		break;
-+
-+	case XEN_VGATYPE_VESA_LFB:
-+		if (size < offsetof(struct dom0_vga_console_info,
-+		                    u.vesa_lfb.gbl_caps))
-+			break;
-+		screen_info->orig_video_isVGA = VIDEO_TYPE_VLFB;
-+		screen_info->lfb_width = info->u.vesa_lfb.width;
-+		screen_info->lfb_height = info->u.vesa_lfb.height;
-+		screen_info->lfb_depth = info->u.vesa_lfb.bits_per_pixel;
-+		screen_info->lfb_base = info->u.vesa_lfb.lfb_base;
-+		screen_info->lfb_size = info->u.vesa_lfb.lfb_size;
-+		screen_info->lfb_linelength = info->u.vesa_lfb.bytes_per_line;
-+		screen_info->red_size = info->u.vesa_lfb.red_size;
-+		screen_info->red_pos = info->u.vesa_lfb.red_pos;
-+		screen_info->green_size = info->u.vesa_lfb.green_size;
-+		screen_info->green_pos = info->u.vesa_lfb.green_pos;
-+		screen_info->blue_size = info->u.vesa_lfb.blue_size;
-+		screen_info->blue_pos = info->u.vesa_lfb.blue_pos;
-+		screen_info->rsvd_size = info->u.vesa_lfb.rsvd_size;
-+		screen_info->rsvd_pos = info->u.vesa_lfb.rsvd_pos;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+		                     u.vesa_lfb.gbl_caps)
-+		            + sizeof(info->u.vesa_lfb.gbl_caps))
-+			screen_info->capabilities = info->u.vesa_lfb.gbl_caps;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+		                     u.vesa_lfb.mode_attrs)
-+		            + sizeof(info->u.vesa_lfb.mode_attrs))
-+			screen_info->vesa_attributes = info->u.vesa_lfb.mode_attrs;
-+		break;
-+	}
-+}
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 33f7538..414236b 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -4,6 +4,8 @@
- #include <linux/init.h>
- #include <linux/clocksource.h>
- #include <linux/irqreturn.h>
-+
-+#include <xen/interface/xen.h>
- #include <xen/xen-ops.h>
+-	if ((!cpu_has(c, X86_FEATURE_MTRR)) &&
+-	    (!cpu_has(c, X86_FEATURE_K6_MTRR)) &&
+-	    (!cpu_has(c, X86_FEATURE_CYRIX_ARR)) &&
+-	    (!cpu_has(c, X86_FEATURE_CENTAUR_MCR)))
++	if (!cpu_has_mtrr &&
++	    !cpu_has_k6_mtrr &&
++	    !cpu_has_cyrix_arr &&
++	    !cpu_has_centaur_mcr)
+ 		return;
  
- /* These are code, but not functions.  Defined in entry.S */
-@@ -75,6 +77,15 @@ static inline void xen_smp_init(void) {}
- #endif
- 
- 
-+#ifdef CONFIG_XEN_DOM0
-+void xen_init_vga(const struct dom0_vga_console_info *, size_t size);
-+#else
-+static inline void xen_init_vga(const struct dom0_vga_console_info *info,
-+				size_t size)
-+{
-+}
-+#endif
-+
- /* Declare an asm function, along with symbols needed to make it
-    inlineable */
- #define DECL_ASM(ret, name, ...)		\
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 18b5599..6c0af21 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -449,6 +449,45 @@ struct start_info {
- 	int8_t cmd_line[MAX_GUEST_CMDLINE];
- };
- 
-+struct dom0_vga_console_info {
-+    uint8_t video_type; /* DOM0_VGA_CONSOLE_??? */
-+#define XEN_VGATYPE_TEXT_MODE_3 0x03
-+#define XEN_VGATYPE_VESA_LFB    0x23
-+
-+    union {
-+        struct {
-+            /* Font height, in pixels. */
-+            uint16_t font_height;
-+            /* Cursor location (column, row). */
-+            uint16_t cursor_x, cursor_y;
-+            /* Number of rows and columns (dimensions in characters). */
-+            uint16_t rows, columns;
-+        } text_mode_3;
-+
-+        struct {
-+            /* Width and height, in pixels. */
-+            uint16_t width, height;
-+            /* Bytes per scan line. */
-+            uint16_t bytes_per_line;
-+            /* Bits per pixel. */
-+            uint16_t bits_per_pixel;
-+            /* LFB physical address, and size (in units of 64kB). */
-+            uint32_t lfb_base;
-+            uint32_t lfb_size;
-+            /* RGB mask offsets and sizes, as defined by VBE 1.2+ */
-+            uint8_t  red_pos, red_size;
-+            uint8_t  green_pos, green_size;
-+            uint8_t  blue_pos, blue_size;
-+            uint8_t  rsvd_pos, rsvd_size;
-+
-+            /* VESA capabilities (offset 0xa, VESA command 0x4f00). */
-+            uint32_t gbl_caps;
-+            /* Mode attributes (offset 0x0, VESA command 0x4f01). */
-+            uint16_t mode_attrs;
-+        } vesa_lfb;
-+    } u;
-+};
-+
- /* These flags are passed in the 'flags' field of start_info_t. */
- #define SIF_PRIVILEGED    (1<<0)  /* Is the domain privileged? */
- #define SIF_INITDOMAIN    (1<<1)  /* Is this the initial control domain? */
+ 	mtrr_if = &xen_mtrr_ops;
 -- 
 1.6.0.6
 
