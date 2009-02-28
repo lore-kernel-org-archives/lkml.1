@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752804AbZB1MwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZB1M6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752804AbZB1MwT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 07:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZB1MwG
+	id S1753141AbZB1M6p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 07:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZB1M6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 07:52:06 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42438 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbZB1MwF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 07:52:05 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49A932D6.6070502@s5r6.in-berlin.de>
-Date: Sat, 28 Feb 2009 13:49:26 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Sat, 28 Feb 2009 07:58:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46010 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751307AbZB1M6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 07:58:36 -0500
+Date: Sat, 28 Feb 2009 13:58:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Salman Qazi <sqazi@google.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
+Message-ID: <20090228125816.GA14917@elte.hu>
+References: <20090224020304.GA4496@google.com> <200902272305.01867.nickpiggin@yahoo.com.au> <20090228082922.GB11425@elte.hu> <200902282249.57479.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Alex Buell <alex.buell@munted.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Unused modules in 2.6.x
-References: <20090225175249.30e47b85@lithium.local.net> <20090225192810.GA6150@kroah.com>
-In-Reply-To: <20090225192810.GA6150@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902282249.57479.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Feb 25, 2009 at 05:52:49PM +0000, Alex Buell wrote:
->> Hi,
->>
->> Perhaps I missed something when the 2.6.x kernels got started a few
->> years back, but why is it not possible for unused modules to be
->> automatically unloaded anymore i.e with rmmod -a? I remember being able
->> to do that with the 2.2.x and 2.4.x series a long time ago.
+
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> > It might be wrong on the principle though, so will revert it 
+> > if needed, before it spreads into too many topics.
 > 
-> Because if you do that, lots of modules that were being "used" by the
-> system would get unloaded (usb host controllers, network drivers, etc.)
+> I would say if Linus didn't like it, revert it.
 > 
-> So it makes sense not to do that anymore.  See the linux-kernel archives
-> about 6 years ago for details if you are curious about this historical
-> issue (hint, it could burn you very badly even in 2.2 and 2.4...)
+> Do you use NFS with 1500 byte packets with a high speed 
+> network and really fast disks (or ramdisk)? Then maybe you can 
+> measure vectored write speedup with your patch over Salman's 
+> more basic one :)
 
-Alex,
+Can you suggest some other workload that should show sensitivity 
+to this detail too? Like a simple write() loop of non-4K-sized 
+files or so?
 
-the "use count" tracks how many sites in the kernel might be using
-symbols in a module (call functions of a module etc.).  The "use count"
-does *not* track anything higher-level than that, e.g. (as pointed out
-by Lennart) "this module might soon come in handy to start accessing
-some hardware" or (as pointed out by Michael) "this module provides
-functionality for one of the links in a currently active IO path".
-
-So, the meaning of Greg's "could burn you" in kernel 2.6 is basically:
-Unloading of seemingly unused modules won't crash the kernel (occasional
-driver bugs excepted) but it might switch off kernel functionality which
-you still intended to use.
-
-But why don't we count "this module provides functionality for one of
-the links in a currently active IO path" too, generally?¹  Because for
-the kernel, "user requests to unbind this driver from that device" is
-merely yet another kind of a family of events like "user plugged out
-that cable", "user ejected this card", "user sent a shutdown request to
-that peer" etc.
-
-------
-¹)  Only in very simple cases is "is part of an IO path"
-indistinguishable from "another kernel site uses symbols of this
-module"; and there are very rare exceptional cases in which we do count
-"is part of an IO path" explicitly for specific reasons.
--- 
-Stefan Richter
--=====-==--= --=- ===--
-http://arcgraph.de/sr/
+	Ingo
