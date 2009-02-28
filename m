@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbZB1Ak3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZB1Ama@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756120AbZB1Ak3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 19:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbZB1AkT
+	id S1756571AbZB1Ama (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 19:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZB1AmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 19:40:19 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37660 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753592AbZB1AkS (ORCPT
+	Fri, 27 Feb 2009 19:42:22 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46585 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753770AbZB1AmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 19:40:18 -0500
-Date: Fri, 27 Feb 2009 16:39:37 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
- 3 users
-In-Reply-To: <20090227061936.GA5318@nowhere>
-Message-ID: <alpine.LFD.2.00.0902271631231.3111@localhost.localdomain>
-References: <49a38304.0506d00a.1f4b.406d@mx.google.com> <20090226130243.GA22460@elte.hu> <20090226170524.GB5889@nowhere> <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere>
- <20090226185208.GA6658@nowhere> <20090226185635.GA12895@elte.hu> <20090227061936.GA5318@nowhere>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 27 Feb 2009 19:42:21 -0500
+Message-ID: <c73ef954d3030022416d249ba8fefe8e.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <661fca240cb094bcf4d261ccebab9848.squirrel@webmail-b.css.fujitsu.com>
+References: <20090227140537.390905c4.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090227162928.6225fc80.kamezawa.hiroyu@jp.fujitsu.com>
+    <b040c32a0902271213q3dd1931foc2b955d8a028eb6f@mail.gmail.com>
+    <b0f5e75d938ffb61bdda7c88b962d3fe.squirrel@webmail-b.css.fujitsu.com>
+    <b040c32a0902271600h31785bb8q93acde59f5d15e3d@mail.gmail.com>
+    <661fca240cb094bcf4d261ccebab9848.squirrel@webmail-b.css.fujitsu.com>
+Date: Sat, 28 Feb 2009 09:42:17 +0900 (JST)
+Subject: Re: [PATCH] change cpuacct usage percpu format v2
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Ken Chen" <kenchen@google.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>, mingo@elte.hu,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki wrote：
+> Ken Chen wrote：
+>> On Fri, Feb 27, 2009 at 3:34 PM, KAMEZAWA Hiroyuki
+>> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>> "a lot of" ? I talking about cpu hotplug and reading another file as
+>>> /sys/devices/system/cpu/present every time before reading this file
+>>> gives much much much more overhead ;)
+>>
+>> yes, really a lot.  CPU hotplug is an uncommon event.  It happens
+>> perhaps once a day? maybe once an hour?
+>>
+> Are you saying the software should have hotplug script and send SIGHUP or
+> some to reload the present map ?
+>
+>> User monitoring process usually reads usage_percpu at fairly high
+>> rate, say once a sec.  At each pass it will need to parse N number of
+>> CPU index.  The overhead is N_CPU * T, where T is time in second
+>> between cpu hotplug event.  Assume T = one day, on a moderate sized
+>> 64-CPU size machine, the overhead is:
+>>
+>> 64 * 86400 : 1, that's like 5.5 million to 1 ratio.  To me that is
+>> *high* overhead.
+>>
+> Sounds strange. I can't catch hat you want to say.
+>
+Ignore above, I caught, at last. I'll add text to documenation.
+
+BTW, current interface to reset cpuacct (write ops) just reset
+specified level of cpuacct and will not clear other hierarchical levels.
+Doesn't this behavior confuse software ?
+
+Thanks,
+-Kame
 
 
-On Fri, 27 Feb 2009, Frederic Weisbecker wrote:
-> 
-> Ok, here is a try, I've mostly unified the format decoding bits.
-> Most interesting other helpers were already implemented (pointer(),
-> string() and number()
 
-Ok, I don't think this is beautiful, but neither was the original code, 
-so..
 
-However, in order to make it at least a _bit_ more palatable, could we 
-please agree to at least clean up this:
 
-> +static int format_decode(const char *fmt, enum format_type *type, int *flags,
-> +			  int *field_width, int *base, int *precision,
-> +			  int *qualifier)
-
-To
-
-	struct printf_spec {
-		enum format_type type;
-		int flags, field_width, base, precision, qualifier;
-	};
-
-and then pass things around like
-
-	static int format_decode(const char *fmt, struct printf_spec *spec)
-	{
-	..
-
-instead? Wouldn't that be nicer? I suspect it would make the code look 
-nicer too (instead of doing "*base = x", you'd see "spec->base = x" and it 
-would look less like line noise in the callee, an the caller could just 
-do a single "struct format_spec spec = { 0, }" to initialize that thing).
-
-		Linus
