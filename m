@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZB1Vdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZB1Vh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZB1Vdn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 16:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZB1Vde
+	id S1755597AbZB1Vh0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 16:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZB1VhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 16:33:34 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:45022 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753730AbZB1Vde (ORCPT
+	Sat, 28 Feb 2009 16:37:12 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:38823 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbZB1VhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 16:33:34 -0500
-Subject: Re: [PATCH 1/3] bluetooth: add write_lock_bh to __l2cap_chan_link
-From: Marcel Holtmann <marcel@holtmann.org>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1235797347-1816-1-git-send-email-gustavo@las.ic.unicamp.br>
-References: <1235797347-1816-1-git-send-email-gustavo@las.ic.unicamp.br>
+	Sat, 28 Feb 2009 16:37:10 -0500
+Subject: Re: [RFC][PATCH 5/8] add f_op for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090228205329.GB4254@infradead.org>
+References: <20090227203425.F3B51176@kernel>
+	 <20090227203431.D1E697CB@kernel>  <20090228205329.GB4254@infradead.org>
 Content-Type: text/plain
-Date: Sat, 28 Feb 2009 22:33:18 +0100
-Message-Id: <1235856798.6074.34.camel@localhost.localdomain>
+Date: Sat, 28 Feb 2009 13:37:06 -0800
+Message-Id: <1235857026.26788.421.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gustavo,
-
-> fix race condition
+On Sat, 2009-02-28 at 15:53 -0500, Christoph Hellwig wrote:
+> On Fri, Feb 27, 2009 at 12:34:31PM -0800, Dave Hansen wrote:
+> > We have set up sane defaults for how filesystems should
+> > be checkpointed.  However, as usual in the VFS, there
+> > are specialized places that will always need an ability
+> > to override these defaults.
+> > 
+> > This adds a new 'file_operations' function for
+> > checkpointing a file.  I did this under the assumption
+> > that we should have a dirt-simple way to make something
+> > (un)checkpointable that fits in with current code.
+> > 
+> > As you can see in the /dev/null patch in a second, all
+> > that we have to do to make something like /dev/null
+> > supported is add a single "generic" f_op entry.
 > 
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-> ---
->  net/bluetooth/l2cap.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/net/bluetooth/l2cap.c b/net/bluetooth/l2cap.c
-> index ca4d3b4..355f375 100644
-> --- a/net/bluetooth/l2cap.c
-> +++ b/net/bluetooth/l2cap.c
-> @@ -175,12 +175,14 @@ static inline void __l2cap_chan_link(struct l2cap_chan_list *l, struct sock *sk)
->  {
->  	sock_hold(sk);
->  
-> +	write_lock_bh(&l->lock);
->  	if (l->head)
->  		l2cap_pi(l->head)->prev_c = sk;
->  
->  	l2cap_pi(sk)->next_c = l->head;
->  	l2cap_pi(sk)->prev_c = NULL;
->  	l->head = sk;
-> +	write_unlock_bh(&l->lock);
->  }
+> Please don't do the fallback to allow checkpointing without file
+> operations.  We've never had luck with these fallbacks, and I'm
+> in the process of getting of the last default file operation (llseek,
+> which has a very bad default) currently.
 
-a general rule of thumb is that function starting with __ are the ones
-that don't use any kind of locking.
+You'll probably believe me when I tell you that I was looking at how
+lseek was done when I did this. :)
 
-Regards
+Doing this will make for a much, much bigger patch, but I do understand
+why you're asking for it to be done this way, so I'll give it a shot for
+the next round.
 
-Marcel
+> Incidentally that should also allow you to get rid of the per-fs flag
+> by just checking for the presence of the operation to check if
+> checkpointing is allowed.
 
+Yup, I completely agree.  The flag was basically an indicator when it
+was OK to do the fallback.
+
+> Also the double-use of the op seem not very nice to me.  Is there any
+> real life use case were you would have the operation on a file but
+> sometimes not allow checkpoiting?
+
+No, I don't have any good concrete ones.  The first thing that comes to
+mind is something like a pipe.  We can checkpoint when there's no data,
+but must refuse when there's data in the pipe.  In practice, pipes are
+fixable, but it is the kind of situation where I expected it to get
+used.
+
+Thanks, Christoph.
+
+-- Dave
 
