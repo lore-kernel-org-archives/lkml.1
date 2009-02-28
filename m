@@ -1,63 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZB1XIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZB1XLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbZB1XIZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 18:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZB1XIP
+	id S1756002AbZB1XLx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 18:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZB1XLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 18:08:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:33022 "EHLO
+	Sat, 28 Feb 2009 18:11:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:17430 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbZB1XIO (ORCPT
+	with ESMTP id S1754651AbZB1XLn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 18:08:14 -0500
+	Sat, 28 Feb 2009 18:11:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cLvEf7aSZH0Z0pqJGY9F6VbxHD7EuvKYgIUG7nffrQw3tCuw+/ILWmE8gn7VeZCdj5
-         0DCfkPUSfMHvy/RgOam/jQUkKQCWSdFrmxk9MNTXPfhOZF1Y2+KRK0KGhwM7fRYfSyPj
-         KLfu6HXz8Ml5PMwNpPdtJthj8nBaCK/pd+pyY=
-Message-ID: <49A9C3D7.8060706@gmail.com>
-Date: Sun, 01 Mar 2009 00:08:07 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GP0cnxJ9Aos/eRRk2bVLSDmLmpR0pzIU1DL2bUMyT7ksmELE2asrsYO+MCvpd5LK7D
+         geiGCpDYxeTfqAv22XS6jBiDPE+MNkCeM6yH3ZiA41/EnK569gVLQHqzZAkhPuost9Ag
+         AMgFWGsX8AVY7eM3HlqbCYG60QAASiMC4Sneg=
+Date: Sun, 1 Mar 2009 00:11:37 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
+	3 users
+Message-ID: <20090228231137.GB6574@nowhere>
+References: <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere> <20090226185208.GA6658@nowhere> <20090226185635.GA12895@elte.hu> <20090227061936.GA5318@nowhere> <alpine.LFD.2.00.0902271631231.3111@localhost.localdomain> <20090228081123.GA5906@nowhere> <20090228091305.GA20533@elte.hu>
 MIME-Version: 1.0
-To: Bob Copeland <me@bobcopeland.com>
-CC: Dhaval Giani <dhaval.lists@thegianis.in>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linville@tuxdriver.com,
-       davem@davemloft.net, linux-wireless@vger.kernel.org,
-       ath5k-devel@venema.h4ckr.net, Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ath5k: fix hw rate index condition
-References: <1231336282-22283-1-git-send-email-jirislaby@gmail.com> <1231338965-796-1-git-send-email-jirislaby@gmail.com> <20090107152208.GB4207@linux.vnet.ibm.com> <4964CAAA.3040801@gmail.com> <25891f3e0902012357n21e7bc2fmc59fb2a842631651@mail.gmail.com> <20090215134702.GA10180@hash.localnet>
-In-Reply-To: <20090215134702.GA10180@hash.localnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090228091305.GA20533@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15.2.2009 14:47, Bob Copeland wrote:
-> On Mon, Feb 02, 2009 at 01:27:39PM +0530, Dhaval Giani wrote:
->> So I finally managed to hit this on 2.6.29-rc3. It is hard to
->> reproduce, so I hope so much information is enough to give you a good
->> guess. This time it hit while trying to connect to an open network at
->> the airport.
->
->> WARNING: at net/mac80211/rx.c:2236 __ieee80211_rx+0x96/0x571 [mac80211]()
->> Hardware name: 2007CS3
->> RATE=255, BAND=8
->
-> band is supposed to be sc->curband?  8 is way wrong.
+On Sat, Feb 28, 2009 at 10:13:05AM +0100, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > > instead? Wouldn't that be nicer? I suspect it would make the 
+> > > code look nicer too (instead of doing "*base = x", you'd see 
+> > > "spec->base = x" and it would look less like line noise in 
+> > > the callee, an the caller could just do a single "struct 
+> > > format_spec spec = { 0, }" to initialize that thing).
+> > > 
+> > > 		Linus
+> > 
+> > You're right, that's much proper.
+> > See the V2 below:
+> 
+> Just a few (very) small code style pet peeves:
+> 
+> > +struct printf_spec {
+> > +	enum format_type type;
+> > +	int flags;			/* flags to number() */
+> > +	int field_width;		/* width of output field */
+> > +	int base;
+> > +	/* min. # of digits for integers; max number of chars for from string */
+> > +	int precision;
+> > +	int qualifier;
+> > +};
+> 
+> doesnt it look a bit tidier this way:
+> 
+>  struct printf_spec {
+> 	enum format_type	type;
+> 	int			flags;		/* flags to number()     */
+> 	int			field_width;	/* width of output field */
+> 	int			base;
+> 	int			precision;	/* # of digits/chars     */
+> 	int			qualifier;
+>  };
+> 
+> ?
+> 
+> > +		case '+':
+> > +			spec->flags |= PLUS;
+> > +			break;
+> > +		case ' ':
+> > +			spec->flags |= SPACE;
+> > +			break;
+> > +		case '#':
+> > +			spec->flags |= SPECIAL;
+> > +			break;
+> > +		case '0':
+> > +			spec->flags |= ZEROPAD;
+> > +			break;
+> > +		default:
+> > +			found = false;
+> 
+> btw., this is one of the cases where i think the original style 
+> was more useful:
+> 
+> > +		case '+':	spec->flags |= PLUS;  break;
+> > +		case ' ':	spec->flags |= SPACE; break;
+> [etc.]
+> 
+> as it's always good to compress repetitive patterns of code.
+> 
+> (If checkpatch complains about this then ignore checkpatch.)
+> 
+> > +	case 'n':
+> > +		/* FIXME:
+> > +		* What does C99 say about the overflow case here? */
+> 
+> (this comment looks a bit funny.)
+> 
+> > +		default: {
+> > +			enum format_type type = spec.type;
+> > +
+> > +			if (type == FORMAT_TYPE_LONG_LONG)
+> > +				num = get_arg(long long);
+> > +			else if (type == FORMAT_TYPE_ULONG)
+> > +				num = get_arg(unsigned long);
+> > +			else if (type == FORMAT_TYPE_LONG)
+> > +				num = get_arg(unsigned long);
+> > +			else if (type == FORMAT_TYPE_SIZE_T)
+> > +				num = get_arg(size_t);
+> > +			else if (type == FORMAT_TYPE_PTRDIFF)
+> > +				num = get_arg(ptrdiff_t);
+> > +			else if (type == FORMAT_TYPE_USHORT)
+> > +				num = get_arg(unsigned short);
+> > +			else if (type == FORMAT_TYPE_SHORT)
+> > +				num = get_arg(short);
+> > +			else if (type == FORMAT_TYPE_UINT)
+> > +				num = get_arg(unsigned int);
+> > +			else
+> > +				num = get_arg(int);
+> 
+> Wouldnt it be cleaner as a switch() statement and to put into a 
+> helper function?
+> 
+> Also, could you please resend the current stuff with a 0/ 
+> description and a diffstat in the 0 mail so that we can all see 
+> all the patches again and the total impact?
+> 
+> 	Ingo
 
-If you look into the patch which outputs this (backtrace in this 
-thread), sband->n_bitrates is 8. I have no idea what I have been smoking 
-the day I wrote it, but BAND= for sure isn't the right name for that 
-thing. Sorry for the confusion.
+Ok, for all these comments. Except I'm not sure that it is needed to export this part
+in a helper, it means 3 new different helpers with two of them having a pointer to a va_list
+in their parameters.
+A pointer to va_list is legal but doesn't seem to me much proper.
 
-> rate could be 255
-> if, for some reason, the hardware rate wasn't in the rate table.
+Unless you have some objections, I will repost the new addressed version and if you still
+think these parts should be exported to helpers, then I will do it.
 
-So, we have a fix for this, right? I mean the u8->s8 sc->rate_idx 
-conversion or alike...
