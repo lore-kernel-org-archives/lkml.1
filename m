@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbZB1IRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZB1IVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbZB1IRr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZB1IRc
+	id S1753919AbZB1IVq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZB1IVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:17:32 -0500
-Received: from gw.goop.org ([64.81.55.164]:43840 "EHLO mail.goop.org"
+	Sat, 28 Feb 2009 03:21:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39856 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753609AbZB1IRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:17:31 -0500
-Message-ID: <49A8F319.3030802@goop.org>
-Date: Sat, 28 Feb 2009 00:17:29 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1751622AbZB1IVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 03:21:37 -0500
+Date: Sat, 28 Feb 2009 09:21:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v2 1/2] x86_32: summit_32, use BAD_APICID
+Message-ID: <20090228082120.GA11425@elte.hu>
+References: <20090224175518.GA15616@elte.hu> <1235508093-18063-1-git-send-email-jirislaby@gmail.com> <49A524D3.3090408@gmail.com> <20090225111002.GA15453@elte.hu> <49A71105.4050001@gmail.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: brk patches..
-References: <1235785882-17580-1-git-send-email-jeremy@goop.org> <1235785882-17580-4-git-send-email-jeremy@goop.org> <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com> <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org>
-In-Reply-To: <49A8ED3D.1060704@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A71105.4050001@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Yinghai Lu wrote:
->   
->> wonder if boot loader check uncompress size aka vmlinux size in bzImage
->> before it find one good position for bzImage...?
+
+* Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> On 25.2.2009 12:10, Ingo Molnar wrote:
+>> * Jiri Slaby<jirislaby@gmail.com>  wrote:
+>>> In that case, the callers code is buggy, since it passes
+>>> online_cpu masks even on machines, where apics are not on the
+>>> same clusters.
 >>
->>     
+>> It's most likely confusion in the old code. This used to be
+>> copy&paste-ed versions of different snapshots of the
+>> mach-default-code, hacked to make work on weird platforms.
+>> Mainline fixes/updates werent merged in consistently.
+>>
+>> So could you please send a patch that fixes this?
 >
-> Jeremy's brk patches may break:
-> 1. kexec load 64bit vmlinux on some ram that near the memory hole etc.
-> blindly to use ram after _end may have some problem
-> 2. coreboot aka linux is using elf (by mkelfImage : vmlinux + initrd), initrd became one section after _end...
-> could cause initrd get overwrite... by extend _brk
->   
+> I've sent 4 more patches, but there are still issues:
+> * es7000 + summit: I haven't solved calling with all bits set (only all  
+> online is sufficient to trigger this). Some of the processors needn't be  
+> on the same apic cluster. It will scream now (again -- it did before  
+> adding the "optimisation"). Actually I don't know how to solve this. How  
+> the caller would know the correct mask, ANDing with a apic->target_cpus  
+> retval?
+>
+> * es7000: target_cpus_cluster returns CPU_MASK_ALL and hence it will  
+> choke itself, because es7000_cpu_mask_to_apicid doesn't count with that.  
+> Invoked by setup_timer_IRQ0_pin this way.
+>
+> * set_desc_affinity doesn't expect apic->cpu_mask_to_apicid_and to  
+> return BAD_APICID and silently sets desc->affinity. Again, I see no  
+> straightforward solution (rollback of assign_irq_vector and  
+> set_extra_move_desc needed).
 
-But its no different from what i386 does now to allocate its initial 
-pagetables.  How does this not break now?
+Ok, they look good. I got a conflict in 2/4, due to an 
+interacting cleanup from Yinghai - mind resending them against 
+latest tip:master?
 
-    J
+Thanks,
+
+	Ingo
