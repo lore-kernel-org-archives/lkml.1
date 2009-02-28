@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895AbZB1HP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZB1HVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752895AbZB1HP5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 02:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZB1HPs
+	id S1752883AbZB1HVT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 02:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZB1HVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 02:15:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57383 "EHLO mx3.mail.elte.hu"
+	Sat, 28 Feb 2009 02:21:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47726 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751300AbZB1HPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 02:15:48 -0500
-Date: Sat, 28 Feb 2009 08:15:34 +0100
+	id S1751362AbZB1HVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 02:21:08 -0500
+Date: Sat, 28 Feb 2009 08:20:55 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
        the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: J
-Message-ID: <20090228071534.GB9351@elte.hu>
-References: <1235785882-17580-1-git-send-email-jeremy@goop.org> <1235785882-17580-4-git-send-email-jeremy@goop.org> <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com> <49A8E235.6010900@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH] xen: core dom0 support
+Message-ID: <20090228072055.GC9351@elte.hu>
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <49A8DF28.4050301@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49A8E235.6010900@goop.org>
+In-Reply-To: <49A8DF28.4050301@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,46 +40,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Yinghai Lu wrote:
->> On Fri, Feb 27, 2009 at 5:51 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>   
->>> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->>>
->>> Rather than having special purpose init_pg_table_start/end variables
->>> to delimit the kernel pagetable built by head_32.S, just use the brk
->>> mechanism to extend the bss for the new pagetable.
->>>
->>> This patch removes init_pg_table_start/end and pg0, defines __brk_base
->>> (which is page-aligned and immediately follows _end), initializes
->>> the brk region to start there, and uses it for the 32-bit pagetable.
->>>     
->> ...
->>
->>   
->>> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
->>> index c246dc4..ed02176 100644
->>> --- a/arch/x86/kernel/setup.c
->>> +++ b/arch/x86/kernel/setup.c
->>> @@ -113,8 +113,10 @@
->>>  #endif
->>>
->>>  unsigned int boot_cpu_id __read_mostly;
->>> -__initdata unsigned long _brk_start = (unsigned long)&_end;
->>> -__initdata unsigned long _brk_end = (unsigned long)&_end;
->>> +
->>> +extern char __brk_base[];
->>> +__initdata unsigned long _brk_start = (unsigned long)__brk_base;
->>> +__initdata unsigned long _brk_end = (unsigned long)&__brk_base;
->>>     
->>
->> ?
->>   
+> [...] At the moment its all running on massive out-of-tree 
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> patches, which doesn't make anyone happy.  It's best that it 
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> be in the mainline kernel.  You know, like we argue for 
+> everything else.
 >
-> What are you asking?  __brk_base is _end rounded up to a page 
-> boundary, so head_32.S can use it directly for pagetable 
-> allocation.  Are you flagging the '&' typo?  Something else?
+>> In three years time, will we regret having merged this?
+>
+> Its a pretty minor amount of extra stuff on top of what's been 
+> added over the last 3 years, so I don't think it's going to 
+> tip the scales on its own.  I wouldn't be comfortable in 
+> trying to merge something that's very intrusive.
 
-it's not really a typo either (__brk_base and &__brk_base should 
-be the same) - just a bit weird looking.
+Hm, how can the same code that you call "massive out-of-tree 
+patches which doesn't make anyone happy" in an out of tree 
+context suddenly become non-intrusive "minor amount of extra 
+stuff" in an upstream context?
+
+I wish the upstream kernel was able to do such magic, but i'm 
+afraid it is not.
 
 	Ingo
