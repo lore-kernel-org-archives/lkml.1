@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbZB1IEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZB1IFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbZB1IEf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZB1IE0
+	id S1753827AbZB1IFp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZB1IFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:04:26 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:49816 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbZB1IEZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:04:25 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC 0/8] Aufs2 documents 
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1235758633.15148.448.camel@moss-terrapins.epoch.ncsc.mil>
-References: <7558.1235374266@jrobl> <1235584254.15148.86.camel@moss-terrapins.epoch.ncsc.mil> <7390.1235624062@jrobl> <1235668827.15148.422.camel@moss-terrapins.epoch.ncsc.mil> <16503.1235744837@jrobl> <1235758633.15148.448.camel@moss-terrapins.epoch.ncsc.mil>
-Date: Sat, 28 Feb 2009 17:04:12 +0900
-Message-ID: <11466.1235808252@jrobl>
+	Sat, 28 Feb 2009 03:05:37 -0500
+Received: from gw.goop.org ([64.81.55.164]:59131 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbZB1IFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 03:05:36 -0500
+Message-ID: <49A8F04D.4090409@goop.org>
+Date: Sat, 28 Feb 2009 00:05:33 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH] xen: core dom0 support
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <49A8DF28.4050301@goop.org> <20090228072055.GC9351@elte.hu>
+In-Reply-To: <20090228072055.GC9351@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> Hm, how can the same code that you call "massive out-of-tree 
+> patches which doesn't make anyone happy" in an out of tree 
+> context suddenly become non-intrusive "minor amount of extra 
+> stuff" in an upstream context?
+>
+> I wish the upstream kernel was able to do such magic, but i'm 
+> afraid it is not.
 
-"David P. Quigley":
-> I mean that in the event that an xattr can't be copied up to the next
-> read-write branch the copyup should fail. Otherwise you get the
-	:::
-> I can see an "I know better" mount option being useful for this. I
-> understand what you're trying to do now.
+No, but I am ;)  The current out of tree Xen patches are very intrusive 
+because there hasn't been much incentive to reduce their impact.  I've 
+going through it all and very carefully rewriting it 1) be cleaner, 2) 
+enable/disable itself at runtime, 3) have clean interfaces and 
+interactions with the rest of the kernel, and 4) address any concerns 
+that others have.  In other words, make Xen a first-class kernel citizen.
 
-Then I don't see difference between what you wrote and my idea.
-I think I should assert first that aufs doesn't support xattr currently.
+Most of the intrusive stuff has already been merged (and merged for some 
+time now), but without dom0 support its only half done; as it stands 
+people are using mainline Linux for their domUs, but are still limited 
+to patched up (old) kernels for dom0.  This is a real problem because 
+all the drivers for interesting new devices are in the new kernels, so 
+there's an additional burden of backporting device support into old kernels.
 
-
-> The point I was trying to make with iso9660_t is that since the xattr
-> interface is what is used for security labels regardless of whether the
-> underlying file system actually supports xattrs there are other places
-> that the security label may come from. Since an iso9660 file system does
-> not support extended attributes SELinux has a fixed type for all content
-> on that file system. When someone asks for security.selinux on an
-> iso9660 file system it goes to the inode, takes the security context in
-> there, and converts it into the string you see even though there is no
-> real xattr support.
-
-For example, on a system which adopts selinux, if a user copies a file
-manually from iso9660 (or other fs which doesn't support xattr) to a
-xattr-supported fs, then he will not meet a security risk.
-Is it correct?
-
-And in the reverse case, copying a file manually from an xattr-supported
-fs to non-supported fs may drop security info. Since this is manual
-operation, user should know the risk. Right?
-Here what will be security.selinux for the copied file?
-Will it be set to the default value which is defined by a global policy
-or something?
-If it is true, then what will happen when the global policy has the
-highest security level? User will not meet a security risk either?
-Or such policy is useless in real world because of too low usability?
-
-While these questions may sound silly, I just want to know how the
-protection will be damaged in detail. Still I don't know much about
-selinux.
-I understand the case you want to clarify which aufs copies file
-internally instead of manually. But will you tell me the comparision
-between internal file copy and manual copy?
-
-Anyway I guess aufs should support xattr in the future. I just want to
-fix its priority, particulary it has to be implemented before
-review/merge.
-
-
-J. R. Okajima
+    J
