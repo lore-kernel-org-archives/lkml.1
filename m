@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZB1NpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZB1Nrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbZB1NpB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 08:45:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZB1Now
+	id S1753905AbZB1Nrk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 08:47:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZB1Nrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 08:44:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47734 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbZB1Now (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 08:44:52 -0500
-Date: Sat, 28 Feb 2009 14:44:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [git-pull -tip] x86: Basic AMD Support for performance counters
-Message-ID: <20090228134434.GA32473@elte.hu>
-References: <1235756278.3914.9.camel@localhost.localdomain> <20090228094018.GF12095@elte.hu>
+	Sat, 28 Feb 2009 08:47:32 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42620 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751362AbZB1Nrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 08:47:31 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49A94032.9010105@s5r6.in-berlin.de>
+Date: Sat, 28 Feb 2009 14:46:26 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090228094018.GF12095@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, jonathan@jonmasters.org
+Subject: Re: [patch 4/4] genirq: add support for threaded interrupt handlers
+References: <20090226131336.423054348@linutronix.de> <20090226131719.760899560@linutronix.de> <20090226153216.5db66bc3.akpm@linux-foundation.org> <20090226212752.332ba546@infradead.org> <20090226214514.f8a58731.akpm@linux-foundation.org> <1235719113.4948.1252.camel@laptop> <20090226234800.4977fca5.akpm@linux-foundation.org> <1235721910.4948.1321.camel@laptop> <20090227070633.2c3fc04e@infradead.org> <alpine.DEB.2.00.0902271024160.25593@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0902271024160.25593@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+> The way softirqs are currently designed, you can not run them from
+> the irq thread. We discovered this (the hard way) in the preempt-rt 
+> kernel. The issue is that each softirq (threaded in preempt-rt, with a 
+> thread for every CPU. ie. net-rx/0 net-rx/1 net-rx/2 net-rx/3 for a 4 CPU 
+> box) is bound to a specific CPU. The design is to modify per cpu data. If 
+> a IRQ thread were to run the softirq code and migrate to another CPU, you 
+> will have very hard to debug crashes on your hands.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+I presume that a lot of tasklet users rely on the fact that tasklets are
+executed on the CPU which scheduled them.  (E.g. the firewire stack's
+low level currently does.)
 
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> We also tried to bind the IRQ thread to the CPU if it were to run a 
+> softirq. But that too had issues. If the IRQ thread was bound to a CPU and 
+> a higher priority process preempted it, that IRQ handler could not migrate 
+> to another CPU to finish the work. Now the IRQ handler would need to wait 
+> for that high priority process to give up the CPU in order to continue.
 > 
-> > Hello Ingo,
-> > 
-> > These patches added basic AMD (K7 and later) support for performance counters:
-> > 
-> > [jaswinder@hpdv5 linux-2.6-tip]$ perfstat -e 0,1,2,3,4,5,-1,-2,-3,-4,-5 ls -lR > /dev/null
-> > 
-> >  Performance counter stats for 'ls':
-> > 
-> >     2723.203821  task clock ticks     (msecs)
-> > 
-> >      1812527794  CPU cycles           (events)
-> >      1121688997  instructions         (events)
-> >       569836744  cache references     (events)
-> >        15934598  cache misses         (events)
-> >        57313261  branches             (events)
-> >         4243201  branch misses        (events)
-> >     2639.682866  cpu clock ticks      (msecs)
-> >     2723.203821  task clock ticks     (msecs)
-> >             647  pagefaults           (events)
-> >            2401  context switches     (events)
-> >               3  CPU migrations       (events)
-> > 
-> >  Wall-clock time elapsed:  6813.030975 msecs
-> 
-> Very nice feature!
-> 
-> The AMD patches look much cleaner than i feared they would be. 
-> It seems you were able to keep pretty generic x86 code in 
-> arch/x86/kernel/cpu/perf_counters.c, sharing most of the logic 
-> between Intel and AMD perfcounters.
+> The solution is to redesign the softirq code to handle migration.
 
-Seems to be working fine, here's the output from an Athlon 64 
-3200+ (Sempron) box:
+Do you mean "redesign the softirq framework" or "redesign the softirq
+framework users"?
 
- Performance counter stats for 'ls':
-
-      17.420811  task clock ticks     (msecs)
-
-              0  CPU migrations       (events)
-             12  context switches     (events)
-            583  pagefaults           (events)
-       29760299  CPU cycles           (events)
-       29401642  instructions         (events)
-       12698498  cache references     (events)
-          66269  cache misses         (events)
-
- Wall-clock time elapsed:   687.999988 msecs
-
-	Ingo
+(In the particular case of firewire, the latter should be just fine.)
+-- 
+Stefan Richter
+-=====-==--= --=- ===--
+http://arcgraph.de/sr/
