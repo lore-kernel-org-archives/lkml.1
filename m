@@ -1,105 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZB1RSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZB1RWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbZB1RSy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 12:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZB1RSq
+	id S1754311AbZB1RWV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 12:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbZB1RWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 12:18:46 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:58338 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZB1RSp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 12:18:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=C69V9kqu1JWmuSFppec43SuElIIlf2H4WFx+LoBnC8yw6LehJOKUgQccIWFylPPOuq
-         +CpE1NGcadzoRtUSpINRXslVf0XMU7K5htvBM2cpHgXINZwbEPOEhtVzMvEAK/fkO2fH
-         fceUEhzqcBHVNeHA+ElEYyDbQwbWhMLMIZih0=
-Date: Sat, 28 Feb 2009 18:18:39 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] vsprintf: unify the format decoding layer for its
-	3 users
-Message-ID: <20090228171838.GA5821@nowhere>
-References: <20090226174303.GC29439@elte.hu> <20090226174547.GC5889@nowhere> <20090226175225.GA4527@elte.hu> <20090226183415.GE5889@nowhere> <20090226185208.GA6658@nowhere> <20090226185635.GA12895@elte.hu> <20090227061936.GA5318@nowhere> <alpine.LFD.2.00.0902271631231.3111@localhost.localdomain> <20090228081123.GA5906@nowhere> <alpine.LFD.2.00.0902280845580.3111@localhost.localdomain>
+	Sat, 28 Feb 2009 12:22:07 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:46092 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752071AbZB1RWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 12:22:06 -0500
+Message-ID: <49A972B3.8020309@krogh.cc>
+Date: Sat, 28 Feb 2009 18:21:55 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902280845580.3111@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, aowi@novozymes.com
+Subject: Re: Regression in bonding between 2.6.26.8 and 2.6.27.6 - bisected
+References: <491FEAD5.4090205@krogh.cc> <49A7B17F.2020408@krogh.cc> <16084.1235752119@death.nxdomain.ibm.com> <49A84802.7030502@krogh.cc> <30478.1235766943@death.nxdomain.ibm.com>
+In-Reply-To: <30478.1235766943@death.nxdomain.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 08:54:15AM -0800, Linus Torvalds wrote:
+Jay Vosburgh wrote:
+> Jesper Krogh <jesper@krogh.cc> wrote:
 > 
+>> Jay Vosburgh wrote:
+>>> Jesper Krogh <jesper@krogh.cc> wrote:
+>>> [...]
+>>>> The offending commit seems to be:
+>>>>
+>>>> A test with a fresh 2.6.29-rc6 revealed that the problem has been fixed
+>>>> subsequently.. but still exists in 2.6.27-newest.  (havent tested
+>>>> 2.6.28-newest yet).
+>>>>
+>>>> Any ideas of what the "fixing" commit is .. or should that also be
+>>>> bisected?
+>>> 	I went back and looked at your earlier mail.  Since you're using
+>>> 802.3ad mode, my first guess would be this commit:
+>>>
+>>> commit fd989c83325cb34795bc4d4aa6b13c06f90eac99
+>>> Author: Jay Vosburgh <fubar@us.ibm.com>
+>>> Date:   Tue Nov 4 17:51:16 2008 -0800
+>>>
+>>>     bonding: alternate agg selection policies for 802.3ad
+>> That didn't do it.. I applied it to 2.6.27.19 but it didnt make that work.
+>> dmesg | grep bond (2.6.27.19 + above patch).
 > 
-> On Sat, 28 Feb 2009, Frederic Weisbecker wrote:
-> > 
-> > You're right, that's much proper.
-> > See the V2 below:
+> 	That was the only real functional change to 802.3ad, there are a
+> lot of other commits, but they're all style or cleanup sorts of things.
 > 
-> Good. This looks better.
+>> [   13.643301] bonding: MII link monitoring set to 100 ms
+>> [   13.730455] bonding: bond0: enslaving eth0 as a backup interface with
+>> an up link.
+>> [   13.781934] bonding: bond0: enslaving eth1 as a backup interface with
+>> an up link.
+>> [   13.904665] bonding: bond0: enslaving eth2 as a backup interface with a
+>> down link.
+>> [   16.945264] bonding: bond0: link status definitely up for interface eth2.
+>> [   75.040290] bond0: no IPv6 routers present
+>>
+>> dmesg | grep bond (2.6.29-rc6)
+>>
+>> $ ssh quad02 dmesg | grep bond
+>> [   27.437877] bonding: MII link monitoring set to 100 ms
+>> [   27.445246] ADDRCONF(NETDEV_UP): bond0: link is not ready
+>> [   27.493260] bonding: bond0: enslaving eth0 as a backup interface with a
+>> down link.
+>> [   27.521397] bonding: bond0: enslaving eth1 as a backup interface with a
+>> down link.
+>> [   27.542332] bonding: bond0: Warning: No 802.3ad response from the link
+>> partner for any adapters in the bond
+>> [   27.611509] bonding: bond0: enslaving eth2 as a backup interface with a
+>> down link.
+>> [   27.617017] ADDRCONF(NETDEV_CHANGE): bond0: link becomes ready
+>> [   27.642330] bonding: bond0: Warning: No 802.3ad response from the link
+>> partner for any adapters in the bond
+>> [   30.042501] bonding: bond0: link status definitely up for interface eth1.
+>> [   30.142505] bonding: bond0: link status definitely up for interface eth0.
+>> [   30.742547] bonding: bond0: link status definitely up for interface eth2.
+>> [   37.875044] bond0: no IPv6 routers present
+>>
+>> I just tested 2.6.28.7.. it still broken. So the fix probably has to be
+>> somewhere in the post 2.6.28 sets.
 > 
-> One final (?) nit:
+> 	It looks like the above two tests are on different machines, or
+> were at least done with different network cards.  Is that the case?
+
+There is 12 Sun Fire X2200 in the rack, they are fully identical (some 
+with a small difference in memory configuration as the only difference.
+
+So yes, different machines, but same hardware (bought in the same 
+shipment, etc. etc).
+
+> 	I'm just wondering if what you're seeing is somehow tied to the
+> network devices' respective autonegotiation speeds, or some difference
+> in the device drivers.  The first dmesg looks to have one slow (3 sec)
+> and two fast ones; the second dmesg looks to have all slow devices.
 > 
-> > +		default: {
-> > +			enum format_type type = spec.type;
-> > +
-> > +			if (type == FORMAT_TYPE_LONG_LONG)
-> > +				num = va_arg(args, long long);
-> > +			else if (type == FORMAT_TYPE_ULONG)
-> > +				num = va_arg(args, unsigned long);
-> > +			else if (type == FORMAT_TYPE_LONG)
-> > +				num = va_arg(args, unsigned long);
-> > +			else if (type == FORMAT_TYPE_SIZE_T)
-> > +				num = va_arg(args, size_t);
-> > +			else if (type == FORMAT_TYPE_PTRDIFF)
-> > +				num = va_arg(args, ptrdiff_t);
-> > +			else if (type == FORMAT_TYPE_USHORT)
-> > +				num = (unsigned short) va_arg(args, int);
-> > +			else if (type == FORMAT_TYPE_SHORT)
-> > +				num = (short) va_arg(args, int);
-> > +			else if (type == FORMAT_TYPE_UINT)
-> > +				num = va_arg(args, unsigned int);
-> > +			else
-> > +				num = va_arg(args, unsigned int);
-> > +
-> > +			str = number(str, end, num, spec.base,
-> > +				spec.field_width, spec.precision, spec.flags);
-> 
-> You've got three copes of these (in the three different users), and that 
-> just looks horrid. I see why you did it, but even something like
-> 
-> 		case FORMAT_TYPE_LONG_LONG:
-> 			num = va_arg(args, long long);
-> 			goto handle_number;
-> 		case FORMAT_TYPE_ULONG:
-> 		...
-> 		case FORMAT_TYPE_INT:
-> 			num = va_arg(args, int);
-> 	handle_number:
-> 		str = number(str, end, num, &spec);
-> 		break;
-> 
-> would be better.
-> 
-> And yes, please do pass in "spec" to the "number()/pointer()/string()" 
-> routines instead of exploding it into the individual numbers. When 
-> cleaning up, let's just do it properly..
-> 
-> 		Linus
+> 	Have you tried the kernels the other way around (the first
+> kernel on the second machine, and vice versa)?
+
+Yes, I've randomly picked a machine in the set to do the test, they all 
+falls out as "predicted".
+
+> 	I'll compile 2.6.28.7 here and see if it works for me.
 
 
-Ok, I'm addressing your comments and those from Ingo, then I will rebase
-the whole patchset (with the ftrace_bprintk related things) against latest
--tip and resend it.
 
-Thanks!
-
+Jesper
+-- 
+Jesper
