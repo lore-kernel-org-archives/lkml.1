@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZB1DxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZB1DyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbZB1DxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 22:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZB1Dwv
+	id S1756664AbZB1DyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 22:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZB1DyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 22:52:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37531 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752345AbZB1Dwu (ORCPT
+	Fri, 27 Feb 2009 22:54:12 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:14328 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753657AbZB1DyK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 22:52:50 -0500
-Date: Fri, 27 Feb 2009 19:52:09 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Roland McGrath <roland@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-In-Reply-To: <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com> <20090228030413.5B915FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 27 Feb 2009 22:54:10 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.LFD.2.00.0902271221360.3111@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0902270948540.2926-100000@iolanthe.rowland.org>
+	 <alpine.LFD.2.00.0902271221360.3111@localhost.localdomain>
+Date: Fri, 27 Feb 2009 19:54:08 -0800
+Message-ID: <d6200be20902271954q16697282ia056d4f40ab49184@mail.gmail.com>
+Subject: Re: [linux-pm] [RFC][PATCH 2/2] PM: Rework handling of interrupts 
+	during suspend-resume
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 27, 2009 at 12:30 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Fri, 27 Feb 2009, Alan Stern wrote:
+>>
+>> Perhaps these aren't all the sort of usage you're talking about, but I
+>> bet most of them are.  It certainly looks like more than just ARM.
+>> Maybe not all that much more, but definitely more.  And the number will
+>> only grow in the future.
+>
+> Are you really sure? Because it can't be x86. I'm pretty sure that that is
+> simply not how x86 wake events _work_ - they're not interrupts.
 
+They are not interrupts on every arm platform that implements set_wake
+either, but it is useful to pretend that they are. If the platform
+code reads the wakeup status and marks the corresponding interrupt
+pending, the driver does not need to know if the event occurred before
+or after the system entered the low power state. I don't know if this
+can be implemented on x86, but it might be worth looking into.
 
-On Fri, 27 Feb 2009, Linus Torvalds wrote:
-> 
-> Ok, please explain this madness.
-> 
-> The whole crazy IS_COMPAT_TASK dance seems to be too messy for words. Why? 
-> What's going on?
+>
+> And that's the big point that people seem to be missing here: the whole
+> "wake up interrupt" thing is not some generic model in the first place. I
+> strongly suspect that it literally only works on certain architectures.
 
-Ok, I can see what's going on. And it's disgusting.
+My point was that it was not specific to our platform. I don't have a
+problem fixing our platform if this patch is merged, but this is case
+where a change to the generic code breaks some platforms. I don't
+think there is a good reason to make the fix arm specific, trivial or
+not, since any platform implementing set_wake may run into the race
+condition that this patch introduced. If the platform does not
+implement set_wake, IRQ_WAKEUP never gets set, and the fix should not
+have any effect.
 
-Just make everybody do that "is_compat_task()" thing. parisc already did, 
-and you just made x86-64 do so too. The only remaining TIF_32BIT users are 
-powerpc and sparc. So instead of having this insane crud, please just add 
-the trivial definitions to the two remaining places, and we don't have to 
-have this insane mess. Ok?
-
-It is clear that TIF_32BIT is _not_ a generic flag for 32/64-bit system 
-calls, so let's stop pretending it is, and then having ugly special cases 
-for when it's not.
-
-			Linus
+-- 
+Arve Hjønnevåg
