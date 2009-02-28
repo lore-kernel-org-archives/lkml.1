@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZB1MQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZB1MUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbZB1MQk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 07:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZB1MQb
+	id S1754132AbZB1MUq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 07:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZB1MUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 07:16:31 -0500
-Received: from n21.bullet.mail.mud.yahoo.com ([68.142.206.160]:47553 "HELO
-	n21.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751163AbZB1MQb (ORCPT
+	Sat, 28 Feb 2009 07:20:38 -0500
+Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:13751 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751936AbZB1MUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 07:16:31 -0500
-X-Yahoo-Newman-Id: 916647.87135.bm@omp417.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0zZnuST/1w7kOwTVJodTuKxcHGlf61C1PKmsRbbbSPsiwovnWDGTWZVVikD1KBnA5TVYJ90v68Xh5ObYlwuwAFYAB6XLy9weauTMxLdRSNWFGfMTwur7aspKdoUiG2wG9PDRyx2kLIV5lCp1cql3l7H5dT1Z/a5tJm0n2MkIlcI=  ;
-X-YMail-OSG: .USTwHIVM1kdSDXtIll.y.tZRAGXzfwtFDxB23A9Pus.SI484uVD7FlVqEwTmEMrPmQbmulC.7KOpFKAo6VG6vbOTRWJueJCTPpVwDLnXzZnItNewldJGGsbmK6uExCXCXJAc_.zatEyLryXpOC4.ztz70F75rf3f3lqpWr3KvJulxEcrpqTi7GO4lpO
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: lockdep and threaded IRQs (was: ...)
-Date: Sat, 28 Feb 2009 04:16:26 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
-       a.p.zijlstra@chello.nl
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200902272046.50572.david-b@pacbell.net> <alpine.LFD.2.00.0902281208270.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902281208270.29264@localhost.localdomain>
+	Sat, 28 Feb 2009 07:20:38 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: hp-wmi: notify of a potential docking state change on resume
+Date: Sat, 28 Feb 2009 13:20:33 +0100
+User-Agent: KMail/1.9.9
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902280416.26687.david-b@pacbell.net>
+Message-Id: <200902281320.34356.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Feb 2009 12:20:34.0495 (UTC) FILETIME=[F4A29CF0:01C9999E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 February 2009, Thomas Gleixner wrote:
-> On Fri, 27 Feb 2009, David Brownell wrote:
-> >   drivers/mfd/twl4030-irq.c
-> > 
-> > Where you'll observe twl_init_irq() at line 688 setting
-> > up the thread and the Primary IRQ Handler (PIH) dispatch.
-> > That's pretty much bog-standard chained IRQ setup code,
-> > except that it chains through a thread.
-> 
-> So this would be the perfect candidate to test the generic threaded
-> code I posted a few days ago ?
+It is possible that the system gets docked or undocked while it's
+suspended. Generate an input event on resume to notify user space
+if there was a state change.
 
-Could be.  URL?
+As it is a switch, we can generate the event unconditionally; the
+input layer will only pass it on if there is an actual change.
+    
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+---
+Works for my HP 2510p.
+
+Is there maybe a way to avoid the loop over the hp_wmi_keymap?
+I did not see any.
 
 
+diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
+index 32eeca6..ded59fb 100644
+--- a/drivers/platform/x86/hp-wmi.c
++++ b/drivers/platform/x86/hp-wmi.c
+@@ -53,6 +53,7 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
+ 
+ static int __init hp_wmi_bios_setup(struct platform_device *device);
+ static int __exit hp_wmi_bios_remove(struct platform_device *device);
++static int hp_wmi_resume_handler(struct platform_device *device);
+ 
+ struct bios_args {
+ 	u32 signature;
+@@ -101,6 +102,7 @@ static struct platform_driver hp_wmi_driver = {
+ 	},
+ 	.probe = hp_wmi_bios_setup,
+ 	.remove = hp_wmi_bios_remove,
++	.resume = hp_wmi_resume_handler,
+ };
+ 
+ static int hp_wmi_perform_query(int query, int write, int value)
+@@ -489,6 +491,29 @@ static int __exit hp_wmi_bios_remove(struct platform_device *device)
+ 	return 0;
+ }
+ 
++static int hp_wmi_resume_handler(struct platform_device *device)
++{
++	struct key_entry *key;
++
++	/*
++	 * Docking state may have changed while suspended, so trigger
++	 * an input event for the current state. As this is a switch,
++	 * the input layer will only actually pass it on if the state
++	 * changed.
++	 */
++	for (key = hp_wmi_keymap; key->type != KE_END; key++) {
++		switch (key->type) {
++		case KE_SW:
++			input_report_switch(hp_wmi_input_dev, key->keycode,
++					    hp_wmi_dock_state());
++			input_sync(hp_wmi_input_dev);
++			break;
++		}
++	}
++
++	return 0;
++}
++
+ static int __init hp_wmi_init(void)
+ {
+ 	int err;
