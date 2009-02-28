@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZB1RZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZB1R1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbZB1RZf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 12:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZB1RYz
+	id S1754829AbZB1R1y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 12:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZB1R1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 12:24:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41747 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752758AbZB1RYy (ORCPT
+	Sat, 28 Feb 2009 12:27:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41423 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752752AbZB1R1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 12:24:54 -0500
-Date: Sat, 28 Feb 2009 09:24:50 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Salman Qazi <sqazi@google.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-Message-ID: <20090228092450.3ded2db5@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
-References: <20090224020304.GA4496@google.com>
-	<200902272305.01867.nickpiggin@yahoo.com.au>
-	<20090228082922.GB11425@elte.hu>
-	<200902282249.57479.nickpiggin@yahoo.com.au>
-	<20090228125816.GA14917@elte.hu>
-	<alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 28 Feb 2009 12:27:46 -0500
+Date: Sat, 28 Feb 2009 09:27:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alex Riesen <raa.lkml@gmail.com>
+cc: trivial@kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Use a format string for linux_banner
+In-Reply-To: <20090228133602.GA28239@blimp.localdomain>
+Message-ID: <alpine.LFD.2.00.0902280924150.3111@localhost.localdomain>
+References: <81b0412b0902250104q53f38343o303e980c1446ed3e@mail.gmail.com> <49A92783.1010709@s5r6.in-berlin.de> <20090228133602.GA28239@blimp.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Feb 2009 09:16:21 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> 
-> 
-> On Sat, 28 Feb 2009, Ingo Molnar wrote:
+
+On Sat, 28 Feb 2009, Alex Riesen wrote:
 > > 
-> > Can you suggest some other workload that should show sensitivity 
-> > to this detail too? Like a simple write() loop of non-4K-sized 
-> > files or so?
+> > Please send patches as inline text or at least as plaintext attachment
+> > in ascii encoding.  linux/Documentation/email-clients.txt has help.
 > 
-> I bet you can find it, but I also suspect that it will depend quite a
-> bit on the microarchitecture. What does 'movntq' actually _do_ on
-> different CPU's (bypass L1 or L2 or just turn the L1 cache policy to
-> "write through and invalidate")? 
+> Couldn't. Had to either choose the corporate firewal and gmail, or the
+> Exchange-thing. Both will corrupt patches, unless send as attachment.
+> Decided not to expose the corporate mail address.
 
-Afaik it's like a cache flush followed by the equivalent of a WC store
+Well, I _can_ tell you that I just ignore patches that I can't see 
+directly in my email reader. Others may pick them up, but for me it's an 
+issue of "ok, I can't easily even see the patch, and the person didn't 
+bother to do it right - it's not worth my time".
 
-> How expensive is the sfence when
-> there are still stores in the write buffer? Does 'movqnt' even use
-> the write buffer for cached stores, or is doing some special path the
-> the last-level cache?
+What people _can_ do is to send it both as a crazy attachment _and_ as 
+plaintext. If they plaintext gets corrupted, the attachment still works, 
+and the plaintext is at least somethign I can see and thus in my mail 
+reader decide whether it's worth my time to save the attachment and look 
+at it outside the mail reader.
 
-it's usually like a WC store
->
-> If you want to be really subtle, ask questions like what are the 
-> implications for last-level caches that are inclusive? The last-level 
-> cache would take not just the new write, but it also has logic to
-> make sure that it's a superset of the inner caches, so what does that
-> do to replacement policy for that cache? Or does it cause
-> invalidations in the inner caches?
-
-it invalidates all caches in the hierarchy
-
-afaik this is what Intel cpus do; but I also thought this behavior was
-quite architectural as well...
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+		Linus
