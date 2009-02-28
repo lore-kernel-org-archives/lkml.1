@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbZB1Bqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZB1Br0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbZB1Bqp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 20:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbZB1BmO
+	id S1756653AbZB1Br0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 20:47:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbZB1Bmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:42:14 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41771 "EHLO mx2.redhat.com"
+	Fri, 27 Feb 2009 20:42:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41779 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754535AbZB1Bl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:41:57 -0500
+	id S1754699AbZB1Bl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 20:41:58 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 13/30] KVM: VMX: Use kvm_mmu_page_fault() handle EPT violation mmio
-Date: Sat, 28 Feb 2009 03:41:32 +0200
-Message-Id: <1235785309-12835-14-git-send-email-avi@redhat.com>
+Subject: [PATCH 23/30] KVM: define KVM_CAP_DEVICE_DEASSIGNMENT
+Date: Sat, 28 Feb 2009 03:41:42 +0200
+Message-Id: <1235785309-12835-24-git-send-email-avi@redhat.com>
 In-Reply-To: <1235785309-12835-1-git-send-email-avi@redhat.com>
 References: <1235785309-12835-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sheng Yang <sheng@linux.intel.com>
+From: Weidong Han <weidong.han@intel.com>
 
-Removed duplicated code.
+define KVM_CAP_DEVICE_DEASSIGNMENT and KVM_DEASSIGN_PCI_DEVICE
+for device deassignment.
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+the ioctl has been already implemented in the
+commit: 0a920356748df4fb06e86c21c23d2ed6d31d37ad
+
+Acked-by: Mark McLoughlin <markmc@redhat.com>
+Signed-off-by: Weidong Han <weidong.han@intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/vmx.c |   30 +-----------------------------
- 1 files changed, 1 insertions(+), 29 deletions(-)
+ include/linux/kvm.h |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 509b353..cb27ffc 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -3058,11 +3058,8 @@ static int handle_task_switch(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- static int handle_ept_violation(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- {
- 	u64 exit_qualification;
--	enum emulation_result er;
- 	gpa_t gpa;
--	unsigned long hva;
- 	int gla_validity;
--	int r;
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index dd48225..0d94b27 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -406,6 +406,9 @@ struct kvm_trace_rec {
+ #define KVM_CAP_IRQ_ROUTING 25
+ #endif
+ #define KVM_CAP_IRQ_INJECT_STATUS 26
++#ifdef __KVM_HAVE_DEVICE_ASSIGNMENT
++#define KVM_CAP_DEVICE_DEASSIGNMENT 27
++#endif
  
- 	exit_qualification = vmcs_read64(EXIT_QUALIFICATION);
+ #ifdef KVM_CAP_IRQ_ROUTING
  
-@@ -3085,32 +3082,7 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	}
+@@ -480,6 +483,8 @@ struct kvm_irq_routing {
+ #define KVM_ASSIGN_IRQ _IOR(KVMIO, 0x70, \
+ 			    struct kvm_assigned_irq)
+ #define KVM_REINJECT_CONTROL      _IO(KVMIO, 0x71)
++#define KVM_DEASSIGN_PCI_DEVICE _IOR(KVMIO, 0x72, \
++				     struct kvm_assigned_pci_dev)
  
- 	gpa = vmcs_read64(GUEST_PHYSICAL_ADDRESS);
--	hva = gfn_to_hva(vcpu->kvm, gpa >> PAGE_SHIFT);
--	if (!kvm_is_error_hva(hva)) {
--		r = kvm_mmu_page_fault(vcpu, gpa & PAGE_MASK, 0);
--		if (r < 0) {
--			printk(KERN_ERR "EPT: Not enough memory!\n");
--			return -ENOMEM;
--		}
--		return 1;
--	} else {
--		/* must be MMIO */
--		er = emulate_instruction(vcpu, kvm_run, 0, 0, 0);
--
--		if (er == EMULATE_FAIL) {
--			printk(KERN_ERR
--			 "EPT: Fail to handle EPT violation vmexit!er is %d\n",
--			 er);
--			printk(KERN_ERR "EPT: GPA: 0x%lx, GVA: 0x%lx\n",
--			 (long unsigned int)vmcs_read64(GUEST_PHYSICAL_ADDRESS),
--			 (long unsigned int)vmcs_read64(GUEST_LINEAR_ADDRESS));
--			printk(KERN_ERR "EPT: Exit qualification is 0x%lx\n",
--				(long unsigned int)exit_qualification);
--			return -ENOTSUPP;
--		} else if (er == EMULATE_DO_MMIO)
--			return 0;
--	}
--	return 1;
-+	return kvm_mmu_page_fault(vcpu, gpa & PAGE_MASK, 0);
- }
- 
- static int handle_nmi_window(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ /*
+  * ioctls for vcpu fds
 -- 
 1.6.0.6
 
