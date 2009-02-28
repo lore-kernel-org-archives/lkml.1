@@ -1,103 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763360AbZB1B4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbZB1B7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763360AbZB1B4A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 20:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762295AbZB1Bx3
+	id S1756714AbZB1B7s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 20:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbZB1B73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:53:29 -0500
-Received: from rv-out-0506.google.com ([209.85.198.227]:4108 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762270AbZB1BxY (ORCPT
+	Fri, 27 Feb 2009 20:59:29 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:59151
+	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755353AbZB1B72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:53:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=EhhDX4vXWIGOEVz5p/n9tW4RhW7k02r5VBROpEL4BNZgD++jlNq6Gse8LQ23ClwQat
-         GT3mgSZDmlhJ5VsKGk6n/N57kGwD7ca057DzX8qQJeNCab0VO4ZRcNzmxwcq/EYwZjIG
-         2A7d7DxIVPhhXAdOBeE45gkDb07JQ/UvW6Xc4=
-MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <alpine.LFD.2.00.0902262311350.9135@localhost.localdomain>
-References: <20090226133339.875832967@linutronix.de>
-	 <cfd18e0f0902261319v20ba7bd1pcc91ccc4b2c7d577@mail.gmail.com>
-	 <alpine.LFD.2.00.0902262311350.9135@localhost.localdomain>
-Date: Sat, 28 Feb 2009 14:53:23 +1300
-Message-ID: <cfd18e0f0902271753ld9b432tae6c0ee783a24480@mail.gmail.com>
-Subject: Re: [patch 0/3] add rt_tgsigqueueinfo syscall [RESEND]
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Linux API <linux-api@vger.kernel.org>, drepper@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Feb 2009 20:59:28 -0500
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH] xen-dom0: only selectively disable cpu features
+Date: Fri, 27 Feb 2009 17:59:10 -0800
+Message-Id: <1235786365-17744-5-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1235786365-17744-1-git-send-email-jeremy@goop.org>
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+Dom0 kernels actually want most of the CPU features to be enabled.
+Some, like MCA/MCE, are still handled by Xen itself.
 
-On 2/27/09, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Michael,
->
-> On Fri, 27 Feb 2009, Michael Kerrisk wrote:
->> I haven't looked at this iteration of the patch, to check if it is
->> different from the version you posted a few months ago.  I assume it
->> isn't different, since you didn't mention any differences.  In that
->> case, there are still the questions I raised back then, so I'll just
->> repeat them now.
->
-> Right, no fundamental changes.
->
->> Back in October, I did some testing of this interface.  Two potential
->> issues that I saw, both of which relate to inconsistencies with
->> rt_sigqueueinfo():
->>
->> 1) With rt_siqueueinfo(), we can get the PID (TGID) of the sender,
->> which enables the receiver of the signal to know who the sender was,
->> and perhaps use that information to (for example) send a signal in the
->> other direction.
->>
->> With rt_tgsigqueueinfo(), we don't quite have that ability: all that
->> the receiver gets is the TGID of the sender, not the TID.  This means
->> that we can't (for example) send a signal back to the precise thread
->> that signaled us. I'm not sure if this matters or not (but perhaps it
->> might when sender and receiver are in the same process?).  I'm also
->> not sure whether we want to do anything about this (i.e., extending
->> siginfo_t to include a si_tid field), but I wanted to point out this
->> assymetry w.r.t. to rt_sigqueueinfo(), in case you had not considered
->> it.
->>
->> 2) With rt_sigqueueinfo(), we can specify the si_pid and and si_uid
->> fields that should be sent to the receiver.  This is not possible with
->> rt_tgsigqueueinfo(), which always supplied the caller';s PID and UID
->> in the si_pid and si_uid fields sent to the receiver.  See the
->> following, created using my test programs below (the 111 & 222
->> arguments to t_*sigqueueinfo set the si_pid and si_uid fields in the
->> siginfo_t given to the *sigqueueinfo() syscall):
->
-> I can see your concern, but I have no strong opinion in either
-> direction.
->
-> Roland ??
+We leave APIC enabled even though we don't really have a functional
+local apic so that the ACPI code will parse the corresponding tables
+properly.
 
-The more I think about these two points, the more it seems to me they
-both should be fixed.  Roland seems to concur on at least the second
-point.  (Probably Ulrich should also be CCed for input -- done now.)
-With respect to the first point, it seems to me reasonably likely that
-there would be use cases where the receiving thread wants to know the
-thread ID of the sender -- especially when sender and receiver are in
-the same process.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/xen/enlighten.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
-Cheers,
-
-Michael
-
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index d5fc434..468aa23 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -171,18 +171,23 @@ static void __init xen_banner(void)
+ static void xen_cpuid(unsigned int *ax, unsigned int *bx,
+ 		      unsigned int *cx, unsigned int *dx)
+ {
+-	unsigned maskedx = ~0;
++	unsigned maskedx = 0;
+ 
+ 	/*
+ 	 * Mask out inconvenient features, to try and disable as many
+ 	 * unsupported kernel subsystems as possible.
+ 	 */
+-	if (*ax == 1)
+-		maskedx = ~((1 << X86_FEATURE_APIC) |  /* disable APIC */
+-			    (1 << X86_FEATURE_ACPI) |  /* disable ACPI */
+-			    (1 << X86_FEATURE_MCE)  |  /* disable MCE */
+-			    (1 << X86_FEATURE_MCA)  |  /* disable MCA */
+-			    (1 << X86_FEATURE_ACC));   /* thermal monitoring */
++	if (*ax == 1) {
++		maskedx =
++			(1 << X86_FEATURE_MCE)  |  /* disable MCE */
++			(1 << X86_FEATURE_MCA)  |  /* disable MCA */
++			(1 << X86_FEATURE_ACC);   /* thermal monitoring */
++
++		if (!xen_initial_domain())
++			maskedx |=
++				(1 << X86_FEATURE_APIC) |  /* disable local APIC */
++				(1 << X86_FEATURE_ACPI);  /* disable ACPI */
++	}
+ 
+ 	asm(XEN_EMULATE_PREFIX "cpuid"
+ 		: "=a" (*ax),
+@@ -190,7 +195,7 @@ static void xen_cpuid(unsigned int *ax, unsigned int *bx,
+ 		  "=c" (*cx),
+ 		  "=d" (*dx)
+ 		: "0" (*ax), "2" (*cx));
+-	*dx &= maskedx;
++	*dx &= ~maskedx;
+ }
+ 
+ static void xen_set_debugreg(int reg, unsigned long val)
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+1.6.0.6
+
