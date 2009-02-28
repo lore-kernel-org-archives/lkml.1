@@ -1,124 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbZB1Ne2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZB1Nen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbZB1Ne2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 08:34:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZB1NeS
+	id S1754690AbZB1Nen (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 08:34:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZB1NeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 08:34:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47832 "EHLO mx3.mail.elte.hu"
+	Sat, 28 Feb 2009 08:34:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59597 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbZB1NeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 08:34:17 -0500
-Date: Sat, 28 Feb 2009 14:34:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Theodore Ts'o" <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [git pull] x86 fix
-Message-ID: <20090228133405.GA17097@elte.hu>
-References: <E1LdOqH-0004wg-JB@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LdOqH-0004wg-JB@closure.thunk.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752123AbZB1NeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 08:34:21 -0500
+Subject: [git-pull -tip] cpu fixes
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 28 Feb 2009 19:03:45 +0530
+Message-Id: <1235828025.3379.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Ingo,
 
-* Theodore Ts'o <tytso@mit.edu> wrote:
+Please pull:
 
-> A recent (probably within the last week) commit seems to have caused
-> the i915 driver to need to use two unexported symbols:
-> 
-> ERROR: "pgprot_writecombine" [drivers/gpu/drm/i915/i915.ko] undefined!
-> ERROR: "is_io_mapping_possible" [drivers/gpu/drm/i915/i915.ko] undefined!
-> 
-> Is the right fix just to export them?  
+The following changes since commit c6003015dacd7c6fe18c6009115801079d8fdd49:
+  Ingo Molnar (1):
+        Merge branch 'linus'
 
-Yeah. This module build bug got masked by two other PAT patches 
-which needed different exports:
+are available in the git repository at:
 
- 13093cb: gpu/drm, x86, PAT: PAT support for io_mapping_*, export symbols for modules
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip-cpu.git master
 
-Linus,
+Jaswinder Singh Rajput (3):
+      x86: decent declarations in perf_counter.c
+      x88: using pr_info in perf_counter.c
+      x86: remove double copy of show_cpuinfo_core for 32 and 64 bit
 
-Please pull the latest x86-fixes-for-linus git tree from:
+ arch/x86/kernel/cpu/perf_counter.c |   62 ++++++++++++++++++------------------
+ arch/x86/kernel/cpu/proc.c         |   20 +----------
+ 2 files changed, 33 insertions(+), 49 deletions(-)
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (1):
-      x86: i915 needs pgprot_writecombine() and is_io_mapping_possible()
-
-
- arch/x86/mm/iomap_32.c |   15 ++++-----------
- arch/x86/mm/pat.c      |    2 ++
- 2 files changed, 6 insertions(+), 11 deletions(-)
-
-diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
-index 6c2b1af..04102d4 100644
---- a/arch/x86/mm/iomap_32.c
-+++ b/arch/x86/mm/iomap_32.c
-@@ -20,23 +20,16 @@
- #include <asm/pat.h>
- #include <linux/module.h>
- 
--#ifdef CONFIG_X86_PAE
--int
--is_io_mapping_possible(resource_size_t base, unsigned long size)
--{
--	return 1;
--}
--#else
--int
--is_io_mapping_possible(resource_size_t base, unsigned long size)
-+int is_io_mapping_possible(resource_size_t base, unsigned long size)
- {
-+#ifndef CONFIG_X86_PAE
- 	/* There is no way to map greater than 1 << 32 address without PAE */
- 	if (base + size > 0x100000000ULL)
- 		return 0;
--
-+#endif
- 	return 1;
- }
--#endif
-+EXPORT_SYMBOL_GPL(is_io_mapping_possible);
- 
- /* Map 'pfn' using fixed map 'type' and protections 'prot'
+Complete diff:
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 266618a..3b65f19 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -42,12 +42,12 @@ struct cpu_hw_counters {
+  * struct pmc_x86_ops - performance counter x86 ops
   */
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index aebbf67..e0ab173 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -11,6 +11,7 @@
- #include <linux/bootmem.h>
- #include <linux/debugfs.h>
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/gfp.h>
- #include <linux/mm.h>
- #include <linux/fs.h>
-@@ -868,6 +869,7 @@ pgprot_t pgprot_writecombine(pgprot_t prot)
- 	else
- 		return pgprot_noncached(prot);
+ struct pmc_x86_ops {
+-	u64 (*save_disable_all)		(void);
+-	void (*restore_all)		(u64 ctrl);
+-	unsigned eventsel;
+-	unsigned perfctr;
+-	int (*event_map)		(int event);
+-	int max_events;
++	u64		(*save_disable_all)(void);
++	void		(*restore_all)(u64 ctrl);
++	unsigned	eventsel;
++	unsigned	perfctr;
++	int		(*event_map)(int event);
++	int		max_events;
+ };
+ 
+ static struct pmc_x86_ops *pmc_ops;
+@@ -454,18 +454,18 @@ void perf_counter_print_debug(void)
+ 	cpuc = &per_cpu(cpu_hw_counters, cpu);
+ 
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) {
+-	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, ctrl);
+-	rdmsrl(MSR_CORE_PERF_GLOBAL_STATUS, status);
+-	rdmsrl(MSR_CORE_PERF_GLOBAL_OVF_CTRL, overflow);
+-	rdmsrl(MSR_ARCH_PERFMON_FIXED_CTR_CTRL, fixed);
+-
+-	printk(KERN_INFO "\n");
+-	printk(KERN_INFO "CPU#%d: ctrl:       %016llx\n", cpu, ctrl);
+-	printk(KERN_INFO "CPU#%d: status:     %016llx\n", cpu, status);
+-	printk(KERN_INFO "CPU#%d: overflow:   %016llx\n", cpu, overflow);
+-	printk(KERN_INFO "CPU#%d: fixed:      %016llx\n", cpu, fixed);
++		rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, ctrl);
++		rdmsrl(MSR_CORE_PERF_GLOBAL_STATUS, status);
++		rdmsrl(MSR_CORE_PERF_GLOBAL_OVF_CTRL, overflow);
++		rdmsrl(MSR_ARCH_PERFMON_FIXED_CTR_CTRL, fixed);
++
++		pr_info("\n");
++		pr_info("CPU#%d: ctrl:       %016llx\n", cpu, ctrl);
++		pr_info("CPU#%d: status:     %016llx\n", cpu, status);
++		pr_info("CPU#%d: overflow:   %016llx\n", cpu, overflow);
++		pr_info("CPU#%d: fixed:      %016llx\n", cpu, fixed);
+ 	}
+-	printk(KERN_INFO "CPU#%d: used:       %016llx\n", cpu, *(u64 *)cpuc->used);
++	pr_info("CPU#%d: used:       %016llx\n", cpu, *(u64 *)cpuc->used);
+ 
+ 	for (idx = 0; idx < nr_counters_generic; idx++) {
+ 		rdmsrl(pmc_ops->eventsel + idx, pmc_ctrl);
+@@ -473,17 +473,17 @@ void perf_counter_print_debug(void)
+ 
+ 		prev_left = per_cpu(prev_left[idx], cpu);
+ 
+-		printk(KERN_INFO "CPU#%d:   gen-PMC%d ctrl:  %016llx\n",
++		pr_info("CPU#%d:   gen-PMC%d ctrl:  %016llx\n",
+ 			cpu, idx, pmc_ctrl);
+-		printk(KERN_INFO "CPU#%d:   gen-PMC%d count: %016llx\n",
++		pr_info("CPU#%d:   gen-PMC%d count: %016llx\n",
+ 			cpu, idx, pmc_count);
+-		printk(KERN_INFO "CPU#%d:   gen-PMC%d left:  %016llx\n",
++		pr_info("CPU#%d:   gen-PMC%d left:  %016llx\n",
+ 			cpu, idx, prev_left);
+ 	}
+ 	for (idx = 0; idx < nr_counters_fixed; idx++) {
+ 		rdmsrl(MSR_ARCH_PERFMON_FIXED_CTR0 + idx, pmc_count);
+ 
+-		printk(KERN_INFO "CPU#%d: fixed-PMC%d count: %016llx\n",
++		pr_info("CPU#%d: fixed-PMC%d count: %016llx\n",
+ 			cpu, idx, pmc_count);
+ 	}
+ 	local_irq_enable();
+@@ -561,7 +561,7 @@ perf_handle_group(struct perf_counter *sibling, u64 *status, u64 *overflown)
+ /*
+  * Maximum interrupt frequency of 100KHz per CPU
+  */
+-#define PERFMON_MAX_INTERRUPTS 100000/HZ
++#define PERFMON_MAX_INTERRUPTS (100000/HZ)
+ 
+ /*
+  * This handler is triggered by the local APIC, so the APIC IRQ handling
+@@ -773,10 +773,10 @@ static struct pmc_x86_ops *pmc_intel_init(void)
+ 	if (eax.split.mask_length <= ARCH_PERFMON_BRANCH_MISSES_RETIRED)
+ 		return NULL;
+ 
+-	printk(KERN_INFO "Intel Performance Monitoring support detected.\n");
+-	printk(KERN_INFO "... version:         %d\n", eax.split.version_id);
+-	printk(KERN_INFO "... bit width:       %d\n", eax.split.bit_width);
+-	printk(KERN_INFO "... mask length:     %d\n", eax.split.mask_length);
++	pr_info("Intel Performance Monitoring support detected.\n");
++	pr_info("... version:         %d\n", eax.split.version_id);
++	pr_info("... bit width:       %d\n", eax.split.bit_width);
++	pr_info("... mask length:     %d\n", eax.split.mask_length);
+ 
+ 	nr_counters_generic = eax.split.num_counters;
+ 	nr_counters_fixed = edx.split.num_counters_fixed;
+@@ -790,7 +790,7 @@ static struct pmc_x86_ops *pmc_amd_init(void)
+ 	nr_counters_generic = 4;
+ 	nr_counters_fixed = 0;
+ 
+-	printk(KERN_INFO "AMD Performance Monitoring support detected.\n");
++	pr_info("AMD Performance Monitoring support detected.\n");
+ 
+ 	return &pmc_amd_ops;
  }
-+EXPORT_SYMBOL_GPL(pgprot_writecombine);
+@@ -811,7 +811,7 @@ void __init init_hw_perf_counters(void)
+ 	if (!pmc_ops)
+ 		return;
  
- #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_X86_PAT)
+-	printk(KERN_INFO "... num counters:    %d\n", nr_counters_generic);
++	pr_info("... num counters:    %d\n", nr_counters_generic);
+ 	if (nr_counters_generic > X86_PMC_MAX_GENERIC) {
+ 		nr_counters_generic = X86_PMC_MAX_GENERIC;
+ 		WARN(1, KERN_ERR "hw perf counters %d > max(%d), clipping!",
+@@ -820,18 +820,18 @@ void __init init_hw_perf_counters(void)
+ 	perf_counter_mask = (1 << nr_counters_generic) - 1;
+ 	perf_max_counters = nr_counters_generic;
  
+-	printk(KERN_INFO "... value mask:      %016Lx\n", counter_value_mask);
++	pr_info("... value mask:      %016Lx\n", counter_value_mask);
+ 
+ 	if (nr_counters_fixed > X86_PMC_MAX_FIXED) {
+ 		nr_counters_fixed = X86_PMC_MAX_FIXED;
+ 		WARN(1, KERN_ERR "hw perf counters fixed %d > max(%d), clipping!",
+ 			nr_counters_fixed, X86_PMC_MAX_FIXED);
+ 	}
+-	printk(KERN_INFO "... fixed counters:  %d\n", nr_counters_fixed);
++	pr_info("... fixed counters:  %d\n", nr_counters_fixed);
+ 
+ 	perf_counter_mask |= ((1LL << nr_counters_fixed)-1) << X86_PMC_IDX_FIXED;
+ 
+-	printk(KERN_INFO "... counter mask:    %016Lx\n", perf_counter_mask);
++	pr_info("... counter mask:    %016Lx\n", perf_counter_mask);
+ 	perf_counters_initialized = true;
+ 
+ 	perf_counters_lapic_init(0);
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 01b1244..d67e0e4 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -7,11 +7,10 @@
+ /*
+  *	Get CPU information for use by the procfs.
+  */
+-#ifdef CONFIG_X86_32
+ static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
+ 			      unsigned int cpu)
+ {
+-#ifdef CONFIG_X86_HT
++#ifdef CONFIG_SMP
+ 	if (c->x86_max_cores * smp_num_siblings > 1) {
+ 		seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
+ 		seq_printf(m, "siblings\t: %d\n",
+@@ -24,6 +23,7 @@ static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
+ #endif
+ }
+ 
++#ifdef CONFIG_X86_32
+ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
+ {
+ 	/*
+@@ -50,22 +50,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
+ 		   c->wp_works_ok ? "yes" : "no");
+ }
+ #else
+-static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
+-			      unsigned int cpu)
+-{
+-#ifdef CONFIG_SMP
+-	if (c->x86_max_cores * smp_num_siblings > 1) {
+-		seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
+-		seq_printf(m, "siblings\t: %d\n",
+-			   cpus_weight(per_cpu(cpu_core_map, cpu)));
+-		seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
+-		seq_printf(m, "cpu cores\t: %d\n", c->booted_cores);
+-		seq_printf(m, "apicid\t\t: %d\n", c->apicid);
+-		seq_printf(m, "initial apicid\t: %d\n", c->initial_apicid);
+-	}
+-#endif
+-}
+-
+ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
+ {
+ 	seq_printf(m,
+
+
