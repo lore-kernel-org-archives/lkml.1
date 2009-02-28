@@ -1,70 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbZB1JJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZB1JKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbZB1JJe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 04:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZB1JJV
+	id S1754627AbZB1JKB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 04:10:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZB1JJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 04:09:21 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:44929 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592AbZB1JJT (ORCPT
+	Sat, 28 Feb 2009 04:09:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60034 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752499AbZB1JJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 04:09:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=WvEeqkWxbjMsMIZULf4By/aFOyF8aMYH61/ohn+L2LuV07cZrDKhy/DnjkO3Z3p21A
-         SqU5A56DZIOnk4G8bJRAvy11mpTiAZB5Wz8rgTS6/hFoL8c1m3zO2KQq2Ek4o26TWl0p
-         +lTbesQTkGHBP0I5qO7acHJJE74g4qhvrHx7E=
-Date: Sat, 28 Feb 2009 10:09:14 +0100
-From: Simon Kagstrom <simon.kagstrom@gmail.com>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andy Green <andy@openmoko.com>, spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH 2/2] spi_bitbang: Add support for non-blocking
- synchronous transfers
-Message-ID: <20090228100914.2ec2ff7f@lska2>
-In-Reply-To: <20090228081117.31964.51155.stgit@fedora.yogi>
-References: <20090228081036.31964.80618.stgit@fedora.yogi>
-	<20090228081117.31964.51155.stgit@fedora.yogi>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Feb 2009 04:09:40 -0500
+Message-Id: <20090228090936.874671115@goodmis.org>
+References: <20090228090646.265765024@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Sat, 28 Feb 2009 04:06:47 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       acme@ghostprotocols.net, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 01/10] tracing: move trace point formats to files in include/trace directory
+Content-Disposition: inline; filename=0001-tracing-move-trace-point-formats-to-files-in-includ.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for taking this up Balaji!
+From: Steven Rostedt <srostedt@redhat.com>
 
-In the comment below I'm assuming the Openmoko accelerometer use of
-this functionality, which would include doing SPI transfers in the
-interrupt handler.
+Impact: clean up
 
-On Sat, 28 Feb 2009 13:41:17 +0530
-Balaji Rao <balajirrao@openmoko.org> wrote:
+To further facilitate the ease of adding trace points for developers, this
+patch creates include/trace/trace_events.h and
+include/trace/trace_event_types.h.
 
-> +/* Synchronous non blocking transfer */
-> +int
-> +spi_bitbang_transfer_sync(struct spi_device *spi, struct spi_message
-> *m) +{
-> [...]
-> +		if (setup_transfer) {
-> +			status = setup_transfer(spi, t);
-> [...]
-> +			if (!m->is_dma_mapped)
-> +				t->rx_dma = t->tx_dma = 0;
-> +			status = bitbang->txrx_bufs(spi, t);
+The former file will hold the trace/<type>.h files and the latter will hold
+the trace/<type>_event_types.h files.
 
-Another thing that we'd need to take care of is that the stuff being
-called from the synhronous transfer is actually callable from interrupt
-context. Looking at txrx_bufs for s3c24xx (s3c24xx_spi_txrx), it's
-using a wait_for_completion which is in turn completed by the s3c24xx
-SPI interrupt handler.
+To create new tracepoints and to have them automatically
+appear in the event tracer, a developer makes the trace/<type>.h file
+which includes <linux/tracepoint.h> and the trace/<type>_event_types.h file.
 
-Without trying, I'm guessing that that won't be possible from interrupt
-context.
+The trace/<type>_event_types.h file will hold the TRACE_FORMAT
+macros.
 
-// Simon
+Then add the trace/<type>.h file to trace/trace_events.h,
+and add the trace/<type>_event_types.h to the trace_event_types.h file.
+
+No need to modify files elsewhere.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/trace/trace_event_types.h |    4 ++++
+ include/trace/trace_events.h      |    4 ++++
+ kernel/trace/events.c             |   10 ++--------
+ 3 files changed, 10 insertions(+), 8 deletions(-)
+ create mode 100644 include/trace/trace_event_types.h
+ create mode 100644 include/trace/trace_events.h
+
+diff --git a/include/trace/trace_event_types.h b/include/trace/trace_event_types.h
+new file mode 100644
+index 0000000..33c8ed5
+--- /dev/null
++++ b/include/trace/trace_event_types.h
+@@ -0,0 +1,4 @@
++/* trace/<type>_event_types.h here */
++
++#include <trace/sched_event_types.h>
++#include <trace/irq_event_types.h>
+diff --git a/include/trace/trace_events.h b/include/trace/trace_events.h
+new file mode 100644
+index 0000000..ea2ef20
+--- /dev/null
++++ b/include/trace/trace_events.h
+@@ -0,0 +1,4 @@
++/* trace/<type>.h here */
++
++#include <trace/sched.h>
++#include <trace/irq.h>
+diff --git a/kernel/trace/events.c b/kernel/trace/events.c
+index 3c75623..46e27ad 100644
+--- a/kernel/trace/events.c
++++ b/kernel/trace/events.c
+@@ -1,15 +1,9 @@
+ /*
+  * This is the place to register all trace points as events.
+- * Include the trace/<type>.h at the top.
+- * Include the trace/<type>_event_types.h at the bottom.
+  */
+ 
+-/* trace/<type>.h here */
+-#include <trace/sched.h>
+-#include <trace/irq.h>
++#include <trace/trace_events.h>
+ 
+ #include "trace_events.h"
+ 
+-/* trace/<type>_event_types.h here */
+-#include <trace/sched_event_types.h>
+-#include <trace/irq_event_types.h>
++#include <trace/trace_event_types.h>
+-- 
+1.5.6.5
+
+-- 
