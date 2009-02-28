@@ -1,106 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZB1Iab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbZB1Ibl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbZB1Iab (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZB1IaW
+	id S1754263AbZB1Ibl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZB1Ibe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:30:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38041 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751387AbZB1IaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:30:21 -0500
-Date: Sat, 28 Feb 2009 09:29:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Salman Qazi <sqazi@google.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-Message-ID: <20090228082922.GB11425@elte.hu>
-References: <20090224020304.GA4496@google.com> <20090225072503.GD21903@elte.hu> <alpine.LFD.2.00.0902250753030.3111@localhost.localdomain> <200902272305.01867.nickpiggin@yahoo.com.au>
+	Sat, 28 Feb 2009 03:31:34 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:41579 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbZB1Ibd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 03:31:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=mZIbMJ/oUGvJDk0RwvcZYuddGMqP8Fh6vVeI/0GjOAeVXku4lwtHZ+EFZ828nuVOVY
+         ohUSg/81+Tog/jfP9y/VCYSPKzApPJ6Wijs94bHF0M/H+76Rp2pg4snvnlASqdFaIkZj
+         pwoqsyZ3N1/lHwyH0KfrOs7mQDe8Bz7U3iQ6Q=
+Message-ID: <49A8F660.10604@gmail.com>
+Date: Sat, 28 Feb 2009 09:31:28 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902272305.01867.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Eric Anholt <eric@anholt.net>
+CC: Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Andrew Morton <akpm@linux-foundation.org>, airlied@linux.ie,
+       keithp@keithp.com, dri-devel@lists.sourceforge.net,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: i915 X lockup
+References: <49A7B253.906@gmail.com>	 <20090227023231.76e7c65f.akpm@linux-foundation.org>	 <20090227130440.GA24633@silver.sucs.org> <49A7EF52.8080105@gmail.com>	 <20090227231207.GA4687@silver.sucs.org> <1235780431.6992.14.camel@gaiman>
+In-Reply-To: <1235780431.6992.14.camel@gaiman>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 28.2.2009 01:20, Eric Anholt wrote:
+> KMS support is not a feature of the server but of your 2D driver.  You
+> want 2.6.2, or things will be bad.
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+I have 2.5.0. After turning KMS off, problem seems to be solved.
 
-> On Thursday 26 February 2009 03:04:22 Linus Torvalds wrote:
-> > On Wed, 25 Feb 2009, Ingo Molnar wrote:
-> > > The main artifact would be the unaligned edges around a bigger
-> > > write. In particular the tail portion of a big write will be
-> > > cached.
-> >
-> > .. but I don't really agree that this is a problem.
-> >
-> > Sure, it's "wrong", but does it actually matter? No. Is it worth adding
-> > complexity to existing interfaces for? I think not.
-> >
-> > In general, I think that software should not mess with nontemporal stores.
-> > The thing is, software almost never knows enough about the CPU cache to
-> > make an intelligent choice.
-> >
-> > So I didn't want to apply the nocache patches in the first place, but the
-> > performance numbers were pretty clear. I'll take "real numbers" over my
-> > personal dislikes any day. But now we have real numbers going the other
-> > way for small writes, and a patch to fix that.
-> >
-> > But we have no amount of real numbers for the edge cases, and I don't
-> > think they matter. In fact, I don't think they _can_ matter, because it is
-> > inevitably always going to be an issue of "which CPU and which memory
-> > subsystem".
-> >
-> > In other words, there is no "right" answer. There is no "perfect". But
-> > there is "we can fix the real numbers".
-> 
-> Well... these are "real" benchmark numbers. Where the benchmark is
-> actually apparently performing an access pattern that seemingly
-> should favour nontemporal stores (the numbers are just measuring the
-> phase were write(2) is being done).
-> 
-> 
-> > At the same time, we also do know:
-> >  - caches work
-> >  - CPU designers will continue to worry about the normal (cached) case,
-> >    and will do reasonable things with cache replacement.
-> >  - ergo: w should always consider the cached case to be the _normal_ mode,
-> >    and it's the nontempral loads/stores that need to explain themselves.
-> >
-> > So I do think we should just apply the simple patch. Not make a big deal
-> > out of it. We have numbers. We use cached memory copies for everything
-> > else. It's always "safe".
-> >
-> > And we pretty much know that the only time we will ever really care about
-> > the nontemporal case is with big writes - where the "edge effects"
-> > essentially become total noise.
-> 
-> I guess so. I wouldn't mind just doing cached stores all the 
-> time for the reasons you say.
-> 
-> But whatever. If it ever becomes *really* important, I guess 
-> we can flag this kind of behaviour from userspace.
+Anyway, I would appreciate a version of the intel driver being in the 
+Kconfig text, otherwise it looks like: don't use this on machines with 
+installation from stone age. If one has latest stable release of a 
+distro, he doesn't even think he doesn't have "new enough userspace".
 
-Important question: is there a standing NAK for the 'total' 
-parameter addition patch i did? You requested it and Linus didnt 
-like it ... and i've measured it and it's just a single 
-instruction in the whole kernel so it did not seem to be too bad 
-to me.
-
-It might be wrong on the principle though, so will revert it if 
-needed, before it spreads into too many topics.
-
-	Ingo
+For reference, the text is:
+Choose this option if you want kernel modesetting enabled by default,
+and you have a new enough userspace to support this. Running old
+userspaces with this enabled will cause pain.
