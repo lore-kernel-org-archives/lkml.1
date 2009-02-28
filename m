@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZB1Edk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZB1Eqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbZB1Edk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 23:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbZB1Edb
+	id S1757154AbZB1Eqn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 23:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbZB1Eqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 23:33:31 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:13557 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbZB1Eda (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 23:33:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tSaInYBwup9HV1Zp9wM9vCipvv3cNMWXrdqw+GPpwpLZ5H7YvONygkwUJsFS02Pdl+
-         U06H9yn+ei1LCeEXo0iWh1wQJfEoH9eCzcsT+xVgbGtumROgO17bTlfAuPaJkTFGCjtu
-         5+9dQLh8CuSFgc/VzCMSgs323A4Unjc1n+S1c=
-Subject: Re: [ANNOUNCE][PATCH 0 of 4] zedtrace, a general-purpose binary
-	tracer
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090227164559.GB5856@nowhere>
-References: <1235725238.8512.86.camel@charm-linux>
-	 <20090227164559.GB5856@nowhere>
-Content-Type: text/plain
-Date: Fri, 27 Feb 2009 22:33:26 -0600
-Message-Id: <1235795606.9433.7.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Feb 2009 23:46:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45536 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbZB1Eqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 23:46:32 -0500
+Date: Sat, 28 Feb 2009 05:46:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+Message-ID: <20090228044614.GA17082@elte.hu>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com> <20090228030413.5B915FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain> <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Fri, 2009-02-27 at 17:46 +0100, Frederic Weisbecker wrote:
-> On Fri, Feb 27, 2009 at 03:00:38AM -0600, Tom Zanussi wrote:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Fri, 27 Feb 2009, Linus Torvalds wrote:
 > > 
-> > Available tracepoints:
+> > Ok, please explain this madness.
 > > 
-> > sched
-> >   sched:kthread_stop
-> >   sched:kthread_stop_ret
-> >   sched:wait_task
-> >   sched:wakeup
-> >   sched:wakeup_new
-> >   sched:switch
-> >   sched:migrate_task
-> >   sched:process_free
-> >   sched:process_exit
-> >   sched:process_wait
-> >   sched:process_fork
-> >   sched:signal_send
-> > block
-> >   block:rq_abort
-> >   block:rq_insert
-> >   block:rq_issue
-> >   block:rq_requeue
-> >   block:rq_complete
-> >   block:bio_bounce
-> >   block:bio_complete
-> >   block:bio_backmerge
-> >   block:bio_frontmerge
-> >   block:bio_queue
-> >   block:getrq
-> >   block:sleeprq
-> >   block:plug
-> >   block:unplug_io
-> >   block:unplug_timer
-> >   block:split
-> >   block:remap
-> > workqueue
-> >   workqueue:insertion
-> >   workqueue:execution
-> >   workqueue:creation
-> >   workqueue:destruction
+> > The whole crazy IS_COMPAT_TASK dance seems to be too messy 
+> > for words. Why? What's going on?
 > 
+> Ok, I can see what's going on. And it's disgusting.
 > 
-> You already wrote the subsystem, so I guess the subsystem: prefix
-> is a bit too much. Anyway, sorting the tracepoints by subsystem is a good
-> idea too.
+> Just make everybody do that "is_compat_task()" thing. parisc 
+> already did, and you just made x86-64 do so too. The only 
+> remaining TIF_32BIT users are powerpc and sparc. So instead of 
+> having this insane crud, please just add the trivial 
+> definitions to the two remaining places, and we don't have to 
+> have this insane mess. Ok?
 > 
+> It is clear that TIF_32BIT is _not_ a generic flag for 
+> 32/64-bit system calls, so let's stop pretending it is, and 
+> then having ugly special cases for when it's not.
 
-I add the subsystem prefix so you can just scrape the full event name
-off the listing shown on the screen and feed it directly to the
-command-line.
+Seconded.
 
-Good point about the sorting though, will put it on my todo list.
-
-> > the infrastructure is there for. ;-)
-> > 
-> > 
-> 
-> 
-> Great work.
->  
-
-Thanks!
-
-
-
+	Ingo
