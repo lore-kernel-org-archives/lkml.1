@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZB1Iqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZB1Isk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbZB1Iqr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbZB1Iqj
+	id S1754549AbZB1Isk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZB1Isc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:46:39 -0500
-Received: from rv-out-0506.google.com ([209.85.198.235]:32432 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbZB1Iqi (ORCPT
+	Sat, 28 Feb 2009 03:48:32 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37514 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752018AbZB1Isc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:46:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=Y2cbtsp7Tss4yj3YNpD8iA7yjSUj86SdINOcdCDLyc5b86y20ch9z3eg90Spgzekpu
-         LaCA7ZxEMXD/9ELT5vvmQVfChFTOF8L/m8JzOSjO5In45wCzxJFAb/Cue/nh9sJSbGAr
-         LIwd49g/KDUDl2kpENBfSARvylNoYmOzTdlOo=
-MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <20090228024424.D237CFC3DA@magilla.sf.frob.com>
-References: <20090226133339.875832967@linutronix.de>
-	 <cfd18e0f0902261319v20ba7bd1pcc91ccc4b2c7d577@mail.gmail.com>
-	 <alpine.LFD.2.00.0902262311350.9135@localhost.localdomain>
-	 <cfd18e0f0902271753ld9b432tae6c0ee783a24480@mail.gmail.com>
-	 <20090228024424.D237CFC3DA@magilla.sf.frob.com>
-Date: Sat, 28 Feb 2009 21:46:35 +1300
-Message-ID: <cfd18e0f0902280046k3171c97uaf9d984bd7894e82@mail.gmail.com>
-Subject: Re: [patch 0/3] add rt_tgsigqueueinfo syscall [RESEND]
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Linux API <linux-api@vger.kernel.org>, drepper@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 28 Feb 2009 03:48:32 -0500
+Date: Sat, 28 Feb 2009 00:47:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Eric Anholt <eric@anholt.net>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       airlied@linux.ie, keithp@keithp.com, dri-devel@lists.sourceforge.net,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: i915 X lockup
+Message-Id: <20090228004751.96d1ea8d.akpm@linux-foundation.org>
+In-Reply-To: <49A8F660.10604@gmail.com>
+References: <49A7B253.906@gmail.com>
+	<20090227023231.76e7c65f.akpm@linux-foundation.org>
+	<20090227130440.GA24633@silver.sucs.org>
+	<49A7EF52.8080105@gmail.com>
+	<20090227231207.GA4687@silver.sucs.org>
+	<1235780431.6992.14.camel@gaiman>
+	<49A8F660.10604@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/28/09, Roland McGrath <roland@redhat.com> wrote:
->> With respect to the first point, it seems to me reasonably likely that
->> there would be use cases where the receiving thread wants to know the
->> thread ID of the sender -- especially when sender and receiver are in
->> the same process.
->
-> But expecting si_pid to play that role is bizarre.
+On Sat, 28 Feb 2009 09:31:28 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Oh -- I wasn't suggeting that si_pid do that task; I was instead
-wondering if we needed an additional si_threadid field (or some such).
+> On 28.2.2009 01:20, Eric Anholt wrote:
+> > KMS support is not a feature of the server but of your 2D driver.  You
+> > want 2.6.2, or things will be bad.
+> 
+> I have 2.5.0. After turning KMS off, problem seems to be solved.
+> 
+> Anyway, I would appreciate a version of the intel driver being in the 
+> Kconfig text, otherwise it looks like: don't use this on machines with 
+> installation from stone age. If one has latest stable release of a 
+> distro, he doesn't even think he doesn't have "new enough userspace".
+> 
+> For reference, the text is:
+> Choose this option if you want kernel modesetting enabled by default,
+> and you have a new enough userspace to support this. Running old
+> userspaces with this enabled will cause pain.
 
-> It's never what any
-> POSIX-like program would do, both since POSIX says si_pid is a process ID,
-> and because there are no POSIX-like interfaces at all that use Linux TIDs
-> to refer to threads.
+Hang on.
 
-(Nod.)
+The kernel deadlocked on struct_mutex, did it not?  That's a kernel bug
+regardless of what userspace you're running.
 
-> Wanting this only seems plausible within one process.
-
-We are in agreement.
-
-> In that case, sender
-> and recipient know they share memory.  The normal thing to do (and what
-> POSIX applications will do) is to store that info somewhere pointed to by
-> the sigval.
-
-Good point.  That would be another of dealing with point I wondered
-about, and probably better than my idea.
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Do we know why this happened?
