@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762543AbZB1CG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762689AbZB1CHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762543AbZB1CG5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 21:06:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761136AbZB1B7o
+	id S1762689AbZB1CHo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 21:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761219AbZB1B7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:59:44 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:59182
+	Fri, 27 Feb 2009 20:59:45 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:59183
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757723AbZB1B7e (ORCPT
+	with ESMTP id S1757736AbZB1B7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Feb 2009 20:59:34 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -16,9 +16,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Mark McLoughlin <markmc@redhat.com>
-Subject: [PATCH] xen mtrr: Use generic_validate_add_page()
-Date: Fri, 27 Feb 2009 17:59:23 -0800
-Message-Id: <1235786365-17744-18-git-send-email-jeremy@goop.org>
+Subject: [PATCH] xen mtrr: Add xen_{get,set}_mtrr() implementations
+Date: Fri, 27 Feb 2009 17:59:25 -0800
+Message-Id: <1235786365-17744-20-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1235786365-17744-1-git-send-email-jeremy@goop.org>
 References: <1235786365-17744-1-git-send-email-jeremy@goop.org>
@@ -28,28 +28,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mark McLoughlin <markmc@redhat.com>
 
-The hypervisor already performs the same validation, but
-better to do it early before getting to the range combining
-code.
+Straightforward apart from the hack to turn mtrr_ops->set()
+into a no-op on all but one CPU.
 
 Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 ---
- arch/x86/kernel/cpu/mtrr/xen.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/cpu/mtrr/xen.c |   52 ++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 48 insertions(+), 4 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
-index 7a25f88..f226044 100644
+index d715843..50a45db 100644
 --- a/arch/x86/kernel/cpu/mtrr/xen.c
 +++ b/arch/x86/kernel/cpu/mtrr/xen.c
-@@ -16,7 +16,7 @@ static struct mtrr_ops xen_mtrr_ops = {
- //	.set               = xen_set_mtrr,
- //	.get               = xen_get_mtrr,
- 	.get_free_region   = generic_get_free_region,
--//	.validate_add_page = xen_validate_add_page,
-+	.validate_add_page = generic_validate_add_page,
+@@ -9,6 +9,52 @@
+ 
+ static int __init xen_num_var_ranges(void);
+ 
++static void xen_set_mtrr(unsigned int reg, unsigned long base,
++			 unsigned long size, mtrr_type type)
++{
++	struct xen_platform_op op;
++	int error;
++
++	/* mtrr_ops->set() is called once per CPU,
++	 * but Xen's ops apply to all CPUs.
++	 */
++	if (smp_processor_id())
++		return;
++
++	if (size == 0) {
++		op.cmd = XENPF_del_memtype;
++		op.u.del_memtype.handle = 0;
++		op.u.del_memtype.reg    = reg;
++	} else {
++		op.cmd = XENPF_add_memtype;
++		op.u.add_memtype.mfn     = base;
++		op.u.add_memtype.nr_mfns = size;
++		op.u.add_memtype.type    = type;
++	}
++
++	error = HYPERVISOR_dom0_op(&op);
++	BUG_ON(error != 0);
++}
++
++static void xen_get_mtrr(unsigned int reg, unsigned long *base,
++			 unsigned long *size, mtrr_type *type)
++{
++	struct xen_platform_op op;
++
++	op.cmd = XENPF_read_memtype;
++	op.u.read_memtype.reg = reg;
++	if (HYPERVISOR_dom0_op(&op) != 0) {
++		*base = 0;
++		*size = 0;
++		*type = 0;
++		return;
++	}
++
++	*size = op.u.read_memtype.nr_mfns;
++	*base = op.u.read_memtype.mfn;
++	*type = op.u.read_memtype.type;
++}
++
+ static int xen_get_free_region(unsigned long base, unsigned long size, int replace_reg)
+ {
+ 	struct xen_platform_op op;
+@@ -34,12 +80,10 @@ static int xen_get_free_region(unsigned long base, unsigned long size, int repla
+ 	return replace_reg;
+ }
+ 
+-/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
+- * working userland mtrr support. */
+ static struct mtrr_ops xen_mtrr_ops = {
+ 	.vendor            = X86_VENDOR_UNKNOWN,
+-//	.set               = xen_set_mtrr,
+-//	.get               = xen_get_mtrr,
++	.set               = xen_set_mtrr,
++	.get               = xen_get_mtrr,
+ 	.get_free_region   = xen_get_free_region,
+ 	.validate_add_page = generic_validate_add_page,
  	.have_wrcomb       = positive_have_wrcomb,
- 	.use_intel_if	   = 0,
- 	.num_var_ranges	   = xen_num_var_ranges,
 -- 
 1.6.0.6
 
