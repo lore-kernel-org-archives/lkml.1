@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbZB1WYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbZB1Wa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbZB1WYV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 17:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZB1WYN
+	id S1755709AbZB1Wa3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 17:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZB1WaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 17:24:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35112 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754480AbZB1WYM (ORCPT
+	Sat, 28 Feb 2009 17:30:19 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:34060 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754480AbZB1WaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 17:24:12 -0500
-Date: Sat, 28 Feb 2009 17:24:09 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [patch 3/4] genirq: add a quick check handler
-Message-ID: <20090228222408.GB7797@infradead.org>
-References: <20090226131336.423054348@linutronix.de> <20090226131719.640887792@linutronix.de>
+	Sat, 28 Feb 2009 17:30:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=O3tHThVvcrioCNoabPVgffkolvPVfmKL1ob7RaeJKde0AkpJGdFkk6klXVqy11yFY+
+         g8PdWtKndfOui/werc99AWdZyEwCM8ydlqHKz4dclL4a+jgL2uRg12UP0R4lgLRBF0gL
+         w/0tsVcY66en8GWbtW5UgcLHfwGXKF0fzI94k=
+Date: Sat, 28 Feb 2009 14:30:05 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       Trilok Soni <soni.trilok@gmail.com>
+Subject: Re: [PATCH] Input notifier support
+Message-ID: <20090228223004.GB16208@dtor-d630.eng.vmware.com>
+References: <20090225044730.GA9106@july>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090226131719.640887792@linutronix.de>
+In-Reply-To: <20090225044730.GA9106@july>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I really disagree with the notation of the pre-handler.  Instead of
-adding an additional pre handler method you should add a new threadfn
-method.  The handler could just as now handle/not handle the interrupt,
-or as a third option defer it to the thread.  That makes the different
-semantics a lot clearer, and means ->handler and ->threadfn both have
-very well defined contexts, instead of sometimes calling ->handler
-sometimes from irq and sometimes from thread context.  This also
-makes it much easier for complex hardware that might have simple and
-fast interrupts that it may want to handle directly from hardirq context
-in just a couple of cycles or complex interrupts that might be deferred
-to process context.
+Hi Kyungmin,
 
-In that model that main loop in handle_IRQ_event would look something
-like this:
+On Wed, Feb 25, 2009 at 01:47:30PM +0900, Kyungmin Park wrote:
+> Some hardware doesn't connected with key button and led. In this case
+> key should be connected with led by software. Of course each application
+> can control it however it's too big burden to application programmer.
+> 
+> So add input notifier and then use it at other frameworks such as led.
+> Of course, other input device can use this one.
+> 
+> Any commnets are welcome.
+> 
 
+I don't think we need to do the notifier route. It is very easy to add
+another input handler in style of rfkill-input or apm-power that would
+listen to events from all ungrabbed input devices and act accordingly.
+Your LED trigger example should work very well if implemented as another
+input handler.
 
-	do {
-		ret = action->handler(irq, action->dev_id);
-		switch (ret) {
-		case IRQ_HANDLED:
-			status |= action->flags;
-			break;
-		case IRQ_WAKE_THREAD:
-			if (likely(!test_bit(IRQTF_DIED,
-					     &action->thread_flags))) {
-				set_bit(IRQTF_RUNTHREAD, &action->thread_flags);
-				wake_up_process(action->thread);
-			}
-			/*
-			 * Set it to handled so the spurious check
-			 * does not trigger.
-			 */
-			ret = IRQ_HANDLED;
-			break;
-		}
-		retval |= ret;
-		action = action->next;
-	 } while (action);
+Thanks.
+
+-- 
+Dmitry
