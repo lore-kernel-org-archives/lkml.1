@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZB1Tc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZB1TmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbZB1Tc2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 14:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZB1TcT
+	id S1754715AbZB1TmE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 14:42:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZB1Tly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 14:32:19 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:62411 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188AbZB1TcS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 14:32:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sEiYL8s9T4iR5UGRV8EhxRoYT+F49f5CtECD0A+VLOjtV7x63Ii+hZZkyYAF+UI0W8
-         mruGi9muUVKHipR38h8gKkUFfOI0I9X7HZJuOjd3mAd4gsqZj6ciiU+wXoCzxxxdrmKM
-         2JWAhVPlU5NH+qbnIFL1audaxySaBTnWw88Y4=
+	Sat, 28 Feb 2009 14:41:54 -0500
+Received: from relay2.ptmail.sapo.pt ([212.55.154.22]:52026 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1750977AbZB1Tlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 14:41:53 -0500
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Sat, 28 Feb 2009 19:40:04 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] tracing: remove unused code
+Message-ID: <20090228194004.GA9780@hades.domain.com>
+References: <20090227202923.GA3826@hades.domain.com> <alpine.DEB.2.00.0902271535440.13395@gandalf.stny.rr.com> <20090228072137.GD9351@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <2c0942db0902140940v4b16c517mcbcd4874466e5158@mail.gmail.com>
-References: <6bd94bae0902130829r15e6eacag25220487457027ad@mail.gmail.com>
-	 <2c0942db0902140940v4b16c517mcbcd4874466e5158@mail.gmail.com>
-Date: Sat, 28 Feb 2009 20:32:15 +0100
-Message-ID: <6bd94bae0902281132u4a54fe55r2d604e0558051c66@mail.gmail.com>
-Subject: Re: contact problem? (was Re: Spurious Filesystem corruption with 
-	ext3 + large (<400GB) hw RAID ...)
-From: Manfred Wassmann <tux.wassmann@googlemail.com>
-To: Ray Lee <madrabbit@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090228072137.GD9351@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 18:40, Ray Lee <madrabbit@gmail.com> wrote:
-[...]
-> (Ah, I missed this message first time around. Please always do a
-> reply-to-all for lkml.)
+On Sat, Feb 28, 2009 at 08:21:37AM +0100, Ingo Molnar wrote:
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > Thanks Luis,
+> > 
+> > But before I remove this code, I want to move it to be 
+> > activated by tracing options. The irqsoff tracer (and other 
+> > latency tracers) are pretty useless without it.
+> 
+> sounds good.
 
-Thanks, that's always a problem with mailing lists, you never know,
-some people want CCs and some -- like me -- don't ;-)
+Ok, understood.  I am sorry for the noise introduced by this patch... I should
+have got some more context before submitting it -- I am really not that familiar
+with this code and tried just to remove a compile warning without fully
+understand the whole picture :-)
 
-> Bad contacts, sure, or (more likely) a marginal power supply? Can you
-> try a different enclosure, or a different power supply for the
-> enclosure?
-
-Now it looks like the disk is the problem, this week the array again
-reported degrades state with the same disk as before being flagged as
-defective but some time later everything was OK. The disk now has been
-replaced.
-Live was easier when disks were either good or bad ;-)
+-- 
+Luis Henriques
