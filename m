@@ -1,104 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbZB1Bn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZB1BoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757761AbZB1Bn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 20:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZB1BmE
+	id S1758950AbZB1BoH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 20:44:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZB1BmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:42:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41760 "EHLO mx2.redhat.com"
+	Fri, 27 Feb 2009 20:42:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41765 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752912AbZB1Bl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:41:56 -0500
+	id S1754405AbZB1Bl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 20:41:57 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/30] KVM: ia64: Add the support for translating PAL Call's pointer args
-Date: Sat, 28 Feb 2009 03:41:21 +0200
-Message-Id: <1235785309-12835-3-git-send-email-avi@redhat.com>
+Subject: [PATCH 05/30] KVM: s390: Fix problem state check for b2 intercepts
+Date: Sat, 28 Feb 2009 03:41:24 +0200
+Message-Id: <1235785309-12835-6-git-send-email-avi@redhat.com>
 In-Reply-To: <1235785309-12835-1-git-send-email-avi@redhat.com>
 References: <1235785309-12835-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiantao Zhang <xiantao.zhang@intel.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-Add the support to translate PAL Call's pointer args.
+The kernel handles some priviledged instruction exits. While I was
+unable to trigger such an exit from guest userspace, the code should
+check for supervisor state before emulating a priviledged instruction.
 
-Signed-off-by: Xiantao Zhang <xiantao.zhang@intel.com>
+I also renamed kvm_s390_handle_priv to kvm_s390_handle_b2. After all
+there are non priviledged b2 instructions like stck (store clock).
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/kvm/process.c |   48 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 45 insertions(+), 3 deletions(-)
+ arch/s390/kvm/intercept.c |    2 +-
+ arch/s390/kvm/kvm-s390.h  |    2 +-
+ arch/s390/kvm/priv.c      |   18 +++++++++++++++---
+ 3 files changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/arch/ia64/kvm/process.c b/arch/ia64/kvm/process.c
-index f9c9504..0e727ce 100644
---- a/arch/ia64/kvm/process.c
-+++ b/arch/ia64/kvm/process.c
-@@ -550,18 +550,60 @@ void reflect_interruption(u64 ifa, u64 isr, u64 iim,
- 	inject_guest_interruption(vcpu, vector);
- }
+diff --git a/arch/s390/kvm/intercept.c b/arch/s390/kvm/intercept.c
+index 6123610..9d19803 100644
+--- a/arch/s390/kvm/intercept.c
++++ b/arch/s390/kvm/intercept.c
+@@ -103,7 +103,7 @@ static int handle_lctl(struct kvm_vcpu *vcpu)
+ static intercept_handler_t instruction_handlers[256] = {
+ 	[0x83] = kvm_s390_handle_diag,
+ 	[0xae] = kvm_s390_handle_sigp,
+-	[0xb2] = kvm_s390_handle_priv,
++	[0xb2] = kvm_s390_handle_b2,
+ 	[0xb7] = handle_lctl,
+ 	[0xeb] = handle_lctlg,
+ };
+diff --git a/arch/s390/kvm/kvm-s390.h b/arch/s390/kvm/kvm-s390.h
+index 3893cf1..00bbe69 100644
+--- a/arch/s390/kvm/kvm-s390.h
++++ b/arch/s390/kvm/kvm-s390.h
+@@ -50,7 +50,7 @@ int kvm_s390_inject_vcpu(struct kvm_vcpu *vcpu,
+ int kvm_s390_inject_program_int(struct kvm_vcpu *vcpu, u16 code);
  
-+static unsigned long kvm_trans_pal_call_args(struct kvm_vcpu *vcpu,
-+						unsigned long arg)
-+{
-+	struct thash_data *data;
-+	unsigned long gpa, poff;
-+
-+	if (!is_physical_mode(vcpu)) {
-+		/* Depends on caller to provide the DTR or DTC mapping.*/
-+		data = vtlb_lookup(vcpu, arg, D_TLB);
-+		if (data)
-+			gpa = data->page_flags & _PAGE_PPN_MASK;
-+		else {
-+			data = vhpt_lookup(arg);
-+			if (!data)
-+				return 0;
-+			gpa = data->gpaddr & _PAGE_PPN_MASK;
-+		}
-+
-+		poff = arg & (PSIZE(data->ps) - 1);
-+		arg = PAGEALIGN(gpa, data->ps) | poff;
-+	}
-+	arg = kvm_gpa_to_mpa(arg << 1 >> 1);
-+
-+	return (unsigned long)__va(arg);
-+}
-+
- static void set_pal_call_data(struct kvm_vcpu *vcpu)
+ /* implemented in priv.c */
+-int kvm_s390_handle_priv(struct kvm_vcpu *vcpu);
++int kvm_s390_handle_b2(struct kvm_vcpu *vcpu);
+ 
+ /* implemented in sigp.c */
+ int kvm_s390_handle_sigp(struct kvm_vcpu *vcpu);
+diff --git a/arch/s390/kvm/priv.c b/arch/s390/kvm/priv.c
+index 3605df4..4b88834 100644
+--- a/arch/s390/kvm/priv.c
++++ b/arch/s390/kvm/priv.c
+@@ -304,12 +304,24 @@ static intercept_handler_t priv_handlers[256] = {
+ 	[0xb1] = handle_stfl,
+ };
+ 
+-int kvm_s390_handle_priv(struct kvm_vcpu *vcpu)
++int kvm_s390_handle_b2(struct kvm_vcpu *vcpu)
  {
- 	struct exit_ctl_data *p = &vcpu->arch.exit_data;
-+	unsigned long gr28 = vcpu_get_gr(vcpu, 28);
-+	unsigned long gr29 = vcpu_get_gr(vcpu, 29);
-+	unsigned long gr30 = vcpu_get_gr(vcpu, 30);
+ 	intercept_handler_t handler;
  
- 	/*FIXME:For static and stacked convention, firmware
- 	 * has put the parameters in gr28-gr31 before
- 	 * break to vmm  !!*/
- 
--	p->u.pal_data.gr28 = vcpu_get_gr(vcpu, 28);
--	p->u.pal_data.gr29 = vcpu_get_gr(vcpu, 29);
--	p->u.pal_data.gr30 = vcpu_get_gr(vcpu, 30);
-+	switch (gr28) {
-+	case PAL_PERF_MON_INFO:
-+	case PAL_HALT_INFO:
-+		p->u.pal_data.gr29 =  kvm_trans_pal_call_args(vcpu, gr29);
-+		p->u.pal_data.gr30 = vcpu_get_gr(vcpu, 30);
-+		break;
-+	case PAL_BRAND_INFO:
-+		p->u.pal_data.gr29 = gr29;;
-+		p->u.pal_data.gr30 = kvm_trans_pal_call_args(vcpu, gr30);
-+		break;
-+	default:
-+		p->u.pal_data.gr29 = gr29;;
-+		p->u.pal_data.gr30 = vcpu_get_gr(vcpu, 30);
++	/*
++	 * a lot of B2 instructions are priviledged. We first check for
++	 * the priviledges ones, that we can handle in the kernel. If the
++	 * kernel can handle this instruction, we check for the problem
++	 * state bit and (a) handle the instruction or (b) send a code 2
++	 * program check.
++	 * Anything else goes to userspace.*/
+ 	handler = priv_handlers[vcpu->arch.sie_block->ipa & 0x00ff];
+-	if (handler)
+-		return handler(vcpu);
++	if (handler) {
++		if (vcpu->arch.sie_block->gpsw.mask & PSW_MASK_PSTATE)
++			return kvm_s390_inject_program_int(vcpu,
++						   PGM_PRIVILEGED_OPERATION);
++		else
++			return handler(vcpu);
 +	}
-+	p->u.pal_data.gr28 = gr28;
- 	p->u.pal_data.gr31 = vcpu_get_gr(vcpu, 31);
-+
- 	p->exit_reason = EXIT_REASON_PAL_CALL;
+ 	return -ENOTSUPP;
  }
- 
 -- 
 1.6.0.6
 
