@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbZB1UnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbZB1Uqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbZB1UnE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 15:43:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZB1Umx
+	id S1755635AbZB1Uqh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 15:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZB1Uq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 15:42:53 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:18569 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484AbZB1Umx convert rfc822-to-8bit (ORCPT
+	Sat, 28 Feb 2009 15:46:29 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:31954 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbZB1Uq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 15:42:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=dSP62xFvJkFPhUEvzL21mfrYpLKhFRJFyZ9hCNSmIepwBhiA+/ZhxSGVlR4MsiPmyQ
-         PJnosZ3Go0+yEDLKtypg96PvnRhUW5aiz+clhVgV7GEsxhYahnfD0C5IZABFkS7UbIjC
-         5Xg0jco8zTMzcdg3fMFYdI4iDKgcXSQLkAIrw=
+	Sat, 28 Feb 2009 15:46:29 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       John.Linn@xilinx.com, sr@denx.de
+Date: Sat, 28 Feb 2009 13:46:22 -0700
+Message-ID: <20090228204622.29719.55082.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-In-Reply-To: <49A8F0E5.10307@zytor.com>
-References: <1235785882-17580-1-git-send-email-jeremy@goop.org>
-	 <1235785882-17580-4-git-send-email-jeremy@goop.org>
-	 <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com>
-	 <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu>
-	 <49A8EA1A.50802@kernel.org> <20090228074740.GA7581@localhost>
-	 <86802c440902272354s147aa88x2be99b48f2097b67@mail.gmail.com>
-	 <49A8F0E5.10307@zytor.com>
-Date: Sat, 28 Feb 2009 12:42:50 -0800
-X-Google-Sender-Auth: d2186ded3133df4f
-Message-ID: <86802c440902281242h76bc601bu70c8b42444f58f72@mail.gmail.com>
-Subject: Re: does boot loader check uncompressed kernel size?
-From: Yinghai Lu <yinghai@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 12:08 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
->>
->> On Fri, Feb 27, 2009 at 11:47 PM, Cyrill Gorcunov <gorcunov@gmail.com>
->> wrote:
->>>
->>> [Yinghai Lu - Fri, Feb 27, 2009 at 11:39:06PM -0800]
->>> | wonder if boot loader check uncompress size aka vmlinux size in bzImage
->>> | before it find one good position for bzImage...?
->>> |
->>> | YH
->>> |
->>>
->>> At least for x86-64 in grub-1.96 I didn't find such a check.
->>> Btw, but why should it care? Or you mean something else?
->>
->> thinking about Jeremy's brk patches that may use ram after _end blindly...
->>
->
-> We already do that.  Jeremy's brk patches just formalizes it.
->
+From: Grant Likely <grant.likely@secretlab.ca>
 
-No, after we extend reserve_early from 64bit to 32bit, we don't use
-RAM blindly in early stage.
+The SystemACE driver does not handle an empty CF slot gracefully.  An
+empty CF slot ends up hanging the system.  This patch adds a check for
+the CF state and stops trying to process requests if the slot is empty.
 
-YH
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ drivers/block/xsysace.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index 381d686..ec5b8ca 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -489,6 +489,28 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		ace->fsm_state, ace->id_req_count);
+ #endif
+ 
++	/* Verify that there is actually a CF in the slot.  If not, then
++	 * bail out back to the idle state and wake up all the waiters */
++	status = ace_in32(ace, ACE_STATUS);
++	if ((status & ACE_STATUS_CFDETECT) == 0) {
++		ace->fsm_state = ACE_FSM_STATE_IDLE;
++		ace->media_change = 1;
++		set_capacity(ace->gd, 0);
++		dev_info(ace->dev, "No CF in slot\n");
++ 
++		/* Drop all pending requests */
++		while ((req = elv_next_request(ace->queue)) != NULL)
++			end_request(req, 0);
++
++		/* Drop back to IDLE state and notify waiters */
++		ace->fsm_state = ACE_FSM_STATE_IDLE;
++		ace->id_result = -EIO;
++		while (ace->id_req_count) {
++			complete(&ace->id_completion);
++			ace->id_req_count--;
++		}
++	}
++
+ 	switch (ace->fsm_state) {
+ 	case ACE_FSM_STATE_IDLE:
+ 		/* See if there is anything to do */
+
