@@ -1,315 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbZB1BrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZB1Brn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761088AbZB1BrH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Feb 2009 20:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbZB1Bm3
+	id S1757965AbZB1Brn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Feb 2009 20:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZB1Bmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Feb 2009 20:42:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41773 "EHLO mx2.redhat.com"
+	Fri, 27 Feb 2009 20:42:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41792 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754638AbZB1Bl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Feb 2009 20:41:57 -0500
+	id S1754892AbZB1Bl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Feb 2009 20:41:59 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/30] KVM: Use irq routing API for MSI
-Date: Sat, 28 Feb 2009 03:41:31 +0200
-Message-Id: <1235785309-12835-13-git-send-email-avi@redhat.com>
+Subject: [PATCH 30/30] KVM: fix sparse warnings: Should it be static?
+Date: Sat, 28 Feb 2009 03:41:49 +0200
+Message-Id: <1235785309-12835-31-git-send-email-avi@redhat.com>
 In-Reply-To: <1235785309-12835-1-git-send-email-avi@redhat.com>
 References: <1235785309-12835-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sheng Yang <sheng@linux.intel.com>
+From: Hannes Eder <hannes@hanneseder.net>
 
-Merge MSI userspace interface with IRQ routing table. Notice the API have been
-changed, and using IRQ routing table would be the only interface kvm-userspace
-supported.
+Impact: Make symbols static.
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+Fix this sparse warnings:
+  arch/x86/kvm/mmu.c:992:5: warning: symbol 'mmu_pages_add' was not declared. Should it be static?
+  arch/x86/kvm/mmu.c:1124:5: warning: symbol 'mmu_pages_next' was not declared. Should it be static?
+  arch/x86/kvm/mmu.c:1144:6: warning: symbol 'mmu_pages_clear_parents' was not declared. Should it be static?
+  arch/x86/kvm/x86.c:2037:5: warning: symbol 'kvm_read_guest_virt' was not declared. Should it be static?
+  arch/x86/kvm/x86.c:2067:5: warning: symbol 'kvm_write_guest_virt' was not declared. Should it be static?
+  virt/kvm/irq_comm.c:220:5: warning: symbol 'setup_routing_entry' was not declared. Should it be static?
+
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- include/linux/kvm.h      |    9 +++++
- include/linux/kvm_host.h |    2 +-
- virt/kvm/irq_comm.c      |   78 +++++++++++++++++++++++++++++++++++++++++----
- virt/kvm/kvm_main.c      |   70 +++--------------------------------------
- 4 files changed, 86 insertions(+), 73 deletions(-)
+ arch/x86/kvm/mmu.c  |   11 ++++++-----
+ arch/x86/kvm/x86.c  |    8 ++++----
+ virt/kvm/irq_comm.c |    4 ++--
+ 3 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 869462c..2163b3d 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -410,8 +410,16 @@ struct kvm_irq_routing_irqchip {
- 	__u32 pin;
- };
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 4a21b0f..2a36f7f 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -989,8 +989,8 @@ struct kvm_mmu_pages {
+ 	     idx < 512;					\
+ 	     idx = find_next_bit(bitmap, 512, idx+1))
  
-+struct kvm_irq_routing_msi {
-+	__u32 address_lo;
-+	__u32 address_hi;
-+	__u32 data;
-+	__u32 pad;
-+};
-+
- /* gsi routing entry types */
- #define KVM_IRQ_ROUTING_IRQCHIP 1
-+#define KVM_IRQ_ROUTING_MSI 2
+-int mmu_pages_add(struct kvm_mmu_pages *pvec, struct kvm_mmu_page *sp,
+-		   int idx)
++static int mmu_pages_add(struct kvm_mmu_pages *pvec, struct kvm_mmu_page *sp,
++			 int idx)
+ {
+ 	int i;
  
- struct kvm_irq_routing_entry {
- 	__u32 gsi;
-@@ -420,6 +428,7 @@ struct kvm_irq_routing_entry {
- 	__u32 pad;
- 	union {
- 		struct kvm_irq_routing_irqchip irqchip;
-+		struct kvm_irq_routing_msi msi;
- 		__u32 pad[8];
- 	} u;
- };
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index c03a0a9..339eda3 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -116,6 +116,7 @@ struct kvm_kernel_irq_routing_entry {
- 			unsigned irqchip;
- 			unsigned pin;
- 		} irqchip;
-+		struct msi_msg msi;
- 	};
- 	struct list_head link;
- };
-@@ -327,7 +328,6 @@ struct kvm_assigned_dev_kernel {
- 	int host_irq;
- 	bool host_irq_disabled;
- 	int guest_irq;
--	struct msi_msg guest_msi;
- #define KVM_ASSIGNED_DEV_GUEST_INTX	(1 << 0)
- #define KVM_ASSIGNED_DEV_GUEST_MSI	(1 << 1)
- #define KVM_ASSIGNED_DEV_HOST_INTX	(1 << 8)
+@@ -1121,8 +1121,9 @@ struct mmu_page_path {
+ 			i < pvec.nr && ({ sp = pvec.page[i].sp; 1;});	\
+ 			i = mmu_pages_next(&pvec, &parents, i))
+ 
+-int mmu_pages_next(struct kvm_mmu_pages *pvec, struct mmu_page_path *parents,
+-		   int i)
++static int mmu_pages_next(struct kvm_mmu_pages *pvec,
++			  struct mmu_page_path *parents,
++			  int i)
+ {
+ 	int n;
+ 
+@@ -1141,7 +1142,7 @@ int mmu_pages_next(struct kvm_mmu_pages *pvec, struct mmu_page_path *parents,
+ 	return n;
+ }
+ 
+-void mmu_pages_clear_parents(struct mmu_page_path *parents)
++static void mmu_pages_clear_parents(struct mmu_page_path *parents)
+ {
+ 	struct kvm_mmu_page *sp;
+ 	unsigned int level = 0;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index e4db5be..8ca100a 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2043,8 +2043,8 @@ static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,
+ 	return dev;
+ }
+ 
+-int kvm_read_guest_virt(gva_t addr, void *val, unsigned int bytes,
+-			struct kvm_vcpu *vcpu)
++static int kvm_read_guest_virt(gva_t addr, void *val, unsigned int bytes,
++			       struct kvm_vcpu *vcpu)
+ {
+ 	void *data = val;
+ 	int r = X86EMUL_CONTINUE;
+@@ -2073,8 +2073,8 @@ out:
+ 	return r;
+ }
+ 
+-int kvm_write_guest_virt(gva_t addr, void *val, unsigned int bytes,
+-			 struct kvm_vcpu *vcpu)
++static int kvm_write_guest_virt(gva_t addr, void *val, unsigned int bytes,
++				struct kvm_vcpu *vcpu)
+ {
+ 	void *data = val;
+ 	int r = X86EMUL_CONTINUE;
 diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index 7aa5086..6bc7439 100644
+index a70d805..864ac54 100644
 --- a/virt/kvm/irq_comm.c
 +++ b/virt/kvm/irq_comm.c
-@@ -20,6 +20,11 @@
-  */
- 
- #include <linux/kvm_host.h>
-+
-+#ifdef CONFIG_X86
-+#include <asm/msidef.h>
-+#endif
-+
- #include "irq.h"
- 
- #include "ioapic.h"
-@@ -38,17 +43,70 @@ static void kvm_set_ioapic_irq(struct kvm_kernel_irq_routing_entry *e,
- 	kvm_ioapic_set_irq(kvm->arch.vioapic, e->irqchip.pin, level);
+@@ -233,8 +233,8 @@ void kvm_free_irq_routing(struct kvm *kvm)
+ 	__kvm_free_irq_routing(&kvm->irq_routing);
  }
  
-+static void kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
-+			struct kvm *kvm, int level)
-+{
-+	int vcpu_id;
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_ioapic *ioapic = ioapic_irqchip(kvm);
-+	int dest_id = (e->msi.address_lo & MSI_ADDR_DEST_ID_MASK)
-+			>> MSI_ADDR_DEST_ID_SHIFT;
-+	int vector = (e->msi.data & MSI_DATA_VECTOR_MASK)
-+			>> MSI_DATA_VECTOR_SHIFT;
-+	int dest_mode = test_bit(MSI_ADDR_DEST_MODE_SHIFT,
-+				(unsigned long *)&e->msi.address_lo);
-+	int trig_mode = test_bit(MSI_DATA_TRIGGER_SHIFT,
-+				(unsigned long *)&e->msi.data);
-+	int delivery_mode = test_bit(MSI_DATA_DELIVERY_MODE_SHIFT,
-+				(unsigned long *)&e->msi.data);
-+	u32 deliver_bitmask;
-+
-+	BUG_ON(!ioapic);
-+
-+	deliver_bitmask = kvm_ioapic_get_delivery_bitmask(ioapic,
-+				dest_id, dest_mode);
-+	/* IOAPIC delivery mode value is the same as MSI here */
-+	switch (delivery_mode) {
-+	case IOAPIC_LOWEST_PRIORITY:
-+		vcpu = kvm_get_lowest_prio_vcpu(ioapic->kvm, vector,
-+				deliver_bitmask);
-+		if (vcpu != NULL)
-+			kvm_apic_set_irq(vcpu, vector, trig_mode);
-+		else
-+			printk(KERN_INFO "kvm: null lowest priority vcpu!\n");
-+		break;
-+	case IOAPIC_FIXED:
-+		for (vcpu_id = 0; deliver_bitmask != 0; vcpu_id++) {
-+			if (!(deliver_bitmask & (1 << vcpu_id)))
-+				continue;
-+			deliver_bitmask &= ~(1 << vcpu_id);
-+			vcpu = ioapic->kvm->vcpus[vcpu_id];
-+			if (vcpu)
-+				kvm_apic_set_irq(vcpu, vector, trig_mode);
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
- /* This should be called with the kvm->lock mutex held */
- void kvm_set_irq(struct kvm *kvm, int irq_source_id, int irq, int level)
+-int setup_routing_entry(struct kvm_kernel_irq_routing_entry *e,
+-			const struct kvm_irq_routing_entry *ue)
++static int setup_routing_entry(struct kvm_kernel_irq_routing_entry *e,
++			       const struct kvm_irq_routing_entry *ue)
  {
- 	struct kvm_kernel_irq_routing_entry *e;
--	unsigned long *irq_state = (unsigned long *)&kvm->arch.irq_states[irq];
-+	unsigned long *irq_state, sig_level;
-+
-+	if (irq < KVM_IOAPIC_NUM_PINS) {
-+		irq_state = (unsigned long *)&kvm->arch.irq_states[irq];
- 
--	/* Logical OR for level trig interrupt */
--	if (level)
--		set_bit(irq_source_id, irq_state);
--	else
--		clear_bit(irq_source_id, irq_state);
-+		/* Logical OR for level trig interrupt */
-+		if (level)
-+			set_bit(irq_source_id, irq_state);
-+		else
-+			clear_bit(irq_source_id, irq_state);
-+		sig_level = !!(*irq_state);
-+	} else /* Deal with MSI/MSI-X */
-+		sig_level = 1;
- 
- 	/* Not possible to detect if the guest uses the PIC or the
- 	 * IOAPIC.  So set the bit in both. The guest will ignore
-@@ -56,7 +114,7 @@ void kvm_set_irq(struct kvm *kvm, int irq_source_id, int irq, int level)
- 	 */
- 	list_for_each_entry(e, &kvm->irq_routing, link)
- 		if (e->gsi == irq)
--			e->set(e, kvm, !!(*irq_state));
-+			e->set(e, kvm, sig_level);
- }
- 
- void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin)
-@@ -186,6 +244,12 @@ int setup_routing_entry(struct kvm_kernel_irq_routing_entry *e,
- 		e->irqchip.irqchip = ue->u.irqchip.irqchip;
- 		e->irqchip.pin = ue->u.irqchip.pin + delta;
- 		break;
-+	case KVM_IRQ_ROUTING_MSI:
-+		e->set = kvm_set_msi;
-+		e->msi.address_lo = ue->u.msi.address_lo;
-+		e->msi.address_hi = ue->u.msi.address_hi;
-+		e->msi.data = ue->u.msi.data;
-+		break;
- 	default:
- 		goto out;
- 	}
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index c65484b..266bdaf 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -47,10 +47,6 @@
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- 
--#ifdef CONFIG_X86
--#include <asm/msidef.h>
--#endif
--
- #ifdef KVM_COALESCED_MMIO_PAGE_OFFSET
- #include "coalesced_mmio.h"
- #endif
-@@ -85,57 +81,6 @@ static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
- static bool kvm_rebooting;
- 
- #ifdef KVM_CAP_DEVICE_ASSIGNMENT
--
--#ifdef CONFIG_X86
--static void assigned_device_msi_dispatch(struct kvm_assigned_dev_kernel *dev)
--{
--	int vcpu_id;
--	struct kvm_vcpu *vcpu;
--	struct kvm_ioapic *ioapic = ioapic_irqchip(dev->kvm);
--	int dest_id = (dev->guest_msi.address_lo & MSI_ADDR_DEST_ID_MASK)
--			>> MSI_ADDR_DEST_ID_SHIFT;
--	int vector = (dev->guest_msi.data & MSI_DATA_VECTOR_MASK)
--			>> MSI_DATA_VECTOR_SHIFT;
--	int dest_mode = test_bit(MSI_ADDR_DEST_MODE_SHIFT,
--				(unsigned long *)&dev->guest_msi.address_lo);
--	int trig_mode = test_bit(MSI_DATA_TRIGGER_SHIFT,
--				(unsigned long *)&dev->guest_msi.data);
--	int delivery_mode = test_bit(MSI_DATA_DELIVERY_MODE_SHIFT,
--				(unsigned long *)&dev->guest_msi.data);
--	u32 deliver_bitmask;
--
--	BUG_ON(!ioapic);
--
--	deliver_bitmask = kvm_ioapic_get_delivery_bitmask(ioapic,
--				dest_id, dest_mode);
--	/* IOAPIC delivery mode value is the same as MSI here */
--	switch (delivery_mode) {
--	case IOAPIC_LOWEST_PRIORITY:
--		vcpu = kvm_get_lowest_prio_vcpu(ioapic->kvm, vector,
--				deliver_bitmask);
--		if (vcpu != NULL)
--			kvm_apic_set_irq(vcpu, vector, trig_mode);
--		else
--			printk(KERN_INFO "kvm: null lowest priority vcpu!\n");
--		break;
--	case IOAPIC_FIXED:
--		for (vcpu_id = 0; deliver_bitmask != 0; vcpu_id++) {
--			if (!(deliver_bitmask & (1 << vcpu_id)))
--				continue;
--			deliver_bitmask &= ~(1 << vcpu_id);
--			vcpu = ioapic->kvm->vcpus[vcpu_id];
--			if (vcpu)
--				kvm_apic_set_irq(vcpu, vector, trig_mode);
--		}
--		break;
--	default:
--		printk(KERN_INFO "kvm: unsupported MSI delivery mode\n");
--	}
--}
--#else
--static void assigned_device_msi_dispatch(struct kvm_assigned_dev_kernel *dev) {}
--#endif
--
- static struct kvm_assigned_dev_kernel *kvm_find_assigned_dev(struct list_head *head,
- 						      int assigned_dev_id)
- {
-@@ -162,13 +107,10 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
- 	 * finer-grained lock, update this
- 	 */
- 	mutex_lock(&assigned_dev->kvm->lock);
--	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_GUEST_INTX)
--		kvm_set_irq(assigned_dev->kvm,
--			    assigned_dev->irq_source_id,
--			    assigned_dev->guest_irq, 1);
--	else if (assigned_dev->irq_requested_type &
--				KVM_ASSIGNED_DEV_GUEST_MSI) {
--		assigned_device_msi_dispatch(assigned_dev);
-+	kvm_set_irq(assigned_dev->kvm, assigned_dev->irq_source_id,
-+		    assigned_dev->guest_irq, 1);
-+
-+	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_GUEST_MSI) {
- 		enable_irq(assigned_dev->host_irq);
- 		assigned_dev->host_irq_disabled = false;
- 	}
-@@ -331,17 +273,15 @@ static int assigned_device_update_msi(struct kvm *kvm,
- {
- 	int r;
- 
-+	adev->guest_irq = airq->guest_irq;
- 	if (airq->flags & KVM_DEV_IRQ_ASSIGN_ENABLE_MSI) {
- 		/* x86 don't care upper address of guest msi message addr */
- 		adev->irq_requested_type |= KVM_ASSIGNED_DEV_GUEST_MSI;
- 		adev->irq_requested_type &= ~KVM_ASSIGNED_DEV_GUEST_INTX;
--		adev->guest_msi.address_lo = airq->guest_msi.addr_lo;
--		adev->guest_msi.data = airq->guest_msi.data;
- 		adev->ack_notifier.gsi = -1;
- 	} else if (msi2intx) {
- 		adev->irq_requested_type |= KVM_ASSIGNED_DEV_GUEST_INTX;
- 		adev->irq_requested_type &= ~KVM_ASSIGNED_DEV_GUEST_MSI;
--		adev->guest_irq = airq->guest_irq;
- 		adev->ack_notifier.gsi = airq->guest_irq;
- 	} else {
- 		/*
+ 	int r = -EINVAL;
+ 	int delta;
 -- 
 1.6.0.6
 
