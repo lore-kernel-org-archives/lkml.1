@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZB1IFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZB1ILM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbZB1IFp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 03:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZB1IFh
+	id S1753346AbZB1ILM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 03:11:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZB1IK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 03:05:37 -0500
-Received: from gw.goop.org ([64.81.55.164]:59131 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbZB1IFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 03:05:36 -0500
-Message-ID: <49A8F04D.4090409@goop.org>
-Date: Sat, 28 Feb 2009 00:05:33 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 28 Feb 2009 03:10:57 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:38999 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbZB1IK5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 03:10:57 -0500
+Subject: [PATCH 0/2] spi: Add support for non-blocking synchronous transfers
+To: linux-kernel@vger.kernel.org
+From: Balaji Rao <balajirrao@openmoko.org>
+Cc: spi-devel-general@lists.sourceforge.net, Andy Green <andy@openmoko.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Date: Sat, 28 Feb 2009 13:40:36 +0530
+Message-ID: <20090228081036.31964.80618.stgit@fedora.yogi>
+User-Agent: StGit/0.14.3.343.g0584
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH] xen: core dom0 support
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <49A8DF28.4050301@goop.org> <20090228072055.GC9351@elte.hu>
-In-Reply-To: <20090228072055.GC9351@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Hm, how can the same code that you call "massive out-of-tree 
-> patches which doesn't make anyone happy" in an out of tree 
-> context suddenly become non-intrusive "minor amount of extra 
-> stuff" in an upstream context?
->
-> I wish the upstream kernel was able to do such magic, but i'm 
-> afraid it is not.
+Hi,
 
-No, but I am ;)  The current out of tree Xen patches are very intrusive 
-because there hasn't been much incentive to reduce their impact.  I've 
-going through it all and very carefully rewriting it 1) be cleaner, 2) 
-enable/disable itself at runtime, 3) have clean interfaces and 
-interactions with the rest of the kernel, and 4) address any concerns 
-that others have.  In other words, make Xen a first-class kernel citizen.
+During the course of development of an accelerometer driver, we saw the
+necessity to execute spi transfers synchronously within an interrupt handler.
+When using a workqueue instead, we observed a huge number of overruns with very
+high cpu utlization, which is unacceptable.
 
-Most of the intrusive stuff has already been merged (and merged for some 
-time now), but without dom0 support its only half done; as it stands 
-people are using mainline Linux for their domUs, but are still limited 
-to patched up (old) kernels for dom0.  This is a real problem because 
-all the drivers for interesting new devices are in the new kernels, so 
-there's an additional burden of backporting device support into old kernels.
+This series adds a new interface for this and modifies no existing ones.
 
-    J
+[PATCH 1/2] - Adds synchronous non-blocking transfer support to spi core
+[PATCH 2/2] - Implements this support in spi_bitbang.c
+
+
+Balaji Rao (2):
+      spi_bitbang: Add support for non-blocking synchronous transfers
+      spi: Add support for non-blocking synchronous transfers
+
+
+ drivers/spi/spi_bitbang.c       |  227 +++++++++++++++++++++------------------
+ include/linux/spi/spi.h         |   31 +++++
+ include/linux/spi/spi_bitbang.h |    5 +
+ 3 files changed, 156 insertions(+), 107 deletions(-)
+
+
+--
+Balaji Rao
