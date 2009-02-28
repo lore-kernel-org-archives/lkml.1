@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZB1OwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZB1PSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbZB1OwU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 09:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbZB1OwG
+	id S1753096AbZB1PSA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 10:18:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZB1PRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 09:52:06 -0500
-Received: from thunk.org ([69.25.196.29]:44640 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbZB1OwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 09:52:04 -0500
-Date: Sat, 28 Feb 2009 09:52:00 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: David Fries <david@fries.net>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Reorder ext4 and ext2 so that ext2 root filesystems
-	are mounted using ext2
-Message-ID: <20090228145200.GA6935@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Fries <david@fries.net>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <1235831060-10086-1-git-send-email-tytso@mit.edu> <20090228143943.GD4894@spacedout.fries.net>
+	Sat, 28 Feb 2009 10:17:51 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:63874 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbZB1PRu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 10:17:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=aRsuqYtLjL6nhZ99WE3m4NcuH5l9J8wOE2DpLezbAwbEns8Kn2lYVGsb5LIf0OZwHi
+         IUFyCoK/ZLiq8uVqVTa/Rp9ANGMQXHY+VgnoVc+B/nX/scVQRn39KPx3Y45Hj4fH1bR1
+         mNETD84GMt1RpEpGQeMSJwhr3KWqvSoRtUJ58=
+Date: Sat, 28 Feb 2009 18:17:47 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] acpi: check for pxm_to_node_map overflow
+Message-ID: <20090228151747.GB7835@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090228143943.GD4894@spacedout.fries.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 08:39:43AM -0600, David Fries wrote:
-> 
-> Try
-> > +# We place ext4 after ext2 so plain ext2 root fs's aren't mounted using ext4
-> > +# unless explicitly requested by rootfstype
-> 
+It is hardly (if ever) possible but in case of broken _PXM
+entry we could reach out of pxm_to_node_map array
+bounds in acpi_map_pxm_to_node() call.
 
-Oops, nice catch!  I changed it to be:
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+CC: Len Brown <lenb@kernel.org>
+---
 
-# We place ext4 after ext2 so plain ext2 root fs's are mounted using ext2
-# unless explicitly requested by rootfstype
+It's a patch resend. I didn't get any response on
+previous submission from Len, oh :(
 
-Thanks,
+Len is the patch really not needed or such a situation
+can't happen?
 
-						- Ted
+ drivers/acpi/numa.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.git/drivers/acpi/numa.c
+===================================================================
+--- linux-2.6.git.orig/drivers/acpi/numa.c
++++ linux-2.6.git/drivers/acpi/numa.c
+@@ -277,7 +277,7 @@ int acpi_get_node(acpi_handle *handle)
+ 	int pxm, node = -1;
+ 
+ 	pxm = acpi_get_pxm(handle);
+-	if (pxm >= 0)
++	if (pxm >= 0 && pxm < MAX_PXM_DOMAINS)
+ 		node = acpi_map_pxm_to_node(pxm);
+ 
+ 	return node;
