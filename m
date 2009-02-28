@@ -1,62 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZB1WAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZB1WFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbZB1WAv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 17:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZB1WAn
+	id S1755532AbZB1WFw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 17:05:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZB1WFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 17:00:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49557 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753518AbZB1WAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 17:00:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: [Bug #12762] Disk errors loop forever in 2.6.29
-Date: Sat, 28 Feb 2009 23:00:10 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <vP9hdyF4fL.A.dKD.3ozoJB@chimera> <20090228215027.GA22913@silver.sucs.org>
-In-Reply-To: <20090228215027.GA22913@silver.sucs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902282300.11455.rjw@sisk.pl>
+	Sat, 28 Feb 2009 17:05:43 -0500
+Received: from everest.las.ic.unicamp.br ([143.106.60.118]:59855 "EHLO
+	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbZB1WFm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 17:05:42 -0500
+From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+To: linux-bluetooth@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] bluetooth: create macros for channels identifiers
+Date: Sat, 28 Feb 2009 19:04:24 -0300
+Message-Id: <1235858664-32201-1-git-send-email-gustavo@las.ic.unicamp.br>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 February 2009, Sitsofe Wheeler wrote:
-> On Mon, Feb 23, 2009 at 10:48:17PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12762
-> > Subject		: Disk errors loop forever in 2.6.29
-> > Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-> > Date		: 2009-02-19 13:53 (5 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b60af5b0adf0da24c673598c8d3fb4d4189a15ce
-> > References	: http://marc.info/?l=linux-kernel&m=123505185407604&w=4
-> > Handled-By	: James Bottomley <James.Bottomley@hansenpartnership.com>
-> > Patch		: http://marc.info/?l=linux-kernel&m=123508030726900&w=4
-> 
-> Sorry I wasn't paying enough attention (am I going to get this message
-> for every rc?).
+Use macros instead of hardcoded numbers to get a code more readable.
 
-Yes (this is because the bug is on the list of recent regressions), but
-generally you don't need to reply to it every time. :-)
+Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+---
+ include/net/bluetooth/l2cap.h |    6 ++++++
+ net/bluetooth/l2cap.c         |   18 +++++++++---------
+ 2 files changed, 15 insertions(+), 9 deletions(-)
 
-> Yes this still happens in 2.6.29-rc6.
+diff --git a/include/net/bluetooth/l2cap.h b/include/net/bluetooth/l2cap.h
+index f566aa1..ed4ba91 100644
+--- a/include/net/bluetooth/l2cap.h
++++ b/include/net/bluetooth/l2cap.h
+@@ -106,6 +106,12 @@ struct l2cap_conn_rsp {
+ 	__le16     status;
+ } __attribute__ ((packed));
+ 
++/* channel indentifier */
++#define L2CAP_CID_SIGNALING	0x0001
++#define L2CAP_CID_CONN_LESS	0x0002
++#define L2CAP_CID_DYN_START	0x0040
++#define L2CAP_CID_DYN_END	0xffff
++
+ /* connect result */
+ #define L2CAP_CR_SUCCESS    0x0000
+ #define L2CAP_CR_PEND       0x0001
+diff --git a/net/bluetooth/l2cap.c b/net/bluetooth/l2cap.c
+index ca4d3b4..ff1744e 100644
+--- a/net/bluetooth/l2cap.c
++++ b/net/bluetooth/l2cap.c
+@@ -161,9 +161,9 @@ static inline struct sock *l2cap_get_chan_by_ident(struct l2cap_chan_list *l, u8
+ 
+ static u16 l2cap_alloc_cid(struct l2cap_chan_list *l)
+ {
+-	u16 cid = 0x0040;
++	u16 cid = L2CAP_CID_DYN_START;
+ 
+-	for (; cid < 0xffff; cid++) {
++	for (; cid < L2CAP_CID_DYN_END; cid++) {
+ 		if(!__l2cap_get_chan_by_scid(l, cid))
+ 			return cid;
+ 	}
+@@ -215,13 +215,13 @@ static void __l2cap_chan_add(struct l2cap_conn *conn, struct sock *sk, struct so
+ 		l2cap_pi(sk)->scid = l2cap_alloc_cid(l);
+ 	} else if (sk->sk_type == SOCK_DGRAM) {
+ 		/* Connectionless socket */
+-		l2cap_pi(sk)->scid = 0x0002;
+-		l2cap_pi(sk)->dcid = 0x0002;
++		l2cap_pi(sk)->scid = L2CAP_CID_CONN_LESS;
++		l2cap_pi(sk)->dcid = L2CAP_CID_CONN_LESS;
+ 		l2cap_pi(sk)->omtu = L2CAP_DEFAULT_MTU;
+ 	} else {
+ 		/* Raw socket can send/recv signalling messages only */
+-		l2cap_pi(sk)->scid = 0x0001;
+-		l2cap_pi(sk)->dcid = 0x0001;
++		l2cap_pi(sk)->scid = L2CAP_CID_SIGNALING;
++		l2cap_pi(sk)->dcid = L2CAP_CID_SIGNALING;
+ 		l2cap_pi(sk)->omtu = L2CAP_DEFAULT_MTU;
+ 	}
+ 
+@@ -1598,7 +1598,7 @@ static struct sk_buff *l2cap_build_cmd(struct l2cap_conn *conn,
+ 
+ 	lh = (struct l2cap_hdr *) skb_put(skb, L2CAP_HDR_SIZE);
+ 	lh->len = cpu_to_le16(L2CAP_CMD_HDR_SIZE + dlen);
+-	lh->cid = cpu_to_le16(0x0001);
++	lh->cid = cpu_to_le16(L2CAP_CID_SIGNALING);
+ 
+ 	cmd = (struct l2cap_cmd_hdr *) skb_put(skb, L2CAP_CMD_HDR_SIZE);
+ 	cmd->code  = code;
+@@ -2420,11 +2420,11 @@ static void l2cap_recv_frame(struct l2cap_conn *conn, struct sk_buff *skb)
+ 	BT_DBG("len %d, cid 0x%4.4x", len, cid);
+ 
+ 	switch (cid) {
+-	case 0x0001:
++	case L2CAP_CID_SIGNALING:
+ 		l2cap_sig_channel(conn, skb);
+ 		break;
+ 
+-	case 0x0002:
++	case L2CAP_CID_CONN_LESS:
+ 		psm = get_unaligned((__le16 *) skb->data);
+ 		skb_pull(skb, 2);
+ 		l2cap_conless_channel(conn, psm, skb);
+-- 
+1.6.0.6
 
-Thanks for the update.
-
-Rafael
