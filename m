@@ -1,58 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZCAOHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbZCAOJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbZCAOHs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 09:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbZCAOHi
+	id S1757169AbZCAOJa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 09:09:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZCAOJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 09:07:38 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:25525 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753883AbZCAOHh (ORCPT
+	Sun, 1 Mar 2009 09:09:23 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:13084 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754390AbZCAOJW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 09:07:37 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IkA2m8Swlvem4AigT5z/0ZbrljVNgjSIn6J0+8o60XqOvpeVncvH6eoasLIGosZkubddMvQraMTii+jpbHEU5eV9T25Sgx4wpxHdL1B/1GzLsIud9rb45fwMEUjjk/jgS+mXeZOZGK/FmdC7fS2vnoUEuUGspO4Bg15MjVUNSo0=  ;
-X-YMail-OSG: UlN_EkYVM1nU8vYraQJuOrbIn8SdUsF7aCbXPIgswzigwdyyDYKEXg8vdx39ZI1LbSqbnwEQksmIoc_iyGnovusKaTatigzevAva9wEVX3MbgILRg4kiseniwlRoQOG_Md9J9599mWl2LfsLuxCIF3GUYXmsHsl7ee0004GDT2mZpNnj5KUnjv30gG4mJA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-Date: Mon, 2 Mar 2009 01:06:51 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       mingo@elte.hu, sqazi@google.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-References: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain> <20090228173813.6d86c0ef@infradead.org> <49A9E7A3.4050102@zytor.com>
-In-Reply-To: <49A9E7A3.4050102@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903020106.51865.nickpiggin@yahoo.com.au>
+	Sun, 1 Mar 2009 09:09:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
+         :x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=lr8TGB/qEG/gVcQJnMqVdqJKo9JBKcvXrbktefsV9M9j09ttBxOnTTMUIDPV0cq78r
+         LsArjFMkGU4pfiyG4VhVARdgU0OBaIi+z7KNETe3D8Irpq9Kdj5fSI4r9KYRK2AubPtR
+         RhxAuA1SdoO4f0T9sOtJObEUdAClhi2OkSOVg=
+Date: Sun, 1 Mar 2009 16:09:14 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Paalanen <pq@iki.fi>, Stuart Bennett <stuart@freedesktop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/7] x86: count errors in testmmiotrace.ko
+Message-ID: <20090301160914.568a4d16@daedalus.pq.iki.fi>
+In-Reply-To: <20090301160643.05a2219b@daedalus.pq.iki.fi>
+References: <20090301160643.05a2219b@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 March 2009 12:40:51 H. Peter Anvin wrote:
-> Arjan van de Ven wrote:
-> > the reason that movntq and co are faster is because you avoid the
-> > write-allocate behavior of the caches....
-> >
-> > the cache polluting part of it I find hard to buy for general use (as
-> > this discussion shows)... that will be extremely hard to measure as
-> > a real huge thing, while the WA part is like a 1.5x to 2x thing.
->
-> Note that hardware *can* (which is not the same thing as hardware
-> *will*) elide the write-allocate behavior.  We did that at Transmeta for
-> rep movs and certain other instructions which provably filled in entire
-> cache lines.  I haven't investigated if newer Intel CPUs do that in the
-> "fast rep movs" case.
+>From e4f0af96ad7507fce1229d46dc68cbc09a5b61d3 Mon Sep 17 00:00:00 2001
+From: Pekka Paalanen <pq@iki.fi>
+Date: Sun, 22 Feb 2009 13:35:56 +0200
+Subject: [PATCH] x86: count errors in testmmiotrace.ko
 
-I would expect any high performance CPU these days to combine entries
-in the store queue, even for normal store instructions (especially for
-linear memcpy patterns). Isn't this likely to be the case?
+Check the read values against the written values in the MMIO read/write
+test. This test shows if the given MMIO test area really works as
+memory, which is a prerequisite for a successful mmiotrace test.
+
+Signed-off-by: Pekka Paalanen <pq@iki.fi>
+---
+ arch/x86/mm/testmmiotrace.c |   35 +++++++++++++++++++++++++++++------
+ 1 files changed, 29 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/mm/testmmiotrace.c b/arch/x86/mm/testmmiotrace.c
+index ab50a8d..4b29f3b 100644
+--- a/arch/x86/mm/testmmiotrace.c
++++ b/arch/x86/mm/testmmiotrace.c
+@@ -1,5 +1,5 @@
+ /*
+- * Written by Pekka Paalanen, 2008 <pq@iki.fi>
++ * Written by Pekka Paalanen, 2008-2009 <pq@iki.fi>
+  */
+ #include <linux/module.h>
+ #include <linux/io.h>
+@@ -11,28 +11,51 @@ static unsigned long mmio_address;
+ module_param(mmio_address, ulong, 0);
+ MODULE_PARM_DESC(mmio_address, "Start address of the mapping of 16 kB.");
+ 
++static unsigned v16(unsigned i)
++{
++	return i * 12 + 7;
++}
++
++static unsigned v32(unsigned i)
++{
++	return i * 212371 + 13;
++}
++
+ static void do_write_test(void __iomem *p)
+ {
+ 	unsigned int i;
+ 	mmiotrace_printk("Write test.\n");
++
+ 	for (i = 0; i < 256; i++)
+ 		iowrite8(i, p + i);
++
+ 	for (i = 1024; i < (5 * 1024); i += 2)
+-		iowrite16(i * 12 + 7, p + i);
++		iowrite16(v16(i), p + i);
++
+ 	for (i = (5 * 1024); i < (16 * 1024); i += 4)
+-		iowrite32(i * 212371 + 13, p + i);
++		iowrite32(v32(i), p + i);
+ }
+ 
+ static void do_read_test(void __iomem *p)
+ {
+ 	unsigned int i;
++	unsigned errs[3] = { 0 };
+ 	mmiotrace_printk("Read test.\n");
++
+ 	for (i = 0; i < 256; i++)
+-		ioread8(p + i);
++		if (ioread8(p + i) != i)
++			++errs[0];
++
+ 	for (i = 1024; i < (5 * 1024); i += 2)
+-		ioread16(p + i);
++		if (ioread16(p + i) != v16(i))
++			++errs[1];
++
+ 	for (i = (5 * 1024); i < (16 * 1024); i += 4)
+-		ioread32(p + i);
++		if (ioread32(p + i) != v32(i))
++			++errs[2];
++
++	mmiotrace_printk("Read errors: 8-bit %d, 16-bit %d, 32-bit %d.\n",
++						errs[0], errs[1], errs[2]);
+ }
+ 
+ static void do_test(void)
+-- 
+1.6.0.6
 
