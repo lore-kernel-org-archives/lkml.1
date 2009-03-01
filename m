@@ -1,111 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZCAESP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZCAEuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbZCAESP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 23:18:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZCAER7
+	id S1756081AbZCAEuH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 23:50:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZCAEtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 23:17:59 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:45123 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbZCAER6 (ORCPT
+	Sat, 28 Feb 2009 23:49:53 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:4462 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbZCAEtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 23:17:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:in-reply-to:references:from:date:subject:to:cc;
-        b=EgjJvOVF1zFYG31wAZ56JUVuawFtPjUnJKibjKq3TD6IVSNKAAB31jbzTVNY9ZDBjq
-         NsN5Pc9t6BCczCrArTG+hAToRCIWegthXkPbsAHZjkiqj1OpJjp6/FqELsbC8kFcgqAe
-         xMZLNcn+zeSgAQwAb+/087DLwEVuXtVPnw/qY=
-Message-ID: <49aa0c73.1c07d00a.4fc6.ffffb4d7@mx.google.com>
-In-Reply-To: <20090228091305.GA20533@elte.hu>
-References: <20090228091305.GA20533@elte.hu>
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Sun, 1 Mar 2009 04:31:43 +0100
-Subject: [PATCH 0/5] Binary ftrace_printk
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+	Sat, 28 Feb 2009 23:49:52 -0500
+MIME-Version: 1.0
+Date: Sat, 28 Feb 2009 23:49:49 -0500
+X-Google-Sender-Auth: c9d3d5fc937e1cc2
+Message-ID: <5aa163d00902282049g2e838b38g7e96040d5356d0da@mail.gmail.com>
+Subject: PATCH [0/3] input: xpad.c - Xbox 360 wireless and sysfs support
+From: Mike Murphy <mamurph@cs.clemson.edu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Oliver Neukum <oliver@neukum.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, torvalds@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry I had a problem with my first sending, hopefully I'm not spamming
-each of you twice).
+Greetings,
 
-An new optimization is making its way to ftrace. Its purpose is to
-make ftrace_printk() consuming less memory and become faster.
+This patchset improves the in-kernel xpad.c driver by improving
+support for the Xbox 360 wireless controllers, and by adding a number
+of features that can be controlled via a new sysfs interface. Rumble
+is now enabled on the wireless 360 controllers, and the LED display is
+set properly instead of flashing constantly. New features include
+implementation of a dead zone for the analog sticks, ability to map
+the stick inputs onto a square axis, ability to turn rumble off on a
+per-controller basis, and a mechanism for identifying the controller
+type and (presumably) unique ID of wireless controllers. In addition,
+and as a change to the most recent development patch, I have adjusted
+the triggers so that they both implement half-axes instead of full
+axes. In other words, they report a range from 0 to +32767, instead of
+-32767 to +32767. This change improves behavior on some gaming
+emulators, and it can be turned off via the sysfs interface.
 
-Written by Lai Jiangshan, the approach is to delay the formatting
-job from tracing time to output time.
-Currently, a call to ftrace_printk will format the whole string and
-insert it into the ring buffer. Then you can read it on /debug/tracing/trace
-file.
+In addition to the core patch, I have updated
+Documentation/input/xpad.txt, and I have added
+Documentation/ABI/testing/game_device-sysfs-interface to document the
+added sysfs interface. I'd like to thank Oliver Neukum, Greg
+Kroah-Hartman, and Frederic Weisbecker for their helpful feedback
+during the development process.
 
-The new implementation stores the address of the format string and
-the binary parameters into the ring buffer, making the packet more compact
-and faster to insert.
-Later, when the user exports the traces, the format string is retrieved
-with the binary parameters and the formatting job is eventually done.
-
-Here is the result of a small comparative benchmark while putting the following
-ftrace_printk on the timer interrupt. ftrace_printk is the old implementation,
-ftrace_bprintk is a the new one:
-
-ftrace_printk("This is the timer interrupt: %llu", jiffies_64);
-
-After some time running on low load (no X, no really active processes):
-
-ftrace_printk:  duration average: 2044 ns, avg of bytes stored per entry: 39
-ftrace_bprintk: duration average: 1426 ns, avg of bytes stored per entry: 16
-
-Higher load (started X and launched a cat running on a X console looping on
-traces printing):
-
-ftrace_printk:  duration average: 8812 ns
-ftrace_bprintk: duration average: 2611 ns
-
-Which means the new implementation can be 70 % faster on higher load.
-And it consumes lesser memory on the ring buffer.
-
-The three first patches rebase against latest -tip the ftrace_bprintk work done
-by Lai few monthes ago.
-
-The two others integrate ftrace_bprintk as a replacement for the old
-ftrace_printk implementation and factorize the printf style format decoding
-which is now used by three functions.
-
----
-
-Frederic Weisbecker (2):
-  tracing/core: drop the old ftrace_printk implementation in favour of
-    ftrace_bprintk
-  vsprintf: unify the format decoding layer for its 3 users
-
-Lai Jiangshan (3):
-  add binary printf
-  ftrace: infrastructure for supporting binary record
-  ftrace: add ftrace_bprintk()
-
- include/asm-generic/vmlinux.lds.h    |    3 +
- include/linux/ftrace.h               |   44 ++-
- include/linux/module.h               |    5 +
- include/linux/string.h               |    7 +
- kernel/module.c                      |    6 +
- kernel/trace/Kconfig                 |    1 +
- kernel/trace/Makefile                |    1 +
- kernel/trace/trace.c                 |  139 +++---
- kernel/trace/trace.h                 |    8 +-
- kernel/trace/trace_functions_graph.c |    6 +-
- kernel/trace/trace_mmiotrace.c       |    9 +-
- kernel/trace/trace_output.c          |   31 +-
- kernel/trace/trace_output.h          |    2 +
- kernel/trace/trace_printk.c          |  178 ++++++
- lib/Kconfig                          |    3 +
- lib/vsprintf.c                       | 1006 ++++++++++++++++++++++++++--------
- 16 files changed, 1127 insertions(+), 322 deletions(-)
- create mode 100644 kernel/trace/trace_printk.c
-
-
+Thanks,
+Mike
+-- 
+Mike Murphy
+Ph.D. Candidate and NSF Graduate Research Fellow
+Clemson University School of Computing
+120 McAdams Hall
+Clemson, SC 29634-0974 USA
+Tel: +1 864.656.2838   Fax: +1 864.656.0145
+http://cirg.cs.clemson.edu/~mamurph
