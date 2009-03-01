@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbZCAVOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbZCAVYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbZCAVOm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 16:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbZCAVOd
+	id S1758062AbZCAVYe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 16:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZCAVYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 16:14:33 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:58025 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbZCAVOd (ORCPT
+	Sun, 1 Mar 2009 16:24:16 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:34505 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754360AbZCAVYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 16:14:33 -0500
-Date: Sun, 1 Mar 2009 16:14:29 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Roel Kluin <roel.kluin@gmail.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: '< 0' test on unsigned
-In-Reply-To: <49AAF64E.9070205@gmail.com>
-Message-ID: <alpine.DEB.2.00.0903011613000.4771@gandalf.stny.rr.com>
-References: <49AAF64E.9070205@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 1 Mar 2009 16:24:15 -0500
+Date: Sun, 1 Mar 2009 22:24:12 +0100
+From: Andreas Mohr <andim2@users.sourceforge.net>
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: andi@lisas.de, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       bunk@kernel.org, auke-jan.h.kok@intel.com,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 e100.c non-MII support status? (Re: [GIT]: Networking)
+Message-ID: <20090301212412.GA13210@rhlx01.hs-esslingen.de>
+Reply-To: andi@lisas.de
+References: <20081228.000118.121541932.davem@davemloft.net> <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20081229091728.d869f1c1.akpm@linux-foundation.org> <9929d2390812291515y623d6a51yed1bef021ab6847e@mail.gmail.com> <20081230120756.GA5393@rhlx01.hs-esslingen.de> <20090228203757.GA18850@rhlx01.hs-esslingen.de> <9929d2390903010257p7c6fb367ga974767605033bc9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9929d2390903010257p7c6fb367ga974767605033bc9@mail.gmail.com>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Sun, 1 Mar 2009, Roel Kluin wrote:
+On Sun, Mar 01, 2009 at 02:57:46AM -0800, Jeff Kirsher wrote:
+> I am personally sorry that nothing has been done regarding this patch.
+>  I still have this patch in my local tree.  I admit that this patch
+> has been on the low priority list, so I will make sure the patch is
+> current this week and respond accordingly this week.
 
-> or should this be fixed, with
-> 
->         if (!cnt || cnt > DEFINE)
-> 
-> if so, what should DEFINE be?
+The whole thing has been somewhat low-priority indeed
+given the probable age of some non-MII contenders. OTOH it would be quite sad
+(and locally problematic) to see support for those non-MII cards vanish
+come 2.6.29.
+Subsequently it would then be nice to devise non-MII support
+in some structured way that enables us to support them without
+much burden (code-wise) on proper standards-supporting MII cards.
 
-Hi Roel,
+Thank you,
 
-Thanks, but I already put in the fix for this. Since Andrew pointed out
-that cnt was unsigned in my "cut and paste" from this function. I went 
-back and fixed it. There should be no DEFINE. cnt can never be less than 
-zero, so simply checking for (!cnt) is sufficient.
-
--- Steve
-
-
-> 
-> This patch wasn't tested in any way.
-> ------------------------------>8-------------8<---------------------------------
-> cnt is unsigned, so the '< 0' test won't work.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index fdf913d..6dab415 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -1129,7 +1129,7 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
->  	size_t read = 0;
->  	ssize_t ret;
->  
-> -	if (!cnt || cnt < 0)
-> +	if (!cnt || (ssize_t)cnt < 0)
->  		return 0;
->  
->  	mutex_lock(&ftrace_regex_lock);
-> 
-> 
+Andreas Mohr
