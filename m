@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZCAAib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZCAAnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbZCAAib (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 19:38:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbZCAAiX
+	id S1756396AbZCAAnW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 19:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZCAAnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 19:38:23 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46442 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754942AbZCAAiW (ORCPT
+	Sat, 28 Feb 2009 19:43:13 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:59866 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754974AbZCAAnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 19:38:22 -0500
-Date: Sat, 28 Feb 2009 16:38:11 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, mingo@elte.hu, nickpiggin@yahoo.com.au,
-       sqazi@google.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-Message-ID: <20090228163811.48b1de72@infradead.org>
-In-Reply-To: <49A9D6CA.30906@zytor.com>
-References: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
-	<20090228092450.3ded2db5@infradead.org>
-	<alpine.LFD.2.00.0902280935010.3111@localhost.localdomain>
-	<20090228.160651.228301019.davem@davemloft.net>
-	<20090301004003.GF26292@one.firstfloor.org>
-	<49A9D6CA.30906@zytor.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 28 Feb 2009 19:43:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ejl7PaGA9UxzJcpiKDtn5RsuyoFPJUh7KzqTEKT2RpOLnSmEQ7DF+nC+XMuo4ACf57
+         r+MmeIGx0TYxdXkiWPq8vMPQmAKvHCoyGYtuvsTVmF9sp7GjNcuTYShqDrD6iCa9xfpU
+         f+dewQn3pAEG9NXSkTulLYhdSyuDEBvOXSfMM=
+Date: Sat, 28 Feb 2009 16:42:59 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH] Input notifier support
+Message-ID: <20090228164126.ZZRA012@mailhub.coreip.homeip.net>
+References: <20090225044730.GA9106@july> <87skly16gh.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87skly16gh.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Feb 2009 16:28:58 -0800
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Andi Kleen wrote:
-> >> I think this is an accurate analysis as well, it's really
-> >> unfortunate the non-temporal stuff on x86 doesn't preserve
-> >> existing cache lines when present.
-> >>
-> >> I thought that was the whole point.  Don't pollute the caches, but
-> >> if cache lines are already loaded there, use them and don't purge!
-> > 
-> > x86 actually supports that, it's just not done through movnt.
-> > 
-> > You can do that on x86 by using PREFETCHNTA (or T0/T1/T2 for
-> > specific cache levels). Typically this is implemented by forcing
-> > the cache line to only a single way of the cache (so only using max
-> > 1/8 or so of your last level cache) 
-> > 
-> > I'm not sure how it interacts with REP MOVS* though, this internally
-> > tends to do additional magic for larger copies.
+On Sun, Mar 01, 2009 at 12:34:38AM +0100, Andi Kleen wrote:
+> Kyungmin Park <kmpark@infradead.org> writes:
 > 
-> The PREFETCHNTA stuff is really for reads rather than writes, however.
-> Yes, you can prefetch the cache line you're about to overwrite, but I
-> suspect (I haven't verified) that you lose out on whole-line
-> optimizations that way.
-
-the entire point of using movntq and friends was to save half the
-memory bandwidth to not pull it into the cache before writing...
-.... so bad idea to do prefetch<anything>
-
+> > Some hardware doesn't connected with key button and led. In this case key should be connected with led by software. Of course each application can control it however it's too big burden to application programmer.
+> >
+> > So add input notifier and then use it at other frameworks such as led.
+> > Of course, other input device can use this one.
+> >
+> > Any commnets are welcome.
 > 
-> 	-hpa
+> It looks like the perfect interface for a password stealing root kit.
+> 
+> Yes there are probably other ways to do this, but still this seems to
+> make it very easy.
 > 
 
+We already have good interface for that. That's why you want to limit
+access to /dev/input/eventX ;) and not make it world-readable.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Dmitry
