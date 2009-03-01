@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZCAUAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbZCAUCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757965AbZCAUAb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 15:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbZCAUAV
+	id S1758071AbZCAUCq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 15:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbZCAUCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 15:00:21 -0500
-Received: from ns2.suse.de ([195.135.220.15]:50676 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756492AbZCAUAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 15:00:21 -0500
-Message-ID: <49AAE94E.8080308@suse.de>
-Date: Sun, 01 Mar 2009 21:00:14 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 1 Mar 2009 15:02:37 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:36656 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756766AbZCAUCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 15:02:36 -0500
+Date: Sun, 1 Mar 2009 14:02:31 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mpm@selenic.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+	do?
+Message-ID: <20090301200231.GA25276@us.ibm.com>
+References: <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu> <20090226223112.GA2939@x200.localdomain> <20090301013304.GA2428@x200.localdomain>
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-Cc: akpm@linux-foundation.org, Ankita Garg <ankita@in.ibm.com>,
-       Adrian Bunk <bunk@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Frank Seidel <fseidel@suse.de>, Frank Seidel <frank@f-seidel.de>,
-       kernalert.de@gmail.com
-Subject: [PATCH] lkdtm: reduce stack size
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090301013304.GA2428@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <frank@f-seidel.de>
+Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> On Fri, Feb 27, 2009 at 01:31:12AM +0300, Alexey Dobriyan wrote:
+> > This is collecting and start of dumping part of cleaned up OpenVZ C/R
+> > implementation, FYI.
+> 
+> OK, here is second version which shows what to do with shared objects
+> (cr_dump_nsproxy(), cr_dump_task_struct()), introduced more checks
+> (still no unlinked files) and dumps some more information including
+> structures connections (cr_pos_*)
+> 
+> Dumping pids in under thinking because in OpenVZ pids are saved as
+> numbers due to CLONE_NEWPID is not allowed in container. In presense
+> of multiple CLONE_NEWPID levels this must present a big problem. Looks
+> like there is now way to not dump pids as separate object.
+> 
+> As result, struct cr_image_pid is variable-sized, don't know how this will
+> play later.
+> 
+> Also, pid refcount check for external pointers is busted right now,
+> because /proc inode pins struct pid, so there is almost always refcount
+> vs ->o_count mismatch.
+> 
+> No restore yet. ;-)
 
-Reduce stack memory footprint of lkdtm
-(recursive_loop). From 1024 bytes on i386 down
-to <10.
+Hi Alexey,
 
-Signed-off-by: Frank Seidel <frank@f-seidel.de>
----
- drivers/misc/lkdtm.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+thanks for posting this.  Of course there are some predictable responses
+(I like the simplicity of pure in-kernel, Dave will not :) but this
+needs to be posted to make us talk about it.
 
---- a/drivers/misc/lkdtm.c
-+++ b/drivers/misc/lkdtm.c
-@@ -225,14 +225,24 @@ static int lkdtm_parse_commandline(void)
- 
- static int recursive_loop(int a)
- {
--	char buf[1024];
-+	char *buf;
-+	int ret;
-+
-+	buf = kmalloc(1024, GFP_KERNEL);
-+	if (!buf) {
-+		printk(KERN_ERR "lkdtm : couldn't allocate buffer\n");
-+		return -ENOMEM;
-+	}
- 
- 	memset(buf,0xFF,1024);
- 	recur_count--;
- 	if (!recur_count)
--		return 0;
-+		ret = 0;
- 	else
--        	return recursive_loop(a);
-+		ret = recursive_loop(a);
-+
-+	kfree(buf);
-+	return ret;
- }
- 
- void lkdtm_handler(void)
+A few more comments that came to me while looking it over:
+
+1. cap_sys_admin check is unfortunate.  In discussions about Oren's
+patchset we've agreed that not having that check from the outset forces
+us to consider security with each new patch and feature, which is a good
+thing.
+
+2. if any tasks being checkpointed are frozen, checkpoint has the
+side effect of thawing them, right?
+
+3. wrt pids, i guess what you really want is to store the pids from
+init_tsk's level down to the task's lowest pid, right?  Then you
+manually set each of those on restart?  Any higher pids of course
+don't matter.
+
+4. do you have any thoughts on what to do with the mntns info at
+restart?  Will you try to detect mounts which need to be re-created?
+How?
+
+5. Since you're always setting f_pos, this won't work straight over
+a pipe?  Do you figure that's just not a worthwhile feature?
+
+Were you saying (in response to Dave) that you're having private
+discussions about whether to pursue posting this as an alternative
+to Oren's patchset?  If so, any updates on those discussions?
+
+thanks,
+-serge
