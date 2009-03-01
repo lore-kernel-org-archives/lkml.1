@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbZCABsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbZCACB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbZCABsr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 20:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZCABsk
+	id S1756513AbZCACB6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 21:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZCACBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 20:48:40 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:38915 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753666AbZCABsj (ORCPT
+	Sat, 28 Feb 2009 21:01:49 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43727 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbZCACBt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 20:48:39 -0500
-Date: Sun, 1 Mar 2009 03:07:08 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       mingo@elte.hu, nickpiggin@yahoo.com.au, sqazi@google.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-Message-ID: <20090301020708.GI26292@one.firstfloor.org>
-References: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain> <20090228092450.3ded2db5@infradead.org> <alpine.LFD.2.00.0902280935010.3111@localhost.localdomain> <20090228.160651.228301019.davem@davemloft.net> <20090301004003.GF26292@one.firstfloor.org> <49A9D6CA.30906@zytor.com> <20090228163811.48b1de72@infradead.org> <20090301014822.GG26292@one.firstfloor.org> <20090228173813.6d86c0ef@infradead.org>
-Mime-Version: 1.0
+	Sat, 28 Feb 2009 21:01:49 -0500
+Date: Sat, 28 Feb 2009 21:01:47 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Brian Maly <bmaly@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix DMI for EFI
+Message-ID: <20090301020147.GE28503@bombadil.infradead.org>
+References: <49A9E5DB.8070203@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090228173813.6d86c0ef@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <49A9E5DB.8070203@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 05:38:13PM -0800, Arjan van de Ven wrote:
-> On Sun, 1 Mar 2009 02:48:22 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > the entire point of using movntq and friends was to save half the
-> > 
-> > I thought the point was to not pollute caches? At least that is 
-> > what I remember being told when I merged the patch.
-> > 
-> 
-> the reason that movntq and co are faster is because you avoid the
-> write-allocate behavior of the caches....
+On Sat, Feb 28, 2009 at 08:33:15PM -0500, Brian Maly wrote:
+> -	dmi_scan_machine();
+> -
+> -	dmi_check_system(bad_bios_dmi_table);
+> -
+>  	/*
+>  	 * VMware detection requires dmi to be available, so this
+>  	 * needs to be done after dmi_scan_machine, for the BP.
 
-Not faster than rep ; movs which does similar magic anyways. Of course it being
-magic it can vary a lot and is somewhat unpredictable.
+This init_hypervisor comment looks important, no? Possibly it needs
+to be moved after the new placement? Doesn't look like the probe_roms
+will be an issue.
 
-Also in my experince movnt is not actually that much faster for small 
-transfers (as in what the kernel mostly does) 
+regards, Kyle
 
--Andi
+> @@ -792,6 +788,10 @@ void __init setup_arch(char **cmdline_p)
+>  	if (efi_enabled)
+>  		efi_init();
+>  
+> +	dmi_scan_machine();
+> +	
+> +	dmi_check_system(bad_bios_dmi_table);
+> +
+>  #ifdef CONFIG_X86_32
+>  	if (ppro_with_ram_bug()) {
+>  		e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
