@@ -1,71 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZCADIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbZCADL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbZCADIQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 22:08:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZCADH7
+	id S1756699AbZCADL5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 22:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280AbZCADLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 22:07:59 -0500
-Received: from an-out-0708.google.com ([209.85.132.244]:44357 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbZCADH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 22:07:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cnfOWvScKPmOw212IdlC8AYSw4VcQbCceDNzuan1VugpO1LkrUTp15RZyDQ6MBTuyt
-         1OaSQQTnoU44svAx/Eutycq3RW4xkCTrx5voYNnQH2chQ7zURwU9u3Y5smbPlG/me7M1
-         ib9e0pnYzNa8HPe+89gxEV0Z6pA/0zlyD3I+4=
-Date: Sat, 28 Feb 2009 19:07:45 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH] Input notifier support
-Message-ID: <20090228190644.ZZRA012@mailhub.coreip.homeip.net>
-References: <20090225044730.GA9106@july> <87skly16gh.fsf@basil.nowhere.org> <20090228164126.ZZRA012@mailhub.coreip.homeip.net> <9c9fda240902281852n32b41cc7ref61dff7d5c1249f@mail.gmail.com>
+	Sat, 28 Feb 2009 22:11:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55441 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755276AbZCADLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 22:11:48 -0500
+Message-ID: <49A9FC9A.2030707@kernel.org>
+Date: Sat, 28 Feb 2009 19:10:18 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9c9fda240902281852n32b41cc7ref61dff7d5c1249f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Kevin O'Connor" <kevin@koconnor.net>
+CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
+       coreboot@coreboot.org, Jaswinder Singh Rajput <jaswinder@infradead.org>
+Subject: Re: MPTable can not be high-memory on Linux
+References: <499DB40C.1060205@coresystems.de> <499DCE79.8020809@coresystems.de> <20090222152530.GA30576@morn.localdomain> <200902221806.55429.rjw@sisk.pl> <49A1C4AF.9000009@kernel.org> <20090222223226.GA3346@morn.localdomain> <20090222225847.GB1649@elte.hu> <49A23EE0.8000102@kernel.org> <20090228234127.GA29964@morn.localdomain>
+In-Reply-To: <20090228234127.GA29964@morn.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 01, 2009 at 11:52:56AM +0900, Kyungmin Park wrote:
-> On Sun, Mar 1, 2009 at 9:42 AM, Dmitry Torokhov
-> <dmitry.torokhov@gmail.com> wrote:
-> > On Sun, Mar 01, 2009 at 12:34:38AM +0100, Andi Kleen wrote:
-> >> Kyungmin Park <kmpark@infradead.org> writes:
-> >>
-> >> > Some hardware doesn't connected with key button and led. In this case key should be connected with led by software. Of course each application can control it however it's too big burden to application programmer.
-> >> >
-> >> > So add input notifier and then use it at other frameworks such as led.
-> >> > Of course, other input device can use this one.
-> >> >
-> >> > Any commnets are welcome.
-> >>
-> >> It looks like the perfect interface for a password stealing root kit.
-> >>
-> >> Yes there are probably other ways to do this, but still this seems to
-> >> make it very easy.
-> >>
-> >
-> > We already have good interface for that. That's why you want to limit
-> > access to /dev/input/eventX ;) and not make it world-readable.
-> >
+Kevin O'Connor wrote:
+> On Sun, Feb 22, 2009 at 10:14:56PM -0800, Yinghai Lu wrote:
+>> please check
+>>
+>> [PATCH] x86: check physptr with max_low_pfn on 32bit
 > 
-> Hi Dmitry,
+> Thanks for looking at this issue.
 > 
-> Could you tell me know which interface you're talking?
-> I agreed it's not good idea to pass key code value to drivers. it
-> caused security issues.
+> Unfortunately, the kernel still does not work with the applied patch.
+> Neither 32bit nor 64bit kernels boot.  (Note, I applied the patch to
+> Linus' git, and I had to replace mpf->physptr with mpf->mpf_physptr.)
+> 
+> The error messages from before and after patching appear to be the
+> same.
+> 
 > 
 
-The interface to steal the root password. One can simply open all input
-devices and read all events (if the process has sufficient rights).
+please add this patch too
 
--- 
-Dmitry
+[PATCH] x86: ioremap mptable
+
+Impact: fix boot with mptable above max_low_mapped
+
+try to use early_ioremap it.
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/mpparse.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/kernel/mpparse.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -611,12 +611,20 @@ static void __init __get_smp_config(unsi
+ 		construct_default_ISA_mptable(mpf->feature1);
+ 
+ 	} else if (mpf->physptr) {
++		struct mpc_table *mpc;
++		unsigned int length;
+ 
++		mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
++		length = mpc->length;
++		apic_printk(APIC_VERBOSE, "  mpc: %x-%x\n", mpf->physptr,
++			 mpf->physptr + length);
++		early_iounmap(mpc, PAGE_SIZE);
++		mpc = early_ioremap(mpf->physptr, length);
+ 		/*
+ 		 * Read the physical hardware table.  Anything here will
+ 		 * override the defaults.
+ 		 */
+-		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
++		if (!smp_read_mpc(mpc, early)) {
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 			smp_found_config = 0;
+ #endif
+@@ -624,9 +632,12 @@ static void __init __get_smp_config(unsi
+ 			       "BIOS bug, MP table errors detected!...\n");
+ 			printk(KERN_ERR "... disabling SMP support. "
+ 			       "(tell your hw vendor)\n");
++			early_iounmap(mpc, length);
+ 			return;
+ 		}
+ 
++		early_iounmap(mpc, length);
++
+ 		if (early)
+ 			return;
+ #ifdef CONFIG_X86_IO_APIC
