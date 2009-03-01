@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbZCARAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbZCARKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbZCARAm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 12:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbZCARAX
+	id S1757828AbZCARKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 12:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbZCARKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 12:00:23 -0500
-Received: from cantor.suse.de ([195.135.220.2]:46346 "EHLO mx1.suse.de"
+	Sun, 1 Mar 2009 12:10:30 -0500
+Received: from ns.suse.de ([195.135.220.2]:46513 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757191AbZCARAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 12:00:22 -0500
-Date: Sun, 1 Mar 2009 18:00:15 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: recursive slqb_lock
-Message-ID: <20090301170015.GC26905@wotan.suse.de>
-References: <20090226053450.GA31108@localhost> <20090301150725.GB26905@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090301150725.GB26905@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	id S1756725AbZCARK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 12:10:29 -0500
+Message-ID: <49AAC180.9000707@suse.de>
+Date: Sun, 01 Mar 2009 18:10:24 +0100
+From: Frank Seidel <fseidel@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: linux kernel <linux-kernel@vger.kernel.org>
+Cc: akpm@linux-foundation.org, kkeil@suse.de, linux-isdn@vger.kernel.org,
+       Frank Seidel <frank@f-seidel.de>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Andreas Eversberg <andreas@eversberg.eu>,
+       Hannes Eder <hannes@hanneseder.net>, Adrian Bunk <bunk@kernel.org>,
+       Frank Seidel <fseidel@suse.de>
+Subject: [PATCHv2] isdn: reduce stack size of mISDN_dsp
+References: <49AAB8B2.8060801@suse.de>
+In-Reply-To: <49AAB8B2.8060801@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 01, 2009 at 04:07:25PM +0100, Nick Piggin wrote:
-> On Thu, Feb 26, 2009 at 01:34:50PM +0800, Wu Fengguang wrote:
-> > Hi Nick,
-> > 
-> > I got a lockdep warning. It looks like the slqb_lock will be taken
-> > twice in the call chain:
-> > 
-> >         s_start()  => take slqb_lock
-> >           s_show()
-> >             gather_stats()  => take slqb_lock again
-> 
-> Hey, thanks for this. The following patch should fix it.
-> 
-> --
-> Fix the lockdep error reported by Fengguang where down_read slqb_lock
-> is taken twice, with the possibility for a deadlock.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
-> Index: linux-2.6/mm/slqb.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slqb.c	2009-03-02 02:05:16.000000000 +1100
-> +++ linux-2.6/mm/slqb.c	2009-03-02 02:05:45.000000000 +1100
-> @@ -3079,7 +3079,9 @@ static void __gather_stats(void *arg)
->  	spin_unlock(&gather->lock);
->  }
->  
-> -static void gather_stats(struct kmem_cache *s, struct stats_gather *stats)
-> +/* must be called with slqb_lock held */
-> +static void gather_stats_locked(struct kmem_cache *s,
-> +				struct stats_gather *stats)
->  {
->  #ifdef CONFIG_NUMA
->  	int node;
-> @@ -3089,8 +3091,6 @@ static void gather_stats(struct kmem_cac
->  	stats->s = s;
->  	spin_lock_init(&stats->lock);
->  
-> -	down_read(&slqb_lock); /* hold off hotplug */
-> -
->  	on_each_cpu(__gather_stats, stats, 1);
->  
->  #ifdef CONFIG_NUMA
-> @@ -3119,10 +3119,15 @@ static void gather_stats(struct kmem_cac
->  	}
->  #endif
->  
-> -	up_read(&slqb_lock);
-> -
->  	stats->nr_objects = stats->nr_slabs * s->objects;
->  }
-> +
-> +static void gather_stats(struct kmem_cache *s, struct stats_gather *stats)
-> +{
-> +	down_read(&slqb_lock); /* hold off hotplug */
-> +	gather_stats(s, stats);
-> +	up_read(&slqb_lock);
-> +}
+From: Frank Seidel <frank@f-seidel.de>
 
-Oops, I didn't test it. That call should be to gather_stats_locked of
-course.
+Reduce stack size memory footprint of mISDN_dsp.
+(From 1468 bytes for dsp_cmx_send on i386 down
+to 44).
+
+Signed-off-by: Frank Seidel <frank@f-seidel.de>
+---
+ drivers/isdn/mISDN/dsp_cmx.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+--- a/drivers/isdn/mISDN/dsp_cmx.c
++++ b/drivers/isdn/mISDN/dsp_cmx.c
+@@ -1592,13 +1592,21 @@ dsp_cmx_send(void *arg)
+ 	struct dsp_conf_member *member;
+ 	struct dsp *dsp;
+ 	int mustmix, members;
+-	s32 mixbuffer[MAX_POLL+100], *c;
++	s32 *mixbuffer;
++	s32 *c;
+ 	u8 *p, *q;
+ 	int r, rr;
+ 	int jittercheck = 0, delay, i;
+ 	u_long flags;
+ 	u16 length, count;
+ 
++	mixbuffer = kmalloc(sizeof(*mixbuffer) * (MAX_POLL + 100), GFP_KERNEL);
++	if (!mixbuffer) {
++		printk(KERN_ERR "mISDN_dsp: cannot allocate buffer(%s)\n",
++		       __func__);
++		return;
++	}
++
+ 	/* lock */
+ 	spin_lock_irqsave(&dsp_lock, flags);
+ 
+@@ -1811,6 +1819,8 @@ dsp_cmx_send(void *arg)
+ 
+ 	/* unlock */
+ 	spin_unlock_irqrestore(&dsp_lock, flags);
++
++	kfree(mixbuffer);
+ }
+ 
+ /*
+
