@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbZCASEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZCASIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757840AbZCASEe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 13:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZCASEZ
+	id S1757908AbZCASIT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 13:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbZCASIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 13:04:25 -0500
-Received: from imta-38.everyone.net ([216.200.145.38]:40841 "EHLO
-	omta0110.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754252AbZCASEY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 13:04:24 -0500
-X-Eon-Dm: dm0206
-X-Eon-Sig: AQHOS7NJqs4la6syKAIAAAAH,9d389c8baf1ee3de4362c2ab0d1fd57b
-Date: Sun, 1 Mar 2009 13:04:20 -0500
-From: "Kevin O'Connor" <kevin@koconnor.net>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
-       coreboot@coreboot.org, Jaswinder Singh Rajput <jaswinder@infradead.org>
-Subject: Re: MPTable can not be high-memory on Linux
-Message-ID: <20090301180420.GA27040@morn.localdomain>
-References: <499DB40C.1060205@coresystems.de> <499DCE79.8020809@coresystems.de> <20090222152530.GA30576@morn.localdomain> <200902221806.55429.rjw@sisk.pl> <49A1C4AF.9000009@kernel.org> <20090222223226.GA3346@morn.localdomain> <20090222225847.GB1649@elte.hu> <49A23EE0.8000102@kernel.org> <20090228234127.GA29964@morn.localdomain> <49A9FC9A.2030707@kernel.org>
+	Sun, 1 Mar 2009 13:08:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38173 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752932AbZCASIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 13:08:10 -0500
+Message-ID: <49AACEB3.5050206@kernel.org>
+Date: Sun, 01 Mar 2009 10:06:43 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49A9FC9A.2030707@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH] x86: put initial_pg_tables into bss -v2
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org> <1235785882-17580-4-git-send-email-jeremy@goop.org> <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com> <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org> <49A8F319.3030802@goop.org> <49A9E392.6090004@kernel.org> <49AA47D2.4020804@kernel.org> <49AA5356.3050602@zytor.com>
+In-Reply-To: <49AA5356.3050602@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 07:10:18PM -0800, Yinghai Lu wrote:
-> Kevin O'Connor wrote:
-> > On Sun, Feb 22, 2009 at 10:14:56PM -0800, Yinghai Lu wrote:
-> >> please check
-> >>
-> >> [PATCH] x86: check physptr with max_low_pfn on 32bit
-> > 
-> > Thanks for looking at this issue.
-> > 
-> > Unfortunately, the kernel still does not work with the applied patch.
-> > Neither 32bit nor 64bit kernels boot.  (Note, I applied the patch to
-> > Linus' git, and I had to replace mpf->physptr with mpf->mpf_physptr.)
-> 
-> please add this patch too
-> 
-> [PATCH] x86: ioremap mptable
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> Impact: cleanup
+>>
+>> Don't use ram after _end blindly for pagetables.
+>> put those pg table into bss
+>>
+>> also remove init_pg_tables_start/end tricks all around
+>>
+>> v2: keep initial page table up to 512M only.
+...
 
-Thanks.  Both 32bit and 64bit kernels are working now.
+> 
+> No, this is garbage.  If you're insisting on getting rid of the brk-like
+> allocation patterns, then you have to get an alternative dynamic
+> allocator available to the pre-paging code.  Now, there is no reason we
+> couldn't execute C code before enabling paging, although the code would
+> either have to be PIC or linked at the physical address.
 
--Kevin
+you can use find_e820_area()/reserve_early() pair to find right position for that.
+
+YH
