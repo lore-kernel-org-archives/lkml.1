@@ -1,78 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbZCAWVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZCAWa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758046AbZCAWVp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 17:21:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZCAWVf
+	id S1758109AbZCAWa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 17:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbZCAWaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 17:21:35 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:33316 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbZCAWVe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 17:21:34 -0500
-Date: Sun, 1 Mar 2009 16:21:30 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mpm@selenic.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090301222130.GA27198@us.ibm.com>
-References: <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu> <20090226223112.GA2939@x200.localdomain> <20090301013304.GA2428@x200.localdomain> <20090301200231.GA25276@us.ibm.com> <20090301205659.GA7276@x200.localdomain>
+	Sun, 1 Mar 2009 17:30:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53543 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755258AbZCAWaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 17:30:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH 3/4] PM: Change hibernation code ordering
+Date: Sun, 1 Mar 2009 23:26:46 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>
+References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl>
+In-Reply-To: <200903012321.40328.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090301205659.GA7276@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903012326.48459.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> On Sun, Mar 01, 2009 at 02:02:31PM -0600, Serge E. Hallyn wrote:
-> > Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> > > On Fri, Feb 27, 2009 at 01:31:12AM +0300, Alexey Dobriyan wrote:
-> > > > This is collecting and start of dumping part of cleaned up OpenVZ C/R
-> > > > implementation, FYI.
-> > > 
-> > > OK, here is second version which shows what to do with shared objects
-> > > (cr_dump_nsproxy(), cr_dump_task_struct()), introduced more checks
-> > > (still no unlinked files) and dumps some more information including
-> > > structures connections (cr_pos_*)
-> > > 
-> > > Dumping pids in under thinking because in OpenVZ pids are saved as
-> > > numbers due to CLONE_NEWPID is not allowed in container. In presense
-> > > of multiple CLONE_NEWPID levels this must present a big problem. Looks
-> > > like there is now way to not dump pids as separate object.
-> > > 
-> > > As result, struct cr_image_pid is variable-sized, don't know how this will
-> > > play later.
-> > > 
-> > > Also, pid refcount check for external pointers is busted right now,
-> > > because /proc inode pins struct pid, so there is almost always refcount
-> > > vs ->o_count mismatch.
-> > > 
-> > > No restore yet. ;-)
-> > 
-> > Hi Alexey,
-> > 
-> > thanks for posting this.  Of course there are some predictable responses
-> > (I like the simplicity of pure in-kernel, Dave will not :) but this
-> > needs to be posted to make us talk about it.
-> > 
-> > A few more comments that came to me while looking it over:
-> > 
-> > 1. cap_sys_admin check is unfortunate.  In discussions about Oren's
-> > patchset we've agreed that not having that check from the outset forces
-> > us to consider security with each new patch and feature, which is a good
-> > thing.
-> 
-> Removing CAP_SYS_ADMIN on restore?
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-And checkpoint.
+Change the ordering of the hibernation core code so that the platform
+"prepare" callbacks are executed and the nonboot CPUs are disabled
+after calling device drivers' "late suspend" methods.
 
--serge
+This change (along with the previous analogous change of the suspend
+core code) will allow us to rework the PCI PM core so that the power
+state of devices is changed in the "late" phase of suspend (and
+analogously in the "early" phase of resume), which in turn will allow
+us to avoid the race condition where a device using shared interrupts
+is put into a low power state with interrupts enabled and then an
+interrupt (for another device) comes in and confuses its driver.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |  109 +++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 61 insertions(+), 48 deletions(-)
+
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -228,13 +228,22 @@ static int create_image(int platform_mod
+ 		goto Unlock;
+ 	}
+ 
++	error = platform_pre_snapshot(platform_mode);
++	if (error || hibernation_test(TEST_PLATFORM))
++		goto Platform_finish;
++
++	error = disable_nonboot_cpus();
++	if (error || hibernation_test(TEST_CPUS)
++	    || hibernation_testmode(HIBERNATION_TEST))
++		goto Enable_cpus;
++
+ 	local_irq_disable();
+ 
+ 	sysdev_suspend(PMSG_FREEZE);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down, "
+ 			"aborting hibernation\n");
+-		goto Power_up_devices;
++		goto Enable_irqs;
+ 	}
+ 
+ 	if (hibernation_test(TEST_CORE))
+@@ -250,15 +259,22 @@ static int create_image(int platform_mod
+ 	restore_processor_state();
+ 	if (!in_suspend)
+ 		platform_leave(platform_mode);
++
+  Power_up:
+ 	sysdev_resume();
+ 	/* NOTE:  device_power_up() is just a resume() for devices
+ 	 * that suspended with irqs off ... no overall powerup.
+ 	 */
+ 
+- Power_up_devices:
++ Enable_irqs:
+ 	local_irq_enable();
+ 
++ Enable_cpus:
++	enable_nonboot_cpus();
++
++ Platform_finish:
++	platform_finish(platform_mode);
++
+ 	device_power_up(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+ 
+@@ -298,25 +314,9 @@ int hibernation_snapshot(int platform_mo
+ 	if (hibernation_test(TEST_DEVICES))
+ 		goto Recover_platform;
+ 
+-	error = platform_pre_snapshot(platform_mode);
+-	if (error || hibernation_test(TEST_PLATFORM))
+-		goto Finish;
+-
+-	error = disable_nonboot_cpus();
+-	if (!error) {
+-		if (hibernation_test(TEST_CPUS))
+-			goto Enable_cpus;
+-
+-		if (hibernation_testmode(HIBERNATION_TEST))
+-			goto Enable_cpus;
++	error = create_image(platform_mode);
++	/* Control returns here after successful restore */
+ 
+-		error = create_image(platform_mode);
+-		/* Control returns here after successful restore */
+-	}
+- Enable_cpus:
+-	enable_nonboot_cpus();
+- Finish:
+-	platform_finish(platform_mode);
+  Resume_devices:
+ 	device_resume(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+@@ -338,7 +338,7 @@ int hibernation_snapshot(int platform_mo
+  *	kernel.
+  */
+ 
+-static int resume_target_kernel(void)
++static int resume_target_kernel(bool platform_mode)
+ {
+ 	int error;
+ 
+@@ -351,9 +351,20 @@ static int resume_target_kernel(void)
+ 		goto Unlock;
+ 	}
+ 
++	error = platform_pre_restore(platform_mode);
++	if (error)
++		goto Cleanup;
++
++	error = disable_nonboot_cpus();
++	if (error)
++		goto Enable_cpus;
++
+ 	local_irq_disable();
+ 
+-	sysdev_suspend(PMSG_QUIESCE);
++	error = sysdev_suspend(PMSG_QUIESCE);
++	if (error)
++		goto Enable_irqs;
++
+ 	/* We'll ignore saved state, but this gets preempt count (etc) right */
+ 	save_processor_state();
+ 	error = restore_highmem();
+@@ -379,8 +390,15 @@ static int resume_target_kernel(void)
+ 
+ 	sysdev_resume();
+ 
++ Enable_irqs:
+ 	local_irq_enable();
+ 
++ Enable_cpus:
++	enable_nonboot_cpus();
++
++ Cleanup:
++	platform_restore_cleanup(platform_mode);
++
+ 	device_power_up(PMSG_RECOVER);
+ 
+  Unlock:
+@@ -405,19 +423,10 @@ int hibernation_restore(int platform_mod
+ 	pm_prepare_console();
+ 	suspend_console();
+ 	error = device_suspend(PMSG_QUIESCE);
+-	if (error)
+-		goto Finish;
+-
+-	error = platform_pre_restore(platform_mode);
+ 	if (!error) {
+-		error = disable_nonboot_cpus();
+-		if (!error)
+-			error = resume_target_kernel();
+-		enable_nonboot_cpus();
++		error = resume_target_kernel(platform_mode);
++		device_resume(PMSG_RECOVER);
+ 	}
+-	platform_restore_cleanup(platform_mode);
+-	device_resume(PMSG_RECOVER);
+- Finish:
+ 	resume_console();
+ 	pm_restore_console();
+ 	return error;
+@@ -453,34 +462,38 @@ int hibernation_platform_enter(void)
+ 		goto Resume_devices;
+ 	}
+ 
++	device_pm_lock();
++
++	error = device_power_down(PMSG_HIBERNATE);
++	if (error)
++		goto Unlock;
++
+ 	error = hibernation_ops->prepare();
+ 	if (error)
+-		goto Resume_devices;
++		goto Platofrm_finish;
+ 
+ 	error = disable_nonboot_cpus();
+ 	if (error)
+-		goto Finish;
+-
+-	device_pm_lock();
+-
+-	error = device_power_down(PMSG_HIBERNATE);
+-	if (!error) {
+-		local_irq_disable();
+-		sysdev_suspend(PMSG_HIBERNATE);
+-		hibernation_ops->enter();
+-		/* We should never get here */
+-		while (1);
+-	}
++		goto Platofrm_finish;
+ 
+-	device_pm_unlock();
++	local_irq_disable();
++	sysdev_suspend(PMSG_HIBERNATE);
++	hibernation_ops->enter();
++	/* We should never get here */
++	while (1);
+ 
+ 	/*
+ 	 * We don't need to reenable the nonboot CPUs or resume consoles, since
+ 	 * the system is going to be halted anyway.
+ 	 */
+- Finish:
++ Platofrm_finish:
+ 	hibernation_ops->finish();
+ 
++	device_power_up(PMSG_RESTORE);
++
++ Unlock:
++	device_pm_unlock();
++
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+ 	device_resume(PMSG_RESTORE);
