@@ -1,86 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbZCAXS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbZCAXWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbZCAXS2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 18:18:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbZCAXST
+	id S1758379AbZCAXWc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 18:22:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbZCAXWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 18:18:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53722 "EHLO ogre.sisk.pl"
+	Sun, 1 Mar 2009 18:22:21 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:47860 "EHLO mail.sf-mail.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755255AbZCAXSS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 18:18:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Mon, 2 Mar 2009 00:17:50 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
+	id S1756385AbZCAXWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 18:22:20 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Mike Miller <mike.miller@hp.com>
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+Date: Sun, 1 Mar 2009 14:49:52 +0100
+User-Agent: KMail/1.9.10
+Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902192215.18365.rjw@sisk.pl> <200902282353.39763.rjw@sisk.pl> <d6200be20902281538g1dd6aec4q1b42b610d3ea15d1@mail.gmail.com>
-In-Reply-To: <d6200be20902281538g1dd6aec4q1b42b610d3ea15d1@mail.gmail.com>
+       "LKML-scsi" <linux-scsi@vger.kernel.org>, coldwell@redhat.com,
+       hare@novell.com, iss_storagedev@hp.com, iss.sbteam@hp.com
+References: <20090227230927.GA21377@roadking.ldev.net>
+In-Reply-To: <20090227230927.GA21377@roadking.ldev.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903020017.52390.rjw@sisk.pl>
+Content-Type: multipart/signed;
+  boundary="nextPart12121403.LEbqP6SMdT";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200903011450.04274.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 March 2009, Arve Hjønnevåg wrote:
-> On Sat, Feb 28, 2009 at 2:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday 28 February 2009, Arve Hjønnevåg wrote:
-> >> Can you summarize what the problems with my current api are? I get the
-> >> impression that you think the overhead of using a list is too high,
-> >> and that timeout support should be removed because you think all
-> >> drivers that use it are broken.
-> >
-> > In no particular order:
-> > 1. One user space process can create an unlimited number of wakelocks.  This
-> >   shouldn't be possible.  Moreover, it is not even necessary for any process
-> >   to have more than one wakelock held at any time.
-> 
-> This has been addressed. A user space process cannot create more
-> wakelocks than it has filedescriptors.
-> 
-> > 2. Timeouts are wrong, because they don't really _solve_ any problem.  They are
-> >   useful for working around the fact that you can't or you don't want to
-> >   modify every piece of code that in principle should take a wakelock and
-> >   that's it.
-> 
-> Yes, timeouts are sometimes wrong, but they are not always wrong. I
-> gave two examples where the use of timeouts was not incorrect.
+--nextPart12121403.LEbqP6SMdT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-There still is a problem that the same operation can take time X on one
-platform and time Y on another, so how are you going to determine the timeouts
-that will be suitable for all platforms?
+You wrote:
 
-> >  However,  entire concept of having one code path acting on
-> >   behalf of another one on a hunch that it might be doing something making
-> >   suspend undesirable is conceptually broken IMO.
-> 
-> OK. Do you have an alternative?
+> +static int adjust_hpsa_scsi_table(struct ctlr_info *h, int hostno,
+> +	struct hpsa_scsi_dev_t sd[], int nsds)
+> +{
+> +	/* sd contains scsi3 addresses and devtypes, and inquiry */
+> +	/* data.  This function takes what's in sd to be the current */
+> +	/* reality and updates h->dev[] to reflect that reality. */
+> +
+> +	int i, entry, device_change, changes =3D 0;
+> +	struct hpsa_scsi_dev_t *csd;
+> +	unsigned long flags;
+> +	struct scsi2map *added, *removed;
+> +	int nadded, nremoved;
+> +	struct Scsi_Host *sh =3D NULL;
+> +
+> +	added =3D kzalloc(sizeof(*added) * HPSA_MAX_SCSI_DEVS_PER_HBA,
+> +		GFP_KERNEL);
+> +	removed =3D kzalloc(sizeof(*removed) * HPSA_MAX_SCSI_DEVS_PER_HBA,
+> +		GFP_KERNEL);
 
-Well, IMO every code path doing something that makes automatic suspend
-undesirable should use a suspend blocker of some sort.  I'm afraid any other
-approach will be unreliable and racy.
+kcalloc()?
 
-> I my opinion this is how the entire system works if you do autosuspend
-> without a mechanism like wakelocks.
+> +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
+> +{
+> +	struct CommandList_struct *c;
+> +	int i;
+> +	union u64bit temp64;
+> +	dma_addr_t cmd_dma_handle, err_dma_handle;
+> +
+> +	do {
+> +		i =3D find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
+> +		if (i =3D=3D h->nr_cmds)
+> +			return NULL;
+> +	} while (test_and_set_bit
+> +		 (i & (BITS_PER_LONG - 1),
+> +		  h->cmd_pool_bits + (i / BITS_PER_LONG)) !=3D 0);
+> +	c =3D h->cmd_pool + i;
+> +	memset(c, 0, sizeof(struct CommandList_struct));
 
-It surely hasn't been designed with automatic suspend in mind.
+sizeof(*c)
 
-Thanks,
-Rafael
+> +	cmd_dma_handle =3D h->cmd_pool_dhandle
+> +	    + i * sizeof(struct CommandList_struct);
+> +	c->err_info =3D h->errinfo_pool + i;
+> +	memset(c->err_info, 0, sizeof(struct ErrorInfo_struct));
+
+sizeof(c->err_info)
+
+> +	err_dma_handle =3D h->errinfo_pool_dhandle
+> +	    + i * sizeof(struct ErrorInfo_struct);
+> +	h->nr_allocs++;
+> +
+> +	c->cmdindex =3D i;
+> +
+> +	INIT_HLIST_NODE(&c->list);
+> +	c->busaddr =3D (__u32) cmd_dma_handle;
+> +	temp64.val =3D (__u64) err_dma_handle;
+> +	c->ErrDesc.Addr.lower =3D temp64.val32.lower;
+> +	c->ErrDesc.Addr.upper =3D temp64.val32.upper;
+> +	c->ErrDesc.Len =3D sizeof(struct ErrorInfo_struct);
+> +
+> +	c->ctlr =3D h->ctlr;
+> +	return c;
+> +}
+> +
+> +/* For operations that can wait for kmalloc to possibly sleep,
+> + * this routine can be called. Lock need not be held to call
+> + * cmd_special_alloc. cmd_special_free() is the complement.
+> + */
+> +static struct CommandList_struct *cmd_special_alloc(struct ctlr_info *h)
+> +{
+> +	struct CommandList_struct *c;
+> +	union u64bit temp64;
+> +	dma_addr_t cmd_dma_handle, err_dma_handle;
+> +
+> +	c =3D (struct CommandList_struct *) pci_alloc_consistent(h->pdev,
+> +		sizeof(struct CommandList_struct), &cmd_dma_handle);
+
+No need to cast a void pointer.
+
+> +	if (c =3D=3D NULL)
+> +		return NULL;
+> +	memset(c, 0, sizeof(struct CommandList_struct));
+
+sizeof(*c)
+
+> +	c->cmdindex =3D -1;
+> +
+> +	c->err_info =3D (struct ErrorInfo_struct *)
+> +	    pci_alloc_consistent(h->pdev, sizeof(struct ErrorInfo_struct),
+> +		    &err_dma_handle);
+> +
+> +	if (c->err_info =3D=3D NULL) {
+> +		pci_free_consistent(h->pdev,
+> +			sizeof(struct CommandList_struct), c, cmd_dma_handle);
+> +		return NULL;
+> +	}
+> +	memset(c->err_info, 0, sizeof(struct ErrorInfo_struct));
+
+Here again.
+
+> +	INIT_HLIST_NODE(&c->list);
+> +	c->busaddr =3D (__u32) cmd_dma_handle;
+> +	temp64.val =3D (__u64) err_dma_handle;
+> +	c->ErrDesc.Addr.lower =3D temp64.val32.lower;
+> +	c->ErrDesc.Addr.upper =3D temp64.val32.upper;
+> +	c->ErrDesc.Len =3D sizeof(struct ErrorInfo_struct);
+> +
+> +	c->ctlr =3D h->ctlr;
+> +	return c;
+> +}
+> +
+> +
+> +/* Free a command block previously allocated with cmd_alloc(). */
+> +static void cmd_free(struct ctlr_info *h, struct CommandList_struct *c)
+> +{
+> +	int i;
+> +	i =3D c - h->cmd_pool;
+> +	clear_bit(i & (BITS_PER_LONG - 1),
+> +		  h->cmd_pool_bits + (i / BITS_PER_LONG));
+> +	h->nr_frees++;
+> +}
+> +
+> +/* Free a command block previously allocated with cmd_special_alloc(). */
+> +static void cmd_special_free(struct ctlr_info *h, struct
+> CommandList_struct *c) +{
+> +	union u64bit temp64;
+> +
+> +	temp64.val32.lower =3D c->ErrDesc.Addr.lower;
+> +	temp64.val32.upper =3D c->ErrDesc.Addr.upper;
+> +	pci_free_consistent(h->pdev, sizeof(struct ErrorInfo_struct),
+> +			    c->err_info, (dma_addr_t) temp64.val);
+
+sizeof(c->err_info)
+
+> +	pci_free_consistent(h->pdev, sizeof(struct CommandList_struct),
+> +			    c, (dma_addr_t) c->busaddr);
+
+sizeof(*c)
+
+I stopped looking for that here, there are maybe some more instances.
+
+> +static int hpsa_pci_init(struct ctlr_info *c, struct pci_dev *pdev)
+> +{
+> +	ushort subsystem_vendor_id, subsystem_device_id, command;
+> +	__u32 board_id, scratchpad =3D 0;
+> +	__u64 cfg_offset;
+> +	__u32 cfg_base_addr;
+> +	__u64 cfg_base_addr_index;
+> +	int i, prod_index, err;
+> +
+> +	subsystem_vendor_id =3D pdev->subsystem_vendor;
+> +	subsystem_device_id =3D pdev->subsystem_device;
+> +	board_id =3D (((__u32) (subsystem_device_id << 16) & 0xffff0000) |
+> +		    subsystem_vendor_id);
+> +
+> +	for (i =3D 0; i < ARRAY_SIZE(products); i++)
+> +		if (board_id =3D=3D products[i].board_id)
+> +			break;
+> +
+> +	prod_index =3D i;
+> +
+> +	if (prod_index =3D=3D ARRAY_SIZE(products)) {
+> +		prod_index--;
+> +		if (subsystem_vendor_id =3D=3D !PCI_VENDOR_ID_HP ||
+> +				!allow_unknown_smartarray) {
+> +			printk(KERN_WARNING "hpsa: Sorry, I don't "
+> +				"know how to access the Smart "
+> +				"Array controller %08lx\n",
+> +				(unsigned long) board_id);
+> +			return -ENODEV;
+> +		}
+> +	}
+> +	/* check to see if controller has been disabled */
+> +	/* BEFORE trying to enable it */
+> +	(void)pci_read_config_word(pdev, PCI_COMMAND, &command);
+> +	if (!(command & 0x02)) {
+> +		printk(KERN_WARNING
+> +		       "hpsa: controller appears to be disabled\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	err =3D pci_enable_device(pdev);
+
+You may want to use pcim_enable_device() as it moves the work of freeing a=
+=20
+bunch of resources (like pci_request_regions()) to devres and you don't nee=
+d=20
+to care about this.
+
+Eike
+
+--nextPart12121403.LEbqP6SMdT
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkmqkowACgkQXKSJPmm5/E7A6QCggdZt5WmsGREY8X9K191aJGBM
+pRIAniWjlsONyMkpBN9krjIcDbvbCApd
+=/8HZ
+-----END PGP SIGNATURE-----
+
+--nextPart12121403.LEbqP6SMdT--
