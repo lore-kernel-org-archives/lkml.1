@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZCAFr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZCAGV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbZCAFr6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 00:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZCAFrv
+	id S1755533AbZCAGV5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 01:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZCAGVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 00:47:51 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:23219 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbZCAFru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 00:47:50 -0500
-Subject: Re: [Orinoco-users] linux-firmware binary corruption with gitweb
-From: Pavel Roskin <proski@gnu.org>
-To: Dave <kilroyd@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, orinoco-users@lists.sourceforge.net,
-       dwmw2@infradead.org
-In-Reply-To: <49A98F6A.50702@gmail.com>
-References: <49A98F6A.50702@gmail.com>
-Content-Type: text/plain
-Date: Sun, 01 Mar 2009 00:47:47 -0500
-Message-Id: <1235886467.3195.15.camel@mj>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+	Sun, 1 Mar 2009 01:21:46 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:40173 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751692AbZCAGVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 01:21:46 -0500
+Message-ID: <49AA2973.7040209@krogh.cc>
+Date: Sun, 01 Mar 2009 07:21:39 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, aowi@novozymes.com
+Subject: Re: Regression in bonding between 2.6.26.8 and 2.6.27.6 - bisected
+References: <491FEAD5.4090205@krogh.cc> <49A7B17F.2020408@krogh.cc> <16084.1235752119@death.nxdomain.ibm.com> <49A84802.7030502@krogh.cc> <30478.1235766943@death.nxdomain.ibm.com>
+In-Reply-To: <30478.1235766943@death.nxdomain.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-02-28 at 19:24 +0000, Dave wrote:
-> I'm aware of at least a couple users of orinoco who have picked up
-> corrupt firmware# from the linux-firmware tree*.
+Jay Vosburgh wrote:
+> Jesper Krogh <jesper@krogh.cc> wrote:
 > 
-> I've verified that the firmware in the repository itself is correct.
-> 
-> It appears that downloading the file using the blob/raw links from
-> gitweb causes the corruption (0xc3 everywhere). At least it does with
-> firefox.
+>> Jay Vosburgh wrote:
+>>> Jesper Krogh <jesper@krogh.cc> wrote:
+>>> [...]
+>>>> The offending commit seems to be:
+>>>>
+>>>> A test with a fresh 2.6.29-rc6 revealed that the problem has been fixed
+>>>> subsequently.. but still exists in 2.6.27-newest.  (havent tested
+>>>> 2.6.28-newest yet).
+>>>>
+>>>> Any ideas of what the "fixing" commit is .. or should that also be
+>>>> bisected?
+>>> 	I went back and looked at your earlier mail.  Since you're using
+>>> 802.3ad mode, my first guess would be this commit:
+>>>
+>>> commit fd989c83325cb34795bc4d4aa6b13c06f90eac99
+ >
+> 	I'll compile 2.6.28.7 here and see if it works for me.
 
-I can confirm the problem with Firefox 3.0.6.  But it's not "0xc3
-everywhere".  The corrupted file is a result of recoding from iso-8859-1
-to utf-8.  The correct agere_sta_fw.bin is 65046 bytes long.  The
-corrupted agere_sta_fw.bin is 89729 bytes long.
+I appreciate that you spend time on it, but my feeling is that it 
+definately isn't reproducible in all environments (otherwise we would
+probably have seen a large cry by now).
 
-There is a way to recode the original binary with GNU recode:
-recode utf8..iso8859-1 agere_sta_fw.bin
+I'm trying to bisect the "fix" down and hope that'll tell us something 
+more.
 
-wget 1.11.4 also gets a corrupted file 89729 bytes long.
-
-$ wget "http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=blob;f=agere_sta_fw.bin;h=bae000f5a7162f5a5b052a2f5b78016e95f825c5;hb=d4cfa9f14c55e9d62f053a542fac21744f22546b"
---2009-03-01 00:42:38--  http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=blob;f=agere_sta_fw.bin;h=bae000f5a7162f5a5b052a2f5b78016e95f825c5;hb=d4cfa9f14c55e9d62f053a542fac21744f22546b
-Resolving git.kernel.org... 204.152.191.40, 149.20.20.136
-Connecting to git.kernel.org|204.152.191.40|:80... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: unspecified [application/octet-stream]
-Saving to: `index.html?p=linux%2Fkernel%2Fgit%2Fdwmw2%2Flinux-firmware.git;a=blob;f=agere_sta_fw.bin;h=bae000f5a7162f5a5b052a2f5b78016e95f825c5;hb=d4cfa9f14c55e9d62f053a542fac21744f22546b'
-
-    [  <=>                                                  ] 89,729       237K/s   in 0.4s    
-
-2009-03-01 00:42:39 (237 KB/s) - `index.html?p=linux%2Fkernel%2Fgit%2Fdwmw2%2Flinux-firmware.git;a=blob;f=agere_sta_fw.bin;h=bae000f5a7162f5a5b052a2f5b78016e95f825c5;hb=d4cfa9f14c55e9d62f053a542fac21744f22546b' saved [89729]
-
-curl 7.18.2 also get the corrupted file:
-
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 89729    0 89729    0     0   111k      0 --:--:-- --:--:-- --:--:--  191k
-
-My strong impression is that the recoding takes place on the server.  I
-think the bug should be reported to the gitweb maintainers unless it a
-local breakage on the kernel.org site.
+If you do the test, remember, that it is not like "bonding isn't 
+working". It just fails to initialize correctly at bootup and doesnt get 
+  the link state by itself. Subsequently doing a /etc/init.d/networking 
+restart brigs it correct up.
 
 -- 
-Regards,
-Pavel Roskin
+Jesper
