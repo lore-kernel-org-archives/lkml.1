@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbZCAOhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbZCAOjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206AbZCAOhV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 09:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbZCAOhE
+	id S1757416AbZCAOjP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 09:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZCAOi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 09:37:04 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:16420 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752980AbZCAOhB convert rfc822-to-8bit (ORCPT
+	Sun, 1 Mar 2009 09:38:59 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:43792 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbZCAOi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 09:37:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=GyNK7W/fb2l2fWeurI5e2KIbK1bHN8mQio8jFWghbaTms8arRYcY0HBQsla/4M7Fxo
-         mbYBauUsAI/QUUQVgoVejRj/KkO2va+nwBaXwa0SG4gNUIapSomt3ByhkyrUuaW+jTab
-         CptHiOWK5kBbDLTOTJP/kDE9d9v9uLFQ6FXpU=
+	Sun, 1 Mar 2009 09:38:59 -0500
+Date: Sun, 1 Mar 2009 14:38:51 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Peter Feuerer <peter@piie.net>
+Cc: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] acerhdf: Acer Aspire One fan control
+Message-ID: <20090301143851.GA11852@srcf.ucam.org>
+References: <cone.1234471033.988571.5384.1000@mentalhome> <20090213134024.GA26549@srcf.ucam.org> <cone.1234551556.57236.4642.1000@onepiie> <20090213191815.GB1379@srcf.ucam.org> <cone.1235761090.678709.5345.1000@onepiie> <1235763653.24506.6.camel@localhost> <cone.1235847508.919525.5537.1000@onepiie>
 MIME-Version: 1.0
-In-Reply-To: <1235884043.9224.12.camel@mj>
-References: <1235688271-22346-1-git-send-email-jirislaby@gmail.com>
-	 <20090226230338.M86894@bobcopeland.com> <49A7236E.2020807@gmail.com>
-	 <b6c5339f0902261528i7b581125k29927c3c5ac4fe4c@mail.gmail.com>
-	 <49A726A7.6090809@gmail.com> <20090227022704.GA29850@hash.localnet>
-	 <1235884043.9224.12.camel@mj>
-Date: Sun, 1 Mar 2009 09:36:59 -0500
-X-Google-Sender-Auth: 048fd70e0772c055
-Message-ID: <b6c5339f0903010636o15afa42en4e1b1eb81c2c06e2@mail.gmail.com>
-Subject: Re: [ath5k-devel] [PATCH 1/1] ath5k: fix hw rate index condition
-From: Bob Copeland <me@bobcopeland.com>
-To: Pavel Roskin <proski@gnu.org>
-Cc: ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cone.1235847508.919525.5537.1000@onepiie>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 1, 2009 at 12:07 AM, Pavel Roskin <proski@gnu.org> wrote:
-> On Thu, 2009-02-26 at 21:27 -0500, Bob Copeland wrote:
->
->> Actually, I remembered in the dark recesses of my moldering brain
->> that someone had a lost patch for this a while ago, so I searched
->> the archives.  Pavel, ok to add your s-o-b?
->
-> Since my patch was dropped and the new patch was implemented without my
-> participation, it makes no sense to put my s-o-b on the code I didn't
-> write (even though I wrote something similar before).
+Small number of things:
 
-Ok, I just wanted to be sure to maintain proper credit, the "From" should
-suffice.  I did rewrite the patch but it actually had an identical diff.
-FWIW, the thread didn't give a clue why it didn't make it upstream, just
-missed I guess (http://marc.info/?l=linux-wireless&m=122480002519627&w=2,
-ultimately that problem was fixed by correctly setting the rs_more flag).
+*) It looks like the patch has ended up linewrapped - it probably won't 
+apply as a result.
 
-Anyway, the patch, while IMO correct, will still result in mac80211
-warning in ieee80211_rx with -1 just as 255 will; it just fixes the
-subsequent out of bound read.  If we want to tell mac80211 a real rate,
-I think we should change it to s8 then hw_to_driver_rix should do
-something like:
+*) x86 specific drivers are mostly moving from drivers/misc to 
+drivers/platform/x86.
 
-idx = array[x][y];
-if (WARN_ON(idx < 0))
-   idx = 0;
+*) It should probably have a DMI modalias to allow it to autoload on 
+appropriate hardware.
 
-return idx;
+*) You have user and kernel modes - it should probably also have a bios 
+mode that just leaves fan control in the same state it would be if the 
+driver had never been loaded, and this should be the default.
 
-Then we get the warning in the driver and we also return a real rate up
-the stack.  I'll prep a patch for this unless there are any objections.
+*) The thermal code has been moved from ACPI into the generic thermal 
+layer for 2.6.30. If you register thermal trip points and indicate that 
+you require polling you should be able to get rid of the kernel thread 
+in your driver and leave that up to the kernel.
+
+Once that's all dealt with you should submit the patch to linux-kernel 
+and Cc: Len Brown who maintains drivers/platform/x86. Include a 
+description and a signed-off-by: line (and an entry in the MAINTAINERS 
+file) and it should get merged.
 
 -- 
-Bob Copeland %% www.bobcopeland.com
+Matthew Garrett | mjg59@srcf.ucam.org
