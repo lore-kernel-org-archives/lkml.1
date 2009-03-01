@@ -1,60 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZCAEO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZCAESP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbZCAEO5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 23:14:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZCAEOr
+	id S1756703AbZCAESP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 23:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZCAER7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 23:14:47 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:59820 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbZCAEOq convert rfc822-to-8bit (ORCPT
+	Sat, 28 Feb 2009 23:17:59 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:45123 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbZCAER6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 23:14:46 -0500
+	Sat, 28 Feb 2009 23:17:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=KMKKGxIX7DOry4bXVbnYBeSL55LUpDQpQQR7SvHtXp43mIDouYq690sTsANer4+IrF
-         EetednKVbsWX7UNOqD1zkuxyuRmeazCNK3Wf9Orc8dcLvUFws+H1BKINsuDvDttbnXi4
-         qw4wKtx/8CmGNCzErDCtFF2Y8WUdV+VoVxlB8=
-MIME-Version: 1.0
-In-Reply-To: <49A965AD.10701@redhat.com>
-References: <49A965AD.10701@redhat.com>
-Date: Sat, 28 Feb 2009 20:14:44 -0800
-X-Google-Sender-Auth: e23fa5a5449ece6d
-Message-ID: <86802c440902282014he17bb6an1f59872ef30db0c5@mail.gmail.com>
-Subject: Re: [PATCH] Fix e820 end address with EFI
-From: Yinghai Lu <yinghai@kernel.org>
-To: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        h=message-id:in-reply-to:references:from:date:subject:to:cc;
+        b=EgjJvOVF1zFYG31wAZ56JUVuawFtPjUnJKibjKq3TD6IVSNKAAB31jbzTVNY9ZDBjq
+         NsN5Pc9t6BCczCrArTG+hAToRCIWegthXkPbsAHZjkiqj1OpJjp6/FqELsbC8kFcgqAe
+         xMZLNcn+zeSgAQwAb+/087DLwEVuXtVPnw/qY=
+Message-ID: <49aa0c73.1c07d00a.4fc6.ffffb4d7@mx.google.com>
+In-Reply-To: <20090228091305.GA20533@elte.hu>
+References: <20090228091305.GA20533@elte.hu>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Sun, 1 Mar 2009 04:31:43 +0100
+Subject: [PATCH 0/5] Binary ftrace_printk
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 28, 2009 at 8:26 AM, Brian Maly <bmaly@redhat.com> wrote:
->
->   On some EFI systems (i.e. Apple) EFI runtime is mapped into higher mem
-> regions. These EFI mem regions are not always taken into consideration when
-> max_pfn is calculated in setup.c being that e820_end_of_ram_pfn() only
-> counts
-> mappings types marked as usable (E820_RAM). Currently we only count to the
-> last
-> usable e820 address range and nothing beyond. EFI can be mapped anywhere
-> within
-> e820 and is not always marked as usable e820, and so EFI runtime may be
-> missed
-> if mapped somewhere beyond last usable e820. This patch attempts to resolve
-> this problem by including all E820 mappings when EFI is enabled, so that
-> the entire e820 (and EFI runtime area) is included in computing max_pfn.
-> Tested
-> on a MacBook Pro 3.1 and resolves the issue (system now boots w/elilo+grub &
-> EFI).
->
+(Sorry I had a problem with my first sending, hopefully I'm not spamming
+each of you twice).
 
-it seems you should check and enable directly mapping when EFI runtime
-service is enabled.
+An new optimization is making its way to ftrace. Its purpose is to
+make ftrace_printk() consuming less memory and become faster.
 
-YH
+Written by Lai Jiangshan, the approach is to delay the formatting
+job from tracing time to output time.
+Currently, a call to ftrace_printk will format the whole string and
+insert it into the ring buffer. Then you can read it on /debug/tracing/trace
+file.
+
+The new implementation stores the address of the format string and
+the binary parameters into the ring buffer, making the packet more compact
+and faster to insert.
+Later, when the user exports the traces, the format string is retrieved
+with the binary parameters and the formatting job is eventually done.
+
+Here is the result of a small comparative benchmark while putting the following
+ftrace_printk on the timer interrupt. ftrace_printk is the old implementation,
+ftrace_bprintk is a the new one:
+
+ftrace_printk("This is the timer interrupt: %llu", jiffies_64);
+
+After some time running on low load (no X, no really active processes):
+
+ftrace_printk:  duration average: 2044 ns, avg of bytes stored per entry: 39
+ftrace_bprintk: duration average: 1426 ns, avg of bytes stored per entry: 16
+
+Higher load (started X and launched a cat running on a X console looping on
+traces printing):
+
+ftrace_printk:  duration average: 8812 ns
+ftrace_bprintk: duration average: 2611 ns
+
+Which means the new implementation can be 70 % faster on higher load.
+And it consumes lesser memory on the ring buffer.
+
+The three first patches rebase against latest -tip the ftrace_bprintk work done
+by Lai few monthes ago.
+
+The two others integrate ftrace_bprintk as a replacement for the old
+ftrace_printk implementation and factorize the printf style format decoding
+which is now used by three functions.
+
+---
+
+Frederic Weisbecker (2):
+  tracing/core: drop the old ftrace_printk implementation in favour of
+    ftrace_bprintk
+  vsprintf: unify the format decoding layer for its 3 users
+
+Lai Jiangshan (3):
+  add binary printf
+  ftrace: infrastructure for supporting binary record
+  ftrace: add ftrace_bprintk()
+
+ include/asm-generic/vmlinux.lds.h    |    3 +
+ include/linux/ftrace.h               |   44 ++-
+ include/linux/module.h               |    5 +
+ include/linux/string.h               |    7 +
+ kernel/module.c                      |    6 +
+ kernel/trace/Kconfig                 |    1 +
+ kernel/trace/Makefile                |    1 +
+ kernel/trace/trace.c                 |  139 +++---
+ kernel/trace/trace.h                 |    8 +-
+ kernel/trace/trace_functions_graph.c |    6 +-
+ kernel/trace/trace_mmiotrace.c       |    9 +-
+ kernel/trace/trace_output.c          |   31 +-
+ kernel/trace/trace_output.h          |    2 +
+ kernel/trace/trace_printk.c          |  178 ++++++
+ lib/Kconfig                          |    3 +
+ lib/vsprintf.c                       | 1006 ++++++++++++++++++++++++++--------
+ 16 files changed, 1127 insertions(+), 322 deletions(-)
+ create mode 100644 kernel/trace/trace_printk.c
+
+
