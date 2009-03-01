@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbZCARXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbZCARuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757656AbZCARXK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 12:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZCARW4
+	id S1757759AbZCARuo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 12:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbZCARug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 12:22:56 -0500
-Received: from mailout04.t-online.de ([194.25.134.18]:52073 "EHLO
-	mailout04.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752932AbZCARW4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 12:22:56 -0500
-X-Greylist: delayed 1024 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Mar 2009 12:22:56 EST
-Date: Sun, 1 Mar 2009 18:04:53 +0100
-From: Karsten Keil <Karsten-Keil@t-online.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Change mailaddress
-Message-ID: <20090301170453.GA19067@gw-kke.kke.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4i
-X-ID: VmH8SZZE8haG7xfccM1j1wXMyRe+DMGTBbA0zyIloQB4ioO6bWmdDeP1V-r-dCOgNM
-X-TOI-MSGID: 589b1177-d743-4307-98d0-40088a4c1839
+	Sun, 1 Mar 2009 12:50:36 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48109 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756441AbZCARuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 12:50:35 -0500
+Message-ID: <49AACAA3.1060806@kernel.org>
+Date: Sun, 01 Mar 2009 09:49:23 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH] x86: put initial_pg_tables into bss -v2
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org> <1235785882-17580-4-git-send-email-jeremy@goop.org> <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com> <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org> <49A8F319.3030802@goop.org> <49A9E392.6090004@kernel.org> <49AA47D2.4020804@kernel.org> <49AA5356.3050602@zytor.com>
+In-Reply-To: <49AA5356.3050602@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since I will loose the old  address soon, please change it.
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> Impact: cleanup
+>>
+>> Don't use ram after _end blindly for pagetables.
+>> put those pg table into bss
+>>
+>> also remove init_pg_tables_start/end tricks all around
+>>
+>> v2: keep initial page table up to 512M only.
+>>
+> 
+> I really, REALLY, don't like this.  This is going right back to the
+> situation which we had before the dynamically generated page tables.  We
+> now have yet another hardcoded limit, and big chunk of wasted memory in
+> case we don't need to allocate it all.
 
-Signed-off-by: Karsten Keil <kkeil@linux-pingi.de>
----
- MAINTAINERS |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+that limit is there in for 64 too. aka 512M direct mapping. (need 1Mbytes space for page tables)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 59fd2d1..1c2ca1d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2464,7 +2464,7 @@ S:	Maintained
- 
- ISDN SUBSYSTEM
- P:	Karsten Keil
--M:	kkeil@suse.de
-+M:	isdn@linux-pingi.de
- L:	isdn4linux@listserv.isdn4linux.de (subscribers-only)
- W:	http://www.isdn4linux.de
- T:	git kernel.org:/pub/scm/linux/kernel/kkeil/isdn-2.6.git
--- 
-1.5.6.4
+we can get rid of that limit: with careful link sequence to make sure that code init_memory_mapping and before is some fixed range.
 
+YH
