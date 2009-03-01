@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbZCAOK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZCAOLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299AbZCAOK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 09:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZCAOKS
+	id S1757349AbZCAOLY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 09:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbZCAOLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 09:10:18 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:45371 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754410AbZCAOKQ convert rfc822-to-8bit (ORCPT
+	Sun, 1 Mar 2009 09:11:15 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:1803 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754390AbZCAOLO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 09:10:16 -0500
+	Sun, 1 Mar 2009 09:11:14 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
          :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=hJAXJaAMx1xJ14VK2jd2/KdNJuGFvcR7u6VFEfHnWksnmEXTCjLv262GuPTXzsXoQE
-         t+AVlV5lOoPB3PRO048dPUNJ5tEnWnWAzOG+UJSna3ZeoZ9AWWePHhjs/G7i37Y/54ln
-         hKru39ZK+raIh+YFtynRtRJIka0yNnHyP9524=
-Date: Sun, 1 Mar 2009 16:10:08 +0200
+        b=lFOvxYyKtLhz/gNQXeAHt6Ri9FXjsy54cTUZFWbjxTlSsM8GYaNtSoL4Ifiv+ibFWb
+         dVgXjhSSxHaJVthRx521p4ScqKfyNfiarL9GE6bkQ2FiG0jOVIMNApbKVS/SC6ATe3IS
+         CpcDuMoeapHGlDy4lx9YcfBhtcoeQw1UXvW3A=
+Date: Sun, 1 Mar 2009 16:11:07 +0200
 From: Pekka Paalanen <pq@iki.fi>
 To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
 Cc: Pekka Paalanen <pq@iki.fi>, Stuart Bennett <stuart@freedesktop.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/7] x86: add far read test to testmmiotrace
-Message-ID: <20090301161008.78fdbab6@daedalus.pq.iki.fi>
+Subject: [PATCH 3/7] x86 mmiotrace: WARN_ONCE if dis/arming a page fails
+Message-ID: <20090301161107.21d82c10@daedalus.pq.iki.fi>
 In-Reply-To: <20090301160643.05a2219b@daedalus.pq.iki.fi>
 References: <20090301160643.05a2219b@daedalus.pq.iki.fi>
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
@@ -34,112 +34,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From d3f1d5f4a087c6e57cc1d2aa8fc2c82c23a5096a Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Sun, 22 Feb 2009 14:09:25 +0200
-Subject: [PATCH] x86: add far read test to testmmiotrace
+>From 2f1f600e019955a0485452e4da676837bc8c91bd Mon Sep 17 00:00:00 2001
+From: Stuart Bennett <stuart@freedesktop.org>
+Date: Fri, 30 Jan 2009 17:38:59 +0000
+Subject: [PATCH] x86 mmiotrace: WARN_ONCE if dis/arming a page fails
 
-Apparently pages far into an ioremapped region might not actually be
-mapped during ioremap(). Add an optional read test to try to trigger a
-multiply faulting MMIO access. Also add more messages to the kernel log
-to help debugging.
+Print a full warning once, if arming or disarming a page fails.
 
-This patch is based on a patch suggested by
-Stuart Bennett <stuart@freedesktop.org>
-who discovered bugs in mmiotrace related to normal kernel space faults.
+Also, if initial arming fails, do not handle the page further. This
+avoids the possibility of a page failing to arm and then later claiming
+to have handled any fault on that page.
 
+WARN_ONCE added by Pekka Paalanen.
+
+Signed-off-by: Stuart Bennett <stuart@freedesktop.org>
 Signed-off-by: Pekka Paalanen <pq@iki.fi>
 ---
- arch/x86/mm/testmmiotrace.c |   35 ++++++++++++++++++++++++++++-------
- 1 files changed, 28 insertions(+), 7 deletions(-)
+ arch/x86/mm/kmmio.c |   25 +++++++++++++++++--------
+ 1 files changed, 17 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/mm/testmmiotrace.c b/arch/x86/mm/testmmiotrace.c
-index 4b29f3b..427fd1b 100644
---- a/arch/x86/mm/testmmiotrace.c
-+++ b/arch/x86/mm/testmmiotrace.c
-@@ -9,7 +9,13 @@
- 
- static unsigned long mmio_address;
- module_param(mmio_address, ulong, 0);
--MODULE_PARM_DESC(mmio_address, "Start address of the mapping of 16 kB.");
-+MODULE_PARM_DESC(mmio_address, " Start address of the mapping of 16 kB "
-+				"(or 8 MB if read_far is non-zero).");
-+
-+static unsigned long read_far = 0x400100;
-+module_param(read_far, ulong, 0);
-+MODULE_PARM_DESC(read_far, " Offset of a 32-bit read within 8 MB "
-+				"(default: 0x400100).");
- 
- static unsigned v16(unsigned i)
- {
-@@ -24,6 +30,7 @@ static unsigned v32(unsigned i)
- static void do_write_test(void __iomem *p)
- {
- 	unsigned int i;
-+	pr_info(MODULE_NAME ": write test.\n");
- 	mmiotrace_printk("Write test.\n");
- 
- 	for (i = 0; i < 256; i++)
-@@ -40,6 +47,7 @@ static void do_read_test(void __iomem *p)
- {
- 	unsigned int i;
- 	unsigned errs[3] = { 0 };
-+	pr_info(MODULE_NAME ": read test.\n");
- 	mmiotrace_printk("Read test.\n");
- 
- 	for (i = 0; i < 256; i++)
-@@ -58,9 +66,17 @@ static void do_read_test(void __iomem *p)
- 						errs[0], errs[1], errs[2]);
+diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
+index 93d8203..fb1f115 100644
+--- a/arch/x86/mm/kmmio.c
++++ b/arch/x86/mm/kmmio.c
+@@ -105,7 +105,7 @@ static struct kmmio_fault_page *get_kmmio_fault_page(unsigned long page)
+ 	return NULL;
  }
  
--static void do_test(void)
-+static void do_read_far_test(void __iomem *p)
-+{
-+	pr_info(MODULE_NAME ": read far test.\n");
-+	mmiotrace_printk("Read far test.\n");
-+
-+	ioread32(p + read_far);
-+}
-+
-+static void do_test(unsigned long size)
+-static void set_page_present(unsigned long addr, bool present,
++static int set_page_present(unsigned long addr, bool present,
+ 							unsigned int *pglevel)
  {
--	void __iomem *p = ioremap_nocache(mmio_address, 0x4000);
-+	void __iomem *p = ioremap_nocache(mmio_address, size);
- 	if (!p) {
- 		pr_err(MODULE_NAME ": could not ioremap, aborting.\n");
- 		return;
-@@ -68,11 +84,15 @@ static void do_test(void)
- 	mmiotrace_printk("ioremap returned %p.\n", p);
- 	do_write_test(p);
- 	do_read_test(p);
-+	if (read_far && read_far < size - 4)
-+		do_read_far_test(p);
- 	iounmap(p);
- }
+ 	pteval_t pteval;
+@@ -116,7 +116,7 @@ static void set_page_present(unsigned long addr, bool present,
  
- static int __init init(void)
- {
-+	unsigned long size = (read_far) ? (8 << 20) : (16 << 10);
-+
- 	if (mmio_address == 0) {
- 		pr_err(MODULE_NAME ": you have to use the module argument "
- 							"mmio_address.\n");
-@@ -81,10 +101,11 @@ static int __init init(void)
- 		return -ENXIO;
+ 	if (!pte) {
+ 		pr_err("kmmio: no pte for page 0x%08lx\n", addr);
+-		return;
++		return -1;
  	}
  
--	pr_warning(MODULE_NAME ": WARNING: mapping 16 kB @ 0x%08lx "
--					"in PCI address space, and writing "
--					"rubbish in there.\n", mmio_address);
--	do_test();
-+	pr_warning(MODULE_NAME ": WARNING: mapping %lu kB @ 0x%08lx in PCI "
-+		"address space, and writing 16 kB of rubbish in there.\n",
-+		 size >> 10, mmio_address);
-+	do_test(size);
-+	pr_info(MODULE_NAME ": All done.\n");
- 	return 0;
+ 	if (pglevel)
+@@ -140,22 +140,27 @@ static void set_page_present(unsigned long addr, bool present,
+ 
+ 	default:
+ 		pr_err("kmmio: unexpected page level 0x%x.\n", level);
+-		return;
++		return -1;
+ 	}
+ 
+ 	__flush_tlb_one(addr);
++
++	return 0;
  }
  
+ /** Mark the given page as not present. Access to it will trigger a fault. */
+-static void arm_kmmio_fault_page(unsigned long page, unsigned int *pglevel)
++static int arm_kmmio_fault_page(unsigned long page, unsigned int *pglevel)
+ {
+-	set_page_present(page & PAGE_MASK, false, pglevel);
++	int ret = set_page_present(page & PAGE_MASK, false, pglevel);
++	WARN_ONCE(ret < 0, KERN_ERR "kmmio arming 0x%08lx failed.\n", page);
++	return ret;
+ }
+ 
+ /** Mark the given page as present. */
+ static void disarm_kmmio_fault_page(unsigned long page, unsigned int *pglevel)
+ {
+-	set_page_present(page & PAGE_MASK, true, pglevel);
++	int ret = set_page_present(page & PAGE_MASK, true, pglevel);
++	WARN_ONCE(ret < 0, KERN_ERR "kmmio disarming 0x%08lx failed.\n", page);
+ }
+ 
+ /*
+@@ -326,9 +331,13 @@ static int add_kmmio_fault_page(unsigned long page)
+ 
+ 	f->count = 1;
+ 	f->page = page;
+-	list_add_rcu(&f->list, kmmio_page_list(f->page));
+ 
+-	arm_kmmio_fault_page(f->page, NULL);
++	if (arm_kmmio_fault_page(f->page, NULL)) {
++		kfree(f);
++		return -1;
++	}
++
++	list_add_rcu(&f->list, kmmio_page_list(f->page));
+ 
+ 	return 0;
+ }
 -- 
 1.6.0.6
 
