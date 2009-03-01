@@ -1,111 +1,617 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZCAJWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbZCAJWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbZCAJWU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 04:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZCAJVZ
+	id S1756477AbZCAJWs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 04:22:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbZCAJV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 04:21:25 -0500
-Received: from brigitte.telenet-ops.be ([195.130.137.66]:46103 "EHLO
-	brigitte.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754695AbZCAJVT (ORCPT
+	Sun, 1 Mar 2009 04:21:28 -0500
+Received: from georges.telenet-ops.be ([195.130.137.68]:35983 "EHLO
+	georges.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754811AbZCAJVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 04:21:19 -0500
+	Sun, 1 Mar 2009 04:21:20 -0500
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Laurent Vivier <Laurent@lvivier.info>,
        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 1/6] m68k: Add install target
-Date: Sun,  1 Mar 2009 10:21:10 +0100
-Message-Id: <1235899275-23630-2-git-send-email-geert@linux-m68k.org>
+Subject: [PATCH 2/6] m68k: mac - Add a new entry in mac_model to identify the floppy controller type.
+Date: Sun,  1 Mar 2009 10:21:11 +0100
+Message-Id: <1235899275-23630-3-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1235899275-23630-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1235899275-23630-2-git-send-email-geert@linux-m68k.org>
 References: <1235899275-23630-1-git-send-email-geert@linux-m68k.org>
+ <1235899275-23630-2-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Laurent Vivier <Laurent@lvivier.info>
 
-This patch enables the use of "make install" on m68k architecture
-to copy kernel to /boot.
+This patch adds a field "floppy_type" which can take the following values:
+
+MAC_FLOPPY_IWM for an IWM based mac
+MAC_FLOPPY_SWIM_ADDR1 for a SWIM based mac with controller at VIA1 + 0x1E000
+MAC_FLOPPY_SWIM_ADDR2 for a SWIM based mac with controller at VIA1 + 0x16000
+MAC_FLOPPY_IOP for an IOP based mac
+MAC_FLOPPY_AV for an AV based mac
 
 Signed-off-by: Laurent Vivier <Laurent@lvivier.info>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/Makefile   |    3 ++
- arch/m68k/install.sh |   52 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 55 insertions(+), 0 deletions(-)
- create mode 100644 arch/m68k/install.sh
+ arch/m68k/include/asm/macintosh.h |    7 ++
+ arch/m68k/mac/config.c            |  163 +++++++++++++++++++++++++------------
+ 2 files changed, 116 insertions(+), 54 deletions(-)
 
-diff --git a/arch/m68k/Makefile b/arch/m68k/Makefile
-index 8133dbc..570d85c 100644
---- a/arch/m68k/Makefile
-+++ b/arch/m68k/Makefile
-@@ -117,3 +117,6 @@ endif
+diff --git a/arch/m68k/include/asm/macintosh.h b/arch/m68k/include/asm/macintosh.h
+index 05309f7..50db359 100644
+--- a/arch/m68k/include/asm/macintosh.h
++++ b/arch/m68k/include/asm/macintosh.h
+@@ -34,6 +34,7 @@ struct mac_model
+ 	char scc_type;
+ 	char ether_type;
+ 	char nubus_type;
++	char floppy_type;
+ };
  
- archclean:
- 	rm -f vmlinux.gz vmlinux.bz2
+ #define MAC_ADB_NONE		0
+@@ -71,6 +72,12 @@ struct mac_model
+ #define MAC_NO_NUBUS		0
+ #define MAC_NUBUS		1
+ 
++#define MAC_FLOPPY_IWM		0
++#define MAC_FLOPPY_SWIM_ADDR1	1
++#define MAC_FLOPPY_SWIM_ADDR2	2
++#define MAC_FLOPPY_SWIM_IOP	3
++#define MAC_FLOPPY_AV		4
 +
-+install:
-+	sh $(srctree)/arch/m68k/install.sh $(KERNELRELEASE) vmlinux.gz System.map "$(INSTALL_PATH)"
-diff --git a/arch/m68k/install.sh b/arch/m68k/install.sh
-new file mode 100644
-index 0000000..9c6bae6
---- /dev/null
-+++ b/arch/m68k/install.sh
-@@ -0,0 +1,52 @@
-+#!/bin/sh
-+#
-+# This file is subject to the terms and conditions of the GNU General Public
-+# License.  See the file "COPYING" in the main directory of this archive
-+# for more details.
-+#
-+# Copyright (C) 1995 by Linus Torvalds
-+#
-+# Adapted from code in arch/i386/boot/Makefile by H. Peter Anvin
-+#
-+# "make install" script for m68k architecture
-+#
-+# Arguments:
-+#   $1 - kernel version
-+#   $2 - kernel image file
-+#   $3 - kernel map file
-+#   $4 - default install path (blank if root directory)
-+#
-+
-+verify () {
-+	if [ ! -f "$1" ]; then
-+		echo ""                                                   1>&2
-+		echo " *** Missing file: $1"                              1>&2
-+		echo ' *** You need to run "make" before "make install".' 1>&2
-+		echo ""                                                   1>&2
-+		exit 1
-+	fi
-+}
-+
-+# Make sure the files actually exist
-+verify "$2"
-+verify "$3"
-+
-+# User may have a custom install script
-+
-+if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
-+if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
-+
-+# Default install - same as make zlilo
-+
-+if [ -f $4/vmlinuz ]; then
-+	mv $4/vmlinuz $4/vmlinuz.old
-+fi
-+
-+if [ -f $4/System.map ]; then
-+	mv $4/System.map $4/System.old
-+fi
-+
-+cat $2 > $4/vmlinuz
-+cp $3 $4/System.map
-+
-+sync
+ /*
+  *	Gestalt numbers
+  */
+diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
+index 98b6bcf..3a1c0b2 100644
+--- a/arch/m68k/mac/config.c
++++ b/arch/m68k/mac/config.c
+@@ -224,7 +224,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_II,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_IWM
+ 	},
+ 
+ 	/*
+@@ -239,7 +240,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_II,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_IWM
+ 	}, {
+ 		.ident		= MAC_MODEL_IIX,
+ 		.name		= "IIx",
+@@ -247,7 +249,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_II,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_IICX,
+ 		.name		= "IIcx",
+@@ -255,7 +258,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_II,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_SE30,
+ 		.name		= "SE/30",
+@@ -263,7 +267,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_II,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	},
+ 
+ 	/*
+@@ -280,7 +285,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_IIFX,
+ 		.name		= "IIfx",
+@@ -288,7 +294,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_IOP,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_IOP
+ 	}, {
+ 		.ident		= MAC_MODEL_IISI,
+ 		.name		= "IIsi",
+@@ -296,7 +303,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_IIVI,
+ 		.name		= "IIvi",
+@@ -304,7 +312,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_IIVX,
+ 		.name		= "IIvx",
+@@ -312,7 +321,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	},
+ 
+ 	/*
+@@ -326,7 +336,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_CCL,
+ 		.name		= "Color Classic",
+@@ -334,7 +345,9 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS},
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
++	},
+ 
+ 	/*
+ 	 *	Some Mac LC machines. Basically the same as the IIci, ADB like IIsi
+@@ -347,7 +360,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_LCII,
+ 		.name		= "LC II",
+@@ -355,7 +369,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_LCIII,
+ 		.name		= "LC III",
+@@ -363,7 +378,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	},
+ 
+ 	/*
+@@ -383,7 +399,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_Q605_ACC,
+ 		.name		= "Quadra 605",
+@@ -391,7 +408,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_Q610,
+ 		.name		= "Quadra 610",
+@@ -400,7 +418,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_Q630,
+ 		.name		= "Quadra 630",
+@@ -410,7 +429,8 @@ static struct mac_model mac_data_table[] = {
+ 		.ide_type	= MAC_IDE_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_Q650,
+ 		.name		= "Quadra 650",
+@@ -419,7 +439,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	},
+ 	/*	The Q700 does have a NS Sonic */
+ 	{
+@@ -430,7 +451,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA2,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_Q800,
+ 		.name		= "Quadra 800",
+@@ -439,7 +461,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_Q840,
+ 		.name		= "Quadra 840AV",
+@@ -448,7 +471,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA3,
+ 		.scc_type	= MAC_SCC_PSC,
+ 		.ether_type	= MAC_ETHER_MACE,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_AV
+ 	}, {
+ 		.ident		= MAC_MODEL_Q900,
+ 		.name		= "Quadra 900",
+@@ -457,7 +481,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA2,
+ 		.scc_type	= MAC_SCC_IOP,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_IOP
+ 	}, {
+ 		.ident		= MAC_MODEL_Q950,
+ 		.name		= "Quadra 950",
+@@ -466,7 +491,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA2,
+ 		.scc_type	= MAC_SCC_IOP,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_IOP
+ 	},
+ 
+ 	/*
+@@ -480,7 +506,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_P475,
+ 		.name		=  "Performa 475",
+@@ -488,7 +515,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_P475F,
+ 		.name		=  "Performa 475",
+@@ -496,7 +524,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_P520,
+ 		.name		=  "Performa 520",
+@@ -504,7 +533,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_P550,
+ 		.name		=  "Performa 550",
+@@ -512,7 +542,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	},
+ 	/* These have the comm slot, and therefore the possibility of SONIC ethernet */
+ 	{
+@@ -523,7 +554,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_II,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_P588,
+ 		.name		= "Performa 588",
+@@ -533,7 +565,8 @@ static struct mac_model mac_data_table[] = {
+ 		.ide_type	= MAC_IDE_QUADRA,
+ 		.scc_type	= MAC_SCC_II,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type	= MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_TV,
+ 		.name		= "TV",
+@@ -541,7 +574,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_P600,
+ 		.name		= "Performa 600",
+@@ -549,7 +583,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_II,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	},
+ 
+ 	/*
+@@ -565,7 +600,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_C650,
+ 		.name		= "Centris 650",
+@@ -574,7 +610,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR1
+ 	}, {
+ 		.ident		= MAC_MODEL_C660,
+ 		.name		= "Centris 660AV",
+@@ -583,7 +620,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_QUADRA3,
+ 		.scc_type	= MAC_SCC_PSC,
+ 		.ether_type	= MAC_ETHER_MACE,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_AV
+ 	},
+ 
+ 	/*
+@@ -599,7 +637,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB145,
+ 		.name		= "PowerBook 145",
+@@ -607,7 +646,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB150,
+ 		.name		= "PowerBook 150",
+@@ -616,7 +656,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.ide_type	= MAC_IDE_PB,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB160,
+ 		.name		= "PowerBook 160",
+@@ -624,7 +665,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB165,
+ 		.name		= "PowerBook 165",
+@@ -632,7 +674,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB165C,
+ 		.name		= "PowerBook 165c",
+@@ -640,7 +683,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB170,
+ 		.name		= "PowerBook 170",
+@@ -648,7 +692,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB180,
+ 		.name		= "PowerBook 180",
+@@ -656,7 +701,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB180C,
+ 		.name		= "PowerBook 180c",
+@@ -664,7 +710,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_QUADRA,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB190,
+ 		.name		= "PowerBook 190",
+@@ -673,7 +720,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.ide_type	= MAC_IDE_BABOON,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB520,
+ 		.name		= "PowerBook 520",
+@@ -682,7 +730,8 @@ static struct mac_model mac_data_table[] = {
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+ 		.ether_type	= MAC_ETHER_SONIC,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	},
+ 
+ 	/*
+@@ -702,7 +751,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB230,
+ 		.name		= "PowerBook Duo 230",
+@@ -710,7 +760,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB250,
+ 		.name		= "PowerBook Duo 250",
+@@ -718,7 +769,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB270C,
+ 		.name		= "PowerBook Duo 270c",
+@@ -726,7 +778,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB280,
+ 		.name		= "PowerBook Duo 280",
+@@ -734,7 +787,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	}, {
+ 		.ident		= MAC_MODEL_PB280C,
+ 		.name		= "PowerBook Duo 280c",
+@@ -742,7 +796,8 @@ static struct mac_model mac_data_table[] = {
+ 		.via_type	= MAC_VIA_IIci,
+ 		.scsi_type	= MAC_SCSI_OLD,
+ 		.scc_type	= MAC_SCC_QUADRA,
+-		.nubus_type	= MAC_NUBUS
++		.nubus_type	= MAC_NUBUS,
++		.floppy_type    = MAC_FLOPPY_SWIM_ADDR2
+ 	},
+ 
+ 	/*
 -- 
 1.6.1.3
 
