@@ -1,111 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbZCAUua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbZCAUzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbZCAUua (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 15:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZCAUuT
+	id S1757807AbZCAUzM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 15:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZCAUy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 15:50:19 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:10001 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbZCAUuR (ORCPT
+	Sun, 1 Mar 2009 15:54:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50212 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753718AbZCAUy5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 15:50:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=d6C+fd4hTYQJ9IcN4MFz8avoppfqvzusX2DOnR7evErXnZRA8oUrYpvp8EJQQxSXSP
-         uJVPbWy+R6q4PblbmXZEtdoONH5SBL81P2ojs4FvvPqhdCiwVD7qEwfwyHE+Fv3m03rf
-         o2GE9lWbHtxsFg2Nc4vuNXlnXLwLxhHMchZfI=
-Date: Sun, 1 Mar 2009 23:56:59 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mpm@selenic.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090301205659.GA7276@x200.localdomain>
-References: <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu> <20090226223112.GA2939@x200.localdomain> <20090301013304.GA2428@x200.localdomain> <20090301200231.GA25276@us.ibm.com>
+	Sun, 1 Mar 2009 15:54:57 -0500
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX19IFshfFTNIdnv9q6+E+GaQ/WjJpkCQQwXQvpZITJ
+	yXp0CxdsgDrTCh
+From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: gpu/drm, x86, PAT: io_mapping_create_wc and resource_size_t
+Date: Sun, 1 Mar 2009 21:54:50 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Dave Airlie <airlied@redhat.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       Keith Packard <keithp@keithp.com>, Ingo Molnar <mingo@elte.hu>
+References: <200902280201.n1S217FR011162@hera.kernel.org> <200903011454.55865.s.L-H@gmx.de> <20090301165327.GA12970@linux-os.sc.intel.com>
+In-Reply-To: <20090301165327.GA12970@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090301200231.GA25276@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903012154.52961.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 01, 2009 at 02:02:31PM -0600, Serge E. Hallyn wrote:
-> Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> > On Fri, Feb 27, 2009 at 01:31:12AM +0300, Alexey Dobriyan wrote:
-> > > This is collecting and start of dumping part of cleaned up OpenVZ C/R
-> > > implementation, FYI.
+Hi
+
+On Sonntag, 1. März 2009, Pallipadi, Venkatesh wrote:
+> On Sun, Mar 01, 2009 at 05:54:53AM -0800, Stefan Lippers-Hollmann wrote:
+> > Hi
 > > 
-> > OK, here is second version which shows what to do with shared objects
-> > (cr_dump_nsproxy(), cr_dump_task_struct()), introduced more checks
-> > (still no unlinked files) and dumps some more information including
-> > structures connections (cr_pos_*)
+> > On Samstag, 28. Februar 2009, Linux Kernel Mailing List wrote:
+> > > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4ab0d47d0ab311eb181532c1ecb6d02905685071
+> > > Commit:     4ab0d47d0ab311eb181532c1ecb6d02905685071
+[...]
+> >   Building modules, stage 2.
+> >   MODPOST 809 modules
+> > ERROR: "pgprot_writecombine" [drivers/gpu/drm/i915/i915.ko] undefined!
+> > ERROR: "is_io_mapping_possible" [drivers/gpu/drm/i915/i915.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > make: *** [modules] Error 2
 > > 
-> > Dumping pids in under thinking because in OpenVZ pids are saved as
-> > numbers due to CLONE_NEWPID is not allowed in container. In presense
-> > of multiple CLONE_NEWPID levels this must present a big problem. Looks
-> > like there is now way to not dump pids as separate object.
+> > This is a build regression in comparison to 2.6.29-rc6.
 > > 
-> > As result, struct cr_image_pid is variable-sized, don't know how this will
-> > play later.
-> > 
-> > Also, pid refcount check for external pointers is busted right now,
-> > because /proc inode pins struct pid, so there is almost always refcount
-> > vs ->o_count mismatch.
-> > 
-> > No restore yet. ;-)
 > 
-> Hi Alexey,
+> My bad. I had missed drm as module compilation. Below patch should fix it.
+> Can you please verify.
+
+Thanks, this builds fine for i386 and amd64 and seems to work on i945GME.
+
+Regards
+	Stefan Lippers-Hollmann
+-- 
+> Thanks,
+> Venki
 > 
-> thanks for posting this.  Of course there are some predictable responses
-> (I like the simplicity of pure in-kernel, Dave will not :) but this
-> needs to be posted to make us talk about it.
 > 
-> A few more comments that came to me while looking it over:
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 > 
-> 1. cap_sys_admin check is unfortunate.  In discussions about Oren's
-> patchset we've agreed that not having that check from the outset forces
-> us to consider security with each new patch and feature, which is a good
-> thing.
+> ---
+>  arch/x86/mm/iomap_32.c     |    1 +
+>  arch/x86/mm/pat.c          |    2 ++
+>  include/linux/io-mapping.h |    3 ++-
+>  3 files changed, 5 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/arch/x86/mm/iomap_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/iomap_32.c	2009-03-01 08:31:12.000000000 -0800
+> +++ linux-2.6/arch/x86/mm/iomap_32.c	2009-03-01 08:47:20.000000000 -0800
+> @@ -37,6 +37,7 @@ is_io_mapping_possible(resource_size_t b
+>  	return 1;
+>  }
+>  #endif
+> +EXPORT_SYMBOL_GPL(is_io_mapping_possible);
+>  
+>  /* Map 'pfn' using fixed map 'type' and protections 'prot'
+>   */
+> Index: linux-2.6/arch/x86/mm/pat.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/pat.c	2009-03-01 08:31:00.000000000 -0800
+> +++ linux-2.6/arch/x86/mm/pat.c	2009-03-01 08:45:48.000000000 -0800
+> @@ -11,6 +11,7 @@
+>  #include <linux/bootmem.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/kernel.h>
+> +#include <linux/module.h>
+>  #include <linux/gfp.h>
+>  #include <linux/mm.h>
+>  #include <linux/fs.h>
+> @@ -868,6 +869,7 @@ pgprot_t pgprot_writecombine(pgprot_t pr
+>  	else
+>  		return pgprot_noncached(prot);
+>  }
+> +EXPORT_SYMBOL(pgprot_writecombine);
+>  
+>  #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_X86_PAT)
+>  
+> Index: linux-2.6/include/linux/io-mapping.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/io-mapping.h	2009-03-01 08:31:12.000000000 -0800
+> +++ linux-2.6/include/linux/io-mapping.h	2009-03-01 08:49:53.000000000 -0800
+> @@ -91,8 +91,9 @@ io_mapping_unmap_atomic(void *vaddr)
+>  static inline void *
+>  io_mapping_map_wc(struct io_mapping *mapping, unsigned long offset)
+>  {
+> +	resource_size_t phys_addr;
+>  	BUG_ON(offset >= mapping->size);
+> -	resource_size_t phys_addr = mapping->base + offset;
+> +	phys_addr = mapping->base + offset;
+>  	return ioremap_wc(phys_addr, PAGE_SIZE);
+>  }
+>  
+> 
 
-Removing CAP_SYS_ADMIN on restore?
 
-> 2. if any tasks being checkpointed are frozen, checkpoint has the
-> side effect of thawing them, right?
-
-Haven't tried, but should be a bug, yes. It will be "thaw or kill"
-depending on "flags".
-
-> 3. wrt pids, i guess what you really want is to store the pids from
-> init_tsk's level down to the task's lowest pid, right?  Then you
-> manually set each of those on restart?  Any higher pids of course
-> don't matter.
-
-Yes, numbers are really meant to be from init_tsk level.
-
-> 4. do you have any thoughts on what to do with the mntns info at
-> restart?  Will you try to detect mounts which need to be re-created?
-> How?
-
-Haven't thought, but it will be tricky for sure :^)
-
-> 5. Since you're always setting f_pos, this won't work straight over
-> a pipe?  Do you figure that's just not a worthwhile feature?
-
-So far there were no loops when dumping data structures, but I _think_
-there will be some, so seeking over dumpfile would be inevitable.
-
-> Were you saying (in response to Dave) that you're having private
-> discussions about whether to pursue posting this as an alternative
-> to Oren's patchset?  If so, any updates on those discussions?
-
-Right now, no.
