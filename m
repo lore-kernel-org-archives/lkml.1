@@ -1,81 +1,46 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZCAFHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbZBBBi5 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 1 Feb 2009 20:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZBBBiq
+	id S1755810AbZCAFHm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 00:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZCAFHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 20:38:46 -0500
-Received: from us-fb01-05.mta.terra.com ([208.84.242.210]:41435 "EHLO
-	us-fb01-05.mta.terra.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751722AbZBBBiq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 20:38:46 -0500
-X-Greylist: delayed 1510 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Feb 2009 20:38:45 EST
-X-Terra-Karma: 0%
-X-Terra-Hash: f09107b0ba2772f0d78d2954ef409ccd
-Date: Mon, 2 Feb 2009 09:13:24 +0800
-Mime-version: 1.0
-Subject: Income Unlimited...$3,500 Weekly..No Brainer!
-From: Sarrah Collins <hugedollarearner@aol.com>
-To: <linux-kernel@vger.kernel.org>
-Message-Id: <22913.KCAMGVPE@aol.com>
-Reply-To: crazymoneyforvr@aol.com
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
+	Sun, 1 Mar 2009 00:07:32 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:56562 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbZCAFHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 00:07:31 -0500
+Subject: Re: [ath5k-devel] [PATCH 1/1] ath5k: fix hw rate index condition
+From: Pavel Roskin <proski@gnu.org>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       ath5k-devel@venema.h4ckr.net
+In-Reply-To: <20090227022704.GA29850@hash.localnet>
+References: <1235688271-22346-1-git-send-email-jirislaby@gmail.com>
+	 <20090226230338.M86894@bobcopeland.com> <49A7236E.2020807@gmail.com>
+	 <b6c5339f0902261528i7b581125k29927c3c5ac4fe4c@mail.gmail.com>
+	 <49A726A7.6090809@gmail.com>  <20090227022704.GA29850@hash.localnet>
+Content-Type: text/plain
+Date: Sun, 01 Mar 2009 00:07:23 -0500
+Message-Id: <1235884043.9224.12.camel@mj>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755738AbZBBBi5@vger.kernel.org>
 
-Yes you read it right! $3,500 A WEEK, ONLY IN YOUR
-SPARE TIME!
+On Thu, 2009-02-26 at 21:27 -0500, Bob Copeland wrote:
 
-You wouldn't believe me? Then visit our site now!
-http://vilasta.com/?SzQPkilJ
+> Actually, I remembered in the dark recesses of my moldering brain 
+> that someone had a lost patch for this a while ago, so I searched
+> the archives.  Pavel, ok to add your s-o-b?
 
-There is no way to truly succeed on the Internet without a
-program that actually works!
+Since my patch was dropped and the new patch was implemented without my
+participation, it makes no sense to put my s-o-b on the code I didn't
+write (even though I wrote something similar before).
 
-For a limited time, we're offering F*R*E*E positions in our
-NEW program, but you need to confirm right away. Everyone
-who comes in after you, will go UNDER you, first come,
-first serve.
-
-Get your spot here:
-www.Zazz.pl/2601
-
-We have reserved a position for you in our program.
-But we need you to confirm before we can start
-building UNDER YOU.
-
-Here's how it works...
-
-We let you take a F*R*E*E position in our program,
-then everyone that takes a position after you, is placed
-UNDER you! So while you're taking a look at our
-program, we're placing other potential customers
-on YOUR team.
-
-This means you could actually have a
-PAYING member under you before you even decide
-to get started yourself. Talk about a NO BRAINER.
-Act fast though, this thing is really cranking. We have
-new PAYING customers pouring in daily.
-
-
-To Your Success,
-
-Mariane Bas
-www.Zazz.pl/2601
-
-
-
-URGENTLY GO HERE to secure a position at the TOP of my group.
-www.Zazz.pl/2601
-
-
-Unsubscribe:
-I apologize for receiving this email at once, if you wish to
-be remove in my list please reply here for removal
-w/ a blank subject. Thank you for your understanding.
-
+-- 
+Regards,
+Pavel Roskin
