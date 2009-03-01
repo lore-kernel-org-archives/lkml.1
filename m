@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbZCAGfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZCAHNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbZCAGfe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 01:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZCAGf1
+	id S1756254AbZCAHNu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 02:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZCAHNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 01:35:27 -0500
-Received: from gate.crashing.org ([63.228.1.57]:41666 "EHLO gate.crashing.org"
+	Sun, 1 Mar 2009 02:13:44 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53029 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146AbZCAGf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 01:35:26 -0500
-Subject: Re: [RFD] Automatic suspend
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-In-Reply-To: <d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
-References: <200902192215.18365.rjw@sisk.pl>
-	 <200902281118.14595.rjw@sisk.pl>
-	 <d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
-	 <200902282353.39763.rjw@sisk.pl>
-	 <d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 01 Mar 2009 17:28:43 +1100
-Message-Id: <1235888923.7388.121.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
+	id S1751840AbZCAHNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 02:13:44 -0500
+Message-ID: <49AA357C.3070006@kernel.org>
+Date: Sun, 01 Mar 2009 16:13:00 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, x86@kernel.org,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH tj-percpu 1/3] percpu: kill compile warning in pcpu_populate_chunk()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 01 Mar 2009 07:13:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-02-28 at 16:06 -0800, Arve Hjønnevåg wrote:
+Impact: remove compile warning
 
-I'm not taking a position on the merit of the wakelocks per se nor
-whether Rafael is right or wrong here, I haven't looked at the problem
-closely enough. I just want to react to this:
+Mark local variable map_end in pcpu_populate_chunk() with
+uninitialized_var().  The variable is always used in tandem with
+map_start and guaranteed to be initialized before use but gcc doesn't
+understand that.
 
-> The basic concept was developed long before android was a public
-> project.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+---
+This the first of three misc fix patches for #tj-percpu.  Patches are
+also available in the tj-percpu git tree.
 
-This isn't going to bring you any good will. We don't care what was done
-before it was a public project. That has strictly no relevance to how it
-should be submitted upstream.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
 
-How long the code has been simmering internally to company X or Y or
-even in a public tree doesn't matter. Some times, yes, we do take
-something as a whole, when it makes no sense to do otherwise (a driver,
-a filesystem, ...). 
+Thanks.
 
-But something like what you propose, it seems, could easily be broken
-down into a basic concept, on which features are added one after the
-other, and in this case, it's the right way to go, simply because it's
-easier to argue for the basic concept alone if you don't have to handle
-comments froms people who don't agree with aspect A B or C of the other
-features involved.
+ mm/percpu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-And if the basic concept doesn't get accepted in the first place, then
-the whole point is moot...
-
-Cheers,
-Ben.
-
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 5954e7a..3d0f545 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -639,7 +639,7 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
+ 	int page_start = PFN_DOWN(off);
+ 	int page_end = PFN_UP(off + size);
+ 	int map_start = -1;
+-	int map_end;
++	int uninitialized_var(map_end);
+ 	unsigned int cpu;
+ 	int i;
+ 
+-- 
+1.6.0.2
 
