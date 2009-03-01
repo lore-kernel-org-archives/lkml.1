@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbZCAKjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbZCAKjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756467AbZCAKjX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 05:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbZCAKi6
+	id S1756944AbZCAKjo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 05:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZCAKjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 05:38:58 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36619 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753744AbZCAKi4 (ORCPT
+	Sun, 1 Mar 2009 05:39:32 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35438 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbZCAKjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 05:38:56 -0500
-Date: Sun, 1 Mar 2009 19:37:37 +0900 (JST)
+	Sun, 1 Mar 2009 05:39:31 -0500
+Date: Sun, 1 Mar 2009 19:37:36 +0900 (JST)
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: [PATCH for mmotm] remove pagevec_swap_free()
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
 Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0902252022460.19132@blonde.anvils>
-References: <20090225192550.GA5645@cmpxchg.org> <Pine.LNX.4.64.0902252022460.19132@blonde.anvils>
-Message-Id: <20090301190227.6FDB.A69D9226@jp.fujitsu.com>
+       Johannes Weiner <hannes@cmpxchg.org>, rjw@sisk.pl, riel@redhat.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20090227132726.GE1482@ucw.cz>
+References: <20090206130009.99400d43.akpm@linux-foundation.org> <20090227132726.GE1482@ucw.cz>
+Message-Id: <20090228154120.6FC3.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
@@ -28,112 +28,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 25 Feb 2009, Johannes Weiner wrote:
+> > hm?  And if this approach leads to less-than-optimum performance after
+> > resume then the fault lies with core page reclaim - it reclaimed the
+> > wrong pages!
+> > 
+> > That actually was my thinking when I first worked on
+> > shrink_all_memory() and it did turn out to be surprisingly hard to
+> > simply reuse the existing reclaim code for this application.  Things
+> > kept on going wrong.  IIRC this was because we were freeing pages as we
+> > were reclaiming, so the page reclaim logic kept on seeing all these
+> > free pages and kept on wanting to bale out.
+> > 
+> > Now, the simple and obvious fix to this is not to free the pages - just
+> > keep on allocating pages and storing them locally until we have
+> > "enough" memory.  Then when we're all done, dump them all straight onto
+> > to the freelists.
+> > 
+> > But for some reason which I do not recall, we couldn't do that.
 > 
-> > The pagevec_swap_free() at the end of shrink_active_list() was
-> > introduced in 68a22394 "vmscan: free swap space on swap-in/activation"
-> > when shrink_active_list() was still rotating referenced active pages.
-> > 
-> > In 7e9cd48 "vmscan: fix pagecache reclaim referenced bit check" this
-> > was changed, the rotating removed but the pagevec_swap_free() after
-> > the rotation loop was forgotten, applying now to the pagevec of the
-> > deactivation loop instead.
-> > 
-> > Now swap space is freed for deactivated pages.  And only for those
-> > that happen to be on the pagevec after the deactivation loop.
-> > 
-> > Complete 7e9cd48 and remove the rest of the swap freeing.
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > Cc: Rik van Riel <riel@redhat.com>
+> We used to do that. I remember having loop doing get_free_page and
+> doing linklist of them. I believe it was considered quite an hack.
 > 
-> Nice observation.  I was going to object that the original code was
-> indifferent to whether it was freeing swap from active or inactive,
-> they all got lumped into the same pvec.  But that was just an oversight
-> in the original code: you're right that if it was our intention to free
-> swap from inactive pages here (when vm_swap_full), then we'd be freeing
-> it from them in the loop above (where the buffer_heads_over_limit
-> pagevec_strip is done).
+> .....one reason is that ee don't want to OOMkill anything if memory is
+> low, we want to abort the hibernation...
 > 
-> Once upon a time (early 2007), testing an earlier incarnation of that
-> code, I did find almost nothing being freed by that pagevec_swap_free
-> anyway: other vm_swap_full frees were being effective, effective
-> enough to render this one rather pointless, even when it was operating
-> as intended.  But I never got around to checking on that in 2008's
-> splitLRU patches, and a lot changed in between: I may be misleading.
->
-> If Rik agrees (I think these do need his Ack), note that there are
-> no other users of pagevec_swap_free, so you'd do well to remove it
-> from mm/swap.c and include/linux/pagevec.h - I can well imagine us
-> wanting to bring it back some time, but can easily look it up when
-> and if we do need it again in the future.
+> Sorry for being late.....
 
-Yup, removing is better.
+Not at all.
+your information is really helpful.
 
-
-==========
-Subject: [PATCH] remove pagevec_swap_free()
-
-pagevec_swap_free() is unused. 
-then it can be removed.
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Hugh Dickins <hugh@veritas.com>
----
- include/linux/pagevec.h |    1 -
- mm/swap.c               |   23 -----------------------
- 2 files changed, 0 insertions(+), 24 deletions(-)
-
-diff --git a/include/linux/pagevec.h b/include/linux/pagevec.h
-index 7b2886f..bab82f4 100644
---- a/include/linux/pagevec.h
-+++ b/include/linux/pagevec.h
-@@ -24,7 +24,6 @@ void __pagevec_release(struct pagevec *pvec);
- void __pagevec_free(struct pagevec *pvec);
- void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru);
- void pagevec_strip(struct pagevec *pvec);
--void pagevec_swap_free(struct pagevec *pvec);
- unsigned pagevec_lookup(struct pagevec *pvec, struct address_space *mapping,
- 		pgoff_t start, unsigned nr_pages);
- unsigned pagevec_lookup_tag(struct pagevec *pvec,
-diff --git a/mm/swap.c b/mm/swap.c
-index eee08df..d33e499 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -471,29 +471,6 @@ void pagevec_strip(struct pagevec *pvec)
- }
- 
- /**
-- * pagevec_swap_free - try to free swap space from the pages in a pagevec
-- * @pvec: pagevec with swapcache pages to free the swap space of
-- *
-- * The caller needs to hold an extra reference to each page and
-- * not hold the page lock on the pages.  This function uses a
-- * trylock on the page lock so it may not always free the swap
-- * space associated with a page.
-- */
--void pagevec_swap_free(struct pagevec *pvec)
--{
--	int i;
--
--	for (i = 0; i < pagevec_count(pvec); i++) {
--		struct page *page = pvec->pages[i];
--
--		if (PageSwapCache(page) && trylock_page(page)) {
--			try_to_free_swap(page);
--			unlock_page(page);
--		}
--	}
--}
--
--/**
-  * pagevec_lookup - gang pagecache lookup
-  * @pvec:	Where the resulting pages are placed
-  * @mapping:	The address_space to search
--- 
-1.6.0.6
+maybe, I expect we can make simplification without oomkill...
 
 
 
