@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZCAOnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZCAPFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbZCAOnT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 09:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbZCAOnG
+	id S1757178AbZCAPFU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 10:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbZCAPFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 09:43:06 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:45781 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbZCAOnF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 09:43:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:cc:subject:references:from:date:message-id:user-agent
-         :mime-version:content-type;
-        b=mNV5lZNRJzvbOFZL8tvRN1mCI2ZE0bMDjfaCQs2nkWwQ9SWXoPxoMHil/1fUIljZs2
-         dRxypBbqYMhcfccCMTpz7JuuyzpY26HSY5OsUwVgjhxulyMb0NmalSbKlcAFJRhHxX2d
-         GKYTfUk7aMNlUERt3DW5yfg+/uu6fL2kJCU80=
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Question regarding concurrent accesses through block device and fs
-References: <m2hc2yulrw.fsf@gmail.com>
-	<200902200044.48328.nickpiggin@yahoo.com.au>
-	<38b2ab8a0902200610i6c91725cjc91adca31042daa9@mail.gmail.com>
-	<200902231458.32911.nickpiggin@yahoo.com.au>
-From: Francis Moreau <francis.moro@gmail.com>
-Date: Sun, 01 Mar 2009 15:42:55 +0100
-Message-ID: <m2ab85nw28.fsf@gmail.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 1 Mar 2009 10:05:05 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:43144 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752964AbZCAPFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 10:05:04 -0500
+Message-ID: <49AAA41A.9070800@krogh.cc>
+Date: Sun, 01 Mar 2009 16:04:58 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: john stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29-rc6
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc> <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> <49A70B24.6090706@krogh.cc> <alpine.LFD.2.00.0902261344440.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902261344440.3111@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> 
+> On Thu, 26 Feb 2009, Jesper Krogh wrote:
+>>> Also mind sending the full dmesg for both kernels?
+>> http://krogh.cc/~jesper/dmesg-2.6.29-rc6.txt
+>> http://krogh.cc/~jesper/dmesg-2.6.26.8.txt
+> 
+> Try changing
+> 
+> 	#define QUICK_PIT_MS 15
+> 
+> in arch/x86/kernel/tsc.c into something bigger. Let's say just doubling 
+> it to 30. Does that change anything?
 
-[ Sorry for being long to answer but I was off, I'm slow and there are
-  a lot of complex code to dig out ! ]
+It seems to "slow down" the process (time from bootup to first clock 
+reset).
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
+Mar  1 15:38:41 quad01 ntpd[4603]: synchronized to LOCAL(0), stratum 13
+Mar  1 15:38:41 quad01 ntpd[4603]: kernel time sync status change 0001
+Mar  1 15:39:47 quad01 ntpd[4603]: synchronized to 10.194.133.13, stratum 4
+Mar  1 15:43:02 quad01 ntpd[4603]: synchronized to 10.194.133.12, stratum 4
+Mar  1 15:53:41 quad01 ntpd[4603]: time reset -0.352221 s
+Mar  1 15:57:18 quad01 ntpd[4603]: synchronized to LOCAL(0), stratum 13
+Mar  1 15:58:23 quad01 ntpd[4603]: synchronized to 10.194.133.13, stratum 4
+jk@quad01:~$ w
+  16:03:29 up 28 min,  2 users,  load average: 0.04, 0.01, 0.00
 
-> On Saturday 21 February 2009 01:10:24 Francis Moreau wrote:
-
-[...]
-
->>   - looking at unmap_underlying_metadata(), there's no code to deal with
->>     meta data buffers. It gets the buffer and unmap it whatever the type of
->>     data it contains.
->
-> That's why I say it only really works for buffer cache used by the same
-> filesystem that is now known to be unused.
->
-
-hum, I still don't know what you mean by this, sorry to be slow.
-
-
-[...]
-
->> What am I missing ?
->
-> That we might complete the write of the new buffer before the
-> old buffer is finished writing out?
-
-Ah yes actually I realize that I don't know where and when the inode
-blocks are effectively written to the disk !
-
-It seems that write_inode(), called after data are commited to the
-disk, only marks the inode buffers as dirty but it performs no IO (at
-least it looks so for ext2 when its 'do_sync' parameter is 0 which is
-the case when this method is called by write_inode()).
-
-Could you enlight me one more time ?
-
-Thanks
 -- 
-Francis
+Jesper
