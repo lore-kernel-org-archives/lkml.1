@@ -1,96 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZCAPHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZCAPJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757329AbZCAPHg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 10:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZCAPH2
+	id S1757347AbZCAPJU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 10:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbZCAPJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 10:07:28 -0500
-Received: from mx2.suse.de ([195.135.220.15]:45239 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbZCAPH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 10:07:28 -0500
-Date: Sun, 1 Mar 2009 16:07:25 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: recursive slqb_lock
-Message-ID: <20090301150725.GB26905@wotan.suse.de>
-References: <20090226053450.GA31108@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090226053450.GA31108@localhost>
-User-Agent: Mutt/1.5.9i
+	Sun, 1 Mar 2009 10:09:09 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:49474 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752185AbZCAPJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 10:09:09 -0500
+Message-ID: <49AAA50F.5070209@krogh.cc>
+Date: Sun, 01 Mar 2009 16:09:03 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29-rc6
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain> <49A6F39F.9040801@krogh.cc>
+In-Reply-To: <49A6F39F.9040801@krogh.cc>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 01:34:50PM +0800, Wu Fengguang wrote:
-> Hi Nick,
+Jesper Krogh wrote:
+> The "current_clocsource" is the same on both systems.
 > 
-> I got a lockdep warning. It looks like the slqb_lock will be taken
-> twice in the call chain:
-> 
->         s_start()  => take slqb_lock
->           s_show()
->             gather_stats()  => take slqb_lock again
+> $ cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+> tsc
 
-Hey, thanks for this. The following patch should fix it.
+What selects the "current_clocksource"? I tried to boot one of the 
+kernels hat have the problem on another piece of hardware and on that 
+system it ended up defaulting to "acpi_pm" instead of "tsc".
 
---
-Fix the lockdep error reported by Fengguang where down_read slqb_lock
-is taken twice, with the possibility for a deadlock.
+http://krogh.cc/~jesper/dmesg-2.6.28.7.txt
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/mm/slqb.c
-===================================================================
---- linux-2.6.orig/mm/slqb.c	2009-03-02 02:05:16.000000000 +1100
-+++ linux-2.6/mm/slqb.c	2009-03-02 02:05:45.000000000 +1100
-@@ -3079,7 +3079,9 @@ static void __gather_stats(void *arg)
- 	spin_unlock(&gather->lock);
- }
- 
--static void gather_stats(struct kmem_cache *s, struct stats_gather *stats)
-+/* must be called with slqb_lock held */
-+static void gather_stats_locked(struct kmem_cache *s,
-+				struct stats_gather *stats)
- {
- #ifdef CONFIG_NUMA
- 	int node;
-@@ -3089,8 +3091,6 @@ static void gather_stats(struct kmem_cac
- 	stats->s = s;
- 	spin_lock_init(&stats->lock);
- 
--	down_read(&slqb_lock); /* hold off hotplug */
--
- 	on_each_cpu(__gather_stats, stats, 1);
- 
- #ifdef CONFIG_NUMA
-@@ -3119,10 +3119,15 @@ static void gather_stats(struct kmem_cac
- 	}
- #endif
- 
--	up_read(&slqb_lock);
--
- 	stats->nr_objects = stats->nr_slabs * s->objects;
- }
-+
-+static void gather_stats(struct kmem_cache *s, struct stats_gather *stats)
-+{
-+	down_read(&slqb_lock); /* hold off hotplug */
-+	gather_stats(s, stats);
-+	up_read(&slqb_lock);
-+}
- #endif
- 
- /*
-@@ -3175,7 +3180,7 @@ static int s_show(struct seq_file *m, vo
- 
- 	s = list_entry(p, struct kmem_cache, list);
- 
--	gather_stats(s, &stats);
-+	gather_stats_locked(s, &stats);
- 
- 	seq_printf(m, "%-17s %6lu %6lu %6u %4u %4d", s->name, stats.nr_inuse,
- 			stats.nr_objects, s->size, s->objects, (1 << s->order));
+"acpi_pm" seems to be reliable all the time.
+
+-- 
+Jesper
