@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZCAKmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZCAKo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbZCAKmP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 05:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZCAKl7
+	id S1756160AbZCAKo1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 05:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZCAKoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 05:41:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59301 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752497AbZCAKl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 05:41:58 -0500
-Subject: Re: [git-pull -tip] x86: Basic AMD Support for performance counters
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20090301083616.GA1742@elte.hu>
-References: <1235756278.3914.9.camel@localhost.localdomain>
-	 <20090228094018.GF12095@elte.hu> <20090228134434.GA32473@elte.hu>
-	 <20090301083616.GA1742@elte.hu>
-Content-Type: text/plain
-Date: Sun, 01 Mar 2009 16:11:27 +0530
-Message-Id: <1235904087.3213.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+	Sun, 1 Mar 2009 05:44:15 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:59636 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752273AbZCAKoO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 05:44:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Tjc3z5WQIG2doOBnENUh8N2gJctrzcMClwjDiTk1qezoJ4GV/3XDeznGJQ/skrKCTS
+         pEnaAw8W9OzGOXaJc7IRC25AYf7JRSf5Xg28+OAmG252l8AWL3ox/uquPd6cjyf0/VEH
+         Rvj4/wFeULNGhIcRHEFROPzhuAEa/EczW30ps=
+Message-ID: <49AA66CE.7080506@panasas.com>
+Date: Sun, 01 Mar 2009 12:43:26 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       jeff@garzik.org, linux-kernel@vger.kernel.org, avishay@gmail.com,
+       osd-dev@open-osd.org, jens.axboe@oracle.com,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [osd-dev] [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+References: <49993FF2.9050200@panasas.com>	<20090217092042C.fujita.tomonori@lab.ntt.co.jp>	<499A70E7.4000405@panasas.com> <20090227170931Z.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090227170931Z.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-01 at 09:36 +0100, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+FUJITA Tomonori wrote:
+> On Tue, 17 Feb 2009 10:10:15 +0200
+> Boaz Harrosh <bharrosh@panasas.com> wrote:
 > 
-> > Seems to be working fine, here's the output from an Athlon 64 
-> > 3200+ (Sempron) box:
-> > 
-> >  Performance counter stats for 'ls':
-> > 
-> >       17.420811  task clock ticks     (msecs)
-> > 
-> >               0  CPU migrations       (events)
-> >              12  context switches     (events)
-> >             583  pagefaults           (events)
-> >        29760299  CPU cycles           (events)
-> >        29401642  instructions         (events)
-> >        12698498  cache references     (events)
-> >           66269  cache misses         (events)
-> > 
-> >  Wall-clock time elapsed:   687.999988 msecs
+>> FUJITA Tomonori wrote:
+>>> Can you stop the argument, "exofs is similar to the existing
+>>> traditional file systems hence it should be treated equally". It's
+>>> simply untrue. Does anyone except for panasas people insist the same
+>>> argument?
+>>>
+>> No I will not, it is true. exofs is just a regular old filesystem
+>> nothing different.
 > 
-> The patches cause a crash on another system - an Opteron system 
-> spontaneous reboots at this point during early bootup:
+> After reading this, I gave up discussing this issue with you but I
+> still wait for your fixes that you promised:
 > 
-> CPU 0/0x4 -> Node 0
-> tseg: 00cfe00000
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 0
-> using C1E aware idle routine
-> AMD Performance Monitoring support detected.
-> ... num counters:    4
-> ... value mask:      0000000000000000
-> ... fixed counters:  0
-> ... counter mask:    000000000000000f
-> ACPI: Core revision 20081204
-> ftrace: converting mcount calls to 0f 1f 44 00 00
-> ftrace: allocating 16365 entries in 129 pages
-> Setting APIC routing to physical flat
-> masked ExtINT on CPU#0
-> ENABLING IO
-> [reboot]
+> http://marc.info/?l=linux-scsi&m=123445759718253&w=2
 > 
+> 
+> Thanks,
+> --
 
-Can you please share your config file.
+They are on the way, I have not forgotten
 
-Thanks,
-
---
-JSR
+Boaz
 
