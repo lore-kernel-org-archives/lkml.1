@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZCAQx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757747AbZCARA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbZCAQx5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 11:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757710AbZCAQxq
+	id S1757747AbZCARA1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 12:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZCARAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 11:53:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:27177 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757718AbZCAQxo (ORCPT
+	Sun, 1 Mar 2009 12:00:15 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:57237 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756520AbZCARAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 11:53:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=L1RJyYKBdAVlCO5oWauyNhH6zwZ7MtM6buDQXrTL8mWSFVlKLKLgnzuIPo2vv6O/z9
-         wuA4CyiGanEIYfXi6hbFK4+LEeXC9xF1Yzdew6yKRv4rnqbDJQusW6yzlSYxT4ItJi3G
-         vd3eiKTHC4seDE/ehtarzfQOJ6v5ysQygfz6o=
-Message-ID: <49AABD8B.2030809@gmail.com>
-Date: Sun, 01 Mar 2009 17:53:31 +0100
-From: Frank Seidel <kernalert.de@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
+	Sun, 1 Mar 2009 12:00:14 -0500
+Date: Sun, 1 Mar 2009 11:00:10 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Alexey Dobriyan <adobriyan@gmail.com>, hch@infradead.org
+Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
+Message-ID: <20090301170010.GC18867@us.ibm.com>
+References: <20090227203425.F3B51176@kernel> <20090227203435.98735E54@kernel> <20090228025743.GA22451@us.ibm.com>
 MIME-Version: 1.0
-To: Karsten Keil <kkeil@suse.de>
-CC: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       linux-isdn@vger.kernel.org, Frank Seidel <frank@f-seidel.de>,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Andreas Eversberg <andreas@eversberg.eu>,
-       Hannes Eder <hannes@hanneseder.net>, Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] isdn: reduce stack size of mISDN_dsp
-References: <49AAB8B2.8060801@suse.de> <20090301165139.GA15287@pingi.kke.suse.de>
-In-Reply-To: <20090301165139.GA15287@pingi.kke.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090228025743.GA22451@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/2009 05:51 PM, Karsten Keil wrote:
-> I do not think we can use a static buffer here,
-> we may have multiple instances.
+Quoting Sukadev Bhattiprolu (sukadev@linux.vnet.ibm.com):
+> Dave Hansen [dave@linux.vnet.ibm.com] wrote:
+> | 
+> | Introduce a files_struct counter to indicate whether a particular
+> | file_struct has ever contained a file which can not be
+> | checkpointed.  This flag is a one-way trip; once it is set, it may
+> | not be unset.
+> | 
+> | We assume at allocation that a new files_struct is clean and may
+> | be checkpointed.  However, as soon as it has had its files filled
+> | from its parent's, we check it for real in __scan_files_for_cr().
+> | At that point, we mark it if it contained any uncheckpointable
+> | files.
+> 
+> Hmm. Why not just copy ->may_checkpoint setting from parent (or old)
+> files_struct ? If parent is not checkpointable, then child won't be
+> and vice-versa - no ?
 
-Oh, i see. So i'll redo the patch with
-kmalloc/kfree.
+No.  We don't clear the files_struct checkpointable flag when an
+uncheckpointable file is closed.  But if the parent has closed
+all uncheckpointable files before forking, then the child can
+be started with a checkpointable files_struct.
 
-Thanks,
-Frank
+Otherwise it wouldn't just be the task which has a one-way trip to
+uncheckpointability, but process trees, and - assuming init does
+anything uncheckpointable at all - the whole system :)
+
+-serge
