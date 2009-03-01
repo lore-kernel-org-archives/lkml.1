@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbZCAWy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbZCAWyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbZCAWy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 17:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZCAWyS
+	id S1758733AbZCAWyl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 17:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758433AbZCAWy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 17:54:18 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45931 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754755AbZCAWyR (ORCPT
+	Sun, 1 Mar 2009 17:54:26 -0500
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:24185 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758237AbZCAWyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 17:54:17 -0500
-Date: Sun, 1 Mar 2009 23:56:47 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090301225647.GE1961@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org> <200902180022.00239.rjw@sisk.pl> <d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
+	Sun, 1 Mar 2009 17:54:25 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=SOJOGBbmsOibdheKw3gYeGKpy+EQx3xW3f3PA9h2eTjiHA8lUborf6ZKtoq6+M9QxolUOck+dFfM3cvRaElqV71mlfHeKZM3pZHiZbnEzZCrUFQ8jlTtNQsbulPPSGidcSusRDgofDzzmyF1MPUhgizOdxd+qeXCGjJ7+84K1C8=  ;
+X-YMail-OSG: Isj.IZ8VM1lQYG1lpKxzgHHBlcUVDsM_0vF4DaAw386m2VIzYauei32wg74RvI.YqHMww5T0T11gr9xzznWJDhC1NwluGKxb3gCJ7Uh7nWkqHz_4x6BScAJ0aDqoXuWDibmNTfAT1HdbDsgsUoirkXY77WGFz_btZG7A5U3d5RWpk_e.jvjH1_SKtT6q
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Date: Sun, 1 Mar 2009 14:54:21 -0800
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       a.p.zijlstra@chello.nl
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200902281405.42080.david-b@pacbell.net> <alpine.LFD.2.00.0903011035360.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903011035360.29264@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903011454.22280.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> >> > Phase 3: Probably explicit control left to open/close.
-> >>
-> >> While that's generally a good idea, it's important to recognize that
-> >> some devices should be runtime-suspended even while they are open.
-> >
-> > From the kernel side, yes (and that should be transparent to the user space
-> > having them open).  By the user space, no.
+On Sunday 01 March 2009, Thomas Gleixner wrote:
+> On Sat, 28 Feb 2009, David Brownell wrote:
+> > That seems to presume a hardirq-to-taskirq handoff.  But the
+> > problem case is taskirq-to-taskirq chaining, through e.g.
+> > what set_irq_chip_and_handler() provided.  (Details not very
+> > amenable to brief emails, just UTSL.)
+> > 
+> > Thing is, I'm not sure a per-IRQ thread can work easily with
+> > that chaining.  The chained IRQs can need to be handled before
+> > the top-level IRQ gets re-enabled.  That's why the twl4030-irq
+> > code uses just one taskirq thread for all incoming events.
 > 
-> Allowing user space to suspend input devices while they are still open
-> is useful. The user-space code that reads from the input devices does
-> not need to know if the device is suspended or not, and the kernel
-> cannot auto suspend input devices based on inactivity.
+> This can be solved by a completion as well.
 
-Actually, I'd like you to fix your userspace and close input devices
-when it does not need them. Given the way you control the platform it
-should not be that hard. I do not see why we'd want to invent new
-interface for "uhuh, I have opened the keyboard but I am not really
-interested in keys being pressed".
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+One of many potential solutions; it's probably a better
+use case for a counting semaphore though, especially if
+they were all going in parallel.  And of course there's
+the issue of where that synch code lives...
+
+Though I still don't see any real issue with keeping it
+simple and serializing them without creating new threads.
+In terms of resource consumption, that simple solution is
+clearly superior.
+
+
+> > (Which of course is rarely more than one at a time, so there's
+> > little reason not to share that task between the demuxing code
+> > and the events being demuxed.  Interrupts that need processing
+> > via I2C/SPI/etc are more or less by definition not frequent or
+> > performance-critical.)
+> 
+> Then all we need to provide in the generic code is a function which
+> does not go through the handle_IRQ_event() logic and calls the action
+> handler directly.
+
+That is, something to replace handle_simple_irq() and
+handle_edge_irq() flow handlers?  (irq_desc.handle_irq)
+
+
+> Not rocket science to do that and better than using 
+> a facility which is designed to run in hardirq context and expect that
+> it works in thread context without complaints.
+
+The main "complaint" is the pre-existing lockdep breakage.  :)
+
+The need to call irq_desc.handle_irq() with IRQs disabled is a
+bit strange, but not really a problem; and it ensures consistent
+locking for the irq_desc statistics and flag updates.
+
+- Dave
+
+
