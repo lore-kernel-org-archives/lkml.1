@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZCALal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZCALkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588AbZCALal (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 06:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZCALac
+	id S1755774AbZCALkV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 06:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZCALkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 06:30:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60608 "EHLO mx2.mail.elte.hu"
+	Sun, 1 Mar 2009 06:40:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36985 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbZCALab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 06:30:31 -0500
-Date: Sun, 1 Mar 2009 12:30:10 +0100
+	id S1751985AbZCALkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 06:40:06 -0500
+Date: Sun, 1 Mar 2009 12:39:48 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [git-pull -tip] x86: Basic AMD Support for performance counters
-Message-ID: <20090301113010.GA1203@elte.hu>
-References: <1235756278.3914.9.camel@localhost.localdomain> <20090228094018.GF12095@elte.hu> <20090228134434.GA32473@elte.hu> <20090301083616.GA1742@elte.hu> <1235904087.3213.3.camel@localhost.localdomain>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [TIP,regression,i915] /dev/dri/card0 is no longer present
+Message-ID: <20090301113948.GA3602@elte.hu>
+References: <20090301110455.GA18547@silver.sucs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1235904087.3213.3.camel@localhost.localdomain>
+In-Reply-To: <20090301110455.GA18547@silver.sucs.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,53 +37,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+* Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 
-> On Sun, 2009-03-01 at 09:36 +0100, Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > Seems to be working fine, here's the output from an Athlon 64 
-> > > 3200+ (Sempron) box:
-> > > 
-> > >  Performance counter stats for 'ls':
-> > > 
-> > >       17.420811  task clock ticks     (msecs)
-> > > 
-> > >               0  CPU migrations       (events)
-> > >              12  context switches     (events)
-> > >             583  pagefaults           (events)
-> > >        29760299  CPU cycles           (events)
-> > >        29401642  instructions         (events)
-> > >        12698498  cache references     (events)
-> > >           66269  cache misses         (events)
-> > > 
-> > >  Wall-clock time elapsed:   687.999988 msecs
-> > 
-> > The patches cause a crash on another system - an Opteron system 
-> > spontaneous reboots at this point during early bootup:
-> > 
-> > CPU 0/0x4 -> Node 0
-> > tseg: 00cfe00000
-> > CPU: Physical Processor ID: 0
-> > CPU: Processor Core ID: 0
-> > using C1E aware idle routine
-> > AMD Performance Monitoring support detected.
-> > ... num counters:    4
-> > ... value mask:      0000000000000000
-> > ... fixed counters:  0
-> > ... counter mask:    000000000000000f
-> > ACPI: Core revision 20081204
-> > ftrace: converting mcount calls to 0f 1f 44 00 00
-> > ftrace: allocating 16365 entries in 129 pages
-> > Setting APIC routing to physical flat
-> > masked ExtINT on CPU#0
-> > ENABLING IO
-> > [reboot]
-> > 
+> Hi,
 > 
-> Can you please share your config file.
+> With the latest -tip /dev/dri/card0 is MIA on my EeePC 900. A bisection
+> has tracked the probem down to the following commit:
+> 
+> commit 17581ad812a9abb0182260374ef2e52d4a808a64
+> Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Date:   Tue Feb 24 17:35:14 2009 -0800
+> 
+>     gpu/drm, x86, PAT: PAT support for io_mapping_*
+> 
+>     Make io_mapping_create_wc and io_mapping_free go through PAT to make sure
+>     that there are no memory type aliases.
+> 
+>     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>     Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>     Cc: Dave Airlie <airlied@redhat.com>
+>     Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+>     Cc: Eric Anholt <eric@anholt.net>
+>     Cc: Keith Packard <keithp@keithp.com>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Reverting this made /dev/dri/card0 reappear. Here is the 
+> bisection log:
 
-any config file will crash that box. I used the 64-bit defconfig 
-- i.e. 'make ARCH=x86_64 defconfig'.
+Thanks, i've reverted the commit for now. Could you please send 
+a 'dmesg' from the bootup with the failed driver? By all 
+likelyhood an ioremap failure causes a driver failure.
 
 	Ingo
