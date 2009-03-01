@@ -1,133 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZCANTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbZCANaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZCANTf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 08:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZCANTX
+	id S1756431AbZCANaL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 08:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZCAN37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 08:19:23 -0500
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:57706 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662AbZCANTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 08:19:22 -0500
-Message-ID: <49AA8B4F.8090405@krogh.cc>
-Date: Sun, 01 Mar 2009 14:19:11 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sun, 1 Mar 2009 08:29:59 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:36683 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbZCAN36 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 08:29:58 -0500
+Date: Sun, 1 Mar 2009 14:29:53 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Pavel Machek <pavel@suse.cz>,
+       =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: lis3's ACPI dependency
+Message-ID: <20090301132953.GF20813@buzzloop.caiaq.de>
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, aowi@novozymes.com
-Subject: Re: Regression in bonding between 2.6.26.8 and 2.6.27.6 - bisected
- - twice 
-References: <491FEAD5.4090205@krogh.cc> <49A7B17F.2020408@krogh.cc> <16084.1235752119@death.nxdomain.ibm.com> <49A84802.7030502@krogh.cc> <30478.1235766943@death.nxdomain.ibm.com> <49AA2973.7040209@krogh.cc>
-In-Reply-To: <49AA2973.7040209@krogh.cc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> I appreciate that you spend time on it, but my feeling is that it 
-> definately isn't reproducible in all environments (otherwise we would
-> probably have seen a large cry by now).
-> 
-> I'm trying to bisect the "fix" down and hope that'll tell us something 
-> more.
+Hi Pavel, Eric,
 
-Ok, The fixing commit seems to be: cb52deba12f27af90a46d2f8667a64888118a888
+are there any plans to free the lis3 driver from its ACPI dependency?
+In fact, this device is I2C/SPI connected which the ACPI layer seems to
+hide from the driver, but to use it on embedded devices, the bus drivers
+must be used directly and the dependeny seems entirely unnecessary
+anyway.
 
-Applying it to 2.6.28.7 and 2.6.27.19 makes them both work.
+Also I got the feeling that using a globally exported 'adev' symbol all
+over the different layers is not the best practice - I suspect all the
+occasions could be solved with private pointers and/or container_of().
+Isn't there any cleanup pending?
 
-It also explains why my e1000 based bonds didnt break, allthough the 
-commitmessage doesnt mention anything about how it should effect 
-bonding. Wouldn't it make sense to propose this patch for 2.6.27 and 
-2.6.28 stable kernels?
-
-
-commit cb52deba12f27af90a46d2f8667a64888118a888
-Author: Ed Swierk <eswierk@arastra.com>
-Date:   Mon Dec 1 12:24:43 2008 +0000
-
-     forcedeth: power down phy when interface is down
-
-     Bring the physical link down when the interface is down by placing 
-the PHY
-     in power-down state, unless WOL is enabled.  This mirrors the 
-behavior of
-     other drivers including e1000 and tg3.
-
-     Without the patch, ifconfig down leaves the physical link up, which 
-confuses
-     datacenter users who expect the link lights both on the NIC and the 
-switch to
-     go out when they bring an interface down.
-
-     Furthermore, even though the phy is powered on, autonegotiation 
-stops working,
-     so a normally gigabit link might suddenly become 100 Mbit 
-half-duplex when the
-     interface goes down, and become gigabit when it comes up again.
-
-     Ayaz said:
-
-       I would not include this patch until further testing is 
-performed.  NVIDIA
-       MCP chips use 3rd party PHY vendors.  By powering down the phy, 
-it could
-       have adverse affects on certain phys.
-
-     Arthur Jones said:
-
-       I just ran across this patch.  Tested on a Marvell 88E1121R (GigE 
-PHY)
-       and works great.  This is a very important feature for me.
-
-     Signed-off-by: Ed Swierk <eswierk@arastra.com>
-     Tested-by: Arthur Jones <ajones@riverbed.com>
-     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-     Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index 0d7e575..12384df 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -1446,9 +1446,9 @@ static int phy_init(struct net_device *dev)
-         /* some phys clear out pause advertisment on reset, set it back */
-         mii_rw(dev, np->phyaddr, MII_ADVERTISE, reg);
-
--       /* restart auto negotiation */
-+       /* restart auto negotiation, power down phy */
-         mii_control = mii_rw(dev, np->phyaddr, MII_BMCR, MII_READ);
--       mii_control |= (BMCR_ANRESTART | BMCR_ANENABLE);
-+       mii_control |= (BMCR_ANRESTART | BMCR_ANENABLE | BMCR_PDOWN);
-         if (mii_rw(dev, np->phyaddr, MII_BMCR, mii_control)) {
-                 return PHY_ERROR;
-         }
-@@ -5208,6 +5208,10 @@ static int nv_open(struct net_device *dev)
-
-         dprintk(KERN_DEBUG "nv_open: begin\n");
-
-+       /* power up phy */
-+       mii_rw(dev, np->phyaddr, MII_BMCR,
-+              mii_rw(dev, np->phyaddr, MII_BMCR, MII_READ) & ~BMCR_PDOWN);
-+
-         /* erase previous misconfiguration */
-         if (np->driver_data & DEV_HAS_POWER_CNTRL)
-                 nv_mac_reset(dev);
-@@ -5401,6 +5405,10 @@ static int nv_close(struct net_device *dev)
-         if (np->wolenabled) {
-                 writel(NVREG_PFF_ALWAYS|NVREG_PFF_MYADDR, base + 
-NvRegPacketFilterFlags);
-                 nv_start_rx(dev);
-+       } else {
-+               /* power down phy */
-+               mii_rw(dev, np->phyaddr, MII_BMCR,
-+                      mii_rw(dev, np->phyaddr, MII_BMCR, 
-MII_READ)|BMCR_PDOWN);
-         }
-
-         /* FIXME: power down nic */
-
+Thanks and best regards,
+Daniel
 
