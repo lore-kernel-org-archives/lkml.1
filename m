@@ -1,108 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbZCAI7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbZCAJMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbZCAI7E (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 03:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZCAI6z
+	id S1754655AbZCAJMJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 04:12:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbZCAJLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 03:58:55 -0500
-Received: from web110616.mail.gq1.yahoo.com ([67.195.13.207]:24107 "HELO
-	web110616.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752277AbZCAI6z convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 03:58:55 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=LW/HcdhBdmcusaJP9iobCiynA+VTVS4cnF7ICTu5mZo7HELOq4Egkcs2rwq2vFeYHiRfSVFpxPEr7Kp/AU39reG2D6VDyPcEStp6VxJV1jk/vvwvYr/vUXMW4IYL4fN0lhTNDoVzu8GTG8nGpZsn9coSP9FyM7Bda8IvRRjou9A=;
-Message-ID: <134099.98473.qm@web110616.mail.gq1.yahoo.com>
-X-YMail-OSG: hzlVVJQVM1mWBGZqBIoznKuhkwKHrFgZbGOzag3XQermG19UtqC.LQvdnbebxCurN6k2KNdD_Cj86.8UHF3tLPFJ8jhEryicbseHeD0.Gp9vrv3M9UpSXCckPy9z1PNf00Ttpy.JDpivVF9oUQ2KCRRC.izoErnfQ2Q1RamIR75PUD3CC_IXLLiDa_TOHBrhWRHgp5V1fYO91mw8rgn6he1GAJJhBBkUGnQkZPbvTPLJZ6sXPVm8TfWUmEmL0EzoXIdbXVGrsC.V99GvadK6hOgJagnK7g--
-X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.289.1
-References: <20090301002758.GA23465@silver.sucs.org> <19f34abd0903010039t23d669bck476066e571a316e@mail.gmail.com>
-Date: Sun, 1 Mar 2009 00:58:52 -0800 (PST)
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: kmemcheck warnings (con_font_op, fuse_open_common)
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
+	Sun, 1 Mar 2009 04:11:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50729 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbZCAJLu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 04:11:50 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFD] Automatic suspend
+Date: Sun, 1 Mar 2009 10:11:18 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Arve =?utf-8?q?Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <200902192215.18365.rjw@sisk.pl> <d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com> <1235888923.7388.121.camel@pasglop>
+In-Reply-To: <1235888923.7388.121.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903011011.20703.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hello,
-
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-
+On Sunday 01 March 2009, Benjamin Herrenschmidt wrote:
+> On Sat, 2009-02-28 at 16:06 -0800, Arve Hjønnevåg wrote:
 > 
-> 2009/3/1 Sitsofe Wheeler :
-> > Hi,
-> >
-> > I've run kmemcheck with the latest -tip and most of the warnings I was
-> > getting have now died down. However dmesg seems to have warnings that
-> > look somewhat legitimate now (and there are quite a few). Further after
-> > a suspend to ram/resume one particular warning related to worker_thread
-> > started appearing over and over. For now I've attached a slightly
-> > modified dmesg below to see what you think:
+> I'm not taking a position on the merit of the wakelocks per se nor
+> whether Rafael is right or wrong here, I haven't looked at the problem
+> closely enough. I just want to react to this:
 > 
-> You did suspend to ram/resume with kmemcheck!? And it worked? WOW! :-D
-
-No one told me it wasn't supposed to work so... :D
-
-> > [  311.779612]  [] copy_to_user+0x3e/0x60
-> > [  311.780335]  [] con_font_op+0x290/0x3f0
+> > The basic concept was developed long before android was a public
+> > project.
 > 
-> This one is very likely a real information leak, because it does a
-> copy to userspace (and the only way this can . On the other hand, the
-> memory _does_ look like it's been initialized (all 0xff). IIRC, I
-> tracked this one down to an overlong copy in vgacon before. But I'd
-> have to look at it again...
-
-For some reason I am sure that you had tracked this down before too. I think
-I confused this with the drm patch you sent a few months ago in one of my
-earlier emails.
- 
-> > [  312.284408] Pid: 952, comm: usplash Not tainted 
-> (2.6.29-rc6-tip-02247-gf8dda9e #68) 900
-> > [  312.284418] EIP: 0060:[] EFLAGS: 00013002 CPU: 0
-> > [  312.284433] EIP is at __dequeue_signal+0xb7/0x140
+> This isn't going to bring you any good will. We don't care what was done
+> before it was a public project. That has strictly no relevance to how it
+> should be submitted upstream.
 > 
-> This is in general a false positive. This case looks a little
-> different from what I've seen here, though.
-
-OK now I'm aware I will avoid bringing this type of message up in 
-the future.
-
-> > [ 1795.445139] Pid: 3898, comm: gvfs-fuse-daemo Not tainted 
-> (2.6.29-rc6-tip-02247-gf8dda9e #68) 900
-> > [ 1795.445146] EIP: 0060:[] EFLAGS: 00010246 CPU: 0
-> > [ 1795.445159] EIP is at fuse_file_alloc+0x69/0x90
+> How long the code has been simmering internally to company X or Y or
+> even in a public tree doesn't matter. Some times, yes, we do take
+> something as a whole, when it makes no sense to do otherwise (a driver,
+> a filesystem, ...). 
 > 
-> Hm. This is a false positive too. RB_CLEAR_NODE() will do a read on
-> the uninitialized value before writing back the new parent pointer
-> (colour remains uninitialized, however). I suspect that we could get
-> away with changing RB_CLEAR_NODE() to just set the colour to 0 at the
-> same time.
+> But something like what you propose, it seems, could easily be broken
+> down into a basic concept, on which features are added one after the
+> other, and in this case, it's the right way to go, simply because it's
+> easier to argue for the basic concept alone if you don't have to handle
+> comments froms people who don't agree with aspect A B or C of the other
+> features involved.
+> 
+> And if the basic concept doesn't get accepted in the first place, then
+> the whole point is moot...
 
-I have to admit I was struggling with this one for a long time. I was sure
-that ff could not be uninitialized if it wasn't NULL :)
- 
-> Thanks for the report! I will try to fix the false positives (by
-> annotating the code paths in question), and investigate the rest. It's
-> a bit sad to see that we (still) have such a high false-positive rate,
-> but it can't really be helped.
+Exactly.  This is what I've been trying to say for some time now.
 
-It sounds like a tricky business (plus I would guess that only the major paths
-will wind up annotated even though drivers could really benefit from this). The
-problem is that in the hands of inexpert users (such as myself) there is a strong
-desire to simply report every kmemcheck warning and leave someone else to 
-understand if it is legit. I'm trying to get a feel (purely based on the look of the 
-stacktrace, whether the memory is initialized at all and frequency of the error) 
-so that intuitively I am less likely to report false positives. Your guide (especially
-the bit mentioned addr2line) has been really helpful too.
+Thanks Ben!
 
-
-
-      
+Rafael
