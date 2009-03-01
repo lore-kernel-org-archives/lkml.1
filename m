@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbZCAAHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZCAASv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756269AbZCAAHZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 19:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbZCAAHM
+	id S1755824AbZCAASv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Feb 2009 19:18:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZCAASm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 19:07:12 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48007
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752063AbZCAAHK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 19:07:10 -0500
-Date: Sat, 28 Feb 2009 16:06:51 -0800 (PST)
-Message-Id: <20090228.160651.228301019.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: arjan@infradead.org, mingo@elte.hu, nickpiggin@yahoo.com.au,
-       sqazi@google.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       hpa@zytor.com, andi@firstfloor.org
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0902280935010.3111@localhost.localdomain>
-References: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain>
-	<20090228092450.3ded2db5@infradead.org>
-	<alpine.LFD.2.00.0902280935010.3111@localhost.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Feb 2009 19:18:42 -0500
+Received: from thunk.org ([69.25.196.29]:42381 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751630AbZCAASm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Feb 2009 19:18:42 -0500
+Date: Sat, 28 Feb 2009 19:18:29 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Mark Brown <broonie@sirena.org.uk>, Andy Whitcroft <apw@canonical.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+Message-ID: <20090301001829.GA10751@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Mark Brown <broonie@sirena.org.uk>,
+	Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+References: <1235757920-20474-1-git-send-email-broonie@sirena.org.uk> <49A942F6.3020600@s5r6.in-berlin.de> <20090228155841.GA15127@sirena.org.uk> <49A962F8.30609@s5r6.in-berlin.de> <20090228164627.GC15127@sirena.org.uk> <49A97563.6040906@s5r6.in-berlin.de> <20090228175218.GA4606@sirena.org.uk> <49A98F93.5030206@s5r6.in-berlin.de> <20090228210223.GA23191@sirena.org.uk> <49A9C252.50204@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49A9C252.50204@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 28 Feb 2009 09:42:18 -0800 (PST)
+On Sun, Mar 01, 2009 at 12:01:38AM +0100, Stefan Richter wrote:
+> > As I have previously said, that is not the case in reality.  There
+> > appears to be substantial sentiment among people handling patches that
+> > not having any text in the body of the e-mail makes it harder to handle
+> > patches.
+> 
+> It is indeed a problem
+>   - if the patch title alone insufficiently describes the patch
+> or
+>   - if a patch reviewer believes that it is OK to ignore patch titles.
 
-> On Sat, 28 Feb 2009, Arjan van de Ven wrote:
-> > 
-> > it invalidates all caches in the hierarchy
-> 
-> Yeah, now that I look at the intel pdf's, I see that.
-> 
-> > afaik this is what Intel cpus do; but I also thought this behavior was
-> > quite architectural as well...
-> 
-> Ok, I really think we should definitely not use non-temporal stores for 
-> anything smaller than one full page in that case. In fact, I wonder if 
-> even any of the old streaming benchmarks are even true. I thought it would 
-> still stay in the L3, but yes, it literally seems to make the access 
-> totally noncached and WC.
-> 
-> That's almost unacceptable in the long run. With a 8MB L3 cache - and a 
-> compile sequence, do we really want to go out to memory to write the .S 
-> file, and then have the assembler go out to memory to read it back? For a 
-> compile, that _probably_ is all fine (the compiler in particular will have 
-> enough data structures around that it's not going to fit in the cache 
-> anyway), but I'm seeing leaner compilers and other cases where forcing 
-> things out all the way on the bus is simply the wrong thing.
+Worse yet, if we start getting these sorts of entries being returned
+by "git log":
 
-I think this is an accurate analysis as well, it's really unfortunate
-the non-temporal stuff on x86 doesn't preserve existing cache lines
-when present.
+------------
+ext4: Fix spelling error: successfull
 
-I thought that was the whole point.  Don't pollute the caches, but
-if cache lines are already loaded there, use them and don't purge!
+Fix spelling error: successfull
+
+Signed-off-by: "Trivial Patch Submitter" <spelling@nits.org>
+------------
+
+Just to shut up checkpatch, I'm going to feel the urge to shake a
+checkpatch maintainer warmly by the throat.
+
+Sometimes, all that is needed is:
+
+------------
+ext4: Fix spelling error: successfull
+
+Signed-off-by: "Trivial Patch Submitter" <spelling@nits.org>
+------------
+
+							- Ted
