@@ -1,87 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbZCBEMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbZCBElR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbZCBEMH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 23:12:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbZCBELy
+	id S1758792AbZCBElR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 23:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZCBElA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 23:11:54 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:39460 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757433AbZCBELy (ORCPT
+	Sun, 1 Mar 2009 23:41:00 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36335 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753821AbZCBEk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 23:11:54 -0500
-Date: Mon, 2 Mar 2009 09:41:48 +0530
-From: Ankita Garg <ankita@in.ibm.com>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       Adrian Bunk <bunk@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Frank Seidel <frank@f-seidel.de>, kernalert.de@gmail.com
-Subject: Re: [PATCH] lkdtm: reduce stack size
-Message-ID: <20090302041148.GA7410@in.ibm.com>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
-References: <49AAE94E.8080308@suse.de>
+	Sun, 1 Mar 2009 23:40:59 -0500
+Date: Mon, 2 Mar 2009 10:10:43 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
+Message-ID: <20090302044043.GC11421@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain> <20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <49AAE94E.8080308@suse.de>
+In-Reply-To: <20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frank,
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 09:24:04]:
 
-On Sun, Mar 01, 2009 at 09:00:14PM +0100, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
+> On Sun, 01 Mar 2009 11:59:59 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Reduce stack memory footprint of lkdtm
-> (recursive_loop). From 1024 bytes on i386 down
-> to <10.
->
+> > 
+> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > 
+> > Changelog v3...v2
+> > 1. Implemented several review comments from Kosaki-San and Kamezawa-San
+> >    Please see individual changelogs for changes
+> > 
+> > Changelog v2...v1
+> > 1. Soft limits now support hierarchies
+> > 2. Use spinlocks instead of mutexes for synchronization of the RB tree
+> > 
+> > Here is v3 of the new soft limit implementation. Soft limits is a new feature
+> > for the memory resource controller, something similar has existed in the
+> > group scheduler in the form of shares. The CPU controllers interpretation
+> > of shares is very different though. 
+> > 
+> > Soft limits are the most useful feature to have for environments where
+> > the administrator wants to overcommit the system, such that only on memory
+> > contention do the limits become active. The current soft limits implementation
+> > provides a soft_limit_in_bytes interface for the memory controller and not
+> > for memory+swap controller. The implementation maintains an RB-Tree of groups
+> > that exceed their soft limit and starts reclaiming from the group that
+> > exceeds this limit by the maximum amount.
+> > 
+> > If there are no major objections to the patches, I would like to get them
+> > included in -mm.
+> > 
+> > TODOs
+> > 
+> > 1. The current implementation maintains the delta from the soft limit
+> >    and pushes back groups to their soft limits, a ratio of delta/soft_limit
+> >    might be more useful
+> > 2. It would be nice to have more targetted reclaim (in terms of pages to
+> >    recalim) interface. So that groups are pushed back, close to their soft
+> >    limits.
+> > 
+> > Tests
+> > -----
+> > 
+> > I've run two memory intensive workloads with differing soft limits and
+> > seen that they are pushed back to their soft limit on contention. Their usage
+> > was their soft limit plus additional memory that they were able to grab
+> > on the system. Soft limit can take a while before we see the expected
+> > results.
+> > 
+> > Please review, comment.
+> > 
+> Please forgive me to say....that the code itself is getting better but far from
+> what I want. Maybe I have to show my own implementation to show my idea
+> and the answer is between yours and mine. If now was the last year, I have enough
+> time until distro's target kernel and may welcome any innovative patches even if
+> it seems to give me concerns, but I have to be conservative now.
 
-The intention here is infact to trigger a stack overflow. This module is
-used to test kernel dumping mechanism like kdump. So the expectation is
-that the kernel will dump as soon as the stack overflows.
- 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> ---
->  drivers/misc/lkdtm.c |   16 +++++++++++++---
->  1 file changed, 13 insertions(+), 3 deletions(-)
+I am not asking for an immediate push to mainline, but for integration
+into -mm and more test. Let me address your concern below
+
 > 
-> --- a/drivers/misc/lkdtm.c
-> +++ b/drivers/misc/lkdtm.c
-> @@ -225,14 +225,24 @@ static int lkdtm_parse_commandline(void)
+> At first, it's said "When cgroup people adds something, the kernel gets slow".
+> This is my start point of reviewing. Below is comments to this version of patch.
 > 
->  static int recursive_loop(int a)
->  {
-> -	char buf[1024];
-> +	char *buf;
-> +	int ret;
-> +
-> +	buf = kmalloc(1024, GFP_KERNEL);
-> +	if (!buf) {
-> +		printk(KERN_ERR "lkdtm : couldn't allocate buffer\n");
-> +		return -ENOMEM;
-> +	}
+>  1. I think it's bad to add more hooks to res_counter. It's enough slow to give up
+>     adding more fancy things..
+
+res_counters was desgined to be extensible, why is adding anything to
+it going to make it slow, unless we turn on soft_limits?
+
 > 
->  	memset(buf,0xFF,1024);
->  	recur_count--;
->  	if (!recur_count)
-> -		return 0;
-> +		ret = 0;
->  	else
-> -        	return recursive_loop(a);
-> +		ret = recursive_loop(a);
-> +
-> +	kfree(buf);
-> +	return ret;
->  }
+>  2. please avoid to add hooks to hot-path. In your patch, especially a hook to
+>     mem_cgroup_uncharge_common() is annoying me.
+
+If soft limits are not enabled, the function does a small check and
+leaves. 
+
 > 
->  void lkdtm_handler(void)
+>  3. please avoid to use global spinlock more. 
+>     no lock is best. mutex is better, maybe.
+> 
+
+No lock to update a tree which is update concurrently?
+
+>  4. RB-tree seems broken. Following is example. (please note you do all ops
+>     in lazy manner (once in HZ/4.)
+> 
+>    i). while running, the tree is constructed as following
+> 
+>              R           R=exceed=300M
+>             / \ 
+>            A   B      A=exceed=200M  B=exceed=400M
+>    ii) A process B exits, but and usage goes down.
+
+That is why we have the hook in uncharge. Even if we update and the
+usage goes down, the tree is ordered by usage_in_excess which is
+updated only when the tree is updated. So what you show below does not
+occur. I think I should document the design better.
+
+> 
+>    iii)      R          R=exceed=300M
+>             / \
+>            A   B      A=exceed=200M  B=exceed=10M
+> 
+>    vi) A new node inserted
+>              R         R=exceed=300M
+>             / \       
+>            A   B       A=exceed=200M B=exceed=10M
+>               / \
+>              nil C     C=exceed=310M
+> 
+>    v) Time expires and remove "R" and do rotate.
+> 
+>    Hmm ? Is above status is allowed ? I'm sorry if I misunderstand RBtree.
+> 
+> I'll post my own version in this week (more conservative version, maybe).
+> please discuss and compare trafe-offs.
+> 
 
 -- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs, 
-Bangalore, India   
+	Balbir
