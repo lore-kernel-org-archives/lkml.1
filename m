@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbZCBNNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZCBNPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752574AbZCBNNY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 08:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZCBNNQ
+	id S1752934AbZCBNPi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 08:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbZCBNP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 08:13:16 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:57874 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750920AbZCBNNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 08:13:15 -0500
-Date: Mon, 2 Mar 2009 14:13:13 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: ???? <xiegang112@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: The difference of request dir between AS and Deadline I/O
-	scheduler?
-Message-ID: <20090302131313.GU11787@kernel.dk>
-References: <d364733c0903012106g2625d433o4cdbbbcc5a9ff19a@mail.gmail.com> <20090302122547.GT11787@kernel.dk> <d364733c0903020503x43a1448cq1b127a88fd816e1c@mail.gmail.com>
+	Mon, 2 Mar 2009 08:15:29 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4021 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751278AbZCBNP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 08:15:29 -0500
+Date: Mon, 2 Mar 2009 13:15:14 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+Message-ID: <20090302131514.GC19744@sirena.org.uk>
+References: <49A962F8.30609@s5r6.in-berlin.de> <20090228164627.GC15127@sirena.org.uk> <49A97563.6040906@s5r6.in-berlin.de> <20090228175218.GA4606@sirena.org.uk> <49A98F93.5030206@s5r6.in-berlin.de> <20090228210223.GA23191@sirena.org.uk> <49A9C252.50204@s5r6.in-berlin.de> <20090301001829.GA10751@mit.edu> <20090301004618.GA12909@sirena.org.uk> <20090301025357.GC10751@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d364733c0903020503x43a1448cq1b127a88fd816e1c@mail.gmail.com>
+In-Reply-To: <20090301025357.GC10751@mit.edu>
+X-Cookie: What hath Bob wrought?
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02 2009, ???? wrote:
-> Do you mean that the same process tends to have the same behavior of
-> I/O in the way of sycn?
-> Does this mean AS works better when requests are distincted by sync
-> mode  (the success rate of anticipation is higher when requests are
-> grouped by the mode of sync)?
+On Sat, Feb 28, 2009 at 09:53:57PM -0500, Theodore Tso wrote:
 
-Please don't top post, put your reply beneath the text you are replying
-to.
+> Who's been complaining?  I can certainly tell you I'll complain in the
+> opposite direction, but that's because it actually causes me more work
 
-It means that there's a key distinction between requests. Sync requests
-often have dependencies on each other, and AS thus enables idling for
-these types of requests. Async io is usually background activity. I
-don't understand what you mean by higher success rate. Anticipation is
-only for sync requests. The grouping is done because it makes
-behavioural sense.
+Andrew Morton is one of them but not the only one.  Like I say, I don't
+want to claim that my changelogs are always ideal here, it was mostly
+the specific language used that made me think of doing this.
 
+> as a maintainer.  If people are kvetching, maybe they should complain
+> to git mailing list and ask for a different git commit to e-mail
+> message convention --- but it's really not hard to look at the subject
+> line.
 
-> 
-> Thanks,
-> 
-> 
-> On Mon, Mar 2, 2009 at 8:25 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Mon, Mar 02 2009, ???? wrote:
-> >> Hi,
-> >>
-> >> I'm little confused about the defination of request dir in AS and
-> >> Deadline I/O scheduler.
-> >> In AS, the request dir is defined by wheher it's sync:
-> >>
-> >> data_dir = rq_is_sync(rq);
-> >>
-> >> But in Deadline, the requests are grouped by read and write.
-> >>
-> >> Why is there the difference since AS is an extension of Deadline?
-> >> what's the consideration?
-> >
-> > Because AS uses the sync vs async distinction to decide whether to
-> > anticipate a new request from that process. 'sync' is then reads or sync
-> > writes, whereas deadline does not distinguish between sync and async
-> > writes.
-> >
-> > --
-> > Jens Axboe
-> >
-> >
-> 
-> 
-> 
-> -- 
-> Xie Gang
-
--- 
-Jens Axboe
-
+Any attempt to change the format to handle this would presumably also
+end up confusing other tools that work with patches, though (at least to
+the point of causing the first line of the commit log to be replicated).
