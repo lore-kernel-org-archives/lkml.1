@@ -1,48 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZCBJzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbZCBJz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757197AbZCBJzE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 04:55:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758735AbZCBJyj
+	id S1757179AbZCBJz3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 04:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759051AbZCBJyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 04:54:39 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:57584 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757573AbZCBJyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 04:54:38 -0500
-Message-ID: <49ABACC4.2020603@knaff.lu>
-Date: Mon, 02 Mar 2009 10:54:12 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@medozas.de>,
-       the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-References: <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <alpine.LSU.2.00.0902172202230.5620@fbirervta.pbzchgretzou.qr> <499B267E.2090509@zytor.com> <20090217220825.GA24337@elte.hu> <20090217233708.GA10756@elte.hu> <499B5BCA.8000905@zytor.com> <499BBD62.5090506@knaff.lu> <499DBCDD.90806@knaff.lu> <49AA8AA9.7080200@knaff.lu> <20090302095301.GH20897@elte.hu>
-In-Reply-To: <20090302095301.GH20897@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 04:54:44 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:35197 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758955AbZCBJyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 04:54:43 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: mingo@redhat.com
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 4/4] x86_32: apic/summit_32, fix cpu_mask_to_apicid
+Date: Mon,  2 Mar 2009 10:53:58 +0100
+Message-Id: <1235987638-23685-4-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <1235987638-23685-3-git-send-email-jirislaby@gmail.com>
+References: <20090228082120.GA11425@elte.hu>
+ <1235987638-23685-1-git-send-email-jirislaby@gmail.com>
+ <1235987638-23685-2-git-send-email-jirislaby@gmail.com>
+ <1235987638-23685-3-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Alain Knaff <alain@knaff.lu> wrote:
->> Any comments about this? Ingo, does it solve the issue with 
->> randconfig?
-> 
-> I've reactivated tip:x86/setup-lzma in tip:master and started 
-> testing it with the problem .config, on the problem test-system. 
-> The bug is most likely fixed, so consider it queued up for 
-> 2.6.30 unless i report some new issue.
-> 
-> Thanks,
-> 
-> 	Ingo
+Perform same-cluster checking even for masks with all (nr_cpu_ids)
+bits set and report correct apicid on success instead.
 
-Thanks. I'm glad we finally made it :-)
+While at it, convert it to for_each_cpu and newer cpumask api.
 
-Regards,
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/apic/summit_32.c |   30 +++++++++---------------------
+ 1 files changed, 9 insertions(+), 21 deletions(-)
 
-Alain
+diff --git a/arch/x86/kernel/apic/summit_32.c b/arch/x86/kernel/apic/summit_32.c
+index 0a1135c..beda620 100644
+--- a/arch/x86/kernel/apic/summit_32.c
++++ b/arch/x86/kernel/apic/summit_32.c
+@@ -291,33 +291,21 @@ static int summit_check_phys_apicid_present(int boot_cpu_physical_apicid)
+ 
+ static unsigned int summit_cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+-	int cpus_found = 0;
+-	int num_bits_set;
+-	int apicid;
+-	int cpu;
++	unsigned int round = 0;
++	int cpu, apicid = 0;
+ 
+-	num_bits_set = cpus_weight(*cpumask);
+-	if (num_bits_set >= nr_cpu_ids)
+-		return BAD_APICID;
+ 	/*
+ 	 * The cpus in the mask must all be on the apic cluster.
+ 	 */
+-	cpu = first_cpu(*cpumask);
+-	apicid = summit_cpu_to_logical_apicid(cpu);
+-
+-	while (cpus_found < num_bits_set) {
+-		if (cpu_isset(cpu, *cpumask)) {
+-			int new_apicid = summit_cpu_to_logical_apicid(cpu);
++	for_each_cpu(cpu, cpumask) {
++		int new_apicid = summit_cpu_to_logical_apicid(cpu);
+ 
+-			if (APIC_CLUSTER(apicid) != APIC_CLUSTER(new_apicid)) {
+-				printk("%s: Not a valid mask!\n", __func__);
+-
+-				return BAD_APICID;
+-			}
+-			apicid = apicid | new_apicid;
+-			cpus_found++;
++		if (round && APIC_CLUSTER(apicid) != APIC_CLUSTER(new_apicid)) {
++			printk("%s: Not a valid mask!\n", __func__);
++			return BAD_APICID;
+ 		}
+-		cpu++;
++		apicid |= new_apicid;
++		round++;
+ 	}
+ 	return apicid;
+ }
+-- 
+1.6.1.3
 
