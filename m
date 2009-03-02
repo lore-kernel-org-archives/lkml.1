@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbZCBWBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZCBWBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbZCBWBB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbZCBWAt
+	id S1756694AbZCBWBY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZCBWAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:00:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38838 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751618AbZCBWAr (ORCPT
+	Mon, 2 Mar 2009 17:00:55 -0500
+Received: from n13a.bullet.mail.mud.yahoo.com ([68.142.207.51]:42781 "HELO
+	n13a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754527AbZCBWAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:00:47 -0500
-Date: Mon, 2 Mar 2009 14:00:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Murphy <mamurph@cs.clemson.edu>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, greg@kroah.com, oliver@neukum.org,
-       fweisbec@gmail.com, torvalds@linux-foundation.org
-Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless 
- support and add sysfs interface
-Message-Id: <20090302140014.47b60178.akpm@linux-foundation.org>
-In-Reply-To: <5aa163d00903021346g59d90241v11f384eb97641e43@mail.gmail.com>
-References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com>
-	<20090302130425.23cc628d.akpm@linux-foundation.org>
-	<5aa163d00903021346g59d90241v11f384eb97641e43@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Mar 2009 17:00:54 -0500
+X-Yahoo-Newman-Id: 121891.54966.bm@omp410.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=JIqmI+Xe+wPJbZaujY6QaJVGmG6YJM30CWVJ0aGIePrLOe6kBrpEMiNAa8W+TASi4mtaAQRcnD/rYlrmOXu33zFxEZFD6+5p+VCVxNTCmK0ZgJLAJH6D+1OrEWDEkvtSc9XccJwfhRCZ2xlEsVV/MKmVJjhEhWtXYrOINwBBMto=  ;
+X-YMail-OSG: paZNTDcVM1neto7AnmHgtaUcqcRUGxm6bJozYyb1FxEN5BP5QFR_m_gGdSnHfZabtZ3wZwlZPVU8kB.6B.VuL8p6.7v.lXTf_Q9DcopB2KUoj9D5gDuwZ7ZRKeukM5LYH9nMMbcOhU1cFFDJ_ynrv2A2CUFS1My393aPczu3.hMMLGlLx3O90NiiVcTd
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: [patch 2.6.29-rc6+misc] MMC: regulator utilities
+Date: Mon, 2 Mar 2009 14:00:49 -0800
+User-Agent: KMail/1.9.10
+Cc: Mark Brown <broonie@sirena.org.uk>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       lkml <linux-kernel@vger.kernel.org>, OMAP <linux-omap@vger.kernel.org>
+References: <200902081037.06645.david-b@pacbell.net> <200903021327.14285.david-b@pacbell.net> <20090302224040.5e7ab0b2@mjolnir.ossman.eu>
+In-Reply-To: <20090302224040.5e7ab0b2@mjolnir.ossman.eu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903021400.50201.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009 16:46:01 -0500
-Mike Murphy <mamurph@cs.clemson.edu> wrote:
+On Monday 02 March 2009, Pierre Ossman wrote:
+> > > > +int mmc_regulator_set_ocr(struct mmc_host *host, struct regulator *supply)
+> > > > +{
+> > > 
+> > > Why not pass the vdd directly? Saves a few dereferences if nothing else.
+> > 
+> > This call syntax is simpler, which is usually a win.
+> > Passing a third parameter would create fault paths
+> > of the "pass *wrong* parameter" flavor.
+> > 
+> > In terms of object code, when I've looked at such things
+> > the dereferences generally cost the same as a ref to a
+> > parameter, but passing an extra parameter isn't free.
+> > 
+> 
+> I couldn't see host being used in there, so I was thinking more of a
+> replacement, not an addition.
 
-> I had looked up another driver that used a header file in the stable
-> tree
+Oh, I see.  That'd make sense.  Just pass host->ios.vdd.
 
-Yup, there's lots of crappy code in the tree, and it is regrettable
-that maintainers continue to go ahead and merge that crappy code.
 
-There's no easy fix for this - you need to be aware of what is right
-and what is wrong, but you cannot look at existing code to determine
-this :(
-
-If the code which you're modifying is known (by you) to be wrong then
-there are two schools of thought.  Some people do like to "match the
-existing code".  I disagree with that.  The code's wrong dammit - we
-might as well make the new code "right".  If that results in
-inconsistent-looking code, well, so be it.  We shouldn't have merged
-the wrong code in the first place.
 
