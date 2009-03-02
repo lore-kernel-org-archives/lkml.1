@@ -1,67 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbZCBOP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZCBOZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbZCBOP3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 09:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCBOPU
+	id S1752987AbZCBOZX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 09:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZCBOZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 09:15:20 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:43074 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbZCBOPS (ORCPT
+	Mon, 2 Mar 2009 09:25:09 -0500
+Received: from e24smtp03.br.ibm.com ([32.104.18.24]:51095 "EHLO
+	e24smtp03.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbZCBOZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 09:15:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=PzIC8g4BBCBUmWF0bwWMU5tIhIGx6yOlEEUj/8uw5AUzOfAmWMcHon5un2qw0iD5ta
-         tXTcaWj3yx+yNSRg1/852UgZrlgdJONF7iNFaGCIDD+769u4+veUAZcyK1kuECdBdZ2g
-         HBWh11Le11St7q8hu0OslRTGpM1jSCL/WWMtI=
-Message-ID: <49ABE9F1.9060201@gmail.com>
-Date: Mon, 02 Mar 2009 15:15:13 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
+	Mon, 2 Mar 2009 09:25:08 -0500
+Message-ID: <49ABEC38.6050806@linux.vnet.ibm.com>
+Date: Mon, 02 Mar 2009 11:24:56 -0300
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Input: Accelerated touchscreen support for Marvell
- Zylonite
-References: <1236000228-13025-1-git-send-email-broonie@opensource.wolfsonmicro.com> <49ABE2BC.9010401@gmail.com> <20090302140044.GA23038@rakim.wolfsonmicro.main>
-In-Reply-To: <20090302140044.GA23038@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: alan@lxorguk.ukuu.org.uk, scottk@digi.com
+Subject: [PATCH 1/1] jsm: Cleanup
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2.3.2009 15:00, Mark Brown wrote:
-> On Mon, Mar 02, 2009 at 02:44:28PM +0100, Jiri Slaby wrote:
->> On 2.3.2009 14:23, Mark Brown wrote:
->>> +	int count = 16;
->>> +	schedule_timeout_uninterruptible(1);
-[...]
->>> +	while (count<   16) {
->
->> Weird condition.
->> + conding style
->
-> Hrm.  This appears to have been mangled somewhere in the mail path to
-> you - the indentation is normal in my send-mail folder and in the copy I
-> got back from the list.
+Here are some cleanups, mainly removing unused variables and silly
+declarations.
 
-OK, anyway the condition looks weird on a semantic layer.
+Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
 
->>> +static void wm97xx_irq_enable(struct wm97xx *wm, int enable)
->>> +{
->>> +	if (enable)
->>> +		enable_irq(wm->pen_irq);
->>> +	else
->>> +		disable_irq(wm->pen_irq);
->
->> sync?
->
-> Could you expand on this, please?
+---
 
-No, I was wrong, ignore this one. It's called from within the interrupt 
-it disables.
+ drivers/serial/jsm/jsm_neo.c |   14 ++++----------
+ drivers/serial/jsm/jsm_tty.c |   19 ++++++++-----------
+ 2 files changed, 12 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/serial/jsm/jsm_neo.c b/drivers/serial/jsm/jsm_neo.c
+index e6390d0..9dadaa1 100644
+--- a/drivers/serial/jsm/jsm_neo.c
++++ b/drivers/serial/jsm/jsm_neo.c
+@@ -533,7 +533,6 @@ static void neo_copy_data_from_queue_to_uart(struct jsm_channel *ch)
+ 	if (!(ch->ch_flags & (CH_TX_FIFO_EMPTY | CH_TX_FIFO_LWM)))
+ 		return;
+ 
+-	len_written = 0;
+ 	n = UART_17158_TX_FIFOSIZE - ch->ch_t_tlevel;
+ 
+ 	/* cache head and tail of queue */
+@@ -619,14 +618,10 @@ static void neo_parse_modem(struct jsm_channel *ch, u8 signals)
+ /* Make the UART raise any of the output signals we want up */
+ static void neo_assert_modem_signals(struct jsm_channel *ch)
+ {
+-	u8 out;
+-
+ 	if (!ch)
+ 		return;
+ 
+-	out = ch->ch_mostat;
+-
+-	writeb(out, &ch->ch_neo_uart->mcr);
++	writeb(ch->ch_mostat, &ch->ch_neo_uart->mcr);
+ 
+ 	/* flush write operation */
+ 	neo_pci_posting_flush(ch->ch_bd);
+@@ -936,10 +931,9 @@ static inline void neo_parse_lsr(struct jsm_board *brd, u32 port)
+ static void neo_param(struct jsm_channel *ch)
+ {
+ 	u8 lcr = 0;
+-	u8 uart_lcr = 0;
+-	u8 ier = 0;
+-	u32 baud = 9600;
+-	int quot = 0;
++	u8 uart_lcr, ier;
++	u32 baud;
++	int quot;
+ 	struct jsm_board *bd;
+ 
+ 	bd = ch->ch_bd;
+diff --git a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
+index 324c74d..2285bf4 100644
+--- a/drivers/serial/jsm/jsm_tty.c
++++ b/drivers/serial/jsm/jsm_tty.c
+@@ -183,7 +183,6 @@ static void jsm_tty_break(struct uart_port *port, int break_state)
+ static int jsm_tty_open(struct uart_port *port)
+ {
+ 	struct jsm_board *brd;
+-	int rc = 0;
+ 	struct jsm_channel *channel = (struct jsm_channel *)port;
+ 	struct ktermios *termios;
+ 
+@@ -265,7 +264,7 @@ static int jsm_tty_open(struct uart_port *port)
+ 	channel->ch_open_count++;
+ 
+ 	jsm_printk(OPEN, INFO, &channel->ch_bd->pci_dev, "finish\n");
+-	return rc;
++	return 0;
+ }
+ 
+ static void jsm_tty_close(struct uart_port *port)
+@@ -748,7 +747,7 @@ static void jsm_carrier(struct jsm_channel *ch)
+ void jsm_check_queue_flow_control(struct jsm_channel *ch)
+ {
+ 	struct board_ops *bd_ops = ch->ch_bd->bd_ops;
+-	int qleft = 0;
++	int qleft;
+ 
+ 	/* Store how much space we have left in the queue */
+ 	if ((qleft = ch->ch_r_tail - ch->ch_r_head - 1) < 0)
+@@ -834,7 +833,7 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
+  */
+ int jsm_tty_write(struct uart_port *port)
+ {
+-	int bufcount = 0, n = 0;
++	int bufcount;
+ 	int data_count = 0,data_count1 =0;
+ 	u16 head;
+ 	u16 tail;
+@@ -850,14 +849,12 @@ int jsm_tty_write(struct uart_port *port)
+ 	if ((bufcount = tail - head - 1) < 0)
+ 		bufcount += WQUEUESIZE;
+ 
+-	n = bufcount;
+-
+-	n = min(n, 56);
++	bufcount = min(bufcount, 56);
+ 	remain = WQUEUESIZE - head;
+ 
+ 	data_count = 0;
+-	if (n >= remain) {
+-		n -= remain;
++	if (bufcount >= remain) {
++		bufcount -= remain;
+ 		while ((port->info->xmit.head != temp_tail) &&
+ 		(data_count < remain)) {
+ 			channel->ch_wqueue[head++] =
+@@ -871,8 +868,8 @@ int jsm_tty_write(struct uart_port *port)
+ 	}
+ 
+ 	data_count1 = 0;
+-	if (n > 0) {
+-		remain = n;
++	if (bufcount > 0) {
++		remain = bufcount;
+ 		while ((port->info->xmit.head != temp_tail) &&
+ 			(data_count1 < remain)) {
+ 			channel->ch_wqueue[head++] =
