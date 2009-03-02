@@ -1,131 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbZCBIsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbZCBIvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbZCBIsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 03:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbZCBIsK
+	id S1758678AbZCBIvh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 03:51:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZCBIv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 03:48:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52899 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756305AbZCBIsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 03:48:09 -0500
-Date: Mon, 2 Mar 2009 09:47:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [git pull] x86 fixes
-Message-ID: <20090302084748.GA8982@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 2 Mar 2009 03:51:28 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:27225 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754910AbZCBIv2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 03:51:28 -0500
+Date: Mon, 2 Mar 2009 09:51:13 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: [PATCH] PCI: Compaq Evo D510 SMBus quirk using USB instead of VGA
+Message-ID: <20090302095113.46661b9d@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+From: David O'Shea <dcoshea@hotmail.com>
+Subject: PCI: Compaq Evo D510 SMBus quirk using USB instead of VGA
 
-Please pull the latest x86-fixes-for-linus git tree from:
+On the Compaq Evo D510 SFF/CMT, a PCI quirk activated the SMBus device
+based on detection of the on-board VGA controller, but the on-board
+VGA is disabled if an AGP card is inserted, so look for one of the USB
+controllers instead.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+Signed-off-by: David O'Shea <dcoshea@hotmail.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/pci/quirks.c    |    9 +++++++--
+ include/linux/pci_ids.h |    1 +
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-
-out-of-topic modifications in x86-fixes-for-linus:
---------------------------------------------------
-include/linux/io-mapping.h         # 5ce04e3: fix warning in io_mapping_map_wc(
-
- Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (1):
-      x86: i915 needs pgprot_writecombine() and is_io_mapping_possible()
-
-Pallipadi, Venkatesh (1):
-      fix warning in io_mapping_map_wc()
-
-
- arch/x86/mm/iomap_32.c     |   15 ++++-----------
- arch/x86/mm/pat.c          |    2 ++
- include/linux/io-mapping.h |    5 ++++-
- 3 files changed, 10 insertions(+), 12 deletions(-)
-
-diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
-index 6c2b1af..04102d4 100644
---- a/arch/x86/mm/iomap_32.c
-+++ b/arch/x86/mm/iomap_32.c
-@@ -20,23 +20,16 @@
- #include <asm/pat.h>
- #include <linux/module.h>
+--- linux-2.6.29-rc6.orig/drivers/pci/quirks.c	2009-03-02 08:46:20.000000000 +0100
++++ linux-2.6.29-rc6/drivers/pci/quirks.c	2009-03-02 09:17:16.000000000 +0100
+@@ -1125,10 +1125,15 @@ static void __init asus_hides_smbus_host
+ 				 * its on-board VGA controller */
+ 				asus_hides_smbus = 1;
+ 			}
+-		else if (dev->device == PCI_DEVICE_ID_INTEL_82845G_IG)
++		else if (dev->device == PCI_DEVICE_ID_INTEL_82801DB_2)
+ 			switch(dev->subsystem_device) {
+ 			case 0x00b8: /* Compaq Evo D510 CMT */
+ 			case 0x00b9: /* Compaq Evo D510 SFF */
++				/* Motherboard doesn't have Host bridge
++				 * subvendor/subdevice IDs and on-board VGA
++				 * controller is disabled if an AGP card is
++				 * inserted, therefore checking USB UHCI
++				 * Controller #1 */
+ 				asus_hides_smbus = 1;
+ 			}
+ 		else if (dev->device == PCI_DEVICE_ID_INTEL_82815_CGC)
+@@ -1153,7 +1158,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82915GM_HB, asus_hides_smbus_hostbridge);
  
--#ifdef CONFIG_X86_PAE
--int
--is_io_mapping_possible(resource_size_t base, unsigned long size)
--{
--	return 1;
--}
--#else
--int
--is_io_mapping_possible(resource_size_t base, unsigned long size)
-+int is_io_mapping_possible(resource_size_t base, unsigned long size)
- {
-+#ifndef CONFIG_X86_PAE
- 	/* There is no way to map greater than 1 << 32 address without PAE */
- 	if (base + size > 0x100000000ULL)
- 		return 0;
--
-+#endif
- 	return 1;
- }
--#endif
-+EXPORT_SYMBOL_GPL(is_io_mapping_possible);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82810_IG3,	asus_hides_smbus_hostbridge);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82845G_IG,	asus_hides_smbus_hostbridge);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82801DB_2,	asus_hides_smbus_hostbridge);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82815_CGC,	asus_hides_smbus_hostbridge);
  
- /* Map 'pfn' using fixed map 'type' and protections 'prot'
-  */
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index aebbf67..e0ab173 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -11,6 +11,7 @@
- #include <linux/bootmem.h>
- #include <linux/debugfs.h>
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/gfp.h>
- #include <linux/mm.h>
- #include <linux/fs.h>
-@@ -868,6 +869,7 @@ pgprot_t pgprot_writecombine(pgprot_t prot)
- 	else
- 		return pgprot_noncached(prot);
- }
-+EXPORT_SYMBOL_GPL(pgprot_writecombine);
- 
- #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_X86_PAT)
- 
-diff --git a/include/linux/io-mapping.h b/include/linux/io-mapping.h
-index cbc2f0c..0adb0f9 100644
---- a/include/linux/io-mapping.h
-+++ b/include/linux/io-mapping.h
-@@ -91,8 +91,11 @@ io_mapping_unmap_atomic(void *vaddr)
- static inline void *
- io_mapping_map_wc(struct io_mapping *mapping, unsigned long offset)
- {
-+	resource_size_t phys_addr;
-+
- 	BUG_ON(offset >= mapping->size);
--	resource_size_t phys_addr = mapping->base + offset;
-+	phys_addr = mapping->base + offset;
-+
- 	return ioremap_wc(phys_addr, PAGE_SIZE);
- }
- 
+ static void asus_hides_smbus_lpc(struct pci_dev *dev)
+--- linux-2.6.29-rc6.orig/include/linux/pci_ids.h	2009-03-02 08:46:20.000000000 +0100
++++ linux-2.6.29-rc6/include/linux/pci_ids.h	2009-03-02 09:17:16.000000000 +0100
+@@ -2373,6 +2373,7 @@
+ #define PCI_DEVICE_ID_INTEL_82801CA_12	0x248c
+ #define PCI_DEVICE_ID_INTEL_82801DB_0	0x24c0
+ #define PCI_DEVICE_ID_INTEL_82801DB_1	0x24c1
++#define PCI_DEVICE_ID_INTEL_82801DB_2	0x24c2
+ #define PCI_DEVICE_ID_INTEL_82801DB_3	0x24c3
+ #define PCI_DEVICE_ID_INTEL_82801DB_5	0x24c5
+ #define PCI_DEVICE_ID_INTEL_82801DB_6	0x24c6
+
+
+-- 
+Jean Delvare
