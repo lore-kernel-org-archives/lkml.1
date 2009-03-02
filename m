@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZCBJI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbZCBJLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbZCBJI2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 04:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZCBJIP
+	id S1757996AbZCBJLT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 04:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZCBJLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 04:08:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50354 "EHLO mx2.mail.elte.hu"
+	Mon, 2 Mar 2009 04:11:06 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40349 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753459AbZCBJIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 04:08:14 -0500
-Date: Mon, 2 Mar 2009 10:07:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: x86@kernel.org, Johannes Weiner <hannes@cmpxchg.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH tj-percpu 1/3] percpu: kill compile warning in
-	pcpu_populate_chunk()
-Message-ID: <20090302090758.GC10783@elte.hu>
-References: <49AA357C.3070006@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AA357C.3070006@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753448AbZCBJLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 04:11:05 -0500
+Date: Mon, 2 Mar 2009 20:10:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: linux-next: Linus' tree build warnings
+Message-Id: <20090302201054.0256de54.sfr@canb.auug.org.au>
+In-Reply-To: <20090302083719.GA6040@elte.hu>
+References: <20090302183511.a1415086.sfr@canb.auug.org.au>
+	<20090302083719.GA6040@elte.hu>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__2_Mar_2009_20_10_54_+1100_A.yREA507kIg1bpA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__2_Mar_2009_20_10_54_+1100_A.yREA507kIg1bpA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Tejun Heo <tj@kernel.org> wrote:
+Hi Ingo,
 
-> Impact: remove compile warning
-> 
-> Mark local variable map_end in pcpu_populate_chunk() with
-> uninitialized_var().  The variable is always used in tandem with
-> map_start and guaranteed to be initialized before use but gcc doesn't
-> understand that.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Reported-by: Ingo Molnar <mingo@elte.hu>
-> ---
-> This the first of three misc fix patches for #tj-percpu.  Patches are
-> also available in the tj-percpu git tree.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+On Mon, 2 Mar 2009 09:37:19 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> yes, a patch for that was already sent.
 
-Pulled, thanks Tejun.
+Thanks.
 
-	Ingo
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__2_Mar_2009_20_10_54_+1100_A.yREA507kIg1bpA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmrop4ACgkQjjKRsyhoI8yk5QCeNVdR67rdobryBlfxBHY2oHex
+coYAoL2CwCcsec6z1234Pzw/XRuQ/D3c
+=0xw6
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__2_Mar_2009_20_10_54_+1100_A.yREA507kIg1bpA--
