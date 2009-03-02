@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZCBVSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZCBVUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbZCBVSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 16:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbZCBVSP
+	id S1755482AbZCBVUl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 16:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZCBVUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 16:18:15 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37600 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756002AbZCBVSN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 16:18:13 -0500
-Date: Mon, 2 Mar 2009 21:17:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
-Message-ID: <20090302211755.24a58ec9@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0903020852220.3111@localhost.localdomain>
-References: <1235996477.5330.174.camel@laptop>
-	<alpine.LFD.2.00.0903020852220.3111@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Organization: None.. I'm free I'm free bwhahahahaha!
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 16:20:31 -0500
+Received: from kroah.org ([198.145.64.141]:49973 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752654AbZCBVUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 16:20:30 -0500
+Date: Mon, 2 Mar 2009 13:18:20 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Murphy <mamurph@cs.clemson.edu>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       oliver@neukum.org, fweisbec@gmail.com, torvalds@linux-foundation.org
+Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless
+	support  and add sysfs interface
+Message-ID: <20090302211820.GA21489@kroah.com>
+References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com> <20090302130425.23cc628d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090302130425.23cc628d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Now, IDE controllers that we end up using PIO on all tend to be pretty 
-> old, but admittedly even the old ones are faster than the worst-case 
-> timings, so in practice you're not looking quite at that kind of horror 
-> case, but you're still looking at each sector transfer (256 16-bit words) 
-> taking on the order of tens of us.
+On Mon, Mar 02, 2009 at 01:04:25PM -0800, Andrew Morton wrote:
+> On Sat, 28 Feb 2009 23:53:03 -0500
+> Mike Murphy <mamurph@cs.clemson.edu> wrote:
+> > ...
+> >
+> > +static ssize_t xpad_show_int(struct device *dev, struct device_attribute *attr,
+> > +		char *buf)
+> > +{
+> > +	struct usb_xpad *xpad = to_xpad(dev);
+> > +	int value;
+> > +	if (attr == &dev_attr_rumble_enable)
+> > +		value = xpad->rumble_enable;
+> > +	else if (attr == &dev_attr_controller_number)
+> > +		value = xpad->controller_number;
+> > +	else if (attr == &dev_attr_controller_present)
+> > +		value = xpad->controller_present;
+> > +	else if (attr == &dev_attr_controller_type)
+> > +		value = xpad->controller_type;
+> > +	else if (attr == &dev_attr_left_trigger_full_axis)
+> > +		value = xpad->left_trigger_full_axis;
+> > +	else if (attr == &dev_attr_right_trigger_full_axis)
+> > +		value = xpad->right_trigger_full_axis;
+> > +	else
+> > +		return -EIO;
+> > +	return snprintf(buf, PAGE_SIZE, "%d\n", value);
+> > +}
+> 
+> The code's a bit unusual.  Most drivers don't have all that
+> if-then-else stuff.  They use a separate function for each sysfs file
+> and then they wrap it all up into a macro which emits all the data and
+> code for each file.
 
-The worst case timings are far worse because of IORDY. 
+Yes, most don't, but that is because we used to not pass the attribute
+variable to the show/store functions.  It was added so that we could
+reduce the huge numbers of functions needed, to do stuff like this.  The
+hwmon drivers are examples of other drivers that do their show/store
+like this.
 
-> Now: I suspect you don't have a single machine that does PIO by default, 
-> and you probably haven't had any for the last ten years. These things 
-> _are_ old. But they do exist. 
+There's nothing wrong with it that I can see.
 
-I bet you do for some stuff. Most CF cards are PIO only. Several
-controllers need to do PIO for some corner cases. Almost all pre-AHCI
-controllers issue command blocks via PIO.
+thanks,
 
-Worse still of course some controllers have an erratum where touching
-some of the other registers during a transfer [which is what you need to
-do to see if you are the IRQ source] corrupts the transfer. Not all
-devices honour the IRQ masking bit on the device either. That makes the
-generalised case of doing both unmasked transfers after an IRQ and the
-errata cases of handling IRQs you can't mask and must leave disabled
-rather more exciting than is nice.
-
-Alan
+greg k-h
