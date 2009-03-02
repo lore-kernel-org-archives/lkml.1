@@ -1,173 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbZCBFlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbZCBFzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbZCBFlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 00:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZCBFk7
+	id S1758278AbZCBFzd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 00:55:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbZCBFzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 00:40:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41739
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751004AbZCBFk6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 00:40:58 -0500
-Date: Sun, 01 Mar 2009 21:40:39 -0800 (PST)
-Message-Id: <20090301.214039.218300763.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 2 Mar 2009 00:55:24 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51566 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750730AbZCBFzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 00:55:23 -0500
+Message-ID: <49AB74C2.5030102@cn.fujitsu.com>
+Date: Mon, 02 Mar 2009 13:55:14 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] sched: remove O(1) scheduler document
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+based on tip/sched/cleanups
 
-1) TCP retransmit accounting fix from Ilpo.
+impact: kernel doc remove
 
-2) netconsole over devices configured with VLANs can crash,
-   fix from Herbert Xu.
+Since we don't have O(1) scheduler implementation anymore,
+remove the legacy doc.
 
-3) DRR scheduler crashes when TCA_OPTIONS are not specified.
-   Fix from Jarek P.
+Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
+---
+ Documentation/scheduler/00-INDEX         |    2 -
+ Documentation/scheduler/sched-coding.txt |  126 ------------------------------
+ 2 files changed, 0 insertions(+), 128 deletions(-)
+ delete mode 100644 Documentation/scheduler/sched-coding.txt
 
-4) VETH carrier detection fix from Eric Bierderman.
+diff --git a/Documentation/scheduler/00-INDEX b/Documentation/scheduler/00-INDEX
+index aabcc3a..3c00c9c 100644
+--- a/Documentation/scheduler/00-INDEX
++++ b/Documentation/scheduler/00-INDEX
+@@ -2,8 +2,6 @@
+ 	- this file.
+ sched-arch.txt
+ 	- CPU Scheduler implementation hints for architecture specific code.
+-sched-coding.txt
+-	- reference for various scheduler-related methods in the O(1) scheduler.
+ sched-design-CFS.txt
+ 	- goals, design and implementation of the Complete Fair Scheduler.
+ sched-domains.txt
+diff --git a/Documentation/scheduler/sched-coding.txt b/Documentation/scheduler/sched-coding.txt
+deleted file mode 100644
+index cbd8db7..0000000
+--- a/Documentation/scheduler/sched-coding.txt
++++ /dev/null
+@@ -1,126 +0,0 @@
+-     Reference for various scheduler-related methods in the O(1) scheduler
+-		Robert Love <rml@tech9.net>, MontaVista Software
+-
+-
+-Note most of these methods are local to kernel/sched.c - this is by design.
+-The scheduler is meant to be self-contained and abstracted away.  This document
+-is primarily for understanding the scheduler, not interfacing to it.  Some of
+-the discussed interfaces, however, are general process/scheduling methods.
+-They are typically defined in include/linux/sched.h.
+-
+-
+-Main Scheduling Methods
+------------------------
+-
+-void load_balance(runqueue_t *this_rq, int idle)
+-	Attempts to pull tasks from one cpu to another to balance cpu usage,
+-	if needed.  This method is called explicitly if the runqueues are
+-	imbalanced or periodically by the timer tick.  Prior to calling,
+-	the current runqueue must be locked and interrupts disabled.
+-
+-void schedule()
+-	The main scheduling function.  Upon return, the highest priority
+-	process will be active.
+-
+-
+-Locking
+--------
+-
+-Each runqueue has its own lock, rq->lock.  When multiple runqueues need
+-to be locked, lock acquires must be ordered by ascending &runqueue value.
+-
+-A specific runqueue is locked via
+-
+-	task_rq_lock(task_t pid, unsigned long *flags)
+-
+-which disables preemption, disables interrupts, and locks the runqueue pid is
+-running on.  Likewise,
+-
+-	task_rq_unlock(task_t pid, unsigned long *flags)
+-
+-unlocks the runqueue pid is running on, restores interrupts to their previous
+-state, and reenables preemption.
+-
+-The routines
+-
+-	double_rq_lock(runqueue_t *rq1, runqueue_t *rq2)
+-
+-and
+-
+-	double_rq_unlock(runqueue_t *rq1, runqueue_t *rq2)
+-
+-safely lock and unlock, respectively, the two specified runqueues.  They do
+-not, however, disable and restore interrupts.  Users are required to do so
+-manually before and after calls.
+-
+-
+-Values
+-------
+-
+-MAX_PRIO
+-	The maximum priority of the system, stored in the task as task->prio.
+-	Lower priorities are higher.  Normal (non-RT) priorities range from
+-	MAX_RT_PRIO to (MAX_PRIO - 1).
+-MAX_RT_PRIO
+-	The maximum real-time priority of the system.  Valid RT priorities
+-	range from 0 to (MAX_RT_PRIO - 1).
+-MAX_USER_RT_PRIO
+-	The maximum real-time priority that is exported to user-space.  Should
+-	always be equal to or less than MAX_RT_PRIO.  Setting it less allows
+-	kernel threads to have higher priorities than any user-space task.
+-MIN_TIMESLICE
+-MAX_TIMESLICE
+-	Respectively, the minimum and maximum timeslices (quanta) of a process.
+-
+-Data
+-----
+-
+-struct runqueue
+-	The main per-CPU runqueue data structure.
+-struct task_struct
+-	The main per-process data structure.
+-
+-
+-General Methods
+----------------
+-
+-cpu_rq(cpu)
+-	Returns the runqueue of the specified cpu.
+-this_rq()
+-	Returns the runqueue of the current cpu.
+-task_rq(pid)
+-	Returns the runqueue which holds the specified pid.
+-cpu_curr(cpu)
+-	Returns the task currently running on the given cpu.
+-rt_task(pid)
+-	Returns true if pid is real-time, false if not.
+-
+-
+-Process Control Methods
+------------------------
+-
+-void set_user_nice(task_t *p, long nice)
+-	Sets the "nice" value of task p to the given value.
+-int setscheduler(pid_t pid, int policy, struct sched_param *param)
+-	Sets the scheduling policy and parameters for the given pid.
+-int set_cpus_allowed(task_t *p, unsigned long new_mask)
+-	Sets a given task's CPU affinity and migrates it to a proper cpu.
+-	Callers must have a valid reference to the task and assure the
+-	task not exit prematurely.  No locks can be held during the call.
+-set_task_state(tsk, state_value)
+-	Sets the given task's state to the given value.
+-set_current_state(state_value)
+-	Sets the current task's state to the given value.
+-void set_tsk_need_resched(struct task_struct *tsk)
+-	Sets need_resched in the given task.
+-void clear_tsk_need_resched(struct task_struct *tsk)
+-	Clears need_resched in the given task.
+-void set_need_resched()
+-	Sets need_resched in the current task.
+-void clear_need_resched()
+-	Clears need_resched in the current task.
+-int need_resched()
+-	Returns true if need_resched is set in the current task, false
+-	otherwise.
+-yield()
+-	Place the current process at the end of the runqueue and call schedule.
+-- 
+1.5.3.4
 
-5) Several small driver fixes all over.
 
-6) IPV6 fix with time-wait sockets when namespaces are enabled,
-   from Pavel Emelyanov.
 
-7) Fix hp-plus build, again, from Randy Dunlap.
-
-Please pull, thanks a lot!
-
-The following changes since commit 778ef1e6cbb049c9bcbf405936ee6f2b6e451892:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../gregkh/staging-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Andrey Borzenkov (1):
-      orinoco: do not resgister NULL pm_notifier function
-
-Bjørn Mork (2):
-      cdc_ether: add usb id for Ericsson F3507g
-      usbnet: make usbnet_get_link() fall back to ethtool_op_get_link()
-
-Chris Leech (2):
-      net headers: cleanup dcbnl.h
-      net headers: export dcbnl.h
-
-David S. Miller (5):
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-      Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-
-Dhananjay Phadke (2):
-      netxen: fix physical port mapping
-      netxen: handle pci bar 0 mapping failure
-
-Dmitriy Taychenachev (1):
-      zaurus: add usb id for motomagx phones
-
-Eric Leblond (3):
-      netfilter: nf_conntrack_ipv6: fix nf_log_packet message in icmpv6 conntrack
-      netfilter: nfnetlink_log: fix per-rule qthreshold override
-      netfilter: nfnetlink_log: fix timeout handling
-
-Eric W. Biederman (1):
-      veth: Fix carrier detect
-
-Greg Kroah-Hartman (1):
-      asix: new device ids
-
-Herbert Xu (1):
-      netpoll: Add drop checks to all entry points
-
-Ilpo Järvinen (1):
-      tcp: fix retrans_out leaks
-
-Ivan Vecera (1):
-      r8169: read MAC address from EEPROM on init (2nd attempt)
-
-Jan Engelhardt (1):
-      netfilter: make proc/net/ip* print names from foreign NFPROTO
-
-Jarek Poplawski (1):
-      pkt_sched: sch_drr: Fix oops in drr_change_class.
-
-Joe Perches (1):
-      tcp_scalable: Update malformed & dead url
-
-Josef Drexler (1):
-      netfilter: xt_recent: fix proc-file addition/removal of IPv4 addresses
-
-Kiran Divekar (1):
-      libertas: fix misuse of netdev_priv() and dev->ml_priv
-
-Larry Finger (1):
-      rtl8187: New USB ID's for RTL8187L
-
-Michael Buesch (2):
-      b44: Unconditionally enable interrupt routing on reset
-      b44: Disable device on shutdown
-
-Patrick McHardy (2):
-      Merge branch 'master' of /repos/git/net-2.6
-      netfilter: nf_conntrack: don't try to deliver events for untracked connections
-
-Pavel Emelyanov (1):
-      ipv6: don't use tw net when accounting for recycled tw
-
-Randy Dunlap (1):
-      net: fix hp-plus build error
-
-Rini van Zetten (1):
-      gianfar: Do right check on num_txbdfree
-
-Vasanthakumar Thiagarajan (1):
-      ath9k: Fix panic upon attach failure
-
- drivers/net/b44.c                              |   13 +-
- drivers/net/gianfar.c                          |    2 +-
- drivers/net/hp-plus.c                          |    2 +-
- drivers/net/netxen/netxen_nic_main.c           |   16 ++-
- drivers/net/r8169.c                            |  114 +++++++++++++-
- drivers/net/usb/asix.c                         |    8 +
- drivers/net/usb/cdc_ether.c                    |    5 +
- drivers/net/usb/usbnet.c                       |    4 +-
- drivers/net/usb/zaurus.c                       |    5 +
- drivers/net/veth.c                             |   51 ++-----
- drivers/net/wireless/ath9k/main.c              |   24 ++-
- drivers/net/wireless/libertas/ethtool.c        |   12 +-
- drivers/net/wireless/libertas/if_usb.c         |    4 +-
- drivers/net/wireless/libertas/main.c           |   31 ++--
- drivers/net/wireless/libertas/persistcfg.c     |   16 +-
- drivers/net/wireless/libertas/scan.c           |    4 +-
- drivers/net/wireless/libertas/tx.c             |    2 +-
- drivers/net/wireless/libertas/wext.c           |   72 +++++-----
- drivers/net/wireless/orinoco/orinoco.c         |   19 ++-
- drivers/net/wireless/rtl818x/rtl8187_dev.c     |   12 ++
- include/linux/Kbuild                           |    1 +
- include/linux/dcbnl.h                          |    4 +-
- include/linux/netfilter/xt_NFLOG.h             |    2 +-
- include/net/netfilter/nf_conntrack_core.h      |    2 +-
- net/8021q/vlan_core.c                          |   10 ++
- net/core/dev.c                                 |    6 +
- net/ipv4/tcp_input.c                           |    9 +-
- net/ipv4/tcp_scalable.c                        |    2 +-
- net/ipv6/inet6_hashtables.c                    |    4 +-
- net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |    5 +-
- net/netfilter/nfnetlink_log.c                  |    8 +-
- net/netfilter/x_tables.c                       |  199 +++++++++++++++++-------
- net/netfilter/xt_recent.c                      |    2 +-
- net/sched/sch_drr.c                            |    6 +-
- 34 files changed, 467 insertions(+), 209 deletions(-)
