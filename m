@@ -1,58 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZCBSTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZCBSYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbZCBSTc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 13:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZCBSTX
+	id S1756216AbZCBSYR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 13:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZCBSYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 13:19:23 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:56122 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbZCBSTW convert rfc822-to-8bit (ORCPT
+	Mon, 2 Mar 2009 13:24:01 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33534 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751948AbZCBSYA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 13:19:22 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ipgRA4DFXw/tgDohdzBSiukh6GisWtXJmTrHe9yRuMFEux9WR7J4sVCjJ1VgPpbbv
-	bHIgT8Ho4Mv4Cz20r/8qA==
+	Mon, 2 Mar 2009 13:24:00 -0500
+Date: Mon, 2 Mar 2009 13:23:57 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/5] ftrace: add ftrace_bprintk()
+In-Reply-To: <c62985530903021006k1a0b1197tc336800379cb5ded@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0903021311190.4771@gandalf.stny.rr.com>
+References: <20090228091305.GA20533@elte.hu>  <49aa088b.1c07d00a.4512.ffffe781@mx.google.com>  <alpine.DEB.2.00.0903021128380.4771@gandalf.stny.rr.com>  <c62985530903020945i6098682bh59a5c6d6c6de759c@mail.gmail.com>  <alpine.DEB.2.00.0903021252420.4771@gandalf.stny.rr.com>
+ <c62985530903021006k1a0b1197tc336800379cb5ded@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <49AB40BF.4030706@cn.fujitsu.com>
-References: <49AB40BF.4030706@cn.fujitsu.com>
-Date: Mon, 2 Mar 2009 10:19:15 -0800
-Message-ID: <6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>
-Subject: Re: [PATCH 0/4] cgroups: show correct file mode
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1154299260-1236018238=:4771"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 1, 2009 at 6:13 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> Now a cgroup subsystem can set default file mode of its control files,
-> so here is a patchset to correct file mode of each subsystem's files.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I really think that we should be defaulting this based on whether the
-control file has read or write handlers.
+--8323328-1154299260-1236018238=:4771
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Sure, there are special cases like "tasks" that we'd need to set a
-manual value for, but most of these patches would be unnecessary.
 
-Paul
+On Mon, 2 Mar 2009, Fr?d?ric Weisbecker wrote:
 
->
-> Should be applied after:
->        cgroup-allow-subsys-to-set-default-mode-of-its-own-file.patch
->
-> [PATCH 1/4] cgroup debug: show correct file mode
-> [PATCH 2/4] cpuacct: show correct file mode
-> [PATCH 3/4] devcgroup: show correct file mode
-> [PATCH 4/4] cpuset: show correct file mode
->
->
+> 2009/3/2 Steven Rostedt <rostedt@goodmis.org>:
+> >
+> > On Mon, 2 Mar 2009, Fr?d?ric Weisbecker wrote:
+> >> >> +
+> >> >> +static
+> >> >> +void release_module_trace_bprintk_format(const char **start, const=
+ char **end)
+> >> >> +{
+> >> >> + =A0 =A0 const char **iter;
+> >> >> + =A0 =A0 lock_btrace();
+> >> >> + =A0 =A0 for (iter =3D start; iter < end; iter++) {
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 struct trace_bprintk_fmt *tb_fmt;
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 if (!*iter)
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
+> >> >> +
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 tb_fmt =3D container_of(*iter, struct tra=
+ce_bprintk_fmt, fmt[0]);
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 tb_fmt->count--;
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 if (!tb_fmt->count && !btrace_metadata_co=
+unt) {
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 list_del(&tb_fmt->list);
+> >> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(tb_fmt);
+> >> >
+> >> > Shouldn't *iter get assigned to NULL somewhere here?
+> >> >
+> >> > -- Steve
+> >>
+> >>
+> >> Hm, why?
+> >
+> > Well, after we free tb_fmt, the *iter will then point to garbage. Right=
+?
+> >
+> > -- Steve
+>=20
+>=20
+> Now that you say it, I have some doubts about the possible sites that
+> can still dereference it
+> at this point.
+> I have to review and test it more seriously. I was convinced that the
+> count field kept track
+> of all references but now I'm not so sure, there can be still one
+> pending event that uses it into
+> the ring buffer, or it can be perhaps in use at the same time it is freed=
+=2E
+> We should perhaps use rcu here, will see.
+>=20
+
+How do you deal with ref counters in the ring buffer? If the ring buffer=20
+is set to overwrite mode (in which is usually is), then you will never=20
+know if a print was erased.
+
+I haven't looked too deep into the implementation. But one safe way to
+do this, with respect to modules, is the following:
+
+#define ftrace_bprintk(fmt, args...) \
+=09do { \
+=09=09static const char __attribute__((section(ftrace_fmt))\
+=09=09=09*f =3D fmt; \
+=09=09_ftrace_bprintk(&f, args); \
+=09} while(0)
+
+On output, you can do:
+
+=09trace_print_bprintk(...)
+=09{
+=09=09char **f =3D field->f;
+
+=09=09if (!f)
+=09=09=09trace_seq_printf(s, "MODULE UNLOADED?\n");
+=09=09trace_seq_printf(s, *f, ...)
+
+Do you see what I'm doing?
+
+Make the ftrace_printk create a constant pointer to the format instead
+of passing in the format. It will istead pass in the address of something
+pointing to the format.
+
+Then on module load, you allocate the area and copy in all the ftrace_fmt=
+=20
+sections.
+
+On module unload, you just NULL out that area. You could probably reuse=20
+those NULL spots, but you would need some kind of checksum to be added=20
+such that a new module will be detected on print out.
+
+
+This is the reason I avoided doing ftrace printk via pointers :-/
+
+-- Steve
+
+--8323328-1154299260-1236018238=:4771--
