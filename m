@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbZCBQA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbZCBQBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbZCBQA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZCBQAI
+	id S1757054AbZCBQBf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:01:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZCBQB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:00:08 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50623 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZCBQAF (ORCPT
+	Mon, 2 Mar 2009 11:01:26 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1494 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753167AbZCBQBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:00:05 -0500
-Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
-From: Peter Zijlstra <peterz@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090302154748.GB14217@parisc-linux.org>
-References: <1235996477.5330.174.camel@laptop>
-	 <20090302144303.GA30136@elte.hu>  <20090302154748.GB14217@parisc-linux.org>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 16:59:48 +0100
-Message-Id: <1236009588.5330.729.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 11:01:25 -0500
+Date: Mon, 2 Mar 2009 16:01:11 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Theodore Tso <tytso@mit.edu>, Andy Whitcroft <apw@canonical.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+Message-ID: <20090302160111.GE19744@sirena.org.uk>
+References: <49A97563.6040906@s5r6.in-berlin.de> <20090228175218.GA4606@sirena.org.uk> <49A98F93.5030206@s5r6.in-berlin.de> <20090228210223.GA23191@sirena.org.uk> <49A9C252.50204@s5r6.in-berlin.de> <20090301001829.GA10751@mit.edu> <20090301004618.GA12909@sirena.org.uk> <20090301025357.GC10751@mit.edu> <20090302131514.GC19744@sirena.org.uk> <49ABF825.1010501@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49ABF825.1010501@s5r6.in-berlin.de>
+X-Cookie: What hath Bob wrought?
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 08:47 -0700, Matthew Wilcox wrote:
-> On Mon, Mar 02, 2009 at 03:43:03PM +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > Hi Linus,
-> > > 
-> > > Would you be willing to take such a patch?
-> > > 
-> > > Its a rather big one, but if you think its a good idea, I can 
-> > > generate one against whatever tree is needed.
-> > > 
-> > > Provided I didn't break any !genirq stuff.. then again, that 
-> > > might be a nice incentive to fix up those last few archs.
-> > 
-> > look good IMO. If there are no objections, and given that it 
-> 
-> Perhaps someone could explain why we want to remove it?  I just added
-> it to AHCI for good reason, so I'd like to know why we think it should
-> be taken away.
-> 
-> I added it because I was adding support for per-port interrupts.
-> In the interrupt handler, we take the *host* lock (not the port lock).
-> With multiple interrupt handlers per host, we would have to disable
-> interrupts in the interrupt handler before taking the lock.  Which is
-> foolish because we've just re-enabled interrupts in the genirq code.
-> Specifying IRQF_DISABLED means we just run with interrupts disabled.
-> 
-> You can argue that libata/ahci should be using a per-port lock, and
-> I wouldn't disagree.  But I'd still like to know why IRQF_DISABLED is
-> being removed.
+On Mon, Mar 02, 2009 at 04:15:49PM +0100, Stefan Richter wrote:
+> Mark Brown wrote:
 
-The idea is to mandate IRQF_DISABLED for everybody, and since it doesn't
-do any good to have it a flag if you have it always enabled, remove
-it ;-)
+> > Andrew Morton is one of them but not the only one.  Like I say, I don't
 
+> As far as I have observed, akpm's (Cc'd now) complaints are about
+> patches whose impact or benefit etc. are insufficiently explained ---
+> which is an issue on a higher level than pure formalism.  I believe I
+> too have seen the term "unchangelogged" (as you mentioned) in one of
+> those discussions but I associated lack of information with it rather
+> than a violation of a formalism.
 
+The terminology and comments about normally skipping these "unchangelogged"
+patches create a very different impression.  Obviously, there's going to
+be a crossover between the two cases.
 
+> I still say there are some straightforward changes which /can/ be well
+> explained in a single line (which would be the title line).  Still, by
+> far the most changes, including several kinds of janitorial changes,
+> require more explanation than that.  At which level a changelog should
+
+Sure, this is all very standard stuff.
+
+> It is not trivial to give general advice on that, and it is impossible
+> to encode even simple tests for the quality of a changelog in a script
+> like checkpatch.
+
+As I've said already on a number of occasions the patch was purely
+intended to catch the case where there was no body in the patch log,
+which appeared to be something that was being specifically objected to.
