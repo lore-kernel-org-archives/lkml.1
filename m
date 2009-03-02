@@ -1,294 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbZCBHWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759099AbZCBHaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbZCBHWi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 02:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbZCBHW3
+	id S1759099AbZCBHaI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 02:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbZCBH3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 02:22:29 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45402 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751873AbZCBHW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 02:22:27 -0500
-Date: Mon, 2 Mar 2009 18:22:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 2
-Message-Id: <20090302182217.90ca3356.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
+	Mon, 2 Mar 2009 02:29:55 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:30375 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751873AbZCBH3y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 02:29:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kcuMA7vqWAOytOpPMJdKfuZ5TBw0D7A4b4Or7tbDywzM6d+P0J9+6vpC9eMFQHUcpO
+         2vL3WKWDOszZrdcmd/bvAWveQYhGDGrjE/N5u/XmQZVUeVkKI2ZOL4Kv1kfBaLGHUQKd
+         b81lANlZqWUUHNbgB4RrIgu7gY+IFcdze8qP8=
+Subject: Re: [PATCH 2/4] zedtrace generic kernel filtering
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090228092657.GA2869@elte.hu>
+References: <1235725256.8512.88.camel@charm-linux>
+	 <20090228092657.GA2869@elte.hu>
+Content-Type: text/plain
+Date: Mon, 02 Mar 2009 01:29:49 -0600
+Message-Id: <1235978989.7581.46.camel@charm-linux>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__2_Mar_2009_18_22_17_+1100_wHzwxN4vB=Wcxort"
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__2_Mar_2009_18_22_17_+1100_wHzwxN4vB=Wcxort
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+On Sat, 2009-02-28 at 10:26 +0100, Ingo Molnar wrote:
+> * Tom Zanussi <tzanussi@gmail.com> wrote:
+> 
+> > Add generic kernel filtering.
+> > 
+> > Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> > 
+> > ---
+> >  kernel/trace/trace_binary/Makefile     |    2 +-
+> >  kernel/trace/trace_binary/zed.c        |  103 +++++++++--
+> >  kernel/trace/trace_binary/zed.h        |   15 ++
+> >  kernel/trace/trace_binary/zed_filter.c |  301 ++++++++++++++++++++++++++++++++
+> >  kernel/trace/trace_binary/zed_filter.h |   45 +++++
+> >  kernel/trace/trace_binary/zed_sched.c  |    4 +
+> >  6 files changed, 451 insertions(+), 19 deletions(-)
+> >  create mode 100644 kernel/trace/trace_binary/zed_filter.c
+> >  create mode 100644 kernel/trace/trace_binary/zed_filter.h
+> 
+> Nice!
+> 
 
-Changes since 20090227:
+Thanks!
 
-Undropped trees:
-	wireless
+> This fits really nicely into the ftrace principles and i'd love 
+> to see this feature merged into ftrace - would you be interested 
+> in working on that? If so then you can find the latest tracing 
 
-Dropped trees (temporary):
-	acpi (build failure)
-	v4l-dvb (build failure)
+Sure, but I'm not too familiar with the ftrace code and wouldn't have
+big blocks of time to devote to it, so if it's something that's needed
+"right away", I'll probably have to defer to letting someone else adapt
+the code if they wanted to.
 
-The v4l-dvb tree gained a build failure so it was dropped for today.
+> tree at:
+> 
+>     http://people.redhat.com/mingo/tip.git/README
+> 
+> Note that Steve added explicit field enumeration and 'raw' C 
+> syntax tracepoints to the event tracer earlier today (partly 
+> based on your ideas here), so that would be a good basis to 
+> extend/enhance/fix, if you are interested.
+> 
 
-The net tree gained a build failure the required 2 commits to be reverted
-for today.
+Yeah, I took a quick look and saw some nice improvements.  Anyway, the
+filtering I did for this was basically a side-effect of the event
+description stuff, which made the filtering relatively easy to do (and
+the event description files give the user a way to list the available
+fields).  What I'm wondering is if you're interested in the filtering
+part alone or in the event description part as well, which I hadn't
+thought of as separable (I guess I need to look at the current ftrace
+code to see what's already there).
 
-The wireless tree lost its build failure.
+Thanks,
 
-The firmware tree gained 2 conflicts against the net tree.
+Tom
 
-----------------------------------------------------------------------------
+> Thanks,
+> 
+> 	Ingo
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.  These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 133 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/mach-at91/gpio.c
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-CONFLICT (rename/modify): Merge conflict in arch/arm/plat-pxa/dma.c
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/powerpc/include/asm/elf.h
-CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in x86/auto=
--x86-next and modified in HEAD. Version HEAD of arch/x86/mach-default/setup=
-.c left in tree.
-$ git rm -f arch/x86/mach-default/setup.c
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-CONFLICT (content): Merge conflict in arch/x86/Kconfig
-Merging genirq/auto-genirq-next
-CONFLICT (content): Merge conflict in kernel/irq/handle.c
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-mpc.c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
-$ git reset --hard HEAD^
-Merging quota/for_next
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-$ git reset --hard HEAD^
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-CONFLICT (content): Merge conflict in fs/ocfs2/ocfs2.h
-Merging ext4/next
-CONFLICT (content): Merge conflict in fs/ext4/inode.c
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-tx.c
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
-Merging cpufreq/next
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging quilt/rr
-CONFLICT (delete/modify): arch/x86/include/asm/es7000/apic.h deleted in HEA=
-D and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/es7000=
-/apic.h left in tree.
-CONFLICT (delete/modify): arch/x86/include/asm/numaq/apic.h deleted in HEAD=
- and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/numaq/a=
-pic.h left in tree.
-CONFLICT (content): Merge conflict in drivers/hid/hid-core.c
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-CONFLICT (content): Merge conflict in kernel/module.c
-$ git rm -f arch/x86/include/asm/es7000/apic.h
-$ git rm -f arch/x86/include/asm/numaq/apic.h
-Applying: rr: fixup for cpumask:remove-address-of-CPU_MASK_ALL
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in firmware/Makefile
-CONFLICT (content): Merge conflict in firmware/WHENCE
-CONFLICT (content): Merge conflict in sound/isa/Kconfig
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-CONFLICT (content): Merge conflict in include/linux/slub_def.h
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_proc.c
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in mm/Makefile
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-CONFLICT (content): Merge conflict in security/selinux/hooks.c
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging squashfs/master
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-CONFLICT (content): Merge conflict in include/linux/slab.h
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging quilt/staging
-Merging scsi-post-merge/master
-[master]: created 3ae24ed: "Revert "RDS: Kconfig and Makefile""
-[master]: created a50c0bd: "Revert "RDS: Congestion-handling code""
-
---Signature=_Mon__2_Mar_2009_18_22_17_+1100_wHzwxN4vB=Wcxort
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmriSkACgkQjjKRsyhoI8wm0wCeODFBQwIjlPmH2oSRe2zLG3yK
-fzYAoJ2QAZR4PBUEFaQSwl4zjOgd/995
-=GAFJ
------END PGP SIGNATURE-----
-
---Signature=_Mon__2_Mar_2009_18_22_17_+1100_wHzwxN4vB=Wcxort--
