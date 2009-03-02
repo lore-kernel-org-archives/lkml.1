@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbZCBIUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbZCBIUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757422AbZCBIUX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 03:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZCBIUJ
+	id S1756258AbZCBIUn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 03:20:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757901AbZCBIU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 03:20:09 -0500
-Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:24986 "HELO
-	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754468AbZCBIUI (ORCPT
+	Mon, 2 Mar 2009 03:20:28 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:41232 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757664AbZCBIU0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 03:20:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mULt9kPoDd9OnIJsCwoxuLS4lxsnOokvgxip3ed6XgNX9L9Lv+PONu8o65SN3yF2ACtN2bWLP+kBEATXjx4HC7nqPiZqxp41ZAgF7ttFXvQ2pSiAmLnR5EbU2o6EIQIzYPm41vKkd3jrrRl5oBfluplKsfWOYuLujQuLwss2dws=  ;
-X-YMail-OSG: Ayja_y4VM1m5xz2PcneGyuvcXtRsgR3uGwsy5.ve1ik9qEmuKGdD2Kvssv80.vVYoIvXGkXqzLZM6jD5YAE9YmCY46hc_boTsluDQ.IC4NG3KZgGkPbjeOFBTWobla9dcV9uiiyHhh_0sPZkqzXZH2LwYTMGFJJ1UtE2dhXAZWr_leEmcIjgo1wYV320MA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] xen: core dom0 support
-Date: Mon, 2 Mar 2009 19:19:29 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Xen-devel" <xen-devel@lists.xensource.com>
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <200903021737.24903.nickpiggin@yahoo.com.au> <49AB9336.7010103@goop.org>
-In-Reply-To: <49AB9336.7010103@goop.org>
+	Mon, 2 Mar 2009 03:20:26 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFD] Automatic suspend
+Date: Mon, 2 Mar 2009 09:24:36 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: "Arve Hj?nnev?g" <arve@android.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org> <d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com> <20090301225647.GE1961@elf.ucw.cz>
+In-Reply-To: <20090301225647.GE1961@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200903021919.30068.nickpiggin@yahoo.com.au>
+Message-Id: <200903020924.42451.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009 19:05:10 Jeremy Fitzhardinge wrote:
-> Nick Piggin wrote:
-> > That would kind of seem like Xen has a better design to me, OTOH if it
-> > needs this dom0 for most device drivers and things, then how much
-> > difference is it really? Is KVM really disadvantaged by being a part of
-> > the kernel?
+Am Sonntag 01 März 2009 23:56:47 schrieb Pavel Machek:
+> > Allowing user space to suspend input devices while they are still open
+> > is useful. The user-space code that reads from the input devices does
+> > not need to know if the device is suspended or not, and the kernel
+> > cannot auto suspend input devices based on inactivity.
 >
-> Well, you can lump everything together in dom0 if you want, and that is
-> a common way to run a Xen system.  But there's no reason you can't
-> disaggregate drivers into their own domains, each with the
-> responsibility for a particular device or set of devices (or indeed, any
-> other service you want provided).  Xen can use hardware features like
-> VT-d to really enforce the partitioning so that the domains can't
-> program their hardware to touch anything except what they're allowed to
-> touch, so nothing is trusted beyond its actual area of responsibility.
-> It also means that killing off and restarting a driver domain is a
-> fairly lightweight and straightforward operation because the state is
-> isolated and self-contained; guests using a device have to be able to
-> deal with a disconnect/reconnect anyway (for migration), so it doesn't
-> affect them much.  Part of the reason there's a lot of academic interest
-> in Xen is because it has the architectural flexibility to try out lots
-> of different configurations.
->
-> I wouldn't say that KVM is necessarily disadvantaged by its design; its
-> just a particular set of tradeoffs made up-front.  It loses Xen's
-> flexibility, but the result is very familiar to Linux people.  A guest
-> domain just looks like a qemu process that happens to run in a strange
-> processor mode a lot of the time.  The qemu process provides virtual
-> device access to its domain, and accesses the normal device drivers like
-> any other usermode process would.  The domains are as isolated from each
-> other as much as processes normally are, but they're all floating around
-> in the same kernel; whether that provides enough isolation for whatever
-> technical, billing, security, compliance/regulatory or other
-> requirements you have is up to the user to judge.
+> Actually, I'd like you to fix your userspace and close input devices
+> when it does not need them. Given the way you control the platform it
+> should not be that hard. I do not see why we'd want to invent new
+> interface for "uhuh, I have opened the keyboard but I am not really
+> interested in keys being pressed".
 
-Well what is the advantage of KVM? Just that it is integrated into
-the kernel? Can we look at the argument the other way around and
-ask why Xen can't replace KVM? (is it possible to make use of HW
-memory virtualization in Xen?) The hypervisor is GPL, right?
+Generally you can't do this. A task has an open fd.
 
+- you cannot assume it can open the device again (fd may be inherited)
+- keeping the device open makes sure you are talking to the same device
+- you may want to avoid repeating expensive initialisations
+- some input devices also do output
 
-> >  Would it be possible I wonder to make
-> > a MMU virtualization layer for CPUs without support, using Xen's page
-> > table protection methods, and have KVM use that? Or does that amount
-> > to putting a significant amount of Xen hypervisor into the kernel..?
->
-> At one point Avi was considering doing it, but I don't think he ever
-> made any real effort in that direction.  KVM is pretty wedded to having
-> hardware support anyway, so there's not much point in removing it in
-> this one area.
-
-Not removing it, but making it available as an alternative form of
-"hardware supported" MMU virtualization. As you say if direct protected
-page tables often are faster than existing HW solutoins anyway, then it
-could be a win for KVM even on newer CPUs.
-
-
-> The Xen technique gets its performance from collapsing a level of
-> indirection, but that has a cost in terms of flexibility; the hypervisor
-> can't do as much mucking around behind the guest's back (for example,
-> the guest sees real hardware memory addresses in the form of mfns, so
-> Xen can't move pages around, at least not without some form of explicit
-> synchronisation).
-
-Any problem can be solved by adding another level of indirection... :)
+	Regards
+		Oliver
 
