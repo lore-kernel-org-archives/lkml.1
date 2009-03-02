@@ -1,162 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZCBXuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbZCBXvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbZCBXuz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbZCBXuU
+	id S1758018AbZCBXvh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:51:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbZCBXv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:50:20 -0500
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:35420 "EHLO
-	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758149AbZCBXuS (ORCPT
+	Mon, 2 Mar 2009 18:51:28 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:52753 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752758AbZCBXv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:50:18 -0500
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [net-next PATCH 2/2] e1000: fix unmap bug
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, gospo@redhat.com, stable@kernel.org,
-       linux-kernel@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 02 Mar 2009 15:49:53 -0800
-Message-ID: <20090302234953.12507.91320.stgit@lost.foo-projects.org>
-In-Reply-To: <20090302234929.12507.51437.stgit@lost.foo-projects.org>
-References: <20090302234929.12507.51437.stgit@lost.foo-projects.org>
-User-Agent: StGIT/0.14.3
+	Mon, 2 Mar 2009 18:51:28 -0500
+Date: Mon, 2 Mar 2009 15:51:20 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       shai@scalex86.org
+Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
+Message-ID: <20090302235120.GF27240@localdomain>
+References: <49A626B2.8090205@kernel.org> <20090226064806.GC27240@localdomain> <20090226114457.GB6651@elte.hu> <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090228094430.GH12095@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+On Sat, Feb 28, 2009 at 10:44:30AM +0100, Ingo Molnar wrote:
+>
+>* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>
+>> 
+>> True, but by how much? 212 bytes, out of 7285943 bytes which 
+>> is very very small percentage wise.
+>
+>How does this eliminate the validity of the patch?
+>
 
-This is in reference to the issue shown in kerneloops (search e1000 unmap)
+It costs 212 bytes to leave is_vsmp_box() to not just be a dummy no-op.
+Having is_vsmp_box() detect if the hardware is indeed vSMP, is meaningful even when
+CONFIG_VSMP is not turned on.   This is because is_vsmp_box() is used to
+tell the kernel, that although the cpus being used are supposed to have TSCs
+in sync, they are not really in sync.  This is because
+you cannot ensure TSCs won't drift between multiple boards being aggregated
+on vSMP systems. Take the case of distro kernels.   Distro kernels typically do
+not have CONFIG_X86_VSMP on.  Due to the large internode cacheline
+setting, CONFIG_VSMP would not be on on the generic distro installer kernels.
+If is_vsmp_box() is a no-op, the generic distro installer kernels will
+assume TSCs to be synched, which is bad.  Hence, it will be nice if, for
+the cost of 212 bytes, vsmp64.o be compiled either unconditionally, OR
+conditionally for 64bit architectures only.  The question is, is 212 bytes out
+of 7285943 bytes too expensive for the generic kernels?  I hope not.
 
-The e1000 transmit code was calling pci_unmap_page on dma handles that it
-might have called pci_map_single on.
-
-Same bug as e1000e
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Acked-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
-
- drivers/net/e1000/e1000_main.c |   51 +++++++++++++++++++++-------------------
- 1 files changed, 27 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index 61b56ca..1f390ce 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -2049,14 +2049,10 @@ void e1000_free_all_tx_resources(struct e1000_adapter *adapter)
- static void e1000_unmap_and_free_tx_resource(struct e1000_adapter *adapter,
- 					     struct e1000_buffer *buffer_info)
- {
--	if (buffer_info->dma) {
--		pci_unmap_page(adapter->pdev,
--				buffer_info->dma,
--				buffer_info->length,
--				PCI_DMA_TODEVICE);
--		buffer_info->dma = 0;
--	}
-+	buffer_info->dma = 0;
- 	if (buffer_info->skb) {
-+		skb_dma_unmap(&adapter->pdev->dev, buffer_info->skb,
-+		              DMA_TO_DEVICE);
- 		dev_kfree_skb_any(buffer_info->skb);
- 		buffer_info->skb = NULL;
- 	}
-@@ -2907,16 +2903,24 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
- 			unsigned int mss)
- {
- 	struct e1000_hw *hw = &adapter->hw;
--	struct e1000_buffer *buffer_info;
--	unsigned int len = skb->len;
--	unsigned int offset = 0, size, count = 0, i;
-+	unsigned int len = skb_headlen(skb);
-+	unsigned int offset, size, count = 0, i;
- 	unsigned int f;
--	len -= skb->data_len;
-+	dma_addr_t map;
- 
- 	i = tx_ring->next_to_use;
- 
-+	if (skb_dma_map(&adapter->pdev->dev, skb, DMA_TO_DEVICE)) {
-+		dev_err(&adapter->pdev->dev, "TX DMA map failed\n");
-+		dev_kfree_skb(skb);
-+		return -2;
-+	}
-+
-+	map = skb_shinfo(skb)->dma_maps[0];
-+	offset = 0;
-+
- 	while (len) {
--		buffer_info = &tx_ring->buffer_info[i];
-+		struct e1000_buffer *buffer_info = &tx_ring->buffer_info[i];
- 		size = min(len, max_per_txd);
- 		/* Workaround for Controller erratum --
- 		 * descriptor for non-tso packet in a linear SKB that follows a
-@@ -2949,11 +2953,7 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
- 			size -= 4;
- 
- 		buffer_info->length = size;
--		buffer_info->dma =
--			pci_map_single(adapter->pdev,
--				skb->data + offset,
--				size,
--				PCI_DMA_TODEVICE);
-+		buffer_info->dma = map + offset;
- 		buffer_info->time_stamp = jiffies;
- 		buffer_info->next_to_watch = i;
- 
-@@ -2968,9 +2968,11 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
- 
- 		frag = &skb_shinfo(skb)->frags[f];
- 		len = frag->size;
--		offset = frag->page_offset;
-+		map = skb_shinfo(skb)->dma_maps[f + 1];
-+		offset = 0;
- 
- 		while (len) {
-+			struct e1000_buffer *buffer_info;
- 			buffer_info = &tx_ring->buffer_info[i];
- 			size = min(len, max_per_txd);
- 			/* Workaround for premature desc write-backs
-@@ -2986,12 +2988,7 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
- 				size -= 4;
- 
- 			buffer_info->length = size;
--			buffer_info->dma =
--				pci_map_page(adapter->pdev,
--					frag->page,
--					offset,
--					size,
--					PCI_DMA_TODEVICE);
-+			buffer_info->dma = map + offset;
- 			buffer_info->time_stamp = jiffies;
- 			buffer_info->next_to_watch = i;
- 
-@@ -3005,6 +3002,7 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
- 	i = (i == 0) ? tx_ring->count - 1 : i - 1;
- 	tx_ring->buffer_info[i].skb = skb;
- 	tx_ring->buffer_info[first].next_to_watch = i;
-+	smp_wmb();
- 
- 	return count;
- }
-@@ -3844,6 +3842,11 @@ static bool e1000_clean_tx_irq(struct e1000_adapter *adapter,
- 		/* Detect a transmit hang in hardware, this serializes the
- 		 * check with the clearing of time_stamp and movement of i */
- 		adapter->detect_tx_hung = false;
-+		/*
-+		 * read barrier to make sure that the ->dma member and time
-+		 * stamp are updated fully
-+		 */
-+		smp_rmb();
- 		if (tx_ring->buffer_info[eop].dma &&
- 		    time_after(jiffies, tx_ring->buffer_info[eop].time_stamp +
- 		               (adapter->tx_timeout_factor * HZ))
-
+Thanks,
+Kiran
