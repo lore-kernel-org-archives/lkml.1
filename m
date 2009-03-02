@@ -1,163 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbZCBDZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbZCBDh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759168AbZCBDZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 22:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZCBDZS
+	id S1758888AbZCBDh0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 22:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZCBDhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 22:25:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49923 "EHLO hera.kernel.org"
+	Sun, 1 Mar 2009 22:37:13 -0500
+Received: from mga03.intel.com ([143.182.124.21]:39540 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753820AbZCBDZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 22:25:16 -0500
-Message-ID: <49AB511E.9010507@kernel.org>
-Date: Sun, 01 Mar 2009 19:23:10 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751757AbZCBDhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 22:37:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,287,1233561600"; 
+   d="scan'208";a="115626043"
+Date: Mon, 2 Mar 2009 11:36:38 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: recursive slqb_lock
+Message-ID: <20090302033638.GA8096@localhost>
+References: <20090226053450.GA31108@localhost> <20090301150725.GB26905@wotan.suse.de> <20090301170015.GC26905@wotan.suse.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Kevin O'Connor" <kevin@koconnor.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
-       coreboot@coreboot.org
-Subject: [PATCH] x86: ioremap mptable -v2
-References: <499DB40C.1060205@coresystems.de> <499DCE79.8020809@coresystems.de> <20090222152530.GA30576@morn.localdomain> <200902221806.55429.rjw@sisk.pl> <49A1C4AF.9000009@kernel.org> <20090222223226.GA3346@morn.localdomain> <20090222225847.GB1649@elte.hu> <49A23EE0.8000102@kernel.org> <20090228234127.GA29964@morn.localdomain> <49A9FC9A.2030707@kernel.org> <20090301180420.GA27040@morn.localdomain>
-In-Reply-To: <20090301180420.GA27040@morn.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090301170015.GC26905@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Nick,
 
-Impact: fix boot with mptable above max_low_mapped
+On Sun, Mar 01, 2009 at 07:00:15PM +0200, Nick Piggin wrote:
+> On Sun, Mar 01, 2009 at 04:07:25PM +0100, Nick Piggin wrote:
+> > On Thu, Feb 26, 2009 at 01:34:50PM +0800, Wu Fengguang wrote:
+> > > Hi Nick,
+> > > 
+> > > I got a lockdep warning. It looks like the slqb_lock will be taken
+> > > twice in the call chain:
+> > > 
+> > >         s_start()  => take slqb_lock
+> > >           s_show()
+> > >             gather_stats()  => take slqb_lock again
+> > 
+> > Hey, thanks for this. The following patch should fix it.
+> > 
+> > --
+> > Fix the lockdep error reported by Fengguang where down_read slqb_lock
+> > is taken twice, with the possibility for a deadlock.
+> > 
+> > Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-try to use early_ioremap it.
+> > +static void gather_stats(struct kmem_cache *s, struct stats_gather *stats)
+> > +{
+> > +	down_read(&slqb_lock); /* hold off hotplug */
+> > +	gather_stats(s, stats);
+> > +	up_read(&slqb_lock);
+> > +}
+> 
+> Oops, I didn't test it. That call should be to gather_stats_locked of
+> course.
 
-v2: also get the exact size for reserve_bootmem in case we got big size than 4k
+Yeah it fixed the lockdep warning :)
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
-
----
- arch/x86/kernel/mpparse.c |   20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/mpparse.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/mpparse.c
-+++ linux-2.6/arch/x86/kernel/mpparse.c
-@@ -611,12 +611,20 @@ static void __init __get_smp_config(unsi
- 		construct_default_ISA_mptable(mpf->feature1);
- 
- 	} else if (mpf->physptr) {
-+		struct mpc_table *mpc;
-+		unsigned long size;
- 
-+		mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
-+		size = mpc->length;
-+		apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", (unsigned long)mpf->physptr,
-+			 mpf->physptr + size);
-+		early_iounmap(mpc, PAGE_SIZE);
-+		mpc = early_ioremap(mpf->physptr, size);
- 		/*
- 		 * Read the physical hardware table.  Anything here will
- 		 * override the defaults.
- 		 */
--		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
-+		if (!smp_read_mpc(mpc, early)) {
- #ifdef CONFIG_X86_LOCAL_APIC
- 			smp_found_config = 0;
- #endif
-@@ -624,9 +632,12 @@ static void __init __get_smp_config(unsi
- 			       "BIOS bug, MP table errors detected!...\n");
- 			printk(KERN_ERR "... disabling SMP support. "
- 			       "(tell your hw vendor)\n");
-+			early_iounmap(mpc, size);
- 			return;
- 		}
- 
-+		early_iounmap(mpc, size);
-+
- 		if (early)
- 			return;
- #ifdef CONFIG_X86_IO_APIC
-@@ -700,7 +711,12 @@ static int __init smp_scan_config(unsign
- 			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
- 					BOOTMEM_DEFAULT);
- 			if (mpf->physptr) {
--				unsigned long size = PAGE_SIZE;
-+				struct mpc_table *mpc;
-+				unsigned long size;
-+
-+				mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
-+				size = mpc->length;
-+				early_iounmap(mpc, PAGE_SIZE);
- #ifdef CONFIG_X86_32
- 				/*
- 				 * We cannot access to MPC table to compute[PATCH] x86: ioremap mptable -v2
-
-Impact: fix boot with mptable above max_low_mapped
-
-try to use early_ioremap it.
-
-v2: also get the exact size for reserve_bootmem in case we got big size than 4k
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
-
----
- arch/x86/kernel/mpparse.c |   20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/mpparse.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/mpparse.c
-+++ linux-2.6/arch/x86/kernel/mpparse.c
-@@ -611,12 +611,20 @@ static void __init __get_smp_config(unsi
- 		construct_default_ISA_mptable(mpf->feature1);
- 
- 	} else if (mpf->physptr) {
-+		struct mpc_table *mpc;
-+		unsigned long size;
- 
-+		mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
-+		size = mpc->length;
-+		apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", (unsigned long)mpf->physptr,
-+			 mpf->physptr + size);
-+		early_iounmap(mpc, PAGE_SIZE);
-+		mpc = early_ioremap(mpf->physptr, size);
- 		/*
- 		 * Read the physical hardware table.  Anything here will
- 		 * override the defaults.
- 		 */
--		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
-+		if (!smp_read_mpc(mpc, early)) {
- #ifdef CONFIG_X86_LOCAL_APIC
- 			smp_found_config = 0;
- #endif
-@@ -624,9 +632,12 @@ static void __init __get_smp_config(unsi
- 			       "BIOS bug, MP table errors detected!...\n");
- 			printk(KERN_ERR "... disabling SMP support. "
- 			       "(tell your hw vendor)\n");
-+			early_iounmap(mpc, size);
- 			return;
- 		}
- 
-+		early_iounmap(mpc, size);
-+
- 		if (early)
- 			return;
- #ifdef CONFIG_X86_IO_APIC
-@@ -700,7 +711,12 @@ static int __init smp_scan_config(unsign
- 			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
- 					BOOTMEM_DEFAULT);
- 			if (mpf->physptr) {
--				unsigned long size = PAGE_SIZE;
-+				struct mpc_table *mpc;
-+				unsigned long size;
-+
-+				mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
-+				size = mpc->length;
-+				early_iounmap(mpc, PAGE_SIZE);
- #ifdef CONFIG_X86_32
- 				/*
- 				 * We cannot access to MPC table to compute
+Thanks,
+Fengguang
