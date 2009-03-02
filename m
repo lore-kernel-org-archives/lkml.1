@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbZCBQRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbZCBQTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbZCBQRS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZCBQRG
+	id S1756491AbZCBQTo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZCBQTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:17:06 -0500
-Received: from cathcart.site5.com ([74.54.107.137]:35524 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbZCBQRF (ORCPT
+	Mon, 2 Mar 2009 11:19:36 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46602 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752254AbZCBQTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:17:05 -0500
-Message-ID: <49AC0677.7040102@compulab.co.il>
-Date: Mon, 02 Mar 2009 18:16:55 +0200
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
-MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: dmitry.torokhov@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>
-Subject: Re: [PATCH RESEND] Input: wm97xx: add BTN_TOUCH event to wm97xx to
- use it with Android
-References: <49ABE938.8040502@compulab.co.il> <20090302142838.GA23342@rakim.wolfsonmicro.main>
-In-Reply-To: <20090302142838.GA23342@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Mar 2009 11:19:35 -0500
+Date: Mon, 2 Mar 2009 08:20:03 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andreas Robinson <andr345@gmail.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       sam@ravnborg.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+Message-ID: <20090302082003.1bb7bdc5@infradead.org>
+In-Reply-To: <1236004353.10055.49.camel@andreas-laptop>
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
+	<cc43514a0902170242m5af7e511ne00f424f06a5da22@mail.gmail.com>
+	<ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
+	<200902181528.29697.rusty@rustcorp.com.au>
+	<ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
+	<1234952753.10531.48.camel@andreas-laptop>
+	<cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
+	<ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com>
+	<1235216636.7025.1023.camel@andreas-laptop>
+	<1236004353.10055.49.camel@andreas-laptop>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark,
-
-Mark Brown wrote:
-> On Mon, Mar 02, 2009 at 04:12:08PM +0200, Mike Rapoport wrote:
->> Android expects BTN_TOUCH events when pen state changes. Add BTN_TOUCH
->> event reporting to allow use of wm97xx touchscreen controller with
->> Android devices.
+> A monolithic kernel with parallelized initcalls is better - about 200
+> ms faster than parallel insmods on my test system. However, it comes
+> with a fairly large set of changes:
 > 
->> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
->> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> * First, you need a 200-line patch in init/main.c (do_initcalls() and
+> friends)
+
+why?
+We already have async function calls; and those speed up my boot (when
+enabled) significantly, by doing much of the kernel/driver init in
+parallel.
+
+My server box boots the whole kernel (including all drivers; I build
+verything in) in 0.56 seconds, and my net books do it in around 1.0
+seconds.
+
 > 
-> I'd still like to see more consistency over touchscreen drivers on this
-> one, BTW - if we're doing this it should be done for all touchscreen
-> drivers (either by updating the individual drivers or having the input
-> core do it).  This isn't the only touchscreen driver that doesn't do
-> BTN_TOUCH.
+> * Then the built-in module dependencies must be calculated properly,
+> eg with a modified depmod, and added to the build process.
 
-Most touchscreen drivers already have BTN_TOUCH event generation:
+nope not if done right
 
-> git-grep -L BTN_TOUCH v2.6.29-rc6 drivers/input/touchscreen/
-v2.6.29-rc6:drivers/input/touchscreen/Kconfig
-v2.6.29-rc6:drivers/input/touchscreen/Makefile
-v2.6.29-rc6:drivers/input/touchscreen/mainstone-wm97xx.c
-v2.6.29-rc6:drivers/input/touchscreen/ucb1400_ts.c
-v2.6.29-rc6:drivers/input/touchscreen/wm9705.c
-v2.6.29-rc6:drivers/input/touchscreen/wm9712.c
-v2.6.29-rc6:drivers/input/touchscreen/wm9713.c
-v2.6.29-rc6:drivers/input/touchscreen/wm97xx-core.c
+> So, what do you think, should I keep going? IMHO, the slower userspace
+> implementation is acceptable since it's so much simpler.
 
-If there no objection I can make a similar patch for mainstone-wm97xx.c and ucb1400_ts.c
-
-
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
--- 
-Sincerely yours,
-Mike.
+I would strongly suggest that you turn on the async function calls and
+look at the boot graph of the resulting kernel boot... if you send
+that to me I can also take a look and make suggestions....
 
