@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbZCBKDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758353AbZCBKMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758842AbZCBKDc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 05:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbZCBKDW
+	id S1758353AbZCBKMu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 05:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZCBKMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 05:03:22 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:37891 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756483AbZCBKDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 05:03:21 -0500
-Date: Mon, 2 Mar 2009 11:03:10 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
-       David Woodhouse <dwmw2@infradead.org>, linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
-Message-ID: <20090302110310.35af50ea@i1501.lan.towertech.it>
-In-Reply-To: <alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<20090220170454.04382e9e@i1501.lan.towertech.it>
-	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
-	<1235511327.18632.73.camel@macbook.infradead.org>
-	<20090224231154.60ba18d6@i1501.lan.towertech.it>
-	<1235514727.18632.93.camel@macbook.infradead.org>
-	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
-	<20090225111836.621412c1@i1501.lan.towertech.it>
-	<20090227185514.GA1071@linux-m68k.org>
-	<alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 05:12:40 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:47572 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754022AbZCBKMk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 05:12:40 -0500
+Date: Mon, 2 Mar 2009 15:42:31 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: Bernd Petrovitsch <bernd@firmix.at>
+Cc: Frank Seidel <fseidel@suse.de>,
+       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       Adrian Bunk <bunk@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Frank Seidel <frank@f-seidel.de>, kernalert.de@gmail.com
+Subject: Re: [PATCH] lkdtm: reduce stack size
+Message-ID: <20090302101231.GC7410@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+References: <49AAE94E.8080308@suse.de> <20090302041148.GA7410@in.ibm.com> <1235987490.19757.4.camel@spike.firmix.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235987490.19757.4.camel@spike.firmix.at>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009 10:54:14 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+Hi Bernd,
 
-> Indeed. You can have a working RTC class driver for lots of hardware by just
-> writing ca. 100 lines of code on top of the generic framework.
+On Mon, Mar 02, 2009 at 10:51:30AM +0100, Bernd Petrovitsch wrote:
+> Hi!
+> 
+> On Mon, 2009-03-02 at 09:41 +0530, Ankita Garg wrote:
+> > Hi Frank,
+> > 
+> > On Sun, Mar 01, 2009 at 09:00:14PM +0100, Frank Seidel wrote:
+> > > From: Frank Seidel <frank@f-seidel.de>
+> > > 
+> > > Reduce stack memory footprint of lkdtm
+> > > (recursive_loop). From 1024 bytes on i386 down
+> > > to <10.
+> > >
+> > 
+> > The intention here is infact to trigger a stack overflow. This module is
+> > used to test kernel dumping mechanism like kdump. So the expectation is
+> > that the kernel will dump as soon as the stack overflows.
+> 
+> That answers why the variable exists at all. It is only zeroed and never
+> else used.
+> Hmm, adding the above as a comment makes probably sense.
+>
 
- That's true, but we would then have two generic frameworks. And one
- of them will have its code scattered all around the kernel.
-
- So you either use the old rtc framework, which is perfectly functional,
- or you move to the new rtc lass and write the drivers.
-
- Layering a generic framework over another generic framework
- is quite a nonsense . 
-
+There is some text at the head of the module file that explains what the
+module does and the usage, etc. I suppose that would be sufficient ?
+ 
 -- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
