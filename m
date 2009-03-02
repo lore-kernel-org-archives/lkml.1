@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbZCBOnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZCBOsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbZCBOnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 09:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZCBOnX
+	id S1754689AbZCBOsn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 09:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZCBOsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 09:43:23 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48288 "EHLO mx2.mail.elte.hu"
+	Mon, 2 Mar 2009 09:48:35 -0500
+Received: from smtp20.orange.fr ([193.252.22.31]:2301 "EHLO smtp20.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbZCBOnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 09:43:22 -0500
-Date: Mon, 2 Mar 2009 15:43:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
-Message-ID: <20090302144303.GA30136@elte.hu>
-References: <1235996477.5330.174.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235996477.5330.174.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752126AbZCBOse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 09:48:34 -0500
+X-ME-UUID: 20090302144832321.4E6041C00059@mwinf2024.orange.fr
+Subject: Re: usb hotplug and hooking
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Oguz Yarimtepe <comp.ogz@gmail.com>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20831c740903020633r40cc3a3fh5eb74eacd9026d3e@mail.gmail.com>
+References: <20831c740903020539h68f62f2fj1575408d89050d25@mail.gmail.com>
+	 <200903021513.01356.oliver@neukum.org>
+	 <20831c740903020633r40cc3a3fh5eb74eacd9026d3e@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 02 Mar 2009 15:48:10 +0100
+Message-Id: <1236005290.10675.360.camel@skunk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-03-02 at 16:33 +0200, Oguz Yarimtepe wrote:
+> I will look at the udev scripting. I don't need a GUI, yet. I will
+> just communicate with the usb device, check its files and if an
+> authorized software is found (will use asymmetric cryptography) will
+> load it.  I can write the software that will do the mentioned things.
+> I just don't know the hooking part. But udev is a good start. Thanks.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Have a look at halevt:
+http://www.environnement.ens.fr/perso/dumas/halevt.html
 
-> Hi Linus,
-> 
-> Would you be willing to take such a patch?
-> 
-> Its a rather big one, but if you think its a good idea, I can 
-> generate one against whatever tree is needed.
-> 
-> Provided I didn't break any !genirq stuff.. then again, that 
-> might be a nice incentive to fix up those last few archs.
+HTH,
+	Xav
 
-look good IMO. If there are no objections, and given that it 
-modifies half a thousand of files i'd suggest we do this near 
-the end of the merge window and not carry it in the genirq tree 
-- while trivial it will still generate quite a bit of conflicts. 
-Would that work with you?
 
-	Ingo
