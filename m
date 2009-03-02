@@ -1,151 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbZCBKUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbZCBKUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbZCBKUZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 05:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757552AbZCBKTf
+	id S1759862AbZCBKUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 05:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZCBKTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 05:19:35 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:58984 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757140AbZCBKTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 05:19:34 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: mingo@redhat.com
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 1/3] x86_32: apic/es7000_32, fix section mismatch
-Date: Mon,  2 Mar 2009 11:18:52 +0100
-Message-Id: <1235989134-29146-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1.3
+	Mon, 2 Mar 2009 05:19:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55900 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758945AbZCBKTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 05:19:38 -0500
+Date: Mon, 2 Mar 2009 11:19:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "Kevin O'Connor" <kevin@koconnor.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
+       coreboot@coreboot.org
+Subject: Re: [PATCH] x86: ioremap mptable -v2
+Message-ID: <20090302101918.GA6705@elte.hu>
+References: <200902221806.55429.rjw@sisk.pl> <49A1C4AF.9000009@kernel.org> <20090222223226.GA3346@morn.localdomain> <20090222225847.GB1649@elte.hu> <49A23EE0.8000102@kernel.org> <20090228234127.GA29964@morn.localdomain> <49A9FC9A.2030707@kernel.org> <20090301180420.GA27040@morn.localdomain> <49AB511E.9010507@kernel.org> <20090302101823.GJ20897@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090302101823.GJ20897@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove __init section placement for some functions, so that we don't
-get section mismatch warnings.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/apic/es7000_32.c |   32 +++++++++++++++-----------------
- 1 files changed, 15 insertions(+), 17 deletions(-)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
-index 4d8830f..67947b6 100644
---- a/arch/x86/kernel/apic/es7000_32.c
-+++ b/arch/x86/kernel/apic/es7000_32.c
-@@ -173,7 +173,7 @@ static int __init es7000_apic_is_cluster(void)
- 	return 0;
- }
- 
--static void __init setup_unisys(void)
-+static void setup_unisys(void)
- {
- 	/*
- 	 * Determine the generation of the ES7000 currently running.
-@@ -192,7 +192,7 @@ static void __init setup_unisys(void)
- /*
-  * Parse the OEM Table:
-  */
--static int __init parse_unisys_oem(char *oemptr)
-+static int parse_unisys_oem(char *oemptr)
- {
- 	int			i;
- 	int 			success = 0;
-@@ -254,7 +254,7 @@ static int __init parse_unisys_oem(char *oemptr)
- }
- 
- #ifdef CONFIG_ACPI
--static int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
-+static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
- {
- 	struct acpi_table_header *header = NULL;
- 	struct es7000_oem_table *table;
-@@ -285,7 +285,7 @@ static int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
- 	return 0;
- }
- 
--static void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
-+static void unmap_unisys_acpi_oem_table(unsigned long oem_addr)
- {
- 	if (!oem_addr)
- 		return;
-@@ -303,10 +303,10 @@ static int es7000_check_dsdt(void)
- 	return 0;
- }
- 
--static int __initdata es7000_acpi_ret;
-+static int es7000_acpi_ret;
- 
- /* Hook from generic ACPI tables.c */
--static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+static int es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	unsigned long oem_addr = 0;
- 	int check_dsdt;
-@@ -333,8 +333,7 @@ static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- 	return ret && !es7000_apic_is_cluster();
- }
- 
--static int __init
--es7000_acpi_madt_oem_check_cluster(char *oem_id, char *oem_table_id)
-+static int es7000_acpi_madt_oem_check_cluster(char *oem_id, char *oem_table_id)
- {
- 	int ret = es7000_acpi_ret;
- 
-@@ -342,13 +341,12 @@ es7000_acpi_madt_oem_check_cluster(char *oem_id, char *oem_table_id)
- }
- 
- #else /* !CONFIG_ACPI: */
--static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+static int es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	return 0;
- }
- 
--static int __init
--es7000_acpi_madt_oem_check_cluster(char *oem_id, char *oem_table_id)
-+static int es7000_acpi_madt_oem_check_cluster(char *oem_id, char *oem_table_id)
- {
- 	return 0;
- }
-@@ -396,7 +394,7 @@ es7000_mip_write(struct mip_reg *mip_reg)
- 	return status;
- }
- 
--static void __init es7000_enable_apic_mode(void)
-+static void es7000_enable_apic_mode(void)
- {
- 	struct mip_reg es7000_mip_reg;
- 	int mip_status;
-@@ -627,9 +625,9 @@ static int probe_es7000(void)
- 	return 0;
- }
- 
--static int __initdata es7000_mps_ret;
--static __init int
--es7000_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
-+static int es7000_mps_ret;
-+static int es7000_mps_oem_check(struct mpc_table *mpc, char *oem,
-+		char *productid)
- {
- 	int ret = 0;
- 
-@@ -646,8 +644,8 @@ es7000_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
- 	return ret && !es7000_apic_is_cluster();
- }
- 
--static __init int
--es7000_mps_oem_check_cluster(struct mpc_table *mpc, char *oem, char *productid)
-+static int es7000_mps_oem_check_cluster(struct mpc_table *mpc, char *oem,
-+		char *productid)
- {
- 	int ret = es7000_mps_ret;
- 
--- 
-1.6.1.3
+> >  	} else if (mpf->physptr) {
+> > +		struct mpc_table *mpc;
+> > +		unsigned long size;
+> >  
+> > +		mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
+> > +		size = mpc->length;
+> > +		apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", (unsigned long)mpf->physptr,
+> > +			 mpf->physptr + size);
+> > +		early_iounmap(mpc, PAGE_SIZE);
+> > +		mpc = early_ioremap(mpf->physptr, size);
+> 
+> no objections, but this bit of __get_smp_config() needs to be 
+> done cleaner - the whole mpf->physptr != 0 bit should probably 
+> go into a helper function.
 
+and if you do that it should be done via two patches, in two 
+steps: first patch is a pure cleanup that moves this bit of 
+__get_smp_config() into a helper function. The second patch then 
+adds the early_ioremap().
+
+	Ingo
