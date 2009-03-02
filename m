@@ -1,108 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbZCBW1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZCBW2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbZCBW1z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZCBW1q
+	id S1757040AbZCBW2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbZCBW2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:27:46 -0500
-Received: from an-out-0708.google.com ([209.85.132.244]:11579 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbZCBW1o convert rfc822-to-8bit (ORCPT
+	Mon, 2 Mar 2009 17:28:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53152 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754590AbZCBW2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:27:44 -0500
-MIME-Version: 1.0
-In-Reply-To: <20090302140014.47b60178.akpm@linux-foundation.org>
-References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com>
-	 <20090302130425.23cc628d.akpm@linux-foundation.org>
-	 <5aa163d00903021346g59d90241v11f384eb97641e43@mail.gmail.com>
-	 <20090302140014.47b60178.akpm@linux-foundation.org>
-Date: Mon, 2 Mar 2009 17:27:41 -0500
-X-Google-Sender-Auth: a3e9e09dd8ab62fb
-Message-ID: <5aa163d00903021427v4088e29alac4350f9006d5a35@mail.gmail.com>
-Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless 
-	support and add sysfs interface
-From: Mike Murphy <mamurph@cs.clemson.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, greg@kroah.com, oliver@neukum.org,
-       fweisbec@gmail.com, torvalds@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 2 Mar 2009 17:28:43 -0500
+Date: Mon, 2 Mar 2009 14:27:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmtom :  add VM_BUG_ON in __get_free_pages
+Message-Id: <20090302142757.1cc014aa.akpm@linux-foundation.org>
+In-Reply-To: <20090302183148.a4dfcc22.minchan.kim@barrios-desktop>
+References: <20090302183148.a4dfcc22.minchan.kim@barrios-desktop>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 2, 2009 at 5:00 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> Yup, there's lots of crappy code in the tree, and it is regrettable
-> that maintainers continue to go ahead and merge that crappy code.
->
-> There's no easy fix for this - you need to be aware of what is right
-> and what is wrong, but you cannot look at existing code to determine
-> this :(
+On Mon, 2 Mar 2009 18:31:48 +0900
+MinChan Kim <minchan.kim@gmail.com> wrote:
 
-Part of the problem is that this is the first driver I've really
-worked on to any extent... and all my formal kernel hacking training
-was on FreeBSD, not Linux. Given the speed at which kernel development
-moves, lack of good docs on how best to do development, etc., one
-simply has to jump into the process and hope for the best. That's
-awfully hard to do when kernel hacking isn't your full-time
-occupation....
+> 
+> The __get_free_pages is used in many place. 
+> Also, driver developers can use it freely due to export function.
+> Some developers might use it to allocate high pages by mistake. 
+> 
+> The __get_free_pages can allocate high page using alloc_pages, 
+> but it can't return linear address for high page.
+> 
+> Even worse, in this csse, caller can't free page which are there in high zone. 
+> So, It would be better to add VM_BUG_ON. 
+> 
+> It's based on mmtom 2009-02-27-13-54.
+>  
+> Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+> ---
+>  mm/page_alloc.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 8294107..381056b 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1681,6 +1681,13 @@ EXPORT_SYMBOL(__alloc_pages_internal);
+>  unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
+>  {
+>  	struct page * page;
+> +
+> +	/*
+> +	 * __get_free_pages() returns a 32-bit address, which cannot represent
+> +	 * a highmem page
+> +	 */
+> +	VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
+> +
+>  	page = alloc_pages(gfp_mask, order);
+>  	if (!page)
+>  		return 0;
 
-For example, my dissertation is on virtualization of grid computing
-systems. I'm doing this driver development simply because I need the
-driver for my own use... and perhaps one of our affiliated research
-groups can use it. In my own research, I use Linux exclusively, but
-all the work I do is at such a high level in userspace that I write
-all my code in Python. I've taught C programming before and have done
-a ton of low-level development in a C dialect for sensor networks
-(nesC for TinyOS), so I'm comfortable with it. Even so, the kernel has
-its own internal types (hence my unneeded typecasts), and it's not
-always clear what type belongs where.
+If someone calls __get_free_pages(__GFP_HIGHMEM) then page_address()
+will reliably return NULL and the caller's code will oops.
 
->
-> If the code which you're modifying is known (by you) to be wrong then
-> there are two schools of thought.  Some people do like to "match the
-> existing code".  I disagree with that.  The code's wrong dammit - we
-> might as well make the new code "right".  If that results in
-> inconsistent-looking code, well, so be it.  We shouldn't have merged
-> the wrong code in the first place.
->
->
+Yes, there's a decent (and increasing) risk that the developer won't be
+testing the code on a highmem machine, but there are enough highmem
+machines out there that the bug should be discovered pretty quickly.
 
-Agreed on the code being correct, but there always arises that
-question about what constitutes "correct" in any given context
-(provably dumb things, like dividing by zero, excepted). For example,
-I broke the xpad driver into two pieces to make it easier to
-understand. When I go to compile it, the #include "xpad.h" in xpad.c
-literally causes the preprocessor to dump the contents of xpad.h into
-xpad.c, before handing the result off to the compiler for conversion
-to assembly. So the system doesn't really care what goes in which
-file... that distinction is left to the humans, who have to establish
-some kind of convention. But where is that convention documented?
+So I'm not sure that this test is worth the additional overhead to a
+fairly frequently called function?
 
-I could make the argument, for example, that the table of different
-Xbox devices and their properties should really go in the header file,
-even though it generates an array. That table constitutes metadata
-that the driver uses to map device ids to products, so from a software
-engineering perspective, it is more of a configuration than an
-executable segment. On the other hand, the only piece that really
-cares about that data is the driver itself... userspace really only
-cares about what type of device is actually connected. So from that
-perspective, it belongs in the C file. But then, whose userspace code
-is really going to include xpad.h? Circles are fun....
-
-And perhaps this is why we academics tend not to write operating
-systems that find their way into widespread use... instead ruminating
-on "nicer" designs (perhaps with a microkernel, *cough*) over more
-practical solutions :).
-
-Mike
--- 
-Mike Murphy
-Ph.D. Candidate and NSF Graduate Research Fellow
-Clemson University School of Computing
-120 McAdams Hall
-Clemson, SC 29634-0974 USA
-Tel: +1 864.656.2838   Fax: +1 864.656.0145
-http://cirg.cs.clemson.edu/~mamurph
