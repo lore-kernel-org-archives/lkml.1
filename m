@@ -1,139 +1,367 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbZCBMQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbZCBMTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbZCBMQp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 07:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbZCBMQh
+	id S1758203AbZCBMTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 07:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZCBMTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 07:16:37 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:60148 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752733AbZCBMQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 07:16:36 -0500
-Date: Mon, 2 Mar 2009 12:16:33 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Lin Ming <ming.m.lin@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-Message-ID: <20090302121632.GA14217@csn.ul.ie>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie> <1235647139.16552.34.camel@penberg-laptop> <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr> <20090302112122.GC21145@csn.ul.ie> <20090302113936.GJ1257@wotan.suse.de>
+	Mon, 2 Mar 2009 07:19:08 -0500
+Received: from cathcart.site5.com ([74.54.107.137]:55595 "EHLO
+	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbZCBMTH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 07:19:07 -0500
+Message-ID: <49ABCEB3.6090100@compulab.co.il>
+Date: Mon, 02 Mar 2009 14:18:59 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090302113936.GJ1257@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: David Brownell <david-b@pacbell.net>
+CC: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org, raph@8d.com
+Subject: Re: [PATCH] rtc-v3020: add ability to access v3020 chip with GPIOs
+References: <cover.1235400430.git.mike@compulab.co.il>	<d2392eac1d61487c6e56341271e7ba10c16b94b9.1235400430.git.mike@compulab.co.il> <20090302124737.03075958@i1501.lan.towertech.it>
+In-Reply-To: <20090302124737.03075958@i1501.lan.towertech.it>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cathcart.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 12:39:36PM +0100, Nick Piggin wrote:
-> On Mon, Mar 02, 2009 at 11:21:22AM +0000, Mel Gorman wrote:
-> > (Added Ingo as a second scheduler guy as there are queries on tg_shares_up)
-> > 
-> > On Fri, Feb 27, 2009 at 04:44:43PM +0800, Lin Ming wrote:
-> > > On Thu, 2009-02-26 at 19:22 +0800, Mel Gorman wrote: 
-> > > > In that case, Lin, could I also get the profiles for UDP-U-4K please so I
-> > > > can see how time is being spent and why it might have gotten worse?
-> > > 
-> > > I have done the profiling (oltp and UDP-U-4K) with and without your v2
-> > > patches applied to 2.6.29-rc6.
-> > > I also enabled CONFIG_DEBUG_INFO so you can translate address to source
-> > > line with addr2line.
-> > > 
-> > > You can download the oprofile data and vmlinux from below link,
-> > > http://www.filefactory.com/file/af2330b/
-> > > 
-> > 
-> > Perfect, thanks a lot for profiling this. It is a big help in figuring out
-> > how the allocator is actually being used for your workloads.
-> > 
-> > The OLTP results had the following things to say about the page allocator.
+David,
+Can you please review and Ack the GPIO part of the below patch?
+
+Alessandro Zummo wrote:
+> On Mon,  2 Mar 2009 13:40:57 +0200
+> Mike Rapoport <mike@compulab.co.il> wrote:
 > 
-> Is this OLTP, or UDP-U-4K?
+>> The v3020 RTC can be connected to GPIOs as well as to memory-like interface.
+>> Add ability to use GPIO bit-bang for v3020 read-write access.
+>>
+>> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+> 
+>  For the rtc part you have my 
+> 
+>  Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+> 
+>  please send the patch to the GPIO maintainer . Once you
+>  have his Acked-by and the one of the driver's author you can
+>  send it to Andrew for inclusion.
 > 
 
-OLTP. I didn't do a comparison for UDP due to uncertainity of what I was
-looking at other than to note that high-order allocations may be a
-bigger deal there.
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+---
+ drivers/rtc/rtc-v3020.c   |  190 ++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/rtc-v3020.h |    6 ++
+ 2 files changed, 176 insertions(+), 20 deletions(-)
 
->  
-> > Samples in the free path
-> > 	vanilla:	6207
-> > 	mg-v2:		4911
-> > Samples in the allocation path
-> > 	vanilla		19948
-> > 	mg-v2:		14238
-> > 
-> > This is based on glancing at the following graphs and not counting the VM
-> > counters as it can't be determined which samples are due to the allocator
-> > and which are due to the rest of the VM accounting.
-> > 
-> > http://www.csn.ul.ie/~mel/postings/lin-20090228/free_pages-vanilla-oltp.png
-> > http://www.csn.ul.ie/~mel/postings/lin-20090228/free_pages-mgv2-oltp.png
-> > 
-> > So the path costs are reduced in both cases. Whatever caused the regression
-> > there doesn't appear to be in time spent in the allocator but due to
-> > something else I haven't imagined yet. Other oddness
-> > 
-> > o According to the profile, something like 45% of time is spent entering
-> >   the __alloc_pages_nodemask() function. Function entry costs but not
-> >   that much. Another significant part appears to be in checking a simple
-> >   mask. That doesn't make much sense to me so I don't know what to do with
-> >   that information yet.
-> > 
-> > o In get_page_from_freelist(), 9% of the time is spent deleting a page
-> >   from the freelist.
-> > 
-> > Neither of these make sense, we're not spending time where I would expect
-> > to at all. One of two things are happening. Something like cache misses or
-> > bounces are dominating for some reason that is specific to this machine. Cache
-> > misses are one possibility that I'll check out. The other is that the sample
-> > rate is too low and the profile counts are hence misleading.
-> > 
-> > Question 1: Would it be possible to increase the sample rate and track cache
-> > misses as well please?
-> 
-> If the events are constantly biased, I don't think sample rate will
-> help. I don't know how the internals of profiling counters work exactly,
-> but you would expect yes cache misses, and stalls from any number of
-> different resources could put results in funny places.
-> 
+diff --git a/drivers/rtc/rtc-v3020.c b/drivers/rtc/rtc-v3020.c
+index 66955cc..4c330f2 100644
+--- a/drivers/rtc/rtc-v3020.c
++++ b/drivers/rtc/rtc-v3020.c
+@@ -27,17 +27,162 @@
+ #include <linux/bcd.h>
+ #include <linux/rtc-v3020.h>
+ #include <linux/delay.h>
++#include <linux/gpio.h>
 
-Ok, if it's stalls that are the real factor then yes, increasing the
-sample rate might not help. However, the same rates for instructions
-were so low, I thought it might be a combination of both low sample
-count and stalls happening at particular places. A profile of cache
-misses will still be useful as it'll say in general if there is a marked
-increase overall or not.
+ #include <linux/io.h>
 
-> Intel's OLTP workload is very sensitive to cacheline footprint of the
-> kernel, and if you touch some extra cachelines at point A, it can just
-> result in profile hits getting distributed all over the place. Profiling
-> cache misses might help, but probably see a similar phenomenon.
-> 
+ #undef DEBUG
 
-Interesting, this might put a hole in replacing the gfp_zone() with a
-version that uses an additional (or maybe two depending on alignment)
-cacheline.
++struct v3020;
++
++struct v3020_chip_ops {
++	int (*map_io)(struct v3020 *chip, struct platform_device *pdev,
++		      struct v3020_platform_data *pdata);
++	void (*unmap_io)(struct v3020 *chip);
++	unsigned char (*read_bit)(struct v3020 *chip);
++	void (*write_bit)(struct v3020 *chip, unsigned char bit);
++};
++
++#define V3020_CS	0
++#define V3020_WR	1
++#define V3020_RD	2
++#define V3020_IO	3
++
++struct v3020_gpio {
++	const char *name;
++	unsigned int gpio;
++};
++
+ struct v3020 {
++	/* MMIO access */
+ 	void __iomem *ioaddress;
+ 	int leftshift;
++
++	/* GPIO access */
++	struct v3020_gpio *gpio;
++
++	struct v3020_chip_ops *ops;
++
+ 	struct rtc_device *rtc;
+ };
 
-> I can't remember, does your latest patchset include any patches that change
-> the possible order in which pages move around? Or is it just made up of
-> straight-line performance improvement of existing implementation?
-> 
++
++static int v3020_mmio_map(struct v3020 *chip, struct platform_device *pdev,
++			  struct v3020_platform_data *pdata)
++{
++	if (pdev->num_resources != 1)
++		return -EBUSY;
++
++	if (pdev->resource[0].flags != IORESOURCE_MEM)
++		return -EBUSY;
++
++	chip->leftshift = pdata->leftshift;
++	chip->ioaddress = ioremap(pdev->resource[0].start, 1);
++	if (chip->ioaddress == NULL)
++		return -EBUSY;
++
++	return 0;
++}
++
++static void v3020_mmio_unmap(struct v3020 *chip)
++{
++	iounmap(chip->ioaddress);
++}
++
++static void v3020_mmio_write_bit(struct v3020 *chip, unsigned char bit)
++{
++	writel(bit << chip->leftshift, chip->ioaddress);
++}
++
++static unsigned char v3020_mmio_read_bit(struct v3020 *chip)
++{
++	return readl(chip->ioaddress) & (1 << chip->leftshift);
++}
++
++static struct v3020_chip_ops v3020_mmio_ops = {
++	.map_io		= v3020_mmio_map,
++	.unmap_io	= v3020_mmio_unmap,
++	.read_bit	= v3020_mmio_read_bit,
++	.write_bit	= v3020_mmio_write_bit,
++};
++
++static struct v3020_gpio v3020_gpio[] = {
++	{ "RTC CS", 0 },
++	{ "RTC WR", 0 },
++	{ "RTC RD", 0 },
++	{ "RTC IO", 0 },
++};
++
++static int v3020_gpio_map(struct v3020 *chip, struct platform_device *pdev,
++			  struct v3020_platform_data *pdata)
++{
++	int i, err;
++
++	v3020_gpio[V3020_CS].gpio = pdata->gpio_cs;
++	v3020_gpio[V3020_WR].gpio = pdata->gpio_wr;
++	v3020_gpio[V3020_RD].gpio = pdata->gpio_rd;
++	v3020_gpio[V3020_IO].gpio = pdata->gpio_io;
++
++	for (i = 0; i < ARRAY_SIZE(v3020_gpio); i++) {
++		err = gpio_request(v3020_gpio[i].gpio, v3020_gpio[i].name);
++		if (err)
++			goto err_request;
++
++		gpio_direction_output(v3020_gpio[i].gpio, 1);
++	}
++
++	chip->gpio = v3020_gpio;
++
++	return 0;
++
++err_request:
++	for (; i >= 0; i--)
++		gpio_free(v3020_gpio[i].gpio);
++
++	return err;
++}
++
++static void v3020_gpio_unmap(struct v3020 *chip)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(v3020_gpio); i++)
++		gpio_free(v3020_gpio[i].gpio);
++}
++
++static void v3020_gpio_write_bit(struct v3020 *chip, unsigned char bit)
++{
++	gpio_direction_output(chip->gpio[V3020_IO].gpio, bit);
++	gpio_set_value(chip->gpio[V3020_CS].gpio, 0);
++	gpio_set_value(chip->gpio[V3020_WR].gpio, 0);
++	udelay(1);
++	gpio_set_value(chip->gpio[V3020_WR].gpio, 1);
++	gpio_set_value(chip->gpio[V3020_CS].gpio, 1);
++}
++
++static unsigned char v3020_gpio_read_bit(struct v3020 *chip)
++{
++	int bit;
++
++	gpio_direction_input(chip->gpio[V3020_IO].gpio);
++	gpio_set_value(chip->gpio[V3020_CS].gpio, 0);
++	gpio_set_value(chip->gpio[V3020_RD].gpio, 0);
++	udelay(1);
++	bit = !!gpio_get_value(chip->gpio[V3020_IO].gpio);
++	udelay(1);
++	gpio_set_value(chip->gpio[V3020_RD].gpio, 1);
++	gpio_set_value(chip->gpio[V3020_CS].gpio, 1);
++
++	return bit;
++}
++
++static struct v3020_chip_ops v3020_gpio_ops = {
++	.map_io		= v3020_gpio_map,
++	.unmap_io	= v3020_gpio_unmap,
++	.read_bit	= v3020_gpio_read_bit,
++	.write_bit	= v3020_gpio_write_bit,
++};
++
+ static void v3020_set_reg(struct v3020 *chip, unsigned char address,
+ 			unsigned char data)
+ {
+@@ -46,7 +191,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char address,
 
-It shouldn't affect order. I did a test a while ago to make sure pages
-were still coming back in contiguous order as some IO cards depend on this
-behaviour for performance. The intention for the first pass is a straight-line
-performance improvement.
+ 	tmp = address;
+ 	for (i = 0; i < 4; i++) {
+-		writel((tmp & 1) << chip->leftshift, chip->ioaddress);
++		chip->ops->write_bit(chip, (tmp & 1));
+ 		tmp >>= 1;
+ 		udelay(1);
+ 	}
+@@ -54,7 +199,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char address,
+ 	/* Commands dont have data */
+ 	if (!V3020_IS_COMMAND(address)) {
+ 		for (i = 0; i < 8; i++) {
+-			writel((data & 1) << chip->leftshift, chip->ioaddress);
++			chip->ops->write_bit(chip, (data & 1));
+ 			data >>= 1;
+ 			udelay(1);
+ 		}
+@@ -67,14 +212,14 @@ static unsigned char v3020_get_reg(struct v3020 *chip, unsigned char address)
+ 	int i;
+
+ 	for (i = 0; i < 4; i++) {
+-		writel((address & 1) << chip->leftshift, chip->ioaddress);
++		chip->ops->write_bit(chip, (address & 1));
+ 		address >>= 1;
+ 		udelay(1);
+ 	}
+
+ 	for (i = 0; i < 8; i++) {
+ 		data >>= 1;
+-		if (readl(chip->ioaddress) & (1 << chip->leftshift))
++		if (chip->ops->read_bit(chip))
+ 			data |= 0x80;
+ 		udelay(1);
+ 	}
+@@ -164,25 +309,23 @@ static int rtc_probe(struct platform_device *pdev)
+ 	int i;
+ 	int temp;
+
+-	if (pdev->num_resources != 1)
+-		return -EBUSY;
+-
+-	if (pdev->resource[0].flags != IORESOURCE_MEM)
+-		return -EBUSY;
+-
+ 	chip = kzalloc(sizeof *chip, GFP_KERNEL);
+ 	if (!chip)
+ 		return -ENOMEM;
+
+-	chip->leftshift = pdata->leftshift;
+-	chip->ioaddress = ioremap(pdev->resource[0].start, 1);
+-	if (chip->ioaddress == NULL)
++	if (pdata->use_gpio)
++		chip->ops = &v3020_gpio_ops;
++	else
++		chip->ops = &v3020_mmio_ops;
++
++	retval = chip->ops->map_io(chip, pdev, pdata);
++	if (retval)
+ 		goto err_chip;
+
+ 	/* Make sure the v3020 expects a communication cycle
+ 	 * by reading 8 times */
+ 	for (i = 0; i < 8; i++)
+-		temp = readl(chip->ioaddress);
++		temp = chip->ops->read_bit(chip);
+
+ 	/* Test chip by doing a write/read sequence
+ 	 * to the chip ram */
+@@ -196,10 +339,17 @@ static int rtc_probe(struct platform_device *pdev)
+ 	 * are all disabled */
+ 	v3020_set_reg(chip, V3020_STATUS_0, 0x0);
+
+-	dev_info(&pdev->dev, "Chip available at physical address 0x%llx,"
+-		"data connected to D%d\n",
+-		(unsigned long long)pdev->resource[0].start,
+-		chip->leftshift);
++	if (pdata->use_gpio)
++		dev_info(&pdev->dev, "Chip available at GPIOs "
++			 "%d, %d, %d, %d\n",
++			 chip->gpio[V3020_CS].gpio, chip->gpio[V3020_WR].gpio,
++			 chip->gpio[V3020_RD].gpio, chip->gpio[V3020_IO].gpio);
++	else
++		dev_info(&pdev->dev, "Chip available at "
++			 "physical address 0x%llx,"
++			 "data connected to D%d\n",
++			 (unsigned long long)pdev->resource[0].start,
++			 chip->leftshift);
+
+ 	platform_set_drvdata(pdev, chip);
+
+@@ -214,7 +364,7 @@ static int rtc_probe(struct platform_device *pdev)
+ 	return 0;
+
+ err_io:
+-	iounmap(chip->ioaddress);
++	chip->ops->unmap_io(chip);
+ err_chip:
+ 	kfree(chip);
+
+@@ -229,7 +379,7 @@ static int rtc_remove(struct platform_device *dev)
+ 	if (rtc)
+ 		rtc_device_unregister(rtc);
+
+-	iounmap(chip->ioaddress);
++	chip->ops->unmap_io(chip);
+ 	kfree(chip);
+
+ 	return 0;
+diff --git a/include/linux/rtc-v3020.h b/include/linux/rtc-v3020.h
+index bf74e63..8ba646e 100644
+--- a/include/linux/rtc-v3020.h
++++ b/include/linux/rtc-v3020.h
+@@ -14,6 +14,12 @@
+  * is used depends on the board. */
+ struct v3020_platform_data {
+ 	int leftshift; /* (1<<(leftshift)) & readl() */
++
++	int use_gpio:1;
++	unsigned int gpio_cs;
++	unsigned int gpio_wr;
++	unsigned int gpio_rd;
++	unsigned int gpio_io;
+ };
+
+ #define V3020_STATUS_0	0x00
+-- 
+1.5.6.4
+
+
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Sincerely yours,
+Mike.
+
+
