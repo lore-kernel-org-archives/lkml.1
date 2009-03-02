@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbZCBNHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbZCBNNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589AbZCBNHI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 08:07:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbZCBNG4
+	id S1752574AbZCBNNY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 08:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZCBNNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 08:06:56 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:59833 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751004AbZCBNG4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 08:06:56 -0500
-Date: Mon, 2 Mar 2009 07:06:52 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH 3/4] devcgroup: show correct file mode
-Message-ID: <20090302130652.GA6628@us.ibm.com>
-References: <49AB40BF.4030706@cn.fujitsu.com> <49AB4143.9050704@cn.fujitsu.com>
+	Mon, 2 Mar 2009 08:13:16 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:57874 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750920AbZCBNNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 08:13:15 -0500
+Date: Mon, 2 Mar 2009 14:13:13 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: ???? <xiegang112@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: The difference of request dir between AS and Deadline I/O
+	scheduler?
+Message-ID: <20090302131313.GU11787@kernel.dk>
+References: <d364733c0903012106g2625d433o4cdbbbcc5a9ff19a@mail.gmail.com> <20090302122547.GT11787@kernel.dk> <d364733c0903020503x43a1448cq1b127a88fd816e1c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49AB4143.9050704@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <d364733c0903020503x43a1448cq1b127a88fd816e1c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Li Zefan (lizf@cn.fujitsu.com):
-> devices.allow and devices.deny are write-only, and devices.list is read-only.
+On Mon, Mar 02 2009, ???? wrote:
+> Do you mean that the same process tends to have the same behavior of
+> I/O in the way of sycn?
+> Does this mean AS works better when requests are distincted by sync
+> mode  (the success rate of anticipation is higher when requests are
+> grouped by the mode of sync)?
+
+Please don't top post, put your reply beneath the text you are replying
+to.
+
+It means that there's a key distinction between requests. Sync requests
+often have dependencies on each other, and AS thus enables idling for
+these types of requests. Async io is usually background activity. I
+don't understand what you mean by higher success rate. Anticipation is
+only for sync requests. The grouping is done because it makes
+behavioural sense.
+
+
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-
-Yup that should be intuitive for people.
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks,
--serge
-
-> ---
->  security/device_cgroup.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+> Thanks,
 > 
-> diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-> index 3aacd0f..b13fbb8 100644
-> --- a/security/device_cgroup.c
-> +++ b/security/device_cgroup.c
-> @@ -439,16 +439,19 @@ static struct cftype dev_cgroup_files[] = {
->  		.name = "allow",
->  		.write_string  = devcgroup_access_write,
->  		.private = DEVCG_ALLOW,
-> +		.mode = 0200,
->  	},
->  	{
->  		.name = "deny",
->  		.write_string = devcgroup_access_write,
->  		.private = DEVCG_DENY,
-> +		.mode = 0200,
->  	},
->  	{
->  		.name = "list",
->  		.read_seq_string = devcgroup_seq_read,
->  		.private = DEVCG_LIST,
-> +		.mode = 0444,
->  	},
->  };
 > 
-> -- 1.5.4.rc3 
+> On Mon, Mar 2, 2009 at 8:25 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Mon, Mar 02 2009, ???? wrote:
+> >> Hi,
+> >>
+> >> I'm little confused about the defination of request dir in AS and
+> >> Deadline I/O scheduler.
+> >> In AS, the request dir is defined by wheher it's sync:
+> >>
+> >> data_dir = rq_is_sync(rq);
+> >>
+> >> But in Deadline, the requests are grouped by read and write.
+> >>
+> >> Why is there the difference since AS is an extension of Deadline?
+> >> what's the consideration?
+> >
+> > Because AS uses the sync vs async distinction to decide whether to
+> > anticipate a new request from that process. 'sync' is then reads or sync
+> > writes, whereas deadline does not distinguish between sync and async
+> > writes.
+> >
+> > --
+> > Jens Axboe
+> >
+> >
+> 
+> 
+> 
+> -- 
+> Xie Gang
+
+-- 
+Jens Axboe
+
