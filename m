@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbZCBVjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZCBVky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbZCBVjo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 16:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZCBVjf
+	id S1756656AbZCBVky (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 16:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZCBVko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 16:39:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36955 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753330AbZCBVjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 16:39:35 -0500
-Message-ID: <49AC51D7.1080203@kernel.org>
-Date: Mon, 02 Mar 2009 13:38:31 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix e820 end address with EFI
-References: <49A965AD.10701@redhat.com>	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>	 <49AAEC79.3000808@redhat.com>	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>	 <49AB38E7.60305@redhat.com>	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>	 <49AB4171.7000508@kernel.org>	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>	 <49AB4521.8010909@kernel.org>	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com> <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Mar 2009 16:40:44 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41924 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750772AbZCBVko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 16:40:44 -0500
+Date: Mon, 2 Mar 2009 22:40:40 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: David Brownell <david-b@pacbell.net>
+Cc: Mark Brown <broonie@sirena.org.uk>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       lkml <linux-kernel@vger.kernel.org>, OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc6+misc] MMC: regulator utilities
+Message-ID: <20090302224040.5e7ab0b2@mjolnir.ossman.eu>
+In-Reply-To: <200903021327.14285.david-b@pacbell.net>
+References: <200902081037.06645.david-b@pacbell.net>
+	<200902261348.30617.david-b@pacbell.net>
+	<20090302215956.3f355eee@mjolnir.ossman.eu>
+	<200903021327.14285.david-b@pacbell.net>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Mon, 2009-03-02 at 10:51 +0800, Yinghai Lu wrote:
->> On Sun, Mar 1, 2009 at 6:37 PM, Huang Ying <ying.huang@intel.com> wrote:
->>>> so 64bit could use ioremap_cache() too?
->>>> we may keep 32bit and 64bit a bit consistent.
->>> If we use ioremap_cache(), kexec runtime service will not work in kexec
->>> situation, which needs EFI runtime memory area to be mapped at exact
->>> same location across kexec. I think we should support kexec if possible.
->>
->> sure.
->>
->> please don't touch max_low_pfn_mapped, because some range may not
->> directly mapped under those efi run-time code
-> 
-> Find an issue to use init_memory_mapping() here.
-> 
-> If the memory range to be mapped is less than 2M, the last mapped
-> address may be next 2M aligned position, this may lead mapping
-> overlapping between memory range. Such as:
-> 
-> 0x3f388000 - 0x3f488000: real mapped	0x3f388000 - 0x3f600000
-> 0x3f590000 - 0x3f5bb000: real mapped	0x3f590000 - 0x3f600000
-> 
-> The problem is that the memory range 0x3f400000 - 0x3f590000 is left not
-> mapped!
+On Mon, 2 Mar 2009 13:27:13 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-what is max_low_pfn_mapped before that?
+> On Monday 02 March 2009, Pierre Ossman wrote:
+> > On Thu, 26 Feb 2009 13:48:30 -0800
+> > David Brownell <david-b@pacbell.net> wrote:
+> > 
+> > > + */
+> > > +int mmc_regulator_set_ocr(struct mmc_host *host, struct regulator *supply)
+> > > +{
+> > 
+> > Why not pass the vdd directly? Saves a few dereferences if nothing else.
+> 
+> This call syntax is simpler, which is usually a win.
+> Passing a third parameter would create fault paths
+> of the "pass *wrong* parameter" flavor.
+> 
+> In terms of object code, when I've looked at such things
+> the dereferences generally cost the same as a ref to a
+> parameter, but passing an extra parameter isn't free.
+> 
 
-YH
+I couldn't see host being used in there, so I was thinking more of a
+replacement, not an addition.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
