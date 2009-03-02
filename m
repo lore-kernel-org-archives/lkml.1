@@ -1,87 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZCBUfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCBUi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbZCBUfE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 15:35:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZCBUeu
+	id S1754205AbZCBUi0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 15:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZCBUiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 15:34:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:32837 "EHLO ogre.sisk.pl"
+	Mon, 2 Mar 2009 15:38:16 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:36808 "EHLO sabe.cs.wisc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752421AbZCBUet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 15:34:49 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Denys Fedoryschenko <denys@visp.net.lb>
-Subject: Re: 2.6.28 - 2.6.29-rc6-git5 regression, p4-clockmod/cpufreq probably
-Date: Mon, 2 Mar 2009 21:34:18 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Matthew Garrett <mjg@redhat.com>,
-       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, davej@redhat.com,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <200903021704.59663.denys@visp.net.lb> <20090302172309.GC25965@silver.sucs.org> <200903022017.30886.denys@visp.net.lb>
-In-Reply-To: <200903022017.30886.denys@visp.net.lb>
+	id S1751915AbZCBUiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 15:38:15 -0500
+Message-ID: <49AC437F.7020001@cs.wisc.edu>
+Date: Mon, 02 Mar 2009 14:37:19 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Grant Grundler <grundler@google.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mike.miller@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, hare@novell.com, iss_storagedev@hp.com,
+       iss.sbteam@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+References: <20090227230927.GA21377@roadking.ldev.net> <20090302153246A.fujita.tomonori@lab.ntt.co.jp> <da824cf30903020919q2d3496e6sb5a253b0acba681a@mail.gmail.com> <49AC237A.7060005@cs.wisc.edu> <20090302183649.GB11787@kernel.dk> <49AC4293.4030902@cs.wisc.edu>
+In-Reply-To: <49AC4293.4030902@cs.wisc.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903022134.19529.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009, Denys Fedoryschenko wrote:
-> On Monday 02 March 2009 19:23:09 Sitsofe Wheeler wrote:
-> > On Mon, Mar 02, 2009 at 06:33:46PM +0200, Denys Fedoryschenko wrote:
-> > > CPUFreq infrastructure much more powerful.
-> > > -d --min <FREQ>
-> > >     new minimum CPU frequency the governor may select.
-> > > -u --max <FREQ>
-> > >     new maximum CPU frequency the governor may select.
-> > > -g --governor <GOV>
-> > >     new cpufreq governor.
-> > >
-> > > This things you cannot do over inserting values over ACPI. Sure you can
-> > > reinvent the wheel, but why?
-> >
-> > I guess I don't understand why you would want scaling if it didn't save
-> > you any power...
-> If i will limit current in certain limits, rather than using high current, i 
-> will have in result higher efficiency of discharging battery.
-> The discharge curves for a Lithium Ion cell below show that the effective 
-> capacity of the cell is reduced if the cell is discharged at very high rates 
-> (or conversely increased with low discharge rates). This is called the 
-> capacity offset and the effect is common to most cell chemistries.
-> If the discharge takes place over a long period of several hours as with some 
-> high rate applications such as electric vehicles, the effective capacity of 
-> the battery can be as much as double the specified capacity at the C rate. 
-> This can be most important when dimensioning an expensive battery for high 
-> power use. The capacity of low power, consumer electronics batteries is 
-> normally specified for discharge at the C rate whereas the SAE uses the 
-> discharge over a period of 20 hours (0.05C) as the standard condition for 
-> measuring the Amphour capacity of automotive batteries. The graph below shows 
-> that the effective capacity of a deep discharge lead acid battery is almost 
-> doubled as the discharge rate is reduced from 1.0C to 0.05C. For discharge 
-> times less than one hour (High C rates) the effective capacity falls off 
-> dramatically. 
-> This means even i need to recode on battery movie (clearly need same amount of 
-> processing power), if i do it with 100% CPU available let's say in 30 
-> minutes, and if i do it with 50% CPU available in 60 minutes, at the end i 
-> should have DIFFERENT amount of remaining battery.
-> 
-> Another example, if i run screensaver i want governor powersave(so some crazy 
-> flash plugin don't dry out battery till i come back) , if i run on battery i 
-> will put conservative and limit frequency range to max 50% of CPU power, so i 
-> can be sure my laptop lasts enough time. This in case battery time matter for 
-> me more than computing power. Sure i will prefer some universal way, so i can 
-> set same rules on Core 2 Duo based laptop, and cheap Celeron. Cpufreq provide 
-> me useful framework for this job, and important SAME API everywhere. Less 
-> efficient on p4-clockmod, and very efficient on true "mobile" processors.
-> 
-> * Many things quoted from http://www.mpoweruk.com/performance.htm
+Mike Christie wrote:
+> iscsi also needs the unique tag and then it needs the 
+> blk_map_queue_find_tag functionality too. iscsi needs the lookup and tag 
+> for host/transport level commands that do not have a scsi 
+> command/request. The tag value has to be unique accross the 
+> host/transport
 
-You should have added linux-acpi to the CC list and since the change in
-question was very much on purpose, I'm not going to list (at least for now).
+I mean that the tag needs to be unique for scsi/block commands and 
+transport commands for each host. So a scsi command and a transport 
+command cannot both have tag X.
 
-Thanks,
-Rafael
