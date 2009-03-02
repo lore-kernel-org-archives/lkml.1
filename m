@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbZCBUip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZCBUlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbZCBUip (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 15:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZCBUib
+	id S1753963AbZCBUlI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 15:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbZCBUkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 15:38:31 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3326 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171AbZCBUia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 15:38:30 -0500
-Date: Mon, 2 Mar 2009 20:38:20 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
-Message-ID: <20090302203819.GI19744@sirena.org.uk>
-References: <20090301001829.GA10751@mit.edu> <20090301004618.GA12909@sirena.org.uk> <20090301025357.GC10751@mit.edu> <20090302131514.GC19744@sirena.org.uk> <49ABF825.1010501@s5r6.in-berlin.de> <20090302100158.bb83bec6.akpm@linux-foundation.org> <20090302182456.GF19744@sirena.org.uk> <20090302103437.f3109332.akpm@linux-foundation.org> <20090302191910.GG19744@sirena.org.uk> <20090302195725.GB25469@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090302195725.GB25469@mit.edu>
-X-Cookie: What hath Bob wrought?
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Mon, 2 Mar 2009 15:40:55 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:54305 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbZCBUkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 15:40:55 -0500
+Message-Id: <200903022040.n22KeX20030383@pobox-pa.hpl.hp.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Jeffrey Mogul <Jeff.Mogul@hp.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+In-reply-to: Your message of "Sat, 28 Feb 2009 14:36:00 +0300."
+             <20090228113559.GA3449@x200.localdomain> 
+From: Jeffrey Mogul <Jeff.Mogul@hp.com>
+X-Organization: Hewlett-Packard Labs, Large Scale Systems group
+Date: Mon, 02 Mar 2009 12:40:33 -0800
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: jeff.mogul@hp.com
+Subject: Re: [PATCH] proc: /proc/kpageflags: incorrect arg order in kpf_copy_bits()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 02:57:25PM -0500, Theodore Tso wrote:
 
-> If you mean stuff like this:
+    On Fri, Feb 27, 2009 at 05:56:39PM -0800, Jeffrey Mogul wrote:
+    > The code in fs/proc/page.c that implements /proc/kpageflags has
+    
+    Already fixed in mainline:
+    
+    commit e07a4b9217d1e97d2f3a62b6b070efdc61212110
+    Author: Helge Bahmann <helge.bahmann@secunet.com>
+    Date:   Fri Feb 20 16:24:12 2009 +0300
+    
+        proc: fix PG_locked reporting in /proc/kpageflags
+        
+        Expr always evaluates to zero.
+        
+Unfortunately, I think that only fixes one of the two bugs
+I reported.  The other one is that the argument order for the
+kpf_copy_bits macro definition does not match the arg order
+for all of the uses (including the one that was already "fixed").
 
->     commit a39a021fd73ce06aad8d1081ac711a36930e6cb8
->     Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
->     Date:   Wed Feb 4 21:10:58 2009 +0100
-> 
->         mfd: Mark WM835x USB_SLV_500MA bit as accessible
+Thanks
+-Jeff
 
->         The code is out of sync with the silicon.
+The kpf_copy_bits() macro was defined with argument order
+(flags, srcpos, dstpos), which is the logical order, but all
+but one of the uses of this macro invoke it instead in the order
+(flags, dstpos, srcpos).  This only affects the output for a few
+flags, since in most -- but not all! -- cases, srcpos == dstpos.
 
-> What I wouldn't know, looking at the message, and what I suspect
-> Andrew is complaining about, is after reading the entire commit log,
+I fixed this by changing the macro definition rather than the macro
+uses, which minimizes the number of lines to change but which might
+not be the most obvious/logical design.
 
-No, and in fact that's a perfect example of what I'm talking about when
-I say that simply writing a second paragraph for the commit logs is not
-a helpful way to deal with the problem here (since it isn't the issue at
-all).
+These bugs appear to have been in the code since /proc/kpageflags
+was introduced (2.6.25).
 
-As I've said on a number of occasions already in this thread I am not
-trying to claim that my commit logs have always been the best or that
-Andrew was complaining about nothing.  I'm perfectly well aware of the
-sort of things that go into a good commit log, I read quite a lot of
-them when reviewing patches myself, and do try to provide useful logs
-even though I don't manage it all the time.
+CC: stable@kernel.org
+Signed-off-by: Jeff Mogul <Jeff.Mogul@hp.com>
+---
+
+--- linux-2.6.28.7/fs/proc/page.c.orig  2009-02-26 17:16:42.000000000 -0800
++++ linux-2.6.28.7/fs/proc/page.c       2009-02-26 17:18:04.000000000 -0800
+@@ -80,7 +80,8 @@ static const struct file_operations proc
+ #define KPF_RECLAIM    9
+ #define KPF_BUDDY     10
+ 
+-#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
++/* Arg order is dstpos,srcpos because that's how this macro is used below */
++#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
+ 
