@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbZCBWCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZCBWDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbZCBWCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbZCBWCE
+	id S1757498AbZCBWDU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZCBWDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:02:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32780 "EHLO hera.kernel.org"
+	Mon, 2 Mar 2009 17:03:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33281 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757056AbZCBWCC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:02:02 -0500
-Date: Mon, 2 Mar 2009 22:01:20 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1236006812.5330.632.camel@laptop>
-References: <1236006812.5330.632.camel@laptop>
-Subject: [tip:irq/genirq] genirq: assert that irq handlers are indeed running in hardirq context
-Message-ID: <tip-3427ce9e6aac783a576c8e2712c323eaddd123a9@git.kernel.org>
-Git-Commit-ID: 3427ce9e6aac783a576c8e2712c323eaddd123a9
-X-Mailer: tip-git-log-daemon
+	id S1754323AbZCBWDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 17:03:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/4] PM: Change suspend code ordering
+Date: Mon, 2 Mar 2009 23:02:39 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>
+References: <200902221837.49396.rjw@sisk.pl> <200903012325.53084.rjw@sisk.pl> <alpine.LFD.2.00.0903021246250.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903021246250.3111@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 02 Mar 2009 22:01:23 +0000 (UTC)
+Message-Id: <200903022302.42067.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3427ce9e6aac783a576c8e2712c323eaddd123a9
-Gitweb:     http://git.kernel.org/tip/3427ce9e6aac783a576c8e2712c323eaddd123a9
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 2 Mar 2009 16:13:32 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 2 Mar 2009 22:59:15 +0100
+On Monday 02 March 2009, Linus Torvalds wrote:
+> 
+> On Sun, 1 Mar 2009, Rafael J. Wysocki wrote:
+> >
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Change the ordering of the suspend core code so that the platform
+> > "prepare" callback is executed and the nonboot CPUs are disabled
+> > after calling device drivers' "late suspend" methods.
+> 
+> Ok, ack on this whole series, looks fine.
 
-genirq: assert that irq handlers are indeed running in hardirq context
-
-Make sure the genirq layer handlers are indeed running handlers
-in hardirq context. That is the genirq expectation and doing
-anything else is broken.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1236006812.5330.632.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/irq/handle.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 3aba8d1..716f4f4 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -328,6 +328,8 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
- 	irqreturn_t ret, retval = IRQ_NONE;
- 	unsigned int status = 0;
+Thanks!
  
-+	BUG_ON(!in_irq());
-+
- 	if (!(action->flags & IRQF_DISABLED))
- 		local_irq_enable_in_hardirq();
- 
+> I'd like to see a 5/4 though:
+> 
+> > This change will allow us to rework the PCI PM core so that the power
+> > state of devices is changed in the "late" phase of suspend (and
+> > analogously in the "early" phase of resume)
+> 
+> .. doing this. Right now we have that hacky "avoid ACPI by doing a special 
+> limited form of pci_set_power_state() and pci_enable() in the 
+> early_resume. I'd love to see the actual PCI code cleanup too.
+
+Sure, that's the next step, but I wanted to get the ack on the preliminary
+patches first. :-)
+
+Rafael
