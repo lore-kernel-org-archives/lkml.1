@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZCBWv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbZCBWyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbZCBWv6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZCBWvt
+	id S1756995AbZCBWyT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZCBWyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:51:49 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34031 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbZCBWvs (ORCPT
+	Mon, 2 Mar 2009 17:54:11 -0500
+Received: from el-out-1112.google.com ([209.85.162.179]:10768 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbZCBWyJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:51:48 -0500
-Subject: Re: lockdep and threaded IRQs (was: ...)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Brownell <david-b@pacbell.net>
-Cc: dbrownell@users.sourceforge.net, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com
-In-Reply-To: <200903021440.58712.david-b@pacbell.net>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
-	 <200903021409.21344.david-b@pacbell.net>
-	 <1236032371.5330.1654.camel@laptop>
-	 <200903021440.58712.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 23:51:29 +0100
-Message-Id: <1236034289.5330.1745.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 17:54:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=sRkrQvIf6Qp8EmZusXBqdRU1R/53FBn0DcH43RSxDWh2Ldn0PAf0Sz48+5mZDapDZv
+         XNpT+TseNhnH7pqO0ZJoxGATnNki0V01WQC+DtxF+s89JUV6DiXH429E0JhV42tC4jFw
+         QaTYdeozo9Kl8gIhMBhCJUHtJRVewbC0kgvx4=
+MIME-Version: 1.0
+Date: Mon, 2 Mar 2009 14:54:06 -0800
+Message-ID: <8c6189ae0903021454t1480e3a6u16532de024f0a458@mail.gmail.com>
+Subject: No symbol version for PROM_KMALLOC1 in kernel 2.6.26
+From: P Mumbai <mumbai.prasanna@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 14:40 -0800, David Brownell wrote:
-> On Monday 02 March 2009, Peter Zijlstra wrote:
-> > I state that every !IRQF_DISABLED usage is a bug, either
-> > due to broken hardware or broken drivers.
-> 
-> That's a novel position.  You do realize that removing that
-> capability breaks drivers?
+Hi all,
 
-Then we fix them.
+I am trying to get my driver working on 2.6.26 kernel. This driver
+works fine in 2.6.17 kernel.
 
-> But if that's what is keeping you from fixing the lockdep bug,
-> why haven't you submitted patches to remove IRQF_DISABLED from
-> the kernel, and update all the drivers relying on IRQs being
-> enabled when their handlers run?
+I have a glue KLM(kernel loadable module) & the main driver KLM.   The
+Glue module exposes a set of API's which the main driver KLM uses.
 
-I did so today. Just didn't realize things actually relied on it since
-lockdep turned them off and my system has been working fine.
+I have a glue layer which exposes a function called "PROM_KMALLOC1".
+This function is exported using "EXPORT_SYMBOL(PROM_KMALLOC1)".  I
+load the glue KLM and then load the main driver KLM.
+The reference to PROM_KMALLOC1 in my main driver is giving me the
+following error.
 
-Your driver needs threaded interrupts, Thomas is working on that now,
-and I saw a conversion of your driver to use that.
+be:  no symbol version for PROM_KMALLOC1
+be: Unknown symbol PROM_KMALLOC1
 
-IDE PIO can hopefully also be converted to threaded interrupts.
+Is there a different way of exporting symbols in 2.6.26 kernel ?   I
+don't know what does symbol version mean ?  Can anyone explain me
+please.
 
-After that I'll post patches to remove IRQF_DISABLED and provide a
-another flag to quick-'fix' other iffy drivers.
+i did
+[root@localhost ~]# cat /proc/kallsyms | grep PROM_KMALLOC1
+e22352d4 r __ksymtab_PROM_KMALLOC1      [glue]
+e22358ba r __kstrtab_PROM_KMALLOC1      [glue]
+e223542c r __kcrctab_PROM_KMALLOC1      [glue]
+e204d048 T PROM_KMALLOC1        [glue]
+d8bc05b7 a __crc_PROM_KMALLOC1  [glue]
 
-Once such drivers are found we can work on proper fixes for them.
-
+~Cheers
+Prasanna
