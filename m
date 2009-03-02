@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZCBSNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbZCBSQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbZCBSNi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 13:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCBSNa
+	id S1756229AbZCBSQS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 13:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZCBSQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 13:13:30 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:46037 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751513AbZCBSN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 13:13:29 -0500
-Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hch@infradead.org, Nathan Lynch <ntl@pobox.com>,
-       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <20090302174433.GA12708@us.ibm.com>
-References: <20090227203425.F3B51176@kernel>
-	 <20090227203435.98735E54@kernel> <20090302133754.GA8033@us.ibm.com>
-	 <20090302095917.6cfeda55@thinkcentre.lan>
-	 <1236011251.26788.450.camel@nimitz>
-	 <20090302112247.76bb3662@thinkcentre.lan>
-	 <1236015052.26788.471.camel@nimitz>  <20090302174433.GA12708@us.ibm.com>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 10:13:20 -0800
-Message-Id: <1236017600.26788.488.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 13:16:06 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:30147 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbZCBSQF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 13:16:05 -0500
+Message-ID: <49AC225B.9080105@ct.jp.nec.com>
+Date: Mon, 02 Mar 2009 10:15:55 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86-tip: xine bustage bisection fingers commit	97286a2b64725aac2d584ddd1f94871f9991d5a1
+References: <1235984665.6195.12.camel@marge.simson.net> <20090302093319.GB20897@elte.hu>
+In-Reply-To: <20090302093319.GB20897@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 11:44 -0600, Serge E. Hallyn wrote:
-> Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> > On Mon, 2009-03-02 at 11:22 -0600, Nathan Lynch wrote:
-> > > No.. I mean what if a process 1234 does
-> > > 
-> > > f = fopen("/proc/1234/stat", "r");
-> > > 
-> > > and is then checkpointed.  Can that path be resolved during restart,
-> > > before pid 1234 is alive?
-> > 
-> > Heh, that's a good one.
-> > 
-> > It does mean that we can't do restore like this:
-> > 
-> > 	for_each_cr_task()
-> > 		restore_task_struct()
-> > 		restore_files()
-> > 		...
-> > 
-> > We have to do:
-> > 
-> > 	for_each_cr_task()
-> > 		restore_task_struct()
-> > 	for_each_cr_task()
-> > 		restore_files()
-> >
-> Which is what we actually do, right?
+Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
+> 
+>> Greetings and Salutations,
+>>
+>> $subject, box is Q6600 X86_64 running v2.6.29-rc6-2261-g0fdaeee
+>>
+>> marge:/root # xine
+>> This is xine (X11 gui) - a free video player v0.99.6cvs.
+>> (c) 2000-2007 The xine Team.
+>> Floating point exception
+>>
+>> [pid  6230] 06:59:50.524473 set_robust_list(0x40e239f0, 0x18 <unfinished ...>
+>> [pid  6230] 06:59:50.524553 <... set_robust_list resumed> ) = 0 <0.000027>
+>> [pid  6230] 06:59:50.524648 select(0, NULL, NULL, NULL, {0, 500000} <unfinished ...>
+>> [pid  6230] 06:59:50.763988 <... select resumed> ) = ? ERESTARTNOHAND (To be restarted) <0.239321>
+>> [pid  6230] 06:59:50.764012 --- SIGRT_1 (Unknown signal 33) @ 0 (0) ---
+>> [pid  6230] 06:59:50.764074 setuid(0)   = 0 <0.000014>
+>> [pid  6230] 06:59:50.764151 futex(0x7fff2745e7a0, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+>> [pid  6230] 06:59:50.764213 <... futex resumed> ) = 0 <0.000051>
+>> [pid  6230] 06:59:50.764255 futex(0x40e23d2c, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+>> [pid  6230] 06:59:50.764298 <... futex resumed> ) = 0 <0.000028>
+>> [pid  6230] 06:59:50.764346 rt_sigreturn(0x40e23d2c <unfinished ...>
+>> [pid  6230] 06:59:50.778497 <... rt_sigreturn resumed> ) = 0 <0.014136>
+>> [pid  6230] 06:59:50.778524 --- SIGSEGV (Segmentation fault) @ 0 (0) ---
+>>
+>> [ 1303.345419] xine[6230] bad frame in rt_sigreturn frame:0000000040e22c28 ip:7f051ca28622 sp:40e23070 orax:ffffffffffffffff in libc-2.8.so[7f051c95c000+14f000]
+>> ﻿
+>> 97286a2b64725aac2d584ddd1f94871f9991d5a1 is first bad commit
+>> commit 97286a2b64725aac2d584ddd1f94871f9991d5a1
+>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> Date:   Fri Feb 27 10:28:48 2009 -0800
+>>
+>>     x86: signal: intrroduce get_sigframe() and replace get_sigstack()
+>>     
+>>     Impact: cleanup
 
-OK, I have a really evil one.
+Thanks for reporting and bisecting.
+Apparently I did something wrong in this cleanup series.
 
-What if task 1234 does:
+> 
+> ok, that's the same area Jaswinder Singh Rajput bisected a 
+> breakage back to. I've excluded these commits from tip:master 
+> for now and pushed out an updated tip:master tree.
+> 
+> Hiroshi-san, mind having a look at this problem?
 
-	open(O_RDONLY, "/proc/5678/fdinfo/44");
+OK, I'll look at this.
 
-and task 5678 does:
-
-	open(O_RDONLY, "/proc/5678/fdinfo/55");
-
-There is no right order.
-
-The only right way I can think to do it is that we have to loop on the
-restore and defer files that we can't seem to find right now, hoping
-that they'll show up as the restore progresses.
-
-Basically:
-
-	for_each_cr_task()
-		deferred_files = restore_files()
-retry:
-	making_progress = 0
-	for_each(deferred_file)
-		restore(deferred_file)
-	if (making_progress)
-		goto retry;
-
--- Dave
+Thanks,
+Hiroshi
 
