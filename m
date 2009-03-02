@@ -1,65 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZCBXHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbZCBXKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbZCBXHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZCBXHR
+	id S1756890AbZCBXKR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZCBXKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:07:17 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58564 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZCBXHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:07:16 -0500
-Subject: Re: lockdep and threaded IRQs
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, dbrownell@users.sourceforge.net,
-       tglx@linutronix.de, me@felipebalbi.com, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, felipe.balbi@nokia.com,
-       dmitry.torokhov@gmail.com, sameo@openedhand.com
-In-Reply-To: <20090302145757.38a44307.akpm@linux-foundation.org>
-References: <1236030106.5330.1553.camel@laptop>
-	 <200903021409.21344.david-b@pacbell.net>
-	 <1236032371.5330.1654.camel@laptop>
-	 <20090302.144647.116847598.davem@davemloft.net>
-	 <20090302145757.38a44307.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 00:07:01 +0100
-Message-Id: <1236035221.5330.1798.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 18:10:03 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55282 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752718AbZCBXKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 18:10:01 -0500
+Date: Tue, 3 Mar 2009 00:09:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
+Message-ID: <20090302230915.GA11626@elte.hu>
+References: <49A82851.5080707@redhat.com> <20090227180724.GA17947@Krystal> <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49AC63FA.70801@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 14:57 -0800, Andrew Morton wrote:
-> On Mon, 02 Mar 2009 14:46:47 -0800 (PST)
-> David Miller <davem@davemloft.net> wrote:
+
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
 > 
-> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Date: Mon, 02 Mar 2009 23:19:31 +0100
+> 
+> Ingo Molnar wrote:
+> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > > 
-> > > I state that every !IRQF_DISABLED usage is a bug, either due to broken
-> > > hardware or broken drivers.
+> >> Mathieu Desnoyers wrote:
+> >>> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> >>>> Index: linux-2.6/init/main.c
+> >>>> ===================================================================
+> >>>> --- linux-2.6.orig/init/main.c
+> >>>> +++ linux-2.6/init/main.c
+> >>>> @@ -676,6 +676,9 @@ asmlinkage void __init start_kernel(void
+> >>>>  	taskstats_init_early();
+> >>>>  	delayacct_init();
+> >>>>
+> >>>> +#ifdef CONFIG_X86
+> >>>> +	text_poke_init();
+> >>>> +#endif
+> >>> All good, except this above. There should be an empty text_poke_init()
+> >>> in some header file, and an implementation for the X86 arch rather than
+> >>> a ifdef in init/main.c.
+> >> Hmm, I'd rather use __weak function instead of defining it in some header
+> >> files, because text_poke() and alternatives exist only on x86.
+> >>
+> >> I know that we need to discuss cross modifying code on x86 with
+> >> Arjan or other Intel engineers. This patch may still be useful
+> >> for removing unnecessary vm_area allocation in text_poke().
+> >>
+> >> Thank you,
+> >>
+> >> ---
+> >>
+> >> Use map_vm_area() instead of vmap() in text_poke() for 
+> >> avoiding page allocation and delayed unmapping, and call 
+> >> vunmap_page_range() and local_flush_tlb() directly because 
+> >> this mapping is temporary and local.
+> >>
+> >> At the result of above change, text_poke() becomes atomic and 
+> >> can be called from stop_machine() etc.
 > > 
-> > We'll send you the bill to have everyone's hardware
-> > replaced :-)
+> > That looks like a good fix in itself - see a few minor details 
+> > below.
 > 
-> yes, but with what?
+> Thank you for review,
 > 
-> No matter how fast all our interrupt handlers are, running them with
-> local interrupts disabled has to worsen the worst-case interrupt
-> latency.
+> > 
+> > (Note, i could not try your patch because it has widespread 
+> > whitespace damage - please watch out for this for future 
+> > patches.)
 > 
-> I don't see how removing !IRQF_DISABLED improves the kernel - in fact
-> there's a latency argument for making !IRQF_DISABLED the default.
+> Oops, it was my mis-setting...
+> 
+> > 
+> >> +static struct vm_struct *text_poke_area[2];
+> >> +static DEFINE_SPINLOCK(text_poke_lock);
+> >> +
+> >> +void __init text_poke_init(void)
+> >> +{
+> >> +	text_poke_area[0] = get_vm_area(PAGE_SIZE, VM_ALLOC);
+> >> +	text_poke_area[1] = get_vm_area(2 * PAGE_SIZE, VM_ALLOC);
+> >> +	BUG_ON(!text_poke_area[0] || !text_poke_area[1]);
+> > 
+> > BUG_ON() for non-100%-essential init code is a no-no. Please 
+> > change it to WARN_ON() so that people have a chance to report i.
+> 
+> Sure.
+> 
+> > 
+> > Also, i think all these vma complications came from the decision 
+> > to use vmap - and vmap enhancements in .29 complicated this 
+> > supposedly-simple interface.
+> > 
+> > So perhaps another approach to (re-)consider would be to go back 
+> > to atomic fixmaps here. It spends 3 slots but that's no big 
+> > deal.
+> 
+> Oh, it's a good idea! fixmaps must make it simpler.
+> 
+> > 
+> > In exchange it will be conceptually simpler, and will also scale 
+> > much better than a global spinlock. What do you think?
+> 
+> I think even if I use fixmaps, we have to use a spinlock to protect
+> the fixmap area from other threads...
 
-On preempt-rt all we do in the hardirq path is mask the interrupt line
-and wake up a thread. That's the extreme end of low latency interrupts.
+that's why i suggested to use an atomic-kmap, not a fixmap.
 
-Arguably there is a middle way that works for !-rt.
-
-However, striving to enable interrupts in all interrupt handlers is
-asking for stack overruns. Interrupt nesting just isn't really helpful.
-
+	Ingo
