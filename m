@@ -1,67 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbZCBUCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbZCBUJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758572AbZCBUCn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 15:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZCBUCf
+	id S1758168AbZCBUJK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 15:09:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZCBUI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 15:02:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48951 "EHLO mx3.mail.elte.hu"
+	Mon, 2 Mar 2009 15:08:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56158 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752425AbZCBUCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 15:02:34 -0500
-Date: Mon, 2 Mar 2009 21:02:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, eric@lammerts.org
-Subject: Re: [PATCH][retry 2] Conform L3 Cache Index Disable to
-	Linuxstandards From:  Eric Lammerts <eric@lammerts.org>
-Message-ID: <20090302200213.GA13699@elte.hu>
-References: <200902201550.47415.mark.langsdorf@amd.com> <20090226163329.3a47b368.akpm@linux-foundation.org> <20090227080246.GA524@elte.hu> <6453C3CB8E2B3646B0D020C112613273C5AEF2@sausexmb4.amd.com>
+	id S1754015AbZCBUIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 15:08:54 -0500
+Message-ID: <49AC3C8C.8070702@kernel.org>
+Date: Mon, 02 Mar 2009 12:07:40 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6453C3CB8E2B3646B0D020C112613273C5AEF2@sausexmb4.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Kevin O'Connor" <kevin@koconnor.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
+       coreboot@coreboot.org
+Subject: Re: [PATCH] x86: ioremap mptable -v2
+References: <20090222152530.GA30576@morn.localdomain> <200902221806.55429.rjw@sisk.pl> <49A1C4AF.9000009@kernel.org> <20090222223226.GA3346@morn.localdomain> <20090222225847.GB1649@elte.hu> <49A23EE0.8000102@kernel.org> <20090228234127.GA29964@morn.localdomain> <49A9FC9A.2030707@kernel.org> <20090301180420.GA27040@morn.localdomain> <49AB511E.9010507@kernel.org> <20090302101823.GJ20897@elte.hu>
+In-Reply-To: <20090302101823.GJ20897@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Langsdorf, Mark <mark.langsdorf@amd.com> wrote:
-
-> > > > Add ABI Documentation entry and fix some /sys directory formating
-> > > > issues with the L3 Cache Index Disable feature for future AMD
-> > > > processors. __Add a check to disable it for family 0x10 models
-> > > > that do not support it yet.
-> > > 
-> > > x86_64 allnoconfig:
-> > > 
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c:556: warning: 
-> > 'free_cache_attributes' defined but not used
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c:596: warning: 
-> > 'detect_cache_attributes' defined but not used
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> My code doesn't modify either of these functions, so
-> I'm not causing the regression.
+>> Impact: fix boot with mptable above max_low_mapped
+>>
+>> try to use early_ioremap it.
+>>
+>> v2: also get the exact size for reserve_bootmem in case we got big size than 4k
+>>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
+>>
+>> ---
+>>  arch/x86/kernel/mpparse.c |   20 ++++++++++++++++++--
+>>  1 file changed, 18 insertions(+), 2 deletions(-)
+>>
+>> Index: linux-2.6/arch/x86/kernel/mpparse.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/mpparse.c
+>> +++ linux-2.6/arch/x86/kernel/mpparse.c
+>> @@ -611,12 +611,20 @@ static void __init __get_smp_config(unsi
+>>  		construct_default_ISA_mptable(mpf->feature1);
+>>  
+>>  	} else if (mpf->physptr) {
+>> +		struct mpc_table *mpc;
+>> +		unsigned long size;
+>>  
+>> +		mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
+>> +		size = mpc->length;
+>> +		apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", (unsigned long)mpf->physptr,
+>> +			 mpf->physptr + size);
+>> +		early_iounmap(mpc, PAGE_SIZE);
+>> +		mpc = early_ioremap(mpf->physptr, size);
+> 
+> no objections, but this bit of __get_smp_config() needs to be 
+> done cleaner - the whole mpf->physptr != 0 bit should probably 
+> go into a helper function.
+> 
 
-The more serious problem is what i reported, that your patch 
-triggers this build failure:
+please check
 
-arch/x86/kernel/built-in.o: In function `store_cache_disable':
-intel_cacheinfo.c:(.text+0xd322): undefined reference to `k8_northbridges'
-arch/x86/kernel/built-in.o: In function `show_cache_disable':
-intel_cacheinfo.c:(.text+0xd52c): undefined reference to `k8_northbridges'
+[PATCH] x86: ioremap mptable -v3
 
-so i've excluded it from tip:master for now. Please resubmit a 
-fixed patch.
+Impact: fix boot with mptable above max_low_mapped
 
-	Ingo
+try to use early_ioremap it.
+
+v2: also get the exact size for reserve_bootmem in case we got big size than 4k
+V3: according to Ingo, seperate get_mpc_size()
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
+
+---
+ arch/x86/kernel/mpparse.c |   24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/mpparse.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -558,6 +558,19 @@ static inline void __init construct_defa
+ 
+ static struct mpf_intel *mpf_found;
+ 
++static unsigned long __init get_mpc_size(unsigned long physptr)
++{
++	struct mpc_table *mpc;
++	unsigned long size;
++
++	mpc = early_ioremap(physptr, PAGE_SIZE);
++	size = mpc->length;
++	early_iounmap(mpc, PAGE_SIZE);
++	apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", physptr, physptr + size);
++
++	return size;
++}
++
+ /*
+  * Scan the memory blocks for an SMP configuration block.
+  */
+@@ -611,12 +624,16 @@ static void __init __get_smp_config(unsi
+ 		construct_default_ISA_mptable(mpf->feature1);
+ 
+ 	} else if (mpf->physptr) {
++		struct mpc_table *mpc;
++		unsigned long size;
+ 
++		size = get_mpc_size(mpf->physptr);
++		mpc = early_ioremap(mpf->physptr, size);
+ 		/*
+ 		 * Read the physical hardware table.  Anything here will
+ 		 * override the defaults.
+ 		 */
+-		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
++		if (!smp_read_mpc(mpc, early)) {
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 			smp_found_config = 0;
+ #endif
+@@ -624,9 +641,12 @@ static void __init __get_smp_config(unsi
+ 			       "BIOS bug, MP table errors detected!...\n");
+ 			printk(KERN_ERR "... disabling SMP support. "
+ 			       "(tell your hw vendor)\n");
++			early_iounmap(mpc, size);
+ 			return;
+ 		}
+ 
++		early_iounmap(mpc, size);
++
+ 		if (early)
+ 			return;
+ #ifdef CONFIG_X86_IO_APIC
+@@ -700,7 +720,7 @@ static int __init smp_scan_config(unsign
+ 			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
+ 					BOOTMEM_DEFAULT);
+ 			if (mpf->physptr) {
+-				unsigned long size = PAGE_SIZE;
++				unsigned long size = get_mpc_size(mpf->physptr);
+ #ifdef CONFIG_X86_32
+ 				/*
+ 				 * We cannot access to MPC table to compute
+
