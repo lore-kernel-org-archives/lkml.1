@@ -1,100 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZCBK7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbZCBLKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbZCBK7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 05:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbZCBK7D
+	id S1758459AbZCBLKL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 06:10:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZCBLJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 05:59:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43768 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753737AbZCBK7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 05:59:01 -0500
-Date: Mon, 2 Mar 2009 11:58:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] zedtrace generic kernel filtering
-Message-ID: <20090302105847.GO20897@elte.hu>
-References: <1235725256.8512.88.camel@charm-linux> <20090228092657.GA2869@elte.hu> <1235978989.7581.46.camel@charm-linux>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235978989.7581.46.camel@charm-linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 2 Mar 2009 06:09:57 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:51410 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752379AbZCBLJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 06:09:56 -0500
+Date: Mon, 2 Mar 2009 12:09:50 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+       David Woodhouse <dwmw2@infradead.org>, linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+Message-ID: <20090302120950.0d35e06c@i1501.lan.towertech.it>
+In-Reply-To: <alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	<1235511327.18632.73.camel@macbook.infradead.org>
+	<20090224231154.60ba18d6@i1501.lan.towertech.it>
+	<1235514727.18632.93.camel@macbook.infradead.org>
+	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
+	<20090225111836.621412c1@i1501.lan.towertech.it>
+	<20090227185514.GA1071@linux-m68k.org>
+	<alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
+	<20090302110310.35af50ea@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2 Mar 2009 11:28:01 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-* Tom Zanussi <tzanussi@gmail.com> wrote:
+> So I can solve my problem (autoloading the RTC driver on PS3 by udev) by
+> converting the old genrtc driver into a platform device driver and creating
+> platform devices where appropriate.
 
-> > Note that Steve added explicit field enumeration and 'raw' C 
-> > syntax tracepoints to the event tracer earlier today (partly 
-> > based on your ideas here), so that would be a good basis to 
-> > extend/enhance/fix, if you are interested.
+ yes. btw, if you are building a kernel specific for the PS3, I would
+ compile the rtc driver statically, otherwise it won't be available
+ early on boot.
+ 
+> However, this doesn't solve the distro's problem: as the old RTC framework
+> depends on RTC_LIB=n, you cannot have both old and new RTC drivers in your
+> (single) distro kernel. That's why dmwm2 created drivers/rtc/rtc-ppc.c: Fedora
+> had to support machines with both old and new RTC drivers. As all of the old
+> drivers are actually behind the ppc_md.[sg]et_rtc_time() abstraction, this was
+> very easy.
+
+ ok, generic kernel. you will have to load the modules on initrd. no, sadly you
+ can't have both of them. you might stick with the old interface or
+ convert them all. 
+
+> Hence it's all or nothing, and we have to convert all of them.
 > 
-> Yeah, I took a quick look and saw some nice improvements.  
+> drivers/rtc/rtc-generic.c would allow to have a working system without old
+> RTC drivers, until all low-level code has been converted to individual RTC
+> drivers.
 
-:)
+ I know but I have enough experience to foresee that once a generic over generic
+ framework is in place it's very hard to get rid of it because people
+ will have no incentives.
 
-> Anyway, the filtering I did for this was basically a 
-> side-effect of the event description stuff, which made the 
-> filtering relatively easy to do (and the event description 
-> files give the user a way to list the available fields).  What 
-> I'm wondering is if you're interested in the filtering part 
-> alone or in the event description part as well, which I hadn't 
-> thought of as separable (I guess I need to look at the current 
-> ftrace code to see what's already there).
+ If you really need rtc-generic you can keep using it even if it's 
+ not in the kernel, distributions often have their specific
+ set of kernel patches.
 
-No, not filtering alone - event description / field enumeration 
-part is mandatory for user-space to be able to define filters, 
-so yes, that bit is also needed and desired. Steve already added 
-those bits we just dont yet have them exposed in 
-/debug/tracing/events, like your patch does. (I think it's next 
-on Steve's TODO list.)
+ But I'd strongly suggest to plan and execute a conversion process.
 
-Basically, i think the big picture is the following. The best 
-model for tracepoints is for them to have the following life 
-cycle:
 
- - trace_printk() ad-hoc additions. Not stable, not hookable and
-   not enumerated - but highly convenient.
+> >  Layering a generic framework over another generic framework
+> >  is quite a nonsense . 
+> 
+> IMHO these two generic frameworks are quite different: [sg]et_rtc_time()
+> abstracts the low-level RTC hardware interface, while RTC class handles the
+> interaction with userspace.
 
- - if a trace_printk() turns out to be useful it might become a
-   bit more active and turn into a regular tracepoint. This
-   makes it hookable by ftrace plugins and makes it faster - but 
-   it's not generally enumerated yet.
+ When I wrote it my intention was to make it as an abstraction _between_
+ the userspace and the hardware according to the platform/device model.
 
- - the final stage for a tracepoint is for it to become a 
-   "C-style" tracepoint. That makes it generally available to 
-   all ftrace plugins, makes it available to opaque user-space 
-   consumption as well and all fields are enumerated. The 
-   in-kernel value filtering machinery you added can make use of 
-   them as well.
+-- 
 
-   ( The downside is (and there are always downsides ;-) that 
-     such tracepoints are the hardest to add and have the 
-     highest ongoing maintenance overhead - but that aspect is 
-     easily visible and will be a well understood property of 
-     them. )
+ Best regards,
 
-Most tracepoints would move on the most convenient-to-add first 
-two levels - but eventually some would percolate up to the last 
-stage as well.
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
-I think the ones you've identified in your patchset are good 
-candidates for that final stage already - and we've added a few 
-more too, such as the IRQ entry/exit tracepoints.
+  http://www.towertech.it
 
-	Ingo
