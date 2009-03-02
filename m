@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZCBObs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZCBOcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZCBObs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 09:31:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZCBObj
+	id S1754508AbZCBOcV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 09:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbZCBOcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 09:31:39 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36030 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751948AbZCBObi (ORCPT
+	Mon, 2 Mar 2009 09:32:06 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:44351 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774AbZCBOcF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 09:31:38 -0500
-Date: Mon, 2 Mar 2009 15:34:22 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Arve Hj?nnev?g <arve@android.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090302143422.GE2527@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org> <d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com> <20090301225647.GE1961@elf.ucw.cz> <200903020924.42451.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200903020924.42451.oliver@neukum.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 2 Mar 2009 09:32:05 -0500
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, Pavel Machek <pavel@suse.cz>,
+       Eric Piel <eric.piel@tremplin-utc.net>, Vladimir Botka <vbotka@suse.cz>,
+       <Quoc.Pham@hp.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: 
+Date: Mon,  2 Mar 2009 15:31:47 +0100
+Message-Id: <1236004310-29196-2-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <1236004310-29196-1-git-send-email-daniel@caiaq.de>
+References: <49ABB22F.7040508@tremplin-utc.net>
+ <1236004310-29196-1-git-send-email-daniel@caiaq.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-03-02 09:24:36, Oliver Neukum wrote:
-> Am Sonntag 01 März 2009 23:56:47 schrieb Pavel Machek:
-> > > Allowing user space to suspend input devices while they are still open
-> > > is useful. The user-space code that reads from the input devices does
-> > > not need to know if the device is suspended or not, and the kernel
-> > > cannot auto suspend input devices based on inactivity.
-> >
-> > Actually, I'd like you to fix your userspace and close input devices
-> > when it does not need them. Given the way you control the platform it
-> > should not be that hard. I do not see why we'd want to invent new
-> > interface for "uhuh, I have opened the keyboard but I am not really
-> > interested in keys being pressed".
-> 
-> Generally you can't do this. A task has an open fd.
-> 
-> - you cannot assume it can open the device again (fd may be
-> inherited)
+From: Pavel Machek <pavel@ucw.cz>
 
-Well, those tasks that matter - X servers and similar - usually can.
+Fix english in Documentation, add "how to test" description.
 
-> - keeping the device open makes sure you are talking to the same device
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Cc: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: Vladimir Botka <vbotka@suse.cz>
+Cc: <Quoc.Pham@hp.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+ This patch is already in the -mm tree, posted as reference only.
 
-Well, you have to handle hotplug anyway, so... and the name will not
-change unless you unplug/replug.
+ Documentation/hwmon/lis3lv02d |   20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-> - you may want to avoid repeating expensive initialisations
-
-That kind of initializations should perhaps be done at insmod, not
-open time?
-
-> - some input devices also do output
-
-I guess you want to separate those to two different devices, then.
-
-Anyway...
-
-* I'd prefer "close to powersave". I can see that can be tricky to
-use. So the alternative is
-
-* ioctl() "I'm not interested in exact keys, powersave" is something
-that makes sense. It should really be discussed with input people.
-
-I'd hate to see
-
-* magic /sys/.../file where you echo 1 to powersave. It is too
-disconnected from the input fd, and while it may make it easier to
-retrofit powermanagement without modifying Xservers etc... it will
-ultimately result in pretty ugly hacks.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff -puN Documentation/hwmon/lis3lv02d~hp_accel-small-documentation-updates Documentation/hwmon/lis3lv02d
+--- a/Documentation/hwmon/lis3lv02d~hp_accel-small-documentation-updates
++++ a/Documentation/hwmon/lis3lv02d
+@@ -1,11 +1,11 @@
+ Kernel driver lis3lv02d
+-==================
++=======================
+ 
+ Supported chips:
+ 
+   * STMicroelectronics LIS3LV02DL and LIS3LV02DQ
+ 
+-Author:
++Authors:
+         Yan Burman <burman.yan@gmail.com>
+ 	Eric Piel <eric.piel@tremplin-utc.net>
+ 
+@@ -15,7 +15,7 @@ Description
+ 
+ This driver provides support for the accelerometer found in various HP
+ laptops sporting the feature officially called "HP Mobile Data
+-Protection System 3D" or "HP 3D DriveGuard". It detect automatically
++Protection System 3D" or "HP 3D DriveGuard". It detects automatically
+ laptops with this sensor. Known models (for now the HP 2133, nc6420,
+ nc2510, nc8510, nc84x0, nw9440 and nx9420) will have their axis
+ automatically oriented on standard way (eg: you can directly play
+@@ -27,7 +27,7 @@ position - 3D position that the accelero
+ calibrate - read: values (x, y, z) that are used as the base for input
+ 		  class device operation.
+             write: forces the base to be recalibrated with the current
+-		  position.
++		   position.
+ rate - reports the sampling rate of the accelerometer device in HZ
+ 
+ This driver also provides an absolute input class device, allowing
+@@ -48,7 +48,7 @@ For better compatibility between the var
+ the accelerometer are converted into a "standard" organisation of the axes
+ (aka "can play neverball out of the box"):
+  * When the laptop is horizontal the position reported is about 0 for X and Y
+-and a positive value for Z
++	and a positive value for Z
+  * If the left side is elevated, X increases (becomes positive)
+  * If the front side (where the touchpad is) is elevated, Y decreases
+ 	(becomes negative)
+@@ -59,3 +59,13 @@ email to the authors to add it to the da
+ laptop, please include the output of "dmidecode" plus the value of
+ /sys/devices/platform/lis3lv02d/position in these four cases.
+ 
++Q&A
++---
++
++Q: How do I safely simulate freefall? I have an HP "portable
++workstation" which has about 3.5kg and a plastic case, so letting it
++fall to the ground is out of question...
++
++A: The sensor is pretty sensitive, so your hands can do it. Lift it
++into free space, follow the fall with your hands for like 10
++centimeters. That should be enough to trigger the detection.
+_
