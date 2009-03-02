@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbZCBRHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZCBRNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbZCBRHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 12:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbZCBRH2
+	id S1757005AbZCBRNP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 12:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbZCBRM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 12:07:28 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:59012 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753141AbZCBRH1 (ORCPT
+	Mon, 2 Mar 2009 12:12:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37865 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753248AbZCBRM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 12:07:27 -0500
-Subject: Re: ACPI hotplug panic with current git head
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200902181141.06997.jbarnes@virtuousgeek.org>
-References: <1231604250.3642.33.camel@localhost.localdomain>
-	 <200902181059.26779.jbarnes@virtuousgeek.org>
-	 <1234984088.3225.44.camel@localhost.localdomain>
-	 <200902181141.06997.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 11:07:22 -0600
-Message-Id: <1236013642.3275.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 12:12:56 -0500
+Date: Mon, 2 Mar 2009 09:11:54 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
+In-Reply-To: <1235996477.5330.174.camel@laptop>
+Message-ID: <alpine.LFD.2.00.0903020852220.3111@localhost.localdomain>
+References: <1235996477.5330.174.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 11:41 -0800, Jesse Barnes wrote:
-> On Wednesday, February 18, 2009 11:08 am James Bottomley wrote:
-> > On Wed, 2009-02-18 at 10:59 -0800, Jesse Barnes wrote:
-> > > On Monday, February 16, 2009 9:10 pm Kenji Kaneshige wrote:
-> > > > Jesse Barnes wrote:
-> > > > > On Wednesday, January 28, 2009 3:47 am Kenji Kaneshige wrote:
-> > > > >> I made several patches to fix the wrong assumption described
-> > > > >> above. It is very difficult for me to check all the code that
-> > > > >> refers pci_bus->self. So I checked include/linux/pci-acpi.h and
-> > > > >> the code under drivers/pci/ only. And I made patches for the code
-> > > > >> like below:
-> > > > >>
-> > > > >>  - The code that clearly chooses host bridge operation or
-> > > > >>    PCI-to-PCI bridge operation based on pci_bus->self.
-> > > > >>
-> > > > >>  - The code that might cause endless loop if pci_bus->self is
-> > > > >>    not NULL on the PCI root bus.
-> > > > >
-> > > > > Kenji-san, can you re-send these to my private mail so I can apply
-> > > > > them? (Outlook/Exchange can't let plain text through without
-> > > > > molesting it for some reason.)
-> > > > >
-> > > > > Thanks,
-> > > >
-> > > > Sure. Resending the following patches. I made those patches against
-> > > > 2.6.29-rc2. I've confirmed they can be applied to 2.6.29-rc5.
-> > > >
-> > > >  - [PATCH 1/8] PCI/ACPI: fix wrong assumption in
-> > > > acpi_pci_get_bridge_handle - [PATCH 2/8] PCI/ACPI: fix wrong assumption
-> > > > in
-> > > > acpi_find_root_bridge_handle - [PATCH 3/8] PCI hotplug: fix wrong
-> > > > assumption in acpi_get_hp_params_from_firmware - [PATCH 4/8] PCI
-> > > > hotplug: fix wrong assumption in acpi_get_hp_hw_control_from_firmware -
-> > > > [PATCH 5/8] PCI: fix wrong assumption in pci_find_upstream_pcie_bridge
-> > > > - [PATCH 6/8] PCI: fix wrong assumption in pci_read_bridge_bases
-> > > >  - [PATCH 7/8] PCI: fix wrong assumption in pci_get_interrupt_pin
-> > > >  - [PATCH 8/8] PCI: fix wrong assumption in pci_common_swizzle
-> > >
-> > > James have you tested this set?  I didn't see your tested-by in the
-> > > changelogs...  Just want to make sure if I'm going to send these to Linus
-> > > for 2.6.29.
-> >
-> > Um ... no.  I have enough trouble picking up my own patches from email.
-> > Is there a git tree of this?  I can pull that in to the box in question
-> > if so.
+
+
+On Mon, 2 Mar 2009, Peter Zijlstra wrote:
 > 
-> Just pushed the set to the hotplug-test branch of my PCI repo:
-> git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 hotplug-test
+> Would you be willing to take such a patch?
 
-Sorry, been away a lot.  Finally got this compiled and installed on
-2.6.29-rc6: it works just fine.
+Yes - some day.
 
-Thanks,
+The "irq's disabled fastpath" thing has been there since pretty much day 
+one, because some irq handlers always wanted it. Making it the default 
+(and the only choice) is fine.
 
-James
+HOWEVER.
 
+The fact is, some interrupt handlers are too slow for this. If you are 
+using a PIO IDE driver, not enabling interrupts will not only make you 
+lose serial line interrupts like mad (even at slow speeds), but has 
+historically resulted in even timer interrupts being lost because the IDE 
+layer is so slow.
 
+The thing is, with PIO, a 512-byte disk read ends up doing 256 16-bit word 
+reads from the controller, each potentially up to 600ns long (PIO0 
+timings). That's 150ms - for a single sector!
+
+Now, IDE controllers that we end up using PIO on all tend to be pretty 
+old, but admittedly even the old ones are faster than the worst-case 
+timings, so in practice you're not looking quite at that kind of horror 
+case, but you're still looking at each sector transfer (256 16-bit words) 
+taking on the order of tens of us.
+
+For example, Mode2 timings are probably still something we should consider 
+realistic, and that's 240ns per word - a single sector now takes ~60ms to 
+read off the disk.
+
+And we don't do single sectors. Most transfers will be 8 sectors (4k 
+contiguos read). So now that 60ms is 480ms per such IDE interrupt. And 
+even with the _good_ timings, we're certainly looking at a reduction of 
+that to about half.
+
+Imagine what happens when we have interrupts disabled for half a second at 
+a time.  
+
+In other words, I do not think we are ready for this.
+
+Now: I suspect you don't have a single machine that does PIO by default, 
+and you probably haven't had any for the last ten years. These things 
+_are_ old. But they do exist. 
+
+Could we make IRQF_DISABLED the default? Hell yes. We probably should. But 
+we realistically can't remove the non-disabled case, until you also have a 
+(tested) patch to fix these kinds of issues for the IDE PIO case (and 
+possibly others - IDE is the one I _know_ needs it).
+
+Could we make just the IDE driver itself enable interrupts? Sure. But that 
+means that the interrupt controller code needs to know that some drivers 
+may enable interrupts and they may have recursive interrupts occurring. In 
+which case you really do want a flag anyway, since the interrupt 
+controller may well end up deciding that the "we're not going to enable 
+interrupts" case allows certain optimizations (like just ACK'ing it 
+immediately and not masking it at the interrupt controller).
+
+So this is not as simple as your patch. Not even _nearly_.
+
+			Linus
