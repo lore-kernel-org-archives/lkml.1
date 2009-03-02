@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZCBNjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbZCBNoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZCBNjw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 08:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbZCBNjo
+	id S1752971AbZCBNoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 08:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZCBNoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 08:39:44 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:23670 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbZCBNjo convert rfc822-to-8bit (ORCPT
+	Mon, 2 Mar 2009 08:44:06 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38582 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107AbZCBNoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 08:39:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=mNhDgwn+4DcMBvlzbNrkpc2kv2kIRkYGiMiTm1VnQQFOVfOK0p1MYxWolX9iQupOOa
-         gdVLkQ/tPqL+MfFoQoJgE982GY+M8rVbSniBdrHDMdkSZ29uXxo3VAMaXMzQz3SDNLEX
-         wQMxwB6RuNMhhrHQDFZH3wozBQUreV1rbHs0U=
+	Mon, 2 Mar 2009 08:44:04 -0500
+Date: Mon, 2 Mar 2009 07:37:54 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Alexey Dobriyan <adobriyan@gmail.com>, hch@infradead.org
+Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
+Message-ID: <20090302133754.GA8033@us.ibm.com>
+References: <20090227203425.F3B51176@kernel> <20090227203435.98735E54@kernel>
 MIME-Version: 1.0
-Date: Mon, 2 Mar 2009 15:39:41 +0200
-Message-ID: <20831c740903020539h68f62f2fj1575408d89050d25@mail.gmail.com>
-Subject: usb hotplug and hooking
-From: Oguz Yarimtepe <comp.ogz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-9
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090227203435.98735E54@kernel>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> 
+> Introduce a files_struct counter to indicate whether a particular
+> file_struct has ever contained a file which can not be
+> checkpointed.  This flag is a one-way trip; once it is set, it may
+> not be unset.
+> 
+> We assume at allocation that a new files_struct is clean and may
+> be checkpointed.  However, as soon as it has had its files filled
+> from its parent's, we check it for real in __scan_files_for_cr().
+> At that point, we mark it if it contained any uncheckpointable
+> files.
+> 
+> We also check each 'struct file' when it is installed in a fd
+> slot.  This way, if anyone open()s or managed to dup() an
+> unsuppored file, we can catch it.
+> 
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 
-I want to run an application when an external usb flash disk is plugged to
-my box machine that has STLinux installed in it. My aim is to check some
-issues on usb disk, whether it has an official software or not. I am not
-sure how will i hook my own application that will check usb device
-when it is plugged. I don't want the application run at the
-background, but run only when a plug is occured.
+So on a practical note, Ingo's scheme appears to be paying off.  In
+order for any program's files_struct to be checkpointable right now,
+it must be statically compiled, else ld.so (I assume) looks up
+/proc/$$/status.  So since proc is not checkpointable, the result
+is irreversibly non-checkpointable.
 
-Will be happy if you guide a little.
+So...  does it make sense to mark proc as checkpointable?  Do we
+reasonably assume that the same procfile will be available at
+restart?
 
-Thanx.
-
---
-Oðuz Yarýmtepe
-www.loopbacking.info
+-serge
