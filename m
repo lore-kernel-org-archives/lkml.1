@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZCBPNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZCBPOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbZCBPNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 10:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZCBPNr
+	id S1756029AbZCBPOY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 10:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbZCBPOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 10:13:47 -0500
-Received: from casper.infradead.org ([85.118.1.10]:32991 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbZCBPNq (ORCPT
+	Mon, 2 Mar 2009 10:14:06 -0500
+Received: from hosting.visp.net.lb ([194.146.153.11]:47603 "EHLO
+	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754820AbZCBPOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 10:13:46 -0500
-Date: Mon, 2 Mar 2009 07:13:55 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Arve Hj?nnev?g" <arve@android.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090302071355.540e5651@infradead.org>
-In-Reply-To: <200903020924.42451.oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
-	<d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
-	<20090301225647.GE1961@elf.ucw.cz>
-	<200903020924.42451.oliver@neukum.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Mar 2009 10:14:04 -0500
+X-Greylist: delayed 533 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Mar 2009 10:14:04 EST
+From: Denys Fedoryschenko <denys@visp.net.lb>
+Organization: VISP
+To: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       cpufreq@vger.kernel.org, davej@redhat.com
+Subject: 2.6.28 - 2.6.29-rc6-git5 regression, p4-clockmod/cpufreq probably
+Date: Mon, 2 Mar 2009 17:04:59 +0200
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200903021704.59663.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009 09:24:36 +0100
-Oliver Neukum <oliver@neukum.org> wrote:
+Please CC me, i am not on linux-kernel maillist
 
-> - you may want to avoid repeating expensive initialisations
+Hardware: Asus EEE 702, 
+CPU: Intel Celeron 900 Mhz
 
-btw this "expensive intialization" for a correct driver... is the same
-thing  you need to do to get the device out of power saving mode..
+On 2.6.28 p4-clockmod available, and i can manage governor, frequency and etc 
+over cpufrequtils.
+On 2.6.29-rc6 (git5 tested also) also shown in dmesg as available, but i  
+can't change anything.
+
+root # cpufreq-info
+cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 0:
+  no or unknown cpufreq driver is active on this CPU
+
+There is no noticeable differences in dmesg.
+Both have
+[    2.438474] p4-clockmod: P4/Xeon(TM) CPU On-Demand Clock Modulation 
+available
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Here is end of strace on cpufreq-info
+lstat64("/sys/devices/system/cpu/cpu0/", {st_mode=S_IFDIR|0755, 
+st_size=0, ...}) = 0
+lstat64("/sys/devices/system/cpu/cpu0/", {st_mode=S_IFDIR|0755, 
+st_size=0, ...}) = 0
+write(1, "analyzing CPU 0:\n"..., 17analyzing CPU 0:
+)   = 17
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", 0xbfbce570) 
+= -1 ENOENT (No such file or directory)
+open("/proc/sys/cpu/0/speed", O_RDONLY) = -1 ENOENT (No such file or 
+directory)
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq", 0xbfbce570) 
+= -1 ENOENT (No such file or directory)
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver", 0xbfbce580) = -1 
+ENOENT (No such file or directory)
+write(1, "  no or unknown cpufreq driver is"..., 53  no or unknown cpufreq 
+driver is active on this CPU
+) = 53
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus", 0xbfbce460) = -1 
+ENOENT (No such file or directory)
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq", 0xbfbce560) 
+= -1 ENOENT (No such file or directory)
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies", 
+0xbfbce460) = -1 ENOENT (No such file or directory)
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors", 
+0xbfbce560) = -1 ENOENT (No such file or directory)
+stat64("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", 0xbfbce570) 
+= -1 ENOENT (No such file or directory)
+
+If you need more information, let me know.
