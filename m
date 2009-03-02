@@ -1,172 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZCBQok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZCBQ5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbZCBQok (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:44:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZCBQob
+	id S1756510AbZCBQ5F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZCBQ4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:44:31 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:62240 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188AbZCBQoa (ORCPT
+	Mon, 2 Mar 2009 11:56:52 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:34863 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbZCBQ4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:44:30 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+gusmo2tZDisJg1jNQKTUw
-Date: Mon, 2 Mar 2009 08:44:14 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: David Brownell <david-b@pacbell.net>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Kim Kyuwon <chammoru@gmail.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
-       =?utf-8?B?77+977+977+91L/vv70=?= <q1.kim@samsung.com>,
-       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>
-Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when
-	resuming
-Message-ID: <20090302164413.GB11864@atomide.com>
-References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com> <200902231023.49653.david-b@pacbell.net> <49A3EF96.3090603@nokia.com> <200902241410.19132.david-b@pacbell.net> <20090227220812.GM11594@atomide.com> <49ABD098.8080108@nokia.com>
+	Mon, 2 Mar 2009 11:56:51 -0500
+Message-ID: <49AC0FAB.6000604@oracle.com>
+Date: Mon, 02 Mar 2009 08:56:11 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49ABD098.8080108@nokia.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, Michael Buesch <mb@bu3sch.de>
+Subject: Re: linux-next: Tree for March 2 (wireless/b43)
+References: <20090302182217.90ca3356.sfr@canb.auug.org.au>
+In-Reply-To: <20090302182217.90ca3356.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.49AC0FBE.028A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Hunter <adrian.hunter@nokia.com> [090302 04:27]:
-> From a2ad80abeb9550782d4962472980e47df4055434 Mon Sep 17 00:00:00 2001
-> From: Kim Kyuwon <chammoru@gmail.com>
-> Date: Fri, 20 Feb 2009 13:10:08 +0100
-> Subject: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when resuming
->
-> Most registers lose its state when the processor wakes up from sleep state.
-> Thus registers should be initialized, when the processor wakes up. However the
-> current hsmmc 'resume' function doesn't consider this issue and finally makes
-> deadlock. So this patch fixes this problem.
->
-> Signed-off-by: Kim Kyuwon <chammoru@gmail.com>
-> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20090227:
+> 
+> Undropped trees:
+> 	wireless
 
-Sounds like there's no rush to get this into mainline until during the
-next merge window as we're still missing most of the 24xx and 34xx PM code.
+when CONFIG_SSB_DRIVER_PCICORE=n:
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+        if ((bus->bustype == SSB_BUSTYPE_PCI) &&
+            (bus->pcicore.dev->id.revision <= 10))
+                hf |= B43_HF_PCISCW; /* PCI slow clock workaround. */
+
+==>
+drivers/net/wireless/b43/main.c:4182: error: 'struct ssb_pcicore' has no member named 'dev'
 
 
-> ---
->
->
->
->
-> Here is Kim Kyuwon's patch without the 'host is never null in suspend / resume'
-> assumption, and leaving the issue of SDBP for later.
->
->
->
->
->
->
-> drivers/mmc/host/omap_hsmmc.c |   55 +++++++++++++++++++++++-----------------
-> 1 files changed, 32 insertions(+), 23 deletions(-)
->
-> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-> index a631c81..1047cb5 100644
-> --- a/drivers/mmc/host/omap_hsmmc.c
-> +++ b/drivers/mmc/host/omap_hsmmc.c
-> @@ -56,6 +56,7 @@
-> #define SDVS18			(0x5 << 9)
-> #define SDVS30			(0x6 << 9)
-> #define SDVS33			(0x7 << 9)
-> +#define SDVS_MASK		0x00000E00
-> #define SDVSCLR			0xFFFFF1FF
-> #define SDVSDET			0x00000400
-> #define AUTOIDLE		0x1
-> @@ -891,6 +892,34 @@ static int omap_hsmmc_get_ro(struct mmc_host *mmc)
-> 	return pdata->slots[0].get_ro(host->dev, 0);
-> }
->
-> +static void omap_hsmmc_init(struct mmc_omap_host *host)
-> +{
-> +	u32 hctl, capa, value;
-> +
-> +	/* Only MMC1 supports 3.0V */
-> +	if (host->id == OMAP_MMC1_DEVID) {
-> +		hctl = SDVS30;
-> +		capa = VS30 | VS18;
-> +	} else {
-> +		hctl = SDVS18;
-> +		capa = VS18;
-> +	}
-> +
-> +	value = OMAP_HSMMC_READ(host->base, HCTL) & ~SDVS_MASK;
-> +	OMAP_HSMMC_WRITE(host->base, HCTL, value | hctl);
-> +
-> +	value = OMAP_HSMMC_READ(host->base, CAPA);
-> +	OMAP_HSMMC_WRITE(host->base, CAPA, value | capa);
-> +
-> +	/* Set the controller to AUTO IDLE mode */
-> +	value = OMAP_HSMMC_READ(host->base, SYSCONFIG);
-> +	OMAP_HSMMC_WRITE(host->base, SYSCONFIG, value | AUTOIDLE);
-> +
-> +	/* Set SD bus power bit */
-> +	value = OMAP_HSMMC_READ(host->base, HCTL);
-> +	OMAP_HSMMC_WRITE(host->base, HCTL, value | SDBP);
-> +}
-> +
-> static struct mmc_host_ops mmc_omap_ops = {
-> 	.request = omap_mmc_request,
-> 	.set_ios = omap_mmc_set_ios,
-> @@ -906,7 +935,6 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
-> 	struct mmc_omap_host *host = NULL;
-> 	struct resource *res;
-> 	int ret = 0, irq;
-> -	u32 hctl, capa;
->
-> 	if (pdata == NULL) {
-> 		dev_err(&pdev->dev, "Platform Data is missing\n");
-> @@ -1011,28 +1039,7 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
-> 	if (pdata->slots[host->slot_id].wires >= 4)
-> 		mmc->caps |= MMC_CAP_4_BIT_DATA;
->
-> -	/* Only MMC1 supports 3.0V */
-> -	if (host->id == OMAP_MMC1_DEVID) {
-> -		hctl = SDVS30;
-> -		capa = VS30 | VS18;
-> -	} else {
-> -		hctl = SDVS18;
-> -		capa = VS18;
-> -	}
-> -
-> -	OMAP_HSMMC_WRITE(host->base, HCTL,
-> -			OMAP_HSMMC_READ(host->base, HCTL) | hctl);
-> -
-> -	OMAP_HSMMC_WRITE(host->base, CAPA,
-> -			OMAP_HSMMC_READ(host->base, CAPA) | capa);
-> -
-> -	/* Set the controller to AUTO IDLE mode */
-> -	OMAP_HSMMC_WRITE(host->base, SYSCONFIG,
-> -			OMAP_HSMMC_READ(host->base, SYSCONFIG) | AUTOIDLE);
-> -
-> -	/* Set SD bus power bit */
-> -	OMAP_HSMMC_WRITE(host->base, HCTL,
-> -			OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
-> +	omap_hsmmc_init(host);
->
-> 	/* Request IRQ for MMC operations */
-> 	ret = request_irq(host->irq, mmc_omap_irq, IRQF_DISABLED,
-> @@ -1222,6 +1229,8 @@ static int omap_mmc_resume(struct platform_device *pdev)
-> 			dev_dbg(mmc_dev(host->mmc),
-> 					"Enabling debounce clk failed\n");
->
-> +		omap_hsmmc_init(host);
-> +
-> 		if (host->pdata->resume) {
-> 			ret = host->pdata->resume(&pdev->dev, host->slot_id);
-> 			if (ret)
-> -- 
-> 1.5.6.3
