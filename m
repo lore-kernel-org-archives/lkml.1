@@ -1,85 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbZCBHo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZCBHqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756974AbZCBHo1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 02:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbZCBHoT
+	id S1757479AbZCBHqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 02:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZCBHqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 02:44:19 -0500
-Received: from ti-out-0910.google.com ([209.85.142.186]:13213 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbZCBHoS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 02:44:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=FeJfZ3LMf/F0qW7zS1zXOi+XcWjMb7YvpNM0ywIpnk48NsQPgEYBpepW21BahRMrFw
-         LLHSkKNAI2U1rTKmYjXKM2mz9aN9BPpg8GinQoz/6T8kM3/+0yGcPcg5mW45mXk0C1B+
-         kzij7H7qT/EZuxnSoKI00B09XE1hl2xH7LANE=
-Date: Mon, 2 Mar 2009 15:44:25 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: kill unused parameter of pick_next_task()
-Message-ID: <20090302074425.GI1771@hack.private>
-References: <49AB74CE.2000200@cn.fujitsu.com> <20090302061350.GE1771@hack.private> <49AB8246.6020809@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49AB8246.6020809@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 2 Mar 2009 02:46:06 -0500
+Received: from mga03.intel.com ([143.182.124.21]:23222 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750879AbZCBHqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 02:46:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,288,1233561600"; 
+   d="asc'?scan'208";a="115678024"
+Subject: Re: [PATCH] Fix e820 end address with EFI
+From: Huang Ying <ying.huang@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>
+References: <49A965AD.10701@redhat.com>
+	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>
+	 <49AAEC79.3000808@redhat.com>
+	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>
+	 <49AB38E7.60305@redhat.com>
+	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>
+	 <49AB4171.7000508@kernel.org>
+	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>
+	 <49AB4521.8010909@kernel.org>
+	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>
+	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hVyPen/HKT8MB5faZiIs"
+Date: Mon, 02 Mar 2009 15:45:59 +0800
+Message-Id: <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 02:52:54PM +0800, Wang Chen wrote:
->Américo Wang said the following on 2009-3-2 14:13:
->> On Mon, Mar 02, 2009 at 01:55:26PM +0800, Wang Chen wrote:
->>> based on tip/sched/cleanups
->>>
->>> impact: no change in functionality
->>>
->>> Parameter "prev" seems like an unusable thing.
->>>
->>> Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
->>> ---
->>> kernel/sched.c |    6 +++---
->>> 1 files changed, 3 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/kernel/sched.c b/kernel/sched.c
->>> index 410eec4..57f8b12 100644
->>> --- a/kernel/sched.c
->>> +++ b/kernel/sched.c
->>> @@ -4512,7 +4512,7 @@ static inline void schedule_debug(struct task_struct *prev)
->>>  * Pick up the highest-prio task:
->>>  */
->>> static inline struct task_struct *
->>> -pick_next_task(struct rq *rq, struct task_struct *prev)
->>> +pick_next_task(struct rq *rq)
->>> {
->>> 	const struct sched_class *class;
->>> 	struct task_struct *p;
->>> @@ -4587,7 +4587,7 @@ need_resched_nonpreemptible:
->>> 		idle_balance(cpu, rq);
->>>
->>> 	prev->sched_class->put_prev_task(rq, prev);
->>         ^^^^^
->> 
->> How about this? :)
->> 
->
->need_resched_nonpreemptible is inside another function instead of pick_next_task().
->Because "diff" doesn't know "asmlinkage void __sched schedule(void)".
->;)
->
 
-Oops, I misread the patch. Then it's OK. :)
+--=-hVyPen/HKT8MB5faZiIs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2009-03-02 at 10:51 +0800, Yinghai Lu wrote:
+> On Sun, Mar 1, 2009 at 6:37 PM, Huang Ying <ying.huang@intel.com> wrote:
+> >> so 64bit could use ioremap_cache() too?
+> >> we may keep 32bit and 64bit a bit consistent.
+> >
+> > If we use ioremap_cache(), kexec runtime service will not work in kexec
+> > situation, which needs EFI runtime memory area to be mapped at exact
+> > same location across kexec. I think we should support kexec if possible=
+.
+>=20
+>=20
+> sure.
+>=20
+> please don't touch max_low_pfn_mapped, because some range may not
+> directly mapped under those efi run-time code
+
+Find an issue to use init_memory_mapping() here.
+
+If the memory range to be mapped is less than 2M, the last mapped
+address may be next 2M aligned position, this may lead mapping
+overlapping between memory range. Such as:
+
+0x3f388000 - 0x3f488000: real mapped	0x3f388000 - 0x3f600000
+0x3f590000 - 0x3f5bb000: real mapped	0x3f590000 - 0x3f600000
+
+The problem is that the memory range 0x3f400000 - 0x3f590000 is left not
+mapped!
+
+Two way to fix the issue:
+
+a) Make init_memory_mapping stopped at specified end page exactly! Even
+for memory range smaller than 2M.
+
+b) init_memory_mapping maps all underlying pages when split large
+mapping.
+
+What do you think about that?
+
+Best Regards,
+Huang Ying
 
 
--- 
-Do what you love, f**k the rest! F**k the regulations!
- 
+--=-hVyPen/HKT8MB5faZiIs
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmrjrEACgkQKhFGF+eHlpgQWgCfaQW68O8AGjTPvDm9qaqXPeHH
+YZQAn1BuXjT20ZJNuqAogJNEbj3Er20i
+=fmOk
+-----END PGP SIGNATURE-----
+
+--=-hVyPen/HKT8MB5faZiIs--
+
