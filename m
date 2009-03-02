@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZCBOsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbZCBOz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZCBOsn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 09:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZCBOsf
+	id S1754069AbZCBOz1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 09:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZCBOzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 09:48:35 -0500
-Received: from smtp20.orange.fr ([193.252.22.31]:2301 "EHLO smtp20.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752126AbZCBOse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 09:48:34 -0500
-X-ME-UUID: 20090302144832321.4E6041C00059@mwinf2024.orange.fr
-Subject: Re: usb hotplug and hooking
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Oguz Yarimtepe <comp.ogz@gmail.com>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20831c740903020633r40cc3a3fh5eb74eacd9026d3e@mail.gmail.com>
-References: <20831c740903020539h68f62f2fj1575408d89050d25@mail.gmail.com>
-	 <200903021513.01356.oliver@neukum.org>
-	 <20831c740903020633r40cc3a3fh5eb74eacd9026d3e@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 15:48:10 +0100
-Message-Id: <1236005290.10675.360.camel@skunk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 09:55:16 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49264 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751622AbZCBOzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 09:55:15 -0500
+Date: Mon, 2 Mar 2009 15:57:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Eric Piel <eric.piel@tremplin-utc.net>
+Subject: Re: [PATCH 3/5] lis3: reorder functions to make forward decl
+	obsolete
+Message-ID: <20090302145754.GL2527@elf.ucw.cz>
+References: <49ABB22F.7040508@tremplin-utc.net> <1236004310-29196-1-git-send-email-daniel@caiaq.de> <1236004310-29196-2-git-send-email-daniel@caiaq.de> <1236004310-29196-3-git-send-email-daniel@caiaq.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236004310-29196-3-git-send-email-daniel@caiaq.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 16:33 +0200, Oguz Yarimtepe wrote:
-> I will look at the udev scripting. I don't need a GUI, yet. I will
-> just communicate with the usb device, check its files and if an
-> authorized software is found (will use asymmetric cryptography) will
-> load it.  I can write the software that will do the mentioned things.
-> I just don't know the hooking part. But udev is a good start. Thanks.
+On Mon 2009-03-02 15:31:48, Daniel Mack wrote:
+> moved lis3lv02d_init_device() down so that the forward declaration of
+> lis3lv02d_add_fs() becomes unnecessary.
+> 
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
 
-Have a look at halevt:
-http://www.environnement.ens.fr/perso/dumas/halevt.html
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-HTH,
-	Xav
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
