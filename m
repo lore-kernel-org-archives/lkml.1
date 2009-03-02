@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZCBQcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZCBQdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbZCBQcm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZCBQcd
+	id S1754715AbZCBQdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbZCBQcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:32:33 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:53681 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbZCBQcd (ORCPT
+	Mon, 2 Mar 2009 11:32:51 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36842 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754165AbZCBQcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:32:33 -0500
-Date: Mon, 2 Mar 2009 09:32:16 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
-Message-ID: <20090302163215.GD14217@parisc-linux.org>
-References: <1235996477.5330.174.camel@laptop> <20090302144303.GA30136@elte.hu> <20090302154748.GB14217@parisc-linux.org> <1236009588.5330.729.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236009588.5330.729.camel@laptop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 2 Mar 2009 11:32:50 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 1/2] regulator: Allow boot_on regulators to be disabled by clients
+Date: Mon,  2 Mar 2009 16:32:46 +0000
+Message-Id: <1236011567-31311-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 04:59:48PM +0100, Peter Zijlstra wrote:
-> The idea is to mandate IRQF_DISABLED for everybody, and since it doesn't
-> do any good to have it a flag if you have it always enabled, remove
-> it ;-)
+Rather than incrementing the reference count for boot_on regulators
+(which prevents them being disabled later on) simply force the
+regulator to be enabled when applying the constraints. Previously
+boot_on was essentially equivalent to always_on.
 
-I don't have a problem with that.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c          |   13 ++++---------
+ include/linux/regulator/machine.h |    4 +++-
+ 2 files changed, 7 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index da357a0..464e9b1 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -772,10 +772,6 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 			}
+ 	}
+ 
+-	/* are we enabled at boot time by firmware / bootloader */
+-	if (rdev->constraints->boot_on)
+-		rdev->use_count = 1;
+-
+ 	/* do we need to setup our suspend state */
+ 	if (constraints->initial_state) {
+ 		ret = suspend_prepare(rdev, constraints->initial_state);
+@@ -804,11 +800,10 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 		}
+ 	}
+ 
+-	/* if always_on is set then turn the regulator on if it's not
+-	 * already on. */
+-	if (constraints->always_on && ops->enable &&
+-	    ((ops->is_enabled && !ops->is_enabled(rdev)) ||
+-	     (!ops->is_enabled && !constraints->boot_on))) {
++	/* If the constraints say the regulator should be on at this point
++	 * and we have control then make sure it is enabled.
++	 */
++	if ((constraints->always_on || constraints->boot_on) && ops->enable) {
+ 		ret = ops->enable(rdev);
+ 		if (ret < 0) {
+ 			printk(KERN_ERR "%s: failed to enable %s\n",
+diff --git a/include/linux/regulator/machine.h b/include/linux/regulator/machine.h
+index 1eb861c..5de7aa3 100644
+--- a/include/linux/regulator/machine.h
++++ b/include/linux/regulator/machine.h
+@@ -73,7 +73,9 @@ struct regulator_state {
+  *
+  * @always_on: Set if the regulator should never be disabled.
+  * @boot_on: Set if the regulator is enabled when the system is initially
+- *           started.
++ *           started.  If the regulator is not enabled by the hardware or
++ *           bootloader then it will be enabled when the constraints are
++ *           applied.
+  * @apply_uV: Apply the voltage constraint when initialising.
+  *
+  * @input_uV: Input voltage for regulator when supplied by another regulator.
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+1.6.1.3
+
