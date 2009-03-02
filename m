@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZCBBDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbZCBBIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556AbZCBBDg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 20:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZCBBD1
+	id S1758005AbZCBBIA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 20:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbZCBBHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 20:03:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42488 "EHLO hera.kernel.org"
+	Sun, 1 Mar 2009 20:07:51 -0500
+Received: from mga11.intel.com ([192.55.52.93]:52196 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751799AbZCBBD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 20:03:26 -0500
-Message-ID: <49AB3031.4020500@kernel.org>
-Date: Sun, 01 Mar 2009 17:02:41 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: brk patches..
-References: <1235785882-17580-1-git-send-email-jeremy@goop.org>	 <1235785882-17580-4-git-send-email-jeremy@goop.org>	 <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com>	 <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu>	 <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org>	 <49A8F319.3030802@goop.org> <86802c440902281240i11423a95l98e330768ac6ca18@mail.gmail.com> <49AB1FE6.8030300@goop.org>
-In-Reply-To: <49AB1FE6.8030300@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752781AbZCBBHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 20:07:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,286,1233561600"; 
+   d="asc'?scan'208";a="669460603"
+Subject: Re: [PATCH] Fix e820 end address with EFI
+From: Huang Ying <ying.huang@intel.com>
+To: Brian Maly <bmaly@redhat.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49AAEC79.3000808@redhat.com>
+References: <49A965AD.10701@redhat.com>
+	 <86802c440902282014he17bb6an1f59872ef30db0c5@mail.gmail.com>
+	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>
+	 <49AAEC79.3000808@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1btKzHHGCrrIAc+m0qU3"
+Date: Mon, 02 Mar 2009 09:07:48 +0800
+Message-Id: <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Yinghai Lu wrote:
->>> But its no different from what i386 does now to allocate its initial
->>> pagetables.  How does this not break now?
->>>
->>>     
->>
->> it will try to use initial page table af first, and it is not big
->> enough, it will according to e820 and other reserved_early areas to
->> find good positions.
->>   
-> 
-> head_32.S has no such logic.  It just starts building the kernel
-> mappings directly after _end, starting at pg0, and uses as much space as
-> it needs.  For a !PSE CPU with a large kernel, that can be quite a lot
-> of space.  Only later, when its creating the linear memory mappings,
-> does it search around in the e820 tables (which it now has access to)
-> for space.
 
-yes, we should have some way to only make initial_pgtable only cover to _end
-and put that initial_pagbe before _end.
+--=-1btKzHHGCrrIAc+m0qU3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> The whole point of the brk segment was to have a way of allocating some
-> memory very early, before e820 is even available.  If you really think
-> this is dangerous, then we can easily extend the bss in the linker
-> script to include the brk memory, and release any leftover when we do
-> the normal bootmem freeup.  That would also give us a well-defined upper
-> limit on how much brk memory can be allocated; its a bit undefined at
-> the moment, as it depends on how much slop there is after the kernel
-> mapping.
+Hi, Brian,
 
-hope later boot loader could check vmlinux size in bzImage (according uncompressed size)
-and find good position in RAM for bzImage.
+On Mon, 2009-03-02 at 04:13 +0800, Brian Maly wrote:
+> I was able verify the kernel that does not boot on the MacBook (vanilla=20
+> 2.6.29-rc4) does call efi_ioremap() which bails out early returning=20
+> NULL. So no remapping happens in this case.  I have no idea if=20
+> efi_ioremap ever does succeed in mapping any ranges though being I have=20
+> no video or console this early in the boot and have to rely on triple=20
+> faulting as a means of debugging.
 
-we should find good position for brk with find_e820_area().
+Please attach your dmesg of successful boot, so we can take a look at
+the EFI memory map.
 
-YH
+Best Regards,
+Huang Ying
+
+--=-1btKzHHGCrrIAc+m0qU3
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmrMWEACgkQKhFGF+eHlpi9qQCgiCH1EiWfN2pTO/xLvRYbYPOA
+32UAn2Cd/WB3+ESTDiy2t0OHhNiGQlJN
+=LvC8
+-----END PGP SIGNATURE-----
+
+--=-1btKzHHGCrrIAc+m0qU3--
+
