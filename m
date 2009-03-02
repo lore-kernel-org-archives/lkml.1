@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbZCBNDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbZCBNHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752123AbZCBNDh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 08:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZCBND2
+	id S1752589AbZCBNHI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 08:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbZCBNG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 08:03:28 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:13316 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbZCBND1 (ORCPT
+	Mon, 2 Mar 2009 08:06:56 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:59833 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbZCBNG4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 08:03:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Cac4UT9/HjzNgk2CGSyY3XIJ5VvvlS2OerNec8TFvUZFSHTpOds6uNrILC+746u+NB
-         83IB7gBp3tnuQRJORuI9/E4iRZnHwQqcMgvYG/4k/zCH/3Z9/R/0YRaNlisFJWvKCQdw
-         j+yRRbeMVPZs5SLamOU4fl5gJdJv5G86BXWhI=
+	Mon, 2 Mar 2009 08:06:56 -0500
+Date: Mon, 2 Mar 2009 07:06:52 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH 3/4] devcgroup: show correct file mode
+Message-ID: <20090302130652.GA6628@us.ibm.com>
+References: <49AB40BF.4030706@cn.fujitsu.com> <49AB4143.9050704@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090302122547.GT11787@kernel.dk>
-References: <d364733c0903012106g2625d433o4cdbbbcc5a9ff19a@mail.gmail.com>
-	 <20090302122547.GT11787@kernel.dk>
-Date: Mon, 2 Mar 2009 21:03:25 +0800
-Message-ID: <d364733c0903020503x43a1448cq1b127a88fd816e1c@mail.gmail.com>
-Subject: Re: The difference of request dir between AS and Deadline I/O 
-	scheduler?
-From: =?GB2312?B?0Lu42Q==?= <xiegang112@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49AB4143.9050704@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do you mean that the same process tends to have the same behavior of
-I/O in the way of sycn?
-Does this mean AS works better when requests are distincted by sync
-mode  (the success rate of anticipation is higher when requests are
-grouped by the mode of sync)?
+Quoting Li Zefan (lizf@cn.fujitsu.com):
+> devices.allow and devices.deny are write-only, and devices.list is read-only.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Thanks,
+Yup that should be intuitive for people.
 
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-On Mon, Mar 2, 2009 at 8:25 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Mon, Mar 02 2009, ???? wrote:
->> Hi,
->>
->> I'm little confused about the defination of request dir in AS and
->> Deadline I/O scheduler.
->> In AS, the request dir is defined by wheher it's sync:
->>
->> data_dir = rq_is_sync(rq);
->>
->> But in Deadline, the requests are grouped by read and write.
->>
->> Why is there the difference since AS is an extension of Deadline?
->> what's the consideration?
->
-> Because AS uses the sync vs async distinction to decide whether to
-> anticipate a new request from that process. 'sync' is then reads or sync
-> writes, whereas deadline does not distinguish between sync and async
-> writes.
->
-> --
-> Jens Axboe
->
->
+thanks,
+-serge
 
-
-
--- 
-Xie Gang
+> ---
+>  security/device_cgroup.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+> index 3aacd0f..b13fbb8 100644
+> --- a/security/device_cgroup.c
+> +++ b/security/device_cgroup.c
+> @@ -439,16 +439,19 @@ static struct cftype dev_cgroup_files[] = {
+>  		.name = "allow",
+>  		.write_string  = devcgroup_access_write,
+>  		.private = DEVCG_ALLOW,
+> +		.mode = 0200,
+>  	},
+>  	{
+>  		.name = "deny",
+>  		.write_string = devcgroup_access_write,
+>  		.private = DEVCG_DENY,
+> +		.mode = 0200,
+>  	},
+>  	{
+>  		.name = "list",
+>  		.read_seq_string = devcgroup_seq_read,
+>  		.private = DEVCG_LIST,
+> +		.mode = 0444,
+>  	},
+>  };
+> 
+> -- 1.5.4.rc3 
