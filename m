@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbZCBTOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZCBTQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756064AbZCBTOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 14:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZCBTOg
+	id S1757275AbZCBTQv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 14:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZCBTQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 14:14:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49873 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751577AbZCBTOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 14:14:35 -0500
-Message-ID: <49AC2FDF.9070700@redhat.com>
-Date: Mon, 02 Mar 2009 14:13:35 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+	Mon, 2 Mar 2009 14:16:42 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:30599 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910AbZCBTQl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 14:16:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=YXufGISfy7itXDAoC+vpJSPYrvwKVhygxGBACH4t8R2XTDubz/WN9It9E0ooUBvYmm
+         bMFJHNbSTYS+n2RM9/8HZxsoVq9jeYp8QwEgLyY8DcyjYQ+fOsx4QFefPSWDth1pHbcI
+         xUKvlvLLPmb8IfIHfnKh7UuJXBZYvUdOSPDLE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
+Date: Mon, 2 Mar 2009 20:18:03 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-next-20090227; KDE/4.2.0; i686; ; )
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
-References: <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com>	<20090223173108.GB1441@Krystal>	<alpine.DEB.2.00.0902231236340.18221@gandalf.stny.rr.com>	<49A82851.5080707@redhat.com>	<20090227180724.GA17947@Krystal>	<49A83237.40604@redhat.com>	<20090227185316.GA19811@Krystal>	<49A853CD.3020607@redhat.com>	<49AC10E9.1090102@redhat.com>	<20090302102841.7e099670@infradead.org>	<20090302183617.GA25105@Krystal> <20090302105500.569e1270@infradead.org>
-In-Reply-To: <20090302105500.569e1270@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-arch" <linux-arch@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1235996477.5330.174.camel@laptop> <200903021948.51500.bzolnier@gmail.com> <alpine.LFD.2.00.0903021101460.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903021101460.3111@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903022018.03736.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Mon, 2 Mar 2009 13:36:17 -0500
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Monday 02 March 2009, Linus Torvalds wrote:
 > 
->> * Arjan van de Ven (arjan@infradead.org) wrote:
->>>> Use map_vm_area() instead of vmap() in text_poke() for avoiding
->>>> page allocation and delayed unmapping, and call
->>>> vunmap_page_range() and local_flush_tlb() directly because this
->>>> mapping is temporary and local.
->>>>
->>>> At the result of above change, text_poke() becomes atomic and can
->>>> be called from stop_machine() etc.
->>> .... but text_poke() realistically needs to call stop_machine()
->>> since you can't poke live code.... so that makes me wonder how
->>> useful this is...
->> Hi Arjan,
->>
->> Stop machine is not required when inserting a breakpoint. 
+> On Mon, 2 Mar 2009, Bartlomiej Zolnierkiewicz wrote:
+> >
+> > Hmm, I said nothing about how it is implemented in the IDE code itself. :)
 > 
-> that is your assumption; when I spoke with CPU architects they
-> cringed ;(
+> Bart, you're missing the point. I'm _also_ not at all interested in how 
+> it's implemented in the IDE code.
+> 
+> The whole - and only - point is that there are drivers that are _known_ to 
+> require non-IRQF_DISABLED semantics. IDE is one such one.
+> 
+> > Fixing this is on long-term TODO (there was just a ton of more high-prio
+> > stuff to take care of first).
+> 
+> Even if you can fix IDE to do everything using softirq's or other tricks 
+> (threads, whatever), nothing really changes. It just means that now there 
+> is one less driver that may need the non-IRQF_DISABLED semantics.
 
-Is that true even if modifying just one-byte (like int3 insertion)
-and we don't care synchronous write(that means code modification
-effects on other processors after a while)?
+I didn't meant non-IRQF_DISABLED semantics (I see absolutely no point in
+changing it) but IDE's internal "disable IRQs just to enable them" issue.  
 
-Thank you,
+[ Sorry for poorly explaining things. ]
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Thanks,
+Bart
