@@ -1,90 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbZCBGxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbZCBHHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759951AbZCBGxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 01:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbZCBGwz
+	id S1758560AbZCBHHb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 02:07:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbZCBHHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 01:52:55 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53869 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757180AbZCBGwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 01:52:54 -0500
-Message-ID: <49AB8246.6020809@cn.fujitsu.com>
-Date: Mon, 02 Mar 2009 14:52:54 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: kill unused parameter of pick_next_task()
-References: <49AB74CE.2000200@cn.fujitsu.com> <20090302061350.GE1771@hack.private>
-In-Reply-To: <20090302061350.GE1771@hack.private>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 2 Mar 2009 02:07:22 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34248 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbZCBHHW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 02:07:22 -0500
+Date: Mon, 2 Mar 2009 16:06:02 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
+Message-Id: <20090302160602.521928a5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090302063649.GJ11421@balbir.in.ibm.com>
+References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain>
+	<20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090302044043.GC11421@balbir.in.ibm.com>
+	<20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090302060519.GG11421@balbir.in.ibm.com>
+	<20090302152128.e74f51ef.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090302063649.GJ11421@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo Wang said the following on 2009-3-2 14:13:
-> On Mon, Mar 02, 2009 at 01:55:26PM +0800, Wang Chen wrote:
->> based on tip/sched/cleanups
->>
->> impact: no change in functionality
->>
->> Parameter "prev" seems like an unusable thing.
->>
->> Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
->> ---
->> kernel/sched.c |    6 +++---
->> 1 files changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index 410eec4..57f8b12 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -4512,7 +4512,7 @@ static inline void schedule_debug(struct task_struct *prev)
->>  * Pick up the highest-prio task:
->>  */
->> static inline struct task_struct *
->> -pick_next_task(struct rq *rq, struct task_struct *prev)
->> +pick_next_task(struct rq *rq)
->> {
->> 	const struct sched_class *class;
->> 	struct task_struct *p;
->> @@ -4587,7 +4587,7 @@ need_resched_nonpreemptible:
->> 		idle_balance(cpu, rq);
->>
->> 	prev->sched_class->put_prev_task(rq, prev);
->         ^^^^^
-> 
-> How about this? :)
-> 
+On Mon, 2 Mar 2009 12:06:49 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-need_resched_nonpreemptible is inside another function instead of pick_next_task().
-Because "diff" doesn't know "asmlinkage void __sched schedule(void)".
-;)
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 15:21:28]:
+> 
+> > On Mon, 2 Mar 2009 11:35:19 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 14:32:50]:
+> > > 
+> > > > On Mon, 2 Mar 2009 10:10:43 +0530
+> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 09:24:04]:
+> > > > > 
+> > > > > > On Sun, 01 Mar 2009 11:59:59 +0530
+> > > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > > 
+> > > > > > > 
+> > > > > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > > > 
+> > > > > > 
+> > > > > > At first, it's said "When cgroup people adds something, the kernel gets slow".
+> > > > > > This is my start point of reviewing. Below is comments to this version of patch.
+> > > > > > 
+> > > > > >  1. I think it's bad to add more hooks to res_counter. It's enough slow to give up
+> > > > > >     adding more fancy things..
+> > > > > 
+> > > > > res_counters was desgined to be extensible, why is adding anything to
+> > > > > it going to make it slow, unless we turn on soft_limits?
+> > > > > 
+> > > > You inserted new "if" logic in the core loop.
+> > > > (What I want to say here is not that this is definitely bad but that "isn't there
+> > > >  any alternatives which is less overhead.)
+> > > > 
+> > > > 
+> > > > > > 
+> > > > > >  2. please avoid to add hooks to hot-path. In your patch, especially a hook to
+> > > > > >     mem_cgroup_uncharge_common() is annoying me.
+> > > > > 
+> > > > > If soft limits are not enabled, the function does a small check and
+> > > > > leaves. 
+> > > > > 
+> > > > &soft_fail_res is passed always even if memory.soft_limit==ULONG_MAX
+> > > > res_counter_soft_limit_excess() adds one more function call and spinlock, and irq-off.
+> > > >
+> > > 
+> > > OK, I see that overhead.. I'll figure out a way to work around it.
+> > >  
+> > > > > > 
+> > > > > >  3. please avoid to use global spinlock more. 
+> > > > > >     no lock is best. mutex is better, maybe.
+> > > > > > 
+> > > > > 
+> > > > > No lock to update a tree which is update concurrently?
+> > > > > 
+> > > > Using tree/sort itself is nonsense, I believe.
+> > > > 
+> > > 
+> > > I tried using prio trees in the past, but they are not easy to update
+> > > either. I won't mind asking for suggestions for a data structure that
+> > > can scaled well, allow quick insert/delete and search.
+> > > 
+> > Now, because the routine is called by kswapd() not by try_to_free.....
+> > 
+> > It's not necessary to be very very fast. That's my point.
+> >
+> 
+> OK, I get your point, but whay does that make RB-Tree data structure non-sense?
+>  
 
->> -	next = pick_next_task(rq, prev);
->> +	next = pick_next_task(rq);
->>
->> 	if (likely(prev != next)) {
->                    ^^^^
-> 
-> also here.
-> 
->> 		sched_info_switch(prev, next);
->> @@ -6423,7 +6423,7 @@ static void migrate_dead_tasks(unsigned int dead_cpu)
->> 		if (!rq->nr_running)
->> 			break;
->> 		update_rq_clock(rq);
->> -		next = pick_next_task(rq, rq->curr);
->> +		next = pick_next_task(rq);
->> 		if (!next)
->> 			break;
->> 		next->sched_class->put_prev_task(rq, next);
-> 
-> 
-> I think you should check the latest linus-git, where you can safely
-> just remove the parameter 'prev'.
-> 
+ 1. Until memory-shortage, rb-tree is kept to be updated and the users(kernel)
+    has to pay its maintainace/check cost, whici is unnecessary.
+    Considering trade-off, paying cost only when memory-shortage happens tend to
+    be reasonable way.
+
+ 2. Current "exceed" just shows "How much we got over my soft limit" but doesn't
+    tell any information per-node/zone. Considering this, this rb-tree
+    information will not be able to help kswapd (on NUMA).
+    But maintain per-node information uses too much resource.
+
+ Considering above 2, it's not bad to find victim by proper logic
+ from balance_pgdat() by using mem_cgroup_select_victim().
+ like this:
+==
+ struct mem_cgroup *select_vicitim_at_soft_limit_via_balance_pgdat(int nid, int zid)
+ {
+     while (?) {
+        vitcim = mem_cgroup_select_victim(init_mem_cgroup);  #need some modification.
+        if (victim is not over soft-limit)
+             continue;
+        /* Ok this is candidate */
+        usage = mem_cgroup_nid_zid_usage(mem, nid, zid); #get sum of active/inactive
+        if (usage_is_enough_big)
+              return victim;
+     }
+ }
+ balance_pgdat()
+ ...... find target zone....
+ ...
+ mem = select_victime_at_soft_limit_via_balance_pgdat(nid, zid)
+ if (mem)
+   sc->mem = mem;
+ shrink_zone();
+ if (mem) {
+   sc->mem = NULL;
+   css_put(&mem->css);
+ }
+==
+
+ We have to pay scan cost but it will not be too big(if there are not thousands of memcg.)
+ Under above, round-robin rotation is used rather than sort.
+ Maybe I can show you sample.....(but I'm a bit busy.)
+ 
+Thanks,
+-Kame
 
