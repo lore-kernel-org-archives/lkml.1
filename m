@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbZCBVXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZCBV0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbZCBVXt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 16:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbZCBVXk
+	id S1754930AbZCBV0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 16:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZCBV0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 16:23:40 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36705 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbZCBVXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 16:23:39 -0500
-Date: Mon, 2 Mar 2009 22:23:35 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Adrian Hunter <adrian.hunter@nokia.com>,
-       David Brownell <david-b@pacbell.net>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Kim Kyuwon <chammoru@gmail.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "=?UTF-8?B?77+977+977+91L/vv70=?=" <q1.kim@samsung.com>,
-       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>
-Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when
- resuming
-Message-ID: <20090302222335.5776897c@mjolnir.ossman.eu>
-In-Reply-To: <20090302164413.GB11864@atomide.com>
-References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com>
-	<200902231023.49653.david-b@pacbell.net>
-	<49A3EF96.3090603@nokia.com>
-	<200902241410.19132.david-b@pacbell.net>
-	<20090227220812.GM11594@atomide.com>
-	<49ABD098.8080108@nokia.com>
-	<20090302164413.GB11864@atomide.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 16:26:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52186 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751618AbZCBVZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 16:25:59 -0500
+Date: Mon, 2 Mar 2009 22:25:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       sqazi@google.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
+Message-ID: <20090302212543.GD20228@elte.hu>
+References: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain> <20090228173813.6d86c0ef@infradead.org> <49A9E7A3.4050102@zytor.com> <200903020106.51865.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903021255020.3111@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903021255020.3111@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009 08:44:14 -0800
-Tony Lindgren <tony@atomide.com> wrote:
 
-> * Adrian Hunter <adrian.hunter@nokia.com> [090302 04:27]:
-> > From a2ad80abeb9550782d4962472980e47df4055434 Mon Sep 17 00:00:00 2001
-> > From: Kim Kyuwon <chammoru@gmail.com>
-> > Date: Fri, 20 Feb 2009 13:10:08 +0100
-> > Subject: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when resuming
-> >
-> > Most registers lose its state when the processor wakes up from sleep state.
-> > Thus registers should be initialized, when the processor wakes up. However the
-> > current hsmmc 'resume' function doesn't consider this issue and finally makes
-> > deadlock. So this patch fixes this problem.
-> >
-> > Signed-off-by: Kim Kyuwon <chammoru@gmail.com>
-> > Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
-> 
-> Sounds like there's no rush to get this into mainline until during the
-> next merge window as we're still missing most of the 24xx and 34xx PM code.
-> 
-> Acked-by: Tony Lindgren <tony@atomide.com>
-> 
-> 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Queued up both patches for the next merge window.
+> We can play games in the kernel. We do know how many sockets 
+> there are. We do know the cache size. We _could_ try to make 
+> an educated guess at whether the next user of the data will be 
+> DMA or not. So there are unquestionably heuristics we could 
+> apply, but I also do suspect that they'd inevitably be pretty 
+> arbitrary.
 
--- 
-     -- Pierre Ossman
+There's a higher-level meta-code argument to consider as well, 
+and i find it equally important: finding this rather obvious and 
+easy to measure performance regression caused by the 
+introduction of MOVNT took us two years.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+That's _way_ too long - and adding more heuristics and more 
+complexity will just increase this latency. (as we will create 
+small niches of special cases with special workloads where we 
+might or might not regress)
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+So, if any such change is done, we can only do it if we have the 
+latency of performance-regression-finding on the order of days 
+or at most weaks - not years.
+
+	Ingo
