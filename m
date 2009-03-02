@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbZCBQWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbZCBQWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756928AbZCBQWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZCBQVv
+	id S1753262AbZCBQWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZCBQVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:21:51 -0500
-Received: from mail.netone.net.tr ([193.192.98.182]:20538 "EHLO
-	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbZCBQVv (ORCPT
+	Mon, 2 Mar 2009 11:21:55 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50592 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754280AbZCBQVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:21:51 -0500
-Message-ID: <49AC0799.5060306@turknet.net.tr>
-Date: Mon, 02 Mar 2009 18:21:45 +0200
-From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 2 Mar 2009 11:21:54 -0500
+Date: Mon, 2 Mar 2009 16:21:51 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: dmitry.torokhov@gmail.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-input <linux-input@vger.kernel.org>
+Subject: Re: [PATCH RESEND] Input: wm97xx: add BTN_TOUCH event to wm97xx to
+	use it with Android
+Message-ID: <20090302162151.GA24717@rakim.wolfsonmicro.main>
+References: <49ABE938.8040502@compulab.co.il> <20090302142838.GA23342@rakim.wolfsonmicro.main> <49AC0677.7040102@compulab.co.il>
 MIME-Version: 1.0
-To: Lubomir Rintel <lkundrak@v3.sk>
-CC: Diego Calleja <diegocg@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Failover Kernel
-References: <49A659D0.2040903@turknet.net.tr>	 <200902261802.56612.diegocg@gmail.com>  <49A80796.2070208@turknet.net.tr> <1235749850.4718.1.camel@localhost.localdomain>
-In-Reply-To: <1235749850.4718.1.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Mar 2009 16:21:47.0131 (UTC) FILETIME=[FBD31CB0:01C99B52]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49AC0677.7040102@compulab.co.il>
+X-Cookie: Sell by date stamped on bottom.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lubomir Rintel wrote:
->
-> How is the backup kernel minimal? It is usually the very same kernel as
-> the "primary" one. You can use the same initrd as well and do a full
-> multiuser boot.
->
->   
-Kdump's backup (in kdump terms, it is "Capture Kernel") kernel is with 
-minimal set of features and modules (scsi drivers, network drivers etc.) 
-to have small memory footprint and resources to just handle crash dump 
-related things. So,it's not a full replacement of primary kernel. Also, 
-the point is not to make boot when crash occured. The idea is to take 
-control when a crash occured by backup kernel without any need to reboot.
+On Mon, Mar 02, 2009 at 06:16:55PM +0200, Mike Rapoport wrote:
+
+> Most touchscreen drivers already have BTN_TOUCH event generation:
+
+Hrm, I'd found some other hits but I could well have been working on a
+platform tree with additional drivers merged at the time.
+
+> If there no objection I can make a similar patch for mainstone-wm97xx.c and ucb1400_ts.c
+
+No problem for me.  Please see the other two accelerated WM97xx drivers
+I posted today too.
