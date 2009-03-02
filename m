@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbZCBGHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbZCBGNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbZCBGHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 01:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZCBGHe
+	id S1758258AbZCBGNu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 01:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZCBGNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 01:07:34 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:59677 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbZCBGHd (ORCPT
+	Mon, 2 Mar 2009 01:13:41 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:64816 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbZCBGNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 01:07:33 -0500
-Date: Mon, 2 Mar 2009 11:37:26 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/4] Memory controller soft limit interface (v3)
-Message-ID: <20090302060726.GH11421@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain> <20090301063011.31557.42094.sendpatchset@localhost.localdomain> <20090302110323.1a9b9e6b.kamezawa.hiroyu@jp.fujitsu.com> <20090302044631.GE11421@balbir.in.ibm.com> <20090302143518.43f5fcc2.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 2 Mar 2009 01:13:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KIHrmrEGesg4EmeJshmvT0kLXiQoTDaz7QkPuKTzfsLBptThif2AsbD8+2FJpt5Ult
+         KboFFi/jWTRfMF/Go2n18KNLY+Zc9RF1Q5wiHtZAJJBYMP5xDyb4n/MRfs6yyQBUfWOB
+         5OyMBNaSQmcTlAAWF3f1y40LE8gyd/yP2ptCs=
+Date: Mon, 2 Mar 2009 14:13:50 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Wang Chen <wangchen@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: kill unused parameter of pick_next_task()
+Message-ID: <20090302061350.GE1771@hack.private>
+References: <49AB74CE.2000200@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090302143518.43f5fcc2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <49AB74CE.2000200@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 14:35:18]:
-
-> On Mon, 2 Mar 2009 10:16:31 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 11:03:23]:
-> > 
-> > > On Sun, 01 Mar 2009 12:00:11 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > 
-> > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > > > 
-> > > > Changelog v2...v1
-> > > > 1. Add support for res_counter_check_soft_limit_locked. This is used
-> > > >    by the hierarchy code.
-> > > > 
-> > > > Add an interface to allow get/set of soft limits. Soft limits for memory plus
-> > > > swap controller (memsw) is currently not supported. Resource counters have
-> > > > been enhanced to support soft limits and new type RES_SOFT_LIMIT has been
-> > > > added. Unlike hard limits, soft limits can be directly set and do not
-> > > > need any reclaim or checks before setting them to a newer value.
-> > > > 
-> > > > Kamezawa-San raised a question as to whether soft limit should belong
-> > > > to res_counter. Since all resources understand the basic concepts of
-> > > > hard and soft limits, it is justified to add soft limits here. Soft limits
-> > > > are a generic resource usage feature, even file system quotas support
-> > > > soft limits.
-> > > > 
-> > > I don't convice adding more logics to res_counter is a good to do, yet.
-> > >
-> > 
-> > Even though it is extensible and you pay the cost only when soft
-> > limits is turned on? Can you show me why you are not convinced?
-> >  
-> Inserting more codes (like "if") to res_counter itself is not welcome..
-> I think res_counter is too complex as counter already.
+On Mon, Mar 02, 2009 at 01:55:26PM +0800, Wang Chen wrote:
+>based on tip/sched/cleanups
 >
-
-Darn.. we better stop all code development!
- 
-> I'm now searching a way to reduce res_counter->lock ping-pong but have no
-> good idea.
+>impact: no change in functionality
+>
+>Parameter "prev" seems like an unusable thing.
+>
+>Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
+>---
+> kernel/sched.c |    6 +++---
+> 1 files changed, 3 insertions(+), 3 deletions(-)
+>
+>diff --git a/kernel/sched.c b/kernel/sched.c
+>index 410eec4..57f8b12 100644
+>--- a/kernel/sched.c
+>+++ b/kernel/sched.c
+>@@ -4512,7 +4512,7 @@ static inline void schedule_debug(struct task_struct *prev)
+>  * Pick up the highest-prio task:
+>  */
+> static inline struct task_struct *
+>-pick_next_task(struct rq *rq, struct task_struct *prev)
+>+pick_next_task(struct rq *rq)
+> {
+> 	const struct sched_class *class;
+> 	struct task_struct *p;
+>@@ -4587,7 +4587,7 @@ need_resched_nonpreemptible:
+> 		idle_balance(cpu, rq);
 > 
+> 	prev->sched_class->put_prev_task(rq, prev);
+        ^^^^^
 
-I've been doing some detailed analysis on the memory controller
-overhead. I have a set of patches that I am testing right now. I'll
-share the details once I am done with them.
+How about this? :)
+
+>-	next = pick_next_task(rq, prev);
+>+	next = pick_next_task(rq);
+> 
+> 	if (likely(prev != next)) {
+                   ^^^^
+
+also here.
+
+> 		sched_info_switch(prev, next);
+>@@ -6423,7 +6423,7 @@ static void migrate_dead_tasks(unsigned int dead_cpu)
+> 		if (!rq->nr_running)
+> 			break;
+> 		update_rq_clock(rq);
+>-		next = pick_next_task(rq, rq->curr);
+>+		next = pick_next_task(rq);
+> 		if (!next)
+> 			break;
+> 		next->sched_class->put_prev_task(rq, next);
+
+
+I think you should check the latest linus-git, where you can safely
+just remove the parameter 'prev'.
+
 
 -- 
-	Balbir
+Do what you love, f**k the rest! F**k the regulations!
+ 
