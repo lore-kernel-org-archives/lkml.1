@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZCBXQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZCBXQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbZCBXQP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZCBXP5
+	id S1757931AbZCBXQo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZCBXQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:15:57 -0500
-Received: from kroah.org ([198.145.64.141]:57807 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751873AbZCBXP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:15:56 -0500
-Date: Mon, 2 Mar 2009 15:13:43 -0800
-From: Greg KH <greg@kroah.com>
-To: Mike Murphy <mamurph@cs.clemson.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       oliver@neukum.org, fweisbec@gmail.com, torvalds@linux-foundation.org
-Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless
-	support and add sysfs interface
-Message-ID: <20090302231343.GA31663@kroah.com>
-References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com> <20090302130425.23cc628d.akpm@linux-foundation.org> <20090302211820.GA21489@kroah.com> <20090302133551.1266f725.akpm@linux-foundation.org> <5aa163d00903021359x3a4693f5tbb7f1e3fec4d88b8@mail.gmail.com> <20090302223916.GA31381@kroah.com> <5aa163d00903021504l1965ecdi3423a43134de10d0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 2 Mar 2009 18:16:35 -0500
+Received: from cmpxchg.org ([85.214.51.133]:48126 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753574AbZCBXQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 18:16:34 -0500
+Date: Tue, 3 Mar 2009 00:16:28 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: MinChan Kim <minchan.kim@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmtom :  add VM_BUG_ON in __get_free_pages
+Message-ID: <20090302231628.GA7228@cmpxchg.org>
+References: <20090302183148.a4dfcc22.minchan.kim@barrios-desktop> <20090302142757.1cc014aa.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <5aa163d00903021504l1965ecdi3423a43134de10d0@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090302142757.1cc014aa.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 06:04:00PM -0500, Mike Murphy wrote:
-> On Mon, Mar 2, 2009 at 5:39 PM, Greg KH <greg@kroah.com> wrote:
-> >
-> > I tried to create such an interface years ago, and the macro tricks
-> > involved ended up being horrible, and in the end, it didn't work.  But
-> > if you can come up with something, I'd love to see it.
-> >
-> > thanks,
-> >
-> > greg k-h
-> >
+On Mon, Mar 02, 2009 at 02:27:57PM -0800, Andrew Morton wrote:
+> On Mon, 2 Mar 2009 18:31:48 +0900
+> MinChan Kim <minchan.kim@gmail.com> wrote:
 > 
-> I could probably give it a shot, but possibly not until May... once
-> the current semester ends. I really need to understand the kernel type
-> system -- or at least the types that "should" be exposed to userspace
-> -- before thinking about the design too much. Maybe that's the
-> question that needs to be asked first: in general, what does a sysfs
-> interface into a driver look like? It's certainly flexible enough to
-> do a lot, and the existing interfaces allow it to do a lot, but is
-> there a simplification that covers some large percentage of cases?
+> > 
+> > The __get_free_pages is used in many place. 
+> > Also, driver developers can use it freely due to export function.
+> > Some developers might use it to allocate high pages by mistake. 
+> > 
+> > The __get_free_pages can allocate high page using alloc_pages, 
+> > but it can't return linear address for high page.
+> > 
+> > Even worse, in this csse, caller can't free page which are there in high zone. 
+> > So, It would be better to add VM_BUG_ON. 
+> > 
+> > It's based on mmtom 2009-02-27-13-54.
+> >  
+> > Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+> > ---
+> >  mm/page_alloc.c |    7 +++++++
+> >  1 files changed, 7 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 8294107..381056b 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1681,6 +1681,13 @@ EXPORT_SYMBOL(__alloc_pages_internal);
+> >  unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
+> >  {
+> >  	struct page * page;
+> > +
+> > +	/*
+> > +	 * __get_free_pages() returns a 32-bit address, which cannot represent
+> > +	 * a highmem page
+> > +	 */
+> > +	VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
+> > +
+> >  	page = alloc_pages(gfp_mask, order);
+> >  	if (!page)
+> >  		return 0;
+> 
+> If someone calls __get_free_pages(__GFP_HIGHMEM) then page_address()
+> will reliably return NULL and the caller's code will oops.
 
-Look at some of the easy things, like integers.  If you could get those
-working, the hwmon drivers could be simplified a lot more.
+It will allocate a page, fail to translate it to a virtual address,
+return 0 and the caller will think allocation failed because it checks
+for the return value.
 
-The problem I ran into was that the attribute show/store functions deals
-with a "struct device" which you need to cast into some other structure
-type, and then determine the offset of the integer you are needing to
-access.
+But the highmem page is still allocated and now leaked, isn't it?
 
-Hm, maybe that wouldn't be that hard with 2 offset_of() values, I think
-I was only trying to do one, but that was a long time ago...
+> Yes, there's a decent (and increasing) risk that the developer won't be
+> testing the code on a highmem machine, but there are enough highmem
+> machines out there that the bug should be discovered pretty quickly.
 
-thanks,
+Another thing is that a device driver developer does not necessarily
+has CONFIG_DEBUG_VM set.  Can we expect him to?
 
-greg k-h
+> So I'm not sure that this test is worth the additional overhead to a
+> fairly frequently called function?
+
+Well, it's only done conditionally if you want to debug the thing
+anyway.  But as mentioned above, maybe this isn't the right condition.
