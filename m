@@ -1,111 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbZCBXTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbZCBXUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbZCBXTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZCBXTF
+	id S1757616AbZCBXUo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:20:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZCBXUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:19:05 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:40896 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbZCBXTD convert rfc822-to-8bit (ORCPT
+	Mon, 2 Mar 2009 18:20:35 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:27155 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753574AbZCBXUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:19:03 -0500
+	Mon, 2 Mar 2009 18:20:34 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=dAuKXJALBfu6cPoLKPdN1wEcDDDOpj2amnWRLBlx0gIieXkB8tN5PfqtxqyfM9PlIgRUnAAvcYwJykIbPwJyuLmOwsiY64FjtAiTn6417yYhVQLaVkgnZL/FP0Xo8PMcQYKX2Augyt/M2lHxKGSJKjtkN9m+S8TkuuBCQX5xM18=  ;
+X-YMail-OSG: 0kxGOxAVM1lwOw7xAXI0Arho.k2v8AfFVBycQyweVC00G5cbZGjjbxnQiUlEDp2HVQQ2NXoLyzBWYmpVr.xzgXJzC0kKmYZpIpaopDo2XXrLAbrKlfoNI5AS8VZ2iO.Zfzd7rZKavr9U9AvirksfCed4
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Date: Mon, 2 Mar 2009 15:20:30 -0800
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       tglx@linutronix.de
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200903021410.25889.david-b@pacbell.net> <1236032722.5330.1675.camel@laptop>
+In-Reply-To: <1236032722.5330.1675.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <200903030013.02805.rjw@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <200903012324.39327.rjw@sisk.pl>
-	 <d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>
-	 <200903030013.02805.rjw@sisk.pl>
-Date: Mon, 2 Mar 2009 15:18:57 -0800
-Message-ID: <d6200be20903021518r48fe6fb2vd07e9dedc4f5ff44@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts during 
-	suspend-resume (rev. 4)
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903021520.30826.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 2, 2009 at 3:13 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 03 March 2009, Arve Hjønnevåg wrote:
->> On Sun, Mar 1, 2009 at 2:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > From: Rafael J. Wysocki <rjw@sisk.pl>
->> >
->> > Introduce two helper functions allowing us to prevent device drivers
->> > from getting any interrupts (without disabling interrupts on the CPU)
->> > during suspend (or hibernation) and to make them start to receive
->> > interrupts again during the subsequent resume, respectively.  These
->> > functions make it possible to keep timer interrupts enabled while the
->> > "late" suspend and "early" resume callbacks provided by device
->> > drivers are being executed.
->> >
->> > Use these functions to rework the handling of interrupts during
->> > suspend (hibernation) and resume.  Namely, interrupts will only be
->> > disabled on the CPU right before suspending sysdevs, while device
->> > drivers will be prevented from receiving interrupts, with the help of
->> > the new helper function, before their "late" suspend callbacks run
->> > (and analogously during resume).
->> >
->> > In addition, since the device interrups are now disabled before the
->> > CPU has turned all interrupts off and the CPU will ACK the interrupts
->> > setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
->> > any wake-up interrupts are pending and abort suspend if that's the
->> > case.
->> >
->>
->>
->> > +void resume_device_irqs(void)
->> > +{
->> > +       struct irq_desc *desc;
->> > +       int irq;
->> > +
->> > +       for_each_irq_desc(irq, desc)
->> > +               if (desc->status & IRQ_SUSPENDED)
->> > +                       enable_irq(irq);
->> > +}
->>
->> I think you need to clear IRQ_SUSPENDED here, not in enable_irq.
->
-> enable_irq() clears IRQ_SUSPENDED.  This has already been discussed btw.
->
+On Monday 02 March 2009, Peter Zijlstra wrote:
+> On Mon, 2009-03-02 at 14:10 -0800, David Brownell wrote:
+> 
+> > What's unfortunate is that you prefer not to fix that
+> > IRQF_DISABLED bug in lockdep, which you co-"maintain".
+> > When running with lockdep, that bug (a) introduces bugs
+> > in some drivers and (b) hides bugs in others.  You've
+> > rejected even a minimal warning fix, to help minimize
+> > the amount of time developers waste on (a) and (b).
+> 
+> I've come to the conclusion that the only technically sound solution is
+> to do as I proposed today, utterly eliminate !IRQF_DISABLED handlers.
 
-I'm if I missed that discussion, but enable_irq cannot know who is
-calling it and therefore cannot know if IRQ_SUSPENDED should be
-cleared.
+As you announced today.  If you truly believe that, then
+you should at least submit a warning patch for 2.6.29-rc
+("driver X isn't setting IRQF_DISABLED, reimplement!")
+with a Documentation/feature-removal-schedule.txt plan
+for removing that mechanism.  And maybe updating the
+handling of IRQF_SHARED at the same time... most shared
+IRQs don't want IRQF_DISABLED.  And ... surely more,
+even just to start phasing out such a longstanding
+mechanism.
 
->> > @@ -222,8 +222,9 @@ static void __enable_irq(struct irq_desc
->> >                WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
->> >                break;
->> >        case 1: {
->> > -               unsigned int status = desc->status & ~IRQ_DISABLED;
->> > +               unsigned int status;
->> >
->> > +               status = desc->status & ~(IRQ_DISABLED | IRQ_SUSPENDED);
->> >                /* Prevent probing on this irq: */
->> >                desc->status = status | IRQ_NOPROBE;
->> >                check_irq_resend(desc, irq);
->>
->> This only clears IRQ_SUSPENDED if the interrupt was not disabled
->> elsewhere. If a driver calls interrupt_disable in suspend_late, but
->> calls interrupt_enable lazily, resume_device_irqs will reenable the
->> interrupt even though the driver has a disable reference.
->
-> Then I'd regard the driver as buggy.
+(Or more likely, start a real LKML discussion on that
+specific topic.  I suspect it won't complete in time
+to merge such a patch with any sort of consensus.)
 
-The bug is not in the driver. The driver called disable_irq once. You
-called disable_irq once, but enable_irq twice.
 
--- 
-Arve Hjønnevåg
+> Apparently you had enough time to come up with the creative genirq abuse
+> of twl4030, I think that with a similar effort you could have
+> implemented generic threaded irq stuff like proposed by Thomas.
+
+Actually, I made time to clean that code up a lot;
+I didn't come up with that original stuff at all.
+
+Why would you think otherwise, after reading the
+copyrights at the top of twl4030-irq.c ??
+
+And when I was doing that cleanup, the Official Plan
+was that Thomas' code would be ready for merge into
+at least the -next tree soon.  I don't know about
+you, but stepping all over his work didn't seem like
+it would be at all constructive.  Having a significant
+driver be ready to try using it ... seemed like a
+more productive approach.
+
+ 
+> > Attacking folk for having to cope with such bugs escalates
+> > things beyond "unfortunate".  If lockdep is "maintained",
+> > your response should be fixing that lockdep bug.  Once
+> > that's done, all workarounds for that bug can be removed.
+> 
+> I state there is no lockdep bug in this respect. The bug is trying to
+> enable interrupts from hardirq context and running code that assumes
+> hardirq context from task context.
+
+Well, I state that you're wrong about those points...
+
+Regardless of what either of us states, the truth of
+the matter is that there are drivers that don't work
+with CONFIG_LOCKDEP and the *only* reason is the code
+removed by the (untested) patchlet below:  semantics
+of irqs change when lockdep is enabled.  (That is, your
+characterization above is incorrect.)  I call that a
+lockdep bug; you don't want to accept that label.
+
+Are those incorrect lockdep assumptions really so hard
+to fix?  Where do they surface?  I scanned lockdep.c
+briefly, and it talks about "hardirq" in several places.
+Is it conflating that with "irqs disabled"?  The two
+concepts should be distinct.
+
+- Dave
+
+
+---
+ kernel/irq/manage.c |    6 ------
+ 1 file changed, 6 deletions(-)
+
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -816,12 +816,6 @@ int request_irq_quickcheck(unsigned int 
+ 				"guaranteed on shared IRQs\n",
+ 				irq, devname);
+ 
+-#ifdef CONFIG_LOCKDEP
+-	/*
+-	 * Lockdep wants atomic interrupt handlers:
+-	 */
+-	irqflags |= IRQF_DISABLED;
+-#endif
+ 	/*
+ 	 * Sanity-check: shared interrupts must pass in a real dev-ID,
+ 	 * otherwise we'll have trouble later trying to figure out
