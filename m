@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZCBQQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbZCBQRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbZCBQQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZCBQQI
+	id S1756725AbZCBQRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZCBQRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:16:08 -0500
-Received: from hosting.visp.net.lb ([194.146.153.11]:32821 "EHLO
-	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbZCBQQH (ORCPT
+	Mon, 2 Mar 2009 11:17:06 -0500
+Received: from cathcart.site5.com ([74.54.107.137]:35524 "EHLO
+	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753599AbZCBQRF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:16:07 -0500
-From: Denys Fedoryschenko <denys@visp.net.lb>
-Organization: VISP
-To: Matthew Garrett <mjg@redhat.com>
-Subject: Re: 2.6.28 - 2.6.29-rc6-git5 regression, p4-clockmod/cpufreq probably
-Date: Mon, 2 Mar 2009 18:15:56 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       cpufreq@vger.kernel.org, davej@redhat.com
-References: <200903021704.59663.denys@visp.net.lb> <20090302160658.GA32708@srcf.ucam.org>
-In-Reply-To: <20090302160658.GA32708@srcf.ucam.org>
+	Mon, 2 Mar 2009 11:17:05 -0500
+Message-ID: <49AC0677.7040102@compulab.co.il>
+Date: Mon, 02 Mar 2009 18:16:55 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+CC: dmitry.torokhov@gmail.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-input <linux-input@vger.kernel.org>
+Subject: Re: [PATCH RESEND] Input: wm97xx: add BTN_TOUCH event to wm97xx to
+ use it with Android
+References: <49ABE938.8040502@compulab.co.il> <20090302142838.GA23342@rakim.wolfsonmicro.main>
+In-Reply-To: <20090302142838.GA23342@rakim.wolfsonmicro.main>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903021815.56191.denys@visp.net.lb>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cathcart.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009 18:06:59 Matthew Garrett wrote:
-> On Mon, Mar 02, 2009 at 05:04:59PM +0200, Denys Fedoryschenko wrote:
-> > On 2.6.29-rc6 (git5 tested also) also shown in dmesg as available, but i
-> > can't change anything.
->
-> That's deliberate. p4-clockmod is for thermal management, not clock
-> control (since it doesn't actually do any of that)
-I know very well it is just throttling, and not real CPU power management.
-At the end it does job.
+Mark,
 
-In my case i used it for testing on "virtual" 113 Mhz video encoding to find 
-out bottleneck on ffmpeg and to compare performance with Blackfin.
+Mark Brown wrote:
+> On Mon, Mar 02, 2009 at 04:12:08PM +0200, Mike Rapoport wrote:
+>> Android expects BTN_TOUCH events when pen state changes. Add BTN_TOUCH
+>> event reporting to allow use of wm97xx touchscreen controller with
+>> Android devices.
+> 
+>> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+>> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> 
+> I'd still like to see more consistency over touchscreen drivers on this
+> one, BTW - if we're doing this it should be done for all touchscreen
+> drivers (either by updating the individual drivers or having the input
+> core do it).  This isn't the only touchscreen driver that doesn't do
+> BTN_TOUCH.
 
-In another case it helps me to limit current from battery(i have custom power 
-supply solution), so battery will lasts longer (on spikes, if it uses full 
-CPU power at 900 Mhz, voltage dropping (specially on last "drops of battery 
-life), and protection unit disconnecting laptop. Throttling helping to 
-prevent this.
+Most touchscreen drivers already have BTN_TOUCH event generation:
 
-Actually i am not asking if it nice or not, just if there is feature which is 
-not working.
+> git-grep -L BTN_TOUCH v2.6.29-rc6 drivers/input/touchscreen/
+v2.6.29-rc6:drivers/input/touchscreen/Kconfig
+v2.6.29-rc6:drivers/input/touchscreen/Makefile
+v2.6.29-rc6:drivers/input/touchscreen/mainstone-wm97xx.c
+v2.6.29-rc6:drivers/input/touchscreen/ucb1400_ts.c
+v2.6.29-rc6:drivers/input/touchscreen/wm9705.c
+v2.6.29-rc6:drivers/input/touchscreen/wm9712.c
+v2.6.29-rc6:drivers/input/touchscreen/wm9713.c
+v2.6.29-rc6:drivers/input/touchscreen/wm97xx-core.c
+
+If there no objection I can make a similar patch for mainstone-wm97xx.c and ucb1400_ts.c
+
+
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+-- 
+Sincerely yours,
+Mike.
+
