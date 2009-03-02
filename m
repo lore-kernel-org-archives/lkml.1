@@ -1,80 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbZCBXul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZCBXuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758357AbZCBXul (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbZCBXuH
+	id S1758699AbZCBXuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbZCBXuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:50:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35546 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757531AbZCBXuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:50:05 -0500
-Date: Tue, 3 Mar 2009 00:49:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
-Message-ID: <20090302234910.GA17956@elte.hu>
-References: <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com>
+	Mon, 2 Mar 2009 18:50:20 -0500
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:35420 "EHLO
+	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758149AbZCBXuS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 18:50:18 -0500
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [net-next PATCH 2/2] e1000: fix unmap bug
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, gospo@redhat.com, stable@kernel.org,
+       linux-kernel@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 02 Mar 2009 15:49:53 -0800
+Message-ID: <20090302234953.12507.91320.stgit@lost.foo-projects.org>
+In-Reply-To: <20090302234929.12507.51437.stgit@lost.foo-projects.org>
+References: <20090302234929.12507.51437.stgit@lost.foo-projects.org>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AC6DEA.2050304@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+This is in reference to the issue shown in kerneloops (search e1000 unmap)
 
-> Ingo Molnar wrote:
-> >>> So perhaps another approach to (re-)consider would be to go back 
-> >>> to atomic fixmaps here. It spends 3 slots but that's no big 
-> >>> deal.
-> >> Oh, it's a good idea! fixmaps must make it simpler.
-> >>
-> >>> In exchange it will be conceptually simpler, and will also scale 
-> >>> much better than a global spinlock. What do you think?
-> >> I think even if I use fixmaps, we have to use a spinlock to protect
-> >> the fixmap area from other threads...
-> > 
-> > that's why i suggested to use an atomic-kmap, not a fixmap.
-> 
-> Even if the mapping is atomic, text_poke() has to protect pte
-> from other text_poke()s while changing code.
-> AFAIK, atomic-kmap itself doesn't ensure that, does it?
+The e1000 transmit code was calling pci_unmap_page on dma handles that it
+might have called pci_map_single on.
 
-Well, but text_poke() is not a serializing API to begin with. 
-It's normally used in code patching sequences when we 'know' 
-that there cannot be similar parallel activities. The kprobes 
-usage of text_poke() looks unsafe - and that needs to be fixed.
+Same bug as e1000e
 
-So indeed a new global lock is needed there.
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Acked-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
 
-It's fixable and we'll fixit, but text_poke() is really more 
-complex than i'd like it to be.
+ drivers/net/e1000/e1000_main.c |   51 +++++++++++++++++++++-------------------
+ 1 files changed, 27 insertions(+), 24 deletions(-)
 
-stop_machine_run() is essentially instantaneous in practice and 
-obviously serializing so it warrants a second look at least. 
-Have you tried to use it in kprobes?
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+index 61b56ca..1f390ce 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -2049,14 +2049,10 @@ void e1000_free_all_tx_resources(struct e1000_adapter *adapter)
+ static void e1000_unmap_and_free_tx_resource(struct e1000_adapter *adapter,
+ 					     struct e1000_buffer *buffer_info)
+ {
+-	if (buffer_info->dma) {
+-		pci_unmap_page(adapter->pdev,
+-				buffer_info->dma,
+-				buffer_info->length,
+-				PCI_DMA_TODEVICE);
+-		buffer_info->dma = 0;
+-	}
++	buffer_info->dma = 0;
+ 	if (buffer_info->skb) {
++		skb_dma_unmap(&adapter->pdev->dev, buffer_info->skb,
++		              DMA_TO_DEVICE);
+ 		dev_kfree_skb_any(buffer_info->skb);
+ 		buffer_info->skb = NULL;
+ 	}
+@@ -2907,16 +2903,24 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
+ 			unsigned int mss)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+-	struct e1000_buffer *buffer_info;
+-	unsigned int len = skb->len;
+-	unsigned int offset = 0, size, count = 0, i;
++	unsigned int len = skb_headlen(skb);
++	unsigned int offset, size, count = 0, i;
+ 	unsigned int f;
+-	len -= skb->data_len;
++	dma_addr_t map;
+ 
+ 	i = tx_ring->next_to_use;
+ 
++	if (skb_dma_map(&adapter->pdev->dev, skb, DMA_TO_DEVICE)) {
++		dev_err(&adapter->pdev->dev, "TX DMA map failed\n");
++		dev_kfree_skb(skb);
++		return -2;
++	}
++
++	map = skb_shinfo(skb)->dma_maps[0];
++	offset = 0;
++
+ 	while (len) {
+-		buffer_info = &tx_ring->buffer_info[i];
++		struct e1000_buffer *buffer_info = &tx_ring->buffer_info[i];
+ 		size = min(len, max_per_txd);
+ 		/* Workaround for Controller erratum --
+ 		 * descriptor for non-tso packet in a linear SKB that follows a
+@@ -2949,11 +2953,7 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
+ 			size -= 4;
+ 
+ 		buffer_info->length = size;
+-		buffer_info->dma =
+-			pci_map_single(adapter->pdev,
+-				skb->data + offset,
+-				size,
+-				PCI_DMA_TODEVICE);
++		buffer_info->dma = map + offset;
+ 		buffer_info->time_stamp = jiffies;
+ 		buffer_info->next_to_watch = i;
+ 
+@@ -2968,9 +2968,11 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
+ 
+ 		frag = &skb_shinfo(skb)->frags[f];
+ 		len = frag->size;
+-		offset = frag->page_offset;
++		map = skb_shinfo(skb)->dma_maps[f + 1];
++		offset = 0;
+ 
+ 		while (len) {
++			struct e1000_buffer *buffer_info;
+ 			buffer_info = &tx_ring->buffer_info[i];
+ 			size = min(len, max_per_txd);
+ 			/* Workaround for premature desc write-backs
+@@ -2986,12 +2988,7 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
+ 				size -= 4;
+ 
+ 			buffer_info->length = size;
+-			buffer_info->dma =
+-				pci_map_page(adapter->pdev,
+-					frag->page,
+-					offset,
+-					size,
+-					PCI_DMA_TODEVICE);
++			buffer_info->dma = map + offset;
+ 			buffer_info->time_stamp = jiffies;
+ 			buffer_info->next_to_watch = i;
+ 
+@@ -3005,6 +3002,7 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
+ 	i = (i == 0) ? tx_ring->count - 1 : i - 1;
+ 	tx_ring->buffer_info[i].skb = skb;
+ 	tx_ring->buffer_info[first].next_to_watch = i;
++	smp_wmb();
+ 
+ 	return count;
+ }
+@@ -3844,6 +3842,11 @@ static bool e1000_clean_tx_irq(struct e1000_adapter *adapter,
+ 		/* Detect a transmit hang in hardware, this serializes the
+ 		 * check with the clearing of time_stamp and movement of i */
+ 		adapter->detect_tx_hung = false;
++		/*
++		 * read barrier to make sure that the ->dma member and time
++		 * stamp are updated fully
++		 */
++		smp_rmb();
+ 		if (tx_ring->buffer_info[eop].dma &&
+ 		    time_after(jiffies, tx_ring->buffer_info[eop].time_stamp +
+ 		               (adapter->tx_timeout_factor * HZ))
 
-	Ingo
