@@ -1,76 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbZCBKSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbZCBKTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723AbZCBKSw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 05:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZCBKSo
+	id S1759141AbZCBKTm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 05:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbZCBKTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 05:18:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55705 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754022AbZCBKSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 05:18:44 -0500
-Date: Mon, 2 Mar 2009 11:18:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "Kevin O'Connor" <kevin@koconnor.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stefan Reinauer <stepan@coresystems.de>, linux-kernel@vger.kernel.org,
-       coreboot@coreboot.org
-Subject: Re: [PATCH] x86: ioremap mptable -v2
-Message-ID: <20090302101823.GJ20897@elte.hu>
-References: <20090222152530.GA30576@morn.localdomain> <200902221806.55429.rjw@sisk.pl> <49A1C4AF.9000009@kernel.org> <20090222223226.GA3346@morn.localdomain> <20090222225847.GB1649@elte.hu> <49A23EE0.8000102@kernel.org> <20090228234127.GA29964@morn.localdomain> <49A9FC9A.2030707@kernel.org> <20090301180420.GA27040@morn.localdomain> <49AB511E.9010507@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AB511E.9010507@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 2 Mar 2009 05:19:32 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:58979 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754820AbZCBKTb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 05:19:31 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: mingo@redhat.com
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 2/3] x86_32: apic/summit_32, fix section mismatch
+Date: Mon,  2 Mar 2009 11:18:53 +0100
+Message-Id: <1235989134-29146-2-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <1235989134-29146-1-git-send-email-jirislaby@gmail.com>
+References: <1235989134-29146-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove __init section placement for some functions/data, so that
+we don't get section mismatch warnings.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+Also make inline function instead of empty setup_summit macro.
 
-> Impact: fix boot with mptable above max_low_mapped
-> 
-> try to use early_ioremap it.
-> 
-> v2: also get the exact size for reserve_bootmem in case we got big size than 4k
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
-> 
-> ---
->  arch/x86/kernel/mpparse.c |   20 ++++++++++++++++++--
->  1 file changed, 18 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/kernel/mpparse.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/mpparse.c
-> +++ linux-2.6/arch/x86/kernel/mpparse.c
-> @@ -611,12 +611,20 @@ static void __init __get_smp_config(unsi
->  		construct_default_ISA_mptable(mpf->feature1);
->  
->  	} else if (mpf->physptr) {
-> +		struct mpc_table *mpc;
-> +		unsigned long size;
->  
-> +		mpc = early_ioremap(mpf->physptr, PAGE_SIZE);
-> +		size = mpc->length;
-> +		apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", (unsigned long)mpf->physptr,
-> +			 mpf->physptr + size);
-> +		early_iounmap(mpc, PAGE_SIZE);
-> +		mpc = early_ioremap(mpf->physptr, size);
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/apic/summit_32.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-no objections, but this bit of __get_smp_config() needs to be 
-done cleaner - the whole mpf->physptr != 0 bit should probably 
-go into a helper function.
+diff --git a/arch/x86/kernel/apic/summit_32.c b/arch/x86/kernel/apic/summit_32.c
+index beda620..cc2278a 100644
+--- a/arch/x86/kernel/apic/summit_32.c
++++ b/arch/x86/kernel/apic/summit_32.c
+@@ -77,9 +77,9 @@ static void summit_send_IPI_all(int vector)
+ extern int use_cyclone;
+ 
+ #ifdef CONFIG_X86_SUMMIT_NUMA
+-extern void setup_summit(void);
++static void setup_summit(void);
+ #else
+-#define setup_summit()	{}
++static inline void setup_summit(void) {}
+ #endif
+ 
+ static int summit_mps_oem_check(struct mpc_table *mpc, char *oem,
+@@ -360,15 +360,15 @@ static void summit_vector_allocation_domain(int cpu, cpumask_t *retmask)
+ }
+ 
+ #ifdef CONFIG_X86_SUMMIT_NUMA
+-static struct rio_table_hdr *rio_table_hdr __initdata;
+-static struct scal_detail   *scal_devs[MAX_NUMNODES] __initdata;
+-static struct rio_detail    *rio_devs[MAX_NUMNODES*4] __initdata;
++static struct rio_table_hdr *rio_table_hdr;
++static struct scal_detail   *scal_devs[MAX_NUMNODES];
++static struct rio_detail    *rio_devs[MAX_NUMNODES*4];
+ 
+ #ifndef CONFIG_X86_NUMAQ
+ static int mp_bus_id_to_node[MAX_MP_BUSSES] __initdata;
+ #endif
+ 
+-static int __init setup_pci_node_map_for_wpeg(int wpeg_num, int last_bus)
++static int setup_pci_node_map_for_wpeg(int wpeg_num, int last_bus)
+ {
+ 	int twister = 0, node = 0;
+ 	int i, bus, num_buses;
+@@ -464,7 +464,7 @@ static int __init build_detail_arrays(void)
+ 	return 1;
+ }
+ 
+-void __init setup_summit(void)
++void setup_summit(void)
+ {
+ 	unsigned long		ptr;
+ 	unsigned short		offset;
+-- 
+1.6.1.3
 
-	Ingo
