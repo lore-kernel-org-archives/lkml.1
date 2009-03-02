@@ -1,117 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbZCBWKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZCBWME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbZCBWKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZCBWKa
+	id S1756593AbZCBWME (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZCBWLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:10:30 -0500
-Received: from n28.bullet.mail.mud.yahoo.com ([68.142.206.223]:31722 "HELO
-	n28.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754309AbZCBWK3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:10:29 -0500
-X-Yahoo-Newman-Id: 845999.71097.bm@omp412.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uGEzKIdgkNob59g8nC0dKZCJCJQxs52FJoOqs8M4APw3GOD9faaLRVWENsHU0wkEVrkFKjm7MAuA7TOG7KMvZfi1ksST9Z61eR0pB81VxwccAypNB7Ip02O6pGiUy6iK8rTs/X+vdN2a60FM1TnjHIL/R3NDpFFvUEK/T5gqLmA=  ;
-X-YMail-OSG: imMBTgUVM1lIaef5fSfws2NBEyxBeCjHVEoHAJEEubhU34QuWALL6XEWx5lPYUep6N5ZfryiwQCO1hOkV9QNWMWvfF8HtdXprHMIIb5yVKVbVERdZvoTc1hRjPeUnkBJ6dixvuGOZ54Dyvpy.1z.ysLtYN_hr8W.RqQuiE2IdG.ht18u3GQK0DrbnMqt
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: lockdep and threaded IRQs (was: ...)
-Date: Mon, 2 Mar 2009 14:10:25 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
-       tglx@linutronix.de
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200902271518.58246.david-b@pacbell.net> <1235999770.5330.367.camel@laptop>
-In-Reply-To: <1235999770.5330.367.camel@laptop>
+	Mon, 2 Mar 2009 17:11:53 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37433 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754658AbZCBWLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 17:11:53 -0500
+Date: Mon, 2 Mar 2009 23:11:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Sitsofe Wheeler <sitsofe@yahoo.com>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [TIP,regression,i915] /dev/dri/card0 is no longer present
+Message-ID: <20090302221143.GA31162@elte.hu>
+References: <20090301110455.GA18547@silver.sucs.org> <20090301113948.GA3602@elte.hu> <20090301134809.GA4753@silver.sucs.org> <1236020758.4586.76.camel@localhost.localdomain> <20090302213412.GB25076@elte.hu> <1236030235.4586.79.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903021410.25889.david-b@pacbell.net>
+In-Reply-To: <1236030235.4586.79.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009, Peter Zijlstra wrote:
-> On Fri, 2009-02-27 at 15:18 -0800, David Brownell wrote:
+
+* Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> wrote:
+
+> On Mon, 2009-03-02 at 13:34 -0800, Ingo Molnar wrote:
+> > * Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> wrote:
 > > 
-> > This stuff just pokes at some annoying current gaps in the
-> > IRQ framework.  I'll be glad when eventually there's no
-> > need to work around those weaknesses ... that is, when
-> > real threaded IRQ support is available.
+> > > On Sun, 2009-03-01 at 05:48 -0800, Sitsofe Wheeler wrote:
+> > > > On Sun, Mar 01, 2009 at 12:39:48PM +0100, Ingo Molnar wrote:
+> > > > >
+> > > > > Thanks, i've reverted the commit for now. Could you please send
+> > > > > a 'dmesg' from the bootup with the failed driver? By all
+> > > > > likelyhood an ioremap failure causes a driver failure.
+> > > > >
+> > > > 
+> > > > See below (drm says it initalized though...):
+> > > > 
+> > > > [    0.000000] Linux version 2.6.29-rc6-00006-g17581ad (@verona) (gcc version 4.2.4) #87 Sun Mar 1 13:42:28 GMT 2009
+> > > > [    0.000000] KERNEL supported cpus:
+> > > > [    0.000000]   Intel GenuineIntel
+> > > > [    0.000000] PAT WC disabled due to known CPU erratum.
+> > > 
+> > > Looks like PAT is getting disabled on this platform. Can you 
+> > > send the output of /proc/cpuinfo please.
+> > 
+> > Does this mean we failed an ioremap()? We still should not fail 
+> > a device ioremap _ever_. We should just fall back to UC and be 
+> > done with it. We may emit a warning if we consider it 
+> > troublesome, but we should never ever break working drivers 
+> > really.
+> > 
 > 
-> Its unfortunate that you prefer these dinky little hacks over
-> helping out providing whatever infrastructure you need.
+> No. We don't break ioremap. We try to fallback on UC_MINUS 
+> here. But, there is something wrong happening in that path, 
+> that is resulting in this issue. I am looking at that right 
+> now.
 
-That's an unfair and unreasonable criticism.  You don't
-know what I "prefer", or how much time I have to "help"
-with.  Plus, you discount the work involved in actually
-tracking down root causes ... and your evaluation of at
-least this issue is biased.
+ah, ok.
 
-What's unfortunate is that you prefer not to fix that
-IRQF_DISABLED bug in lockdep, which you co-"maintain".
-When running with lockdep, that bug (a) introduces bugs
-in some drivers and (b) hides bugs in others.  You've
-rejected even a minimal warning fix, to help minimize
-the amount of time developers waste on (a) and (b).
+> I have found another problem with this particular patch, on 
+> one of test systems. So, let us keep the revert until I fix 
+> what looks like two different problems here.
 
-Attacking folk for having to cope with such bugs escalates
-things beyond "unfortunate".  If lockdep is "maintained",
-your response should be fixing that lockdep bug.  Once
-that's done, all workarounds for that bug can be removed.
+ok.
 
-
-> There's plenty good reasons for mandating that irq handlers run with
-> irqs disabled, if you need threaded handlers -- that's fine, but then
-> teach the generic code about them.
-
-There are many ways to "teach" such things, of course,
-and the learning goes both ways ... the initial set of
-perceived requirements changes when 
-
-And since there have been folk at work on such issues for
-some time, I'm not sure why you think I shouldn't give
-them a fair chance to deliver, and help improve those
-(long anticipated) solutions.  There's a saying that
-"too many cooks spoil the broth"; and in software, it's
-well known that extra developers aren't necessarily any
-kind of help.
-
-
-> What you do _NOT_ do is hack your way around things, that's not how
-> Linux works, and by doing that you make the world a slightly worse place
-> for everyone.
-
-Linux has lots of bug workarounds and odd constraints, like
-any other large system does.  The "world" is full of them;
-DNA-coded machinery is felt to consist *mostly* of them.
-(And many folk argue that monoculture is dangerous...)
-
-The sign of a bad workaround is that it sits in core code
-and impacts everything using it.  Like, oh, that lockdep
-bug, preventing various systems from ever using it because
-they rely on mechanisms broken by that bug.
-
-
-On the other hand, the main valid complaint about one-line
-workarounds is needing them at all.  Boiling down a system
-misbehavior to a one-line workaround *IS* a way to help
-make the (kernel) world a better place, by fingerpointing
-a real issue ... setting trail markers for a better way.
-
-In this case there's a real bug in the lockdep code.
-
-The recent threaded IRQ proposal moves some support down
-a layer (into genirq) and generalizes it a bit, but some
-drivers (e.g. I2C ones) have threaded IRQs for a long time
-now -- out of necessity, not just performance tweaking.
-
-- Dave
-
+	Ingo
