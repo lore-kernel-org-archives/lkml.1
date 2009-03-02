@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbZCBR6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759464AbZCBSDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757858AbZCBR6p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 12:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZCBR6h
+	id S1759464AbZCBSDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 13:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbZCBSDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 12:58:37 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:55500 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbZCBR6g (ORCPT
+	Mon, 2 Mar 2009 13:03:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46344 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754933AbZCBSDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 12:58:36 -0500
-Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Nathan Lynch <ntl@pobox.com>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hch@infradead.org, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <20090302174433.GA12708@us.ibm.com>
-References: <20090227203425.F3B51176@kernel>
-	 <20090227203435.98735E54@kernel> <20090302133754.GA8033@us.ibm.com>
-	 <20090302095917.6cfeda55@thinkcentre.lan>
-	 <1236011251.26788.450.camel@nimitz>
-	 <20090302112247.76bb3662@thinkcentre.lan>
-	 <1236015052.26788.471.camel@nimitz>  <20090302174433.GA12708@us.ibm.com>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 09:58:26 -0800
-Message-Id: <1236016706.26788.478.camel@nimitz>
+	Mon, 2 Mar 2009 13:03:12 -0500
+Date: Mon, 2 Mar 2009 10:01:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Mark Brown <broonie@sirena.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+Message-Id: <20090302100158.bb83bec6.akpm@linux-foundation.org>
+In-Reply-To: <49ABF825.1010501@s5r6.in-berlin.de>
+References: <49A962F8.30609@s5r6.in-berlin.de>
+	<20090228164627.GC15127@sirena.org.uk>
+	<49A97563.6040906@s5r6.in-berlin.de>
+	<20090228175218.GA4606@sirena.org.uk>
+	<49A98F93.5030206@s5r6.in-berlin.de>
+	<20090228210223.GA23191@sirena.org.uk>
+	<49A9C252.50204@s5r6.in-berlin.de>
+	<20090301001829.GA10751@mit.edu>
+	<20090301004618.GA12909@sirena.org.uk>
+	<20090301025357.GC10751@mit.edu>
+	<20090302131514.GC19744@sirena.org.uk>
+	<49ABF825.1010501@s5r6.in-berlin.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 11:44 -0600, Serge E. Hallyn wrote:
-> Which is what we actually do, right?
+On Mon, 02 Mar 2009 16:15:49 +0100 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+> Mark Brown wrote:
+> > On Sat, Feb 28, 2009 at 09:53:57PM -0500, Theodore Tso wrote:
+> >> Who's been complaining?  I can certainly tell you I'll complain in the
+> >> opposite direction, but that's because it actually causes me more work
+> > 
+> > Andrew Morton is one of them but not the only one.  Like I say, I don't
+> > want to claim that my changelogs are always ideal here, it was mostly
+> > the specific language used that made me think of doing this.
 > 
-> Actually we have userspace create the tasks first, and
-> then each task calls sys_restart which does restore_files().
+> As far as I have observed, akpm's (Cc'd now) complaints are about
+> patches whose impact or benefit etc. are insufficiently explained ---
+> which is an issue on a higher level than pure formalism.  I believe I
+> too have seen the term "unchangelogged" (as you mentioned) in one of
+> those discussions but I associated lack of information with it rather
+> than a violation of a formalism.
 
-Quoting:
+Oh absolutely.  Quite often the changelog body contains no information
+which wasn't in the title, so there's no need for a body.
 
-http://git.ncl.cs.columbia.edu/?p=linux-cr.git;a=commitdiff;h=3c1b1900f92ed12f5020a7b566065bffda2908d8;hp=7aec1a8f3345bb33c3f93226c895a45ec269bb59
-
-> Restarting of multiple processes expects all restarting tasks to call
-> sys_restart(). Once inside the system call, each task will restart
-> itself at the same order that they were saved. The internals of the
-> syscall will take care of in-kernel synchronization bewteen tasks.
-
-I guess it is OK since everybody sleeps once they enter sys_restart()
-until the container init decides it is ready to go.  
-
--- Dave
-
+I think what triggered this was a patch from Mark which had no
+changelog and which had me sitting there wondering wtf it does, whether
+we need it in 2.6.29, whether we need it in 2.6.28.x and earlier and me
+not having the foggiest clue then getting grumpy.
