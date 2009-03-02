@@ -1,98 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbZCBXBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZCBXCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbZCBXBq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZCBXBg
+	id S1757464AbZCBXCA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbZCBXBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:01:36 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:30267 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752860AbZCBXBf convert rfc822-to-8bit (ORCPT
+	Mon, 2 Mar 2009 18:01:46 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:48660 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754477AbZCBXBo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:01:35 -0500
+	Mon, 2 Mar 2009 18:01:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=E6MbNedCOW7/8hABGPYgkYlyWLedxdMo77O1hILWe/ekVZrl42Y5myewJLSYB4/P6X
+         VEw9oaRPuZ5hJm0Q4BJNey2j5ZqrorKyMOIuGf863G1cOkpyUNrzbdOIX5B3zALsj5Ag
+         pLJ7qRwEL20M+xuruLI675j81O1zQj+F80L/0=
 MIME-Version: 1.0
-In-Reply-To: <200903012324.39327.rjw@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl>
-	 <200903012324.39327.rjw@sisk.pl>
-Date: Mon, 2 Mar 2009 15:01:33 -0800
-Message-ID: <d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts during 
-	suspend-resume (rev. 4)
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090302142757.1cc014aa.akpm@linux-foundation.org>
+References: <20090302183148.a4dfcc22.minchan.kim@barrios-desktop>
+	 <20090302142757.1cc014aa.akpm@linux-foundation.org>
+Date: Tue, 3 Mar 2009 08:01:41 +0900
+Message-ID: <28c262360903021501q7cf29c2fu96d831ac5bad08f@mail.gmail.com>
+Subject: Re: [PATCH] mmtom : add VM_BUG_ON in __get_free_pages
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 1, 2009 at 2:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, Mar 3, 2009 at 7:27 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Mon, 2 Mar 2009 18:31:48 +0900
+> MinChan Kim <minchan.kim@gmail.com> wrote:
 >
-> Introduce two helper functions allowing us to prevent device drivers
-> from getting any interrupts (without disabling interrupts on the CPU)
-> during suspend (or hibernation) and to make them start to receive
-> interrupts again during the subsequent resume, respectively.  These
-> functions make it possible to keep timer interrupts enabled while the
-> "late" suspend and "early" resume callbacks provided by device
-> drivers are being executed.
+>>
+>> The __get_free_pages is used in many place.
+>> Also, driver developers can use it freely due to export function.
+>> Some developers might use it to allocate high pages by mistake.
+>>
+>> The __get_free_pages can allocate high page using alloc_pages,
+>> but it can't return linear address for high page.
+>>
+>> Even worse, in this csse, caller can't free page which are there in high zone.
+>> So, It would be better to add VM_BUG_ON.
+>>
+>> It's based on mmtom 2009-02-27-13-54.
+>>
+>> Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+>> ---
+>> Â mm/page_alloc.c | Â  Â 7 +++++++
+>> Â 1 files changed, 7 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+>> index 8294107..381056b 100644
+>> --- a/mm/page_alloc.c
+>> +++ b/mm/page_alloc.c
+>> @@ -1681,6 +1681,13 @@ EXPORT_SYMBOL(__alloc_pages_internal);
+>> Â unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
+>> Â {
+>> Â  Â  Â  struct page * page;
+>> +
+>> + Â  Â  /*
+>> + Â  Â  Â * __get_free_pages() returns a 32-bit address, which cannot represent
+>> + Â  Â  Â * a highmem page
+>> + Â  Â  Â */
+>> + Â  Â  VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
+>> +
+>> Â  Â  Â  page = alloc_pages(gfp_mask, order);
+>> Â  Â  Â  if (!page)
+>> Â  Â  Â  Â  Â  Â  Â  return 0;
 >
-> Use these functions to rework the handling of interrupts during
-> suspend (hibernation) and resume.  Namely, interrupts will only be
-> disabled on the CPU right before suspending sysdevs, while device
-> drivers will be prevented from receiving interrupts, with the help of
-> the new helper function, before their "late" suspend callbacks run
-> (and analogously during resume).
+> If someone calls __get_free_pages(__GFP_HIGHMEM) then page_address()
+> will reliably return NULL and the caller's code will oops.
+
+If someone fail to allocate highmem, he might retry to allocate page
+in normal or dma. then he will get the page.
+but, more important thing is that In first try, page allocator
+succeeded to allocate page in highmem and just failed to translate
+from page to linear address by page_address(page).
+
+So, the caller don't have any way to free high page.
+How do we solve this problem ?
+
+
+> Yes, there's a decent (and increasing) risk that the developer won't be
+> testing the code on a highmem machine, but there are enough highmem
+> machines out there that the bug should be discovered pretty quickly.
+> So I'm not sure that this test is worth the additional overhead to a
+> fairly frequently called function?
 >
-> In addition, since the device interrups are now disabled before the
-> CPU has turned all interrupts off and the CPU will ACK the interrupts
-> setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
-> any wake-up interrupts are pending and abort suspend if that's the
-> case.
->
+
+I agree.
+
+If you have a concern about hotpath,  how about adding annotation to
+prevent wrong usage ?
+If you agree with my suggestion, I will resend this patch with more
+detail changelog.
+
+ Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+
+---
+ mm/page_alloc.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 381056b..b168c5f 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1677,6 +1677,7 @@ EXPORT_SYMBOL(__alloc_pages_internal);
+
+ /*
+  * Common helper functions.
++ * This function must not be used with __GFP_HIGHMEM.
+  */
+ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
+ {
+-- 
+1.5.4.3
 
 
-> +void resume_device_irqs(void)
-> +{
-> +       struct irq_desc *desc;
-> +       int irq;
-> +
-> +       for_each_irq_desc(irq, desc)
-> +               if (desc->status & IRQ_SUSPENDED)
-> +                       enable_irq(irq);
-> +}
 
-I think you need to clear IRQ_SUSPENDED here, not in enable_irq.
-
-> @@ -222,8 +222,9 @@ static void __enable_irq(struct irq_desc
->                WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
->                break;
->        case 1: {
-> -               unsigned int status = desc->status & ~IRQ_DISABLED;
-> +               unsigned int status;
->
-> +               status = desc->status & ~(IRQ_DISABLED | IRQ_SUSPENDED);
->                /* Prevent probing on this irq: */
->                desc->status = status | IRQ_NOPROBE;
->                check_irq_resend(desc, irq);
-
-This only clears IRQ_SUSPENDED if the interrupt was not disabled
-elsewhere. If a driver calls interrupt_disable in suspend_late, but
-calls interrupt_enable lazily, resume_device_irqs will reenable the
-interrupt even though the driver has a disable reference.
-
-The rest of the patch looks good.
 
 -- 
-Arve Hjønnevåg
+Kinds regards,
+MinChan Kim
