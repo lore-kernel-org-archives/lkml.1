@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZCBXQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZCBXRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbZCBXQo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZCBXQf
+	id S1758248AbZCBXRT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZCBXRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:16:35 -0500
-Received: from cmpxchg.org ([85.214.51.133]:48126 "EHLO cmpxchg.org"
+	Mon, 2 Mar 2009 18:17:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39685 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753574AbZCBXQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:16:34 -0500
-Date: Tue, 3 Mar 2009 00:16:28 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: MinChan Kim <minchan.kim@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmtom :  add VM_BUG_ON in __get_free_pages
-Message-ID: <20090302231628.GA7228@cmpxchg.org>
-References: <20090302183148.a4dfcc22.minchan.kim@barrios-desktop> <20090302142757.1cc014aa.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752868AbZCBXRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 18:17:03 -0500
+Date: Mon, 2 Mar 2009 23:15:45 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       akpm@linux-foundation.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1236006812.5330.632.camel@laptop>
+References: <1236006812.5330.632.camel@laptop>
+Subject: [tip:irq/genirq] genirq: assert that irq handlers are indeed running in hardirq context
+Message-ID: <tip-044d408409cc4e1bc75c886e27ca85c270db104c@git.kernel.org>
+Git-Commit-ID: 044d408409cc4e1bc75c886e27ca85c270db104c
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090302142757.1cc014aa.akpm@linux-foundation.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 02 Mar 2009 23:15:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 02:27:57PM -0800, Andrew Morton wrote:
-> On Mon, 2 Mar 2009 18:31:48 +0900
-> MinChan Kim <minchan.kim@gmail.com> wrote:
-> 
-> > 
-> > The __get_free_pages is used in many place. 
-> > Also, driver developers can use it freely due to export function.
-> > Some developers might use it to allocate high pages by mistake. 
-> > 
-> > The __get_free_pages can allocate high page using alloc_pages, 
-> > but it can't return linear address for high page.
-> > 
-> > Even worse, in this csse, caller can't free page which are there in high zone. 
-> > So, It would be better to add VM_BUG_ON. 
-> > 
-> > It's based on mmtom 2009-02-27-13-54.
-> >  
-> > Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
-> > ---
-> >  mm/page_alloc.c |    7 +++++++
-> >  1 files changed, 7 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 8294107..381056b 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1681,6 +1681,13 @@ EXPORT_SYMBOL(__alloc_pages_internal);
-> >  unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
-> >  {
-> >  	struct page * page;
-> > +
-> > +	/*
-> > +	 * __get_free_pages() returns a 32-bit address, which cannot represent
-> > +	 * a highmem page
-> > +	 */
-> > +	VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
-> > +
-> >  	page = alloc_pages(gfp_mask, order);
-> >  	if (!page)
-> >  		return 0;
-> 
-> If someone calls __get_free_pages(__GFP_HIGHMEM) then page_address()
-> will reliably return NULL and the caller's code will oops.
+Commit-ID:  044d408409cc4e1bc75c886e27ca85c270db104c
+Gitweb:     http://git.kernel.org/tip/044d408409cc4e1bc75c886e27ca85c270db104c
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 2 Mar 2009 16:13:32 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 3 Mar 2009 00:05:45 +0100
 
-It will allocate a page, fail to translate it to a virtual address,
-return 0 and the caller will think allocation failed because it checks
-for the return value.
+genirq: assert that irq handlers are indeed running in hardirq context
 
-But the highmem page is still allocated and now leaked, isn't it?
+Make sure the genirq layer handlers are indeed running handlers
+in hardirq context. That is the genirq expectation and doing
+anything else is broken.
 
-> Yes, there's a decent (and increasing) risk that the developer won't be
-> testing the code on a highmem machine, but there are enough highmem
-> machines out there that the bug should be discovered pretty quickly.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <1236006812.5330.632.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Another thing is that a device driver developer does not necessarily
-has CONFIG_DEBUG_VM set.  Can we expect him to?
 
-> So I'm not sure that this test is worth the additional overhead to a
-> fairly frequently called function?
+---
+ kernel/irq/handle.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Well, it's only done conditionally if you want to debug the thing
-anyway.  But as mentioned above, maybe this isn't the right condition.
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 3aba8d1..a2ee682 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -328,6 +328,8 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+ 	irqreturn_t ret, retval = IRQ_NONE;
+ 	unsigned int status = 0;
+ 
++	WARN_ONCE(!in_irq(), "BUG: IRQ handler called from non-hardirq context!");
++
+ 	if (!(action->flags & IRQF_DISABLED))
+ 		local_irq_enable_in_hardirq();
+ 
