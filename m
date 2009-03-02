@@ -1,120 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbZCBOdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbZCBOfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbZCBOdp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 09:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZCBOck
+	id S1757400AbZCBOfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 09:35:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZCBOet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 09:32:40 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:51561 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755242AbZCBOci (ORCPT
+	Mon, 2 Mar 2009 09:34:49 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:30563 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbZCBOes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 09:32:38 -0500
+	Mon, 2 Mar 2009 09:34:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Bap6h+XLPR7Xo+1eIRprm8rNSrPHhZxAzU9USL3UQqUoF6o0f5wa5EJHPqjOiO5wqJ
-         WtEesfZy1jr/ofEI2EbxY4f/Z1CAt7gVSLlv/O7rY5CQ1BNHWQyvXgnKib5MqG+anmqj
-         o+im9lKAglQkHYraTFhoh9GEB3u/4fdUShMmA=
-Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
-From: Andreas Robinson <andr345@gmail.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1235216636.7025.1023.camel@andreas-laptop>
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
-	 <cc43514a0902170242m5af7e511ne00f424f06a5da22@mail.gmail.com>
-	 <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
-	 <200902181528.29697.rusty@rustcorp.com.au>
-	 <ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
-	 <1234952753.10531.48.camel@andreas-laptop>
-	 <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
-	 <ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com>
-	 <1235216636.7025.1023.camel@andreas-laptop>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 15:32:33 +0100
-Message-Id: <1236004353.10055.49.camel@andreas-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fDdszuPIXwhwNXg0qvuCUlg/HIAecJzMYODltUsgvOm+ZhdMIwRtDjmC3BD4ayClOJ
+         7KqsXu/GQXRDNZoZJ/cUs2DDGziuJxs22V2MCaExJRZ+PBG5LPT3FGZ0JuExsE37aEqq
+         kurkVEETzEeCHynMzQjDGR1eIcPPMNHG5Xs64=
+Message-ID: <49ABEE83.904@gmail.com>
+Date: Mon, 02 Mar 2009 15:34:43 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Subject: Re: [PATCH 2/2] Input: add wm97xx accelerated driver for AVR32 AT32AP700X
+ microprocessors
+References: <1236000228-13025-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1236000228-13025-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1236000228-13025-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have finished testing parallel module loading. It looks like a small
-kernel with a minimal initramfs and running several instances of insmod
-or modprobe in parallel has the best complexity to performance ratio.
+> --- /dev/null
+> +++ b/drivers/input/touchscreen/at32-wm97xx.c
+> +static void at32_wm97xx_pen_timer(unsigned long data)
 
-Testing shows that a megamodule is slightly slower than parallel
-insmods, so it's not really an option anymore.
+Wouldn't be delayed_work more appropriate (and convenient) here?
 
-A monolithic kernel with parallelized initcalls is better - about 200 ms
-faster than parallel insmods on my test system. However, it comes with a
-fairly large set of changes:
+> +{
+> +	struct at32_wm97xx *at32_wm97xx = (struct at32_wm97xx *)data;
+> +	struct wm97xx *wm = at32_wm97xx->wm;
+> +	int pen_down = gpio_get_value(at32_wm97xx->gpio_pen);
+> +
+> +	if (pen_down != 0) {
+> +		mod_timer(&at32_wm97xx->pen_timer, jiffies
+> +				+ msecs_to_jiffies(1));
+> +	} else {
+> +		input_report_abs(wm->input_dev, ABS_PRESSURE, 0);
+> +		input_sync(wm->input_dev);
+> +	}
+> +}
 
-* First, you need a 200-line patch in init/main.c (do_initcalls() and
-friends)
+> +static int __init at32_wm97xx_probe(struct platform_device *pdev)
+> +{
+[...]
+> +	at32_wm97xx->regs	= (void *)AT32_WM97XX_AC97C_IOMEM;
 
-* Then the built-in module dependencies must be calculated properly, eg
-with a modified depmod, and added to the build process.
+(void __iomem *)?
+Did you feed it through sparse?
 
-* Finally "soft" dependencies, i.e dependencies that are not implied by
-symbol use, have to be formalized and moved into the kernel somehow.
-Right now they're only defined in "install" commands in modprobe.conf.
+> +	ret = request_irq(at32_wm97xx->ac97c_irq,
+> +			at32_wm97xx_channel_b_interrupt,
+> +			IRQF_SHARED, "at32-wm97xx-ch-b", at32_wm97xx);
+[...]
+> +	return wm97xx_register_mach_ops(wm,&at32_mach_ops);
 
-So, what do you think, should I keep going? IMHO, the slower userspace
-implementation is acceptable since it's so much simpler.
+In case it fails, irq remains set up.
 
-Thanks,
-Andreas
+> +#ifdef CONFIG_PM
+> +static int at32_wm97xx_suspend(struct platform_device *pdev, pm_message_t msg)
+> +{
+> +	struct at32_wm97xx *at32_wm97xx = platform_get_drvdata(pdev);
+> +
+> +	ac97c_writel(at32_wm97xx, IDR, AC97C_INT_CBEVT);
+> +	disable_irq(at32_wm97xx->gpio_irq);
 
-------------------------
-
-Here are the test results:
-
-Setup:
-
-HP Pavillion DV6300 laptop. AMD Turion TL-56 @ 1.8GHz CPU. In a
-benchmark at Tomshardware, the CPU have scores similar to an Intel core
-duo T2300.
-http://www.tomshardware.com/reviews/dual-core-notebook-cpus-explored,1553-11.html
-
-Results:
-
-   Configuration                    |   T    | stddev (n = 10)
-------------------------------------+--------+--------
-[1] Serial monolithic kernel        | 3.08 s |  0.08
-[2] Megamodule, serial initcalls    | 3.26 s |  0.05
-[3] Megamodule, parallel initcalls  | 2.27 s |  0.01
-[4] Parallel insmods w/ mutex patch | 2.20 s |  0.01 <- best choice
-[5] Parallel monolithic kernel      | 2.02 s |       <- estimate only
-
-T = Time from kernel startup until all module initcalls have
-    executed, i.e when init can mount the root filesystem.
-
-[1] Monolithic 2.6.29-rc5 with fastboot cmdline option. No initramfs.
-
-[2] 94 modules linked into one megamodule. The megamodule executed
-    module initcalls sequentially. All files were on a minimal
-    initramfs. The kernel had fastboot enabled.
-
-[3] 94 modules inserted with custom insmod, in parallel.
-    (Dependencies were accounted for.) Minimal initramfs, fastboot.
-
-[4] Like [2], but initcalls ran in parallel.
-    (Dependencies were accounted for.) Minimal initramfs, fastboot.
-    Rusty's module loader mutex-patch is applied.
-
-[5] This is an estimation based on how much faster [3] would be if
-    load_module() took no time at all. T5 = T3 - (T2 - T1).
-    That is, I assume T2-T1 is the time spent in load_module().
-
-Note:
-
-By minimal initramfs, I mean one such that it, plus small kernel, is
-roughly the same size as the equivalent monolithic kernel. The only
-executable on it is init, written in C. There are no shell scripts,
-busybox, progress bars or unused modules.
-
-
+Here, you should call disable_irq_sync() (that's what I meant by _sync 
+in the last post).
