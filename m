@@ -1,106 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbZCBXNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZCBXQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757813AbZCBXNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZCBXN0
+	id S1757194AbZCBXQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZCBXP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:13:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33550 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750942AbZCBXNZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:13:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts during suspend-resume (rev. 4)
-Date: Tue, 3 Mar 2009 00:13:01 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>
-References: <200902221837.49396.rjw@sisk.pl> <200903012324.39327.rjw@sisk.pl> <d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>
-In-Reply-To: <d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>
+	Mon, 2 Mar 2009 18:15:57 -0500
+Received: from kroah.org ([198.145.64.141]:57807 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751873AbZCBXP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 18:15:56 -0500
+Date: Mon, 2 Mar 2009 15:13:43 -0800
+From: Greg KH <greg@kroah.com>
+To: Mike Murphy <mamurph@cs.clemson.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       oliver@neukum.org, fweisbec@gmail.com, torvalds@linux-foundation.org
+Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless
+	support and add sysfs interface
+Message-ID: <20090302231343.GA31663@kroah.com>
+References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com> <20090302130425.23cc628d.akpm@linux-foundation.org> <20090302211820.GA21489@kroah.com> <20090302133551.1266f725.akpm@linux-foundation.org> <5aa163d00903021359x3a4693f5tbb7f1e3fec4d88b8@mail.gmail.com> <20090302223916.GA31381@kroah.com> <5aa163d00903021504l1965ecdi3423a43134de10d0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200903030013.02805.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5aa163d00903021504l1965ecdi3423a43134de10d0@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 March 2009, Arve Hjønnevåg wrote:
-> On Sun, Mar 1, 2009 at 2:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Mon, Mar 02, 2009 at 06:04:00PM -0500, Mike Murphy wrote:
+> On Mon, Mar 2, 2009 at 5:39 PM, Greg KH <greg@kroah.com> wrote:
 > >
-> > Introduce two helper functions allowing us to prevent device drivers
-> > from getting any interrupts (without disabling interrupts on the CPU)
-> > during suspend (or hibernation) and to make them start to receive
-> > interrupts again during the subsequent resume, respectively.  These
-> > functions make it possible to keep timer interrupts enabled while the
-> > "late" suspend and "early" resume callbacks provided by device
-> > drivers are being executed.
+> > I tried to create such an interface years ago, and the macro tricks
+> > involved ended up being horrible, and in the end, it didn't work.  But
+> > if you can come up with something, I'd love to see it.
 > >
-> > Use these functions to rework the handling of interrupts during
-> > suspend (hibernation) and resume.  Namely, interrupts will only be
-> > disabled on the CPU right before suspending sysdevs, while device
-> > drivers will be prevented from receiving interrupts, with the help of
-> > the new helper function, before their "late" suspend callbacks run
-> > (and analogously during resume).
+> > thanks,
 > >
-> > In addition, since the device interrups are now disabled before the
-> > CPU has turned all interrupts off and the CPU will ACK the interrupts
-> > setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
-> > any wake-up interrupts are pending and abort suspend if that's the
-> > case.
+> > greg k-h
 > >
 > 
-> 
-> > +void resume_device_irqs(void)
-> > +{
-> > +       struct irq_desc *desc;
-> > +       int irq;
-> > +
-> > +       for_each_irq_desc(irq, desc)
-> > +               if (desc->status & IRQ_SUSPENDED)
-> > +                       enable_irq(irq);
-> > +}
-> 
-> I think you need to clear IRQ_SUSPENDED here, not in enable_irq.
+> I could probably give it a shot, but possibly not until May... once
+> the current semester ends. I really need to understand the kernel type
+> system -- or at least the types that "should" be exposed to userspace
+> -- before thinking about the design too much. Maybe that's the
+> question that needs to be asked first: in general, what does a sysfs
+> interface into a driver look like? It's certainly flexible enough to
+> do a lot, and the existing interfaces allow it to do a lot, but is
+> there a simplification that covers some large percentage of cases?
 
-enable_irq() clears IRQ_SUSPENDED.  This has already been discussed btw.
+Look at some of the easy things, like integers.  If you could get those
+working, the hwmon drivers could be simplified a lot more.
 
-> > @@ -222,8 +222,9 @@ static void __enable_irq(struct irq_desc
-> >                WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
-> >                break;
-> >        case 1: {
-> > -               unsigned int status = desc->status & ~IRQ_DISABLED;
-> > +               unsigned int status;
-> >
-> > +               status = desc->status & ~(IRQ_DISABLED | IRQ_SUSPENDED);
-> >                /* Prevent probing on this irq: */
-> >                desc->status = status | IRQ_NOPROBE;
-> >                check_irq_resend(desc, irq);
-> 
-> This only clears IRQ_SUSPENDED if the interrupt was not disabled
-> elsewhere. If a driver calls interrupt_disable in suspend_late, but
-> calls interrupt_enable lazily, resume_device_irqs will reenable the
-> interrupt even though the driver has a disable reference.
+The problem I ran into was that the attribute show/store functions deals
+with a "struct device" which you need to cast into some other structure
+type, and then determine the offset of the integer you are needing to
+access.
 
-Then I'd regard the driver as buggy.
- 
-> The rest of the patch looks good.
+Hm, maybe that wouldn't be that hard with 2 offset_of() values, I think
+I was only trying to do one, but that was a long time ago...
 
-I'm glad you like it.
+thanks,
 
-Thanks,
-Rafael
+greg k-h
