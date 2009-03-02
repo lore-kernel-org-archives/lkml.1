@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbZCBXEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZCBXGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbZCBXEW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbZCBXEG
+	id S1757290AbZCBXGS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZCBXGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:04:06 -0500
-Received: from an-out-0708.google.com ([209.85.132.241]:7465 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755336AbZCBXEE convert rfc822-to-8bit (ORCPT
+	Mon, 2 Mar 2009 18:06:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54755 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750796AbZCBXGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:04:04 -0500
-MIME-Version: 1.0
-In-Reply-To: <20090302223916.GA31381@kroah.com>
-References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com>
-	 <20090302130425.23cc628d.akpm@linux-foundation.org>
-	 <20090302211820.GA21489@kroah.com>
-	 <20090302133551.1266f725.akpm@linux-foundation.org>
-	 <5aa163d00903021359x3a4693f5tbb7f1e3fec4d88b8@mail.gmail.com>
-	 <20090302223916.GA31381@kroah.com>
-Date: Mon, 2 Mar 2009 18:04:00 -0500
-X-Google-Sender-Auth: 2d8c3ded7cad0853
-Message-ID: <5aa163d00903021504l1965ecdi3423a43134de10d0@mail.gmail.com>
-Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless 
-	support and add sysfs interface
-From: Mike Murphy <mamurph@cs.clemson.edu>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       oliver@neukum.org, fweisbec@gmail.com, torvalds@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 2 Mar 2009 18:06:01 -0500
+Date: Mon, 2 Mar 2009 15:04:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: djwong@us.ibm.com
+Cc: khali@linux-fr.org, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] lm90: Support the MAX6648/6692 chips
+Message-Id: <20090302150426.b22100c1.akpm@linux-foundation.org>
+In-Reply-To: <20090302210106.GD6550@plum>
+References: <20090302210106.GD6550@plum>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 2, 2009 at 5:39 PM, Greg KH <greg@kroah.com> wrote:
->
-> I tried to create such an interface years ago, and the macro tricks
-> involved ended up being horrible, and in the end, it didn't work.  But
-> if you can come up with something, I'd love to see it.
->
-> thanks,
->
-> greg k-h
->
+On Mon, 2 Mar 2009 13:01:06 -0800
+"Darrick J. Wong" <djwong@us.ibm.com> wrote:
 
-I could probably give it a shot, but possibly not until May... once
-the current semester ends. I really need to understand the kernel type
-system -- or at least the types that "should" be exposed to userspace
--- before thinking about the design too much. Maybe that's the
-question that needs to be asked first: in general, what does a sysfs
-interface into a driver look like? It's certainly flexible enough to
-do a lot, and the existing interfaces allow it to do a lot, but is
-there a simplification that covers some large percentage of cases?
+> @@ -776,7 +776,12 @@ static int lm90_detect(struct i2c_client *new_client, int kind,
+>  			 && (reg_config1 & 0x3f) == 0x00
+>  			 && reg_convrate <= 0x07) {
+>  				kind = max6646;
+> -			}
+> +			} else
+> +			/* The MAX6648/6692 chips have a working man/chip id
+> +			 * and the same register set as the 6657.
+> +			 */
+> +			if (chip_id == 0x59 && address == 0x4C)
+> +				kind = max6657;
+>  		}
 
-Mike
--- 
-Mike Murphy
-Ph.D. Candidate and NSF Graduate Research Fellow
-Clemson University School of Computing
-120 McAdams Hall
-Clemson, SC 29634-0974 USA
-Tel: +1 864.656.2838   Fax: +1 864.656.0145
-http://cirg.cs.clemson.edu/~mamurph
+gack, the indenting and layout there is totally busted.
+
+
+--- a/drivers/hwmon/lm90.c~lm90-support-the-max6648-6692-chips-fix
++++ a/drivers/hwmon/lm90.c
+@@ -776,12 +776,14 @@ static int lm90_detect(struct i2c_client
+ 			 && (reg_config1 & 0x3f) == 0x00
+ 			 && reg_convrate <= 0x07) {
+ 				kind = max6646;
+-			} else
+-			/* The MAX6648/6692 chips have a working man/chip id
+-			 * and the same register set as the 6657.
+-			 */
+-			if (chip_id == 0x59 && address == 0x4C)
++			} else if (chip_id == 0x59 && address == 0x4C) {
++				/*
++				 * The MAX6648/6692 chips have a working
++				 * man/chip id and the same register set as the
++				 * 6657.
++				 */
+ 				kind = max6657;
++			}
+ 		}
+ 
+ 		if (kind <= 0) { /* identification failed */
+_
+
