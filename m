@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZCBWBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZCBWB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbZCBWBY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZCBWAz
+	id S1754651AbZCBWB4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:01:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbZCBWBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:00:55 -0500
-Received: from n13a.bullet.mail.mud.yahoo.com ([68.142.207.51]:42781 "HELO
-	n13a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754527AbZCBWAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:00:54 -0500
-X-Yahoo-Newman-Id: 121891.54966.bm@omp410.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=JIqmI+Xe+wPJbZaujY6QaJVGmG6YJM30CWVJ0aGIePrLOe6kBrpEMiNAa8W+TASi4mtaAQRcnD/rYlrmOXu33zFxEZFD6+5p+VCVxNTCmK0ZgJLAJH6D+1OrEWDEkvtSc9XccJwfhRCZ2xlEsVV/MKmVJjhEhWtXYrOINwBBMto=  ;
-X-YMail-OSG: paZNTDcVM1neto7AnmHgtaUcqcRUGxm6bJozYyb1FxEN5BP5QFR_m_gGdSnHfZabtZ3wZwlZPVU8kB.6B.VuL8p6.7v.lXTf_Q9DcopB2KUoj9D5gDuwZ7ZRKeukM5LYH9nMMbcOhU1cFFDJ_ynrv2A2CUFS1My393aPczu3.hMMLGlLx3O90NiiVcTd
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: [patch 2.6.29-rc6+misc] MMC: regulator utilities
-Date: Mon, 2 Mar 2009 14:00:49 -0800
-User-Agent: KMail/1.9.10
-Cc: Mark Brown <broonie@sirena.org.uk>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       lkml <linux-kernel@vger.kernel.org>, OMAP <linux-omap@vger.kernel.org>
-References: <200902081037.06645.david-b@pacbell.net> <200903021327.14285.david-b@pacbell.net> <20090302224040.5e7ab0b2@mjolnir.ossman.eu>
-In-Reply-To: <20090302224040.5e7ab0b2@mjolnir.ossman.eu>
+	Mon, 2 Mar 2009 17:01:45 -0500
+Received: from kroah.org ([198.145.64.141]:33748 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754170AbZCBWBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 17:01:44 -0500
+Date: Mon, 2 Mar 2009 13:59:10 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mamurph@cs.clemson.edu, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       oliver@neukum.org, fweisbec@gmail.com, torvalds@linux-foundation.org
+Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless
+	support  and add sysfs interface
+Message-ID: <20090302215910.GA31164@kroah.com>
+References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com> <20090302130425.23cc628d.akpm@linux-foundation.org> <20090302211820.GA21489@kroah.com> <20090302133551.1266f725.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903021400.50201.david-b@pacbell.net>
+In-Reply-To: <20090302133551.1266f725.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009, Pierre Ossman wrote:
-> > > > +int mmc_regulator_set_ocr(struct mmc_host *host, struct regulator *supply)
+On Mon, Mar 02, 2009 at 01:35:51PM -0800, Andrew Morton wrote:
+> On Mon, 2 Mar 2009 13:18:20 -0800
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > On Mon, Mar 02, 2009 at 01:04:25PM -0800, Andrew Morton wrote:
+> > > On Sat, 28 Feb 2009 23:53:03 -0500
+> > > Mike Murphy <mamurph@cs.clemson.edu> wrote:
+> > > > ...
+> > > >
+> > > > +static ssize_t xpad_show_int(struct device *dev, struct device_attribute *attr,
+> > > > +		char *buf)
 > > > > +{
+> > > > +	struct usb_xpad *xpad = to_xpad(dev);
+> > > > +	int value;
+> > > > +	if (attr == &dev_attr_rumble_enable)
+> > > > +		value = xpad->rumble_enable;
+> > > > +	else if (attr == &dev_attr_controller_number)
+> > > > +		value = xpad->controller_number;
+> > > > +	else if (attr == &dev_attr_controller_present)
+> > > > +		value = xpad->controller_present;
+> > > > +	else if (attr == &dev_attr_controller_type)
+> > > > +		value = xpad->controller_type;
+> > > > +	else if (attr == &dev_attr_left_trigger_full_axis)
+> > > > +		value = xpad->left_trigger_full_axis;
+> > > > +	else if (attr == &dev_attr_right_trigger_full_axis)
+> > > > +		value = xpad->right_trigger_full_axis;
+> > > > +	else
+> > > > +		return -EIO;
+> > > > +	return snprintf(buf, PAGE_SIZE, "%d\n", value);
+> > > > +}
 > > > 
-> > > Why not pass the vdd directly? Saves a few dereferences if nothing else.
+> > > The code's a bit unusual.  Most drivers don't have all that
+> > > if-then-else stuff.  They use a separate function for each sysfs file
+> > > and then they wrap it all up into a macro which emits all the data and
+> > > code for each file.
 > > 
-> > This call syntax is simpler, which is usually a win.
-> > Passing a third parameter would create fault paths
-> > of the "pass *wrong* parameter" flavor.
+> > Yes, most don't, but that is because we used to not pass the attribute
+> > variable to the show/store functions.  It was added so that we could
+> > reduce the huge numbers of functions needed, to do stuff like this.  The
+> > hwmon drivers are examples of other drivers that do their show/store
+> > like this.
 > > 
-> > In terms of object code, when I've looked at such things
-> > the dereferences generally cost the same as a ref to a
-> > parameter, but passing an extra parameter isn't free.
+> > There's nothing wrong with it that I can see.
 > > 
 > 
-> I couldn't see host being used in there, so I was thinking more of a
-> replacement, not an addition.
+> OK.  I think.
+> 
+> - This approach will require a large number of edits each time an
+>   attribute is added/removed.
 
-Oh, I see.  That'd make sense.  Just pass host->ios.vdd.
+That's really not a big dea.
 
+> - otoh, removing nasty macros is always nice.
+> 
+> - This approach will generate slower code (which doesn't matter
+>   here).
 
+True.
 
+> - Was it demonstrated that this approach generates less code?
+
+Yes it was.  I can go dig through the archives if you want real numbers.
+
+thanks,
+
+greg k-h
