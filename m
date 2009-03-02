@@ -1,139 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZCBW5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbZCBXBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbZCBW5S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbZCBW5E
+	id S1756348AbZCBXBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZCBXBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:57:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43248 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750910AbZCBW5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:57:02 -0500
-Message-ID: <49AC63FA.70801@redhat.com>
-Date: Mon, 02 Mar 2009 17:55:54 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 2 Mar 2009 18:01:36 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:30267 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752860AbZCBXBf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 18:01:35 -0500
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+In-Reply-To: <200903012324.39327.rjw@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl>
+	 <200903012324.39327.rjw@sisk.pl>
+Date: Mon, 2 Mar 2009 15:01:33 -0800
+Message-ID: <d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>
+Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts during 
+	suspend-resume (rev. 4)
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
-References: <20090223173108.GB1441@Krystal> <alpine.DEB.2.00.0902231236340.18221@gandalf.stny.rr.com> <49A82851.5080707@redhat.com> <20090227180724.GA17947@Krystal> <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu>
-In-Reply-To: <20090302222254.GA31962@elte.hu>
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 1, 2009 at 2:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Introduce two helper functions allowing us to prevent device drivers
+> from getting any interrupts (without disabling interrupts on the CPU)
+> during suspend (or hibernation) and to make them start to receive
+> interrupts again during the subsequent resume, respectively.  These
+> functions make it possible to keep timer interrupts enabled while the
+> "late" suspend and "early" resume callbacks provided by device
+> drivers are being executed.
+>
+> Use these functions to rework the handling of interrupts during
+> suspend (hibernation) and resume.  Namely, interrupts will only be
+> disabled on the CPU right before suspending sysdevs, while device
+> drivers will be prevented from receiving interrupts, with the help of
+> the new helper function, before their "late" suspend callbacks run
+> (and analogously during resume).
+>
+> In addition, since the device interrups are now disabled before the
+> CPU has turned all interrupts off and the CPU will ACK the interrupts
+> setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
+> any wake-up interrupts are pending and abort suspend if that's the
+> case.
+>
 
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> Mathieu Desnoyers wrote:
->>> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->>>> Index: linux-2.6/init/main.c
->>>> ===================================================================
->>>> --- linux-2.6.orig/init/main.c
->>>> +++ linux-2.6/init/main.c
->>>> @@ -676,6 +676,9 @@ asmlinkage void __init start_kernel(void
->>>>  	taskstats_init_early();
->>>>  	delayacct_init();
->>>>
->>>> +#ifdef CONFIG_X86
->>>> +	text_poke_init();
->>>> +#endif
->>> All good, except this above. There should be an empty text_poke_init()
->>> in some header file, and an implementation for the X86 arch rather than
->>> a ifdef in init/main.c.
->> Hmm, I'd rather use __weak function instead of defining it in some header
->> files, because text_poke() and alternatives exist only on x86.
->>
->> I know that we need to discuss cross modifying code on x86 with
->> Arjan or other Intel engineers. This patch may still be useful
->> for removing unnecessary vm_area allocation in text_poke().
->>
->> Thank you,
->>
->> ---
->>
->> Use map_vm_area() instead of vmap() in text_poke() for 
->> avoiding page allocation and delayed unmapping, and call 
->> vunmap_page_range() and local_flush_tlb() directly because 
->> this mapping is temporary and local.
->>
->> At the result of above change, text_poke() becomes atomic and 
->> can be called from stop_machine() etc.
-> 
-> That looks like a good fix in itself - see a few minor details 
-> below.
+> +void resume_device_irqs(void)
+> +{
+> +       struct irq_desc *desc;
+> +       int irq;
+> +
+> +       for_each_irq_desc(irq, desc)
+> +               if (desc->status & IRQ_SUSPENDED)
+> +                       enable_irq(irq);
+> +}
 
-Thank you for review,
+I think you need to clear IRQ_SUSPENDED here, not in enable_irq.
 
-> 
-> (Note, i could not try your patch because it has widespread 
-> whitespace damage - please watch out for this for future 
-> patches.)
+> @@ -222,8 +222,9 @@ static void __enable_irq(struct irq_desc
+>                WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
+>                break;
+>        case 1: {
+> -               unsigned int status = desc->status & ~IRQ_DISABLED;
+> +               unsigned int status;
+>
+> +               status = desc->status & ~(IRQ_DISABLED | IRQ_SUSPENDED);
+>                /* Prevent probing on this irq: */
+>                desc->status = status | IRQ_NOPROBE;
+>                check_irq_resend(desc, irq);
 
-Oops, it was my mis-setting...
+This only clears IRQ_SUSPENDED if the interrupt was not disabled
+elsewhere. If a driver calls interrupt_disable in suspend_late, but
+calls interrupt_enable lazily, resume_device_irqs will reenable the
+interrupt even though the driver has a disable reference.
 
-> 
->> +static struct vm_struct *text_poke_area[2];
->> +static DEFINE_SPINLOCK(text_poke_lock);
->> +
->> +void __init text_poke_init(void)
->> +{
->> +	text_poke_area[0] = get_vm_area(PAGE_SIZE, VM_ALLOC);
->> +	text_poke_area[1] = get_vm_area(2 * PAGE_SIZE, VM_ALLOC);
->> +	BUG_ON(!text_poke_area[0] || !text_poke_area[1]);
-> 
-> BUG_ON() for non-100%-essential init code is a no-no. Please 
-> change it to WARN_ON() so that people have a chance to report i.
-
-Sure.
-
-> 
-> Also, i think all these vma complications came from the decision 
-> to use vmap - and vmap enhancements in .29 complicated this 
-> supposedly-simple interface.
-> 
-> So perhaps another approach to (re-)consider would be to go back 
-> to atomic fixmaps here. It spends 3 slots but that's no big 
-> deal.
-
-Oh, it's a good idea! fixmaps must make it simpler.
-
-> 
-> In exchange it will be conceptually simpler, and will also scale 
-> much better than a global spinlock. What do you think?
-
-I think even if I use fixmaps, we have to use a spinlock to protect
-the fixmap area from other threads...
-
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+The rest of the patch looks good.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Arve Hjønnevåg
