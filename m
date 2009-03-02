@@ -1,84 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZCBOA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZCBOEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbZCBOA5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 09:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZCBOAs
+	id S1753229AbZCBOEs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 09:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZCBOEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 09:00:48 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43554 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751789AbZCBOAr (ORCPT
+	Mon, 2 Mar 2009 09:04:40 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47990 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751726AbZCBOEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 09:00:47 -0500
-Date: Mon, 2 Mar 2009 14:00:44 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Input: Accelerated touchscreen support for Marvell
-	Zylonite
-Message-ID: <20090302140044.GA23038@rakim.wolfsonmicro.main>
-References: <1236000228-13025-1-git-send-email-broonie@opensource.wolfsonmicro.com> <49ABE2BC.9010401@gmail.com>
+	Mon, 2 Mar 2009 09:04:39 -0500
+Message-ID: <c31ccd23cb41f0f7594b3f56b20f0165.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090302124210.GK11421@balbir.in.ibm.com>
+References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain>
+    <20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090302044043.GC11421@balbir.in.ibm.com>
+    <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090302060519.GG11421@balbir.in.ibm.com>
+    <20090302152128.e74f51ef.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090302063649.GJ11421@balbir.in.ibm.com>
+    <20090302160602.521928a5.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090302124210.GK11421@balbir.in.ibm.com>
+Date: Mon, 2 Mar 2009 23:04:34 +0900 (JST)
+Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       "Bharata B Rao" <bharata@in.ibm.com>, "Paul Menage" <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "David Rientjes" <rientjes@google.com>,
+       "Pavel Emelianov" <xemul@openvz.org>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49ABE2BC.9010401@gmail.com>
-X-Cookie: byob, v:
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 02:44:28PM +0100, Jiri Slaby wrote:
-> On 2.3.2009 14:23, Mark Brown wrote:
+Balbir Singh wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02
+> 16:06:02]:
+>
+>> On Mon, 2 Mar 2009 12:06:49 +0530
+>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> > OK, I get your point, but whay does that make RB-Tree data structure
+>> non-sense?
+>> >
+>>
+>>  1. Until memory-shortage, rb-tree is kept to be updated and the
+>> users(kernel)
+>>     has to pay its maintainace/check cost, whici is unnecessary.
+>>     Considering trade-off, paying cost only when memory-shortage happens
+>> tend to
+>>     be reasonable way.
+> As you've seen in the code, the cost is only at an interval HZ/2
+> currently. The other overhead is the calculation of excess, I can try
+> and see if we can get rid of it.
+>
+>>
+>>  2. Current "exceed" just shows "How much we got over my soft limit" but
+>> doesn't
+>>     tell any information per-node/zone. Considering this, this rb-tree
+>>     information will not be able to help kswapd (on NUMA).
+>>     But maintain per-node information uses too much resource.
+>
+> Yes, kswapd is per-node and we try to free all pages belonging to a
+> zonelist as specified by pgdat->node_zonelists for the memory control
+> groups that are over their soft limit. Keeping this information per
+> node makes no sense (exceeds information).
+>
+>>
+>>  Considering above 2, it's not bad to find victim by proper logic
+>>  from balance_pgdat() by using mem_cgroup_select_victim().
+>>  like this:
+>> ==
+>>  struct mem_cgroup *select_vicitim_at_soft_limit_via_balance_pgdat(int
+>> nid, int zid)
+>>  {
+>>      while (?) {
+>>         vitcim = mem_cgroup_select_victim(init_mem_cgroup);  #need some
+>> modification.
+>>         if (victim is not over soft-limit)
+>>              continue;
+>>         /* Ok this is candidate */
+>>         usage = mem_cgroup_nid_zid_usage(mem, nid, zid); #get sum of
+>> active/inactive
+>>         if (usage_is_enough_big)
+>>               return victim;
+>
+> We currently track overall usage, so we split into per nid, zid
+> information and use that? Is that your suggestion?
 
->> +static int pressure;
->> +module_param(pressure, int, 1);
+My suggestion is that current per-zone statistics interface of memcg
+already holds all necessary information. And aggregate usage information
+is not worth to be tracked becauset it's no help for kswapd.
 
-> Weird permissions.
+>  The soft limit is
+> also an aggregate limit, how do we define usage_is_big_enough or
+> usage_is_enough_big? Through some heuristics?
+>
+I think that if memcg/zone's page usage is not 0, it's enough big.
+(and round robin rotation as hierachical reclaim can be used.)
 
-Fixed.
+There maybe some threshold to try.
 
->> +	int count = 16;
->> +	schedule_timeout_uninterruptible(1);
+For example)
+   need_to_reclaim = zone->high - zone->free.
+   if (usage_in_this_zone_of_memcg > need_to_reclaim/4)
+         select this.
 
-> You meant ssleep(1)?
+Maybe we can adjust that later.
 
-msleep, but yes.  Shows how old the code is - I'll update.
+>>      }
+>>  }
+>>  balance_pgdat()
+>>  ...... find target zone....
+>>  ...
+>>  mem = select_victime_at_soft_limit_via_balance_pgdat(nid, zid)
+>>  if (mem)
+>>    sc->mem = mem;
+>>  shrink_zone();
+>>  if (mem) {
+>>    sc->mem = NULL;
+>>    css_put(&mem->css);
+>>  }
+>> ==
+>>
+>>  We have to pay scan cost but it will not be too big(if there are not
+>> thousands of memcg.)
+>>  Under above, round-robin rotation is used rather than sort.
+>
+> Yes, we sort, but not frequently at every page-fault but at a
+> specified interval.
+>
+>>  Maybe I can show you sample.....(but I'm a bit busy.)
+>>
+>
+> Explanation and review is good, but I don't see how not-sorting will
+> help? I need something that can help me point to the culprits quickly
+> enough during soft limit reclaim and RB-Tree works very well for me.
+>
 
->> +
->> +	while (count<  16) {
+I don't think "tracking memcg which exceeds soft limit" is not worth
+to do in synchronous way. It can be done in lazy way when it's necessary
+in simpler logic.
 
-> Weird condition.
-> + conding style
+BTW, did you do set-softlimit-zero and rmdir() test ?
+At quick review, memcg will never be removed from RB tree because
+force_empty moves account from children to parent. But no tree ops there.
+plz see mem_cgroup_move_account().
 
-Hrm.  This appears to have been mangled somewhere in the mail path to 
-you - the indentation is normal in my send-mail folder and in the copy I
-got back from the list.
+I'm sorry if I missed something.
+
+Thanks,
+-Kame
 
 
->> +	if (tries>  5) {
 
-> Where is tries defined?
-
-Further up the file as a global static.  I've pulled the variables into
-the function since it's the only place they're used.
-
->> +static int wm97xx_acc_startup(struct wm97xx *wm)
->> +{
->> +	int idx = 0;
-
-> No need to initialize.
-
-Fixed.
-
->> +static void wm97xx_irq_enable(struct wm97xx *wm, int enable)
->> +{
->> +	if (enable)
->> +		enable_irq(wm->pen_irq);
->> +	else
->> +		disable_irq(wm->pen_irq);
-
-> sync?
-
-Could you expand on this, please?
