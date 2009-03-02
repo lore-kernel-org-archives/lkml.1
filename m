@@ -1,62 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbZCBWyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZCBW5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756995AbZCBWyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZCBWyL
+	id S1757069AbZCBW5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbZCBW5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:54:11 -0500
-Received: from el-out-1112.google.com ([209.85.162.179]:10768 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbZCBWyJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:54:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=sRkrQvIf6Qp8EmZusXBqdRU1R/53FBn0DcH43RSxDWh2Ldn0PAf0Sz48+5mZDapDZv
-         XNpT+TseNhnH7pqO0ZJoxGATnNki0V01WQC+DtxF+s89JUV6DiXH429E0JhV42tC4jFw
-         QaTYdeozo9Kl8gIhMBhCJUHtJRVewbC0kgvx4=
+	Mon, 2 Mar 2009 17:57:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43248 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750910AbZCBW5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 17:57:02 -0500
+Message-ID: <49AC63FA.70801@redhat.com>
+Date: Mon, 02 Mar 2009 17:55:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Date: Mon, 2 Mar 2009 14:54:06 -0800
-Message-ID: <8c6189ae0903021454t1480e3a6u16532de024f0a458@mail.gmail.com>
-Subject: No symbol version for PROM_KMALLOC1 in kernel 2.6.26
-From: P Mumbai <mumbai.prasanna@gmail.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
+References: <20090223173108.GB1441@Krystal> <alpine.DEB.2.00.0902231236340.18221@gandalf.stny.rr.com> <49A82851.5080707@redhat.com> <20090227180724.GA17947@Krystal> <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu>
+In-Reply-To: <20090302222254.GA31962@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-I am trying to get my driver working on 2.6.26 kernel. This driver
-works fine in 2.6.17 kernel.
 
-I have a glue KLM(kernel loadable module) & the main driver KLM.   The
-Glue module exposes a set of API's which the main driver KLM uses.
+Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+>> Mathieu Desnoyers wrote:
+>>> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+>>>> Index: linux-2.6/init/main.c
+>>>> ===================================================================
+>>>> --- linux-2.6.orig/init/main.c
+>>>> +++ linux-2.6/init/main.c
+>>>> @@ -676,6 +676,9 @@ asmlinkage void __init start_kernel(void
+>>>>  	taskstats_init_early();
+>>>>  	delayacct_init();
+>>>>
+>>>> +#ifdef CONFIG_X86
+>>>> +	text_poke_init();
+>>>> +#endif
+>>> All good, except this above. There should be an empty text_poke_init()
+>>> in some header file, and an implementation for the X86 arch rather than
+>>> a ifdef in init/main.c.
+>> Hmm, I'd rather use __weak function instead of defining it in some header
+>> files, because text_poke() and alternatives exist only on x86.
+>>
+>> I know that we need to discuss cross modifying code on x86 with
+>> Arjan or other Intel engineers. This patch may still be useful
+>> for removing unnecessary vm_area allocation in text_poke().
+>>
+>> Thank you,
+>>
+>> ---
+>>
+>> Use map_vm_area() instead of vmap() in text_poke() for 
+>> avoiding page allocation and delayed unmapping, and call 
+>> vunmap_page_range() and local_flush_tlb() directly because 
+>> this mapping is temporary and local.
+>>
+>> At the result of above change, text_poke() becomes atomic and 
+>> can be called from stop_machine() etc.
+> 
+> That looks like a good fix in itself - see a few minor details 
+> below.
 
-I have a glue layer which exposes a function called "PROM_KMALLOC1".
-This function is exported using "EXPORT_SYMBOL(PROM_KMALLOC1)".  I
-load the glue KLM and then load the main driver KLM.
-The reference to PROM_KMALLOC1 in my main driver is giving me the
-following error.
+Thank you for review,
 
-be:  no symbol version for PROM_KMALLOC1
-be: Unknown symbol PROM_KMALLOC1
+> 
+> (Note, i could not try your patch because it has widespread 
+> whitespace damage - please watch out for this for future 
+> patches.)
 
-Is there a different way of exporting symbols in 2.6.26 kernel ?   I
-don't know what does symbol version mean ?  Can anyone explain me
-please.
+Oops, it was my mis-setting...
 
-i did
-[root@localhost ~]# cat /proc/kallsyms | grep PROM_KMALLOC1
-e22352d4 r __ksymtab_PROM_KMALLOC1      [glue]
-e22358ba r __kstrtab_PROM_KMALLOC1      [glue]
-e223542c r __kcrctab_PROM_KMALLOC1      [glue]
-e204d048 T PROM_KMALLOC1        [glue]
-d8bc05b7 a __crc_PROM_KMALLOC1  [glue]
+> 
+>> +static struct vm_struct *text_poke_area[2];
+>> +static DEFINE_SPINLOCK(text_poke_lock);
+>> +
+>> +void __init text_poke_init(void)
+>> +{
+>> +	text_poke_area[0] = get_vm_area(PAGE_SIZE, VM_ALLOC);
+>> +	text_poke_area[1] = get_vm_area(2 * PAGE_SIZE, VM_ALLOC);
+>> +	BUG_ON(!text_poke_area[0] || !text_poke_area[1]);
+> 
+> BUG_ON() for non-100%-essential init code is a no-no. Please 
+> change it to WARN_ON() so that people have a chance to report i.
 
-~Cheers
-Prasanna
+Sure.
+
+> 
+> Also, i think all these vma complications came from the decision 
+> to use vmap - and vmap enhancements in .29 complicated this 
+> supposedly-simple interface.
+> 
+> So perhaps another approach to (re-)consider would be to go back 
+> to atomic fixmaps here. It spends 3 slots but that's no big 
+> deal.
+
+Oh, it's a good idea! fixmaps must make it simpler.
+
+> 
+> In exchange it will be conceptually simpler, and will also scale 
+> much better than a global spinlock. What do you think?
+
+I think even if I use fixmaps, we have to use a spinlock to protect
+the fixmap area from other threads...
+
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
