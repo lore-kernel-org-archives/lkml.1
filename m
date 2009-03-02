@@ -1,102 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbZCBCNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbZCBCON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759228AbZCBCNt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Mar 2009 21:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbZCBCNk
+	id S1759326AbZCBCON (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Mar 2009 21:14:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbZCBCNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Mar 2009 21:13:40 -0500
-Received: from mga01.intel.com ([192.55.52.88]:56376 "EHLO mga01.intel.com"
+	Sun, 1 Mar 2009 21:13:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49718 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbZCBCNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Mar 2009 21:13:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,286,1233561600"; 
-   d="asc'?scan'208";a="435206810"
-Subject: Re: [PATCH] Fix e820 end address with EFI
-From: Huang Ying <ying.huang@intel.com>
-To: Brian Maly <bmaly@redhat.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <49AB38E7.60305@redhat.com>
-References: <49A965AD.10701@redhat.com>
-	 <86802c440902282014he17bb6an1f59872ef30db0c5@mail.gmail.com>
-	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>
-	 <49AAEC79.3000808@redhat.com>
-	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>
-	 <49AB38E7.60305@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qt4w8OcsRCQzrPgVpf81"
-Date: Mon, 02 Mar 2009 10:13:36 +0800
-Message-Id: <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1757321AbZCBCNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Mar 2009 21:13:41 -0500
+Message-ID: <49AB4091.6060701@kernel.org>
+Date: Sun, 01 Mar 2009 18:12:33 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: brk patches..
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org>	 <1235785882-17580-4-git-send-email-jeremy@goop.org>	 <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com>	 <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu>	 <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org>	 <49A8F319.3030802@goop.org> <86802c440902281240i11423a95l98e330768ac6ca18@mail.gmail.com> <49AB1FE6.8030300@goop.org> <49AB3031.4020500@kernel.org> <49AB316E.4000009@zytor.com> <49AB3377.40904@goop.org> <49AB3805.6060109@zytor.com> <49AB3C70.7090701@goop.org>
+In-Reply-To: <49AB3C70.7090701@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> Jeremy Fitzhardinge wrote:
+>>  
+>>> (To be specific: I reshape the guest e820 table so that it doesn't have
+>>> memory in any forbidden areas of the host e820 table.  That may require
+>>> moving the pseudo-physical address of pages into a new overflow e820
+>>> entry, which would also require allocating pages for the p2m radix
+>>> tree.)
+>>>
+>>>     
+>>
+>> Isn't that the domain builder's job?
+>>   
+> 
+> No.  It just provides a flat memory map from 0-max_pfn.  I want to avoid
+> the overlap between pseudo-phys and machine memory so that the resource
+> manager doesn't get confused by overlapping ranges, and so that it
+> places the pci window in the same place as native.
 
---=-qt4w8OcsRCQzrPgVpf81
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+where will those mem allocator needed?
 
-On Mon, 2009-03-02 at 09:39 +0800, Brian Maly wrote:
-> Huang Ying wrote:=20
-> > Hi, Brian,
-> >=20
-> > On Mon, 2009-03-02 at 04:13 +0800, Brian Maly wrote:
-> >  =20
-> > > I was able verify the kernel that does not boot on the MacBook (vanil=
-la=20
-> > > 2.6.29-rc4) does call efi_ioremap() which bails out early returning=20
-> > > NULL. So no remapping happens in this case.  I have no idea if=20
-> > > efi_ioremap ever does succeed in mapping any ranges though being I ha=
-ve=20
-> > > no video or console this early in the boot and have to rely on triple=
-=20
-> > > faulting as a means of debugging.
-> > >    =20
-> >=20
-> > Please attach your dmesg of successful boot, so we can take a look at
-> > the EFI memory map.
-> >=20
-> > Best Regards,
-> > Huang Ying
-> >  =20
-> This dmesg is from a 2.6.25 kernel which works fine. I can gather
-> other debugging info from the booting kernels if needed. But its a
-> challenge to debug the bad kernel being efifb is initialized very late
-> (so you never even get to the video initialization and cant see any
-> logged messages) and since its a MacBook I dont have a real serial
-> port for serial console. The efi map is for MacBook has a different
-> layout from other EFI systems I have to test on. 2.6.29 kernel works
-> on every EFI system I have except MacBook.
+if it is used after finish_e820_parsing(), you could use find_e820_area()
 
-It seems that you have an EFI system which has too big runtime area.
-
-EFI: mem44: type=3D0, attr=3D0x8000000000000000, range=3D[0x000000007ff0000=
-0-0x0000000080000000) (1MB)
-
-efi_ioremap() can map only memory range < 400k now.
-
-It seems that efi_ioremap is the bottle net now. Can we just use
-init_memory_mapping() instead of efi_ioremap() for EFI runtime area?
-
-Yinghai, how about your opinion?
-
-Best Regards,
-Huang Ying
-
-
---=-qt4w8OcsRCQzrPgVpf81
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmrQLQACgkQKhFGF+eHlpgY8ACcDmBLaz9GTKtXwjgq2KvHqtWf
-ANkAoI+xse/7qhjtSB4fi/nDc+DKrLZN
-=3MRF
------END PGP SIGNATURE-----
-
---=-qt4w8OcsRCQzrPgVpf81--
-
+YH
