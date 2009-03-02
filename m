@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZCBPJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZCBPNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbZCBPJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 10:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbZCBPJK
+	id S1755388AbZCBPNz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 10:13:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZCBPNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 10:09:10 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36511 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbZCBPJJ (ORCPT
+	Mon, 2 Mar 2009 10:13:47 -0500
+Received: from casper.infradead.org ([85.118.1.10]:32991 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbZCBPNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 10:09:09 -0500
-Date: Mon, 2 Mar 2009 16:11:53 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Mack <daniel@caiaq.de>, vbotka@suse.cz
-Cc: linux-kernel@vger.kernel.org, Eric Piel <eric.piel@tremplin-utc.net>
-Subject: Re: [PATCH 5/5] lis3: SPI transport layer
-Message-ID: <20090302151153.GN2527@elf.ucw.cz>
-References: <49ABB22F.7040508@tremplin-utc.net> <1236004310-29196-1-git-send-email-daniel@caiaq.de> <1236004310-29196-2-git-send-email-daniel@caiaq.de> <1236004310-29196-3-git-send-email-daniel@caiaq.de> <1236004310-29196-4-git-send-email-daniel@caiaq.de> <1236004310-29196-5-git-send-email-daniel@caiaq.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236004310-29196-5-git-send-email-daniel@caiaq.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 2 Mar 2009 10:13:46 -0500
+Date: Mon, 2 Mar 2009 07:13:55 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "Arve Hj?nnev?g" <arve@android.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090302071355.540e5651@infradead.org>
+In-Reply-To: <200903020924.42451.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
+	<d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
+	<20090301225647.GE1961@elf.ucw.cz>
+	<200903020924.42451.oliver@neukum.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-03-02 15:31:50, Daniel Mack wrote:
-> Make use of the new abstraction layer and add a new transport layer for
-> spi. Works fine on a PXA based board.
+On Mon, 2 Mar 2009 09:24:36 +0100
+Oliver Neukum <oliver@neukum.org> wrote:
 
-Looks ok to me, and proves that previous patch was sane.
+> - you may want to avoid repeating expensive initialisations
 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+btw this "expensive intialization" for a correct driver... is the same
+thing  you need to do to get the device out of power saving mode..
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Vlado, could you test the compelete series?
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
