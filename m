@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbZCBShO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbZCBSoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760069AbZCBShO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 13:37:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZCBSgx
+	id S1755309AbZCBSoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 13:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZCBSoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 13:36:53 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:54503 "EHLO kernel.dk"
+	Mon, 2 Mar 2009 13:44:04 -0500
+Received: from thunk.org ([69.25.196.29]:33933 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbZCBSgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 13:36:52 -0500
-Date: Mon, 2 Mar 2009 19:36:49 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Christie <michaelc@cs.wisc.edu>
-Cc: Grant Grundler <grundler@google.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mike.miller@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, hare@novell.com, iss_storagedev@hp.com,
-       iss.sbteam@hp.com
-Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-Message-ID: <20090302183649.GB11787@kernel.dk>
-References: <20090227230927.GA21377@roadking.ldev.net> <20090302153246A.fujita.tomonori@lab.ntt.co.jp> <da824cf30903020919q2d3496e6sb5a253b0acba681a@mail.gmail.com> <49AC237A.7060005@cs.wisc.edu>
+	id S1750837AbZCBSoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 13:44:01 -0500
+Date: Mon, 2 Mar 2009 13:43:16 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark Brown <broonie@sirena.org.uk>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+Message-ID: <20090302184316.GA25469@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Mark Brown <broonie@sirena.org.uk>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+References: <20090228210223.GA23191@sirena.org.uk> <49A9C252.50204@s5r6.in-berlin.de> <20090301001829.GA10751@mit.edu> <20090301004618.GA12909@sirena.org.uk> <20090301025357.GC10751@mit.edu> <20090302131514.GC19744@sirena.org.uk> <49ABF825.1010501@s5r6.in-berlin.de> <20090302100158.bb83bec6.akpm@linux-foundation.org> <20090302182456.GF19744@sirena.org.uk> <20090302103437.f3109332.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49AC237A.7060005@cs.wisc.edu>
+In-Reply-To: <20090302103437.f3109332.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02 2009, Mike Christie wrote:
-> Grant Grundler wrote:
->> On Sun, Mar 1, 2009 at 10:32 PM, FUJITA Tomonori
->> <fujita.tomonori@lab.ntt.co.jp> wrote:
->> ...
->>>> +/*
->>>> + * For operations that cannot sleep, a command block is allocated at init,
->>>> + * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
->>>> + * which ones are free or in use.  Lock must be held when calling this.
->>>> + * cmd_free() is the complement.
->>>> + */
->>>> +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
->>>> +{
->>>> +     struct CommandList_struct *c;
->>>> +     int i;
->>>> +     union u64bit temp64;
->>>> +     dma_addr_t cmd_dma_handle, err_dma_handle;
->>>> +
->>>> +     do {
->>>> +             i = find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
->>>> +             if (i == h->nr_cmds)
->>>> +                     return NULL;
->>>> +     } while (test_and_set_bit
->>>> +              (i & (BITS_PER_LONG - 1),
->>>> +               h->cmd_pool_bits + (i / BITS_PER_LONG)) != 0);
->>> Using bitmap to manage free commands looks too complicated a bit to
->>> me. Can we just use lists for command management?
->>
->> Bit maps are generally more efficient than lists since we touch less data.
->> For both search and moving elements from free<->busy lists. This probably
->> won't matter if we are talking less than 10K IOPS. And willy demonstrated
->> other layers have pretty high overhead (block, libata and SCSI midlayer)
->> at high transaction rates.
->>
->
-> If it was just needing this for the queuecommand path it would be  
-> simple. For the queuecommand path we could just use the scsi host  
-> tagging code for the index. You do not need a lock in the queuecommand  
-> path for getting a index and command, and you do not need to duplicate  
-> the tag/index allocation code in the block/scsi code
->
-> A problem with the host tagging is what to do if you need a tag/index  
-> for a internal command. In the slow path like the device reset and cache  
-> flush case you could use a list or preallocated command or whatever  
-> other drivers are using that makes you happy.
->
-> Or for the reset/shutdown/internal path could we come up with a  
-> extension to the existing API. Maybe just add some wrapper around some  
-> of blk_queue_start_tag that takes a the bqt (the bqt would come from the  
-> host wide one) and allocates the tag (need a something similar for the  
-> release side).
+On Mon, Mar 02, 2009 at 10:34:37AM -0800, Andrew Morton wrote:
+> 
+> The text covering a patch should describe what the patch does, why it
+> does it, how it does it and it should describe the end-user effects of
+> not having the patch present.  Any and all of these can be skipped if
+> they are utterly obvious and unneeded.
+> 
+> Changes should be properly described, that's all.  The means by which
+> that is done isn't terribly important.  Sometimes most of the
+> description is in code comments, or in a newly-added Documentation/
+> file.
 
-This is precisely what I did for libata, here is is interleaved with
-some other stuff:
+My usual advise to folks is that if someone might be scratching their
+head about why the code 3 months later, it probably does belong in the
+code comments.  On the other hand, an explanation for why the previous
+code was buggy probably should be in the commit description --- if it
+isn't obvious.
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=f557570ec6042370333b6b9c33bbbae175120a89
+An explanation for what the user might see when the bug gets hit is
+also useful if after the fact someone is trying to see if a particular
+bug has been fixed in mainline already, as is a pointer to the
+bugzilla URL.
 
-It needs a little more polish and so on, but the concept is identical to
-what you describe for this case. And I agree, it's much better to use
-the same index instead of generating/maintaining seperate bitmaps for
-this type of thing.
+But if it's something as simple as "fix spelling mistake", or "handle
+OOM condition gracefully", it may be that thing more than a single
+one-line patch title is all that is necessary.
 
--- 
-Jens Axboe
+						- Ted
 
+> The reason I asked you personally to always send a changelog is because
+> I quite frequently sit there scratching my head at your patches not
+> having a clue what they do nor how to prioritise them.
