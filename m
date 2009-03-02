@@ -1,55 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZCBXC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZCBXDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbZCBXC6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZCBXCp
+	id S1757388AbZCBXDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbZCBXCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:02:45 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43774 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752860AbZCBXCo (ORCPT
+	Mon, 2 Mar 2009 18:02:50 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33924 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757312AbZCBXCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:02:44 -0500
-Subject: Re: lockdep and threaded IRQs
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Miller <davem@davemloft.net>
-Cc: dbrownell@users.sourceforge.net, tglx@linutronix.de,
-       akpm@linux-foundation.org, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com
-In-Reply-To: <20090302.144647.116847598.davem@davemloft.net>
-References: <1236030106.5330.1553.camel@laptop>
-	 <200903021409.21344.david-b@pacbell.net>
-	 <1236032371.5330.1654.camel@laptop>
-	 <20090302.144647.116847598.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 00:02:23 +0100
-Message-Id: <1236034943.5330.1779.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 18:02:49 -0500
+Date: Mon, 2 Mar 2009 23:02:44 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Subject: Re: [PATCH 2/2] Input: add wm97xx accelerated driver for AVR32
+	AT32AP700X microprocessors
+Message-ID: <20090302230244.GA31790@opensource.wolfsonmicro.com>
+References: <1236000228-13025-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1236000228-13025-2-git-send-email-broonie@opensource.wolfsonmicro.com> <49ABEE83.904@gmail.com> <49AC5EB2.3050805@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49AC5EB2.3050805@gmail.com>
+X-Cookie: Chess tonight.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 14:46 -0800, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Mon, 02 Mar 2009 23:19:31 +0100
-> 
-> > I state that every !IRQF_DISABLED usage is a bug, either due to broken
-> > hardware or broken drivers.
-> 
-> We'll send you the bill to have everyone's hardware
-> replaced :-)
+On Mon, Mar 02, 2009 at 11:33:22PM +0100, Jiri Slaby wrote:
 
-I'm not saying to remove support for such stuff, as long as we clearly
-annotate that its due to broken ass hardware we can leave a IRQF_ENABLED
-thingy in there.
+> Ah, it's in the opposite way. This one is fine, the patch 1/2 should use  
+> disable_irq_nosync(), if I understand the code correctly.
 
-Preferably such drivers would be converted to threaded interrupts, but I
-thought Alan mentioned an IDE chipset that was so broken even that would
-be impossible (could not mask the IRQ for it would corrupt stuff).
-
-The thing I am strongly opposing though, is keeping interrupts enabled
-for regular drivers on sane hardware.
-
+Actually it makes no odds either way for zylonite (it can be guaranteed
+to be uniprocessor) but I'll change it for next time I spin.
