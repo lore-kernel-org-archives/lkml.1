@@ -1,124 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbZCBQ7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZCBRAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759955AbZCBQ7p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbZCBQ6F
+	id S1756302AbZCBRAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 12:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759924AbZCBQ7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:58:05 -0500
-Received: from mx1.emlix.com ([193.175.82.87]:36350 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755824AbZCBQ6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:58:01 -0500
-References: <20090302164257.477296438@emlix.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 02 Mar 2009 17:43:04 +0100
-From: Johannes Weiner <jw@emlix.com>
-To: Chris Zankel <chris@zankel.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 7/7] xtensa: cope with ram beginning at higher addresses
-Content-Disposition: inline; filename=xtensa-cope-with-ram-beginning-at-higher-addresses.patch
-Message-Id: <E1LeBSp-0003ZA-Gr@mailer.emlix.com>
-Organization: emlix gmbh, Goettingen, Germany
+	Mon, 2 Mar 2009 11:59:41 -0500
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:29569 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759906AbZCBQ7k convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 11:59:40 -0500
+X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Mar 2009 11:59:40 EST
+X-BigFish: VPS-7(zz1432R1805Mzzzzz32i6bh68o)
+X-Spam-TCS-SCL: 7:0
+X-FB-SS: 5,
+X-WSS-ID: 0KFW156-02-VPR-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH][retry 2] Conform L3 Cache Index Disable to Linuxstandards From:  Eric Lammerts <eric@lammerts.org>
+Date: Mon, 2 Mar 2009 10:44:01 -0600
+Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AEF2@sausexmb4.amd.com>
+In-Reply-To: <20090227080246.GA524@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH][retry 2] Conform L3 Cache Index Disable to Linuxstandards From:  Eric Lammerts <eric@lammerts.org>
+Thread-Index: AcmYsdHB/iBuuT6ZQfG0SlICJFY+PgCoY5Gg
+References: <200902201550.47415.mark.langsdorf@amd.com> <20090226163329.3a47b368.akpm@linux-foundation.org> <20090227080246.GA524@elte.hu>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, <tglx@linutronix.de>, <eric@lammerts.org>
+X-OriginalArrivalTime: 02 Mar 2009 16:44:02.0073 (UTC) FILETIME=[17831890:01C99B56]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current assumption of the memory code is that the first RAM PFN in
-the system is 0.
+> > > Add ABI Documentation entry and fix some /sys directory formating
+> > > issues with the L3 Cache Index Disable feature for future AMD
+> > > processors. __Add a check to disable it for family 0x10 models
+> > > that do not support it yet.
+> > 
+> > x86_64 allnoconfig:
+> > 
+> > arch/x86/kernel/cpu/intel_cacheinfo.c:556: warning: 
+> 'free_cache_attributes' defined but not used
+> > arch/x86/kernel/cpu/intel_cacheinfo.c:596: warning: 
+> 'detect_cache_attributes' defined but not used
 
-Adjust the relevant code to play well with setups where memory starts
-at higher addresses, indicated by PLATFORM_DEFAULT_MEM_START.
+My code doesn't modify either of these functions, so
+I'm not causing the regression.
 
-The new memory model looks like this:
+Also, I can't reproduce this error on the current head of 
+Ingo's tree:
+http://people.redhat.com/mingo/tip.git/readme.txt
 
-+----------+--+----------------------+----------------+
-|          |  |                      |                |
-|          |  |         RAM          |                |
-|          |  |                      |                |
-+----------+--+----------------------+----------------+
-|          |  |                      |                |
-+- PFN 0   |  +- min_low_pfn         +- max_low_pfn   +- max_pfn
-           |
-           +- ARCH_PFN_OFFSET
-           +- PLATFORM_DEFAULT_MEM_START >> PAGE_SIZE
+I do `make allnoconfig; make all` without errors, apply
+my patch, and do `make all` again without errors.
 
-The memory map contains pages starting from pfn ARCH_PFN_OFFSET up to
-max_low_pfn.  The only zone used right now will span exactly the same
-region.
+> > I'll drop the patches.  Please test version 3 a bit better?
+> 
+> Yes. I'll pick it up into the x86 tree once it works and builds 
+> warning-free.
 
-Usually, ARCH_PFN_OFFSET and min_low_pfn are the same value.  Handle
-them separately for robustness.  Gapping pages will be in the memory
-map but marked as reserved and won't be touched.
-
-Signed-off-by: Johannes Weiner <jw@emlix.com>
----
- arch/xtensa/include/asm/page.h |    5 ++++-
- arch/xtensa/mm/init.c          |   10 +++++-----
- 2 files changed, 9 insertions(+), 6 deletions(-)
-
---- a/arch/xtensa/include/asm/page.h
-+++ b/arch/xtensa/include/asm/page.h
-@@ -14,6 +14,7 @@
- #include <asm/processor.h>
- #include <asm/types.h>
- #include <asm/cache.h>
-+#include <platform/hardware.h>
- 
- /*
-  * Fixed TLB translations in the processor.
-@@ -150,9 +151,11 @@ extern void copy_user_page(void*, void*,
-  * addresses.
-  */
- 
-+#define ARCH_PFN_OFFSET		(PLATFORM_DEFAULT_MEM_START >> PAGE_SHIFT)
-+
- #define __pa(x)			((unsigned long) (x) - PAGE_OFFSET)
- #define __va(x)			((void *)((unsigned long) (x) + PAGE_OFFSET))
--#define pfn_valid(pfn)		((unsigned long)pfn < max_mapnr)
-+#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && ((pfn) - ARCH_PFN_OFFSET) < max_mapnr)
- #ifdef CONFIG_DISCONTIGMEM
- # error CONFIG_DISCONTIGMEM not supported
- #endif
---- a/arch/xtensa/mm/init.c
-+++ b/arch/xtensa/mm/init.c
-@@ -167,7 +167,7 @@ void __init paging_init(void)
- 
- 	/* All pages are DMA-able, so we put them all in the DMA zone. */
- 
--	zones_size[ZONE_DMA] = max_low_pfn;
-+	zones_size[ZONE_DMA] = max_low_pfn - ARCH_PFN_OFFSET;
- 	for (i = 1; i < MAX_NR_ZONES; i++)
- 		zones_size[i] = 0;
- 
-@@ -179,7 +179,7 @@ void __init paging_init(void)
- 
- 	memset(swapper_pg_dir, 0, PAGE_SIZE);
- 
--	free_area_init(zones_size);
-+	free_area_init_node(0, zones_size, ARCH_PFN_OFFSET, NULL);
- }
- 
- /*
-@@ -220,8 +220,8 @@ void __init mem_init(void)
- 	unsigned long codesize, reservedpages, datasize, initsize;
- 	unsigned long highmemsize, tmp, ram;
- 
--	max_mapnr = num_physpages = max_low_pfn;
--	high_memory = (void *) __va(max_mapnr << PAGE_SHIFT);
-+	max_mapnr = num_physpages = max_low_pfn - ARCH_PFN_OFFSET;
-+	high_memory = (void *) __va(max_low_pfn << PAGE_SHIFT);
- 	highmemsize = 0;
- 
- #ifdef CONFIG_HIGHMEM
-@@ -231,7 +231,7 @@ void __init mem_init(void)
- 	totalram_pages += free_all_bootmem();
- 
- 	reservedpages = ram = 0;
--	for (tmp = 0; tmp < max_low_pfn; tmp++) {
-+	for (tmp = 0; tmp < max_mapnr; tmp++) {
- 		ram++;
- 		if (PageReserved(mem_map+tmp))
- 			reservedpages++;
-
--- 
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
