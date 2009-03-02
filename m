@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZCBR2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbZCBRbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZCBR2o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 12:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbZCBR2f
+	id S1758577AbZCBRbS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 12:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbZCBRbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 12:28:35 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34802 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754004AbZCBR2f (ORCPT
+	Mon, 2 Mar 2009 12:31:07 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:55308 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754727AbZCBRbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 12:28:35 -0500
-Subject: Re: [PATCH] crc32: remove useless __pure modifier from functions
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Thiago Galesi <thiagogalesi@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <82ecf08e0903020750q3670de6u4162e4f01c847003@mail.gmail.com>
-References: <1236007103.18284.83.camel@penberg-laptop>
-	 <82ecf08e0903020750q3670de6u4162e4f01c847003@mail.gmail.com>
-Date: Mon, 02 Mar 2009 19:28:31 +0200
-Message-Id: <1236014911.18284.89.camel@penberg-laptop>
+	Mon, 2 Mar 2009 12:31:05 -0500
+Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       hch@infradead.org, Ingo Molnar <mingo@elte.hu>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090302112247.76bb3662@thinkcentre.lan>
+References: <20090227203425.F3B51176@kernel>
+	 <20090227203435.98735E54@kernel> <20090302133754.GA8033@us.ibm.com>
+	 <20090302095917.6cfeda55@thinkcentre.lan>
+	 <1236011251.26788.450.camel@nimitz>
+	 <20090302112247.76bb3662@thinkcentre.lan>
+Content-Type: text/plain
+Date: Mon, 02 Mar 2009 09:30:52 -0800
+Message-Id: <1236015052.26788.471.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
 X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 12:50 -0300, Thiago Galesi wrote:
-> Actually, the effects of most keywords (like const, etc) affect things
-> outside of the module (the callers)
+On Mon, 2009-03-02 at 11:22 -0600, Nathan Lynch wrote:
+> No.. I mean what if a process 1234 does
 > 
-> http://gcc.gnu.org/onlinedocs/gcc-4.2.0/gcc/Function-Attributes.html
-> has a good explanation.
+> f = fopen("/proc/1234/stat", "r");
 > 
-> Briefly, a _pure function only depends on its parameters and the only
-> return is via the function return, so the compiler can optimize some
-> of its calls away.
+> and is then checkpointed.  Can that path be resolved during restart,
+> before pid 1234 is alive?
 
-Hmm. They're not marked as pure in the header files. Does GCC look it up
-from the object file or something for this...?
+Heh, that's a good one.
 
-			Pekka
+It does mean that we can't do restore like this:
+
+	for_each_cr_task()
+		restore_task_struct()
+		restore_files()
+		...
+
+We have to do:
+
+	for_each_cr_task()
+		restore_task_struct()
+	for_each_cr_task()
+		restore_files()
+
+
+-- Dave
 
