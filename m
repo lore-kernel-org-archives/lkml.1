@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbZCBOk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbZCBOnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbZCBOk1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 09:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZCBOkR
+	id S1754150AbZCBOnc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 09:43:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZCBOnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 09:40:17 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:23591 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751936AbZCBOkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 09:40:16 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <49ABEFCB.5060804@tremplin-utc.net>
-Date: Mon, 02 Mar 2009 15:40:11 +0100
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.5.0
+	Mon, 2 Mar 2009 09:43:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48288 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751979AbZCBOnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 09:43:22 -0500
+Date: Mon, 2 Mar 2009 15:43:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
+Message-ID: <20090302144303.GA30136@elte.hu>
+References: <1235996477.5330.174.camel@laptop>
 MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: lis3's ACPI dependency
-References: <20090301132953.GF20813@buzzloop.caiaq.de> <49AAD3B1.4050501@tremplin-utc.net> <20090302005554.GB3223@buzzloop.caiaq.de> <49ABB22F.7040508@tremplin-utc.net> <20090302143649.GA11072@buzzloop.caiaq.de>
-In-Reply-To: <20090302143649.GA11072@buzzloop.caiaq.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235996477.5330.174.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack schreef:
-> Hi Eric,
-> 
-> On Mon, Mar 02, 2009 at 11:17:19AM +0100, Éric Piel wrote:
->>> Ok, I'll start and seperate things then but will need you help with
->>> testing as I don't have the hardware the driver was written for
->>> originally. I do have, in turn, a custom board with this chip connected
->>> via SPI.
->> Very good.
-> 
-> Ok, just send a series of 5 patches. For some reason, git send-email ate
-> up the subject lines of the first two, sorry for that.
-> 
-> All together they do what I want - I can use the device now on my PXA
-> board. There might be some more updates I'll come up with later. For
-> now, I'd like to make sure I didn't break anything for HP laptops :)
-Will try to find some time tonight or tomorrow to test them.
-At first sight they look good :-)
 
-Eric
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> Hi Linus,
+> 
+> Would you be willing to take such a patch?
+> 
+> Its a rather big one, but if you think its a good idea, I can 
+> generate one against whatever tree is needed.
+> 
+> Provided I didn't break any !genirq stuff.. then again, that 
+> might be a nice incentive to fix up those last few archs.
+
+look good IMO. If there are no objections, and given that it 
+modifies half a thousand of files i'd suggest we do this near 
+the end of the merge window and not carry it in the genirq tree 
+- while trivial it will still generate quite a bit of conflicts. 
+Would that work with you?
+
+	Ingo
