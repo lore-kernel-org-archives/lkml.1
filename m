@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbZCBQ6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbZCBQ7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbZCBQ6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZCBQ5s
+	id S1759175AbZCBQ7H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:59:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZCBQ5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:57:48 -0500
-Received: from mx1.emlix.com ([193.175.82.87]:48385 "EHLO mx1.emlix.com"
+	Mon, 2 Mar 2009 11:57:52 -0500
+Received: from mx1.emlix.com ([193.175.82.87]:51750 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755540AbZCBQ5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:57:47 -0500
+	id S1757140AbZCBQ5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 11:57:51 -0500
 References: <20090302164257.477296438@emlix.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 02 Mar 2009 17:43:01 +0100
+Date: Mon, 02 Mar 2009 17:43:02 +0100
 From: Johannes Weiner <jw@emlix.com>
 To: Chris Zankel <chris@zankel.net>
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 4/7] xtensa: use correct stack pointer for stack traces
-Content-Disposition: inline; filename=xtensa-use-correct-stack-for-backtrace.patch
-Message-Id: <E1LeBSa-0003Z1-Vb@mailer.emlix.com>
+Subject: [patch 5/7] xtensa: fix init_bootmem_node() argument order
+Content-Disposition: inline; filename=xtensa-fix-init_bootmem_node-argument-order.patch
+Message-Id: <E1LeBSf-0003Z4-92@mailer.emlix.com>
 Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Right now, the xtensa stacktrace code reads the _current_ kernel stack
-pointer if nothing is supplied.  With debugging facilities like sysrq
-this means that the backtrace of the sysrq-handler is printed instead
-of a trace of the given task's stack.
+The second argument to init_bootmem_node() is the PFN to place the
+bootmem bitmap at and the third argument is the first PFN on the node.
 
-When no stack pointer is specified in show_trace() and show_stack(),
-use the stack pointer that comes with the handed in task descriptor to
-make stack traces more useful.
+This is currently backwards but never made any problems as both values
+were always zero.
 
 Signed-off-by: Johannes Weiner <jw@emlix.com>
 ---
- arch/xtensa/kernel/traps.c |   14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ arch/xtensa/mm/init.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/arch/xtensa/kernel/traps.c
-+++ b/arch/xtensa/kernel/traps.c
-@@ -372,11 +372,10 @@ void show_trace(struct task_struct *task
- 	unsigned long a0, a1, pc;
- 	unsigned long sp_start, sp_end;
+--- a/arch/xtensa/mm/init.c
++++ b/arch/xtensa/mm/init.c
+@@ -145,8 +145,9 @@ void __init bootmem_init(void)
+ 	/* Reserve the bootmem bitmap area */
  
--	a1 = (unsigned long)sp;
--
--	if (a1 == 0)
--		__asm__ __volatile__ ("mov %0, a1\n" : "=a"(a1));
--
-+	if (sp)
-+		a1 = (unsigned long)sp;
-+	else
-+		a1 = task->thread.sp;
+ 	mem_reserve(bootmap_start, bootmap_start + bootmap_size, 1);
+-	bootmap_size = init_bootmem_node(NODE_DATA(0), min_low_pfn,
++	bootmap_size = init_bootmem_node(NODE_DATA(0),
+ 					 bootmap_start >> PAGE_SHIFT,
++					 min_low_pfn,
+ 					 max_low_pfn);
  
- 	sp_start = a1 & ~(THREAD_SIZE-1);
- 	sp_end = sp_start + THREAD_SIZE;
-@@ -418,9 +417,8 @@ void show_stack(struct task_struct *task
- 	int i = 0;
- 	unsigned long *stack;
- 
--	if (sp == 0)
--		__asm__ __volatile__ ("mov %0, a1\n" : "=a"(sp));
--
-+	if (!sp)
-+		sp = (unsigned long *)task->thread.sp;
-  	stack = sp;
- 
- 	printk("\nStack: ");
+ 	/* Add all remaining memory pieces into the bootmem map */
 
 -- 
 
