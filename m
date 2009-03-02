@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZCBTQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZCBTTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbZCBTQv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 14:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZCBTQm
+	id S1757436AbZCBTTz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 14:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZCBTTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 14:16:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:30599 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbZCBTQl (ORCPT
+	Mon, 2 Mar 2009 14:19:47 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2891 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZCBTTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 14:16:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=YXufGISfy7itXDAoC+vpJSPYrvwKVhygxGBACH4t8R2XTDubz/WN9It9E0ooUBvYmm
-         bMFJHNbSTYS+n2RM9/8HZxsoVq9jeYp8QwEgLyY8DcyjYQ+fOsx4QFefPSWDth1pHbcI
-         xUKvlvLLPmb8IfIHfnKh7UuJXBZYvUdOSPDLE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
-Date: Mon, 2 Mar 2009 20:18:03 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-next-20090227; KDE/4.2.0; i686; ; )
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linux-arch" <linux-arch@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1235996477.5330.174.camel@laptop> <200903021948.51500.bzolnier@gmail.com> <alpine.LFD.2.00.0903021101460.3111@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903021101460.3111@localhost.localdomain>
+	Mon, 2 Mar 2009 14:19:46 -0500
+Date: Mon, 2 Mar 2009 19:19:11 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Theodore Tso <tytso@mit.edu>,
+       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
+Message-ID: <20090302191910.GG19744@sirena.org.uk>
+References: <20090228210223.GA23191@sirena.org.uk> <49A9C252.50204@s5r6.in-berlin.de> <20090301001829.GA10751@mit.edu> <20090301004618.GA12909@sirena.org.uk> <20090301025357.GC10751@mit.edu> <20090302131514.GC19744@sirena.org.uk> <49ABF825.1010501@s5r6.in-berlin.de> <20090302100158.bb83bec6.akpm@linux-foundation.org> <20090302182456.GF19744@sirena.org.uk> <20090302103437.f3109332.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903022018.03736.bzolnier@gmail.com>
+In-Reply-To: <20090302103437.f3109332.akpm@linux-foundation.org>
+X-Cookie: What hath Bob wrought?
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009, Linus Torvalds wrote:
-> 
-> On Mon, 2 Mar 2009, Bartlomiej Zolnierkiewicz wrote:
-> >
-> > Hmm, I said nothing about how it is implemented in the IDE code itself. :)
-> 
-> Bart, you're missing the point. I'm _also_ not at all interested in how 
-> it's implemented in the IDE code.
-> 
-> The whole - and only - point is that there are drivers that are _known_ to 
-> require non-IRQF_DISABLED semantics. IDE is one such one.
-> 
-> > Fixing this is on long-term TODO (there was just a ton of more high-prio
-> > stuff to take care of first).
-> 
-> Even if you can fix IDE to do everything using softirq's or other tricks 
-> (threads, whatever), nothing really changes. It just means that now there 
-> is one less driver that may need the non-IRQF_DISABLED semantics.
+On Mon, Mar 02, 2009 at 10:34:37AM -0800, Andrew Morton wrote:
 
-I didn't meant non-IRQF_DISABLED semantics (I see absolutely no point in
-changing it) but IDE's internal "disable IRQs just to enable them" issue.  
+> The reason I asked you personally to always send a changelog is because
+> I quite frequently sit there scratching my head at your patches not
+> having a clue what they do nor how to prioritise them.
 
-[ Sorry for poorly explaining things. ]
+Hrm.  Are you by any chance referring to the changelog as being *only*
+the bit in the body of the e-mail?  If so that's half the confusion here
+- in tools such as git the changelog also includes what ends up in the
+subject of the e-mail.  This is what I was reading your comments (to
+others as well, I wouldn't have bothered if it had just been me) as
+referring to.
 
-Thanks,
-Bart
+I'm not sure that simply supplying a body would help anything here, FWIW
+- if I'm writing a body for the sake of it it'll generally just be
+repetitive which isn't terribly constructive.  Obviously I do *try* to
+write sensible changelogs and will keep making an effort to do so.  As
+far as I remember most of the issues in the past have been due to
+missing out something along the lines of "...because that's what the
+silicon does" but ICBW.
+
+As far as prioritisation goes I'd always expect to have to explicitly
+call out anything other than merging via -next with no particular
+urgency.
