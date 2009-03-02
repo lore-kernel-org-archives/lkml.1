@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbZCBGFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbZCBGHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbZCBGFq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 01:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbZCBGFg
+	id S1759253AbZCBGHm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 01:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZCBGHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 01:05:36 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:59422 "EHLO
+	Mon, 2 Mar 2009 01:07:34 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:59677 "EHLO
 	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbZCBGFf (ORCPT
+	with ESMTP id S1750786AbZCBGHd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 01:05:35 -0500
-Date: Mon, 2 Mar 2009 11:35:19 +0530
+	Mon, 2 Mar 2009 01:07:33 -0500
+Date: Mon, 2 Mar 2009 11:37:26 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
@@ -23,131 +23,67 @@ Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Rik van Riel <riel@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
-Message-ID: <20090302060519.GG11421@balbir.in.ibm.com>
+Subject: Re: [PATCH 2/4] Memory controller soft limit interface (v3)
+Message-ID: <20090302060726.GH11421@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
-References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain> <20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com> <20090302044043.GC11421@balbir.in.ibm.com> <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain> <20090301063011.31557.42094.sendpatchset@localhost.localdomain> <20090302110323.1a9b9e6b.kamezawa.hiroyu@jp.fujitsu.com> <20090302044631.GE11421@balbir.in.ibm.com> <20090302143518.43f5fcc2.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090302143518.43f5fcc2.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 14:32:50]:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 14:35:18]:
 
-> On Mon, 2 Mar 2009 10:10:43 +0530
+> On Mon, 2 Mar 2009 10:16:31 +0530
 > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 09:24:04]:
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 11:03:23]:
 > > 
-> > > On Sun, 01 Mar 2009 11:59:59 +0530
+> > > On Sun, 01 Mar 2009 12:00:11 +0530
 > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > > > 
 > > > > 
 > > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> > > 
-> > > At first, it's said "When cgroup people adds something, the kernel gets slow".
-> > > This is my start point of reviewing. Below is comments to this version of patch.
-> > > 
-> > >  1. I think it's bad to add more hooks to res_counter. It's enough slow to give up
-> > >     adding more fancy things..
+> > > > 
+> > > > Changelog v2...v1
+> > > > 1. Add support for res_counter_check_soft_limit_locked. This is used
+> > > >    by the hierarchy code.
+> > > > 
+> > > > Add an interface to allow get/set of soft limits. Soft limits for memory plus
+> > > > swap controller (memsw) is currently not supported. Resource counters have
+> > > > been enhanced to support soft limits and new type RES_SOFT_LIMIT has been
+> > > > added. Unlike hard limits, soft limits can be directly set and do not
+> > > > need any reclaim or checks before setting them to a newer value.
+> > > > 
+> > > > Kamezawa-San raised a question as to whether soft limit should belong
+> > > > to res_counter. Since all resources understand the basic concepts of
+> > > > hard and soft limits, it is justified to add soft limits here. Soft limits
+> > > > are a generic resource usage feature, even file system quotas support
+> > > > soft limits.
+> > > > 
+> > > I don't convice adding more logics to res_counter is a good to do, yet.
+> > >
 > > 
-> > res_counters was desgined to be extensible, why is adding anything to
-> > it going to make it slow, unless we turn on soft_limits?
-> > 
-> You inserted new "if" logic in the core loop.
-> (What I want to say here is not that this is definitely bad but that "isn't there
->  any alternatives which is less overhead.)
-> 
-> 
-> > > 
-> > >  2. please avoid to add hooks to hot-path. In your patch, especially a hook to
-> > >     mem_cgroup_uncharge_common() is annoying me.
-> > 
-> > If soft limits are not enabled, the function does a small check and
-> > leaves. 
-> > 
-> &soft_fail_res is passed always even if memory.soft_limit==ULONG_MAX
-> res_counter_soft_limit_excess() adds one more function call and spinlock, and irq-off.
+> > Even though it is extensible and you pay the cost only when soft
+> > limits is turned on? Can you show me why you are not convinced?
+> >  
+> Inserting more codes (like "if") to res_counter itself is not welcome..
+> I think res_counter is too complex as counter already.
 >
 
-OK, I see that overhead.. I'll figure out a way to work around it.
+Darn.. we better stop all code development!
  
-> > > 
-> > >  3. please avoid to use global spinlock more. 
-> > >     no lock is best. mutex is better, maybe.
-> > > 
-> > 
-> > No lock to update a tree which is update concurrently?
-> > 
-> Using tree/sort itself is nonsense, I believe.
+> I'm now searching a way to reduce res_counter->lock ping-pong but have no
+> good idea.
 > 
 
-I tried using prio trees in the past, but they are not easy to update
-either. I won't mind asking for suggestions for a data structure that
-can scaled well, allow quick insert/delete and search.
-
-> 
-> > >  4. RB-tree seems broken. Following is example. (please note you do all ops
-> > >     in lazy manner (once in HZ/4.)
-> > > 
-> > >    i). while running, the tree is constructed as following
-> > > 
-> > >              R           R=exceed=300M
-> > >             / \ 
-> > >            A   B      A=exceed=200M  B=exceed=400M
-> > >    ii) A process B exits, but and usage goes down.
-> > 
-> > That is why we have the hook in uncharge. Even if we update and the
-> > usage goes down, the tree is ordered by usage_in_excess which is
-> > updated only when the tree is updated. So what you show below does not
-> > occur. I think I should document the design better.
-> > 
-> 
-> time_check==true. So, update-tree at uncharge() only happens once in HZ/4
-
-
-No.. you are missing the point
-
-==
-        if (updated_tree) {
-                spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-                mem->last_tree_update = jiffies;
-                mem->usage_in_excess = new_usage_in_excess;
-                spin_unlock_irqrestore(&memcg_soft_limit_tree_lock,
-flags);
-        }
-==
-
-mem->usage_in_excess is the key for the RB-Tree and is updated only
-when the tree is updated.
-
-> ==
-> @@ -1422,6 +1520,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
->  	mz = page_cgroup_zoneinfo(pc);
->  	unlock_page_cgroup(pc);
-> 
-> +	mem_cgroup_check_and_update_tree(mem, true);
->  	/* at swapout, this memcg will be accessed to record to swap */
->  	if (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
->  		css_put(&mem->css);
-> ==
-> Then, not-sorted RB-tree can be there.
-> 
-> BTW,
->    time_after(jiffies, 0)
-> is buggy (see definition). If you want make this true always,
->    time_after(jiffies, jiffies +1)
->
-
-HZ/4 is 250/4 jiffies in the worst case (62). We have
-time_after(jiffies, next_update_interval) and next_update_interval is
-set to last_tree_update + 62. Not sure if I got what you are pointing
-to.
+I've been doing some detailed analysis on the memory controller
+overhead. I have a set of patches that I am testing right now. I'll
+share the details once I am done with them.
 
 -- 
 	Balbir
