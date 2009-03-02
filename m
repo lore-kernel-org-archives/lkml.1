@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZCBVhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbZCBVjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbZCBVhy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 16:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbZCBVh3
+	id S1756180AbZCBVjo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 16:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZCBVjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 16:37:29 -0500
-Received: from mga01.intel.com ([192.55.52.88]:55571 "EHLO mga01.intel.com"
+	Mon, 2 Mar 2009 16:39:35 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36955 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754331AbZCBVh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 16:37:27 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,291,1233561600"; 
-   d="scan'208";a="435495491"
-Subject: Re: [PATCH] iwlwifi: reduce stack size
-From: reinette chatre <reinette.chatre@intel.com>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "Zhu, Yi" <yi.zhu@intel.com>, Frank Seidel <frank@f-seidel.de>,
-       "kernalert.de@gmail.com" <kernalert.de@gmail.com>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>,
-       "Winkler, Tomas" <tomas.winkler@intel.com>,
-       "Kolekar, Abhijeet" <abhijeet.kolekar@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <49AAE132.8030403@suse.de>
-References: <49AAE132.8030403@suse.de>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 13:42:13 -0800
-Message-Id: <1236030133.18288.158.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1753330AbZCBVjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 16:39:35 -0500
+Message-ID: <49AC51D7.1080203@kernel.org>
+Date: Mon, 02 Mar 2009 13:38:31 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Huang Ying <ying.huang@intel.com>
+CC: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix e820 end address with EFI
+References: <49A965AD.10701@redhat.com>	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>	 <49AAEC79.3000808@redhat.com>	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>	 <49AB38E7.60305@redhat.com>	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>	 <49AB4171.7000508@kernel.org>	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>	 <49AB4521.8010909@kernel.org>	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com> <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-01 at 11:25 -0800, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
+Huang Ying wrote:
+> On Mon, 2009-03-02 at 10:51 +0800, Yinghai Lu wrote:
+>> On Sun, Mar 1, 2009 at 6:37 PM, Huang Ying <ying.huang@intel.com> wrote:
+>>>> so 64bit could use ioremap_cache() too?
+>>>> we may keep 32bit and 64bit a bit consistent.
+>>> If we use ioremap_cache(), kexec runtime service will not work in kexec
+>>> situation, which needs EFI runtime memory area to be mapped at exact
+>>> same location across kexec. I think we should support kexec if possible.
+>>
+>> sure.
+>>
+>> please don't touch max_low_pfn_mapped, because some range may not
+>> directly mapped under those efi run-time code
 > 
-> Reduce stack memory footprint of iwlwifi.
-> (From >1000 bytes for each *_table_read
-> on i386 down to 32)
+> Find an issue to use init_memory_mapping() here.
 > 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
+> If the memory range to be mapped is less than 2M, the last mapped
+> address may be next 2M aligned position, this may lead mapping
+> overlapping between memory range. Such as:
+> 
+> 0x3f388000 - 0x3f488000: real mapped	0x3f388000 - 0x3f600000
+> 0x3f590000 - 0x3f5bb000: real mapped	0x3f590000 - 0x3f600000
+> 
+> The problem is that the memory range 0x3f400000 - 0x3f590000 is left not
+> mapped!
 
-Thank you.
+what is max_low_pfn_mapped before that?
 
-Acked-by: Reinette Chatre <reinette.chatre@intel.com>
-
-Reinette
-
-
+YH
