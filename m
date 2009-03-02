@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZCBQaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZCBQcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757633AbZCBQaT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZCBQaD
+	id S1756774AbZCBQcm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:32:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZCBQcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:30:03 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:46998 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbZCBQaB (ORCPT
+	Mon, 2 Mar 2009 11:32:33 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:53681 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753482AbZCBQcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:30:01 -0500
+	Mon, 2 Mar 2009 11:32:33 -0500
+Date: Mon, 2 Mar 2009 09:32:16 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
+Message-ID: <20090302163215.GD14217@parisc-linux.org>
+References: <1235996477.5330.174.camel@laptop> <20090302144303.GA30136@elte.hu> <20090302154748.GB14217@parisc-linux.org> <1236009588.5330.729.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <20090302082003.1bb7bdc5@infradead.org>
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
-	 <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
-	 <200902181528.29697.rusty@rustcorp.com.au>
-	 <ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
-	 <1234952753.10531.48.camel@andreas-laptop>
-	 <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
-	 <ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com>
-	 <1235216636.7025.1023.camel@andreas-laptop>
-	 <1236004353.10055.49.camel@andreas-laptop>
-	 <20090302082003.1bb7bdc5@infradead.org>
-Date: Mon, 2 Mar 2009 17:29:57 +0100
-Message-ID: <ac3eb2510903020829s7c876a96y7eb5568eeb9921fd@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andreas Robinson <andr345@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236009588.5330.729.camel@laptop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 2, 2009 at 17:20, Arjan van de Ven <arjan@infradead.org> wrote:
->> A monolithic kernel with parallelized initcalls is better - about 200
->> ms faster than parallel insmods on my test system. However, it comes
->> with a fairly large set of changes:
->>
->> * First, you need a 200-line patch in init/main.c (do_initcalls() and
->> friends)
->
-> why?
-> We already have async function calls; and those speed up my boot (when
-> enabled) significantly, by doing much of the kernel/driver init in
-> parallel.
->
-> My server box boots the whole kernel (including all drivers; I build
-> verything in) in 0.56 seconds, and my net books do it in around 1.0
-> seconds.
->
->>
->> * Then the built-in module dependencies must be calculated properly,
->> eg with a modified depmod, and added to the build process.
->
-> nope not if done right
->
->> So, what do you think, should I keep going? IMHO, the slower userspace
->> implementation is acceptable since it's so much simpler.
->
-> I would strongly suggest that you turn on the async function calls and
-> look at the boot graph of the resulting kernel boot... if you send
-> that to me I can also take a look and make suggestions....
+On Mon, Mar 02, 2009 at 04:59:48PM +0100, Peter Zijlstra wrote:
+> The idea is to mandate IRQF_DISABLED for everybody, and since it doesn't
+> do any good to have it a flag if you have it always enabled, remove
+> it ;-)
 
-The "fastboot" kernel commandline option was used, as mentioned in the
-mail. Is there anything else?
+I don't have a problem with that.
 
-Thanks,
-Kay
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
