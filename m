@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbZCBSg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbZCBSgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759358AbZCBSg3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 13:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbZCBSgS
+	id S1759892AbZCBSgm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 13:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZCBSgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 13:36:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58138 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751398AbZCBSgR (ORCPT
+	Mon, 2 Mar 2009 13:36:24 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:49785 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758048AbZCBSgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 13:36:17 -0500
-Date: Mon, 2 Mar 2009 10:34:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Brown <broonie@sirena.org.uk>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Theodore Tso <tytso@mit.edu>,
-       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] checkpatch: Warn on empty commit log bodies
-Message-Id: <20090302103437.f3109332.akpm@linux-foundation.org>
-In-Reply-To: <20090302182456.GF19744@sirena.org.uk>
-References: <20090228175218.GA4606@sirena.org.uk>
-	<49A98F93.5030206@s5r6.in-berlin.de>
-	<20090228210223.GA23191@sirena.org.uk>
-	<49A9C252.50204@s5r6.in-berlin.de>
-	<20090301001829.GA10751@mit.edu>
-	<20090301004618.GA12909@sirena.org.uk>
-	<20090301025357.GC10751@mit.edu>
-	<20090302131514.GC19744@sirena.org.uk>
-	<49ABF825.1010501@s5r6.in-berlin.de>
-	<20090302100158.bb83bec6.akpm@linux-foundation.org>
-	<20090302182456.GF19744@sirena.org.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 2 Mar 2009 13:36:22 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhIFALO0q0lMQW1W/2dsb2JhbACBWdRAhBoG
+Date: Mon, 2 Mar 2009 13:36:17 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
+Message-ID: <20090302183617.GA25105@Krystal>
+References: <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com> <20090223173108.GB1441@Krystal> <alpine.DEB.2.00.0902231236340.18221@gandalf.stny.rr.com> <49A82851.5080707@redhat.com> <20090227180724.GA17947@Krystal> <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302102841.7e099670@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090302102841.7e099670@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:34:57 up 2 days, 15:01,  3 users,  load average: 0.72, 0.55,
+	0.39
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009 18:24:57 +0000 Mark Brown <broonie@sirena.org.uk> wrote:
-
-> On Mon, Mar 02, 2009 at 10:01:58AM -0800, Andrew Morton wrote:
+* Arjan van de Ven (arjan@infradead.org) wrote:
+> > 
+> > Use map_vm_area() instead of vmap() in text_poke() for avoiding page
+> > allocation and delayed unmapping, and call vunmap_page_range() and
+> > local_flush_tlb() directly because this mapping is temporary and
+> > local.
+> > 
+> > At the result of above change, text_poke() becomes atomic and can be
+> > called from stop_machine() etc.
 > 
-> > I think what triggered this was a patch from Mark which had no
-> > changelog and which had me sitting there wondering wtf it does, whether
-> > we need it in 2.6.29, whether we need it in 2.6.28.x and earlier and me
-> > not having the foggiest clue then getting grumpy.
-> 
-> Do you mean no changelog in the body of the e-mail here?  I'm assuming
-> now that you mean no changelog in the body but when you say "no
-> changelog" that reads differently.  I'm not saying the changelog was
-> perfect here but your comments really do read like you felt there was
-> nothing at all.
+> .... but text_poke() realistically needs to call stop_machine() since
+> you can't poke live code.... so that makes me wonder how useful this
+> is...
 
+Hi Arjan,
 
-The text covering a patch should describe what the patch does, why it
-does it, how it does it and it should describe the end-user effects of
-not having the patch present.  Any and all of these can be skipped if
-they are utterly obvious and unneeded.
+Stop machine is not required when inserting a breakpoint. And cleverly
+using this breakpoint technique can permit modifying other instructions
+as well.
 
-Changes should be properly described, that's all.  The means by which
-that is done isn't terribly important.  Sometimes most of the
-description is in code comments, or in a newly-added Documentation/
-file.
+Mathieu
 
-The reason I asked you personally to always send a changelog is because
-I quite frequently sit there scratching my head at your patches not
-having a clue what they do nor how to prioritise them.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
