@@ -1,460 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZCBRjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZCBRmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbZCBRjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 12:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZCBRjI
+	id S1757442AbZCBRmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 12:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZCBRmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 12:39:08 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:52005 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188AbZCBRjF convert rfc822-to-8bit (ORCPT
+	Mon, 2 Mar 2009 12:42:09 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:60675 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbZCBRmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 12:39:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=EKbPgUHwlILfbikHggPUCw7t2DSK0fXcx7O2KMbbrqiuTBmv9WJgnACW9Lu3QQtllT
-         WGMNOvwJK2xoahug6BkyJp52bfdNREfP4i9f43Cesae3uDsywGvaMwFK+Htcfb1TOv+t
-         kEieDU+77PAsw397vuvLNNP2+KjG8vhCVR35o=
+	Mon, 2 Mar 2009 12:42:08 -0500
+Date: Mon, 2 Mar 2009 23:11:56 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
+Message-ID: <20090302174156.GM11421@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain> <20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com> <20090302044043.GC11421@balbir.in.ibm.com> <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com> <20090302060519.GG11421@balbir.in.ibm.com> <20090302152128.e74f51ef.kamezawa.hiroyu@jp.fujitsu.com> <20090302063649.GJ11421@balbir.in.ibm.com> <20090302160602.521928a5.kamezawa.hiroyu@jp.fujitsu.com> <20090302124210.GK11421@balbir.in.ibm.com> <c31ccd23cb41f0f7594b3f56b20f0165.squirrel@webmail-b.css.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0903021117590.4771@gandalf.stny.rr.com>
-References: <20090228091305.GA20533@elte.hu>
-	 <49aa087f.0a1ad00a.5d0e.ffff9888@mx.google.com>
-	 <alpine.DEB.2.00.0903021117590.4771@gandalf.stny.rr.com>
-Date: Mon, 2 Mar 2009 18:39:01 +0100
-Message-ID: <c62985530903020939o14b8d6b9o6646d6d7b401df07@mail.gmail.com>
-Subject: Re: [PATCH 2/5] ftrace: infrastructure for supporting binary record
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <c31ccd23cb41f0f7594b3f56b20f0165.squirrel@webmail-b.css.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/2 Steven Rostedt <rostedt@goodmis.org>:
->
->
-> On Sat, 28 Feb 2009, Frederic Weisbecker wrote:
->
->> From: Lai Jiangshan <laijs@cn.fujitsu.com>
->>
->> Impact: save on memory for tracing
->>
->> Current tracers are typically using a struct(like struct ftrace_entry,
->> struct ctx_switch_entry, struct special_entr etc...)to record a binary
->> event. These structs can only record a their own kind of events.
->> A new kind of tracer need a new struct and a lot of code too handle it.
->>
->> So we need a generic binary record for events. This infrastructure
->> is for this purpose.
->>
->> [fweisbec@gmail.com: rebase against latest -tip]
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> ---
->>  include/linux/ftrace.h       |    3 +
->>  kernel/trace/Kconfig         |    6 +++
->>  kernel/trace/Makefile        |    1 +
->>  kernel/trace/trace.c         |   55 ++++++++++++++++++++++++++
->>  kernel/trace/trace.h         |   12 ++++++
->>  kernel/trace/trace_bprintk.c |   87 ++++++++++++++++++++++++++++++++++++++++++
->>  kernel/trace/trace_output.c  |   76 ++++++++++++++++++++++++++++++++++++
->>  7 files changed, 240 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
->> index 847bb3c..8ac2fac 100644
->> --- a/include/linux/ftrace.h
->> +++ b/include/linux/ftrace.h
->> @@ -222,6 +222,9 @@ extern int ftrace_make_nop(struct module *mod,
->>   */
->>  extern int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr);
->>
->> +#ifdef CONFIG_TRACE_BPRINTK
->> +extern int trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
->> +#endif
->>
->>  /* May be defined in arch */
->>  extern int ftrace_arch_read_dyn_info(char *buf, int size);
->> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
->> index 02bc5d6..2e84fc7 100644
->> --- a/kernel/trace/Kconfig
->> +++ b/kernel/trace/Kconfig
->> @@ -86,6 +86,12 @@ config FUNCTION_GRAPH_TRACER
->>         This is done by setting the current return address on the current
->>         task structure into a stack of calls.
->>
->> +config TRACE_BPRINTK
->> +     bool "Binary printk for tracing"
->> +     default y
->> +     depends on TRACING
->> +     select BINARY_PRINTF
->> +
->>  config IRQSOFF_TRACER
->>       bool "Interrupts-off Latency Tracer"
->>       default n
->> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
->> index c931fe0..dba6157 100644
->> --- a/kernel/trace/Makefile
->> +++ b/kernel/trace/Makefile
->> @@ -22,6 +22,7 @@ obj-$(CONFIG_TRACING) += trace.o
->>  obj-$(CONFIG_TRACING) += trace_clock.o
->>  obj-$(CONFIG_TRACING) += trace_output.o
->>  obj-$(CONFIG_TRACING) += trace_stat.o
->> +obj-$(CONFIG_TRACE_BPRINTK) += trace_bprintk.o
->>  obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
->>  obj-$(CONFIG_SYSPROF_TRACER) += trace_sysprof.o
->>  obj-$(CONFIG_FUNCTION_TRACER) += trace_functions.o
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index c5e39cd..3a3ae19 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -3572,6 +3572,61 @@ int __ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap)
->>  }
->>  EXPORT_SYMBOL_GPL(__ftrace_vprintk);
->>
->> +/**
->> + * trace_vbprintk - write binary msg to tracing buffer
->> + *
->> + * Caller must insure @fmt are valid when msg is in tracing buffer.
->> + */
->> +int trace_vbprintk(unsigned long ip, const char *fmt, va_list args)
->> +{
->> +     static DEFINE_SPINLOCK(trace_buf_lock);
->> +     static u32 trace_buf[TRACE_BUF_SIZE];
->> +
->> +     struct ring_buffer_event *event;
->> +     struct trace_array *tr = &global_trace;
->> +     struct trace_array_cpu *data;
->> +     struct bprintk_entry *entry;
->> +     unsigned long flags;
->> +     int cpu, len = 0, size, pc;
->> +
->> +     if (tracing_disabled || !trace_bprintk_enable)
->> +             return 0;
->> +
->
-> If this is called in the scheduler (we might want a ftrace_printk there),
-> then the preempt_enable might cause a recursive crash.
->
-> If a ftrace_printk is in schedule() but before we clear NEED_RESCHED, the
-> preempt_enable below will cause schedule to be called again. Then we would
-> again execute this trace and call schedule again, over and over till we
-> corrupt the stack and crash the system.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 23:04:34]:
 
-
-Oh, right!
-
-
-> That is what ftrace_preempt_disable() is for.
->
-> It's defined in kernel/trace/trace.h:
->
-> The way you use it is:
->
->        int resched;
->        [...]
->
->        resched = ftrace_preempt_disable();
->        [...]
->
->        ftrace_preempt_enable(resched);
->
-> This will safely disable preemption and enable it correctly.
+> Balbir Singh wrote:
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02
+> > 16:06:02]:
+> >
+> >> On Mon, 2 Mar 2009 12:06:49 +0530
+> >> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >> > OK, I get your point, but whay does that make RB-Tree data structure
+> >> non-sense?
+> >> >
+> >>
+> >>  1. Until memory-shortage, rb-tree is kept to be updated and the
+> >> users(kernel)
+> >>     has to pay its maintainace/check cost, whici is unnecessary.
+> >>     Considering trade-off, paying cost only when memory-shortage happens
+> >> tend to
+> >>     be reasonable way.
+> > As you've seen in the code, the cost is only at an interval HZ/2
+> > currently. The other overhead is the calculation of excess, I can try
+> > and see if we can get rid of it.
+> >
+> >>
+> >>  2. Current "exceed" just shows "How much we got over my soft limit" but
+> >> doesn't
+> >>     tell any information per-node/zone. Considering this, this rb-tree
+> >>     information will not be able to help kswapd (on NUMA).
+> >>     But maintain per-node information uses too much resource.
+> >
+> > Yes, kswapd is per-node and we try to free all pages belonging to a
+> > zonelist as specified by pgdat->node_zonelists for the memory control
+> > groups that are over their soft limit. Keeping this information per
+> > node makes no sense (exceeds information).
+> >
+> >>
+> >>  Considering above 2, it's not bad to find victim by proper logic
+> >>  from balance_pgdat() by using mem_cgroup_select_victim().
+> >>  like this:
+> >> ==
+> >>  struct mem_cgroup *select_vicitim_at_soft_limit_via_balance_pgdat(int
+> >> nid, int zid)
+> >>  {
+> >>      while (?) {
+> >>         vitcim = mem_cgroup_select_victim(init_mem_cgroup);  #need some
+> >> modification.
+> >>         if (victim is not over soft-limit)
+> >>              continue;
+> >>         /* Ok this is candidate */
+> >>         usage = mem_cgroup_nid_zid_usage(mem, nid, zid); #get sum of
+> >> active/inactive
+> >>         if (usage_is_enough_big)
+> >>               return victim;
+> >
+> > We currently track overall usage, so we split into per nid, zid
+> > information and use that? Is that your suggestion?
+> 
+> My suggestion is that current per-zone statistics interface of memcg
+> already holds all necessary information. And aggregate usage information
+> is not worth to be tracked becauset it's no help for kswapd.
 >
 
+We have that data, but we need aggregate data to see who exceeded the
+limit.
+ 
+> >  The soft limit is
+> > also an aggregate limit, how do we define usage_is_big_enough or
+> > usage_is_enough_big? Through some heuristics?
+> >
+> I think that if memcg/zone's page usage is not 0, it's enough big.
+> (and round robin rotation as hierachical reclaim can be used.)
+> 
+> There maybe some threshold to try.
+> 
+> For example)
+>    need_to_reclaim = zone->high - zone->free.
+>    if (usage_in_this_zone_of_memcg > need_to_reclaim/4)
+>          select this.
+> 
+> Maybe we can adjust that later.
+> 
 
-Ok, will fix it.
+No... this looks broken by design. Even if the administrator sets a
+large enough limit and no soft limits, the cgroup gets reclaimed from?
 
 
->> +     pc = preempt_count();
->> +     preempt_disable_notrace();
->> +     cpu = raw_smp_processor_id();
->> +     data = tr->data[cpu];
->> +
->> +     if (unlikely(atomic_read(&data->disabled)))
->> +             goto out;
->> +
->> +     spin_lock_irqsave(&trace_buf_lock, flags);
->> +     len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
->> +
->> +     if (len > TRACE_BUF_SIZE || len < 0)
->> +             goto out_unlock;
->> +
->> +     size = sizeof(*entry) + sizeof(u32) * len;
->> +     event = trace_buffer_lock_reserve(tr, TRACE_BPRINTK, size, flags, pc);
->> +     if (!event)
->> +             goto out_unlock;
->> +     entry = ring_buffer_event_data(event);
->> +     entry->ip                       = ip;
->> +     entry->fmt                      = fmt;
->> +
->> +     memcpy(entry->buf, trace_buf, sizeof(u32) * len);
->> +     ring_buffer_unlock_commit(tr->buffer, event);
->> +
->> +out_unlock:
->> +     spin_unlock_irqrestore(&trace_buf_lock, flags);
->> +
->> +out:
->> +     preempt_enable_notrace();
->> +
->> +     return len;
->> +}
->> +EXPORT_SYMBOL_GPL(trace_vbprintk);
->> +
->>  static int trace_panic_handler(struct notifier_block *this,
->>                              unsigned long event, void *unused)
->>  {
->> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
->> index f6fa0b9..92703b1 100644
->> --- a/kernel/trace/trace.h
->> +++ b/kernel/trace/trace.h
->> @@ -20,6 +20,7 @@ enum trace_type {
->>       TRACE_WAKE,
->>       TRACE_STACK,
->>       TRACE_PRINT,
->> +     TRACE_BPRINTK,
->>       TRACE_SPECIAL,
->>       TRACE_MMIO_RW,
->>       TRACE_MMIO_MAP,
->> @@ -124,6 +125,16 @@ struct print_entry {
->>       char                    buf[];
->>  };
->>
->> +struct bprintk_entry {
->> +     struct trace_entry ent;
->> +     unsigned long ip;
->> +     const char *fmt;
->> +     u32 buf[];
->> +};
->> +#ifdef CONFIG_TRACE_BPRINTK
->> +extern int trace_bprintk_enable;
->> +#endif
->> +
->>  #define TRACE_OLD_SIZE               88
->>
->>  struct trace_field_cont {
->> @@ -284,6 +295,7 @@ extern void __ftrace_bad_type(void);
->>               IF_ASSIGN(var, ent, struct stack_entry, TRACE_STACK);   \
->>               IF_ASSIGN(var, ent, struct userstack_entry, TRACE_USER_STACK);\
->>               IF_ASSIGN(var, ent, struct print_entry, TRACE_PRINT);   \
->> +             IF_ASSIGN(var, ent, struct bprintk_entry, TRACE_BPRINTK);\
->>               IF_ASSIGN(var, ent, struct special_entry, 0);           \
->>               IF_ASSIGN(var, ent, struct trace_mmiotrace_rw,          \
->>                         TRACE_MMIO_RW);                               \
->> diff --git a/kernel/trace/trace_bprintk.c b/kernel/trace/trace_bprintk.c
->> new file mode 100644
->> index 0000000..1f8e532
->> --- /dev/null
->> +++ b/kernel/trace/trace_bprintk.c
->> @@ -0,0 +1,87 @@
->> +/*
->> + * trace binary printk
->> + *
->> + * Copyright (C) 2008 Lai Jiangshan <laijs@cn.fujitsu.com>
->> + *
->> + */
->> +#include <linux/kernel.h>
->> +#include <linux/ftrace.h>
->> +#include <linux/string.h>
->> +#include <linux/ctype.h>
->> +#include <linux/list.h>
->> +#include <linux/mutex.h>
->> +#include <linux/slab.h>
->> +#include <linux/module.h>
->> +#include <linux/seq_file.h>
->> +#include <linux/fs.h>
->> +#include <linux/marker.h>
->> +#include <linux/uaccess.h>
->> +
->> +#include "trace.h"
->> +
->> +/* binary printk basic */
->> +static DEFINE_MUTEX(btrace_mutex);
->> +static int btrace_metadata_count;
->> +
->> +static inline void lock_btrace(void)
->> +{
->> +     mutex_lock(&btrace_mutex);
->> +}
->> +
->> +static inline void unlock_btrace(void)
->> +{
->> +     mutex_unlock(&btrace_mutex);
->> +}
+> >>      }
+> >>  }
+> >>  balance_pgdat()
+> >>  ...... find target zone....
+> >>  ...
+> >>  mem = select_victime_at_soft_limit_via_balance_pgdat(nid, zid)
+> >>  if (mem)
+> >>    sc->mem = mem;
+> >>  shrink_zone();
+> >>  if (mem) {
+> >>    sc->mem = NULL;
+> >>    css_put(&mem->css);
+> >>  }
+> >> ==
+> >>
+> >>  We have to pay scan cost but it will not be too big(if there are not
+> >> thousands of memcg.)
+> >>  Under above, round-robin rotation is used rather than sort.
+> >
+> > Yes, we sort, but not frequently at every page-fault but at a
+> > specified interval.
+> >
+> >>  Maybe I can show you sample.....(but I'm a bit busy.)
+> >>
+> >
+> > Explanation and review is good, but I don't see how not-sorting will
+> > help? I need something that can help me point to the culprits quickly
+> > enough during soft limit reclaim and RB-Tree works very well for me.
+> >
+> 
+> I don't think "tracking memcg which exceeds soft limit" is not worth
+> to do in synchronous way. It can be done in lazy way when it's necessary
+> in simpler logic.
 >
-> Is there a reason to add these wrappers around the mutex?
->
-> -- Steve
 
-Removed on the end of the serie :-)
+The synchronous way can be harmful if we do it every page fault. THe
+current logic is quite simple....no?
+ 
+> BTW, did you do set-softlimit-zero and rmdir() test ?
+> At quick review, memcg will never be removed from RB tree because
+> force_empty moves account from children to parent. But no tree ops there.
+> plz see mem_cgroup_move_account().
+> 
 
-Thanks!
+__mme_cgroup_free() has tree ops, shouldn't that catch this scenario?
 
+> I'm sorry if I missed something.
 >
->> +
->> +static void get_btrace_metadata(void)
->> +{
->> +     lock_btrace();
->> +     btrace_metadata_count++;
->> +     unlock_btrace();
->> +}
->> +
->> +static void put_btrace_metadata(void)
->> +{
->> +     lock_btrace();
->> +     btrace_metadata_count--;
->> +     unlock_btrace();
->> +}
->> +
->> +/* events tracer */
->> +int trace_bprintk_enable;
->> +
->> +static void start_bprintk_trace(struct trace_array *tr)
->> +{
->> +     get_btrace_metadata();
->> +     tracing_reset_online_cpus(tr);
->> +     trace_bprintk_enable = 1;
->> +}
->> +
->> +static void stop_bprintk_trace(struct trace_array *tr)
->> +{
->> +     trace_bprintk_enable = 0;
->> +     tracing_reset_online_cpus(tr);
->> +     put_btrace_metadata();
->> +}
->> +
->> +static int init_bprintk_trace(struct trace_array *tr)
->> +{
->> +     start_bprintk_trace(tr);
->> +     return 0;
->> +}
->> +
->> +static struct tracer bprintk_trace __read_mostly =
->> +{
->> +     .name        = "events",
->> +     .init        = init_bprintk_trace,
->> +     .reset       = stop_bprintk_trace,
->> +     .start       = start_bprintk_trace,
->> +     .stop        = stop_bprintk_trace,
->> +};
->> +
->> +static __init int init_bprintk(void)
->> +{
->> +     return register_tracer(&bprintk_trace);
->> +}
->> +
->> +device_initcall(init_bprintk);
->> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
->> index 9fc8150..7897b5d 100644
->> --- a/kernel/trace/trace_output.c
->> +++ b/kernel/trace/trace_output.c
->> @@ -53,6 +53,26 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
->>       return len;
->>  }
->>
->> +static int
->> +trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
->> +{
->> +     int len = (PAGE_SIZE - 1) - s->len;
->> +     int ret;
->> +
->> +     if (!len)
->> +             return 0;
->> +
->> +     ret = bstr_printf(s->buffer + s->len, len, fmt, binary);
->> +
->> +     /* If we can't write it all, don't bother writing anything */
->> +     if (ret >= len)
->> +             return 0;
->> +
->> +     s->len += ret;
->> +
->> +     return len;
->> +}
->> +
->>  /**
->>   * trace_seq_puts - trace sequence printing of simple string
->>   * @s: trace sequence descriptor
->> @@ -887,6 +907,61 @@ static struct trace_event trace_print_event = {
->>       .raw            = trace_print_raw,
->>  };
->>
->> +/* TRACE_BPRINTK */
->> +static enum print_line_t
->> +trace_bprintk_print(struct trace_iterator *iter, int flags)
->> +{
->> +     struct trace_entry *entry = iter->ent;
->> +     struct trace_seq *s = &iter->seq;
->> +     struct bprintk_entry *field;
->> +
->> +     trace_assign_type(field, entry);
->> +
->> +     if (!seq_print_ip_sym(s, field->ip, flags))
->> +             goto partial;
->> +
->> +     if (!trace_seq_puts(s, ": "))
->> +             goto partial;
->> +
->> +     if (!trace_seq_bprintf(s, field->fmt, field->buf))
->> +             goto partial;
->> +
->> +     return TRACE_TYPE_HANDLED;
->> +
->> + partial:
->> +     return TRACE_TYPE_PARTIAL_LINE;
->> +}
->> +
->> +static enum print_line_t
->> +trace_bprintk_raw(struct trace_iterator *iter, int flags)
->> +{
->> +     struct trace_entry *entry = iter->ent;
->> +     struct trace_seq *s = &iter->seq;
->> +     struct bprintk_entry *field;
->> +
->> +     trace_assign_type(field, entry);
->> +
->> +     if (!trace_seq_printf(s, ": %lx : ", field->ip))
->> +             goto partial;
->> +
->> +     if (!trace_seq_bprintf(s, field->fmt, field->buf))
->> +             goto partial;
->> +
->> +     return TRACE_TYPE_HANDLED;
->> +
->> + partial:
->> +     return TRACE_TYPE_PARTIAL_LINE;
->> +}
->> +
->> +static struct trace_event trace_bprintk_event = {
->> +     .type           = TRACE_BPRINTK,
->> +     .trace          = trace_bprintk_print,
->> +     .latency_trace  = trace_bprintk_print,
->> +     .raw            = trace_bprintk_raw,
->> +     .hex            = trace_nop_print,
->> +     .binary         = trace_nop_print,
->> +};
->> +
->>  static struct trace_event *events[] __initdata = {
->>       &trace_fn_event,
->>       &trace_ctx_event,
->> @@ -895,6 +970,7 @@ static struct trace_event *events[] __initdata = {
->>       &trace_stack_event,
->>       &trace_user_stack_event,
->>       &trace_print_event,
->> +     &trace_bprintk_event,
->>       NULL
->>  };
->>
->> --
->> 1.6.1
->>
->>
->>
->
+
+Thanks for the review and discussion. 
+
+-- 
+	Balbir
