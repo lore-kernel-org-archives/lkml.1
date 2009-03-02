@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZCBXea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbZCBXf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbZCBXea (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbZCBXeW
+	id S1757879AbZCBXf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbZCBXfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:34:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46656 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753411AbZCBXeV (ORCPT
+	Mon, 2 Mar 2009 18:35:13 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57518 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754706AbZCBXfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:34:21 -0500
-Date: Mon, 2 Mar 2009 15:32:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts during 
- suspend-resume (rev. 4)
-In-Reply-To: <d6200be20903021518r48fe6fb2vd07e9dedc4f5ff44@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0903021530200.3111@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <200903012324.39327.rjw@sisk.pl>  <d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>  <200903030013.02805.rjw@sisk.pl> <d6200be20903021518r48fe6fb2vd07e9dedc4f5ff44@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 2 Mar 2009 18:35:10 -0500
+Date: Mon, 2 Mar 2009 23:35:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Brownell <david-b@pacbell.net>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Message-ID: <20090302233526.3c694e22@lxorguk.ukuu.org.uk>
+In-Reply-To: <1236028617.18955.14.camel@twins>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+	<200903011454.22280.david-b@pacbell.net>
+	<1235999772.5330.368.camel@laptop>
+	<200903021304.56881.david-b@pacbell.net>
+	<1236028617.18955.14.camel@twins>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Organization: None.. I'm free I'm free bwhahahahaha!
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Because running irq handlers with irqs enabled it plain silly.
 
+It makes enormous sense to run with the ability to mask *just* the IRQ
+that occurred and not others so that long lasting interrupts. 
 
-On Mon, 2 Mar 2009, Arve Hjønnevåg wrote:
->
-> > enable_irq() clears IRQ_SUSPENDED.  This has already been discussed btw.
-> 
-> I'm if I missed that discussion, but enable_irq cannot know who is
-> calling it and therefore cannot know if IRQ_SUSPENDED should be
-> cleared.
+There is another reason not to do this of course - the real time work
+makes it essentially irrelevant by doing the job right and reducing the
+entire problem space to software priority management.
+ 
+> Except it turns out there is some really broken ass hardware out there.
+> But supposedly IDE PIO could be done from a threaded handler.
 
-Sure it can. 
+Only if you support reliable masking of a single IRQ *after* the IRQ
+handler returns. The real time patches can do that for some chipsets but
+on the PC at least you are into the realms of deepest darkest APIC
+weirdness and that requires Ingo's pointy hat and wand..
 
-If IRQ_SUSPENDED is not set, then clearing it is a no-op, so that's fine.
-
-If IRQ_SUSPENDED _is_ set, then that means that we're after the 
-suspend_late() sequence and before the resume_early() sequence, and no 
-device driver is possibly called in between, so they'd sure better not be 
-doing anything that does an enable_irq().
-
-IOW, we know who the caller is, simply because there can be no other valid 
-caller!
-
-			Linus
+Alan
