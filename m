@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZCBQ3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZCBQaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbZCBQ3f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbZCBQ30
+	id S1757633AbZCBQaT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZCBQaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:29:26 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:42273 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbZCBQ3Z (ORCPT
+	Mon, 2 Mar 2009 11:30:03 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:46998 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753482AbZCBQaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:29:25 -0500
-Date: Mon, 2 Mar 2009 10:28:57 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hch@infradead.org, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
-Message-ID: <20090302162857.GA10974@us.ibm.com>
-References: <20090227203425.F3B51176@kernel> <20090227203435.98735E54@kernel> <20090302133754.GA8033@us.ibm.com> <20090302095917.6cfeda55@thinkcentre.lan>
+	Mon, 2 Mar 2009 11:30:01 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090302095917.6cfeda55@thinkcentre.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090302082003.1bb7bdc5@infradead.org>
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
+	 <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
+	 <200902181528.29697.rusty@rustcorp.com.au>
+	 <ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
+	 <1234952753.10531.48.camel@andreas-laptop>
+	 <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
+	 <ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com>
+	 <1235216636.7025.1023.camel@andreas-laptop>
+	 <1236004353.10055.49.camel@andreas-laptop>
+	 <20090302082003.1bb7bdc5@infradead.org>
+Date: Mon, 2 Mar 2009 17:29:57 +0100
+Message-ID: <ac3eb2510903020829s7c876a96y7eb5568eeb9921fd@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andreas Robinson <andr345@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Nathan Lynch (ntl@pobox.com):
-> On Mon, 2 Mar 2009 07:37:54 -0600
-> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> 
-> > Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> > > 
-> > > Introduce a files_struct counter to indicate whether a particular
-> > > file_struct has ever contained a file which can not be
-> > > checkpointed.  This flag is a one-way trip; once it is set, it may
-> > > not be unset.
-> > > 
-> > > We assume at allocation that a new files_struct is clean and may
-> > > be checkpointed.  However, as soon as it has had its files filled
-> > > from its parent's, we check it for real in __scan_files_for_cr().
-> > > At that point, we mark it if it contained any uncheckpointable
-> > > files.
-> > > 
-> > > We also check each 'struct file' when it is installed in a fd
-> > > slot.  This way, if anyone open()s or managed to dup() an
-> > > unsuppored file, we can catch it.
-> > > 
-> > > Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-> > 
-> > So on a practical note, Ingo's scheme appears to be paying off.  In
-> > order for any program's files_struct to be checkpointable right now,
-> > it must be statically compiled, else ld.so (I assume) looks up
-> > /proc/$$/status.  So since proc is not checkpointable, the result
-> > is irreversibly non-checkpointable.
-> > 
-> > So...  does it make sense to mark proc as checkpointable?  Do we
-> > reasonably assume that the same procfile will be available at
-> > restart?
-> 
-> With respect to /proc/$x/* where $x is the pid the restarted task wants,
-> is that not a chicken-and-egg problem?
+On Mon, Mar 2, 2009 at 17:20, Arjan van de Ven <arjan@infradead.org> wrote:
+>> A monolithic kernel with parallelized initcalls is better - about 200
+>> ms faster than parallel insmods on my test system. However, it comes
+>> with a fairly large set of changes:
+>>
+>> * First, you need a 200-line patch in init/main.c (do_initcalls() and
+>> friends)
+>
+> why?
+> We already have async function calls; and those speed up my boot (when
+> enabled) significantly, by doing much of the kernel/driver init in
+> parallel.
+>
+> My server box boots the whole kernel (including all drivers; I build
+> verything in) in 0.56 seconds, and my net books do it in around 1.0
+> seconds.
+>
+>>
+>> * Then the built-in module dependencies must be calculated properly,
+>> eg with a modified depmod, and added to the build process.
+>
+> nope not if done right
+>
+>> So, what do you think, should I keep going? IMHO, the slower userspace
+>> implementation is acceptable since it's so much simpler.
+>
+> I would strongly suggest that you turn on the async function calls and
+> look at the boot graph of the resulting kernel boot... if you send
+> that to me I can also take a look and make suggestions....
 
-I don't think so... the task will get the pid back (eventually :).  So
-sure it won't really be supported yet but we can ignore that for now
-imo.
+The "fastboot" kernel commandline option was used, as mentioned in the
+mail. Is there anything else?
 
-The question is, do we worry about the fact that the procfile contents
-might be different at restart (different kernel, etc).
-
--serge
+Thanks,
+Kay
