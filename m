@@ -1,420 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbZCBLpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbZCBLrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757859AbZCBLpc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 06:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZCBLpU
+	id S1757937AbZCBLrt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 06:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZCBLrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 06:45:20 -0500
-Received: from home.innominate.com ([77.245.32.75]:56759 "EHLO
-	home.innominate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbZCBLpR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 06:45:17 -0500
-Date: Mon, 2 Mar 2009 12:45:12 +0100
-From: Christian Hohnstaedt <chohnstaedt@innominate.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, karl@hiramoto.org,
-       chohnstaedt@innominate.com, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: [PATCH] crypto: fix handling of sg buffers in ixp4xx driver
-Message-ID: <20090302114511.GE6283@elara.bln.innominate.local>
-Mail-Followup-To: Christian Hohnstaedt <chohnstaedt@innominate.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	karl@hiramoto.org, linux-crypto@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.arm.linux.org.uk
-References: <20090226232025.GE5811@n2100.arm.linux.org.uk> <20090227005033.GA20046@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090227005033.GA20046@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 2 Mar 2009 06:47:41 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:60773 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752103AbZCBLrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 06:47:40 -0500
+Date: Mon, 2 Mar 2009 12:47:37 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org, raph@8d.com
+Subject: Re: [PATCH] rtc-v3020: add ability to access v3020 chip with GPIOs
+Message-ID: <20090302124737.03075958@i1501.lan.towertech.it>
+In-Reply-To: <d2392eac1d61487c6e56341271e7ba10c16b94b9.1235400430.git.mike@compulab.co.il>
+References: <cover.1235400430.git.mike@compulab.co.il>
+	<d2392eac1d61487c6e56341271e7ba10c16b94b9.1235400430.git.mike@compulab.co.il>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon,  2 Mar 2009 13:40:57 +0200
+Mike Rapoport <mike@compulab.co.il> wrote:
 
- - keep dma functions away from chained scatterlists.
-   Use the existing scatterlist iteration inside the driver
-   to call dma_map_single() for each chunk and avoid dma_map_sg().
+> The v3020 RTC can be connected to GPIOs as well as to memory-like interface.
+> Add ability to use GPIO bit-bang for v3020 read-write access.
+> 
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 
-Signed-off-by: Christian Hohnstaedt <chohnstaedt@innominate.com>
-Tested-By:  Karl Hiramoto <karl@hiramoto.org>
+ For the rtc part you have my 
 
----
- drivers/crypto/ixp4xx_crypto.c |  182 ++++++++++++++--------------------------
- 1 files changed, 63 insertions(+), 119 deletions(-)
+ Acked-by: Alessandro Zummo <a.zummo@towertech.it>
 
-diff --git a/drivers/crypto/ixp4xx_crypto.c b/drivers/crypto/ixp4xx_crypto.c
-index 2d637e0..fdcd0ab 100644
---- a/drivers/crypto/ixp4xx_crypto.c
-+++ b/drivers/crypto/ixp4xx_crypto.c
-@@ -101,6 +101,7 @@ struct buffer_desc {
- 	u32 phys_addr;
- 	u32 __reserved[4];
- 	struct buffer_desc *next;
-+	enum dma_data_direction dir;
- };
- 
- struct crypt_ctl {
-@@ -132,14 +133,10 @@ struct crypt_ctl {
- struct ablk_ctx {
- 	struct buffer_desc *src;
- 	struct buffer_desc *dst;
--	unsigned src_nents;
--	unsigned dst_nents;
- };
- 
- struct aead_ctx {
- 	struct buffer_desc *buffer;
--	unsigned short assoc_nents;
--	unsigned short src_nents;
- 	struct scatterlist ivlist;
- 	/* used when the hmac is not on one sg entry */
- 	u8 *hmac_virt;
-@@ -312,7 +309,7 @@ static struct crypt_ctl *get_crypt_desc_emerg(void)
- 	}
- }
- 
--static void free_buf_chain(struct buffer_desc *buf, u32 phys)
-+static void free_buf_chain(struct device *dev, struct buffer_desc *buf,u32 phys)
- {
- 	while (buf) {
- 		struct buffer_desc *buf1;
-@@ -320,6 +317,7 @@ static void free_buf_chain(struct buffer_desc *buf, u32 phys)
- 
- 		buf1 = buf->next;
- 		phys1 = buf->phys_next;
-+		dma_unmap_single(dev, buf->phys_next, buf->buf_len, buf->dir);
- 		dma_pool_free(buffer_pool, buf, phys);
- 		buf = buf1;
- 		phys = phys1;
-@@ -348,7 +346,6 @@ static void one_packet(dma_addr_t phys)
- 	struct crypt_ctl *crypt;
- 	struct ixp_ctx *ctx;
- 	int failed;
--	enum dma_data_direction src_direction = DMA_BIDIRECTIONAL;
- 
- 	failed = phys & 0x1 ? -EBADMSG : 0;
- 	phys &= ~0x3;
-@@ -358,13 +355,8 @@ static void one_packet(dma_addr_t phys)
- 	case CTL_FLAG_PERFORM_AEAD: {
- 		struct aead_request *req = crypt->data.aead_req;
- 		struct aead_ctx *req_ctx = aead_request_ctx(req);
--		dma_unmap_sg(dev, req->assoc, req_ctx->assoc_nents,
--				DMA_TO_DEVICE);
--		dma_unmap_sg(dev, &req_ctx->ivlist, 1, DMA_BIDIRECTIONAL);
--		dma_unmap_sg(dev, req->src, req_ctx->src_nents,
--				DMA_BIDIRECTIONAL);
- 
--		free_buf_chain(req_ctx->buffer, crypt->src_buf);
-+		free_buf_chain(dev, req_ctx->buffer, crypt->src_buf);
- 		if (req_ctx->hmac_virt) {
- 			finish_scattered_hmac(crypt);
- 		}
-@@ -374,16 +366,11 @@ static void one_packet(dma_addr_t phys)
- 	case CTL_FLAG_PERFORM_ABLK: {
- 		struct ablkcipher_request *req = crypt->data.ablk_req;
- 		struct ablk_ctx *req_ctx = ablkcipher_request_ctx(req);
--		int nents;
-+
- 		if (req_ctx->dst) {
--			nents = req_ctx->dst_nents;
--			dma_unmap_sg(dev, req->dst, nents, DMA_FROM_DEVICE);
--			free_buf_chain(req_ctx->dst, crypt->dst_buf);
--			src_direction = DMA_TO_DEVICE;
-+			free_buf_chain(dev, req_ctx->dst, crypt->dst_buf);
- 		}
--		nents = req_ctx->src_nents;
--		dma_unmap_sg(dev, req->src, nents, src_direction);
--		free_buf_chain(req_ctx->src, crypt->src_buf);
-+		free_buf_chain(dev, req_ctx->src, crypt->src_buf);
- 		req->base.complete(&req->base, failed);
- 		break;
- 	}
-@@ -748,56 +735,35 @@ static int setup_cipher(struct crypto_tfm *tfm, int encrypt,
- 	return 0;
- }
- 
--static int count_sg(struct scatterlist *sg, int nbytes)
-+static struct buffer_desc *chainup_buffers(struct device *dev,
-+		struct scatterlist *sg,	unsigned nbytes,
-+		struct buffer_desc *buf, gfp_t flags,
-+		enum dma_data_direction dir)
- {
--	int i;
--	for (i = 0; nbytes > 0; i++, sg = sg_next(sg))
--		nbytes -= sg->length;
--	return i;
--}
--
--static struct buffer_desc *chainup_buffers(struct scatterlist *sg,
--			unsigned nbytes, struct buffer_desc *buf, gfp_t flags)
--{
--	int nents = 0;
--
--	while (nbytes > 0) {
-+	for (;nbytes > 0; sg = scatterwalk_sg_next(sg)) {
-+		unsigned len = min(nbytes, sg->length);
- 		struct buffer_desc *next_buf;
- 		u32 next_buf_phys;
--		unsigned len = min(nbytes, sg_dma_len(sg));
-+		void *ptr;
- 
--		nents++;
- 		nbytes -= len;
--		if (!buf->phys_addr) {
--			buf->phys_addr = sg_dma_address(sg);
--			buf->buf_len = len;
--			buf->next = NULL;
--			buf->phys_next = 0;
--			goto next;
--		}
--		/* Two consecutive chunks on one page may be handled by the old
--		 * buffer descriptor, increased by the length of the new one
--		 */
--		if (sg_dma_address(sg) == buf->phys_addr + buf->buf_len) {
--			buf->buf_len += len;
--			goto next;
--		}
-+		ptr = page_address(sg_page(sg)) + sg->offset;
- 		next_buf = dma_pool_alloc(buffer_pool, flags, &next_buf_phys);
--		if (!next_buf)
--			return NULL;
-+		if (!next_buf) {
-+			buf = NULL;
-+			break;
-+		}
-+		sg_dma_address(sg) = dma_map_single(dev, ptr, len, dir);
- 		buf->next = next_buf;
- 		buf->phys_next = next_buf_phys;
--
- 		buf = next_buf;
--		buf->next = NULL;
--		buf->phys_next = 0;
-+
- 		buf->phys_addr = sg_dma_address(sg);
- 		buf->buf_len = len;
--next:
--		if (nbytes > 0) {
--			sg = sg_next(sg);
--		}
-+		buf->dir = dir;
- 	}
-+	buf->next = NULL;
-+	buf->phys_next = 0;
- 	return buf;
- }
- 
-@@ -858,12 +824,12 @@ static int ablk_perform(struct ablkcipher_request *req, int encrypt)
- 	struct crypto_ablkcipher *tfm = crypto_ablkcipher_reqtfm(req);
- 	struct ixp_ctx *ctx = crypto_ablkcipher_ctx(tfm);
- 	unsigned ivsize = crypto_ablkcipher_ivsize(tfm);
--	int ret = -ENOMEM;
- 	struct ix_sa_dir *dir;
- 	struct crypt_ctl *crypt;
--	unsigned int nbytes = req->nbytes, nents;
-+	unsigned int nbytes = req->nbytes;
- 	enum dma_data_direction src_direction = DMA_BIDIRECTIONAL;
- 	struct ablk_ctx *req_ctx = ablkcipher_request_ctx(req);
-+	struct buffer_desc src_hook;
- 	gfp_t flags = req->base.flags & CRYPTO_TFM_REQ_MAY_SLEEP ?
- 				GFP_KERNEL : GFP_ATOMIC;
- 
-@@ -876,7 +842,7 @@ static int ablk_perform(struct ablkcipher_request *req, int encrypt)
- 
- 	crypt = get_crypt_desc();
- 	if (!crypt)
--		return ret;
-+		return -ENOMEM;
- 
- 	crypt->data.ablk_req = req;
- 	crypt->crypto_ctx = dir->npe_ctx_phys;
-@@ -889,53 +855,41 @@ static int ablk_perform(struct ablkcipher_request *req, int encrypt)
- 	BUG_ON(ivsize && !req->info);
- 	memcpy(crypt->iv, req->info, ivsize);
- 	if (req->src != req->dst) {
-+		struct buffer_desc dst_hook;
- 		crypt->mode |= NPE_OP_NOT_IN_PLACE;
--		nents = count_sg(req->dst, nbytes);
- 		/* This was never tested by Intel
- 		 * for more than one dst buffer, I think. */
--		BUG_ON(nents != 1);
--		req_ctx->dst_nents = nents;
--		dma_map_sg(dev, req->dst, nents, DMA_FROM_DEVICE);
--		req_ctx->dst = dma_pool_alloc(buffer_pool, flags,&crypt->dst_buf);
--		if (!req_ctx->dst)
--			goto unmap_sg_dest;
--		req_ctx->dst->phys_addr = 0;
--		if (!chainup_buffers(req->dst, nbytes, req_ctx->dst, flags))
-+		BUG_ON(req->dst->length < nbytes);
-+		req_ctx->dst = NULL;
-+		if (!chainup_buffers(dev, req->dst, nbytes, &dst_hook,
-+					flags, DMA_FROM_DEVICE))
- 			goto free_buf_dest;
- 		src_direction = DMA_TO_DEVICE;
-+		req_ctx->dst = dst_hook.next;
-+		crypt->dst_buf = dst_hook.phys_next;
- 	} else {
- 		req_ctx->dst = NULL;
--		req_ctx->dst_nents = 0;
- 	}
--	nents = count_sg(req->src, nbytes);
--	req_ctx->src_nents = nents;
--	dma_map_sg(dev, req->src, nents, src_direction);
--
--	req_ctx->src = dma_pool_alloc(buffer_pool, flags, &crypt->src_buf);
--	if (!req_ctx->src)
--		goto unmap_sg_src;
--	req_ctx->src->phys_addr = 0;
--	if (!chainup_buffers(req->src, nbytes, req_ctx->src, flags))
-+	req_ctx->src = NULL;
-+	if (!chainup_buffers(dev, req->src, nbytes, &src_hook,
-+				flags, src_direction))
- 		goto free_buf_src;
- 
-+	req_ctx->src = src_hook.next;
-+	crypt->src_buf = src_hook.phys_next;
- 	crypt->ctl_flags |= CTL_FLAG_PERFORM_ABLK;
- 	qmgr_put_entry(SEND_QID, crypt_virt2phys(crypt));
- 	BUG_ON(qmgr_stat_overflow(SEND_QID));
- 	return -EINPROGRESS;
- 
- free_buf_src:
--	free_buf_chain(req_ctx->src, crypt->src_buf);
--unmap_sg_src:
--	dma_unmap_sg(dev, req->src, req_ctx->src_nents, src_direction);
-+	free_buf_chain(dev, req_ctx->src, crypt->src_buf);
- free_buf_dest:
- 	if (req->src != req->dst) {
--		free_buf_chain(req_ctx->dst, crypt->dst_buf);
--unmap_sg_dest:
--		dma_unmap_sg(dev, req->src, req_ctx->dst_nents,
--			DMA_FROM_DEVICE);
-+		free_buf_chain(dev, req_ctx->dst, crypt->dst_buf);
- 	}
- 	crypt->ctl_flags = CTL_FLAG_UNUSED;
--	return ret;
-+	return -ENOMEM;
- }
- 
- static int ablk_encrypt(struct ablkcipher_request *req)
-@@ -983,7 +937,7 @@ static int hmac_inconsistent(struct scatterlist *sg, unsigned start,
- 			break;
- 
- 		offset += sg->length;
--		sg = sg_next(sg);
-+		sg = scatterwalk_sg_next(sg);
- 	}
- 	return (start + nbytes > offset + sg->length);
- }
-@@ -995,11 +949,10 @@ static int aead_perform(struct aead_request *req, int encrypt,
- 	struct ixp_ctx *ctx = crypto_aead_ctx(tfm);
- 	unsigned ivsize = crypto_aead_ivsize(tfm);
- 	unsigned authsize = crypto_aead_authsize(tfm);
--	int ret = -ENOMEM;
- 	struct ix_sa_dir *dir;
- 	struct crypt_ctl *crypt;
--	unsigned int cryptlen, nents;
--	struct buffer_desc *buf;
-+	unsigned int cryptlen;
-+	struct buffer_desc *buf, src_hook;
- 	struct aead_ctx *req_ctx = aead_request_ctx(req);
- 	gfp_t flags = req->base.flags & CRYPTO_TFM_REQ_MAY_SLEEP ?
- 				GFP_KERNEL : GFP_ATOMIC;
-@@ -1020,7 +973,7 @@ static int aead_perform(struct aead_request *req, int encrypt,
- 	}
- 	crypt = get_crypt_desc();
- 	if (!crypt)
--		return ret;
-+		return -ENOMEM;
- 
- 	crypt->data.aead_req = req;
- 	crypt->crypto_ctx = dir->npe_ctx_phys;
-@@ -1039,31 +992,27 @@ static int aead_perform(struct aead_request *req, int encrypt,
- 		BUG(); /* -ENOTSUP because of my lazyness */
- 	}
- 
--	req_ctx->buffer = dma_pool_alloc(buffer_pool, flags, &crypt->src_buf);
--	if (!req_ctx->buffer)
--		goto out;
--	req_ctx->buffer->phys_addr = 0;
- 	/* ASSOC data */
--	nents = count_sg(req->assoc, req->assoclen);
--	req_ctx->assoc_nents = nents;
--	dma_map_sg(dev, req->assoc, nents, DMA_TO_DEVICE);
--	buf = chainup_buffers(req->assoc, req->assoclen, req_ctx->buffer,flags);
-+	buf = chainup_buffers(dev, req->assoc, req->assoclen, &src_hook,
-+		flags, DMA_TO_DEVICE);
-+	req_ctx->buffer = src_hook.next;
-+	crypt->src_buf = src_hook.phys_next;
- 	if (!buf)
--		goto unmap_sg_assoc;
-+		goto out;
- 	/* IV */
- 	sg_init_table(&req_ctx->ivlist, 1);
- 	sg_set_buf(&req_ctx->ivlist, iv, ivsize);
--	dma_map_sg(dev, &req_ctx->ivlist, 1, DMA_BIDIRECTIONAL);
--	buf = chainup_buffers(&req_ctx->ivlist, ivsize, buf, flags);
-+	buf = chainup_buffers(dev, &req_ctx->ivlist, ivsize, buf, flags,
-+			DMA_BIDIRECTIONAL);
- 	if (!buf)
--		goto unmap_sg_iv;
-+		goto free_chain;
- 	if (unlikely(hmac_inconsistent(req->src, cryptlen, authsize))) {
- 		/* The 12 hmac bytes are scattered,
- 		 * we need to copy them into a safe buffer */
- 		req_ctx->hmac_virt = dma_pool_alloc(buffer_pool, flags,
- 				&crypt->icv_rev_aes);
- 		if (unlikely(!req_ctx->hmac_virt))
--			goto unmap_sg_iv;
-+			goto free_chain;
- 		if (!encrypt) {
- 			scatterwalk_map_and_copy(req_ctx->hmac_virt,
- 				req->src, cryptlen, authsize, 0);
-@@ -1073,33 +1022,28 @@ static int aead_perform(struct aead_request *req, int encrypt,
- 		req_ctx->hmac_virt = NULL;
- 	}
- 	/* Crypt */
--	nents = count_sg(req->src, cryptlen + authsize);
--	req_ctx->src_nents = nents;
--	dma_map_sg(dev, req->src, nents, DMA_BIDIRECTIONAL);
--	buf = chainup_buffers(req->src, cryptlen + authsize, buf, flags);
-+	buf = chainup_buffers(dev, req->src, cryptlen + authsize, buf, flags,
-+			DMA_BIDIRECTIONAL);
- 	if (!buf)
--		goto unmap_sg_src;
-+		goto free_hmac_virt;
- 	if (!req_ctx->hmac_virt) {
- 		crypt->icv_rev_aes = buf->phys_addr + buf->buf_len - authsize;
- 	}
-+
- 	crypt->ctl_flags |= CTL_FLAG_PERFORM_AEAD;
- 	qmgr_put_entry(SEND_QID, crypt_virt2phys(crypt));
- 	BUG_ON(qmgr_stat_overflow(SEND_QID));
- 	return -EINPROGRESS;
--unmap_sg_src:
--	dma_unmap_sg(dev, req->src, req_ctx->src_nents, DMA_BIDIRECTIONAL);
-+free_hmac_virt:
- 	if (req_ctx->hmac_virt) {
- 		dma_pool_free(buffer_pool, req_ctx->hmac_virt,
- 				crypt->icv_rev_aes);
- 	}
--unmap_sg_iv:
--	dma_unmap_sg(dev, &req_ctx->ivlist, 1, DMA_BIDIRECTIONAL);
--unmap_sg_assoc:
--	dma_unmap_sg(dev, req->assoc, req_ctx->assoc_nents, DMA_TO_DEVICE);
--	free_buf_chain(req_ctx->buffer, crypt->src_buf);
-+free_chain:
-+	free_buf_chain(dev, req_ctx->buffer, crypt->src_buf);
- out:
- 	crypt->ctl_flags = CTL_FLAG_UNUSED;
--	return ret;
-+	return -ENOMEM;
- }
- 
- static int aead_setup(struct crypto_aead *tfm, unsigned int authsize)
+ please send the patch to the GPIO maintainer . Once you
+ have his Acked-by and the one of the driver's author you can
+ send it to Andrew for inclusion.
+
 -- 
-1.6.0.3
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
