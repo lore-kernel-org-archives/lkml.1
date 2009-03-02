@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbZCBQ0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbZCBQ1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbZCBQ0q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZCBQ0h
+	id S1757224AbZCBQ1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZCBQ1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:26:37 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:49087 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751532AbZCBQ0g (ORCPT
+	Mon, 2 Mar 2009 11:27:43 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:34442 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753345AbZCBQ1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:26:36 -0500
-Date: Mon, 2 Mar 2009 16:26:21 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Denys Fedoryschenko <denys@visp.net.lb>
-Cc: Matthew Garrett <mjg@redhat.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: 2.6.28 - 2.6.29-rc6-git5 regression, p4-clockmod/cpufreq probably
-Message-ID: <20090302162621.GB25965@silver.sucs.org>
-References: <200903021704.59663.denys@visp.net.lb> <20090302160658.GA32708@srcf.ucam.org> <200903021815.56191.denys@visp.net.lb>
+	Mon, 2 Mar 2009 11:27:42 -0500
+Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       hch@infradead.org, Ingo Molnar <mingo@elte.hu>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090302095917.6cfeda55@thinkcentre.lan>
+References: <20090227203425.F3B51176@kernel>
+	 <20090227203435.98735E54@kernel> <20090302133754.GA8033@us.ibm.com>
+	 <20090302095917.6cfeda55@thinkcentre.lan>
+Content-Type: text/plain
+Date: Mon, 02 Mar 2009 08:27:31 -0800
+Message-Id: <1236011251.26788.450.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903021815.56191.denys@visp.net.lb>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 06:15:56PM +0200, Denys Fedoryschenko wrote:
-> On Monday 02 March 2009 18:06:59 Matthew Garrett wrote:
-> > On Mon, Mar 02, 2009 at 05:04:59PM +0200, Denys Fedoryschenko wrote:
-> > > On 2.6.29-rc6 (git5 tested also) also shown in dmesg as available, but i
-> > > can't change anything.
-> >
-> > That's deliberate. p4-clockmod is for thermal management, not clock
-> > control (since it doesn't actually do any of that)
-> I know very well it is just throttling, and not real CPU power management.
-> At the end it does job.
+On Mon, 2009-03-02 at 09:59 -0600, Nathan Lynch wrote:
+> On Mon, 2 Mar 2009 07:37:54 -0600
+> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> > So on a practical note, Ingo's scheme appears to be paying off.  In
+> > order for any program's files_struct to be checkpointable right now,
+> > it must be statically compiled, else ld.so (I assume) looks up
+> > /proc/$$/status.  So since proc is not checkpointable, the result
+> > is irreversibly non-checkpointable.
+> > 
+> > So...  does it make sense to mark proc as checkpointable?  Do we
+> > reasonably assume that the same procfile will be available at
+> > restart?
 > 
-> In my case i used it for testing on "virtual" 113 Mhz video encoding to find 
-> out bottleneck on ffmpeg and to compare performance with Blackfin.
+> With respect to /proc/$x/* where $x is the pid the restarted task wants,
+> is that not a chicken-and-egg problem?
 
-If it's just throttling you want can't you do that via
-/proc/acpi/processor/CPU<N>/throttling ...
+Do you mean that we have to go look into /proc to figure out which task
+we want before we can checkpoint it?  That makes the process *doing* the
+checkpoint uncheckpointable, but no the process being examined.
 
--- 
-Sitsofe | http://sucs.org/~sits/
+Anyway, I'll fix /proc.  It is pretty important.
+
+-- Dave
+
