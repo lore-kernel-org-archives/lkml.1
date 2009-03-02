@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZCBXZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZCBX11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756999AbZCBXZe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZCBXZZ
+	id S1757448AbZCBX11 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZCBX1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:25:25 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:28464 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbZCBXZY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:25:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=YY0Pt6QLmrMkPYpLQEu3ZENYa7A8EXBL/a30bo8UPWZs2uyVNBCP/QlBM00iiXumY/
-         omg4tpJ1R/pkBMWLRrIGQ8jOoLqXVWmivViO/OL7iDP9W1H/83nsOmxuSGXP39ITACrL
-         oWUiHuyjRtrKJfEwkw9QJe+GtHm8KFw9KTEF8=
+	Mon, 2 Mar 2009 18:27:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34594 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750910AbZCBX1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 18:27:17 -0500
+Date: Tue, 3 Mar 2009 00:26:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Brownell <david-b@pacbell.net>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       tglx@linutronix.de
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Message-ID: <20090302232650.GA14515@elte.hu>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200903021410.25889.david-b@pacbell.net> <1236032722.5330.1675.camel@laptop> <200903021520.30826.david-b@pacbell.net>
 MIME-Version: 1.0
-In-Reply-To: <49A53FF5.1020509@gmail.com>
-References: <49A53FF5.1020509@gmail.com>
-Date: Mon, 2 Mar 2009 16:25:22 -0700
-X-Google-Sender-Auth: 1461165c9513f24a
-Message-ID: <e9c3a7c20903021525jff8e2d4qf848a92dced8be93@mail.gmail.com>
-Subject: Re: [PATCH] iop-adma, dmaengine: misplaced curly brackets?
-From: Dan Williams <dan.j.williams@intel.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903021520.30826.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 5:56 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> I observed this by code inspection, and it was not tested in any way,
-> but aren't the curly brackets below wrong?
->
-> please review.
-> ------------------------------>8-------------8<---------------------------------
-> Misplaced curly brackets.
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
 
-Yes, static analysis caught this error here recently as well.  I have
-applied your patch with a fixed up changelog:
+* David Brownell <david-b@pacbell.net> wrote:
 
-commit d2076514c9ea68e7fef21158c1cdb8b244bfe5f2
-Author: Roel Kluin <roel.kluin@gmail.com>
-Date:   Wed Feb 25 13:56:21 2009 +0100
+> On Monday 02 March 2009, Peter Zijlstra wrote:
+> > On Mon, 2009-03-02 at 14:10 -0800, David Brownell wrote:
+> > 
+> > > What's unfortunate is that you prefer not to fix that
+> > > IRQF_DISABLED bug in lockdep, which you co-"maintain".
+> > > When running with lockdep, that bug (a) introduces bugs
+> > > in some drivers and (b) hides bugs in others.  You've
+> > > rejected even a minimal warning fix, to help minimize
+> > > the amount of time developers waste on (a) and (b).
+> > 
+> > I've come to the conclusion that the only technically sound solution is
+> > to do as I proposed today, utterly eliminate !IRQF_DISABLED handlers.
+> 
+> As you announced today.  If you truly believe that, then
+> you should at least submit a warning patch for 2.6.29-rc
+> ("driver X isn't setting IRQF_DISABLED, reimplement!")
 
-    iop-adma, mv_xor: fix mem leak on self-test setup failure
+i have changed the BUG_ON() to a WARN_ONCE() message so the 
+warning is in place now.
 
-    iop_adma_zero_sum_self_test has the brackets in the wrong place for the
-    setup failure deallocation path.  This error was duplicated in
-    mv_xor_xor_self_test.
+> with a Documentation/feature-removal-schedule.txt plan for 
+> removing that mechanism. [...]
 
-    Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+you are misunderstanding the workings and purpose of 
+feature-removal-schedule.txt. It is mainly used for 
+functionality that is user-visible. It is sometimes used for 
+functionality that a subsystem has exported to a lot of drivers 
+consciously and which is being removed.
 
-Thanks,
-Dan
+It is never used for a single driver finding a core kernel 
+symbol and abusing it in a way that was never intended. Abuse of 
+kernel internals by kernel code was never a 'feature'. Just 
+because you find a symbol (which is not even exported to 
+drivers) does not mean you can use it like that.
+
+If you want to work on genirq threaded IRQ handlers them please 
+check out and test the threaded IRQ handlers patches that are 
+being worked on at lkml. See:
+
+[patch 0/4] genirq: add infrastructure for threaded interrupt handlers V2
+
+	Ingo
