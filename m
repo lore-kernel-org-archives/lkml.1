@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbZCBWNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbZCBWOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755693AbZCBWNa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 17:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZCBWNV
+	id S1756445AbZCBWOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 17:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZCBWOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 17:13:21 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:42792 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbZCBWNU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 17:13:20 -0500
-Date: Mon, 2 Mar 2009 14:14:06 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
-Subject: [PATCH mainline] menu: fix embedded menu snafu
-Message-Id: <20090302141406.13d5ef1f.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.49AC59D6.0304:SCFSTAT928724,ss=1,fgs=0
+	Mon, 2 Mar 2009 17:14:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58950 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754198AbZCBWOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 17:14:07 -0500
+Date: Mon, 2 Mar 2009 23:13:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>
+Subject: Re: [GIT PULL] tracing: make CALLER_ADDRx overwriteable
+Message-ID: <20090302221348.GB31162@elte.hu>
+References: <alpine.DEB.2.00.0903021638480.4771@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903021638480.4771@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The COMPAT_BRK kconfig symbol does not depend on EMBEDDED,
-but it is in the midst of the EMBEDDED menu symbols, so it mucks
-up the EMBEDDED menu.  Fix by moving it to just after all of
-the EMBEDDED menu symbols.  Also, surround all of the
-EMBEDDED symbols with "if EMBEDDED"/"endif" so that this
-EMBEDDED block is clearer.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- init/Kconfig |   28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+> 
+> Ingo,
+> 
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
+> 
+> 
+> Uwe Kleine-Koenig (1):
+>       tracing: make CALLER_ADDRx overwriteable
+> 
+> ----
+>  arch/alpha/include/asm/ftrace.h    |    1 +
+>  arch/avr32/include/asm/ftrace.h    |    1 +
+>  arch/blackfin/include/asm/ftrace.h |    1 +
+>  arch/cris/include/asm/ftrace.h     |    1 +
+>  arch/h8300/include/asm/ftrace.h    |    1 +
+>  arch/m68k/include/asm/ftrace.h     |    1 +
+>  arch/mips/include/asm/ftrace.h     |    1 +
+>  arch/parisc/include/asm/ftrace.h   |    1 +
+>  arch/um/include/asm/ftrace.h       |    1 +
+>  arch/xtensa/include/asm/ftrace.h   |    1 +
+>  include/asm-frv/ftrace.h           |    1 +
+>  include/asm-m32r/ftrace.h          |    1 +
+>  include/asm-mn10300/ftrace.h       |    1 +
+>  include/linux/ftrace.h             |   41 ++++++++++++++++++-----------------
+>  14 files changed, 34 insertions(+), 20 deletions(-)
 
---- linux-2.6.29-rc6-git5.orig/init/Kconfig
-+++ linux-2.6.29-rc6-git5/init/Kconfig
-@@ -683,6 +683,8 @@ menuconfig EMBEDDED
-           environments which can tolerate a "non-standard" kernel.
-           Only use this if you really know what you are doing.
- 
-+if EMBEDDED
-+
- config UID16
- 	bool "Enable 16-bit UID system calls" if EMBEDDED
- 	depends on ARM || BLACKFIN || CRIS || FRV || H8300 || X86_32 || M68K || (S390 && !64BIT) || SUPERH || SPARC32 || (SPARC64 && COMPAT) || UML || (X86_64 && IA32_EMULATION)
-@@ -780,18 +782,6 @@ config PCSPKR_PLATFORM
-           This option allows to disable the internal PC-Speaker
-           support, saving some memory.
- 
--config COMPAT_BRK
--	bool "Disable heap randomization"
--	default y
--	help
--	  Randomizing heap placement makes heap exploits harder, but it
--	  also breaks ancient binaries (including anything libc5 based).
--	  This option changes the bootup default to heap randomization
--	  disabled, and can be overriden runtime by setting
--	  /proc/sys/kernel/randomize_va_space to 2.
--
--	  On non-ancient distros (post-2000 ones) N is usually a safe choice.
--
- config BASE_FULL
- 	default y
- 	bool "Enable full-sized data structures for core" if EMBEDDED
-@@ -897,6 +887,20 @@ config SLUB_DEBUG
- 	  SLUB sysfs support. /sys/slab will not exist and there will be
- 	  no support for cache validation etc.
- 
-+endif # EMBEDDED
-+
-+config COMPAT_BRK
-+	bool "Disable heap randomization"
-+	default y
-+	help
-+	  Randomizing heap placement makes heap exploits harder, but it
-+	  also breaks ancient binaries (including anything libc5 based).
-+	  This option changes the bootup default to heap randomization
-+	  disabled, and can be overriden runtime by setting
-+	  /proc/sys/kernel/randomize_va_space to 2.
-+
-+	  On non-ancient distros (post-2000 ones) N is usually a safe choice.
-+
- choice
- 	prompt "Choose SLAB allocator"
- 	default SLUB
+Pulled, thanks a lot Steve!
+
+	Ingo
