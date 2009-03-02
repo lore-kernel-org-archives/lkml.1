@@ -1,136 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZCBM1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbZCBM16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbZCBM1n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 07:27:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbZCBM1e
+	id S1757592AbZCBM16 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 07:27:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZCBM1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 07:27:34 -0500
-Received: from clegg.madduck.net ([193.242.105.96]:42097 "EHLO
-	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbZCBM1d (ORCPT
+	Mon, 2 Mar 2009 07:27:47 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:48197 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754240AbZCBM1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 07:27:33 -0500
-Date: Mon, 2 Mar 2009 13:27:18 +0100
-From: martin f krafft <madduck@madduck.net>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: /proc/sys/net/ip*/conf/all/* does not actually affect interfaces
-Message-ID: <20090302122718.GA3906@piper.oerlikon.madduck.net>
-Mail-Followup-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+	Mon, 2 Mar 2009 07:27:45 -0500
+Message-ID: <49ABD098.8080108@nokia.com>
+Date: Mon, 02 Mar 2009 14:27:04 +0200
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
-Content-Disposition: inline
-X-Motto: Keep the good times rollin'
-X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.26-1-amd64 x86_64
-X-Spamtrap: madduck.bogus@madduck.net
-X-Subliminal-Message: debian/rules!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tony Lindgren <tony@atomide.com>
+CC: David Brownell <david-b@pacbell.net>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Kim Kyuwon <chammoru@gmail.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
+       =?UTF-8?B?77+977+977+91L/vv70=?= <q1.kim@samsung.com>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>
+Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers	when
+ resuming
+References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com> <200902231023.49653.david-b@pacbell.net> <49A3EF96.3090603@nokia.com> <200902241410.19132.david-b@pacbell.net> <20090227220812.GM11594@atomide.com>
+In-Reply-To: <20090227220812.GM11594@atomide.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Mar 2009 12:27:09.0399 (UTC) FILETIME=[34D7AE70:01C99B32]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From a2ad80abeb9550782d4962472980e47df4055434 Mon Sep 17 00:00:00 2001
+From: Kim Kyuwon <chammoru@gmail.com>
+Date: Fri, 20 Feb 2009 13:10:08 +0100
+Subject: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when resuming
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Most registers lose its state when the processor wakes up from sleep state.
+Thus registers should be initialized, when the processor wakes up. However the
+current hsmmc 'resume' function doesn't consider this issue and finally makes
+deadlock. So this patch fixes this problem.
 
-Dear kernel gurus,
-
-I was unpleasantly surprised last night that a rogue machine managed
-to alter the IPv6 default route of one of my servers, despite my
-sysctl configuration, which disables RA for "all" interfaces during
-the boot sequence. It also changes the "default" values:
-
-  net.ipv6.conf.default.autoconf =3D 0
-  net.ipv6.conf.default.accept_ra =3D 0
-  net.ipv6.conf.default.accept_ra_defrtr =3D 0
-  net.ipv6.conf.default.accept_ra_pinfo =3D 0
-  net.ipv6.conf.default.accept_source_route =3D 0
-  net.ipv6.conf.default.accept_redirects =3D 0
-  net.ipv6.conf.default.forwarding =3D 0
-  net.ipv6.conf.all.autoconf =3D 0
-  net.ipv6.conf.all.accept_ra =3D 0
-  net.ipv6.conf.all.accept_ra_defrtr =3D 0
-  net.ipv6.conf.all.accept_ra_pinfo =3D 0
-  net.ipv6.conf.all.accept_source_route =3D 0
-  net.ipv6.conf.all.accept_redirects =3D 0
-  net.ipv6.conf.all.forwarding =3D 0
-
-Yet, net.ipv6.conf.eth0.* values were unchanged, and routing
-advertisements honoured.
-
-This also applies to files in ipv4/, e.g. accept_redirects
-
-A bit of investigation shows that something fishy is going on, or
-at least it's unexpected to me, because I recall the conf/all/*
-interface to do what it promised to do a while ago. Not anymore
-though.
-
-seamus# pwd
-/proc/sys/net
-seamus# head ipv4/conf/{all,eth0}/accept_redirects =20
-=3D=3D> ipv4/conf/all/accept_redirects <=3D=3D
-1
-
-=3D=3D> ipv4/conf/eth0/accept_redirects <=3D=3D
-1
-seamus# echo 0 >| ipv4/conf/all/accept_redirects =20
-seamus# head ipv4/conf/{all,eth0}/accept_redirects =20
-=3D=3D> ipv4/conf/all/accept_redirects <=3D=3D
-0
-
-=3D=3D> ipv4/conf/eth0/accept_redirects <=3D=3D
-1
+Signed-off-by: Kim Kyuwon <chammoru@gmail.com>
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+---
 
 
 
-***** shouldn't ipv4/conf/eth0/accept_redirects be 0 too??
 
-
-same with ipv6:
-
-seamus# head ipv6/conf/{all,eth0}/accept_ra
-=3D=3D> ipv6/conf/all/accept_ra <=3D=3D
-1
-
-=3D=3D> ipv6/conf/eth0/accept_ra <=3D=3D
-1
-seamus# echo 0 >| ipv6/conf/all/accept_ra
-seamus# head ipv6/conf/{all,eth0}/accept_ra
-=3D=3D> ipv6/conf/all/accept_ra <=3D=3D
-0
-
-=3D=3D> ipv6/conf/eth0/accept_ra <=3D=3D
-1
+Here is Kim Kyuwon's patch without the 'host is never null in suspend / resume'
+assumption, and leaving the issue of SDBP for later.
 
 
 
-What is going on? Is this my fault, did something change in the
-kernel, or is this a bug?
 
---=20
-martin | http://madduck.net/ | http://two.sentenc.es/
-=20
-"in the figure of the president, george w. bush, the incompetence,
- stupidity, and sheer inhumanity that characterize so much of
- america's money-mad corporate elite find their quintessentially
- repulsive expression."
-                                 -- journalist, aftermath of katrina
-=20
-spamtraps: madduck.bogus@madduck.net
 
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
-Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+ drivers/mmc/host/omap_hsmmc.c |   55 +++++++++++++++++++++++-----------------
+ 1 files changed, 32 insertions(+), 23 deletions(-)
 
-iEYEARECAAYFAkmr0KIACgkQIgvIgzMMSnVFsQCg0RNPgtlbcCY9fwsbDty81r1a
-XKsAoJD4YHSqVY8HRT+PuTy10+sYw+EV
-=6yxq
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index a631c81..1047cb5 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -56,6 +56,7 @@
+ #define SDVS18			(0x5 << 9)
+ #define SDVS30			(0x6 << 9)
+ #define SDVS33			(0x7 << 9)
++#define SDVS_MASK		0x00000E00
+ #define SDVSCLR			0xFFFFF1FF
+ #define SDVSDET			0x00000400
+ #define AUTOIDLE		0x1
+@@ -891,6 +892,34 @@ static int omap_hsmmc_get_ro(struct mmc_host *mmc)
+ 	return pdata->slots[0].get_ro(host->dev, 0);
+ }
+ 
++static void omap_hsmmc_init(struct mmc_omap_host *host)
++{
++	u32 hctl, capa, value;
++
++	/* Only MMC1 supports 3.0V */
++	if (host->id == OMAP_MMC1_DEVID) {
++		hctl = SDVS30;
++		capa = VS30 | VS18;
++	} else {
++		hctl = SDVS18;
++		capa = VS18;
++	}
++
++	value = OMAP_HSMMC_READ(host->base, HCTL) & ~SDVS_MASK;
++	OMAP_HSMMC_WRITE(host->base, HCTL, value | hctl);
++
++	value = OMAP_HSMMC_READ(host->base, CAPA);
++	OMAP_HSMMC_WRITE(host->base, CAPA, value | capa);
++
++	/* Set the controller to AUTO IDLE mode */
++	value = OMAP_HSMMC_READ(host->base, SYSCONFIG);
++	OMAP_HSMMC_WRITE(host->base, SYSCONFIG, value | AUTOIDLE);
++
++	/* Set SD bus power bit */
++	value = OMAP_HSMMC_READ(host->base, HCTL);
++	OMAP_HSMMC_WRITE(host->base, HCTL, value | SDBP);
++}
++
+ static struct mmc_host_ops mmc_omap_ops = {
+ 	.request = omap_mmc_request,
+ 	.set_ios = omap_mmc_set_ios,
+@@ -906,7 +935,6 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 	struct mmc_omap_host *host = NULL;
+ 	struct resource *res;
+ 	int ret = 0, irq;
+-	u32 hctl, capa;
+ 
+ 	if (pdata == NULL) {
+ 		dev_err(&pdev->dev, "Platform Data is missing\n");
+@@ -1011,28 +1039,7 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 	if (pdata->slots[host->slot_id].wires >= 4)
+ 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+ 
+-	/* Only MMC1 supports 3.0V */
+-	if (host->id == OMAP_MMC1_DEVID) {
+-		hctl = SDVS30;
+-		capa = VS30 | VS18;
+-	} else {
+-		hctl = SDVS18;
+-		capa = VS18;
+-	}
+-
+-	OMAP_HSMMC_WRITE(host->base, HCTL,
+-			OMAP_HSMMC_READ(host->base, HCTL) | hctl);
+-
+-	OMAP_HSMMC_WRITE(host->base, CAPA,
+-			OMAP_HSMMC_READ(host->base, CAPA) | capa);
+-
+-	/* Set the controller to AUTO IDLE mode */
+-	OMAP_HSMMC_WRITE(host->base, SYSCONFIG,
+-			OMAP_HSMMC_READ(host->base, SYSCONFIG) | AUTOIDLE);
+-
+-	/* Set SD bus power bit */
+-	OMAP_HSMMC_WRITE(host->base, HCTL,
+-			OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
++	omap_hsmmc_init(host);
+ 
+ 	/* Request IRQ for MMC operations */
+ 	ret = request_irq(host->irq, mmc_omap_irq, IRQF_DISABLED,
+@@ -1222,6 +1229,8 @@ static int omap_mmc_resume(struct platform_device *pdev)
+ 			dev_dbg(mmc_dev(host->mmc),
+ 					"Enabling debounce clk failed\n");
+ 
++		omap_hsmmc_init(host);
++
+ 		if (host->pdata->resume) {
+ 			ret = host->pdata->resume(&pdev->dev, host->slot_id);
+ 			if (ret)
+-- 
+1.5.6.3
