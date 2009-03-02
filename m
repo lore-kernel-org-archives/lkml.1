@@ -1,280 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbZCBXns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbZCBXsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbZCBXns (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZCBXnk
+	id S1757241AbZCBXsc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZCBXsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:43:40 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54143 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752758AbZCBXnj (ORCPT
+	Mon, 2 Mar 2009 18:48:24 -0500
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:47020 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752852AbZCBXsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:43:39 -0500
-Date: Tue, 3 Mar 2009 08:42:18 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: paulmck@linux.vnet.ibm.com, Bharata B Rao <bharata.rao@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] remove rq->lock from cpuacct cgroup (Was Re:
- [PATCH] cpuacct: add a branch prediction
-Message-Id: <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1236005770.5330.583.camel@laptop>
-References: <49A65455.4030204@cn.fujitsu.com>
-	<20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
-	<344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
-	<18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
-	<1235645076.4645.4781.camel@laptop>
-	<934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com>
-	<1235647682.4948.15.camel@laptop>
-	<145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
-	<20090226164509.GB6634@linux.vnet.ibm.com>
-	<20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090227012915.GF6634@linux.vnet.ibm.com>
-	<20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
-	<1236005770.5330.583.camel@laptop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 18:48:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=0xW+3ldSHOn00bI/05u4L+7IC6RpNBQQpkmTcZmjr2zhm5uMzOa6kqI6kk8d4lVql2u4XgeA8wyrbER2Z/dNFIBaMnpBNLv16d6e7CHlQmOx6t4B2Zdi9FAYQMaS0+mvg/w1FDN5UBkQkJK/L9E5K9VMmL/I5llPlVBx+Qp4zMA=  ;
+X-YMail-OSG: qcIfuDQVM1n1xlagHwdDLjecwwGijOPgBuw7Oja_uiIJFoU6293hvQ8NIOqjybXd9p7_S28L2Dn8LdB0xTxUsRi9vOV7RprMWKGJGUyAURRGPbr.o3QxmnBO_AHMno6yBi7hjUEmSzMGXkYUS_VhCHwDHm8mHj8gAR8daft67ZyORhGh9SvaX6QgyfSN
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Date: Mon, 2 Mar 2009 15:48:18 -0800
+User-Agent: KMail/1.9.10
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       tglx@linutronix.de
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200903021520.30826.david-b@pacbell.net> <20090302232650.GA14515@elte.hu>
+In-Reply-To: <20090302232650.GA14515@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200903021548.19504.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Mar 2009 15:56:10 +0100
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Fri, 2009-02-27 at 12:22 +0900, KAMEZAWA Hiroyuki wrote:
+On Monday 02 March 2009, Ingo Molnar wrote:
 > 
-> Comments below..
-> 
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > What's unfortunate is that you prefer not to fix that
+> > > > IRQF_DISABLED bug in lockdep, which you co-"maintain".
+> > > > When running with lockdep, that bug (a) introduces bugs
+> > > > in some drivers and (b) hides bugs in others.  You've
+> > > > rejected even a minimal warning fix, to help minimize
+> > > > the amount of time developers waste on (a) and (b).
+> > > 
+> > > I've come to the conclusion that the only technically sound solution is
+> > > to do as I proposed today, utterly eliminate !IRQF_DISABLED handlers.
 > > 
-> > cgroup/cpuacct subsystem counts cpu usage by 64bit coutnter in
-> > per-cpu object. In read-side (via cpuacct.usage file), for reading 64bit
-> > value in safe manner, it takes rq->lock of (other) cpus.
-> > 
-> > In general, taking rq->lock of other cpus from codes not for scheduler
-> > is not good. This patch tries to remove rq->lock used in read-side.
-> > 
-> > To read 64bit value in safe, this patch uses seqcounter.
-> > 
-> > Pros.
-> >   - rq->lock is not necessary.
-> > Cons.
-> >   - When updating counter, sequence number must be updated.
-> >     (I hope this per-cpu sequence number is on cache...)
-> >   - not simple.
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> >  kernel/sched.c |  141 ++++++++++++++++++++++++++++++++++++++++++---------------
-> >  1 file changed, 105 insertions(+), 36 deletions(-)
-> > 
-> > Index: mmotm-2.6.29-Feb24/kernel/sched.c
-> > ===================================================================
-> > --- mmotm-2.6.29-Feb24.orig/kernel/sched.c
-> > +++ mmotm-2.6.29-Feb24/kernel/sched.c
-> > @@ -9581,6 +9581,67 @@ struct cgroup_subsys cpu_cgroup_subsys =
-> >  
-> >  #ifdef CONFIG_CGROUP_CPUACCT
-> >  
-> > +#ifndef CONFIG_64BIT
-> > +DEFINE_PER_CPU(struct seqcount, cpuacct_cgroup_seq);
-> > +
-> > +static inline void cpuacct_start_counter_update(void)
-> > +{
-> > +	/* This is called under rq->lock and IRQ is off */
-> > +	struct seqcount *s = &get_cpu_var(cpuacct_cgroup_seq);
-> > +
-> > +	write_seqcount_begin(s);
-> > +	put_cpu_var(cpuacct_cgroup_seq);
-> > +}
-> > +
-> > +static inline void cpuacct_end_counter_update(void)
-> > +{
-> > +	struct seqcount *s = &get_cpu_var(cpuacct_cgroup_seq);
-> > +
-> > +	write_seqcount_end(s);
-> > +	put_cpu_var(cpuacct_cgroup_seq);
-> > +}
+> > As you announced today.  If you truly believe that, then
+> > you should at least submit a warning patch for 2.6.29-rc
+> > ("driver X isn't setting IRQF_DISABLED, reimplement!")
 > 
-> It seems odd we disable/enable preemption in both, I would expect for
-> start to disable preemption, and have end enable it again, or use
-> __get_cpu_var() and assume preemption is already disabled (callsites are
-> under rq->lock, right?)
-> 
-yes. calles are under rq->lock...ok, you're right.
-I'll remove preepmtp disabling codes.
+> i have changed the BUG_ON() to a WARN_ONCE() message so the 
+> warning is in place now.
+
+The patch Peter sent doesn't relate in the least to removing
+the IRQF_DISABLED flag though.  Patches addressing that
+would be in setup_irq() code paths not IRQ dispatch.
 
 
-> > +static inline u64
-> > +cpuacct_read_counter(u64 *val, int cpu)
-> > +{
-> > +	struct seqcount *s = &per_cpu(cpuacct_cgroup_seq, cpu);
-> > +	unsigned int seq;
-> > +	u64 data;
-> > +
-> > +	do {
-> > +		seq = read_seqcount_begin(s);
-> > +		data = *val;
-> > +	} while (read_seqcount_retry(s, seq));
-> > +	return data;
-> > +}
-> > +/* This is a special funtion called against "offline" cpus. */
-> > +static inline void cpuacct_reset_offline_counter(u64 *val, int cpu)
-> > +{
-> > +	struct seqcount *s = &per_cpu(cpuacct_cgroup_seq, cpu);
-> > +
-> > +	preempt_disable();
-> > +	write_seqcount_begin(s);
-> > +	*val = 0;
-> > +	write_seqcount_end(s);
-> > +	preempt_enable();
-> > +}
+> > with a Documentation/feature-removal-schedule.txt plan for 
+> > removing that mechanism. [...]
 > 
-> And here you double disable preemption, quite useless if you take a
-> remote cpu's per-cpu data.
-> 
-Ok, maybe this "reset" from a user should be under rq->lock.
-(But reading will not be under rq->lock.)
+> you are misunderstanding the workings and purpose of 
+> feature-removal-schedule.txt. It is mainly used for 
+> functionality that is user-visible.
+
+If by "user" you include "kernel developers", yes;
+otherwise, I'd dispute "mainly".  The first several
+entries right now relate to kernel interfaces, as
+do quite a lot of the others.
 
 
-> > +#else
-> > +static inline void cpuacct_start_counter_update(void)
-> > +{
-> > +}
-> > +static inline void cpuacct_end_counter_update(void)
-> > +{
-> > +}
-> > +static inline u64 cpuacct_read_counter(u64 *val, int cpu)
-> > +{
-> > +	return *val;
-> > +}
-> > +static inline void cpuacct_reset_offline_counter(u64 *val, int cpu)
-> > +{
-> > +	*val = 0;
-> > +}
-> > +#endif
-> > +
-> >  /*
-> >   * CPU accounting code for task groups.
-> >   *
-> > @@ -9596,6 +9657,11 @@ struct cpuacct {
-> >  	struct cpuacct *parent;
-> >  };
-> >  
-> > +struct cpuacct_work {
-> > +	struct work_struct work;
-> > +	struct cpuacct *cpuacct;
-> > +};
-> > +
-> >  struct cgroup_subsys cpuacct_subsys;
-> >  
-> >  /* return cpu accounting group corresponding to this container */
-> > @@ -9643,39 +9709,29 @@ cpuacct_destroy(struct cgroup_subsys *ss
-> >  	kfree(ca);
-> >  }
-> >  
-> > +/* In 32bit enviroment, seqcounter is used for reading 64bit in safe way */
-> >  static u64 cpuacct_cpuusage_read(struct cpuacct *ca, int cpu)
-> >  {
-> >  	u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
-> >  	u64 data;
-> >  
-> > -#ifndef CONFIG_64BIT
-> > -	/*
-> > -	 * Take rq->lock to make 64-bit read safe on 32-bit platforms.
-> > -	 */
-> > -	spin_lock_irq(&cpu_rq(cpu)->lock);
-> > -	data = *cpuusage;
-> > -	spin_unlock_irq(&cpu_rq(cpu)->lock);
-> > -#else
-> > -	data = *cpuusage;
-> > -#endif
-> > +	data = cpuacct_read_counter(cpuusage, cpu);
-> >  
-> >  	return data;
-> >  }
-> >  
-> > -static void cpuacct_cpuusage_write(struct cpuacct *ca, int cpu, u64 val)
-> > +/* called by per-cpu workqueue */
-> > +static void cpuacct_cpuusage_reset_cpu(struct work_struct *work)
-> >  {
-> > +	struct cpuacct_work *cw = container_of(work, struct cpuacct_work, work);
-> > +	struct cpuacct *ca = cw->cpuacct;
-> > +	int cpu = get_cpu();
-> >  	u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
-> >  
-> > -#ifndef CONFIG_64BIT
-> > -	/*
-> > -	 * Take rq->lock to make 64-bit write safe on 32-bit platforms.
-> > -	 */
-> > -	spin_lock_irq(&cpu_rq(cpu)->lock);
-> > -	*cpuusage = val;
-> > -	spin_unlock_irq(&cpu_rq(cpu)->lock);
-> > -#else
-> > -	*cpuusage = val;
-> > -#endif
-> > +	cpuacct_start_counter_update();
-> > +	*cpuusage = 0;
-> > +	cpuacct_end_counter_update();
-> > +	put_cpu();
-> >  }
-> >  
-> >  /* return total cpu usage (in nanoseconds) of a group */
-> > @@ -9691,23 +9747,34 @@ static u64 cpuusage_read(struct cgroup *
-> >  	return totalcpuusage;
-> >  }
-> >  
-> > -static int cpuusage_write(struct cgroup *cgrp, struct cftype *cftype,
-> > -								u64 reset)
-> > +static int cpuacct_cpuusage_reset(struct cgroup *cgrp, unsigned int event)
-> >  {
-> >  	struct cpuacct *ca = cgroup_ca(cgrp);
-> > -	int err = 0;
-> > -	int i;
-> > -
-> > -	if (reset) {
-> > -		err = -EINVAL;
-> > -		goto out;
-> > +	int cpu;
-> > +	/*
-> > +	 * Reset All counters....doesn't need to be fast.
-> > +	 * "ca" will be stable while doing this. We are in write() syscall.
-> > +	 */
-> > +	get_online_cpus();
-> > +	/*
-> > +	 * Because we use alloc_percpu() for allocating counter, we have
-> > +	 * a counter per a possible cpu. Reset all online's by workqueue and
-> > +	 * reset offline cpu's directly.
-> > +	 */
-> > +	for_each_possible_cpu(cpu) {
-> > +		if (cpu_online(cpu)) {
-> > +			struct cpuacct_work cw;
-> > +			INIT_WORK(&cw.work, cpuacct_cpuusage_reset_cpu);
-> > +			cw.cpuacct = ca;
-> > +			schedule_work_on(cpu, &cw.work);
-> > +			flush_work(&cw.work);
-> > +		} else {
-> > +			u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
-> > +			cpuacct_reset_offline_counter(cpuusage, cpu);
-> > +		}
-> 
-> I'm not particularly convinced this is the right way, schedule_work_on()
-> sounds way expensive for setting a variable to 0.
-> 
-yes, yes..
+> It is sometimes used for  
+> functionality that a subsystem has exported to a lot of drivers 
+> consciously and which is being removed.
 
-> Furthermore, if you want something like schedule_work_on() for each cpu,
-> there's schedule_on_each_cpu().
-> 
-It can't pass arguments...Maybe I should use rq->lock here to reset
-other cpu's value.
+The IRQ framework has very consciously exported IRQF_DISABLED.
+That functionality has been around for a very long time; I'm
+thinking at least ten years now.
 
-Thank you for review.
--Kame
+So removing IRQF_DISABLED -- if it's even agreed to be
+a good idea, which seems to be a minority opinion so far
+on this thread -- is very much the sort of thing one would
+expect to appear in that schedule.
 
