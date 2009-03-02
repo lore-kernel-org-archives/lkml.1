@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbZCBMF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbZCBMGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbZCBMF0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 07:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZCBMFM
+	id S1758029AbZCBMGp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 07:06:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZCBMGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 07:05:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48517 "EHLO mx2.mail.elte.hu"
+	Mon, 2 Mar 2009 07:06:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45695 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752224AbZCBMFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 07:05:11 -0500
-Date: Mon, 2 Mar 2009 13:04:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH] xen: core dom0 support
-Message-ID: <20090302120445.GA29015@elte.hu>
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <49A8DF28.4050301@goop.org> <20090228072055.GC9351@elte.hu> <49ABA633.2050903@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49ABA633.2050903@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753120AbZCBMGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 07:06:35 -0500
+Subject: Re: [PATCH 1/2] GFS2: fix sparse warnings: constant is so big it
+	is ...
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090221011125.5075.23703.stgit@vmbox.hanneseder.net>
+References: <20090221011033.5075.95929.stgit@vmbox.hanneseder.net>
+	 <20090221011125.5075.23703.stgit@vmbox.hanneseder.net>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Mon, 02 Mar 2009 12:01:22 +0000
+Message-Id: <1235995282.9571.822.camel@quoit>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Gerd Hoffmann <kraxel@redhat.com> wrote:
+Sorry for the delay - I'm back from holiday now and I've applied this
+patch to the -nmw git tree. Thanks,
 
-> Ingo Molnar wrote:
-> >>> In three years time, will we regret having merged this?
-> >> Its a pretty minor amount of extra stuff on top of what's been 
-> >> added over the last 3 years, so I don't think it's going to 
-> >> tip the scales on its own.  I wouldn't be comfortable in 
-> >> trying to merge something that's very intrusive.
-> > 
-> > Hm, how can the same code that you call "massive out-of-tree 
-> > patches which doesn't make anyone happy" in an out of tree 
-> > context suddenly become non-intrusive "minor amount of extra 
-> > stuff" in an upstream context?
+Steve.
+
+On Sat, 2009-02-21 at 02:11 +0100, Hannes Eder wrote:
+> Fix this sparse warnings:
+>   fs/gfs2/rgrp.c:156:23: warning: constant 0xffffffffffffffff is so big it is unsigned long long
+>   fs/gfs2/rgrp.c:157:23: warning: constant 0xaaaaaaaaaaaaaaaa is so big it is unsigned long long
+>   fs/gfs2/rgrp.c:158:23: warning: constant 0x5555555555555555 is so big it is long long
+>   fs/gfs2/rgrp.c:194:20: warning: constant 0x5555555555555555 is so big it is long long
+>   fs/gfs2/rgrp.c:204:44: warning: constant 0x5555555555555555 is so big it is long long
 > 
-> The current, out-of-tree xen kernel stuff is based on 2.6.18. 
-> [...]
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  fs/gfs2/rgrp.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
+> index c0abe69..34691d7 100644
+> --- a/fs/gfs2/rgrp.c
+> +++ b/fs/gfs2/rgrp.c
+> @@ -153,10 +153,10 @@ static inline u64 gfs2_bit_search(const __le64 *ptr, u64 mask, u8 state)
+>  {
+>  	u64 tmp;
+>  	static const u64 search[] = {
+> -		[0] = 0xffffffffffffffff,
+> -		[1] = 0xaaaaaaaaaaaaaaaa,
+> -		[2] = 0x5555555555555555,
+> -		[3] = 0x0000000000000000,
+> +		[0] = 0xffffffffffffffffULL,
+> +		[1] = 0xaaaaaaaaaaaaaaaaULL,
+> +		[2] = 0x5555555555555555ULL,
+> +		[3] = 0x0000000000000000ULL,
+>  	};
+>  	tmp = le64_to_cpu(*ptr) ^ search[state];
+>  	tmp &= (tmp >> 1);
+> @@ -191,7 +191,7 @@ u32 gfs2_bitfit(const u8 *buf, const unsigned int len, u32 goal, u8 state)
+>  	const __le64 *ptr = ((__le64 *)buf) + (goal >> 5);
+>  	const __le64 *end = (__le64 *)(buf + ALIGN(len, sizeof(u64)));
+>  	u64 tmp;
+> -	u64 mask = 0x5555555555555555;
+> +	u64 mask = 0x5555555555555555ULL;
+>  	u32 bit;
+>  
+>  	BUG_ON(state > 3);
+> @@ -201,7 +201,7 @@ u32 gfs2_bitfit(const u8 *buf, const unsigned int len, u32 goal, u8 state)
+>  	tmp = gfs2_bit_search(ptr, mask, state);
+>  	ptr++;
+>  	while(tmp == 0 && ptr < end) {
+> -		tmp = gfs2_bit_search(ptr, 0x5555555555555555, state);
+> +		tmp = gfs2_bit_search(ptr, 0x5555555555555555ULL, state);
+>  		ptr++;
+>  	}
+>  	/* Mask off any bits which are more than len bytes from the start */
+> 
 
-Sure, but what i'm pointing out is the following aspect of 
-communication:
-
->>> [...] At the moment its all running on massive out-of-tree 
->>> patches, which doesn't make anyone happy.  It's best that it 
->>> be in the mainline kernel.  You know, like we argue for 
->>> everything else.
-
-Comparing it to a 2.6.18 base is simply misleading when it comes 
-to upstreaming something. Enterprise distros will rebase, and 
-their out-of-tree pile of patches will shrink.
-
-	Ingo
