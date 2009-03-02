@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZCBXGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZCBXHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757290AbZCBXGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 18:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZCBXGD
+	id S1757370AbZCBXHa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 18:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZCBXHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 18:06:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54755 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750796AbZCBXGB (ORCPT
+	Mon, 2 Mar 2009 18:07:17 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58564 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbZCBXHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 18:06:01 -0500
-Date: Mon, 2 Mar 2009 15:04:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: djwong@us.ibm.com
-Cc: khali@linux-fr.org, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] lm90: Support the MAX6648/6692 chips
-Message-Id: <20090302150426.b22100c1.akpm@linux-foundation.org>
-In-Reply-To: <20090302210106.GD6550@plum>
-References: <20090302210106.GD6550@plum>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 2 Mar 2009 18:07:16 -0500
+Subject: Re: lockdep and threaded IRQs
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, dbrownell@users.sourceforge.net,
+       tglx@linutronix.de, me@felipebalbi.com, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, felipe.balbi@nokia.com,
+       dmitry.torokhov@gmail.com, sameo@openedhand.com
+In-Reply-To: <20090302145757.38a44307.akpm@linux-foundation.org>
+References: <1236030106.5330.1553.camel@laptop>
+	 <200903021409.21344.david-b@pacbell.net>
+	 <1236032371.5330.1654.camel@laptop>
+	 <20090302.144647.116847598.davem@davemloft.net>
+	 <20090302145757.38a44307.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 00:07:01 +0100
+Message-Id: <1236035221.5330.1798.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.25.91 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009 13:01:06 -0800
-"Darrick J. Wong" <djwong@us.ibm.com> wrote:
+On Mon, 2009-03-02 at 14:57 -0800, Andrew Morton wrote:
+> On Mon, 02 Mar 2009 14:46:47 -0800 (PST)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date: Mon, 02 Mar 2009 23:19:31 +0100
+> > 
+> > > I state that every !IRQF_DISABLED usage is a bug, either due to broken
+> > > hardware or broken drivers.
+> > 
+> > We'll send you the bill to have everyone's hardware
+> > replaced :-)
+> 
+> yes, but with what?
+> 
+> No matter how fast all our interrupt handlers are, running them with
+> local interrupts disabled has to worsen the worst-case interrupt
+> latency.
+> 
+> I don't see how removing !IRQF_DISABLED improves the kernel - in fact
+> there's a latency argument for making !IRQF_DISABLED the default.
 
-> @@ -776,7 +776,12 @@ static int lm90_detect(struct i2c_client *new_client, int kind,
->  			 && (reg_config1 & 0x3f) == 0x00
->  			 && reg_convrate <= 0x07) {
->  				kind = max6646;
-> -			}
-> +			} else
-> +			/* The MAX6648/6692 chips have a working man/chip id
-> +			 * and the same register set as the 6657.
-> +			 */
-> +			if (chip_id == 0x59 && address == 0x4C)
-> +				kind = max6657;
->  		}
+On preempt-rt all we do in the hardirq path is mask the interrupt line
+and wake up a thread. That's the extreme end of low latency interrupts.
 
-gack, the indenting and layout there is totally busted.
+Arguably there is a middle way that works for !-rt.
 
-
---- a/drivers/hwmon/lm90.c~lm90-support-the-max6648-6692-chips-fix
-+++ a/drivers/hwmon/lm90.c
-@@ -776,12 +776,14 @@ static int lm90_detect(struct i2c_client
- 			 && (reg_config1 & 0x3f) == 0x00
- 			 && reg_convrate <= 0x07) {
- 				kind = max6646;
--			} else
--			/* The MAX6648/6692 chips have a working man/chip id
--			 * and the same register set as the 6657.
--			 */
--			if (chip_id == 0x59 && address == 0x4C)
-+			} else if (chip_id == 0x59 && address == 0x4C) {
-+				/*
-+				 * The MAX6648/6692 chips have a working
-+				 * man/chip id and the same register set as the
-+				 * 6657.
-+				 */
- 				kind = max6657;
-+			}
- 		}
- 
- 		if (kind <= 0) { /* identification failed */
-_
+However, striving to enable interrupts in all interrupt handlers is
+asking for stack overruns. Interrupt nesting just isn't really helpful.
 
