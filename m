@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbZCBQWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbZCBQ0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753262AbZCBQWX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 11:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZCBQVz
+	id S1756321AbZCBQ0q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 11:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZCBQ0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 11:21:55 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50592 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754280AbZCBQVy (ORCPT
+	Mon, 2 Mar 2009 11:26:37 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:49087 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751532AbZCBQ0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 11:21:54 -0500
-Date: Mon, 2 Mar 2009 16:21:51 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: dmitry.torokhov@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>
-Subject: Re: [PATCH RESEND] Input: wm97xx: add BTN_TOUCH event to wm97xx to
-	use it with Android
-Message-ID: <20090302162151.GA24717@rakim.wolfsonmicro.main>
-References: <49ABE938.8040502@compulab.co.il> <20090302142838.GA23342@rakim.wolfsonmicro.main> <49AC0677.7040102@compulab.co.il>
-MIME-Version: 1.0
+	Mon, 2 Mar 2009 11:26:36 -0500
+Date: Mon, 2 Mar 2009 16:26:21 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Denys Fedoryschenko <denys@visp.net.lb>
+Cc: Matthew Garrett <mjg@redhat.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: 2.6.28 - 2.6.29-rc6-git5 regression, p4-clockmod/cpufreq probably
+Message-ID: <20090302162621.GB25965@silver.sucs.org>
+References: <200903021704.59663.denys@visp.net.lb> <20090302160658.GA32708@srcf.ucam.org> <200903021815.56191.denys@visp.net.lb>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49AC0677.7040102@compulab.co.il>
-X-Cookie: Sell by date stamped on bottom.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200903021815.56191.denys@visp.net.lb>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 06:16:55PM +0200, Mike Rapoport wrote:
+On Mon, Mar 02, 2009 at 06:15:56PM +0200, Denys Fedoryschenko wrote:
+> On Monday 02 March 2009 18:06:59 Matthew Garrett wrote:
+> > On Mon, Mar 02, 2009 at 05:04:59PM +0200, Denys Fedoryschenko wrote:
+> > > On 2.6.29-rc6 (git5 tested also) also shown in dmesg as available, but i
+> > > can't change anything.
+> >
+> > That's deliberate. p4-clockmod is for thermal management, not clock
+> > control (since it doesn't actually do any of that)
+> I know very well it is just throttling, and not real CPU power management.
+> At the end it does job.
+> 
+> In my case i used it for testing on "virtual" 113 Mhz video encoding to find 
+> out bottleneck on ffmpeg and to compare performance with Blackfin.
 
-> Most touchscreen drivers already have BTN_TOUCH event generation:
+If it's just throttling you want can't you do that via
+/proc/acpi/processor/CPU<N>/throttling ...
 
-Hrm, I'd found some other hits but I could well have been working on a
-platform tree with additional drivers merged at the time.
-
-> If there no objection I can make a similar patch for mainstone-wm97xx.c and ucb1400_ts.c
-
-No problem for me.  Please see the other two accelerated WM97xx drivers
-I posted today too.
+-- 
+Sitsofe | http://sucs.org/~sits/
