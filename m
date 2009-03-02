@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZCBVfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbZCBVgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbZCBVfw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 16:35:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbZCBVf2
+	id S1755879AbZCBVgw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 16:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZCBVgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 16:35:28 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:34246 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbZCBVf1 (ORCPT
+	Mon, 2 Mar 2009 16:36:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50162 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750904AbZCBVgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 16:35:27 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Mon, 02 Mar 2009 22:34:37 +0100
-Message-ID: <20090302213436.27388.13985.stgit@f10box.hanneseder.net>
-User-Agent: StGit/0.14.3.348.gcb02.dirty
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 2 Mar 2009 16:36:41 -0500
+Date: Mon, 2 Mar 2009 13:35:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: mamurph@cs.clemson.edu, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       oliver@neukum.org, fweisbec@gmail.com, torvalds@linux-foundation.org
+Subject: Re: PATCH [1/3] drivers/input/xpad.c: Improve Xbox 360 wireless
+ support  and add sysfs interface
+Message-Id: <20090302133551.1266f725.akpm@linux-foundation.org>
+In-Reply-To: <20090302211820.GA21489@kroah.com>
+References: <5aa163d00902282053h38b0febbyb37fc30855fdc985@mail.gmail.com>
+	<20090302130425.23cc628d.akpm@linux-foundation.org>
+	<20090302211820.GA21489@kroah.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 11/16 v2] NULL noise: drivers/ide/ide-*.c
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: trivial@kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090227012837.GQ28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warnings:
-  drivers/ide/ide-disk_proc.c:130:11: warning: Using plain integer as NULL pointer
-  drivers/ide/ide-floppy_proc.c:32:11: warning: Using plain integer as NULL pointer
-  drivers/ide/ide-proc.c:234:11: warning: Using plain integer as NULL pointer
-  drivers/ide/ide-tape.c:2141:11: warning: Using plain integer as NULL pointer
+On Mon, 2 Mar 2009 13:18:20 -0800
+Greg KH <greg@kroah.com> wrote:
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
-v2: other subject, as suggested by Al Viro
+> On Mon, Mar 02, 2009 at 01:04:25PM -0800, Andrew Morton wrote:
+> > On Sat, 28 Feb 2009 23:53:03 -0500
+> > Mike Murphy <mamurph@cs.clemson.edu> wrote:
+> > > ...
+> > >
+> > > +static ssize_t xpad_show_int(struct device *dev, struct device_attribute *attr,
+> > > +		char *buf)
+> > > +{
+> > > +	struct usb_xpad *xpad = to_xpad(dev);
+> > > +	int value;
+> > > +	if (attr == &dev_attr_rumble_enable)
+> > > +		value = xpad->rumble_enable;
+> > > +	else if (attr == &dev_attr_controller_number)
+> > > +		value = xpad->controller_number;
+> > > +	else if (attr == &dev_attr_controller_present)
+> > > +		value = xpad->controller_present;
+> > > +	else if (attr == &dev_attr_controller_type)
+> > > +		value = xpad->controller_type;
+> > > +	else if (attr == &dev_attr_left_trigger_full_axis)
+> > > +		value = xpad->left_trigger_full_axis;
+> > > +	else if (attr == &dev_attr_right_trigger_full_axis)
+> > > +		value = xpad->right_trigger_full_axis;
+> > > +	else
+> > > +		return -EIO;
+> > > +	return snprintf(buf, PAGE_SIZE, "%d\n", value);
+> > > +}
+> > 
+> > The code's a bit unusual.  Most drivers don't have all that
+> > if-then-else stuff.  They use a separate function for each sysfs file
+> > and then they wrap it all up into a macro which emits all the data and
+> > code for each file.
+> 
+> Yes, most don't, but that is because we used to not pass the attribute
+> variable to the show/store functions.  It was added so that we could
+> reduce the huge numbers of functions needed, to do stuff like this.  The
+> hwmon drivers are examples of other drivers that do their show/store
+> like this.
+> 
+> There's nothing wrong with it that I can see.
+> 
 
- drivers/ide/ide-disk_proc.c   |    2 +-
- drivers/ide/ide-floppy_proc.c |    2 +-
- drivers/ide/ide-proc.c        |    2 +-
- drivers/ide/ide-tape.c        |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+OK.  I think.
 
-diff --git a/drivers/ide/ide-disk_proc.c b/drivers/ide/ide-disk_proc.c
-index 3f2a078..eaea3be 100644
---- a/drivers/ide/ide-disk_proc.c
-+++ b/drivers/ide/ide-disk_proc.c
-@@ -127,5 +127,5 @@ const struct ide_proc_devset ide_disk_settings[] = {
- 	IDE_PROC_DEVSET(multcount,	0,    16),
- 	IDE_PROC_DEVSET(nowerr,		0,     1),
- 	IDE_PROC_DEVSET(wcache,		0,     1),
--	{ 0 },
-+	{ NULL },
- };
-diff --git a/drivers/ide/ide-floppy_proc.c b/drivers/ide/ide-floppy_proc.c
-index 3ec762c..fcd4d81 100644
---- a/drivers/ide/ide-floppy_proc.c
-+++ b/drivers/ide/ide-floppy_proc.c
-@@ -29,5 +29,5 @@ const struct ide_proc_devset ide_floppy_settings[] = {
- 	IDE_PROC_DEVSET(bios_head, 0,  255),
- 	IDE_PROC_DEVSET(bios_sect, 0,   63),
- 	IDE_PROC_DEVSET(ticks,	   0,  255),
--	{ 0 },
-+	{ NULL },
- };
-diff --git a/drivers/ide/ide-proc.c b/drivers/ide/ide-proc.c
-index 0ee8887..10a88bf 100644
---- a/drivers/ide/ide-proc.c
-+++ b/drivers/ide/ide-proc.c
-@@ -231,7 +231,7 @@ static const struct ide_proc_devset ide_generic_settings[] = {
- 	IDE_PROC_DEVSET(pio_mode, 0, 255),
- 	IDE_PROC_DEVSET(unmaskirq, 0, 1),
- 	IDE_PROC_DEVSET(using_dma, 0, 1),
--	{ 0 },
-+	{ NULL },
- };
- 
- static void proc_ide_settings_warn(void)
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 733cb51..cafc67d 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -2142,7 +2142,7 @@ static const struct ide_proc_devset idetape_settings[] = {
- 	__IDE_PROC_DEVSET(speed,	0, 0xffff, NULL, NULL),
- 	__IDE_PROC_DEVSET(tdsc,		IDETAPE_DSC_RW_MIN, IDETAPE_DSC_RW_MAX,
- 					mulf_tdsc, divf_tdsc),
--	{ 0 },
-+	{ NULL },
- };
- #endif
- 
+- This approach will require a large number of edits each time an
+  attribute is added/removed.
+
+- otoh, removing nasty macros is always nice.
+
+- This approach will generate slower code (which doesn't matter
+  here).
+
+- Was it demonstrated that this approach generates less code?
+
 
