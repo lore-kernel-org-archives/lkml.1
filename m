@@ -1,70 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbZCBSgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbZCBShO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbZCBSgm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 13:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZCBSgY
+	id S1760069AbZCBShO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 13:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZCBSgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 13:36:24 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:49785 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758048AbZCBSgW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 13:36:22 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhIFALO0q0lMQW1W/2dsb2JhbACBWdRAhBoG
-Date: Mon, 2 Mar 2009 13:36:17 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
-Message-ID: <20090302183617.GA25105@Krystal>
-References: <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com> <20090223173108.GB1441@Krystal> <alpine.DEB.2.00.0902231236340.18221@gandalf.stny.rr.com> <49A82851.5080707@redhat.com> <20090227180724.GA17947@Krystal> <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302102841.7e099670@infradead.org>
-Mime-Version: 1.0
+	Mon, 2 Mar 2009 13:36:53 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:54503 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753324AbZCBSgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 13:36:52 -0500
+Date: Mon, 2 Mar 2009 19:36:49 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Christie <michaelc@cs.wisc.edu>
+Cc: Grant Grundler <grundler@google.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mike.miller@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, hare@novell.com, iss_storagedev@hp.com,
+       iss.sbteam@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+Message-ID: <20090302183649.GB11787@kernel.dk>
+References: <20090227230927.GA21377@roadking.ldev.net> <20090302153246A.fujita.tomonori@lab.ntt.co.jp> <da824cf30903020919q2d3496e6sb5a253b0acba681a@mail.gmail.com> <49AC237A.7060005@cs.wisc.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090302102841.7e099670@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:34:57 up 2 days, 15:01,  3 users,  load average: 0.72, 0.55,
-	0.39
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49AC237A.7060005@cs.wisc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven (arjan@infradead.org) wrote:
-> > 
-> > Use map_vm_area() instead of vmap() in text_poke() for avoiding page
-> > allocation and delayed unmapping, and call vunmap_page_range() and
-> > local_flush_tlb() directly because this mapping is temporary and
-> > local.
-> > 
-> > At the result of above change, text_poke() becomes atomic and can be
-> > called from stop_machine() etc.
-> 
-> .... but text_poke() realistically needs to call stop_machine() since
-> you can't poke live code.... so that makes me wonder how useful this
-> is...
+On Mon, Mar 02 2009, Mike Christie wrote:
+> Grant Grundler wrote:
+>> On Sun, Mar 1, 2009 at 10:32 PM, FUJITA Tomonori
+>> <fujita.tomonori@lab.ntt.co.jp> wrote:
+>> ...
+>>>> +/*
+>>>> + * For operations that cannot sleep, a command block is allocated at init,
+>>>> + * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
+>>>> + * which ones are free or in use.  Lock must be held when calling this.
+>>>> + * cmd_free() is the complement.
+>>>> + */
+>>>> +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
+>>>> +{
+>>>> +     struct CommandList_struct *c;
+>>>> +     int i;
+>>>> +     union u64bit temp64;
+>>>> +     dma_addr_t cmd_dma_handle, err_dma_handle;
+>>>> +
+>>>> +     do {
+>>>> +             i = find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
+>>>> +             if (i == h->nr_cmds)
+>>>> +                     return NULL;
+>>>> +     } while (test_and_set_bit
+>>>> +              (i & (BITS_PER_LONG - 1),
+>>>> +               h->cmd_pool_bits + (i / BITS_PER_LONG)) != 0);
+>>> Using bitmap to manage free commands looks too complicated a bit to
+>>> me. Can we just use lists for command management?
+>>
+>> Bit maps are generally more efficient than lists since we touch less data.
+>> For both search and moving elements from free<->busy lists. This probably
+>> won't matter if we are talking less than 10K IOPS. And willy demonstrated
+>> other layers have pretty high overhead (block, libata and SCSI midlayer)
+>> at high transaction rates.
+>>
+>
+> If it was just needing this for the queuecommand path it would be  
+> simple. For the queuecommand path we could just use the scsi host  
+> tagging code for the index. You do not need a lock in the queuecommand  
+> path for getting a index and command, and you do not need to duplicate  
+> the tag/index allocation code in the block/scsi code
+>
+> A problem with the host tagging is what to do if you need a tag/index  
+> for a internal command. In the slow path like the device reset and cache  
+> flush case you could use a list or preallocated command or whatever  
+> other drivers are using that makes you happy.
+>
+> Or for the reset/shutdown/internal path could we come up with a  
+> extension to the existing API. Maybe just add some wrapper around some  
+> of blk_queue_start_tag that takes a the bqt (the bqt would come from the  
+> host wide one) and allocates the tag (need a something similar for the  
+> release side).
 
-Hi Arjan,
+This is precisely what I did for libata, here is is interleaved with
+some other stuff:
 
-Stop machine is not required when inserting a breakpoint. And cleverly
-using this breakpoint technique can permit modifying other instructions
-as well.
+http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=f557570ec6042370333b6b9c33bbbae175120a89
 
-Mathieu
+It needs a little more polish and so on, but the concept is identical to
+what you describe for this case. And I agree, it's much better to use
+the same index instead of generating/maintaining seperate bitmaps for
+this type of thing.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jens Axboe
+
