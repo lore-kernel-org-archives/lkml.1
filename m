@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZCCCJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZCCCRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbZCCCJh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 21:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbZCCCJ2
+	id S1755781AbZCCCRn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 21:17:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZCCCRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 21:09:28 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:46644 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753356AbZCCCJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 21:09:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kJjxQp7GSselnSlnyYMnIrgpizWCyHRLnPzK5OZUkre4Z733zEy/2z0Ppc3sEHblWE
-         l3d3+fvV77szifwUcz6xcCObV9DKoEihXaC5hX8adxiiNUlpMYKO8i8BLe+ZiGFoAXv3
-         PRWinyNGJKPtjrY9WhH2IXYAUph1i8fABglDo=
-Subject: Re: [PATCH 1/2] byteorder: add load/store_{endian} API
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-In-Reply-To: <alpine.LFD.2.00.0903021749030.3111@localhost.localdomain>
-References: <1236038817.5756.11.camel@brick>
-	 <alpine.LFD.2.00.0903021613590.3111@localhost.localdomain>
-	 <1236039944.5756.19.camel@brick>
-	 <alpine.LFD.2.00.0903021632320.3111@localhost.localdomain>
-	 <1236040845.5756.33.camel@brick>
-	 <alpine.LFD.2.00.0903021749030.3111@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 18:09:19 -0800
-Message-Id: <1236046159.5756.43.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 21:17:34 -0500
+Received: from mga14.intel.com ([143.182.124.37]:8369 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751789AbZCCCRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 21:17:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,293,1233561600"; 
+   d="scan'208";a="116039340"
+Date: Tue, 3 Mar 2009 10:16:02 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "eric@anholt.net" <eric@anholt.net>
+Subject: Re: [Bug #12210] 2.6.28-rc8 big regression in VM
+Message-ID: <20090303021602.GA8149@localhost>
+References: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera> <T1gm2CtAHBF.A.2vG.c4_QJB@chimera> <20081225112017.GB16080@localhost> <20090226180636.GE4374@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090226180636.GE4374@ics.muni.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 17:51 -0800, Linus Torvalds wrote:
+Hi Lukas,
+
+On Thu, Feb 26, 2009 at 08:06:36PM +0200, Lukas Hejtmanek wrote:
+> Hello,
 > 
-> On Mon, 2 Mar 2009, Harvey Harrison wrote:
-> > 
-> > OK, static inline it is then. Would you be opposed to an API like:
-> > 
-> > get_le16
-> > put_le16
-> > 
-> > to match with 
-> >
-> > get_unaligned_le16
-> > put_unaligned_le16
-> > 
-> > And make the existing unaligned helpers typesafe?
+> you may remember that I reported regression in VM. I used you filecache module
+> and discovered that the leaks are caused by these items:
+> # filecache 1.0
+> #      ino       size   cached cached% refcnt state dev          file
+>     167302         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+>     167301         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+>     167300         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+>     167299          4        4     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+>     167290          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+>     167289          8        8     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+>     167288         16       16     100      1    -- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
+>     167287         16       16     100      1    d- 00:08(tmpfs) /drm\040mm\040object\040(deleted)
 > 
-> That sounds much better to me. That said, I'm also wondering what the 
-> upside is of this all?
+> there are tons of those items:
+> cat /proc/filecache  | grep drm | wc -l
+> 14224
 > 
+> Do you have any clues what happens here? Is it a bug in kernel VM system or it
+> is more likely a bug in Intel's GEM drm driver? Right now it results in 500MB
+> of undropable cache.
 
-1) Recognize that some drivers/subsystems want this, or already
-implement it privately
+Could you provide the full filecache listing(the 'size' field may
+provide some info), and the contents in /proc/dri/0/*?
 
-2) [micro-optimization] Allow arches that do provide load/store swapped
-instructions to be used more often.
+> Also lsof reports many leaked file descriptors:
+> lsof | grep drm | wc -l
+> 7326
 
-3) make it more likely that people will actually use the unaligned
-helpers rather than open-coding the byteswapping, allowing arches that
-have no alignment constraints to just do regular loads if possible.
+Simply being "deleted" does not mean that they are leaked files.
+shmem files are special.
 
-Disadvantages:
-
-1) existing users of the get_unaligned bits may/will produce sparse
-warnings on the flag day
-
-2) the existing argument ordering of put_unaligned is opposite what
-is usually expected in such a helper
-
-3) [nitpicky] get/put almost always means reference taking/releasing,
-load/store is the usual verb used for such an API.
-
-Harvey
+Thanks,
+Fengguang
 
