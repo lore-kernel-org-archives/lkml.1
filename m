@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbZCCR3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZCCRj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbZCCR3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 12:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZCCR3p
+	id S1756548AbZCCRj5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 12:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZCCRjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 12:29:45 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:52570 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755358AbZCCR3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 12:29:45 -0500
-Message-ID: <49AD6904.6060903@us.ibm.com>
-Date: Tue, 03 Mar 2009 09:29:40 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 3 Mar 2009 12:39:48 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:48133 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752404AbZCCRjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 12:39:47 -0500
+Date: Tue, 3 Mar 2009 11:39:43 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6 v6] SGI RTC: add generic system interrupt
+Message-ID: <20090303173943.GA30012@sgi.com>
+References: <20090303151044.GA20016@sgi.com> <20090303151357.GA20120@sgi.com> <20090303153433.GA29454@elte.hu>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: "lkml," <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: Re: [TIP][RFC 3/7] futex: futex_lock_pi_atomic()
-References: <49AC73A9.4040804@us.ibm.com>  <49AC761C.907@us.ibm.com> <1236085438.5330.4336.camel@laptop>
-In-Reply-To: <1236085438.5330.4336.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090303153433.GA29454@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-
-Hi Peter,
-
-Thanks for taking a look.
-
-> On Mon, 2009-03-02 at 16:13 -0800, Darren Hart wrote:
->> + * Returns:
->> + * - 0 on success (futex_q is setup and FUTEX_WAITERS bit is set on the futex)
->> + * - 1 on a successful atomic acquisition of the lock
->> + * - A negative error code on failure
+On Tue, Mar 03, 2009 at 04:34:33PM +0100, Ingo Molnar wrote:
 > 
-> That utterly confused me for a while.
+> * Dimitri Sivanich <sivanich@sgi.com> wrote:
+> 
+> > This patch allocates a system interrupt vector for various 
+> > platform specific uses.
+> 
+> this is really ugly.
+> 
+> Also, why are all these symbols exported? There's no need to 
+> build the UV RTC driver as a module. It's either built-in or not 
+> built-in - it's small enough.
 
-Sorry about that, guess my doc-fu needs some work.
+OK.
 
 > 
-> Maybe something like:
+> this stuff:
 > 
->  0 - ready to wait
->  1 - acquired the lock
+> > +/* Function pointer for generic interrupt vector handling */
+> > +static void (*generic_interrupt_extension)(void);
+> > +static char generic_show_string[28];
+> > +static char generic_show_prefix[6];
+> > +
+> > +int is_generic_interrupt_registered()
+> > +{
+> > +	if (generic_interrupt_extension)
+> > +		return 1;
+> > +	else
+> > +		return 0;
+> > +}
+> > +
+> > +char *generic_interrupt_string(void)
+> > +{
+> > +	return generic_show_string;
+> > +}
+> > +
+> > +char *generic_interrupt_prefix(void)
+> > +{
+> > +	return generic_show_prefix;
+> > +}
 > 
->  <0 - error
+> is SMP unsafe, etc. etc. - not something we should ever call 
+> from a module. We just shouldnt do it in this form. What 
+> necessiates it?
 
-Sure thing, I've updated the patch and my git tree:
+I wanted a way to show specific strings when displaying irq statistics.  We could show these in a more generic way I suppose.
 
-http://git.kernel.org/?p=linux/kernel/git/dvhart/linux-2.6-tip-hacks.git;a=shortlog;h=requeue-pi-dev
+Any given platform should just be changing these once, hence the lack of need for locking.
 
-Note, this is a development branch and I continuously update it, 
-replacing patches, etc.
+> 
+> All we need is:
+> 
+> > +	/* generic IPI for platform specific use */
+> > +	alloc_intr_gate(GENERIC_INTERRUPT_VECTOR, generic_interrupt);
+> 
+> plus one trivial callback function - and then the UV platform 
+> uses it for its own purpose. It's not like two platforms will be 
+> running at once so there's no locking needed, etc.
 
+Right.  But still register the callback function as I have it now?
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+> 
+> > +#ifdef CONFIG_X86_64
+> > +extern void generic_interrupt(void);
+> > +#endif
+> 
+> in any case please make it symmetric across 32-bit and 64-bit - 
+> even though UV is 64-bit only.
+
+OK.
+
+> 
+> 	Ingo
