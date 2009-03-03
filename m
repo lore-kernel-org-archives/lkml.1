@@ -1,89 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZCCW5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZCCXAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757317AbZCCW5a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 17:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbZCCW5T
+	id S1756925AbZCCXAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 18:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZCCXAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 17:57:19 -0500
-Received: from mail.lang.hm ([64.81.33.126]:48159 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753141AbZCCW5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 17:57:18 -0500
-Date: Tue, 3 Mar 2009 14:55:34 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <greg@kroah.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: Elaboration on "Equivalent fix must already exist in Linus'
- tree"
-In-Reply-To: <43e72e890903031043m1fe417eay4420e734064a5882@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0903031454010.30837@asgard.lang.hm>
-References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>  <49ACC6B0.409@garzik.org>  <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>  <20090303072637.GB4440@kroah.com>  <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
-  <49AD4C74.1060704@s5r6.in-berlin.de>  <43e72e890903030923v27c47f5anc184c0e8085bc5c1@mail.gmail.com>  <49AD7361.308@s5r6.in-berlin.de> <43e72e890903031043m1fe417eay4420e734064a5882@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 3 Mar 2009 18:00:06 -0500
+Received: from n18.bullet.mail.mud.yahoo.com ([68.142.206.145]:46623 "HELO
+	n18.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754653AbZCCXAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 18:00:04 -0500
+X-Yahoo-Newman-Id: 756766.71191.bm@omp410.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=j1gL8FX7MDvmXRDryNTMC4Xu1i75/w2td3Rb12yGt3HFQF+lxXaoKrglVwzeekIxjXlyxz++DOA6e/SkTRWz1TLTF6MmgqPbn/A+9D0RZ886xeh48BKzetNv+jAe2BoQBpXM9TBSr9s8pHj7ECD3yPc/1KSi3t3ivLU2CEWVEYE=  ;
+X-YMail-OSG: OX5tHfgVM1l4tPKM17O7MFiHNqMdepNxPuhX1qNQwf9IBpaGvmzU1VYJbVjpn.jvIOJKhA93Xk.WiV2tR6WRiSnkQVWh0RxmQnu5khaKciMkag8LA18vbnQlOE7AZAm8RKpkPkEJE6NBU7y2s1c4Ipsz8PU._g_IJWEPIFESI6UHIaM5tOYGpI0cAL_yhv09iw5C4R1ThtksPM0d_l5iiO.Y5mnKuTnitmR2sUmyOowkzu5rxLxDNTvcQRux8sSMfR0LrWatwyaq5VxM1jtvxnCT3aykL8L2uBxNXw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage enumeration (v2)
+Date: Tue, 3 Mar 2009 14:59:59 -0800
+User-Agent: KMail/1.9.10
+Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200902081037.06645.david-b@pacbell.net> <200902261602.58832.david-b@pacbell.net> <1235737930.31223.117.camel@vega.slimlogic.co.uk>
+In-Reply-To: <1235737930.31223.117.camel@vega.slimlogic.co.uk>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="680960-2025645448-1236120935=:30837"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903031500.00166.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Friday 27 February 2009, Liam Girdwood wrote:
+> Sorry, this didn't apply. It looks like I'm missing an earlier patch(s)
+> here. Could you regenerate this and your core patch against latest
+> for-next.
 
---680960-2025645448-1236120935=:30837
-Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Here you go.
 
-On Tue, 3 Mar 2009, Luis R. Rodriguez wrote:
+- Dave
 
-> On Tue, Mar 3, 2009 at 10:13 AM, Stefan Richter
-> <stefanr@s5r6.in-berlin.de> wrote:
->> Luis R. Rodriguez wrote:
->>> On Tue, Mar 3, 2009 at 7:27 AM, Stefan Richter
->>> <stefanr@s5r6.in-berlin.de> wrote:
->>>> Luis R. Rodriguez wrote:
->>>>> OK small silly example is convincing distributions it may be a good
->>>>> idea to carry linux-next kernel packages as options to users to
->>>>> hopefully down the road reduce the delta between what they carry and
->>>>> what is actually upstream.
->>>> Distros would do their users a bigger favour if [...]
->>>
->>> I don't think I was very clear in what I meant about "carrying
->>> linux-next kernel packages as an option". What I meant was carrying it
->>> just as an option for those users who want to test bleeding edge
->>> without compiling their own linux-next, _not_ to merge linux-next
->>> things into their own default kernel release and shove it down users
->>> throats.
->>
->> Sorry, I meant "bigger favour" relative to carrying an own delta of
->> considerable size.
->>
->> Packaging linux-next would be fine if the workload isn't a problem for
->> the packager.  As pointed out elsewhere, there are caveats with
->> linux-next (e.g. a functionality which was in it yesterday could be gone
->> today because of a merge issue), but that's the nature of bleeding edge
->> of course.
->
-> Sure, understood. That's all I meant really.
->
-> My argument here I guess is that the reasons used to support the
-> "equivalent fix" policy for patches upstream makes it apparent why
-> linux-next is so important and my hope would be to get it more
-> exposure by having distributions let users test it (as an option to go
-> with bleeding edge) and this in turn help stabilize code in our next
-> release.
 
-what does "equivalent fix" in the linus tree have to do with -next?
+========== CUT HERE
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-patches don't go always go through -next to get to linus, things that are 
-in -next don't nessasarily _ever_ get to linus.
+Minor cleanups to the twl403 regulator driver, mostly enabled
+by other recent changes:  comments, shrink memory usage, add
+definition for one bit.
 
-you are mixing issues here.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/regulator/twl4030-regulator.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-David Lang
+--- a/drivers/regulator/twl4030-regulator.c
++++ b/drivers/regulator/twl4030-regulator.c
+@@ -36,13 +36,13 @@ struct twlreg_info {
+ 	/* twl4030 resource ID, for resource control state machine */
+ 	u8			id;
+ 
++	/* FIXED_LDO voltage */
++	u8			deciV;
++
+ 	/* voltage in mV = table[VSEL]; table_len must be a power-of-two */
+ 	u8			table_len;
+ 	const u16		*table;
+ 
+-	/* chip constraints on regulator behavior */
+-	u16			min_mV;
+-
+ 	/* used by regulator core */
+ 	struct regulator_desc	desc;
+ };
+@@ -93,6 +93,7 @@ static int twl4030reg_grp(struct regulat
+ #define P3_GRP		BIT(7)		/* "peripherals" */
+ #define P2_GRP		BIT(6)		/* secondary processor, modem, etc */
+ #define P1_GRP		BIT(5)		/* CPU/Linux */
++#define WARM_CFG	BIT(4)
+ 
+ static int twl4030reg_is_enabled(struct regulator_dev *rdev)
+ {
+@@ -325,14 +326,14 @@ static int twl4030fixed_list_voltage(str
+ {
+ 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
+ 
+-	return info->min_mV * 1000;
++	return info->deciV * 100 * 1000;
+ }
+ 
+ static int twl4030fixed_get_voltage(struct regulator_dev *rdev)
+ {
+ 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
+ 
+-	return info->min_mV * 1000;
++	return info->deciV * 100 * 1000;
+ }
+ 
+ static struct regulator_ops twl4030fixed_ops = {
+@@ -369,7 +370,7 @@ static struct regulator_ops twl4030fixed
+ #define TWL_FIXED_LDO(label, offset, mVolts, num) { \
+ 	.base = offset, \
+ 	.id = num, \
+-	.min_mV = mVolts, \
++	.deciV = mVolts / 100 , \
+ 	.desc = { \
+ 		.name = #label, \
+ 		.id = TWL4030_REG_##label, \
+@@ -381,7 +382,7 @@ static struct regulator_ops twl4030fixed
+ 	}
+ 
+ /*
+- * We list regulators here if systems need some level of
++ * We expose regulators here if systems need some level of
+  * software control over them after boot.
+  */
+ static struct twlreg_info twl4030_regs[] = {
+@@ -435,6 +436,7 @@ static int twl4030reg_probe(struct platf
+ 
+ 	/* Constrain board-specific capabilities according to what
+ 	 * this driver and the chip itself can actually do.
++	 * (Regulator core now does this for voltage constraints.)
+ 	 */
+ 	c = &initdata->constraints;
+ 	c->valid_modes_mask &= REGULATOR_MODE_NORMAL | REGULATOR_MODE_STANDBY;
 
---680960-2025645448-1236120935=:30837--
+
+
