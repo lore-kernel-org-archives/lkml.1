@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbZCCLKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751818AbZCCLKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbZCCLKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 06:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCCLKI
+	id S1751818AbZCCLKl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 06:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbZCCLKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 06:10:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59557 "EHLO hera.kernel.org"
+	Tue, 3 Mar 2009 06:10:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59560 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZCCLKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 06:10:07 -0500
-Date: Tue, 3 Mar 2009 11:09:35 GMT
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+	id S1752868AbZCCLKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 06:10:12 -0500
+Date: Tue, 3 Mar 2009 11:09:27 GMT
+From: Tim Blechmann <tim@klingt.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
+       robert.richter@amd.com, stable@kernel.org, tglx@linutronix.de,
+       tim@klingt.org, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1236077704.2675.4.camel@penberg-laptop>
-References: <1236077704.2675.4.camel@penberg-laptop>
-Subject: [tip:x86/mm] x86: move __VMALLOC_RESERVE to pgtable_32.c
-Message-ID: <tip-2b688dfd0a93cf3b17c38feef693361da47b0606@git.kernel.org>
-Git-Commit-ID: 2b688dfd0a93cf3b17c38feef693361da47b0606
+       robert.richter@amd.com, stable@kernel.org, tglx@linutronix.de,
+       tim@klingt.org, mingo@elte.hu
+In-Reply-To: <20090303100412.GC10085@erda.amd.com>
+References: <20090303100412.GC10085@erda.amd.com>
+Subject: [tip:x86/urgent] x86: oprofile: don't set counter width from cpuid on Core2
+Message-ID: <tip-780eef9492b16a1543a3b2ae9f9526a735fc9856@git.kernel.org>
+Git-Commit-ID: 780eef9492b16a1543a3b2ae9f9526a735fc9856
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 03 Mar 2009 11:09:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 03 Mar 2009 11:09:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2b688dfd0a93cf3b17c38feef693361da47b0606
-Gitweb:     http://git.kernel.org/tip/2b688dfd0a93cf3b17c38feef693361da47b0606
-Author:     "Pekka Enberg" <penberg@cs.helsinki.fi>
-AuthorDate: Tue, 3 Mar 2009 12:55:04 +0200
+Commit-ID:  780eef9492b16a1543a3b2ae9f9526a735fc9856
+Gitweb:     http://git.kernel.org/tip/780eef9492b16a1543a3b2ae9f9526a735fc9856
+Author:     "Tim Blechmann" <tim@klingt.org>
+AuthorDate: Thu, 19 Feb 2009 17:34:03 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 3 Mar 2009 12:06:59 +0100
+CommitDate: Tue, 3 Mar 2009 12:04:22 +0100
 
-x86: move __VMALLOC_RESERVE to pgtable_32.c
+x86: oprofile: don't set counter width from cpuid on Core2
 
-Impact: cleanup
+Impact: fix stuck NMIs and non-working oprofile on certain CPUs
 
-The __VMALLOC_RESERVE global variable is not used in init_32.c. Move that to
-pgtable_32.c to reduce the diff between init_32.c and init_64.c.
+Resetting the counter width of the performance counters on Intel's
+Core2 CPUs, breaks the delivery of NMIs, when running in x86_64 mode.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-LKML-Reference: <1236077704.2675.4.camel@penberg-laptop>
+This should fix bug #12395:
+
+  http://bugzilla.kernel.org/show_bug.cgi?id=12395
+
+Signed-off-by: Tim Blechmann <tim@klingt.org>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+LKML-Reference: <20090303100412.GC10085@erda.amd.com>
+Cc: <stable@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/mm/init_32.c    |    2 --
- arch/x86/mm/pgtable_32.c |    2 ++
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/oprofile/op_model_ppro.c |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 06708ee..5b06a2f 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -50,8 +50,6 @@
- #include <asm/setup.h>
- #include <asm/cacheflush.h>
- 
--unsigned int __VMALLOC_RESERVE = 128 << 20;
--
- unsigned long max_low_pfn_mapped;
- unsigned long max_pfn_mapped;
- 
-diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
-index 0951db9..e4032c8 100644
---- a/arch/x86/mm/pgtable_32.c
-+++ b/arch/x86/mm/pgtable_32.c
-@@ -20,6 +20,8 @@
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
- 
-+unsigned int __VMALLOC_RESERVE = 128 << 20;
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index e9f80c7..10131fb 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -78,8 +78,18 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+ 	if (cpu_has_arch_perfmon) {
+ 		union cpuid10_eax eax;
+ 		eax.full = cpuid_eax(0xa);
+-		if (counter_width < eax.split.bit_width)
+-			counter_width = eax.split.bit_width;
 +
- /*
-  * Associate a virtual page frame with a given physical page frame 
-  * and protection flags for that frame.
++		/*
++		 * For Core2 (family 6, model 15), don't reset the
++		 * counter width:
++		 */
++		if (!(eax.split.version_id == 0 &&
++			current_cpu_data.x86 == 6 &&
++				current_cpu_data.x86_model == 15)) {
++
++			if (counter_width < eax.split.bit_width)
++				counter_width = eax.split.bit_width;
++		}
+ 	}
+ 
+ 	/* clear all counters */
