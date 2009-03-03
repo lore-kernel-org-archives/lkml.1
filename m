@@ -1,127 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbZCCEyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZCCF2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbZCCEyY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 23:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZCCEyP
+	id S1754025AbZCCF2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 00:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbZCCF2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 23:54:15 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39050 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753630AbZCCEyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 23:54:14 -0500
-Date: Tue, 3 Mar 2009 05:54:06 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
-Message-ID: <20090303045406.GD3973@wotan.suse.de>
-References: <20090223161312.GA30279@Krystal> <alpine.DEB.2.00.0902231125520.18221@gandalf.stny.rr.com> <20090223173108.GB1441@Krystal> <alpine.DEB.2.00.0902231236340.18221@gandalf.stny.rr.com> <49A82851.5080707@redhat.com> <20090227180724.GA17947@Krystal> <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AC10E9.1090102@redhat.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 3 Mar 2009 00:28:39 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54829 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbZCCF2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 00:28:39 -0500
+Message-ID: <49ACC037.2090507@cn.fujitsu.com>
+Date: Tue, 03 Mar 2009 13:29:27 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] cgroups: show correct file mode
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 12:01:29PM -0500, Masami Hiramatsu wrote:
-> ---
-> 
-> Use map_vm_area() instead of vmap() in text_poke() for avoiding page 
-> allocation
-> and delayed unmapping, and call vunmap_page_range() and local_flush_tlb()
-> directly because this mapping is temporary and local.
-> 
-> At the result of above change, text_poke() becomes atomic and can be called
-> from stop_machine() etc.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Cc: Nick Piggin <npiggin@suse.de>
-> ---
->  arch/x86/include/asm/alternative.h |    1 +
->  arch/x86/kernel/alternative.c      |   36 
->  +++++++++++++++++++++++++++++-------
->  include/linux/vmalloc.h            |    1 +
->  init/main.c                        |    3 +++
->  mm/vmalloc.c                       |    2 +-
->  5 files changed, 35 insertions(+), 8 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/include/asm/alternative.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/include/asm/alternative.h
-> +++ linux-2.6/arch/x86/include/asm/alternative.h
-> @@ -177,6 +177,7 @@ extern void add_nops(void *insns, unsign
->   * The _early version expects the memory to already be RW.
->   */
-> 
-> +extern void text_poke_init(void);
->  extern void *text_poke(void *addr, const void *opcode, size_t len);
->  extern void *text_poke_early(void *addr, const void *opcode, size_t len);
-> 
-> Index: linux-2.6/arch/x86/kernel/alternative.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/alternative.c
-> +++ linux-2.6/arch/x86/kernel/alternative.c
-> @@ -12,6 +12,7 @@
->  #include <asm/nmi.h>
->  #include <asm/vsyscall.h>
->  #include <asm/cacheflush.h>
-> +#include <asm/tlbflush.h>
->  #include <asm/io.h>
-> 
->  #define MAX_PATCH_LEN (255-1)
-> @@ -485,6 +486,16 @@ void *text_poke_early(void *addr, const
->  	return addr;
->  }
-> 
-> +static struct vm_struct *text_poke_area[2];
-> +static DEFINE_SPINLOCK(text_poke_lock);
-> +
-> +void __init text_poke_init(void)
-> +{
-> +	text_poke_area[0] = get_vm_area(PAGE_SIZE, VM_ALLOC);
-> +	text_poke_area[1] = get_vm_area(2 * PAGE_SIZE, VM_ALLOC);
-> +	BUG_ON(!text_poke_area[0] || !text_poke_area[1]);
-> +}
-> +
->  /**
->   * text_poke - Update instructions on a live kernel
->   * @addr: address to modify
-> @@ -501,8 +512,9 @@ void *__kprobes text_poke(void *addr, co
->  	unsigned long flags;
->  	char *vaddr;
->  	int nr_pages = 2;
-> -	struct page *pages[2];
-> -	int i;
-> +	struct page *pages[2], **pgp = pages;
-> +	int i, ret;
-> +	struct vm_struct *vma;
-> 
->  	if (!core_kernel_text((unsigned long)addr)) {
->  		pages[0] = vmalloc_to_page(addr);
+Andrew, please drop these 2 patches:
+  cgroup-allow-subsys-to-set-default-mode-of-its-own-file.patch
+  cgroup-memcg-show-correct-file-mode.patch
 
-This is really good....
+Here is a patch to replace them.
 
-> @@ -515,12 +527,22 @@ void *__kprobes text_poke(void *addr, co
->  	BUG_ON(!pages[0]);
->  	if (!pages[1])
->  		nr_pages = 1;
-> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-> -	BUG_ON(!vaddr);
-        ^^^^^^^^^^^^^^
-This really is nasty bug in text_poke, and I never knew why it was
-allowed to live for so long!
 
-Thanks,
-Nick
+=============
+
+
+From: Li Zefan <lizf@cn.fujitsu.com>
+Date: Tue, 3 Mar 2009 08:55:58 +0800
+Subject: [PATCH] cgroups: show correct file mode
+
+We have some read-only files and write-only files, but currently they
+are all set to 0644, which is counter-intuitive and cause trouble
+for some cgroup tools like libcgroup.
+
+This patch adds 'mode' to struct cftype to allow cgroup subsys to set
+it's own files' file mode, and for the most cases cft->mode can be
+default to 0 and cgroup will figure out proper mode.
+
+Acked-by: Paul Menage <menage@google.com>
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/linux/cgroup.h |    5 +++++
+ kernel/cgroup.c        |   32 +++++++++++++++++++++++++++++++-
+ kernel/cpuset.c        |    1 +
+ 3 files changed, 37 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 6ad1989..31cc1a9 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -258,6 +258,11 @@ struct cftype {
+ 	 */
+ 	char name[MAX_CFTYPE_NAME];
+ 	int private;
++	/*
++	 * If not 0, file mode is set to this value, otherwise it will
++	 * be figured out automatically
++	 */
++	int mode;
+ 
+ 	/*
+ 	 * If non-zero, defines the maximum length of string that can
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 379baa3..043b24e 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1750,6 +1750,33 @@ static int cgroup_create_dir(struct cgroup *cgrp, struct dentry *dentry,
+ 	return error;
+ }
+ 
++/**
++ * cgroup_file_mode - deduce file mode of a control file
++ * @cft: the control file in question
++ *
++ * returns cft->mode if ->mode is not 0
++ * returns 0644 if it has both a read and a write handler
++ * returns 0444 if it has only a read handler
++ * returns 0200 if it has only a write hander
++ */
++static int cgroup_file_mode(const struct cftype *cft)
++{
++	int mode = 0;
++
++	if (cft->mode)
++		return cft->mode;
++
++	if (cft->read || cft->read_u64 || cft->read_s64 ||
++	    cft->read_map || cft->read_seq_string)
++		mode |= 0444;
++
++	if (cft->write || cft->write_u64 || cft->write_s64 ||
++	    cft->write_string || cft->trigger)
++		mode |= 0200;
++
++	return mode;
++}
++
+ int cgroup_add_file(struct cgroup *cgrp,
+ 		       struct cgroup_subsys *subsys,
+ 		       const struct cftype *cft)
+@@ -1757,6 +1784,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+ 	struct dentry *dir = cgrp->dentry;
+ 	struct dentry *dentry;
+ 	int error;
++	int mode;
+ 
+ 	char name[MAX_CGROUP_TYPE_NAMELEN + MAX_CFTYPE_NAME + 2] = { 0 };
+ 	if (subsys && !test_bit(ROOT_NOPREFIX, &cgrp->root->flags)) {
+@@ -1767,7 +1795,8 @@ int cgroup_add_file(struct cgroup *cgrp,
+ 	BUG_ON(!mutex_is_locked(&dir->d_inode->i_mutex));
+ 	dentry = lookup_one_len(name, dir, strlen(name));
+ 	if (!IS_ERR(dentry)) {
+-		error = cgroup_create_file(dentry, 0644 | S_IFREG,
++		mode = cgroup_file_mode(cft);
++		error = cgroup_create_file(dentry, mode | S_IFREG,
+ 						cgrp->root->sb);
+ 		if (!error)
+ 			dentry->d_fsdata = (void *)cft;
+@@ -2349,6 +2378,7 @@ static struct cftype files[] = {
+ 		.write_u64 = cgroup_tasks_write,
+ 		.release = cgroup_tasks_release,
+ 		.private = FILE_TASKLIST,
++		.mode = 0644,
+ 	},
+ 
+ 	{
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index a46d693..31e28b3 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1678,6 +1678,7 @@ static struct cftype files[] = {
+ 		.read_u64 = cpuset_read_u64,
+ 		.write_u64 = cpuset_write_u64,
+ 		.private = FILE_MEMORY_PRESSURE,
++		.mode = 0444,
+ 	},
+ 
+ 	{
+-- 
+1.5.4.rc3
+
+
