@@ -1,137 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZCCJ25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbZCCJc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbZCCJ25 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 04:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZCCJ2s
+	id S1755633AbZCCJc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 04:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbZCCJcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 04:28:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45774 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753265AbZCCJ2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 04:28:47 -0500
-Date: Tue, 3 Mar 2009 10:27:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH] Text Edit Lock - kprobes architecture independent
-	support (v2)
-Message-ID: <20090303092750.GG11484@elte.hu>
-References: <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <20090303000054.GC3906@Krystal> <20090303003237.GA30221@elte.hu> <20090303013124.GB7783@Krystal>
+	Tue, 3 Mar 2009 04:32:16 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:57053 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbZCCJcP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 04:32:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=dWHS3UXYm8lJVcZ4CkyNWyBBEQupcbEHwOZcd7uBs0wMkpLSbs5ESgwG7tX2GB3Qmu
+         MiqOgZGpdRtmpejqEGXTpJciFziEWN5OaMqbVKrey3+GuBDeuTgKkilfHCUE4jxK1Lyn
+         zcNrczwCRjx9tbKm19AmbqqqqcH9dN7FVP9tI=
+Message-ID: <49ACF8FE.2020904@panasas.com>
+Date: Tue, 03 Mar 2009 11:31:42 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090303013124.GB7783@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Large amount of scsi-sgpool objects
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> Hi,
+> 
+> 
+> I am noticing that there are a lot of objects active after a few tens 
+> minutes of running xfs_fsr.
+> 
+> $ slabtop
+>   OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME                   
+> 818616 818616 100%    0.16K  34109       24    136436K sgpool-8
+> 253692 253692 100%    0.62K  42282        6    169128K sgpool-32
+>  52017  52016  99%    2.50K  17339        3    138712K sgpool-128
+>  26220  26219  99%    0.31K   2185       12      8740K sgpool-16
+>   8927   8574  96%    0.03K     79      113       316K size-32
+> 
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Looks like a leak, by failing to call scsi_release_buffers()
+somehow. (Which was changed recently)
 
-> @@ -709,7 +711,8 @@ int __kprobes register_kprobe(struct kpr
->  
->  	if (kprobe_enabled)
->  		arch_arm_kprobe(p);
+> $ uname -a
+> Linux yaguchi 2.6.29-rc6-rt #1 SMP PREEMPT RT 2009-02-19 23:12:33 
+> +0100 i686 athlon i386 GNU/Linux
+> 
 
-hm, it's cleaner now, but there's serious locking dependency 
-problems visible in the patch:
+Did you have a chance to try exact same thing with vanilla 2.6.29-rc6?
 
-> -
-> +out_unlock_text:
-> +	mutex_unlock(&text_mutex);
->  out:
->  	mutex_unlock(&kprobe_mutex);
+try a bisect -- drivers/scsi/scsi_lib.c there should not be more then
+a couple of patches
 
-this one creates a (text_mutex -> kprobe_mutex) dependency. 
-(also you removed a newline spuriously - dont do that)
+> What could be the problem that there are so many objects around and not 
+> freed? 
 
-> @@ -746,8 +749,11 @@ valid_p:
->  		 * enabled and not gone - otherwise, the breakpoint would
->  		 * already have been removed. We save on flushing icache.
->  		 */
-> -		if (kprobe_enabled && !kprobe_gone(old_p))
-> +		if (kprobe_enabled && !kprobe_gone(old_p)) {
-> +			mutex_lock(&text_mutex);
->  			arch_disarm_kprobe(p);
-> +			mutex_unlock(&text_mutex);
-> +		}
->  		hlist_del_rcu(&old_p->hlist);
+Only one reason, failing to call scsi_release_buffers()
 
-(kprobe_mutex -> text_mutex) dependency. AB-BA deadlock.
+There should not be more then .can_queue sg-pool objects in flight
+per disk. Which is rarely more then 255
 
->  	} else {
->  		if (p->break_handler && !kprobe_gone(p))
-> @@ -918,7 +924,6 @@ static int __kprobes pre_handler_kretpro
->  		}
->  
->  		arch_prepare_kretprobe(ri, regs);
-> -
+This makes the system pretty much unusable after a while as it 
+> runs towards a low-memory condition.
+> 
+> $ free
+>              total       used       free     shared    buffers     cached
+> Mem:        766592     758688       7904          0          0     137184
+> -/+ buffers/cache:     621504     145088
+> Swap:       795136         32     795104
+> 
+> 
+> $ cat /proc/meminfo 
+> MemTotal:         766592 kB
+> MemFree:           79388 kB
+> Buffers:               0 kB
+> Cached:            62120 kB
+> SwapCached:         1428 kB
+> Active:            74472 kB
+> Inactive:         113524 kB
+> Active(anon):      58228 kB
+> Inactive(anon):    69124 kB
+> Active(file):      16244 kB
+> Inactive(file):    44400 kB
+> Unevictable:           0 kB
+> Mlocked:               0 kB
+> HighTotal:             0 kB
+> HighFree:              0 kB
+> LowTotal:         766592 kB
+> LowFree:           79388 kB
+> SwapTotal:        795136 kB
+> SwapFree:         792404 kB
+> Dirty:                 0 kB
+> Writeback:             0 kB
+> AnonPages:        124440 kB
+> Mapped:            13672 kB
+> Slab:             478576 kB
+> SReclaimable:       5316 kB
+> SUnreclaim:       473260 kB
+> PageTables:         1220 kB
+> NFS_Unstable:          0 kB
+> Bounce:                0 kB
+> WritebackTmp:          0 kB
+> CommitLimit:     1178432 kB
+> Committed_AS:   4294655912 kB
+> VmallocTotal:     245816 kB
+> VmallocUsed:       27404 kB
+> VmallocChunk:     197108 kB
+> HugePages_Total:       0
+> HugePages_Free:        0
+> HugePages_Rsvd:        0
+> HugePages_Surp:        0
+> Hugepagesize:       4096 kB
+> DirectMap4k:      696256 kB
+> DirectMap4M:       90112 kB
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-spurious (and wrong) newline removal.
+Please try some more tests, could it be a race that gets exposed in -rt?
 
->  		/* XXX(hch): why is there no hlist_move_head? */
->  		INIT_HLIST_NODE(&ri->hlist);
->  		kretprobe_table_lock(hash, &flags);
-> @@ -1280,12 +1285,14 @@ static void __kprobes enable_all_kprobes
->  	if (kprobe_enabled)
->  		goto already_enabled;
->  
-> +	mutex_lock(&text_mutex);
->  	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
->  		head = &kprobe_table[i];
->  		hlist_for_each_entry_rcu(p, node, head, hlist)
->  			if (!kprobe_gone(p))
->  				arch_arm_kprobe(p);
->  	}
-> +	mutex_unlock(&text_mutex);
-
-this one creates a (kprobe_mutex -> text_mutex) dependency 
-again.
-
-> @@ -1310,6 +1317,7 @@ static void __kprobes disable_all_kprobe
->  
->  	kprobe_enabled = false;
->  	printk(KERN_INFO "Kprobes globally disabled\n");
-> +	mutex_lock(&text_mutex);
->  	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
->  		head = &kprobe_table[i];
->  		hlist_for_each_entry_rcu(p, node, head, hlist) {
-> @@ -1317,7 +1325,7 @@ static void __kprobes disable_all_kprobe
->  				arch_disarm_kprobe(p);
->  		}
->  	}
-> -
-> +	mutex_unlock(&text_mutex);
->  	mutex_unlock(&kprobe_mutex);
-
-And this one in the reverse direction again.
-
-The dependencies are totally wrong. The text lock (a low level 
-lock) should nest inside the kprobes mutex (which is the higher 
-level lock).
-
-Have you reviewed the locking dependencies when writing this 
-patch, at all? That's one of the first things to do when adding 
-a new lock.
-
-	Ingo
+Boaz
