@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZCCAi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759571AbZCCAjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbZCCAi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 19:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZCCAiP
+	id S1759571AbZCCAjm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 19:39:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZCCAjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 19:38:15 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:64314 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbZCCAiO (ORCPT
+	Mon, 2 Mar 2009 19:39:33 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:63795 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751183AbZCCAjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 19:38:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nLFbW6Akrc/bT6i1mARFPksTXHNQRoAR/tsuy1/rGMggdR48VSjrXE0rHan9yl4oBX
-         cCeSbW25i/96Hrgw+9MsimoatgWYG5RAky2pWu7ujeEFuS41GGMvi5wPdbQvxJH6iRKY
-         kS0XPoTJvBD0WhUe8Lk6G3HX0Ja+TgYGkkn6c=
-Subject: Re: [PATCH 2/2] unaligned: add load/store_{endian}_noalign API
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-In-Reply-To: <alpine.LFD.2.00.0903021616440.3111@localhost.localdomain>
-References: <1236038818.5756.12.camel@brick>
-	 <alpine.LFD.2.00.0903021616440.3111@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 02 Mar 2009 16:38:10 -0800
-Message-Id: <1236040690.5756.31.camel@brick>
+	Mon, 2 Mar 2009 19:39:32 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhwFAA4KrElMQW1W/2dsb2JhbACBWdNEhAYG
+Date: Mon, 2 Mar 2009 19:39:28 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH] Text Edit Lock - Architecture Independent Code
+Message-ID: <20090303003928.GA6106@Krystal>
+References: <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <20090303000054.GC3906@Krystal> <20090303003237.GA30221@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090303003237.GA30221@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:37:53 up 2 days, 21:04,  3 users,  load average: 0.49, 0.65,
+	0.67
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 16:18 -0800, Linus Torvalds wrote:
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> On Mon, 2 Mar 2009, Harvey Harrison wrote:
-> >
-> > Add a typed API with the usual argument ordering and use load/store,
-> > this API is also consistent with the aligned versions.
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> This naming is horrible. It doesn't match the normal pattern we have in 
-> the kernel. 
+> > +/*
+> > + * Take and release the kernel text modification lock, used for code patching.
+> > + * Users of this lock can sleep.
+> > + */
+> > +extern void kernel_text_lock(void);
+> > +extern void kernel_text_unlock(void);
 > 
-> Why not just try to fix the current (well-named) "get_unaligned_le16()" 
-> problems, instead of introducing a new (and badly named) version of them.
+> Locking APIs with hidden semantics are very ugly. Remember 
+> lock_kernel()?
 > 
-> So NAK on both of these.
+> > +/*
+> > + * mutex protecting text section modification (dynamic code patching).
+> > + * some users need to sleep (allocating memory...) while they hold this lock.
+> > + */
+> > +static DEFINE_MUTEX(text_mutex);
+> 
+> Please update those sites to do an explicit:
+> 
+> 	mutex_lock(&text_mutex);
+> 
+> instead.
+> 
+> That way we save a function call, and we'll also see exactly 
+> what type of lock is being taken, etc.
+> 
 
-Well, the current API can be made typesafe, and then the sparse fallout
-can be fixed...I introduced the new API to make it opt-in and then
-phase out the old API over time to avoid that.  As I already had a new
-API, 'fixing' the argument order was doable as well.  Comments from AKPM
-made me drop the get/put name as well, and load/store seemed the most
-natural replacement.
+OK. However we'll have to export the text_mutex symbol and use it in
+various locations. As long as we are fine with that, I'll provide an
+updated patch.
 
-The other reason was currently we have:
+Mathieu
 
-Aligned:
-le16_to_cpup
+> 	Ingo
 
-Unaligned:
-get_unaligned_le16
-put_unaligned_le16
-
-And although the le16_to_cpup is at worst the same as le16_to_cpu(*p) it
-is more efficient on arches like powerpc and sparc that have a load-swap
-instruction...but few people use it because of the goofy name.  Same goes
-for the get/put_unaligned, people don't use them and just open-code the
-byteswapping whenever there is going to be unaligned access.
-
-So I was hoping to make it easier/more obvious to use as well.
-
-Aligned:
-load_le16
-store_le16
-
-Unaligned (which degrades to aligned on arches without alignment restrictions)
-load_le16_noalign
-store_le16_noalign
-
-Cheers,
-
-Harvey
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
