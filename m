@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZCCVg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbZCCVgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbZCCVg0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 16:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbZCCVgN
+	id S1757641AbZCCVgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 16:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZCCVgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:36:13 -0500
-Received: from fifo99.com ([67.223.236.141]:56033 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756782AbZCCVgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:36:12 -0500
-Subject: Re: [patch 3/3] xtensa: ccount clocksource
-From: Daniel Walker <dwalker@fifo99.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Johannes Weiner <jw@emlix.com>, Chris Zankel <chris@zankel.net>,
-       linux-kernel@vger.kernel.org, John Stultz <johnstul@us.ibm.com>
-In-Reply-To: <20090303195401.GA2654@cmpxchg.org>
-References: <E1LeXCe-0006wA-5k@mailer.emlix.com>
-	 <E1LeXJ1-00071v-Dy@mailer.emlix.com> <1236102945.5937.1.camel@desktop>
-	 <20090303195401.GA2654@cmpxchg.org>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 13:36:04 -0800
-Message-Id: <1236116164.5937.22.camel@desktop>
+	Tue, 3 Mar 2009 16:36:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35650 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751935AbZCCVgo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 16:36:44 -0500
+Date: Tue, 3 Mar 2009 13:36:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] generic debug pagealloc
+Message-Id: <20090303133610.cb771fef.akpm@linux-foundation.org>
+In-Reply-To: <20090303160103.GB5812@localhost.localdomain>
+References: <20090303160103.GB5812@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 20:54 +0100, Johannes Weiner wrote:
-> On Tue, Mar 03, 2009 at 09:55:45AM -0800, Daniel Walker wrote:
-> > On Tue, 2009-03-03 at 16:30 +0100, Johannes Weiner wrote:
-> > > @ -29,6 +30,19 @@ unsigned long ccount_per_jiffy;              /* per 
-> > >  unsigned long nsec_per_ccount;         /* nsec per ccount increment
-> > > */
-> > >  #endif
-> > >  
-> > > +static cycle_t ccount_read(void)
-> > > +{
-> > > +       return (cycle_t)get_ccount();
-> > > +}
-> > > +
-> > > +static struct clocksource ccount_clocksource = {
-> > > +       .name = "ccount",
-> > > +       .rating = 200,
-> > > +       .read = ccount_read,
-> > > +       .mask = CLOCKSOURCE_MASK(32),
-> > > +       .mult = NSEC_PER_CCOUNT,
-> > > +};
-> > 
-> > You don't want to use the shift field?
-> 
-> Thanks for pointing it out.
-> 
-> To make sure I understood this:
-> 
-> If shift is 0, then a walltime adjustment would be done in 1/2^0
-> steps, meaning an adjustment of counting one nanosecond more or less
-> per ccount.
+On Wed, 4 Mar 2009 01:01:04 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-The shift and mult are just used to convert your cycle counters current
-count into nanoseconds .. I'm not sure how much a zero shift would
-degrade the conversion to nanoseconds for your cycles counter tho. So it
-could be along the lines of what your suggesting above.
+> +static void unpoison_page(struct page *page)
+> +{
+> +	unsigned char *mem;
+> +	int i;
+> +
+> +	if (!page->poison)
+> +		return;
+> +
+> +	mem = kmap_atomic(page, KM_USER0);
+> +	for (i = 0; i < PAGE_SIZE; i++) {
+> +		if (mem[i] != PAGE_POISON) {
+> +			dump_broken_mem(mem);
+> +			break;
+> +		}
+> +	}
+> +	kunmap_atomic(mem, KM_USER0);
+> +	page->poison = false;
+> +}
+> +
+> +static void unpoison_pages(struct page *page, int n)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < n; i++)
+> +		unpoison_page(page + i);
+> +}
+> +
+> +void kernel_map_pages(struct page *page, int numpages, int enable)
+> +{
+> +	if (!debug_pagealloc_enabled)
+> +		return;
+> +
+> +	if (enable)
+> +		unpoison_pages(page, numpages);
+> +	else
+> +		poison_pages(page, numpages);
+> +}
 
-> To give this a finer granularity and smooth out adjustments, the shift
-> should be a trade-off between too much adjustment and no adjustment
-> progress in a sane amount of time (and, of course, to stay within
-> bounds of the used type).
-> 
-> Does that make sense?
+kernel_map_pages() is called from the memory-allocation and
+memory-freeing paths.  Hence it can be called from interrupt contexts.
 
-I don't really look at it in terms of walltime adjustments. The actual
-frequency of kernel time adjustments isn't defined in the clocksource
-structure AFAIK. From my experience you just want the clocksource to
-produce the most accurate nanosecond value your hardware can provide ,
-which would mean setting the shift as high as is safe for your hardware.
+KM_USER0 must not be used from interrupt context - it will corrupt the
+non-interrupt context's pte, causing unpleasing very hard to track down
+memory corruption.  Often memory which is getting written to the user's
+disk.  This makes users unhappy.
 
-I added John Stultz to the CC so he could comment further if he cares
-too.
+We could use KM_IRQ0 here.  The code should disable local interrupts
+when holding a KM_IRQ0 kmap.
 
-> I found a patch of yours that introduced clocksource_hz2shift() but it
-> seems it hasn't been merged (yet).  Is it yet to get integrated?
+If this code were to switch to using KM_IRQ0 then we still have a
+problem - if any other place in the kernel does a memory allcoation or
+free while holding a KM_IRQ0 kmap, then this new code will corrupt the
+caller's pte.
 
-I've been meaning to update it, but haven't gotten around to it. If you
-know the input values you can run that function once just to produce a
-shift which you define statically in the clocksource structure. Then use
-that shift value with the other helper clocksource_hz2mult() to produce
-a mult value.
+So I guess we'll need to create a new kmap_atomic slot for this
+application.  It will need interrupt protection - the page allocator can
+be called from interrupt context while it is already running in
+non-interrupt context.
 
-Daniel
 
+Alternatively, we could just not do the kmap_atomic() at all.  i386
+won't be using this code and IIRC the only other highmem architecture
+is powerpc32, and ppc32 appears to also have its own DEBUG_PAGEALLOC
+implementation.  So you could remove the kmap_atomic() stuff and put
+
+#ifdef CONFIG_HIGHMEM
+#error i goofed
+#endif
+
+in there.
