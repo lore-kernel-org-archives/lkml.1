@@ -1,76 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbZCCLz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbZCCMDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbZCCLz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 06:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbZCCLzM
+	id S1757008AbZCCMDt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 07:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZCCMDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 06:55:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50728 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZCCLzL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 06:55:11 -0500
-Subject: Re: [RFC][PATCH] remove rq->lock from cpuacct cgroup (Was Re:
- [PATCH] cpuacct: add a branch prediction
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: paulmck@linux.vnet.ibm.com, Bharata B Rao <bharata.rao@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
-References: <49A65455.4030204@cn.fujitsu.com>
-	 <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
-	 <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
-	 <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
-	 <1235645076.4645.4781.camel@laptop>
-	 <934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com>
-	 <1235647682.4948.15.camel@laptop>
-	 <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
-	 <20090226164509.GB6634@linux.vnet.ibm.com>
-	 <20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090227012915.GF6634@linux.vnet.ibm.com>
-	 <20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1236005770.5330.583.camel@laptop>
-	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1236066689.18955.27.camel@twins>
-	 <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
-	 <1236073236.18955.46.camel@twins>
-	 <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 12:54:48 +0100
-Message-Id: <1236081288.5330.4105.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 07:03:37 -0500
+Received: from mail.suse.de ([195.135.220.2]:51403 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751077AbZCCMDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 07:03:36 -0500
+Date: Tue, 3 Mar 2009 13:03:32 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jan Kara <jack@suse.cz>
+Cc: Kazuo Moriwaka <moriwaka@gmail.com>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] jbd header comment typo fix
+In-Reply-To: <20090226135038.GA976@atrey.karlin.mff.cuni.cz>
+Message-ID: <alpine.LNX.2.00.0903031303030.5295@jikos.suse.cz>
+References: <b294a32a0902052218y6f4f9f75h5616f285d306e9d9@mail.gmail.com> <20090226135038.GA976@atrey.karlin.mff.cuni.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 19:42 +0900, KAMEZAWA Hiroyuki wrote:
-> Peter Zijlstra  wrote:
-> > On Tue, 2009-03-03 at 18:04 +0900, KAMEZAWA Hiroyuki wrote:
-> >> Peter Zijlstra wrote:
-> >> > On Tue, 2009-03-03 at 08:42 +0900, KAMEZAWA Hiroyuki wrote:
-> >> >
-> >> >> > Furthermore, if you want something like schedule_work_on() for each
-> >> >> cpu,
-> >> >> > there's schedule_on_each_cpu().
-> >> >> >
-> >> >> It can't pass arguments...Maybe I should use rq->lock here to reset
-> >> >> other cpu's value.
-> >> >
-> >> > Why bother with serializing the reset code at all?
-> >> >
-> >>   I don't think reset v.s. read is problem but reset v.s. increment
-> >>   (read-modify-write) can't be ?
-> >
-> > Sure, can be, do we care?
-> >
-> If small/easy code allows us to declare "there are any racy case!
-> and you don't have to check whether you successfully reseted",
-> it's worth to do I think.
+On Thu, 26 Feb 2009, Jan Kara wrote:
 
-smp_call_function() it is...
+>   CCing trivial tree which is probably the best place for this.
 
+Applied, thanks.
+
+> > Sighned-off-by: Kazuo Moriwaka <moriwaka@redhat.com>
+
+BTW, when fixing typos, try not to introduce new ones :)
+
+-- 
+Jiri Kosina
+SUSE Labs
