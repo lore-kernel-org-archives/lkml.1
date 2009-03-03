@@ -1,60 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZCCSCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZCCSEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbZCCSCR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 13:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZCCSCD
+	id S1755487AbZCCSEo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 13:04:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZCCSEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 13:02:03 -0500
-Received: from mail.polezero.com ([216.68.55.34]:35872 "EHLO
-	firewall.polezero.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751084AbZCCSCB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 13:02:01 -0500
-Subject: Re: New HID device support
-From: Jason Noble <nobleja@polezero.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.0903031720380.5295@jikos.suse.cz>
-References: <1236096277.26321.29.camel@paradox.pz.local>
-	 <alpine.LNX.2.00.0903031720380.5295@jikos.suse.cz>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 13:01:49 -0500
-Message-Id: <1236103310.12185.1.camel@paradox.pz.local>
+	Tue, 3 Mar 2009 13:04:36 -0500
+Received: from verein.lst.de ([213.95.11.210]:48060 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751210AbZCCSEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 13:04:36 -0500
+Date: Tue, 3 Mar 2009 19:04:33 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Future of md multipath
+Message-ID: <20090303180433.GA27569@lst.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 17:21 +0100, Jiri Kosina wrote:
-> On Tue, 3 Mar 2009, Jason Noble wrote:
-> 
-> > Jiri,
-> > 	After a bit of googling I'm pretty sure you are the person to ask for
-> > help.
-> > 
-> > I have a new Kensington Slimblade Trackball 
-> > http://us.kensington.com/html/16632.html. This device just recently 
-> > started shipping, I'm probably one of the first few people to connect 
-> > one to linux.
-> > 
-> > Using "evtest /dev/input/eventX" two of the four buttons are not
-> > registering at all. With usbmon I can see data coming from these
-> > buttons.
-> > Can you help? If so, what info do you need?
-> > If not, can you point me in the correct direction?
-> 
-> Could you please compile your kernel with CONFIG_HID_DEBUG, modprobe the 
-> 'hid' module with 'debug=2' option, and send me the output that appears in 
-> dmesg when you
+Just noticed that we still have the old md-based multipath driver
+in the tree, which seem to not have gotten any attention since we
+got dm multipath.
 
-On a monolithic kernel I just pass usbhid.debug=2 at boot correct?
-
-> 
-> - connect the device
-> - press the non-working buttons
-> 
-> Thanks,
-> 
-
+Is there any reason to keep it or should we deprecate it and kill
+it after a couple of kernel releases?
