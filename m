@@ -1,96 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbZCCXa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZCCXdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbZCCXa1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 18:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZCCXaP
+	id S1756822AbZCCXdz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 18:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbZCCXdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 18:30:15 -0500
-Received: from web23608.mail.ird.yahoo.com ([87.248.115.51]:46264 "HELO
-	web23608.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753613AbZCCXaO convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 18:30:14 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Mar 2009 18:30:13 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Mv6Y6bpOuzB0WxtCTG0D/SrzGlF37uJ+o7nrFGHSJ+yI8+t540mWEXmVAbERUX2U2hkgJX2RcezelXniE4eKFSjM8h1/vTUwNIyIolwHVtcjaQAqDXh8uuyPpA6eTQvzkufePsLKmsQy8vltzkfPsB6svop0v6HZXxtVEygbMio=;
-X-YMail-OSG: 1Dzt90IVM1k8yXrYmTd1Eu_AiDj0JfuxPCvxiWIUCACpIJjKBDYU88cRjsnvK5pvwEUCNvLIHp5MNbJ73aamIohpgA0o_GbydGRfEuBQj1PIRXZEi11q4X8HKm3DcLVMvdkQwZVY.A2Y3TGnAxOuQa.xhMuDmdaX5h6IaL9a6kjg_gyZJ8vqreLS734dbhjG_jHn9aWBqArDL19Txm_ym8KH
-X-Mailer: YahooMailWebService/0.7.289.1
-Date: Tue, 3 Mar 2009 23:23:29 +0000 (GMT)
-From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Reply-To: etienne_lorrain@yahoo.fr
-Subject: [ANNOUNCE] Gujin bootloader version 2.5
-To: linux-kernel@vger.kernel.org
+	Tue, 3 Mar 2009 18:33:44 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53008 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755007AbZCCXdn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 18:33:43 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49ADBE29.4040706@s5r6.in-berlin.de>
+Date: Wed, 04 Mar 2009 00:32:57 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <544014.15275.qm@web23608.mail.ird.yahoo.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       Boaz Harrosh <bharrosh@panasas.com>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Large amount of scsi-sgpool objects
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr> <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain> <20090303192212.GA20705@elte.hu> <1236115544.15993.22.camel@localhost.localdomain> <20090303214454.GA8288@elte.hu> <1236119990.24019.35.camel@localhost.localdomain> <20090303230323.GA21644@elte.hu>
+In-Reply-To: <20090303230323.GA21644@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a new version v2.5 of Gujin at http://gujin.sf.net with some
-bugfixes and improvement, like:
+Ingo Molnar wrote:
+> i picked up a v1 patch from the SCSI list that 
+> i reported and which patch was sent to me. I did that in the 
+> hope to fix a serious lockup bug that is still unfixed in the
+> upstream kernel
 
- - Installer and boot code can be fully recompiled on 64 bits OS PCs,
- no 32 bits libraries needed.
-
- - support for FAT+ISO filesystem on the same device, so that you
- can transform an ISO image (by "./instboot boot.bin easypeasy-1.0.iso")
- to a superfloppy to boot (for instance) an EeePc from USB thumb drive
- or SD card.
- Some old EeePc may need an upgrade of their BIOS.
- Note for this one that there is a problem in the automounter of most Linux
- distribution and the resulting window appearing at device insertion shall 
- never be used (unless you see the boot.bio file).
- With such a modified easypeasy-1.0.iso, the ISOLINUX is still used, Gujin
- just simulate the BIOS disk converting reads of different sector size -
- more info in install.txt and "./instboot -h".
-
- - EXT4 is (partly) supported (if constant inode size), that part still
- need improvement but works for me.
-
- - more real mode segments are defined so that other people can add code
- easily.
-
- - When installing and asking to build a bootable FAT filesystem (complete 
- initialisation of a floppy or a thumb drive), support added for FAT32 and 
- autoselection of FAT12/FAT16/FAT32. When using FAT32, you cannot use the
- IDE interface to load the second stage bootloader (space restrictions in
- MBR).
- Nothing is changed to *probe* FAT32 filesystems, just stage 2 loading.
- The installer also try (by default) to align the data clusters of the FAT
- generated to the cluster size for performance reasons.
- The FAT32 filesystem checks good with another OS "chkdsk.exe" and
- obviously with Linux "fsck.vfat".
-
- - installer support /dev/mmcblk0, and /dev/mmcblk0p1 names as target
- (SD card)
-
- - some changes to EDID detection, is it working better for everybody?
-
- - The toolchain I use (GCC + Binutils + GMP + MPFR) can be generated by
- "make toolchain". I have compiled using GCC-4.2.4 to get a better code
- size and execution speed, but I tested the newer GCC-4.4 and it is
- working without known problem.
-
- - CC, GCC and CFLAGS variables can be used on the make command line
-
- - started but not finished support for GRUB_MULTIBOOT
- 
-I hope I did not create any regressions, at least I did not found any...
-
-Note that the code to simulate floppies in Gujin can convert sector
-sizes in between 512, 1024, 2048 and 4096 bytes/sector, and can be tested
-by creating a bootable DOS filesystem image (of a floppy) named DOS.BDI
-on a CDROM and booting it using Gujin, but that part is not new in this
-version. I still did not test 4096->512 conversion, if someone has a 4096
-bytes/sector HD, that could now be tested...
-
- Have fun,
- Etienne.
-
-
-
-      
+Perhaps you could avoid putting such fixes into published merge
+branches.  Have it in an off-topic branch and tell people with affected
+systems to locally merge such a branch themselves if it is strictly
+necessary to keep their development rolling.  (And if such an off-topic
+branch turns out to be unexpectedly long-lived, ping the choke point.)
+Just so that there is minimal surprise about which modifications your
+trees carry.
+-- 
+Stefan Richter
+-=====-==--= --== --=--
+http://arcgraph.de/sr/
