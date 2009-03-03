@@ -1,68 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZCCJlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbZCCJnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbZCCJlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 04:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZCCJlH
+	id S1755803AbZCCJnd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 04:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZCCJnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 04:41:07 -0500
-Received: from viefep13-int.chello.at ([62.179.121.33]:25445 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbZCCJlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 04:41:06 -0500
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH] remove rq->lock from cpuacct cgroup (Was Re:
- [PATCH] cpuacct: add a branch prediction
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: paulmck@linux.vnet.ibm.com, Bharata B Rao <bharata.rao@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
-References: <49A65455.4030204@cn.fujitsu.com>
-	 <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
-	 <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
-	 <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
-	 <1235645076.4645.4781.camel@laptop>
-	 <934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com>
-	 <1235647682.4948.15.camel@laptop>
-	 <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
-	 <20090226164509.GB6634@linux.vnet.ibm.com>
-	 <20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090227012915.GF6634@linux.vnet.ibm.com>
-	 <20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1236005770.5330.583.camel@laptop>
-	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1236066689.18955.27.camel@twins>
-	 <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 10:40:36 +0100
-Message-Id: <1236073236.18955.46.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 04:43:21 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:47164 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752486AbZCCJnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 04:43:20 -0500
+Date: Tue, 3 Mar 2009 10:43:17 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Christie <michaelc@cs.wisc.edu>
+Cc: Grant Grundler <grundler@google.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mike.miller@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, hare@novell.com, iss_storagedev@hp.com,
+       iss.sbteam@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+Message-ID: <20090303094317.GD11787@kernel.dk>
+References: <20090227230927.GA21377@roadking.ldev.net> <20090302153246A.fujita.tomonori@lab.ntt.co.jp> <da824cf30903020919q2d3496e6sb5a253b0acba681a@mail.gmail.com> <49AC237A.7060005@cs.wisc.edu> <20090302183649.GB11787@kernel.dk> <49AC4293.4030902@cs.wisc.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49AC4293.4030902@cs.wisc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 18:04 +0900, KAMEZAWA Hiroyuki wrote:
-> Peter Zijlstra wrote:
-> > On Tue, 2009-03-03 at 08:42 +0900, KAMEZAWA Hiroyuki wrote:
-> >
-> >> > Furthermore, if you want something like schedule_work_on() for each
-> >> cpu,
-> >> > there's schedule_on_each_cpu().
-> >> >
-> >> It can't pass arguments...Maybe I should use rq->lock here to reset
-> >> other cpu's value.
-> >
-> > Why bother with serializing the reset code at all?
-> >
->   I don't think reset v.s. read is problem but reset v.s. increment
->   (read-modify-write) can't be ?
+On Mon, Mar 02 2009, Mike Christie wrote:
+> Jens Axboe wrote:
+>> On Mon, Mar 02 2009, Mike Christie wrote:
+>>> Grant Grundler wrote:
+>>>> On Sun, Mar 1, 2009 at 10:32 PM, FUJITA Tomonori
+>>>> <fujita.tomonori@lab.ntt.co.jp> wrote:
+>>>> ...
+>>>>>> +/*
+>>>>>> + * For operations that cannot sleep, a command block is allocated at init,
+>>>>>> + * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
+>>>>>> + * which ones are free or in use.  Lock must be held when calling this.
+>>>>>> + * cmd_free() is the complement.
+>>>>>> + */
+>>>>>> +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
+>>>>>> +{
+>>>>>> +     struct CommandList_struct *c;
+>>>>>> +     int i;
+>>>>>> +     union u64bit temp64;
+>>>>>> +     dma_addr_t cmd_dma_handle, err_dma_handle;
+>>>>>> +
+>>>>>> +     do {
+>>>>>> +             i = find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
+>>>>>> +             if (i == h->nr_cmds)
+>>>>>> +                     return NULL;
+>>>>>> +     } while (test_and_set_bit
+>>>>>> +              (i & (BITS_PER_LONG - 1),
+>>>>>> +               h->cmd_pool_bits + (i / BITS_PER_LONG)) != 0);
+>>>>> Using bitmap to manage free commands looks too complicated a bit to
+>>>>> me. Can we just use lists for command management?
+>>>> Bit maps are generally more efficient than lists since we touch less data.
+>>>> For both search and moving elements from free<->busy lists. This probably
+>>>> won't matter if we are talking less than 10K IOPS. And willy demonstrated
+>>>> other layers have pretty high overhead (block, libata and SCSI midlayer)
+>>>> at high transaction rates.
+>>>>
+>>> If it was just needing this for the queuecommand path it would be   
+>>> simple. For the queuecommand path we could just use the scsi host   
+>>> tagging code for the index. You do not need a lock in the 
+>>> queuecommand  path for getting a index and command, and you do not 
+>>> need to duplicate  the tag/index allocation code in the block/scsi 
+>>> code
+>>>
+>>> A problem with the host tagging is what to do if you need a tag/index 
+>>>  for a internal command. In the slow path like the device reset and 
+>>> cache  flush case you could use a list or preallocated command or 
+>>> whatever  other drivers are using that makes you happy.
+>>>
+>>> Or for the reset/shutdown/internal path could we come up with a   
+>>> extension to the existing API. Maybe just add some wrapper around 
+>>> some  of blk_queue_start_tag that takes a the bqt (the bqt would come 
+>>> from the  host wide one) and allocates the tag (need a something 
+>>> similar for the  release side).
+>>
+>> This is precisely what I did for libata, here is is interleaved with
+>> some other stuff:
+>>
+>> http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=f557570ec6042370333b6b9c33bbbae175120a89
+>>
+>> It needs a little more polish and so on, but the concept is identical to
+>> what you describe for this case. And I agree, it's much better to use
+>> the same index instead of generating/maintaining seperate bitmaps for
+>> this type of thing.
+>>
+>
+> In that patch where does the tag come from? Is it from libata?
 
-Sure, can be, do we care?
+This specific one is for libata which reserves an internal tag, hence it
+just needs to wait for that. Splitting the tag map find/set/clear
+functions as your patch does is perfectly doable, no problem with that.
 
+>
+> What if we wanted and/or needed the bqt to give us a tag value and we  
+> need it for the lookup? It looks like for hpsa we could kill its  
+> find_first_zero_bit code and use and use the code in blk_queue_start_tag.
+>
+> iscsi also needs the unique tag and then it needs the  
+> blk_map_queue_find_tag functionality too. iscsi needs the lookup and tag  
+> for host/transport level commands that do not have a scsi  
+> command/request. The tag value has to be unique accross the  
+> host/transport (acutally just the transport, but ignore that for now to  
+> make it simple and because for software iscsi we do a host per transport  
+> connection). Do you think something like the attached patch would be ok  
+> (it is only compile tested)?
+
+> diff --git a/block/blk-tag.c b/block/blk-tag.c
+> index 3c518e3..0614faf 100644
+> --- a/block/blk-tag.c
+> +++ b/block/blk-tag.c
+> @@ -106,7 +106,7 @@ EXPORT_SYMBOL(blk_queue_free_tags);
+>  static int
+>  init_tag_map(struct request_queue *q, struct blk_queue_tag *tags, int depth)
+>  {
+> -	struct request **tag_index;
+> +	void **tag_index;
+>  	unsigned long *tag_map;
+>  	int nr_ulongs;
+>  
+> @@ -116,7 +116,7 @@ init_tag_map(struct request_queue *q, struct blk_queue_tag *tags, int depth)
+>  		       __func__, depth);
+>  	}
+>  
+> -	tag_index = kzalloc(depth * sizeof(struct request *), GFP_ATOMIC);
+> +	tag_index = kzalloc(depth * sizeof(void *), GFP_ATOMIC);
+>  	if (!tag_index)
+>  		goto fail;
+>  
+> @@ -219,7 +219,7 @@ EXPORT_SYMBOL(blk_queue_init_tags);
+>  int blk_queue_resize_tags(struct request_queue *q, int new_depth)
+>  {
+>  	struct blk_queue_tag *bqt = q->queue_tags;
+> -	struct request **tag_index;
+> +	void **tag_index;
+>  	unsigned long *tag_map;
+>  	int max_depth, nr_ulongs;
+>  
+> @@ -254,7 +254,7 @@ int blk_queue_resize_tags(struct request_queue *q, int new_depth)
+>  	if (init_tag_map(q, bqt, new_depth))
+>  		return -ENOMEM;
+>  
+> -	memcpy(bqt->tag_index, tag_index, max_depth * sizeof(struct request *));
+> +	memcpy(bqt->tag_index, tag_index, max_depth * sizeof(void *));
+>  	nr_ulongs = ALIGN(max_depth, BITS_PER_LONG) / BITS_PER_LONG;
+>  	memcpy(bqt->tag_map, tag_map, nr_ulongs * sizeof(unsigned long));
+>  
+> @@ -265,24 +265,12 @@ int blk_queue_resize_tags(struct request_queue *q, int new_depth)
+>  EXPORT_SYMBOL(blk_queue_resize_tags);
+>  
+>  /**
+> - * blk_queue_end_tag - end tag operations for a request
+> - * @q:  the request queue for the device
+> - * @rq: the request that has completed
+> - *
+> - *  Description:
+> - *    Typically called when end_that_request_first() returns %0, meaning
+> - *    all transfers have been done for a request. It's important to call
+> - *    this function before end_that_request_last(), as that will put the
+> - *    request back on the free list thus corrupting the internal tag list.
+> - *
+> - *  Notes:
+> - *   queue lock must be held.
+> + * blk_map_end_tag - end tag operation
+> + * @bqt: block queue tag
+> + * @tag: tag to clear
+>   **/
+> -void blk_queue_end_tag(struct request_queue *q, struct request *rq)
+> +void blk_map_end_tag(struct blk_queue_tag *bqt, int tag)
+>  {
+> -	struct blk_queue_tag *bqt = q->queue_tags;
+> -	int tag = rq->tag;
+> -
+>  	BUG_ON(tag == -1);
+>  
+>  	if (unlikely(tag >= bqt->real_max_depth))
+> @@ -292,10 +280,6 @@ void blk_queue_end_tag(struct request_queue *q, struct request *rq)
+>  		 */
+>  		return;
+>  
+> -	list_del_init(&rq->queuelist);
+> -	rq->cmd_flags &= ~REQ_QUEUED;
+> -	rq->tag = -1;
+> -
+>  	if (unlikely(bqt->tag_index[tag] == NULL))
+>  		printk(KERN_ERR "%s: tag %d is missing\n",
+>  		       __func__, tag);
+> @@ -313,9 +297,65 @@ void blk_queue_end_tag(struct request_queue *q, struct request *rq)
+>  	 */
+>  	clear_bit_unlock(tag, bqt->tag_map);
+>  }
+> +EXPORT_SYMBOL(blk_map_end_tag);
+> +
+> +/**
+> + * blk_queue_end_tag - end tag operations for a request
+> + * @q:  the request queue for the device
+> + * @rq: the request that has completed
+> + *
+> + *  Description:
+> + *    Typically called when end_that_request_first() returns %0, meaning
+> + *    all transfers have been done for a request. It's important to call
+> + *    this function before end_that_request_last(), as that will put the
+> + *    request back on the free list thus corrupting the internal tag list.
+> + *
+> + *  Notes:
+> + *   queue lock must be held.
+> + **/
+> +void blk_queue_end_tag(struct request_queue *q, struct request *rq)
+> +{
+> +	blk_map_end_tag(q->queue_tags, rq->tag);
+> +
+> +	list_del_init(&rq->queuelist);
+> +	rq->cmd_flags &= ~REQ_QUEUED;
+> +	rq->tag = -1;
+> +}
+>  EXPORT_SYMBOL(blk_queue_end_tag);
+>  
+>  /**
+> + * blk_map_start_tag - find a free tag
+> + * @bqt: block queue tag
+> + * @object: object to store in bqt tag_index at index returned by tag
+> + * @offset: offset into bqt tag map
+> + **/
+> +int blk_map_start_tag(struct blk_queue_tag *bqt, void *object, unsigned offset)
+> +{
+> +	unsigned max_depth;
+> +	int tag;
+> +
+> +	/*
+> +	 * Protect against shared tag maps, as we may not have exclusive
+> +	 * access to the tag map.
+> +	 */
+> +	max_depth = bqt->max_depth;
+> +	do {
+> +		tag = find_next_zero_bit(bqt->tag_map, max_depth, offset);
+> +		if (tag >= max_depth)
+> +			return -1;
+> +
+> +	} while (test_and_set_bit_lock(tag, bqt->tag_map));
+> +	/*
+> +	 * We need lock ordering semantics given by test_and_set_bit_lock.
+> +	 * See blk_map_end_tag for details.
+> +	 */
+> +
+> +	bqt->tag_index[tag] = object;
+> +	return tag;
+> +}
+> +EXPORT_SYMBOL(blk_map_start_tag);
+> +
+> +/**
+>   * blk_queue_start_tag - find a free tag and assign it
+>   * @q:  the request queue for the device
+>   * @rq:  the block request that needs tagging
+> @@ -347,10 +387,8 @@ int blk_queue_start_tag(struct request_queue *q, struct request *rq)
+>  		BUG();
+>  	}
+>  
+> +
+>  	/*
+> -	 * Protect against shared tag maps, as we may not have exclusive
+> -	 * access to the tag map.
+> -	 *
+>  	 * We reserve a few tags just for sync IO, since we don't want
+>  	 * to starve sync IO on behalf of flooding async IO.
+>  	 */
+> @@ -360,20 +398,12 @@ int blk_queue_start_tag(struct request_queue *q, struct request *rq)
+>  	else
+>  		offset = max_depth >> 2;
+>  
+> -	do {
+> -		tag = find_next_zero_bit(bqt->tag_map, max_depth, offset);
+> -		if (tag >= max_depth)
+> -			return 1;
+> -
+> -	} while (test_and_set_bit_lock(tag, bqt->tag_map));
+> -	/*
+> -	 * We need lock ordering semantics given by test_and_set_bit_lock.
+> -	 * See blk_queue_end_tag for details.
+> -	 */
+> +	tag = blk_map_start_tag(bqt, rq, offset);
+> +	if (tag < 0)
+> +		return 1;
+>  
+>  	rq->cmd_flags |= REQ_QUEUED;
+>  	rq->tag = tag;
+> -	bqt->tag_index[tag] = rq;
+>  	blkdev_dequeue_request(rq);
+>  	list_add(&rq->queuelist, &q->tag_busy_list);
+>  	return 0;
+> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> index 465d6ba..d748261 100644
+> --- a/include/linux/blkdev.h
+> +++ b/include/linux/blkdev.h
+> @@ -290,7 +290,7 @@ enum blk_queue_state {
+>  };
+>  
+>  struct blk_queue_tag {
+> -	struct request **tag_index;	/* map of busy tags */
+> +	void **tag_index;		/* map of busy tags */
+>  	unsigned long *tag_map;		/* bit map of free/busy tags */
+>  	int busy;			/* current depth */
+>  	int max_depth;			/* what we will send to device */
+> @@ -904,6 +904,8 @@ extern int blk_queue_resize_tags(struct request_queue *, int);
+>  extern void blk_queue_invalidate_tags(struct request_queue *);
+>  extern struct blk_queue_tag *blk_init_tags(int);
+>  extern void blk_free_tags(struct blk_queue_tag *);
+> +extern int blk_map_start_tag(struct blk_queue_tag *, void *, unsigned);
+> +extern void blk_map_end_tag(struct blk_queue_tag *, int);
+>  
+>  static inline struct request *blk_map_queue_find_tag(struct blk_queue_tag *bqt,
+>  						int tag)
+
+
+-- 
+Jens Axboe
 
