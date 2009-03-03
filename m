@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZCCAdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbZCCAdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbZCCAdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 19:33:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbZCCAdN
+	id S1760092AbZCCAdp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 19:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbZCCAdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 19:33:13 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:32616 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751374AbZCCAdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 19:33:12 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pBD9gB8LrPlix2NTj3AObFR02P6Gk6BlY8dqJEZ6KI/Yba3Jifv/swwSF/JXd30nDGzsnz2g5r2d1buPz4D7ssSb7bQR/QTaeKWA0RMpC+62i4BkyIfSSrVKOyShoSZKWTV29uxKJlqeOP0vO8VTiL5zo93Uoo3rZAjPKKX7E9Y=  ;
-X-YMail-OSG: j9xeuF4VM1mg.JR0c2I2Hw_gouOVA3mx0F2B3IeuXH8gA4vPg3.WLEfIKQD6v_OkjAwfvGIGgCGD.uHwkAoW.p_WbFptvAiEdx1ZociG5O79.5PBDdIGNZ0qgz27kbaEw3Za2Q6sX7WzxpUYk_gg2f5pe6yK5eLYMQ99pJ7ZhzSVCFq4PrYkm7j2zBes
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: lockdep and threaded IRQs (was: ...)
-Date: Mon, 2 Mar 2009 16:33:08 -0800
-User-Agent: KMail/1.9.10
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
-       tglx@linutronix.de
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200903021542.25153.david-b@pacbell.net> <20090302235327.GB19084@elte.hu>
-In-Reply-To: <20090302235327.GB19084@elte.hu>
+	Mon, 2 Mar 2009 19:33:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60145 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757496AbZCCAde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 19:33:34 -0500
+Date: Tue, 3 Mar 2009 01:32:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH] Text Edit Lock - Architecture Independent Code
+Message-ID: <20090303003237.GA30221@elte.hu>
+References: <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <20090303000054.GC3906@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903021633.08736.david-b@pacbell.net>
+In-Reply-To: <20090303000054.GC3906@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009, Ingo Molnar wrote:
-> > 
-> > The significant omission is lack of support for chaining
-> > such threads.  Example, an I2C device that exposes
-> > several dozen IRQs with mask/ack/... operations that
-> > require I2C access.
-> 
-> Well, those are rarely used, embedded-only constructs - the main 
-> focus of IRQ threading patches are the more common patterns.
 
-Yes, mostly for embedded, where "system bus" more likely
-means I2C than PCI.
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
+> +/*
+> + * Take and release the kernel text modification lock, used for code patching.
+> + * Users of this lock can sleep.
+> + */
+> +extern void kernel_text_lock(void);
+> +extern void kernel_text_unlock(void);
 
-> Since you care about them - could you please send patches on top 
-> of the IRQ threading patches to add support for them?
+Locking APIs with hidden semantics are very ugly. Remember 
+lock_kernel()?
 
-I'll look at that, and try to prepare something on top
-of the version of the threading patches that gets into
-the -next tree.  I got the impression there was going
-to be a v3 of those patches soonish...
+> +/*
+> + * mutex protecting text section modification (dynamic code patching).
+> + * some users need to sleep (allocating memory...) while they hold this lock.
+> + */
+> +static DEFINE_MUTEX(text_mutex);
 
-I expect there will be two basic parts of that work:
+Please update those sites to do an explicit:
 
- - One to cope with the upcoming change to handle_irq(),
-   insisting that it live in hardirq context instead of
-   just an irqs-off context (and thereby preventing use
-   of standard chaining calls in irq threads, sigh).
+	mutex_lock(&text_mutex);
 
- - Another to set up a chaining thread, since chain
-   setup bypasses setup_irq() and friends.
+instead.
 
-That latter might touch what the v2 patches added,
-since I'd want it to share code.
+That way we save a function call, and we'll also see exactly 
+what type of lock is being taken, etc.
 
-- Dave
-
-p.s. Note that those changes would still leave the
-     lockdep bug around ... it will still be breaking
-     various drivers that use normal IRQs, by forcibly
-     enabling IRQF_DISABLED.
-
+	Ingo
