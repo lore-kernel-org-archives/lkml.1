@@ -1,53 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZCCG2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZCCGgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbZCCG2V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 01:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZCCG2G
+	id S1756665AbZCCGgv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 01:36:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZCCGgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 01:28:06 -0500
-Received: from kroah.org ([198.145.64.141]:42790 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751922AbZCCG2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 01:28:04 -0500
-Date: Mon, 2 Mar 2009 22:27:21 -0800
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Elaboration on "Equivalent fix must already exist in Linus'
-	tree"
-Message-ID: <20090303062721.GA4091@kroah.com>
-References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 3 Mar 2009 01:36:42 -0500
+Received: from mailout5.samsung.com ([203.254.224.35]:51269 "EHLO
+	mailout5.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbZCCGgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 01:36:41 -0500
+Date: Tue, 03 Mar 2009 15:36:31 +0900
+From: Kyungmin Park <kmpark@infradead.org>
+Subject: [PATCH 3/3] [MTD] [OneNAND] Add bbt_wait & unlock_all as	replaceable
+ for some platform
+To: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Message-id: <20090303063631.GA30269@july>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-OriginalArrivalTime: 03 Mar 2009 06:36:37.0519 (UTC)
+ FILETIME=[674739F0:01C99BCA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 09:43:26PM -0800, Luis R. Rodriguez wrote:
-> While extending the documentation for submitting Linux wireless bug
-> reports [1] we note the stable series policy on patches -- that of
-> having an equivalent fix already in Linus' tree. I find this
-> documented in Documentation/stable_kernel_rules.txt but I'm curious if
-> there is any other resource which documents this or elaborates on this
-> a bit more.
+Add bbt_wait & unlock_all as replaceable for some platform such as s3c64xx
+s3c64xx has its own OneNAND controller and another interface
 
-Simple is better, do you really want a longer version of that same file?
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/mtd/onenand/onenand_base.c |   12 ++++++++++--
+ include/linux/mtd/onenand.h        |    5 +++++
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
-Is there something confusing in it?
+diff --git a/drivers/mtd/onenand/onenand_base.c b/drivers/mtd/onenand/onenand_base.c
+index 7af863a..565599b 100644
+--- a/drivers/mtd/onenand/onenand_base.c
++++ b/drivers/mtd/onenand/onenand_base.c
+@@ -1511,7 +1511,7 @@ int onenand_bbt_read_oob(struct mtd_info *mtd, loff_t from,
+ 
+ 		onenand_update_bufferram(mtd, from, 0);
+ 
+-		ret = onenand_bbt_wait(mtd, FL_READING);
++		ret = this->bbt_wait(mtd, FL_READING);
+ 		if (unlikely(ret))
+ 			ret = onenand_recover_lsb(mtd, from, ret);
+ 
+@@ -2532,6 +2532,10 @@ static void onenand_unlock_all(struct mtd_info *mtd)
+ 		    & ONENAND_CTRL_ONGO)
+ 			continue;
+ 
++		/* Don't check lock status */
++		if (this->options & ONENAND_SKIP_UNLOCK_CHECK)
++			return;
++
+ 		/* Check lock status */
+ 		if (onenand_check_lock_status(this))
+ 			return;
+@@ -3407,6 +3411,10 @@ int onenand_scan(struct mtd_info *mtd, int maxchips)
+ 		this->command = onenand_command;
+ 	if (!this->wait)
+ 		onenand_setup_wait(mtd);
++	if (!this->bbt_wait)
++		this->bbt_wait = onenand_bbt_wait;
++	if (!this->unlock_all)
++		this->unlock_all = onenand_unlock_all;
+ 
+ 	if (!this->read_bufferram)
+ 		this->read_bufferram = onenand_read_bufferram;
+@@ -3524,7 +3532,7 @@ int onenand_scan(struct mtd_info *mtd, int maxchips)
+ 	mtd->owner = THIS_MODULE;
+ 
+ 	/* Unlock whole block */
+-	onenand_unlock_all(mtd);
++	this->unlock_all(mtd);
+ 
+ 	ret = this->scan_bbt(mtd);
+ 	if ((!FLEXONENAND(this)) || ret)
+diff --git a/include/linux/mtd/onenand.h b/include/linux/mtd/onenand.h
+index 1ce6c39..c3aed89 100644
+--- a/include/linux/mtd/onenand.h
++++ b/include/linux/mtd/onenand.h
+@@ -97,6 +97,8 @@ struct onenand_bufferram {
+  * @command:		[REPLACEABLE] hardware specific function for writing
+  *			commands to the chip
+  * @wait:		[REPLACEABLE] hardware specific function for wait on ready
++ * @bbt_wait:		[REPLACEABLE] hardware specific function for bbt wait on ready
++ * @unlock_all:		[REPLACEABLE] hardware specific function for unlock all
+  * @read_bufferram:	[REPLACEABLE] hardware specific function for BufferRAM Area
+  * @write_bufferram:	[REPLACEABLE] hardware specific function for BufferRAM Area
+  * @read_word:		[REPLACEABLE] hardware specific function for read
+@@ -141,6 +143,8 @@ struct onenand_chip {
+ 
+ 	int (*command)(struct mtd_info *mtd, int cmd, loff_t address, size_t len);
+ 	int (*wait)(struct mtd_info *mtd, int state);
++	int (*bbt_wait)(struct mtd_info *mtd, int state);
++	void (*unlock_all)(struct mtd_info *mtd);
+ 	int (*read_bufferram)(struct mtd_info *mtd, int area,
+ 			unsigned char *buffer, int offset, size_t count);
+ 	int (*write_bufferram)(struct mtd_info *mtd, int area,
+@@ -207,6 +211,7 @@ struct onenand_chip {
+ #define ONENAND_HAS_CONT_LOCK		(0x0001)
+ #define ONENAND_HAS_UNLOCK_ALL		(0x0002)
+ #define ONENAND_HAS_2PLANE		(0x0004)
++#define ONENAND_SKIP_UNLOCK_CHECK	(0x0100)
+ #define ONENAND_PAGEBUF_ALLOC		(0x1000)
+ #define ONENAND_OOBBUF_ALLOC		(0x2000)
+ 
+-- 
+1.5.3.3
 
-And as always, a simple:
-	Cc: stable <stable@kernel.org>
-in the patch itself is the easiest way to get it automatically included
-in the next -stable releases after it hits Linus's tree.
-
-What more do people want?  Personal invitations?
-
-Is it time to break out the caligraphy pens and wax seals?
-
-thanks,
-
-greg k-h
