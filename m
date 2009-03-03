@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZCCOHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZCCOKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbZCCOHw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 09:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZCCOHn
+	id S1754547AbZCCOKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 09:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZCCOKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 09:07:43 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41146 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbZCCOHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 09:07:42 -0500
-Date: Tue, 3 Mar 2009 15:07:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 5/6] slqb: introduce __kfree_rcu
-Message-ID: <20090303140724.GC23822@elte.hu>
-References: <49AD3448.6050105@cn.fujitsu.com>
+	Tue, 3 Mar 2009 09:10:09 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:11986 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZCCOKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 09:10:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=rIW8YNvZVgK1ro2Bdk3PIs/NP22PThDq5uk4mKZZpZmOlmneRLkd8AGjKpjhfhcM+u
+         TzrmucGh792QsdDcbtG8W95v7xAq8DEyqRl1M+mIKPL0lWRuEE/U+Loijhi7ZPFbACgy
+         4phSEoakMT3WJf+yxYDzfvvpP3a+ORzOzuEms=
+Message-ID: <49AD3A3D.4040303@gmail.com>
+Date: Tue, 03 Mar 2009 15:10:05 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AD3448.6050105@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: wim@iguana.be
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] watchdog: fsl_get_sys_freq() failure not noticed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Maybe it is nicer to do a test like:
 
-* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+	if (freq < MAX_FREQ)
 
-> Introduce __kfree_rcu() for kfree_rcu()
-> 
-> It like __kfree_rcu() in slab.c, slub.c
-> We can calculate the object poiter from a poiter inside this
-> object in slqb.c, so we can use it for rcu callback and free
-> the object.
+but I don't know what MAX_FREQ should be.
+------------------------------>8-------------8<---------------------------------
+fsl_get_sys_freq() may return -1 when 'soc' isn't found, but in gef_wdt_probe()
+'freq' is unsigned, so the test doesn't catch that.
 
-s/poiter/pointer
-
-(that typo is in other patches too.)
-
-	Ingo
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/watchdog/gef_wdt.c b/drivers/watchdog/gef_wdt.c
+index f0c2b7a..734d980 100644
+--- a/drivers/watchdog/gef_wdt.c
++++ b/drivers/watchdog/gef_wdt.c
+@@ -269,7 +269,7 @@ static int __devinit gef_wdt_probe(struct of_device *dev,
+ 	bus_clk = 133; /* in MHz */
+ 
+ 	freq = fsl_get_sys_freq();
+-	if (freq > 0)
++	if (freq != -1)
+ 		bus_clk = freq;
+ 
+ 	/* Map devices registers into memory */
