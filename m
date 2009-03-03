@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbZCCAXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbZCCAYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbZCCAXU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 19:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbZCCAXJ
+	id S1759873AbZCCAYH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 19:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZCCAXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 19:23:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56384 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751598AbZCCAXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 19:23:08 -0500
-Date: Tue, 3 Mar 2009 01:22:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
-Message-ID: <20090303002214.GA4147@elte.hu>
-References: <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <49AC7453.8020307@redhat.com>
+	Mon, 2 Mar 2009 19:23:54 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:50782 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373AbZCCAXx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 19:23:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=aJhQBmaHYK7Zi3fOMLHHZ2CYNjFCO2b2qz4A9dkqtK5d+2lzmyfBryobuy7qnYvpK
+	f+eXSh3V7DM43L/XBKJeA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AC7453.8020307@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090303092021.93e69b96.kamezawa.hiroyu@jp.fujitsu.com>
+References: <49AB40BF.4030706@cn.fujitsu.com>
+	 <6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>
+	 <20090303090950.60cea53a.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830903021615j6e1380e2l1544b67b187c1f5e@mail.gmail.com>
+	 <20090303092021.93e69b96.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 2 Mar 2009 16:23:46 -0800
+Message-ID: <6599ad830903021623q1666c519h5f68da7203b0f58a@mail.gmail.com>
+Subject: Re: [PATCH 0/4] cgroups: show correct file mode
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 2, 2009 at 4:20 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>
+>> int mode;
+>> if (cft->mode) {
+>>   mode = cft->mode;
+>> } else {
+>>   if (cft->write_xxx || ....)
+>>     mode |= 0600;
+>>   if (cft->read_xxx || ...)
+>>     mode |= 0444;
+>> }
+>>
+> Oh, I see. But int mode=0, at first ;)
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+Oops, yes.
 
-> 
-> 
-> Ingo Molnar wrote:
-> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >>>>> So perhaps another approach to (re-)consider would be to go back 
-> >>>>> to atomic fixmaps here. It spends 3 slots but that's no big 
-> >>>>> deal.
-> >>>> Oh, it's a good idea! fixmaps must make it simpler.
-> >>>>
-> >>>>> In exchange it will be conceptually simpler, and will also scale 
-> >>>>> much better than a global spinlock. What do you think?
-> >>>> I think even if I use fixmaps, we have to use a spinlock to protect
-> >>>> the fixmap area from other threads...
-> >>> that's why i suggested to use an atomic-kmap, not a fixmap.
-> >> Even if the mapping is atomic, text_poke() has to protect pte
-> >> from other text_poke()s while changing code.
-> >> AFAIK, atomic-kmap itself doesn't ensure that, does it?
-> > 
-> > Well, but text_poke() is not a serializing API to begin with. 
-> > It's normally used in code patching sequences when we 'know' 
-> > that there cannot be similar parallel activities. The kprobes 
-> > usage of text_poke() looks unsafe - and that needs to be fixed.
-> 
-> Oh, kprobes already prohibited parallel arming/disarming
-> by using kprobe_mutex. :-)
+> I have no objections but please forgive subsys to set mode=0644 explicitly.
 
-yeah, but still the API is somewhat unsafe.
+Do you mean "allow" rather than "forgive"? if so, then yes, a
+subsystem should be able to override this to whatever it wants.
 
-In any case, you also answered your own question:
-
-> >> Even if the mapping is atomic, text_poke() has to protect pte
-> >> from other text_poke()s while changing code.
-> >> AFAIK, atomic-kmap itself doesn't ensure that, does it?
-
-kprobe_mutex does that.
-
-	Ingo
+Paul
