@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZCCVgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZCCVg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbZCCVgG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 16:36:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZCCVfy
+	id S1757381AbZCCVg0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 16:36:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbZCCVgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:35:54 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:51708 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753087AbZCCVfy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:35:54 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Ek2GC4bFwj6L7ff77NCQNQgXkt1YTMqh4ge6iqr/Zmbgxjxj9rWZfrZPXzw7wIZxv
-	NCN8uEqH/TNL64u4RRrLw==
-Date: Tue, 3 Mar 2009 13:35:08 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] slub: enforce cpuset restrictions for cpu slabs
-In-Reply-To: <alpine.DEB.1.10.0903031509380.25612@qirst.com>
-Message-ID: <alpine.DEB.2.00.0903031330090.23523@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com> <alpine.DEB.2.00.0903022011430.17284@chino.kir.corp.google.com> <alpine.DEB.1.10.0903031136380.26454@qirst.com> <alpine.DEB.2.00.0903030900580.6643@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0903031345150.9466@qirst.com> <alpine.DEB.2.00.0903031057110.15900@chino.kir.corp.google.com> <alpine.DEB.1.10.0903031509380.25612@qirst.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Tue, 3 Mar 2009 16:36:13 -0500
+Received: from fifo99.com ([67.223.236.141]:56033 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756782AbZCCVgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 16:36:12 -0500
+Subject: Re: [patch 3/3] xtensa: ccount clocksource
+From: Daniel Walker <dwalker@fifo99.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Johannes Weiner <jw@emlix.com>, Chris Zankel <chris@zankel.net>,
+       linux-kernel@vger.kernel.org, John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20090303195401.GA2654@cmpxchg.org>
+References: <E1LeXCe-0006wA-5k@mailer.emlix.com>
+	 <E1LeXJ1-00071v-Dy@mailer.emlix.com> <1236102945.5937.1.camel@desktop>
+	 <20090303195401.GA2654@cmpxchg.org>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 13:36:04 -0800
+Message-Id: <1236116164.5937.22.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Mar 2009, Christoph Lameter wrote:
-
-> SLUB is also "dismissing" lots of other NUMA locality requirements since
-> it relies on the page allocators for this. SLUB does *not* realize memory
-> policy and/or cpuset support for individual objects.
-
-Right, and this patch adds that.
-
-> NUMA locality is
-> implemented only (aside from explicit requests of memory from a
-> certain node) when slab page allocations are performed.
+On Tue, 2009-03-03 at 20:54 +0100, Johannes Weiner wrote:
+> On Tue, Mar 03, 2009 at 09:55:45AM -0800, Daniel Walker wrote:
+> > On Tue, 2009-03-03 at 16:30 +0100, Johannes Weiner wrote:
+> > > @ -29,6 +30,19 @@ unsigned long ccount_per_jiffy;              /* per 
+> > >  unsigned long nsec_per_ccount;         /* nsec per ccount increment
+> > > */
+> > >  #endif
+> > >  
+> > > +static cycle_t ccount_read(void)
+> > > +{
+> > > +       return (cycle_t)get_ccount();
+> > > +}
+> > > +
+> > > +static struct clocksource ccount_clocksource = {
+> > > +       .name = "ccount",
+> > > +       .rating = 200,
+> > > +       .read = ccount_read,
+> > > +       .mask = CLOCKSOURCE_MASK(32),
+> > > +       .mult = NSEC_PER_CCOUNT,
+> > > +};
+> > 
+> > You don't want to use the shift field?
 > 
+> Thanks for pointing it out.
+> 
+> To make sure I understood this:
+> 
+> If shift is 0, then a walltime adjustment would be done in 1/2^0
+> steps, meaning an adjustment of counting one nanosecond more or less
+> per ccount.
 
-Yes, that is the current implementation.
+The shift and mult are just used to convert your cycle counters current
+count into nanoseconds .. I'm not sure how much a zero shift would
+degrade the conversion to nanoseconds for your cycles counter tho. So it
+could be along the lines of what your suggesting above.
 
-For systems that use multiple cpusets, this allows objects for a task to 
-be allocated on its assigned cpuset node(s); the only reasonable use case 
-would be for memory isolation and/or NUMA optimizations.
+> To give this a finer granularity and smooth out adjustments, the shift
+> should be a trade-off between too much adjustment and no adjustment
+> progress in a sane amount of time (and, of course, to stay within
+> bounds of the used type).
+> 
+> Does that make sense?
 
-Unfortunately, we can't add a slab hardwall flag to the cpuset to 
-configure this behavior since that would require locking to dereference 
-in the fastpath.  
+I don't really look at it in terms of walltime adjustments. The actual
+frequency of kernel time adjustments isn't defined in the clocksource
+structure AFAIK. From my experience you just want the clocksource to
+produce the most accurate nanosecond value your hardware can provide ,
+which would mean setting the shift as high as is safe for your hardware.
+
+I added John Stultz to the CC so he could comment further if he cares
+too.
+
+> I found a patch of yours that introduced clocksource_hz2shift() but it
+> seems it hasn't been merged (yet).  Is it yet to get integrated?
+
+I've been meaning to update it, but haven't gotten around to it. If you
+know the input values you can run that function once just to produce a
+shift which you define statically in the clocksource structure. Then use
+that shift value with the other helper clocksource_hz2mult() to produce
+a mult value.
+
+Daniel
+
