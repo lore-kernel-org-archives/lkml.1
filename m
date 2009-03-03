@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZCCJd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZCCJlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbZCCJd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 04:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZCCJdT
+	id S1755019AbZCCJlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 04:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZCCJlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 04:33:19 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:59437 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750860AbZCCJdS (ORCPT
+	Tue, 3 Mar 2009 04:41:07 -0500
+Received: from viefep13-int.chello.at ([62.179.121.33]:25445 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583AbZCCJlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 04:33:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NH6C2v9xK0FYThUVtrwUrGLHXfEwy1VKx9A8LeCfxpIwgYVgzhqxsOrgKZoF4rU+ci
-         lTTtC8XlX1Wjrpg3FEHeiKutLc/hXgQgaEftgvTtN801BquH3LNtdQROc6PTsS94WPpJ
-         sHBflVz18Tnjbb5XmIxExgL0wMdhvN5YjSLIQ=
-MIME-Version: 1.0
-In-Reply-To: <82ecf08e0903020942i55e1a31bn983c2ce243e342e9@mail.gmail.com>
-References: <1236007103.18284.83.camel@penberg-laptop>
-	 <82ecf08e0903020750q3670de6u4162e4f01c847003@mail.gmail.com>
-	 <1236014911.18284.89.camel@penberg-laptop>
-	 <82ecf08e0903020942i55e1a31bn983c2ce243e342e9@mail.gmail.com>
-Date: Tue, 3 Mar 2009 09:33:15 +0000
-Message-ID: <87a5b0800903030133y7bd22204y4995657cfd75950f@mail.gmail.com>
-Subject: Re: [PATCH] crc32: remove useless __pure modifier from functions
-From: Will Newton <will.newton@gmail.com>
-To: Thiago Galesi <thiagogalesi@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 3 Mar 2009 04:41:06 -0500
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC][PATCH] remove rq->lock from cpuacct cgroup (Was Re:
+ [PATCH] cpuacct: add a branch prediction
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: paulmck@linux.vnet.ibm.com, Bharata B Rao <bharata.rao@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
+References: <49A65455.4030204@cn.fujitsu.com>
+	 <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
+	 <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
+	 <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
+	 <1235645076.4645.4781.camel@laptop>
+	 <934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com>
+	 <1235647682.4948.15.camel@laptop>
+	 <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
+	 <20090226164509.GB6634@linux.vnet.ibm.com>
+	 <20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090227012915.GF6634@linux.vnet.ibm.com>
+	 <20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1236005770.5330.583.camel@laptop>
+	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1236066689.18955.27.camel@twins>
+	 <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 10:40:36 +0100
+Message-Id: <1236073236.18955.46.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 2, 2009 at 5:42 PM, Thiago Galesi <thiagogalesi@gmail.com> wrote:
->>
->> Hmm. They're not marked as pure in the header files. Does GCC look it up
->> from the object file or something for this...?
->
-> I just tested this, the answer is No :(
->
-> It only works if it's marked in the header. But when it's marked, it
-> works, and redundant calls are optimized.
+On Tue, 2009-03-03 at 18:04 +0900, KAMEZAWA Hiroyuki wrote:
+> Peter Zijlstra wrote:
+> > On Tue, 2009-03-03 at 08:42 +0900, KAMEZAWA Hiroyuki wrote:
+> >
+> >> > Furthermore, if you want something like schedule_work_on() for each
+> >> cpu,
+> >> > there's schedule_on_each_cpu().
+> >> >
+> >> It can't pass arguments...Maybe I should use rq->lock here to reset
+> >> other cpu's value.
+> >
+> > Why bother with serializing the reset code at all?
+> >
+>   I don't think reset v.s. read is problem but reset v.s. increment
+>   (read-modify-write) can't be ?
 
-Did you see any change in size of your kernel with this annotation? It
-didn't seem to have any effect as far as I could tell.
+Sure, can be, do we care?
 
-There are a number of functions in lib/ code that could be marked
-__pure or __attribute_const__ but I'm not sure if it's worth the
-effort, for my compiler (gcc 4.2) at least.
+
