@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZCCDQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZCCDXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbZCCDQv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 22:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbZCCDQf
+	id S1755891AbZCCDXc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 22:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbZCCDXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 22:16:35 -0500
-Received: from silene.metacarta.com ([208.80.142.18]:42995 "EHLO
-	silene.metacarta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754742AbZCCDQd (ORCPT
+	Mon, 2 Mar 2009 22:23:23 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:33670 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbZCCDXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 22:16:33 -0500
-Date: Mon, 2 Mar 2009 22:16:28 -0500 (EST)
-From: Joe Malicki <jmalicki@metacarta.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Kenneth Baker <bakerkj@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <30226597.10050111236050188053.JavaMail.root@ouachita>
-In-Reply-To: <15171620.10049841236049960269.JavaMail.root@ouachita>
-Subject: Re: BUG: setuid sometimes doesn't.
+	Mon, 2 Mar 2009 22:23:22 -0500
+Message-ID: <49ACA28F.5090906@oracle.com>
+Date: Mon, 02 Mar 2009 19:22:55 -0800
+From: Andy Grover <andy.grover@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: net tree build failure
+References: <20090302180514.9b07c7d9.sfr@canb.auug.org.au>	<20090302.014958.31955182.davem@davemloft.net> <20090303125525.1cb0baf9.sfr@canb.auug.org.au>
+In-Reply-To: <20090303125525.1cb0baf9.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [66.31.17.145]
-X-Mailer: Zimbra 5.0.9_GA_2533.UBUNTU6 (ZimbraWebClient - FF3.0 (Linux)/5.0.9_GA_2533.UBUNTU6)
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010201.49ACA29C.01D9:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ "Hugh Dickins" <hugh@veritas.com> wrote:
-
-> On Thu, 26 Feb 2009, Joe Malicki wrote:
-> > ----- "Joe Malicki" <jmalicki@metacarta.com> wrote:
-> > 
-> > > Very rarely, we experience a setuid program not properly getting
-> > > the euid of its owner.
-> > > 
-> > > Thus far, we have only seen failures for the program being setuid
-> > > root, being run by a non-root user, on a multi-core machine. 
-> Trying
-> > > to
-> > > setuid to a user from root, *or* booting with maxcpus=1 and trying
-> to
-> > > setuid from a non-root user to root, both fail.
-> > 
-> > Sorry, misstated that.
-> > 
-> > setuid from nonroot->root, or with maxcpus=1, always seems to work.
-> > 
-> > Only multiple cores with setuid to root has failed for us.
+Stephen Rothwell wrote:
+> Hi Dave,
 > 
-> Here's a shot in the dark: I may be misreading things, and I don't
-> quite see how it fits with the finer details you mention here; but
-> it looks to me as if /proc/*/cwd and /proc/*/root lookup interferes
-> with the fs->count check in fs/exec.c's unsafe_exec().
+> On Mon, 02 Mar 2009 01:49:58 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+>> From: Stephen Rothwell <sfr@canb.auug.org.au>
+>> Date: Mon, 2 Mar 2009 18:05:14 +1100
+>>
+>>> Today's linux-next build (powerpc allyesconfig) failed like this:
+>>>
+>>> net/rds/cong.c: In function 'rds_cong_set_bit':
+>>> net/rds/cong.c:284: error: implicit declaration of function 'generic___set_le_bit'
+>>> net/rds/cong.c: In function 'rds_cong_clear_bit':
+>>> net/rds/cong.c:298: error: implicit declaration of function 'generic___clear_le_bit'
+>>> net/rds/cong.c: In function 'rds_cong_test_bit':
+>>> net/rds/cong.c:309: error: implicit declaration of function 'generic_test_le_bit'
+>> I've fixed this up as follows:
 > 
-> If you would, please give this patch against 2.6.28* a try (applies
-> to 2.6.29-rc too, but not to 2.6.24*), to see if it makes any
-> difference to you.  I'm hoping not to hear from you for a while!
-> 
-> (I assume it's okay to read_lock fs->lock while holding task_lock:
-> I didn't see anywhere else doing so, but lockdep hasn't objected
-> yet.)
-> 
-> Hugh
+> I was actually wondering if this was some API that powerpc had not
+> implemented (most other architectures include asm-generic/bitops/le.h in
+> their asm/bitops.h via asm-generic/bitops/ext2-non-atomic.h or
+> asm-generic/bitops/minix-le.h) or whether RDS should be using some other
+> API (since this is the first use of those functions outside the headers
+> above).
 
-Hugh...
+My 2c,
 
-Thanks for the attention!  This didn't seem to fix our problem
-(surprisingly) since it does seem to fit with the finer details:
+I think the correct solution is for all archs to define 
+generic_*_le_bit. In addition ext2_*_bit callers (there are a bunch 
+besides ext2!) should be fixed.
 
-1) The software load we were running it on does a health check every few minutes
-   which, among other things, executes several lsof and ss (sockstat) processes.
-2) In security/commoncap.c, the code:
-     void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
-{
-        if (bprm->e_uid != current->uid || bprm->e_gid != current->gid ||
-            !cap_issubset(bprm->cap_post_exec_permitted,
-                          current->cap_permitted)) {
-                set_dumpable(current->mm, suid_dumpable);
-                current->pdeath_signal = 0;
+Some examples:
 
-                if (unsafe & ~LSM_UNSAFE_PTRACE_CAP) {
-                        if (!capable(CAP_SETUID)) {
-                                bprm->e_uid = current->uid;
-                                bprm->e_gid = current->gid;
-                        }
-                        if (cap_limit_ptraced_target()) {
-                                bprm->cap_post_exec_permitted = cap_intersect(
-                                        bprm->cap_post_exec_permitted,
-                                        current->cap_permitted);
-                        }
-                }
-        }
-.....
+include/linux/reiserfs_fs.h:#define reiserfs_test_and_set_le_bit 
+ext2_set_bit
+fs/udf/balloc.c:#define udf_clear_bit(nr, addr) ext2_clear_bit(nr, addr)
+fs/ext4/ext4.h:#define ext4_set_bit                     ext2_set_bit
 
-Looks like it would fail because of that (is the ~LSM_UNSAFE_PTRACE_CAP
-actually the intended condition?  It wasn't clear either way for me, due to
-the lack of comments).
+And this one:
 
-I could not reproduce the problem without our system-health-monitor process,
-or on several other machines at home (Ubuntu 8.04 and Ubuntu 8.10 with updated
-kernels, running multicore).  So I am very suspicious of that race, although your
-patch didn't seem to fix it.... (?!?!)
+lib/find_next_bit.c:static inline unsigned long ext2_swabp(const 
+unsigned long *
 
-Thanks,
-Joe Malicki
-  
-P.S. Michael Itz did a lot of work related to this issue, and managed to narrow 
-it down quite a bit, and I feel guilty putting a lot out there without mentioning that.
+^^^ cargo cult ext2 prefixing???
+
+Regards -- Andy
