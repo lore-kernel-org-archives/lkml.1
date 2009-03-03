@@ -1,59 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZCCBO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZCCBQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbZCCBO5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 20:14:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbZCCBOt
+	id S1758174AbZCCBQU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 20:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbZCCBQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 20:14:49 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59981 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbZCCBOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 20:14:48 -0500
-Message-ID: <49AC84BE.5020501@cn.fujitsu.com>
-Date: Tue, 03 Mar 2009 09:15:42 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 2 Mar 2009 20:16:10 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:54090 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbZCCBQJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 20:16:09 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=N9OmUqMzo8gQNecD5GBO7qnS0xuGHliaOf3/Q5FChnnYq2SYpVWuXiEz3dc1OhuHA
+	M3wpewwkPLu5M+P4X876w==
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+In-Reply-To: <49AC8307.7090008@cn.fujitsu.com>
+References: <49AB40BF.4030706@cn.fujitsu.com>
+	 <6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>
+	 <49AC8307.7090008@cn.fujitsu.com>
+Date: Mon, 2 Mar 2009 17:16:03 -0800
+Message-ID: <6599ad830903021716o20f8a7a7k66045ad75dbab5b1@mail.gmail.com>
+Subject: Re: [PATCH 0/4] cgroups: show correct file mode
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        LKML <linux-kernel@vger.kernel.org>,
        Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH 0/4] cgroups: show correct file mode
-References: <49AB40BF.4030706@cn.fujitsu.com>	<6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>	<49AC8307.7090008@cn.fujitsu.com> <20090303100827.43d82c3a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090303100827.43d82c3a.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> +/**
->> + * cgroup_file_mode - deduce file mode of a control file
->> + * @cft: the control file in question
->> + *
->> + * returns cftype->mode if ->mode is not 0
->> + * returns 0644 if it has both a read and a write handler
->> + * returns 0444 if it has only a read handler
->> + * returns 0200 if it has only a write hander
->> + */
->> +static int cgroup_file_mode(const struct cftype *cft)
->> +{
->> +	int mode = 0;
->> +
->> +	if (cft->mode)
->> +		return cft->mode;
->> +
->> +	if (cft->read || cft->read_u64 || cft->read_s64 ||
->> +	    cft->read_map || cft->read_seq_string)
->> +		mode += 0444;
->> +
->> +	if (cft->write || cft->write_u64 || cft->write_s64 ||
->> +	    cft->write_string || cft->trigger)
->> +		mode += 0200;
->> +
-> 
-> += is not |=...
-> 
+On Mon, Mar 2, 2009 at 5:08 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>
+> Those patches are small and trivial, but it's ok for me to do this
+> automatically. How about below patch.
+>
+> Note cpuset.memory_pressure is read-only though it has read handler.
+> Since if the read handler is removed, it'll return EINVAL instead of
+> the current EACCESS, I think it's better to leave as it is.
 
-Ah, yes, though both happen to result in 0644.
+Hmm. I find it hard to believe that anyone would have behaviour that
+depends on cpuset.memory_pressure returning EACCES rather than EINVAL,
+but I guess it's not a big deal.
 
+On the += or |= issue, I think |= is slightly more familiar to most
+readers given that you're doing bit options, although the end result
+is the same in this case.
+
+Acked-by: Paul Menage <menage@google.com>
+
+>
+> =====================
+>
+> cgroups: show correct file mode
+>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/linux/cgroup.h |    5 +++++
+>  kernel/cgroup.c        |   30 ++++++++++++++++++++++++++++++
+>  kernel/cpuset.c        |    1 +
+>  3 files changed, 36 insertions(+)
+>
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index 6ad1989..af3c10f 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -258,6 +258,11 @@ struct cftype {
+>         */
+>        char name[MAX_CFTYPE_NAME];
+>        int private;
+> +       /*
+> +        * If not 0, file mode is set to this value, otherwise it will
+> +        * be figured out automatically
+> +        */
+> +       int mode;
+>
+>        /*
+>         * If non-zero, defines the maximum length of string that can
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 379baa3..0b19204 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -1750,6 +1750,33 @@ static int cgroup_create_dir(struct cgroup *cgrp, struct dentry *dentry,
+>        return error;
+>  }
+>
+> +/**
+> + * cgroup_file_mode - deduce file mode of a control file
+> + * @cft: the control file in question
+> + *
+> + * returns cftype->mode if ->mode is not 0
+> + * returns 0644 if it has both a read and a write handler
+> + * returns 0444 if it has only a read handler
+> + * returns 0200 if it has only a write hander
+> + */
+> +static int cgroup_file_mode(const struct cftype *cft)
+> +{
+> +       int mode = 0;
+> +
+> +       if (cft->mode)
+> +               return cft->mode;
+> +
+> +       if (cft->read || cft->read_u64 || cft->read_s64 ||
+> +           cft->read_map || cft->read_seq_string)
+> +               mode += 0444;
+> +
+> +       if (cft->write || cft->write_u64 || cft->write_s64 ||
+> +           cft->write_string || cft->trigger)
+> +               mode += 0200;
+> +
+> +       return mode;
+> +}
+> +
+>  int cgroup_add_file(struct cgroup *cgrp,
+>                       struct cgroup_subsys *subsys,
+>                       const struct cftype *cft)
+> @@ -1757,6 +1784,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+>        struct dentry *dir = cgrp->dentry;
+>        struct dentry *dentry;
+>        int error;
+> +       int mode;
+>
+>        char name[MAX_CGROUP_TYPE_NAMELEN + MAX_CFTYPE_NAME + 2] = { 0 };
+>        if (subsys && !test_bit(ROOT_NOPREFIX, &cgrp->root->flags)) {
+> @@ -1767,6 +1795,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+>        BUG_ON(!mutex_is_locked(&dir->d_inode->i_mutex));
+>        dentry = lookup_one_len(name, dir, strlen(name));
+>        if (!IS_ERR(dentry)) {
+> +               mode = cgroup_file_mode(cft);
+>                error = cgroup_create_file(dentry, 0644 | S_IFREG,
+>                                                cgrp->root->sb);
+>                if (!error)
+> @@ -2349,6 +2378,7 @@ static struct cftype files[] = {
+>                .write_u64 = cgroup_tasks_write,
+>                .release = cgroup_tasks_release,
+>                .private = FILE_TASKLIST,
+> +               .mode = 0644,
+>        },
+>
+>        {
+> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+> index a46d693..31e28b3 100644
+> --- a/kernel/cpuset.c
+> +++ b/kernel/cpuset.c
+> @@ -1678,6 +1678,7 @@ static struct cftype files[] = {
+>                .read_u64 = cpuset_read_u64,
+>                .write_u64 = cpuset_write_u64,
+>                .private = FILE_MEMORY_PRESSURE,
+> +               .mode = 0444,
+>        },
+>
+>        {
+>
+>
