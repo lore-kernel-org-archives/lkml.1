@@ -1,132 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZCCVpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZCCVsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbZCCVpY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 16:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZCCVpG
+	id S1757064AbZCCVsz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 16:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbZCCVsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:45:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59303 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Mar 2009 16:48:46 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:34859 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754473AbZCCVpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:45:04 -0500
-Date: Tue, 3 Mar 2009 22:44:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       linux-scsi@vger.kernel.org,
+	id S1754473AbZCCVsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 16:48:45 -0500
+Date: Tue, 3 Mar 2009 21:48:42 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Lin Ming <ming.m.lin@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-Subject: Re: Large amount of scsi-sgpool objects
-Message-ID: <20090303214454.GA8288@elte.hu>
-References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr> <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain> <20090303192212.GA20705@elte.hu> <1236115544.15993.22.camel@localhost.localdomain>
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
+Message-ID: <20090303214842.GL10577@csn.ul.ie>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie> <1235647139.16552.34.camel@penberg-laptop> <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr> <20090302112122.GC21145@csn.ul.ie> <alpine.DEB.1.10.0903031130550.26454@qirst.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1236115544.15993.22.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.DEB.1.10.0903031130550.26454@qirst.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-
-> On Tue, 2009-03-03 at 20:22 +0100, Ingo Molnar wrote:
-> > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > 
-> > > On Tue, 2009-03-03 at 17:08 +0100, Jan Engelhardt wrote:
-> > > > On Tuesday 2009-03-03 16:21, James Bottomley wrote:
-> > > > >> > $ slabtop
-> > > > >> >   OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME                   
-> > > > >> > 818616 818616 100%    0.16K  34109       24    136436K sgpool-8
-> > > > >> > 253692 253692 100%    0.62K  42282        6    169128K sgpool-32
-> > > > >> >  52017  52016  99%    2.50K  17339        3    138712K sgpool-128
-> > > > >> >  26220  26219  99%    0.31K   2185       12      8740K sgpool-16
-> > > > >> >   8927   8574  96%    0.03K     79      113       316K size-32
-> > > > >> 
-> > > > >> Looks like a leak, by failing to call scsi_release_buffers()
-> > > > >> somehow. (Which was changed recently)
-> > > > >
-> > > > >Firstly, I have to say I don't see this in the mainline tree, so could
-> > > > >you try that with your setup just to verify (git head at 2.6.29-rc6).
-> > > > 
-> > > > Yes, looking at the rt patch (in broken-out it's in origin.diff),
-> > > > it seems a bit obvious - the scsi_release_buffers is not called anymore:
-> > > 
-> > > OK, this is a bad patch, so just revert it.  It was posted to 
-> > > linux-scsi initially in this form before the author posted a 
-> > > new one with the missing release buffers added.  It looks like 
-> > > the first incarnation got pulled into the -rt tree for some 
-> > > reasons.
-> > 
-> > Uhm. I applied a test-patch from Alan Stern, to possibly fix an 
-> > SCSI lockup with aic7xxx that _I_ reported to you and then to 
-> > the scsi-list.
-> > 
-> > You were Cc:-ed to that test patch and to my bugreport as well, 
-> > all the way. Do you claim that you dont remember it?
+On Tue, Mar 03, 2009 at 11:31:46AM -0500, Christoph Lameter wrote:
+> On Mon, 2 Mar 2009, Mel Gorman wrote:
 > 
-> ?  If I've just quoted the patch above why would I not remember it now.
-> I've just said it's the cause of the problems in the -rt tree.
+> > Going by the vanilla kernel, a *large* amount of time is spent doing
+> > high-order allocations. Over 25% of the cost of buffered_rmqueue() is in
+> > the branch dealing with high-order allocations. Does UDP-U-4K mean that 8K
+> > pages are required for the packets? That means high-order allocations and
+> > high contention on the zone-list. That is bad obviously and has implications
+> > for the SLUB-passthru patch because whether 8K allocations are handled by
+> > SL*B or the page allocator has a big impact on locking.
+> >
+> > Next, a little over 50% of the cost get_page_from_freelist() is being spent
+> > acquiring the zone spinlock. The implication is that the SL*B allocators
+> > passing in order-1 allocations to the page allocator are currently going to
+> > hit scalability problems in a big way. The solution may be to extend the
+> > per-cpu allocator to handle magazines up to PAGE_ALLOC_COSTLY_ORDER. I'll
+> > check it out.
 > 
-> > The saga is still documented in tip:out-of-tree (which is a 
-> > special branch with out-of-tree hotfixes):
-> > 
-> >  7e4cbd1: fix "scsi: aic7xxx hang since v2.6.28-rc1"
-> >  e027abc: scsi: temporarily undo scsi reverts
-> >  813104e: Revert "[SCSI] simplify scsi_io_completion()"
-> >  84db545: Revert "[SCSI] Fix uninitialized variable error in scsi_io_completion"
-> >  0eb6038: Revert "[SCSI] Fix error handling for DIF/DIX"
-> >  3cd94dd: Revert "[SCSI] scsi_lib: don't decrement busy counters when inserting commands"
-> >  c27aed5: Revert "[SCSI] scsi_lib: fix DID_RESET status problems"
-> > 
-> > I wasnt Cc:-ed on the updated patch AFAICS, so i didnt pick it 
-> > up.
+> Then we are increasing the number of queues dramatically in the page
+> allocator. More of a memory sink. Less cache hotness.
 > 
-> Actually, you were cc'd, you probably just missed it.
 
-Correct, see my earlier reply to Alan Stern for the details of 
-why it got missed.
+It doesn't have to be more queues and networking is doing order-1 allocations
+based on a quick instrumentation so we might be justified in doing this to
+avoid contending excessively on the zone lock.
 
-> > > So the real question is why does the -rt tree even have 
-> > > patches not in the vanilla SCSI tree?  This type of cockup 
-> > > clearly demonstrates why it's a bad idea.
-> > 
-> > Believe me, i have better things to do than to track down your 
-> > regressions. I applied a fix/test patch sent to me by SCSI 
-> > folks.
-> 
-> Look, I've no problem with you collecting random patches.  I 
-> have a problem when you start pushing random SCSI patches into 
-> other trees. [...]
+Without the patchset, we do a search of the pcp lists for a page of the
+appropriate migrate type. There is a patch that removes this search at
+the cost of one cache line per CPU and it works reasonably well.
 
-Both -tip and -rt are generic trees and there's a connection 
-between them that the maintainers of both are one and the same 
-set of people.
-
-So i'm not sure on what grounds you purport to be able to 
-prevent fixes from flowing from -tip into -rt and vice versa.
-
-You have no monopoly on the propagation and testing of SCSI 
-fixes. We picked up a v1 patch from the SCSI list and did not 
-add nor remove anything from it.
-
-Yes, v1 was buggy and I missed the v2 patch because it had the 
-same subject line and no easily visible differentiator that it 
-was a v2 patch.
-
-In fact you should be happy that people are helping you out 
-fixing your bugs. I never even thought of flaming anyone for 
-having picked up a v1 scheduler fix and getting burned by it 
-while a v2 existed. I find it unexplainable and irrational that 
-you feel the need to do so for SCSI fixes.
-
-	Ingo
+However, if the search was left in place, you can add pages of other orders
+and just search for those which should be a lot less costly. Yes, the search
+is unfortunate but you avoid acquiring the zone lock without increasing
+the size of the per-cpu structure. The search will require cache lines it's
+probably less than acquiring teh zone lock and going through the whole buddy
+allocator for order-1 pages.
