@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZCCOdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbZCCOdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZCCOdc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 09:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZCCOdY
+	id S1755868AbZCCOdu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 09:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZCCOdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 09:33:24 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:58809 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbZCCOdX (ORCPT
+	Tue, 3 Mar 2009 09:33:40 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:64063 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755154AbZCCOdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 09:33:23 -0500
+	Tue, 3 Mar 2009 09:33:39 -0500
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: AvsEALvJrElMQW1W/2dsb2JhbACBTtZQhAYG
-Date: Tue, 3 Mar 2009 09:28:12 -0500
+Date: Tue, 3 Mar 2009 09:33:33 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
@@ -27,9 +28,9 @@ Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Arjan van de Ven <arjan@infradead.org>,
        Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH] Text Edit Lock - kprobes architecture independent
-	support (v2)
-Message-ID: <20090303142812.GA27043@Krystal>
+Subject: [PATCH] Text Edit Lock - kprobes architecture independent support
+	(v3)
+Message-ID: <20090303143333.GB27043@Krystal>
 References: <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <20090303000054.GC3906@Krystal> <20090303003237.GA30221@elte.hu> <20090303013124.GB7783@Krystal> <20090303092750.GG11484@elte.hu> <20090303120659.GA3480@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,113 +40,112 @@ In-Reply-To: <20090303120659.GA3480@in.ibm.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:26:39 up 3 days, 10:52,  1 user,  load average: 0.50, 0.53,
-	0.41
+X-Uptime: 09:31:17 up 3 days, 10:57,  1 user,  load average: 0.03, 0.24,
+	0.31
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ananth N Mavinakayanahalli (ananth@in.ibm.com) wrote:
-> On Tue, Mar 03, 2009 at 10:27:50AM +0100, Ingo Molnar wrote:
-> > 
-> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > @@ -709,7 +711,8 @@ int __kprobes register_kprobe(struct kpr
-> 
-> Hi Ingo,
-> 
-> > >  	if (kprobe_enabled)
-> > >  		arch_arm_kprobe(p);
-> > 
-> > hm, it's cleaner now, but there's serious locking dependency 
-> > problems visible in the patch:
-> > 
-> > > -
-> > > +out_unlock_text:
-> > > +	mutex_unlock(&text_mutex);
-> > >  out:
-> > >  	mutex_unlock(&kprobe_mutex);
-> > 
-> > this one creates a (text_mutex -> kprobe_mutex) dependency. 
-> > (also you removed a newline spuriously - dont do that)
-> 
-> That is a mutex_unlock :-) ...
-> 
-> > > @@ -746,8 +749,11 @@ valid_p:
-> > >  		 * enabled and not gone - otherwise, the breakpoint would
-> > >  		 * already have been removed. We save on flushing icache.
-> > >  		 */
-> > > -		if (kprobe_enabled && !kprobe_gone(old_p))
-> > > +		if (kprobe_enabled && !kprobe_gone(old_p)) {
-> > > +			mutex_lock(&text_mutex);
-> > >  			arch_disarm_kprobe(p);
-> > > +			mutex_unlock(&text_mutex);
-> > > +		}
-> > >  		hlist_del_rcu(&old_p->hlist);
-> > 
-> > (kprobe_mutex -> text_mutex) dependency. AB-BA deadlock.
-> 
-> At this time the kprobe_mutex is already held.
-> 
-> ...
-> 
-> > > @@ -1280,12 +1285,14 @@ static void __kprobes enable_all_kprobes
-> > >  	if (kprobe_enabled)
-> > >  		goto already_enabled;
-> > >  
-> > > +	mutex_lock(&text_mutex);
-> > >  	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-> > >  		head = &kprobe_table[i];
-> > >  		hlist_for_each_entry_rcu(p, node, head, hlist)
-> > >  			if (!kprobe_gone(p))
-> > >  				arch_arm_kprobe(p);
-> > >  	}
-> > > +	mutex_unlock(&text_mutex);
-> > 
-> > this one creates a (kprobe_mutex -> text_mutex) dependency 
-> > again.
-> 
-> kprobe_mutex his held here too...
-> 
-> > > @@ -1310,6 +1317,7 @@ static void __kprobes disable_all_kprobe
-> > >  
-> > >  	kprobe_enabled = false;
-> > >  	printk(KERN_INFO "Kprobes globally disabled\n");
-> > > +	mutex_lock(&text_mutex);
-> > >  	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-> > >  		head = &kprobe_table[i];
-> > >  		hlist_for_each_entry_rcu(p, node, head, hlist) {
-> > > @@ -1317,7 +1325,7 @@ static void __kprobes disable_all_kprobe
-> > >  				arch_disarm_kprobe(p);
-> > >  		}
-> > >  	}
-> > > -
-> > > +	mutex_unlock(&text_mutex);
-> > >  	mutex_unlock(&kprobe_mutex);
-> > 
-> > And this one in the reverse direction again.
-> 
-> Unlock again :-)
-> 
-> > The dependencies are totally wrong. The text lock (a low level 
-> > lock) should nest inside the kprobes mutex (which is the higher 
-> > level lock).
-> 
-> From what I see, Mathieu has done just that and has gotten the order
-> right in all cases. Or maybe I am missing something?
-> 
-> (I recall having tested this patch with LOCKDEP turned on and it
-> din't throw any errors).
-> 
+Use the mutual exclusion provided by the text edit lock in the kprobes code. It
+allows coherent manipulation of the kernel code by other subsystems.
 
-Yes, I even moved all kprobe_mutexes out of arch_arm_kprobe/arch_arm_kprobe
-a while ago in preparation for this patch. :) I can repost without the
-white space modifications.
+Changelog:
 
-Mathieu
+Move the kernel_text_lock/unlock out of the for loops.
+Use text_mutex directly instead of a function.
+Remove whitespace modifications.
 
-> Ananth
+(note : kprobes_mutex is always taken outside of text_mutex)
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+CC: ananth@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
+CC: Roel Kluin <12o3l@tiscali.nl>
+---
+ kernel/kprobes.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+Index: linux-2.6-lttng/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2009-03-02 19:22:51.000000000 -0500
++++ linux-2.6-lttng/kernel/kprobes.c	2009-03-03 09:11:17.000000000 -0500
+@@ -43,6 +43,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
+ #include <linux/kdebug.h>
++#include <linux/memory.h>
+ 
+ #include <asm-generic/sections.h>
+ #include <asm/cacheflush.h>
+@@ -699,9 +700,10 @@ int __kprobes register_kprobe(struct kpr
+ 		goto out;
+ 	}
+ 
++	mutex_lock(&text_mutex);
+ 	ret = arch_prepare_kprobe(p);
+ 	if (ret)
+-		goto out;
++		goto out_unlock_text;
+ 
+ 	INIT_HLIST_NODE(&p->hlist);
+ 	hlist_add_head_rcu(&p->hlist,
+@@ -710,6 +712,8 @@ int __kprobes register_kprobe(struct kpr
+ 	if (kprobe_enabled)
+ 		arch_arm_kprobe(p);
+ 
++out_unlock_text:
++	mutex_unlock(&text_mutex);
+ out:
+ 	mutex_unlock(&kprobe_mutex);
+ 
+@@ -746,8 +750,11 @@ valid_p:
+ 		 * enabled and not gone - otherwise, the breakpoint would
+ 		 * already have been removed. We save on flushing icache.
+ 		 */
+-		if (kprobe_enabled && !kprobe_gone(old_p))
++		if (kprobe_enabled && !kprobe_gone(old_p)) {
++			mutex_lock(&text_mutex);
+ 			arch_disarm_kprobe(p);
++			mutex_unlock(&text_mutex);
++		}
+ 		hlist_del_rcu(&old_p->hlist);
+ 	} else {
+ 		if (p->break_handler && !kprobe_gone(p))
+@@ -1280,12 +1287,14 @@ static void __kprobes enable_all_kprobes
+ 	if (kprobe_enabled)
+ 		goto already_enabled;
+ 
++	mutex_lock(&text_mutex);
+ 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+ 		head = &kprobe_table[i];
+ 		hlist_for_each_entry_rcu(p, node, head, hlist)
+ 			if (!kprobe_gone(p))
+ 				arch_arm_kprobe(p);
+ 	}
++	mutex_unlock(&text_mutex);
+ 
+ 	kprobe_enabled = true;
+ 	printk(KERN_INFO "Kprobes globally enabled\n");
+@@ -1310,6 +1319,7 @@ static void __kprobes disable_all_kprobe
+ 
+ 	kprobe_enabled = false;
+ 	printk(KERN_INFO "Kprobes globally disabled\n");
++	mutex_lock(&text_mutex);
+ 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+ 		head = &kprobe_table[i];
+ 		hlist_for_each_entry_rcu(p, node, head, hlist) {
+@@ -1318,6 +1328,7 @@ static void __kprobes disable_all_kprobe
+ 		}
+ 	}
+ 
++	mutex_unlock(&text_mutex);
+ 	mutex_unlock(&kprobe_mutex);
+ 	/* Allow all currently running kprobes to complete */
+ 	synchronize_sched();
 
 -- 
 Mathieu Desnoyers
