@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbZCCHwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbZCCHxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757668AbZCCHwE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 02:52:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZCCHvx
+	id S1758671AbZCCHxS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 02:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZCCHxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 02:51:53 -0500
-Received: from viefep18-int.chello.at ([62.179.121.38]:44270 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbZCCHvx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 02:51:53 -0500
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH] remove rq->lock from cpuacct cgroup (Was Re:
- [PATCH] cpuacct: add a branch prediction
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: paulmck@linux.vnet.ibm.com, Bharata B Rao <bharata.rao@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
-References: <49A65455.4030204@cn.fujitsu.com>
-	 <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
-	 <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
-	 <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
-	 <1235645076.4645.4781.camel@laptop>
-	 <934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com>
-	 <1235647682.4948.15.camel@laptop>
-	 <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
-	 <20090226164509.GB6634@linux.vnet.ibm.com>
-	 <20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090227012915.GF6634@linux.vnet.ibm.com>
-	 <20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1236005770.5330.583.camel@laptop>
-	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 08:51:29 +0100
-Message-Id: <1236066689.18955.27.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 02:53:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:32969 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751960AbZCCHxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 02:53:04 -0500
+Date: Tue, 3 Mar 2009 07:51:41 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, hpa@zytor.com,
+       mingo@redhat.com, yinghai@kernel.org, bmaly@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, ying.huang@intel.com,
+       linux-kernel@vger.kernel.org, yinghai@kernel.org, bmaly@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49ACDDED.1060508@kernel.org>
+References: <49ACDDED.1060508@kernel.org>
+Subject: [tip:x86/urgent] x86: fix init_memory_mapping() to handle small ranges
+Message-ID: <tip-0fc59d3a01820765e5f3a723733728758b0cf577@git.kernel.org>
+Git-Commit-ID: 0fc59d3a01820765e5f3a723733728758b0cf577
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 03 Mar 2009 07:51:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 08:42 +0900, KAMEZAWA Hiroyuki wrote:
+Commit-ID:  0fc59d3a01820765e5f3a723733728758b0cf577
+Gitweb:     http://git.kernel.org/tip/0fc59d3a01820765e5f3a723733728758b0cf577
+Author:     "Yinghai Lu" <yinghai@kernel.org>
+AuthorDate: Mon, 2 Mar 2009 23:36:13 -0800
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 3 Mar 2009 08:50:22 +0100
 
-> > Furthermore, if you want something like schedule_work_on() for each cpu,
-> > there's schedule_on_each_cpu().
-> > 
-> It can't pass arguments...Maybe I should use rq->lock here to reset
-> other cpu's value.
+x86: fix init_memory_mapping() to handle small ranges
 
-Why bother with serializing the reset code at all?
+Impact: fix failed EFI bootup in certain circumstances
 
-But there's always smp_call_function() I suppose.
+Ying Huang found init_memory_mapping() has problem with small ranges
+less than 2M when he tried to direct map the EFI runtime code out of
+max_low_pfn_mapped.
 
+It turns out we never considered that case and didn't check the range...
+
+Reported-by: Ying Huang <ying.huang@intel.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Brian Maly <bmaly@redhat.com>
+LKML-Reference: <49ACDDED.1060508@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/mm/init_64.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index e6d36b4..b135225 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -714,6 +714,8 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	pos = start_pfn << PAGE_SHIFT;
+ 	end_pfn = ((pos + (PMD_SIZE - 1)) >> PMD_SHIFT)
+ 			<< (PMD_SHIFT - PAGE_SHIFT);
++	if (end_pfn > (end >> PAGE_SHIFT))
++		end_pfn = end >> PAGE_SHIFT;
+ 	if (start_pfn < end_pfn) {
+ 		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
+ 		pos = end_pfn << PAGE_SHIFT;
