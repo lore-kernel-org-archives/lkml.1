@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbZCCCBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZCCCJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756752AbZCCCBX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 21:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZCCCBP
+	id S1755572AbZCCCJh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 21:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbZCCCJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 21:01:15 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:32010 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbZCCCBO (ORCPT
+	Mon, 2 Mar 2009 21:09:28 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:46644 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753356AbZCCCJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 21:01:14 -0500
-Message-ID: <49AC8F98.10101@oracle.com>
-Date: Mon, 02 Mar 2009 18:02:00 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-03-02-17-09 uploaded
-References: <200903030109.n2319UeR010057@imap1.linux-foundation.org>
-In-Reply-To: <200903030109.n2319UeR010057@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Mar 2009 21:09:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kJjxQp7GSselnSlnyYMnIrgpizWCyHRLnPzK5OZUkre4Z733zEy/2z0Ppc3sEHblWE
+         l3d3+fvV77szifwUcz6xcCObV9DKoEihXaC5hX8adxiiNUlpMYKO8i8BLe+ZiGFoAXv3
+         PRWinyNGJKPtjrY9WhH2IXYAUph1i8fABglDo=
+Subject: Re: [PATCH 1/2] byteorder: add load/store_{endian} API
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>
+In-Reply-To: <alpine.LFD.2.00.0903021749030.3111@localhost.localdomain>
+References: <1236038817.5756.11.camel@brick>
+	 <alpine.LFD.2.00.0903021613590.3111@localhost.localdomain>
+	 <1236039944.5756.19.camel@brick>
+	 <alpine.LFD.2.00.0903021632320.3111@localhost.localdomain>
+	 <1236040845.5756.33.camel@brick>
+	 <alpine.LFD.2.00.0903021749030.3111@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 02 Mar 2009 18:09:19 -0800
+Message-Id: <1236046159.5756.43.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49AC8F40.00F7:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-03-02-17-09 has been uploaded to
+On Mon, 2009-03-02 at 17:51 -0800, Linus Torvalds wrote:
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
+> On Mon, 2 Mar 2009, Harvey Harrison wrote:
+> > 
+> > OK, static inline it is then. Would you be opposed to an API like:
+> > 
+> > get_le16
+> > put_le16
+> > 
+> > to match with 
+> >
+> > get_unaligned_le16
+> > put_unaligned_le16
+> > 
+> > And make the existing unaligned helpers typesafe?
 > 
-> and will soon be available at
+> That sounds much better to me. That said, I'm also wondering what the 
+> upside is of this all?
 > 
->    git://git.zen-sources.org/zen/mmotm.git
-> 
-> It contains the following patches against 2.6.29-rc6:
 
+1) Recognize that some drivers/subsystems want this, or already
+implement it privately
 
-> relay-fix-for-possible-loss-corruption-of-produced-subbufs.patch
+2) [micro-optimization] Allow arches that do provide load/store swapped
+instructions to be used more often.
 
+3) make it more likely that people will actually use the unaligned
+helpers rather than open-coding the byteswapping, allowing arches that
+have no alignment constraints to just do regular loads if possible.
 
-diffstat for this patch says:
+Disadvantages:
 
- kernel/relay.c      |    8 
- kernel/relay.c.orig | 1406 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 1411 insertions(+), 3 deletions(-)
+1) existing users of the get_unaligned bits may/will produce sparse
+warnings on the flag day
 
+2) the existing argument ordering of put_unaligned is opposite what
+is usually expected in such a helper
 
-and quilt stops applying the series file when it has this error:
+3) [nitpicky] get/put almost always means reference taking/releasing,
+load/store is the usual verb used for such an API.
 
-Applying patch relay-fix-for-possible-loss-corruption-of-produced-subbufs.patch
-patching file kernel/relay.c
-The next patch would create the file kernel/relay.c.orig,
-which already exists!  Applying it anyway.
-patching file kernel/relay.c.orig
-[31mPatch attempted to create file kernel/relay.c.orig, which already exists.[00m
-[31mHunk #1 FAILED at 1.[00m
-[31m1 out of 1 hunk FAILED -- rejects in file kernel/relay.c.orig[00m
-Patch relay-fix-for-possible-loss-corruption-of-produced-subbufs.patch does not apply (enforce with -f)
--- 
-~Randy
+Harvey
+
