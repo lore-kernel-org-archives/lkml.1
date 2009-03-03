@@ -1,225 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZCCLNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZCCLO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZCCLNU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 06:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZCCLNL
+	id S1757213AbZCCLO0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 06:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCCLOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 06:13:11 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:56007 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbZCCLNJ (ORCPT
+	Tue, 3 Mar 2009 06:14:17 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58152 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751075AbZCCLOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 06:13:09 -0500
-Date: Tue, 3 Mar 2009 16:42:44 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
-Message-ID: <20090303111244.GP11421@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090302044043.GC11421@balbir.in.ibm.com> <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com> <20090302060519.GG11421@balbir.in.ibm.com> <20090302152128.e74f51ef.kamezawa.hiroyu@jp.fujitsu.com> <20090302063649.GJ11421@balbir.in.ibm.com> <20090302160602.521928a5.kamezawa.hiroyu@jp.fujitsu.com> <20090302124210.GK11421@balbir.in.ibm.com> <c31ccd23cb41f0f7594b3f56b20f0165.squirrel@webmail-b.css.fujitsu.com> <20090302174156.GM11421@balbir.in.ibm.com> <20090303085914.555089b1.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090303085914.555089b1.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Mar 2009 06:14:16 -0500
+Date: Tue, 3 Mar 2009 11:13:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
+       tglx@linutronix.de
+Subject: Re: lockdep and threaded IRQs (was: ...)
+Message-ID: <20090303111353.5d9e4a8d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090303104836.GA11532@elte.hu>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+	<200903021633.08736.david-b@pacbell.net>
+	<20090303004427.GA8638@elte.hu>
+	<200903021837.08635.david-b@pacbell.net>
+	<1236072446.18955.44.camel@twins>
+	<20090303094743.030b2507@lxorguk.ukuu.org.uk>
+	<20090303100329.GA5050@elte.hu>
+	<20090303103041.0ba4aebd@lxorguk.ukuu.org.uk>
+	<20090303104836.GA11532@elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Organization: None.. I'm free I'm free bwhahahahaha!
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-03 08:59:14]:
+> Hm, that reads like the boot IRQ erratas of certain chipsets - 
+> the APIC could throw a fit essentially locking up the system. 
+> FYI, we have fixes for that upstream already.
 
-> On Mon, 2 Mar 2009 23:11:56 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 23:04:34]:
-> > 
-> > > Balbir Singh wrote:
-> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02
-> > > > 16:06:02]:
-> > > >
-> > > >> On Mon, 2 Mar 2009 12:06:49 +0530
-> > > >> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > >> > OK, I get your point, but whay does that make RB-Tree data structure
-> > > >> non-sense?
-> > > >> >
-> > > >>
-> > > >>  1. Until memory-shortage, rb-tree is kept to be updated and the
-> > > >> users(kernel)
-> > > >>     has to pay its maintainace/check cost, whici is unnecessary.
-> > > >>     Considering trade-off, paying cost only when memory-shortage happens
-> > > >> tend to
-> > > >>     be reasonable way.
-> > > > As you've seen in the code, the cost is only at an interval HZ/2
-> > > > currently. The other overhead is the calculation of excess, I can try
-> > > > and see if we can get rid of it.
-> > > >
-> > > >>
-> > > >>  2. Current "exceed" just shows "How much we got over my soft limit" but
-> > > >> doesn't
-> > > >>     tell any information per-node/zone. Considering this, this rb-tree
-> > > >>     information will not be able to help kswapd (on NUMA).
-> > > >>     But maintain per-node information uses too much resource.
-> > > >
-> > > > Yes, kswapd is per-node and we try to free all pages belonging to a
-> > > > zonelist as specified by pgdat->node_zonelists for the memory control
-> > > > groups that are over their soft limit. Keeping this information per
-> > > > node makes no sense (exceeds information).
-> > > >
-> > > >>
-> > > >>  Considering above 2, it's not bad to find victim by proper logic
-> > > >>  from balance_pgdat() by using mem_cgroup_select_victim().
-> > > >>  like this:
-> > > >> ==
-> > > >>  struct mem_cgroup *select_vicitim_at_soft_limit_via_balance_pgdat(int
-> > > >> nid, int zid)
-> > > >>  {
-> > > >>      while (?) {
-> > > >>         vitcim = mem_cgroup_select_victim(init_mem_cgroup);  #need some
-> > > >> modification.
-> > > >>         if (victim is not over soft-limit)
-> > > >>              continue;
-> > > >>         /* Ok this is candidate */
-> > > >>         usage = mem_cgroup_nid_zid_usage(mem, nid, zid); #get sum of
-> > > >> active/inactive
-> > > >>         if (usage_is_enough_big)
-> > > >>               return victim;
-> > > >
-> > > > We currently track overall usage, so we split into per nid, zid
-> > > > information and use that? Is that your suggestion?
-> > > 
-> > > My suggestion is that current per-zone statistics interface of memcg
-> > > already holds all necessary information. And aggregate usage information
-> > > is not worth to be tracked becauset it's no help for kswapd.
-> > >
-> > 
-> > We have that data, but we need aggregate data to see who exceeded the
-> > limit.
-> >  
-> Aggregate data is in res_counter, already.
-> 
-> 
-> 
-> > > >  The soft limit is
-> > > > also an aggregate limit, how do we define usage_is_big_enough or
-> > > > usage_is_enough_big? Through some heuristics?
-> > > >
-> > > I think that if memcg/zone's page usage is not 0, it's enough big.
-> > > (and round robin rotation as hierachical reclaim can be used.)
-> > > 
-> > > There maybe some threshold to try.
-> > > 
-> > > For example)
-> > >    need_to_reclaim = zone->high - zone->free.
-> > >    if (usage_in_this_zone_of_memcg > need_to_reclaim/4)
-> > >          select this.
-> > > 
-> > > Maybe we can adjust that later.
-> > > 
-> > 
-> > No... this looks broken by design. Even if the administrator sets a
-> > large enough limit and no soft limits, the cgroup gets reclaimed from?
-> > 
-> I wrote
-> ==
->  if (victim is not over soft-limit)
-> ==
-> ....Maybe this discussion style is bad and I should explain my approach in patch.
-> (I can't write code today, sorry.)
-> 
-> 
-> > 
-> > > >>      }
-> > > >>  }
-> > > >>  balance_pgdat()
-> > > >>  ...... find target zone....
-> > > >>  ...
-> > > >>  mem = select_victime_at_soft_limit_via_balance_pgdat(nid, zid)
-> > > >>  if (mem)
-> > > >>    sc->mem = mem;
-> > > >>  shrink_zone();
-> > > >>  if (mem) {
-> > > >>    sc->mem = NULL;
-> > > >>    css_put(&mem->css);
-> > > >>  }
-> > > >> ==
-> > > >>
-> > > >>  We have to pay scan cost but it will not be too big(if there are not
-> > > >> thousands of memcg.)
-> > > >>  Under above, round-robin rotation is used rather than sort.
-> > > >
-> > > > Yes, we sort, but not frequently at every page-fault but at a
-> > > > specified interval.
-> > > >
-> > > >>  Maybe I can show you sample.....(but I'm a bit busy.)
-> > > >>
-> > > >
-> > > > Explanation and review is good, but I don't see how not-sorting will
-> > > > help? I need something that can help me point to the culprits quickly
-> > > > enough during soft limit reclaim and RB-Tree works very well for me.
-> > > >
-> > > 
-> > > I don't think "tracking memcg which exceeds soft limit" is not worth
-> > > to do in synchronous way. It can be done in lazy way when it's necessary
-> > > in simpler logic.
-> > >
-> > 
-> > The synchronous way can be harmful if we do it every page fault. THe
-> > current logic is quite simple....no?
-> In my point of view, No.
-> 
-> For example, I can never be able to explain why Hz/4 is the best and
-> why we have to maintain the tree while there are no memory shortage.
-> 
+Good - certainly it used to be the case that masking APIC IRQs and
+leaving them masked from the IRQ handled used to do funny things
+sometimes.
 
-Why do we need to track pages even when no hard limits are setup?
-Every feature comes with a price when enabled.
+> i think you severely over-estimate the importance and ratio of 
+> drivers that enable irqs within irq handlers. (Nor does anyone 
+> want to break them really - we want to have a sane default and 
+> we want to flag the broken cases as broken.)
 
-> IMHO, Under well controlled system with cgroup, problematic applications
-> and very huge file cache users are udner limitation. Memory shortage can be
-> rare event after all.
-
-Yes and that is why hard limits make no sense there, soft limits make
-more sense in the rare event of shortage, they kick in.
-
-> 
-> But, on NUMA, because memcg just checks "usage" and doesn't check
-> "usage-per-node", there can be memory shortage and this kind of soft-limit
-> sounds attractive for me.
-> 
+IDE. A lot less people use the IDE stack nowdays but its a big item and
+getting it wrong tends to eat your files.
 
 
-Could you please elaborate further on this?
-
-> >  
-> > > BTW, did you do set-softlimit-zero and rmdir() test ?
-> > > At quick review, memcg will never be removed from RB tree because
-> > > force_empty moves account from children to parent. But no tree ops there.
-> > > plz see mem_cgroup_move_account().
-> > > 
-> > 
-> > __mme_cgroup_free() has tree ops, shouldn't that catch this scenario?
-> > 
-> Ok, I missed that. Thank you for clarification.
-> 
-> Regards.
-> -Kame
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-
--- 
-	Balbir
+I do object to the attitude shown about "forcing" people. It's a
+community project built by a large number of people on a mix of
+pragmatic and elegant design balances. Maybe it's just unfortunate choice
+of wording but it is the wrong sentiment.
