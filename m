@@ -1,119 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZCCFi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZCCFlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbZCCFi1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 00:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbZCCFiS
+	id S1754730AbZCCFlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 00:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbZCCFlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 00:38:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45134 "EHLO hera.kernel.org"
+	Tue, 3 Mar 2009 00:41:04 -0500
+Received: from mga09.intel.com ([134.134.136.24]:37703 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750924AbZCCFiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 00:38:17 -0500
-Message-ID: <49ACC205.2040504@kernel.org>
-Date: Mon, 02 Mar 2009 21:37:09 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+	id S1750924AbZCCFlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 00:41:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,294,1233561600"; 
+   d="asc'?scan'208";a="391115897"
 Subject: Re: [PATCH] Fix e820 end address with EFI
-References: <49A965AD.10701@redhat.com>	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>	 <49AAEC79.3000808@redhat.com>	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>	 <49AB38E7.60305@redhat.com>	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>	 <49AB4171.7000508@kernel.org>	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>	 <49AB4521.8010909@kernel.org>	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>	 <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>	 <49AC51D7.1080203@kernel.org>	 <1236042459.6204.226.camel@yhuang-dev.sh.intel.com>	 <49AC87AE.60001@kernel.org>	 <1236046936.6204.243.camel@yhuang-dev.sh.intel.com>	 <49AC9B99.5020000@kernel.org>	 <1236049574.6204.253.camel@yhuang-dev.sh.intel.com>	 <49ACAAAF.90300@kernel.org> <1236058371.6204.267.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1236058371.6204.267.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Huang Ying <ying.huang@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49ACC205.2040504@kernel.org>
+References: <49A965AD.10701@redhat.com>
+	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>
+	 <49AAEC79.3000808@redhat.com>
+	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>
+	 <49AB38E7.60305@redhat.com>
+	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>
+	 <49AB4171.7000508@kernel.org>
+	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>
+	 <49AB4521.8010909@kernel.org>
+	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>
+	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>
+	 <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
+	 <49AC51D7.1080203@kernel.org>
+	 <1236042459.6204.226.camel@yhuang-dev.sh.intel.com>
+	 <49AC87AE.60001@kernel.org>
+	 <1236046936.6204.243.camel@yhuang-dev.sh.intel.com>
+	 <49AC9B99.5020000@kernel.org>
+	 <1236049574.6204.253.camel@yhuang-dev.sh.intel.com>
+	 <49ACAAAF.90300@kernel.org>
+	 <1236058371.6204.267.camel@yhuang-dev.sh.intel.com>
+	 <49ACC205.2040504@kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-o/paKqoOa8RgRLzDS/aq"
+Date: Tue, 03 Mar 2009 13:40:58 +0800
+Message-Id: <1236058858.6204.273.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Tue, 2009-03-03 at 11:57 +0800, Yinghai Lu wrote:
->> Huang Ying wrote:
->>> On Tue, 2009-03-03 at 10:53 +0800, Yinghai Lu wrote:
->>>> Huang Ying wrote:
->>>>> On Tue, 2009-03-03 at 09:28 +0800, Yinghai Lu wrote:
->>>>>> Huang Ying wrote:
->>>>>>> On Tue, 2009-03-03 at 05:38 +0800, Yinghai Lu wrote:
->>>>>>>> Huang Ying wrote:
->>>>>>>>> On Mon, 2009-03-02 at 10:51 +0800, Yinghai Lu wrote:
->>>>>>>>>> On Sun, Mar 1, 2009 at 6:37 PM, Huang Ying <ying.huang@intel.com> wrote:
->>>>>>>>>>>> so 64bit could use ioremap_cache() too?
->>>>>>>>>>>> we may keep 32bit and 64bit a bit consistent.
->>>>>>>>>>> If we use ioremap_cache(), kexec runtime service will not work in kexec
->>>>>>>>>>> situation, which needs EFI runtime memory area to be mapped at exact
->>>>>>>>>>> same location across kexec. I think we should support kexec if possible.
->>>>>>>>>> sure.
->>>>>>>>>>
->>>>>>>>>> please don't touch max_low_pfn_mapped, because some range may not
->>>>>>>>>> directly mapped under those efi run-time code
->>>>>>>>> Find an issue to use init_memory_mapping() here.
->>>>>>>>>
->>>>>>>>> If the memory range to be mapped is less than 2M, the last mapped
->>>>>>>>> address may be next 2M aligned position, this may lead mapping
->>>>>>>>> overlapping between memory range. Such as:
->>>>>>>>>
->>>>>>>>> 0x3f388000 - 0x3f488000: real mapped	0x3f388000 - 0x3f600000
->>>>>>>>> 0x3f590000 - 0x3f5bb000: real mapped	0x3f590000 - 0x3f600000
->>>>>>>>>
->>>>>>>>> The problem is that the memory range 0x3f400000 - 0x3f590000 is left not
->>>>>>>>> mapped!
->>>>>>>> what is max_low_pfn_mapped before that?
->>>>>>> I don't know exactly what you mean. Can you elaborate a little?
->>>>>>>
->>>>>>> 0 ~ max_low_pfn_mapped ~ max_pfn_mapped can be mapped with
->>>>>>> init_memory_mapping() properly.
->>>>>>>
->>>>>>> The issue of above example is that 0x3f400000 ~ 0x3f488000 is a
->>>>>>> sub-range of 0x3f388000 ~ 0x3f488000, which should be mapped but is left
->>>>>>> not mapped.
->>>>>> what is max_low_pfn_mapped?
->>>>>>
->>>>>> what is init_memory_mapping() printout?
->>>>> This does not comes from a real test case. To test the changes I made, I
->>>>> make efi_ioremap() being used even if the corresponding memory range is
->>>>> below max_low_pfn_mapped. The dmesg of test is attached with the mail.
->>>>>
->>>>> The printout of init_memory_mapping shows:
->>>>>
->>>>> init_memory_mapping: 000000003f488000-000000003f4bb000                          
->>>>> last_map_addr: 3f600000 end: 3f4bb000
->>>>> init_memory_mapping: 000000003f590000-000000003f5bb000                          
->>>>> last_map_addr: 3f600000 end: 3f5bb000
->>>> init_memory_mapping: 0000000000000000-000000003f700000                          
->>>>
->>>> last_map_addr: 3f700000 end: 3f700000                                           
->>>>
->>>> (6 early reservations) ==> bootmem [0000000000 - 003f700000]
->>>>
->>>> so max_low_pfn_mapped is (3f700000>>12)
->>>> and you try to init_memory_mapping again before it
->>> Yes. Just for testing, I want to use efi_ioremap() on more memory range
->>> to test.
->>>
->>>>> init_memory_mapping: 00000000fffb0000-00000000fffba000                          
->>>>> last_map_addr: 100000000 end: fffba000
->>>> this one is interesting... got over mapped...
->>>>> So I think it is possible to have the issue I mentioned above.
->>>> looks like.
->>> So, If you have no time, I can try to fix that. Do you think
->>> init_memory_mapping should stop at specified end page?
->> you may boot with debug, so could figure out how init_memory_mapping want to map the range.
->>
->> it should stop at specified end page at least with 64bit.
-> 
-> The dmesg with ignore_loglevel in kernel parameters is attached with the
-> mail.
-> 
-> init_memory_mapping: 0000000000000000-000000003f700000
->  0000000000 - 003f600000 page 2M
->  003f600000 - 003f700000 page 4k
-> kernel direct mapping tables up to 3f700000 @ 8000-b000
-> last_map_addr: 3f700000 end: 3f700000
-> 
-> init_memory_mapping: 00000000fffb0000-00000000fffba000
->  00fffb0000 - 0100000000 page 4k
-> last_map_addr: 100000000 end: fffba000
-that is funny, the range calculating has some problem...when the range size < 2M...
 
-YH
+--=-o/paKqoOa8RgRLzDS/aq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2009-03-03 at 13:37 +0800, Yinghai Lu wrote:
+[...]
+> > The dmesg with ignore_loglevel in kernel parameters is attached with th=
+e
+> > mail.
+> >=20
+> > init_memory_mapping: 0000000000000000-000000003f700000
+> >  0000000000 - 003f600000 page 2M
+> >  003f600000 - 003f700000 page 4k
+> > kernel direct mapping tables up to 3f700000 @ 8000-b000
+> > last_map_addr: 3f700000 end: 3f700000
+> >=20
+> > init_memory_mapping: 00000000fffb0000-00000000fffba000
+> >  00fffb0000 - 0100000000 page 4k
+> > last_map_addr: 100000000 end: fffba000
+> that is funny, the range calculating has some problem...when the range si=
+ze < 2M...
+
+Yes. Can you fix that? If you have no time, I can do that.
+
+Best Regards,
+Huang Ying
+
+
+--=-o/paKqoOa8RgRLzDS/aq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmswucACgkQKhFGF+eHlphItACeLRe9Vwqtikt78DiEhywCFwGu
+0awAoJt/FcqGYl0CB4EYtRGfNnTxVb5C
+=Uevd
+-----END PGP SIGNATURE-----
+
+--=-o/paKqoOa8RgRLzDS/aq--
 
