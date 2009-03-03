@@ -1,105 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbZCCD66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZCCEJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208AbZCCD66 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 22:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZCCD6t
+	id S1755869AbZCCEJu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 23:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZCCEJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 22:58:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52663 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751817AbZCCD6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 22:58:49 -0500
-Message-ID: <49ACAAAF.90300@kernel.org>
-Date: Mon, 02 Mar 2009 19:57:35 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 2 Mar 2009 23:09:41 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:31837 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbZCCEJj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 23:09:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dfKBSlxNILbz2Z9u/pjrSgiyNGPk0m+Lwk3si6tO+Njv17Vq5NaVHP0vzFfpfNIZs9
+         tMPAYjo11AGbsPPfnW7nBITZRAHxRKq71bAJ5m2YOCrAkiIXYrpGpsBtLqkG1FYD8PW8
+         4WX8soKSuQX8vDNqsSXPlUYLMTg9Xe7n3ttn4=
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix e820 end address with EFI
-References: <49A965AD.10701@redhat.com>	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>	 <49AAEC79.3000808@redhat.com>	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>	 <49AB38E7.60305@redhat.com>	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>	 <49AB4171.7000508@kernel.org>	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>	 <49AB4521.8010909@kernel.org>	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>	 <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>	 <49AC51D7.1080203@kernel.org>	 <1236042459.6204.226.camel@yhuang-dev.sh.intel.com>	 <49AC87AE.60001@kernel.org>	 <1236046936.6204.243.camel@yhuang-dev.sh.intel.com>	 <49AC9B99.5020000@kernel.org> <1236049574.6204.253.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1236049574.6204.253.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <49AB55B9.3050301@oracle.com>
+References: <1235401804-8136-1-git-send-email-crquan@gmail.com>
+	 <49AB55B9.3050301@oracle.com>
+Date: Tue, 3 Mar 2009 12:09:35 +0800
+Message-ID: <91b13c310903022009l363497bbi380356c19caa53b3@mail.gmail.com>
+Subject: Re: [PATCH 0/6] [KBUILD] configuration system improvements
+From: Cheng Renquan <crquan@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Tue, 2009-03-03 at 10:53 +0800, Yinghai Lu wrote:
->> Huang Ying wrote:
->>> On Tue, 2009-03-03 at 09:28 +0800, Yinghai Lu wrote:
->>>> Huang Ying wrote:
->>>>> On Tue, 2009-03-03 at 05:38 +0800, Yinghai Lu wrote:
->>>>>> Huang Ying wrote:
->>>>>>> On Mon, 2009-03-02 at 10:51 +0800, Yinghai Lu wrote:
->>>>>>>> On Sun, Mar 1, 2009 at 6:37 PM, Huang Ying <ying.huang@intel.com> wrote:
->>>>>>>>>> so 64bit could use ioremap_cache() too?
->>>>>>>>>> we may keep 32bit and 64bit a bit consistent.
->>>>>>>>> If we use ioremap_cache(), kexec runtime service will not work in kexec
->>>>>>>>> situation, which needs EFI runtime memory area to be mapped at exact
->>>>>>>>> same location across kexec. I think we should support kexec if possible.
->>>>>>>> sure.
->>>>>>>>
->>>>>>>> please don't touch max_low_pfn_mapped, because some range may not
->>>>>>>> directly mapped under those efi run-time code
->>>>>>> Find an issue to use init_memory_mapping() here.
->>>>>>>
->>>>>>> If the memory range to be mapped is less than 2M, the last mapped
->>>>>>> address may be next 2M aligned position, this may lead mapping
->>>>>>> overlapping between memory range. Such as:
->>>>>>>
->>>>>>> 0x3f388000 - 0x3f488000: real mapped	0x3f388000 - 0x3f600000
->>>>>>> 0x3f590000 - 0x3f5bb000: real mapped	0x3f590000 - 0x3f600000
->>>>>>>
->>>>>>> The problem is that the memory range 0x3f400000 - 0x3f590000 is left not
->>>>>>> mapped!
->>>>>> what is max_low_pfn_mapped before that?
->>>>> I don't know exactly what you mean. Can you elaborate a little?
->>>>>
->>>>> 0 ~ max_low_pfn_mapped ~ max_pfn_mapped can be mapped with
->>>>> init_memory_mapping() properly.
->>>>>
->>>>> The issue of above example is that 0x3f400000 ~ 0x3f488000 is a
->>>>> sub-range of 0x3f388000 ~ 0x3f488000, which should be mapped but is left
->>>>> not mapped.
->>>> what is max_low_pfn_mapped?
->>>>
->>>> what is init_memory_mapping() printout?
->>> This does not comes from a real test case. To test the changes I made, I
->>> make efi_ioremap() being used even if the corresponding memory range is
->>> below max_low_pfn_mapped. The dmesg of test is attached with the mail.
->>>
->>> The printout of init_memory_mapping shows:
->>>
->>> init_memory_mapping: 000000003f488000-000000003f4bb000                          
->>> last_map_addr: 3f600000 end: 3f4bb000
->>> init_memory_mapping: 000000003f590000-000000003f5bb000                          
->>> last_map_addr: 3f600000 end: 3f5bb000
->> init_memory_mapping: 0000000000000000-000000003f700000                          
+On Mon, Mar 2, 2009 at 11:42 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Cheng Renquan wrote:
+>> This group of patches improve the usability of kernel configuration system,
+>> mainly,
 >>
->> last_map_addr: 3f700000 end: 3f700000                                           
+>> 1. add symbol's value shown accompanied in config item's help message;
+>> 2. move the real plumbing functions code from mconf.c to menu.c, make them
+>>    be able to be shared with other configuration methods;
+>> 3. add "symbol's value shown" support for gconfig/xconfig/config;
 >>
->> (6 early reservations) ==> bootmem [0000000000 - 003f700000]
+>>   0001--KBUILD-add-symbol-value-to-help-find-the-real-depe.patch
+>>   0002--KBUILD-add-menu_get_ext_help-function-to-display-m.patch
+>>   0003--KBUILD-menuconfig-improvements.patch
+>>   0004--KBUILD-make-use-of-menu_get_ext_help-in-gconfig.patch
+>>   0005--KBUILD-make-use-of-menu_get_ext_help-in-qconfig.patch
+>>   0006--KBUILD-make-use-of-menu_get_ext_help-in-make-conf.patch
 >>
->> so max_low_pfn_mapped is (3f700000>>12)
->> and you try to init_memory_mapping again before it
-> 
-> Yes. Just for testing, I want to use efi_ioremap() on more memory range
-> to test.
-> 
->>> init_memory_mapping: 00000000fffb0000-00000000fffba000                          
->>> last_map_addr: 100000000 end: fffba000
->> this one is interesting... got over mapped...
->>> So I think it is possible to have the issue I mentioned above.
->> looks like.
-> 
-> So, If you have no time, I can try to fix that. Do you think
-> init_memory_mapping should stop at specified end page?
+>> I found gconfig still lack of "search by symbol" support, and that would be
+>> in another patch.
+>>
+>> Request for comments, thanks.
+>
+> Hi,
+>
+> I still like this idea a lot.  However, with "make gconfig" I am
+> seeing a segfault when I click on "Firmware Drivers" in the main menu.
+> I only see this with these patches applied.
+>
+> Other than that, they look good to me.
+>
+>
+> Here's the gconfig info:
+> rddunlap@chimera:linux-2.6.29-rc6-git5> make ARCH=x86_64 O=xx64 gconfig &
+> [1] 10722
+> rddunlap@chimera:linux-2.6.29-rc6-git5>   GEN     /local/linsrc/tmp/linux-2.6.29-rc6-git5/xx64/Makefile
+> scripts/kconfig/gconf arch/x86/Kconfig
+> make[2]: *** [gconfig] Segmentation fault
+> make[1]: *** [gconfig] Error 2
+> make: *** [sub-make] Error
+>
+>
+> and from the kernel log:
+>
+> gconf[10868]: segfault at 0000000000000070 rip 00000000004111b6 rsp 00007ffff67cd6f0 error 4
 
-you may boot with debug, so could figure out how init_memory_mapping want to map the range.
+Could you tell what distribution are you using? The versions of your
+glibc, gtk+2.0, and glibc? If you can correctly build other gtk+
+programs?
 
-it should stop at specified end page at least with 64bit.
+I have developed these patches on default Fedora 10 i686, it runs
+well, and today I have tested it under a latest Gentoo x86_64 desktop,
+all seems run well here.
 
-YH
+thanks,
+
+>
+>
+> Thanks,
+> --
+> ~Randy
+>
+
+-- 
+Cheng Renquan (程任全), from Shenzhen, China
+Dick Cavett  - "If your parents never had children, chances are...
+neither will you."
