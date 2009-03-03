@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbZCCAL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbZCCANa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbZCCAL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 19:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbZCCALq
+	id S1758929AbZCCANa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 19:13:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZCCANW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 19:11:46 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:58346 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757082AbZCCALo (ORCPT
+	Mon, 2 Mar 2009 19:13:22 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:33625 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752396AbZCCANV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 19:11:44 -0500
-Message-ID: <49AC75BA.3030006@us.ibm.com>
-Date: Mon, 02 Mar 2009 16:11:38 -0800
+	Mon, 2 Mar 2009 19:13:21 -0500
+Message-ID: <49AC761C.907@us.ibm.com>
+Date: Mon, 02 Mar 2009 16:13:16 -0800
 From: Darren Hart <dvhltc@us.ibm.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
@@ -19,7 +19,7 @@ To: "lkml, " <linux-kernel@vger.kernel.org>
 CC: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <srostedt@redhat.com>,
        Sripathi Kodi <sripathik@in.ibm.com>,
        John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: [TIP][RFC 2/7] futex: futex_top_waiter()
+Subject: [TIP][RFC 3/7] futex: futex_lock_pi_atomic()
 References: <49AC73A9.4040804@us.ibm.com>
 In-Reply-To: <49AC73A9.4040804@us.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -30,60 +30,292 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Darren Hart <dvhltc@us.ibm.com>
 
-Improve legibility by wrapping finding the top waiter in a function.  This
-will be used by the follow-on patches for enabling requeue pi.
+Refactor the atomic portion of futex_lock_pi() into futex_lock_pi_atomic().
+This logic will be needed elsewhere, so modularize it to reduce code
+duplication.  The only significant change is passing of the task to try and
+take the lock for.  This simplifies the -EDEADLOCK test as if the lock is owned
+by task t, it's a deadlock, regardless of if we are doing requeue pi or not.
+This patch updates the corresponding comment accordingly.
 
 Changelog:
-V4: -Simplified logic in the hb loop
-    -Return the futex_q as the task can be had from there if needed
-    -Updated comments and dropped the -safe iterator per review from tglx
-V3: -Comment linewidth cleanup
-V1: -Initial version
+V4: -fixes for style errors caught by checkpatch.pl
+    -use task instead of t for legibility whilst searching
+    -pass key and pi_state directly rather than trying to rely on the futex_q
+     since the key may be different.
+    -minor cleanups suggested by tglx
+V2: -Initial version
 
 Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 ---
 
- kernel/futex.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+ kernel/futex.c |  230 +++++++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 134 insertions(+), 96 deletions(-)
 
 
 diff --git a/kernel/futex.c b/kernel/futex.c
-index 16459c2..d02962b 100644
+index d02962b..c4984d4 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -277,6 +277,32 @@ void put_futex_key(int fshared, union futex_key *key)
- 	drop_futex_key_refs(key);
+@@ -592,6 +592,129 @@ lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
+ 	return 0;
  }
  
-+/*
-+ * futex_top_waiter - return the highest priority waiter on the futex specified
-+ *                    by key
-+ * @hb: the hash bucket the futex_q's reside in
-+ * @key: the futex key (to distinguish it from other futex futex_q's)
++/* futex_lock_pi_atomic - perform the atomic work on the futex required to
++ *                          take a pi aware futex
++ * @uaddr: the pi futex user address
++ * @hb:   the pi futex hash bucket
++ * @key:  the futex key assocaiated with uaddr and hb
++ * @ps:   the pi_state pointer where we store the result of the lookup
++ * @task: the task to perform the atomic lock work for.  This will be current
++ *        except in the case of requeue pi.
 + *
-+ * Must be called with the hb lock held.
++ * Returns:
++ * - 0 on success (futex_q is setup and FUTEX_WAITERS bit is set on the futex)
++ * - 1 on a successful atomic acquisition of the lock
++ * - A negative error code on failure
 + *
++ * The hb->lock and futex_key refs shall be held by the caller.
 + */
-+static struct futex_q *futex_top_waiter(struct futex_hash_bucket *hb,
-+					union futex_key *key)
++static int futex_lock_pi_atomic(u32 __user *uaddr, struct futex_hash_bucket *hb,
++				union futex_key *key,
++				struct futex_pi_state **ps,
++				struct task_struct *task)
 +{
-+	struct plist_head *head;
-+	struct futex_q *this;
-+	struct futex_q *top_waiter = NULL;
++	u32 uval, newval, curval;
++	int lock_taken;
++	int ret;
++	int ownerdied = 0;
 +
-+	head = &hb->chain;
-+	plist_for_each_entry(this, head, list) {
-+		if (match_futex(&this->key, key)) {
-+			top_waiter = this;
++retry:
++	ret = lock_taken = 0;
++
++	/*
++	 * To avoid races, we attempt to take the lock here again
++	 * (by doing a 0 -> TID atomic cmpxchg), while holding all
++	 * the locks. It will most likely not succeed.
++	 */
++	newval = task_pid_vnr(task);
++
++	curval = cmpxchg_futex_value_locked(uaddr, 0, newval);
++
++	if (unlikely(curval == -EFAULT))
++		return -EFAULT;
++
++	/*
++	 * Detect deadlocks.
++	 */
++	if ((unlikely((curval & FUTEX_TID_MASK) == task_pid_vnr(task))))
++		return -EDEADLK;
++
++	/*
++	 * Surprise - we got the lock. Just return to userspace:
++	 */
++	if (unlikely(!curval))
++		return 1;
++
++	uval = curval;
++
++	/*
++	 * Set the WAITERS flag, so the owner will know it has someone
++	 * to wake at next unlock
++	 */
++	newval = curval | FUTEX_WAITERS;
++
++	/*
++	 * There are two cases, where a futex might have no owner (the
++	 * owner TID is 0): OWNER_DIED. We take over the futex in this
++	 * case. We also do an unconditional take over, when the owner
++	 * of the futex died.
++	 *
++	 * This is safe as we are protected by the hash bucket lock !
++	 */
++	if (unlikely(ownerdied || !(curval & FUTEX_TID_MASK))) {
++		/* Keep the OWNER_DIED bit */
++		newval = (curval & ~FUTEX_TID_MASK) | task_pid_vnr(task);
++		ownerdied = 0;
++		lock_taken = 1;
++	}
++
++	curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
++
++	if (unlikely(curval == -EFAULT))
++		return -EFAULT;
++	if (unlikely(curval != uval))
++		goto retry;
++
++	/*
++	 * We took the lock due to owner died take over.
++	 */
++	if (unlikely(lock_taken))
++		return 1;
++
++	/*
++	 * We dont have the lock. Look up the PI state (or create it if
++	 * we are the first waiter):
++	 */
++	ret = lookup_pi_state(uval, hb, key, ps);
++
++	if (unlikely(ret)) {
++		switch (ret) {
++		case -ESRCH:
++			/*
++			 * No owner found for this futex. Check if the
++			 * OWNER_DIED bit is set to figure out whether
++			 * this is a robust futex or not.
++			 */
++			if (get_futex_value_locked(&curval, uaddr))
++				return -EFAULT;
++
++			/*
++			 * We simply start over in case of a robust
++			 * futex. The code above will take the futex
++			 * and return happy.
++			 */
++			if (curval & FUTEX_OWNER_DIED) {
++				ownerdied = 1;
++				goto retry;
++			}
++		default:
 +			break;
 +		}
 +	}
-+	return top_waiter;
++
++	return ret;
 +}
 +
- static u32 cmpxchg_futex_value_locked(u32 __user *uaddr, u32 uval, u32 newval)
- {
- 	u32 curval;
+ /*
+  * The hash bucket lock must be held when this is called.
+  * Afterwards, the futex_q must not be accessed.
+@@ -1384,9 +1507,9 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
+ 	struct hrtimer_sleeper timeout, *to = NULL;
+ 	struct task_struct *curr = current;
+ 	struct futex_hash_bucket *hb;
+-	u32 uval, newval, curval;
++	u32 uval;
+ 	struct futex_q q;
+-	int ret, lock_taken, ownerdied = 0, attempt = 0;
++	int ret, attempt = 0;
+ 
+ 	if (refill_pi_state_cache())
+ 		return -ENOMEM;
+@@ -1409,108 +1532,23 @@ retry:
+ retry_unlocked:
+ 	hb = queue_lock(&q);
+ 
+-retry_locked:
+-	ret = lock_taken = 0;
+-
+-	/*
+-	 * To avoid races, we attempt to take the lock here again
+-	 * (by doing a 0 -> TID atomic cmpxchg), while holding all
+-	 * the locks. It will most likely not succeed.
+-	 */
+-	newval = task_pid_vnr(current);
+-
+-	curval = cmpxchg_futex_value_locked(uaddr, 0, newval);
+-
+-	if (unlikely(curval == -EFAULT))
+-		goto uaddr_faulted;
+-
+-	/*
+-	 * Detect deadlocks. In case of REQUEUE_PI this is a valid
+-	 * situation and we return success to user space.
+-	 */
+-	if (unlikely((curval & FUTEX_TID_MASK) == task_pid_vnr(current))) {
+-		ret = -EDEADLK;
+-		goto out_unlock_put_key;
+-	}
+-
+-	/*
+-	 * Surprise - we got the lock. Just return to userspace:
+-	 */
+-	if (unlikely(!curval))
+-		goto out_unlock_put_key;
+-
+-	uval = curval;
+-
+-	/*
+-	 * Set the WAITERS flag, so the owner will know it has someone
+-	 * to wake at next unlock
+-	 */
+-	newval = curval | FUTEX_WAITERS;
+-
+-	/*
+-	 * There are two cases, where a futex might have no owner (the
+-	 * owner TID is 0): OWNER_DIED. We take over the futex in this
+-	 * case. We also do an unconditional take over, when the owner
+-	 * of the futex died.
+-	 *
+-	 * This is safe as we are protected by the hash bucket lock !
+-	 */
+-	if (unlikely(ownerdied || !(curval & FUTEX_TID_MASK))) {
+-		/* Keep the OWNER_DIED bit */
+-		newval = (curval & ~FUTEX_TID_MASK) | task_pid_vnr(current);
+-		ownerdied = 0;
+-		lock_taken = 1;
+-	}
+-
+-	curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
+-
+-	if (unlikely(curval == -EFAULT))
+-		goto uaddr_faulted;
+-	if (unlikely(curval != uval))
+-		goto retry_locked;
+-
+-	/*
+-	 * We took the lock due to owner died take over.
+-	 */
+-	if (unlikely(lock_taken))
+-		goto out_unlock_put_key;
+-
+-	/*
+-	 * We dont have the lock. Look up the PI state (or create it if
+-	 * we are the first waiter):
+-	 */
+-	ret = lookup_pi_state(uval, hb, &q.key, &q.pi_state);
+-
++	ret = futex_lock_pi_atomic(uaddr, hb, &q.key, &q.pi_state, current);
+ 	if (unlikely(ret)) {
+ 		switch (ret) {
+-
++		case 1:
++			/* We got the lock. */
++			ret = 0;
++			goto out_unlock_put_key;
++		case -EFAULT:
++			goto uaddr_faulted;
+ 		case -EAGAIN:
+ 			/*
+-			 * Task is exiting and we just wait for the
+-			 * exit to complete.
++			 * Task is exiting and we just wait for the exit to
++			 * complete.
+ 			 */
+ 			queue_unlock(&q, hb);
+ 			cond_resched();
+ 			goto retry;
+-
+-		case -ESRCH:
+-			/*
+-			 * No owner found for this futex. Check if the
+-			 * OWNER_DIED bit is set to figure out whether
+-			 * this is a robust futex or not.
+-			 */
+-			if (get_futex_value_locked(&curval, uaddr))
+-				goto uaddr_faulted;
+-
+-			/*
+-			 * We simply start over in case of a robust
+-			 * futex. The code above will take the futex
+-			 * and return happy.
+-			 */
+-			if (curval & FUTEX_OWNER_DIED) {
+-				ownerdied = 1;
+-				goto retry_locked;
+-			}
+ 		default:
+ 			goto out_unlock_put_key;
+ 		}
 -- 
 Darren Hart
 IBM Linux Technology Center
