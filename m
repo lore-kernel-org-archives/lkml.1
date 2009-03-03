@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbZCCVGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZCCVIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbZCCVGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 16:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbZCCVGi
+	id S1756786AbZCCVIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 16:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZCCVIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:06:38 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:42154 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753099AbZCCVGh (ORCPT
+	Tue, 3 Mar 2009 16:08:35 -0500
+Received: from n17.bullet.mail.mud.yahoo.com ([68.142.206.144]:30609 "HELO
+	n17.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753612AbZCCVIe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:06:37 -0500
-Date: Tue, 3 Mar 2009 16:06:34 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: Boaz Harrosh <bharrosh@panasas.com>, Jan Engelhardt <jengelh@medozas.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       <linux-scsi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: Large amount of scsi-sgpool objects
-In-Reply-To: <20090303205637.GA26196@elte.hu>
-Message-ID: <Pine.LNX.4.44L0.0903031603430.4082-100000@iolanthe.rowland.org>
+	Tue, 3 Mar 2009 16:08:34 -0500
+X-Yahoo-Newman-Id: 169175.40441.bm@omp410.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=dNWG+Unn2Qq5cH/KjF5xlxi+xKyU0OWp9HT2f64h343Z7etO2vtzQ1JQ3kbMbpz49tyf1EaQytwtpgeoxseOzu//ka67YalGqbxr+qCuzcUG+PWVP6R6+kYEbG8+0aYrG8q/ZiU28aMabo8htzodx30wU0i7Iv1/pqkQnRUM5AU=  ;
+X-YMail-OSG: c7nl6DoVM1nL0RheEG95pJ.qdQ.q6f9_hbay80vM7RnDOLKY2GTaPfZJSujebH7kVYb.jQj8uRIWxso9cAuzQulEklh4MeCJjeU6sebTn0qWehidJ2rGezYUIW7lYPmIyhlYiUZWnSpHu1XPyicwZSrt
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mike Rapoport <mike@compulab.co.il>
+Subject: Re: [PATCH] rtc-v3020: add ability to access v3020 chip with GPIOs
+Date: Tue, 3 Mar 2009 13:08:29 -0800
+User-Agent: KMail/1.9.10
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org, raph@8d.com
+References: <cover.1235400430.git.mike@compulab.co.il> <20090302124737.03075958@i1501.lan.towertech.it> <49ABCEB3.6090100@compulab.co.il>
+In-Reply-To: <49ABCEB3.6090100@compulab.co.il>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200903031308.29933.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Mar 2009, Ingo Molnar wrote:
+On Monday 02 March 2009, Mike Rapoport wrote:
+> +
+> +#define V3020_CS       0
+> +#define V3020_WR       1
+> +#define V3020_RD       2
+> +#define V3020_IO       3
+> +
+> +struct v3020_gpio {
+> +       const char *name;
+> +       unsigned int gpio;
+> +};
+> +
 
-> > > The above diff looks like something that was sent in the past to the mailing
-> > > list, but only half of it. It was sent by Alan Stern. It might patch but
-> > > it is not applicable any more because of changes made since. 
-> > 
-> > That's right; it is an old version of a patch which no longer applies 
-> > to the current kernel (the __scsi_release_buffers() call was added 
-> > after that patch was written).  An updated version of the patch has 
-> > been submitted here:
-> > 
-> > 	http://marc.info/?l=linux-scsi&m=123507641620649&w=2
-> 
-> ah, i missed that patch because you used the exact same subject 
-> line. (The standard lkml convention is to use "v2, v3" 
-> postfixes, to make sure people notice that it's an update. It 
-> helps avoid such mistakes.)
+> +static struct v3020_gpio v3020_gpio[] = {
+> +       { "RTC CS", 0 },
+> +       { "RTC WR", 0 },
+> +       { "RTC RD", 0 },
+> +       { "RTC IO", 0 },
+> +};
 
-Sorry, I just forgot to update the subject line.
+After Andrew's fault path cleanup it looks OK, but I see
+no point to that GPIO struct with the name.  You know the
+name based on the position, if you ever need one.  Take
+that away, and you can add my ack.
 
-> I've picked up the v2 delta below into tip:out-of-tree - thanks 
-> Alan! This will also get into the next -rt release.
-> 
-> Both patches will go away from the tip:out-of-tree hot-fixes 
-> branch once the fix is upstream via the SCSI tree.
-> 
-> Any ETA for that? The lockup bug it fixes is very serious.
 
-It's entirely up to James.
+Also, best not to have a single static struct; there's
+no need to add a driver restriction that there be only
+one of these chips in a system.
 
-Alan Stern
+- Dave
+
+
 
