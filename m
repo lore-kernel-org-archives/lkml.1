@@ -1,225 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbZCCEvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbZCCEwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758411AbZCCEvP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 23:51:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCCEuf
+	id S1758095AbZCCEwy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 23:52:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZCCEwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 23:50:35 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:3041 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753582AbZCCEud (ORCPT
+	Mon, 2 Mar 2009 23:52:45 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:15842 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479AbZCCEwo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 23:50:33 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=K0mnPjBSkZv1YxKIXYykN7ar+4POSSyrT39Bd30hDAPDpErBe38IsjUzPkERTfrvU
-	9bAzbQ1+4UArPWxiY8JRw==
-Date: Mon, 2 Mar 2009 20:50:17 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Paul Menage <menage@google.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: [patch 1/2] cpusets: replace zone allowed functions with node
- allowed
-Message-ID: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 2 Mar 2009 23:52:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jWMTyRtJvqRakM8GHWTrJ/skSNhysad0THAwnrvS7Cr/PBgWiHLj2tnpGToiiMXIOJ
+         TgBqvpO+I93vhlapCQlPWTAaCZDKS5EA2yxGjnIpyAYWOXDbngCDQzpwBgAmTX3oUCnm
+         HJOFLTX5gO62rL6OaalVYeDpU3G8LGrLWcOs4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <49ACB02D.8070300@cse.unsw.edu.au>
+References: <d364733c0903012106g2625d433o4cdbbbcc5a9ff19a@mail.gmail.com>
+	 <49ACB02D.8070300@cse.unsw.edu.au>
+Date: Tue, 3 Mar 2009 12:52:42 +0800
+Message-ID: <d364733c0903022052g671a07ayf4ded2014d085fdf@mail.gmail.com>
+Subject: Re: The difference of request dir between AS and Deadline I/O 
+	scheduler?
+From: =?GB2312?B?0Lu42Q==?= <xiegang112@gmail.com>
+To: Aaron Carroll <aaronc@cse.unsw.edu.au>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cpuset_zone_allowed() variants are actually only a function of the
-zone's node.
+On Tue, Mar 3, 2009 at 12:21 PM, Aaron Carroll <aaronc@cse.unsw.edu.au> wrote:
+> � wrote:
+>> Hi,
+>>
+>> I'm little confused about the defination of request dir in AS and
+>> Deadline I/O scheduler.
+>> In AS, the request dir is defined by wheher it's sync:
+>>
+>> data_dir = rq_is_sync(rq);
+>>
+>> But in Deadline, the requests are grouped by read and write.
+>>
+>> Why is there the difference since AS is an extension of Deadline?
+>> what's the consideration?
+>
+> I also thought it was silly to have different behaviours, so I tried
+> the following patch that makes deadline use sync/async instead of
+> read/write.  All the benchmarks I tried showed that performance
+> dropped or remained constant at best, so I didn't propose it.
+> Maybe you will have more luck...
+Hello,
+Which benchmark tool do you use? I'd like to have a try. I think the
+I/O behavior is an important factor which can affect the performance.
 
-Cc: Paul Menage <menage@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- include/linux/cpuset.h |   33 ++++++++++++++++++++++-----
- kernel/cpuset.c        |   59 ++++++++++++++++++++---------------------------
- 2 files changed, 52 insertions(+), 40 deletions(-)
+Thanks,
+>
+> --
+>
+> From: Aaron Carroll <aaronc@cse.unsw.edu.au>
+> Date: Sat, 4 Oct 2008 11:58:23 +1000
+> Subject: [PATCH] deadline-iosched: support SYNC bio/request flag
+>
+> Support sync/async requests in deadline rather than read/write, as is
+> done in AS and CFQ.
+>
+> Signed-off-by: Aaron Carroll <aaronc@cse.unsw.edu.au>
+> ---
+>  block/deadline-iosched.c |   63 ++++++++++++++++++++++++---------------------
+>  1 files changed, 34 insertions(+), 29 deletions(-)
+>
+> diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
+> index 342448c..b2cfd47 100644
+> --- a/block/deadline-iosched.c
+> +++ b/block/deadline-iosched.c
+> @@ -23,6 +23,11 @@ static const int writes_starved = 2;    /* max times reads can starve a write */
+>  static const int fifo_batch = 16;       /* # of sequential requests treated as one
+>                                     by the above parameters. For throughput. */
+>
+> +enum {
+> +       REQ_ASYNC,
+> +       REQ_SYNC,
+> +};
+> +
+>  struct deadline_data {
+>        /*
+>         * run time data
+> @@ -53,7 +58,7 @@ struct deadline_data {
+>
+>  static void deadline_move_request(struct deadline_data *, struct request *);
+>
+> -#define RQ_RB_ROOT(dd, rq)     (&(dd)->sort_list[rq_data_dir((rq))])
+> +#define RQ_RB_ROOT(dd, rq)     (&(dd)->sort_list[rq_is_sync((rq))])
+>
+>  /*
+>  * get the request after `rq' in sector-sorted order
+> @@ -86,7 +91,7 @@ retry:
+>  static inline void
+>  deadline_del_rq_rb(struct deadline_data *dd, struct request *rq)
+>  {
+> -       const int data_dir = rq_data_dir(rq);
+> +       const int data_dir = rq_is_sync(rq);
+>
+>        if (dd->next_rq[data_dir] == rq)
+>                dd->next_rq[data_dir] = deadline_latter_request(rq);
+> @@ -101,7 +106,7 @@ static void
+>  deadline_add_request(struct request_queue *q, struct request *rq)
+>  {
+>        struct deadline_data *dd = q->elevator->elevator_data;
+> -       const int data_dir = rq_data_dir(rq);
+> +       const int data_dir = rq_is_sync(rq);
+>
+>        deadline_add_rq_rb(dd, rq);
+>
+> @@ -206,10 +211,10 @@ deadline_move_to_dispatch(struct deadline_data *dd, struct request *rq)
+>  static void
+>  deadline_move_request(struct deadline_data *dd, struct request *rq)
+>  {
+> -       const int data_dir = rq_data_dir(rq);
+> +       const int data_dir = rq_is_sync(rq);
+>
+> -       dd->next_rq[READ] = NULL;
+> -       dd->next_rq[WRITE] = NULL;
+> +       dd->next_rq[REQ_SYNC] = NULL;
+> +       dd->next_rq[REQ_ASYNC] = NULL;
+>        dd->next_rq[data_dir] = deadline_latter_request(rq);
+>
+>        dd->last_sector = rq->sector + rq->nr_sectors;
+> @@ -245,18 +250,18 @@ static inline int deadline_check_fifo(struct deadline_data *dd, int ddir)
+>  static int deadline_dispatch_requests(struct request_queue *q, int force)
+>  {
+>        struct deadline_data *dd = q->elevator->elevator_data;
+> -       const int reads = !list_empty(&dd->fifo_list[READ]);
+> -       const int writes = !list_empty(&dd->fifo_list[WRITE]);
+> +       const int reads = !list_empty(&dd->fifo_list[REQ_SYNC]);
+> +       const int writes = !list_empty(&dd->fifo_list[REQ_ASYNC]);
+>        struct request *rq;
+>        int data_dir;
+>
+>        /*
+>         * batches are currently reads XOR writes
+>         */
+> -       if (dd->next_rq[WRITE])
+> -               rq = dd->next_rq[WRITE];
+> +       if (dd->next_rq[REQ_ASYNC])
+> +               rq = dd->next_rq[REQ_ASYNC];
+>        else
+> -               rq = dd->next_rq[READ];
+> +               rq = dd->next_rq[REQ_SYNC];
+>
+>        if (rq) {
+>                /* we have a "next request" */
+> @@ -276,12 +281,12 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
+>         */
+>
+>        if (reads) {
+> -               BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[READ]));
+> +               BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[REQ_SYNC]));
+>
+>                if (writes && (dd->starved++ >= dd->writes_starved))
+>                        goto dispatch_writes;
+>
+> -               data_dir = READ;
+> +               data_dir = REQ_SYNC;
+>
+>                goto dispatch_find_request;
+>        }
+> @@ -292,11 +297,11 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
+>
+>        if (writes) {
+>  dispatch_writes:
+> -               BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[WRITE]));
+> +               BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[REQ_ASYNC]));
+>
+>                dd->starved = 0;
+>
+> -               data_dir = WRITE;
+> +               data_dir = REQ_ASYNC;
+>
+>                goto dispatch_find_request;
+>        }
+> @@ -338,16 +343,16 @@ static int deadline_queue_empty(struct request_queue *q)
+>  {
+>        struct deadline_data *dd = q->elevator->elevator_data;
+>
+> -       return list_empty(&dd->fifo_list[WRITE])
+> -               && list_empty(&dd->fifo_list[READ]);
+> +       return list_empty(&dd->fifo_list[REQ_ASYNC])
+> +               && list_empty(&dd->fifo_list[REQ_SYNC]);
+>  }
+>
+>  static void deadline_exit_queue(elevator_t *e)
+>  {
+>        struct deadline_data *dd = e->elevator_data;
+>
+> -       BUG_ON(!list_empty(&dd->fifo_list[READ]));
+> -       BUG_ON(!list_empty(&dd->fifo_list[WRITE]));
+> +       BUG_ON(!list_empty(&dd->fifo_list[REQ_SYNC]));
+> +       BUG_ON(!list_empty(&dd->fifo_list[REQ_ASYNC]));
+>
+>        kfree(dd);
+>  }
+> @@ -363,12 +368,12 @@ static void *deadline_init_queue(struct request_queue *q)
+>        if (!dd)
+>                return NULL;
+>
+> -       INIT_LIST_HEAD(&dd->fifo_list[READ]);
+> -       INIT_LIST_HEAD(&dd->fifo_list[WRITE]);
+> -       dd->sort_list[READ] = RB_ROOT;
+> -       dd->sort_list[WRITE] = RB_ROOT;
+> -       dd->fifo_expire[READ] = read_expire;
+> -       dd->fifo_expire[WRITE] = write_expire;
+> +       INIT_LIST_HEAD(&dd->fifo_list[REQ_SYNC]);
+> +       INIT_LIST_HEAD(&dd->fifo_list[REQ_ASYNC]);
+> +       dd->sort_list[REQ_SYNC] = RB_ROOT;
+> +       dd->sort_list[REQ_ASYNC] = RB_ROOT;
+> +       dd->fifo_expire[REQ_SYNC] = read_expire;
+> +       dd->fifo_expire[REQ_ASYNC] = write_expire;
+>        dd->writes_starved = writes_starved;
+>        dd->front_merges = 1;
+>        dd->fifo_batch = fifo_batch;
+> @@ -403,8 +408,8 @@ static ssize_t __FUNC(elevator_t *e, char *page)                    \
+>                __data = jiffies_to_msecs(__data);                      \
+>        return deadline_var_show(__data, (page));                       \
+>  }
+> -SHOW_FUNCTION(deadline_read_expire_show, dd->fifo_expire[READ], 1);
+> -SHOW_FUNCTION(deadline_write_expire_show, dd->fifo_expire[WRITE], 1);
+> +SHOW_FUNCTION(deadline_read_expire_show, dd->fifo_expire[REQ_SYNC], 1);
+> +SHOW_FUNCTION(deadline_write_expire_show, dd->fifo_expire[REQ_ASYNC], 1);
+>  SHOW_FUNCTION(deadline_writes_starved_show, dd->writes_starved, 0);
+>  SHOW_FUNCTION(deadline_front_merges_show, dd->front_merges, 0);
+>  SHOW_FUNCTION(deadline_fifo_batch_show, dd->fifo_batch, 0);
+> @@ -426,8 +431,8 @@ static ssize_t __FUNC(elevator_t *e, const char *page, size_t count)        \
+>                *(__PTR) = __data;                                      \
+>        return ret;                                                     \
+>  }
+> -STORE_FUNCTION(deadline_read_expire_store, &dd->fifo_expire[READ], 0, INT_MAX, 1);
+> -STORE_FUNCTION(deadline_write_expire_store, &dd->fifo_expire[WRITE], 0, INT_MAX, 1);
+> +STORE_FUNCTION(deadline_read_expire_store, &dd->fifo_expire[REQ_SYNC], 0, INT_MAX, 1);
+> +STORE_FUNCTION(deadline_write_expire_store, &dd->fifo_expire[REQ_ASYNC], 0, INT_MAX, 1);
+>  STORE_FUNCTION(deadline_writes_starved_store, &dd->writes_starved, INT_MIN, INT_MAX, 0);
+>  STORE_FUNCTION(deadline_front_merges_store, &dd->front_merges, 0, 1, 0);
+>  STORE_FUNCTION(deadline_fifo_batch_store, &dd->fifo_batch, 0, INT_MAX, 0);
+>
 
-diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
---- a/include/linux/cpuset.h
-+++ b/include/linux/cpuset.h
-@@ -12,6 +12,7 @@
- #include <linux/cpumask.h>
- #include <linux/nodemask.h>
- #include <linux/cgroup.h>
-+#include <linux/mm.h>
- 
- #ifdef CONFIG_CPUSETS
- 
-@@ -29,19 +30,29 @@ void cpuset_init_current_mems_allowed(void);
- void cpuset_update_task_memory_state(void);
- int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask);
- 
--extern int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask);
--extern int __cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask);
-+extern int __cpuset_node_allowed_softwall(int node, gfp_t gfp_mask);
-+extern int __cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask);
- 
--static int inline cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
-+static inline int cpuset_node_allowed_softwall(int node, gfp_t gfp_mask)
- {
- 	return number_of_cpusets <= 1 ||
--		__cpuset_zone_allowed_softwall(z, gfp_mask);
-+		__cpuset_node_allowed_softwall(node, gfp_mask);
- }
- 
--static int inline cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
-+static inline int cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask)
- {
- 	return number_of_cpusets <= 1 ||
--		__cpuset_zone_allowed_hardwall(z, gfp_mask);
-+		__cpuset_node_allowed_hardwall(node, gfp_mask);
-+}
-+
-+static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
-+{
-+	return cpuset_node_allowed_softwall(zone_to_nid(z), gfp_mask);
-+}
-+
-+static inline int cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
-+{
-+	return cpuset_node_allowed_hardwall(zone_to_nid(z), gfp_mask);
- }
- 
- extern int cpuset_mems_allowed_intersects(const struct task_struct *tsk1,
-@@ -112,6 +123,16 @@ static inline int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
- 	return 1;
- }
- 
-+static inline int cpuset_node_allowed_softwall(int node, gfp_t gfp_mask)
-+{
-+	return 1;
-+}
-+
-+static inline int cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask)
-+{
-+	return 1;
-+}
-+
- static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
- {
- 	return 1;
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -2206,26 +2206,24 @@ static const struct cpuset *nearest_hardwall_ancestor(const struct cpuset *cs)
- }
- 
- /**
-- * cpuset_zone_allowed_softwall - Can we allocate on zone z's memory node?
-- * @z: is this zone on an allowed node?
-+ * cpuset_node_allowed_softwall - Can we allocate on a memory node?
-+ * @node: is this an allowed node?
-  * @gfp_mask: memory allocation flags
-  *
-- * If we're in interrupt, yes, we can always allocate.  If
-- * __GFP_THISNODE is set, yes, we can always allocate.  If zone
-- * z's node is in our tasks mems_allowed, yes.  If it's not a
-- * __GFP_HARDWALL request and this zone's nodes is in the nearest
-- * hardwalled cpuset ancestor to this tasks cpuset, yes.
-- * If the task has been OOM killed and has access to memory reserves
-- * as specified by the TIF_MEMDIE flag, yes.
-+ * If we're in interrupt, yes, we can always allocate.  If __GFP_THISNODE is
-+ * set, yes, we can always allocate.  If node is in our task's mems_allowed,
-+ * yes.  If it's not a __GFP_HARDWALL request and this node is in the nearest
-+ * hardwalled cpuset ancestor to this task's cpuset, yes.  If the task has been
-+ * OOM killed and has access to memory reserves as specified by the TIF_MEMDIE
-+ * flag, yes.
-  * Otherwise, no.
-  *
-- * If __GFP_HARDWALL is set, cpuset_zone_allowed_softwall()
-- * reduces to cpuset_zone_allowed_hardwall().  Otherwise,
-- * cpuset_zone_allowed_softwall() might sleep, and might allow a zone
-- * from an enclosing cpuset.
-+ * If __GFP_HARDWALL is set, cpuset_node_allowed_softwall() reduces to
-+ * cpuset_node_allowed_hardwall().  Otherwise, cpuset_node_allowed_softwall()
-+ * might sleep, and might allow a node from an enclosing cpuset.
-  *
-- * cpuset_zone_allowed_hardwall() only handles the simpler case of
-- * hardwall cpusets, and never sleeps.
-+ * cpuset_node_allowed_hardwall() only handles the simpler case of hardwall
-+ * cpusets, and never sleeps.
-  *
-  * The __GFP_THISNODE placement logic is really handled elsewhere,
-  * by forcibly using a zonelist starting at a specified node, and by
-@@ -2264,20 +2262,17 @@ static const struct cpuset *nearest_hardwall_ancestor(const struct cpuset *cs)
-  *	GFP_USER     - only nodes in current tasks mems allowed ok.
-  *
-  * Rule:
-- *    Don't call cpuset_zone_allowed_softwall if you can't sleep, unless you
-+ *    Don't call cpuset_node_allowed_softwall if you can't sleep, unless you
-  *    pass in the __GFP_HARDWALL flag set in gfp_flag, which disables
-  *    the code that might scan up ancestor cpusets and sleep.
-  */
--
--int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
-+int __cpuset_node_allowed_softwall(int node, gfp_t gfp_mask)
- {
--	int node;			/* node that zone z is on */
- 	const struct cpuset *cs;	/* current cpuset ancestors */
- 	int allowed;			/* is allocation in zone z allowed? */
- 
- 	if (in_interrupt() || (gfp_mask & __GFP_THISNODE))
- 		return 1;
--	node = zone_to_nid(z);
- 	might_sleep_if(!(gfp_mask & __GFP_HARDWALL));
- 	if (node_isset(node, current->mems_allowed))
- 		return 1;
-@@ -2306,15 +2301,15 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
- }
- 
- /*
-- * cpuset_zone_allowed_hardwall - Can we allocate on zone z's memory node?
-- * @z: is this zone on an allowed node?
-+ * cpuset_node_allowed_hardwall - Can we allocate on a memory node?
-+ * @node: is this an allowed node?
-  * @gfp_mask: memory allocation flags
-  *
-- * If we're in interrupt, yes, we can always allocate.
-- * If __GFP_THISNODE is set, yes, we can always allocate.  If zone
-- * z's node is in our tasks mems_allowed, yes.   If the task has been
-- * OOM killed and has access to memory reserves as specified by the
-- * TIF_MEMDIE flag, yes.  Otherwise, no.
-+ * If we're in interrupt, yes, we can always allocate.  If __GFP_THISNODE is
-+ * set, yes, we can always allocate.  If node is in our task's mems_allowed,
-+ * yes.  If the task has been OOM killed and has access to memory reserves as
-+ * specified by the TIF_MEMDIE flag, yes.
-+ * Otherwise, no.
-  *
-  * The __GFP_THISNODE placement logic is really handled elsewhere,
-  * by forcibly using a zonelist starting at a specified node, and by
-@@ -2322,20 +2317,16 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
-  * any node on the zonelist except the first.  By the time any such
-  * calls get to this routine, we should just shut up and say 'yes'.
-  *
-- * Unlike the cpuset_zone_allowed_softwall() variant, above,
-- * this variant requires that the zone be in the current tasks
-+ * Unlike the cpuset_node_allowed_softwall() variant, above,
-+ * this variant requires that the node be in the current task's
-  * mems_allowed or that we're in interrupt.  It does not scan up the
-  * cpuset hierarchy for the nearest enclosing mem_exclusive cpuset.
-  * It never sleeps.
-  */
--
--int __cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
-+int __cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask)
- {
--	int node;			/* node that zone z is on */
--
- 	if (in_interrupt() || (gfp_mask & __GFP_THISNODE))
- 		return 1;
--	node = zone_to_nid(z);
- 	if (node_isset(node, current->mems_allowed))
- 		return 1;
- 	/*
+
+
+-- 
+Xie Gang
