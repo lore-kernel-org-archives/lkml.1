@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbZCCPfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbZCCPgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbZCCPfO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 10:35:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbZCCPe7
+	id S1757849AbZCCPgV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 10:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZCCPgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 10:34:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43220 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Mar 2009 10:36:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43462 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbZCCPe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 10:34:58 -0500
-Date: Tue, 3 Mar 2009 16:34:33 +0100
+	id S1752858AbZCCPgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 10:36:11 -0500
+Date: Tue, 3 Mar 2009 16:35:53 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Dimitri Sivanich <sivanich@sgi.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6 v6] SGI RTC: add generic system interrupt
-Message-ID: <20090303153433.GA29454@elte.hu>
-References: <20090303151044.GA20016@sgi.com> <20090303151357.GA20120@sgi.com>
+Subject: Re: [PATCH 6/6 v6] SGI RTC: add clocksource driver
+Message-ID: <20090303153553.GB29454@elte.hu>
+References: <20090303151044.GA20016@sgi.com> <20090303151357.GA20120@sgi.com> <20090303151524.GB20120@sgi.com> <20090303151657.GC20120@sgi.com> <20090303151827.GD20120@sgi.com> <20090303152016.GE20120@sgi.com> <20090303152206.GF20120@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090303151357.GA20120@sgi.com>
+In-Reply-To: <20090303152206.GF20120@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,58 +38,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Dimitri Sivanich <sivanich@sgi.com> wrote:
 
-> This patch allocates a system interrupt vector for various 
-> platform specific uses.
+>  drivers/clocksource/Makefile |    1 
+>  drivers/clocksource/rtc_uv.c |  381 +++++++++++++++++++++++++++++++++++++++
+>  drivers/misc/Kconfig         |    9 
 
-this is really ugly.
-
-Also, why are all these symbols exported? There's no need to 
-build the UV RTC driver as a module. It's either built-in or not 
-built-in - it's small enough.
-
-this stuff:
-
-> +/* Function pointer for generic interrupt vector handling */
-> +static void (*generic_interrupt_extension)(void);
-> +static char generic_show_string[28];
-> +static char generic_show_prefix[6];
-> +
-> +int is_generic_interrupt_registered()
-> +{
-> +	if (generic_interrupt_extension)
-> +		return 1;
-> +	else
-> +		return 0;
-> +}
-> +
-> +char *generic_interrupt_string(void)
-> +{
-> +	return generic_show_string;
-> +}
-> +
-> +char *generic_interrupt_prefix(void)
-> +{
-> +	return generic_show_prefix;
-> +}
-
-is SMP unsafe, etc. etc. - not something we should ever call 
-from a module. We just shouldnt do it in this form. What 
-necessiates it?
-
-All we need is:
-
-> +	/* generic IPI for platform specific use */
-> +	alloc_intr_gate(GENERIC_INTERRUPT_VECTOR, generic_interrupt);
-
-plus one trivial callback function - and then the UV platform 
-uses it for its own purpose. It's not like two platforms will be 
-running at once so there's no locking needed, etc.
-
-> +#ifdef CONFIG_X86_64
-> +extern void generic_interrupt(void);
-> +#endif
-
-in any case please make it symmetric across 32-bit and 64-bit - 
-even though UV is 64-bit only.
+btw., since this is a platform driver, i'd suggest to move it to 
+arch/x86/kernel/uv_time.c or so.
 
 	Ingo
