@@ -1,151 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbZCCBHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZCCBH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbZCCBHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 20:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZCCBHd
+	id S1758735AbZCCBH7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 20:07:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbZCCBHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 20:07:33 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49158 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750882AbZCCBHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 20:07:32 -0500
-Message-ID: <49AC8307.7090008@cn.fujitsu.com>
-Date: Tue, 03 Mar 2009 09:08:23 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH 0/4] cgroups: show correct file mode
-References: <49AB40BF.4030706@cn.fujitsu.com> <6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>
-In-Reply-To: <6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Mar 2009 20:07:45 -0500
+Received: from mga02.intel.com ([134.134.136.20]:46386 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756691AbZCCBHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 20:07:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,292,1233561600"; 
+   d="asc'?scan'208";a="494382871"
+Subject: Re: [PATCH] Fix e820 end address with EFI
+From: Huang Ying <ying.huang@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49AC51D7.1080203@kernel.org>
+References: <49A965AD.10701@redhat.com>
+	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>
+	 <49AAEC79.3000808@redhat.com>
+	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>
+	 <49AB38E7.60305@redhat.com>
+	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>
+	 <49AB4171.7000508@kernel.org>
+	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>
+	 <49AB4521.8010909@kernel.org>
+	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>
+	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>
+	 <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
+	 <49AC51D7.1080203@kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3tNfEsOnpskYMI1b5I0b"
+Date: Tue, 03 Mar 2009 09:07:39 +0800
+Message-Id: <1236042459.6204.226.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Sun, Mar 1, 2009 at 6:13 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->> Now a cgroup subsystem can set default file mode of its control files,
->> so here is a patchset to correct file mode of each subsystem's files.
-> 
-> I really think that we should be defaulting this based on whether the
-> control file has read or write handlers.
-> 
-> Sure, there are special cases like "tasks" that we'd need to set a
-> manual value for, but most of these patches would be unnecessary.
-> 
 
-Those patches are small and trivial, but it's ok for me to do this
-automatically. How about below patch.
+--=-3tNfEsOnpskYMI1b5I0b
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Note cpuset.memory_pressure is read-only though it has read handler.
-Since if the read handler is removed, it'll return EINVAL instead of
-the current EACCESS, I think it's better to leave as it is.
+On Tue, 2009-03-03 at 05:38 +0800, Yinghai Lu wrote:
+> Huang Ying wrote:
+> > On Mon, 2009-03-02 at 10:51 +0800, Yinghai Lu wrote:
+> >> On Sun, Mar 1, 2009 at 6:37 PM, Huang Ying <ying.huang@intel.com> wrot=
+e:
+> >>>> so 64bit could use ioremap_cache() too?
+> >>>> we may keep 32bit and 64bit a bit consistent.
+> >>> If we use ioremap_cache(), kexec runtime service will not work in kex=
+ec
+> >>> situation, which needs EFI runtime memory area to be mapped at exact
+> >>> same location across kexec. I think we should support kexec if possib=
+le.
+> >>
+> >> sure.
+> >>
+> >> please don't touch max_low_pfn_mapped, because some range may not
+> >> directly mapped under those efi run-time code
+> >=20
+> > Find an issue to use init_memory_mapping() here.
+> >=20
+> > If the memory range to be mapped is less than 2M, the last mapped
+> > address may be next 2M aligned position, this may lead mapping
+> > overlapping between memory range. Such as:
+> >=20
+> > 0x3f388000 - 0x3f488000: real mapped	0x3f388000 - 0x3f600000
+> > 0x3f590000 - 0x3f5bb000: real mapped	0x3f590000 - 0x3f600000
+> >=20
+> > The problem is that the memory range 0x3f400000 - 0x3f590000 is left no=
+t
+> > mapped!
+>=20
+> what is max_low_pfn_mapped before that?
 
-=====================
+I don't know exactly what you mean. Can you elaborate a little?
 
-cgroups: show correct file mode
+0 ~ max_low_pfn_mapped ~ max_pfn_mapped can be mapped with
+init_memory_mapping() properly.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/cgroup.h |    5 +++++
- kernel/cgroup.c        |   30 ++++++++++++++++++++++++++++++
- kernel/cpuset.c        |    1 +
- 3 files changed, 36 insertions(+)
+The issue of above example is that 0x3f400000 ~ 0x3f488000 is a
+sub-range of 0x3f388000 ~ 0x3f488000, which should be mapped but is left
+not mapped.
 
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 6ad1989..af3c10f 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -258,6 +258,11 @@ struct cftype {
- 	 */
- 	char name[MAX_CFTYPE_NAME];
- 	int private;
-+	/*
-+	 * If not 0, file mode is set to this value, otherwise it will
-+	 * be figured out automatically
-+	 */
-+	int mode;
- 
- 	/*
- 	 * If non-zero, defines the maximum length of string that can
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 379baa3..0b19204 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1750,6 +1750,33 @@ static int cgroup_create_dir(struct cgroup *cgrp, struct dentry *dentry,
- 	return error;
- }
- 
-+/**
-+ * cgroup_file_mode - deduce file mode of a control file
-+ * @cft: the control file in question
-+ *
-+ * returns cftype->mode if ->mode is not 0
-+ * returns 0644 if it has both a read and a write handler
-+ * returns 0444 if it has only a read handler
-+ * returns 0200 if it has only a write hander
-+ */
-+static int cgroup_file_mode(const struct cftype *cft)
-+{
-+	int mode = 0;
-+
-+	if (cft->mode)
-+		return cft->mode;
-+
-+	if (cft->read || cft->read_u64 || cft->read_s64 ||
-+	    cft->read_map || cft->read_seq_string)
-+		mode += 0444;
-+
-+	if (cft->write || cft->write_u64 || cft->write_s64 ||
-+	    cft->write_string || cft->trigger)
-+		mode += 0200;
-+
-+	return mode;
-+}
-+
- int cgroup_add_file(struct cgroup *cgrp,
- 		       struct cgroup_subsys *subsys,
- 		       const struct cftype *cft)
-@@ -1757,6 +1784,7 @@ int cgroup_add_file(struct cgroup *cgrp,
- 	struct dentry *dir = cgrp->dentry;
- 	struct dentry *dentry;
- 	int error;
-+	int mode;
- 
- 	char name[MAX_CGROUP_TYPE_NAMELEN + MAX_CFTYPE_NAME + 2] = { 0 };
- 	if (subsys && !test_bit(ROOT_NOPREFIX, &cgrp->root->flags)) {
-@@ -1767,6 +1795,7 @@ int cgroup_add_file(struct cgroup *cgrp,
- 	BUG_ON(!mutex_is_locked(&dir->d_inode->i_mutex));
- 	dentry = lookup_one_len(name, dir, strlen(name));
- 	if (!IS_ERR(dentry)) {
-+		mode = cgroup_file_mode(cft);
- 		error = cgroup_create_file(dentry, 0644 | S_IFREG,
- 						cgrp->root->sb);
- 		if (!error)
-@@ -2349,6 +2378,7 @@ static struct cftype files[] = {
- 		.write_u64 = cgroup_tasks_write,
- 		.release = cgroup_tasks_release,
- 		.private = FILE_TASKLIST,
-+		.mode = 0644,
- 	},
- 
- 	{
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index a46d693..31e28b3 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1678,6 +1678,7 @@ static struct cftype files[] = {
- 		.read_u64 = cpuset_read_u64,
- 		.write_u64 = cpuset_write_u64,
- 		.private = FILE_MEMORY_PRESSURE,
-+		.mode = 0444,
- 	},
- 
- 	{
+Best Regards,
+Huang Ying
+
+
+--=-3tNfEsOnpskYMI1b5I0b
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmsgtQACgkQKhFGF+eHlpgoAwCfZGdkw+efGOqdJodnMjKY4mve
+6S0An0qTHJ/B9aF4h+yYjMrRFSxwaVk9
+=h0v1
+-----END PGP SIGNATURE-----
+
+--=-3tNfEsOnpskYMI1b5I0b--
 
