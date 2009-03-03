@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZCCTWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbZCCTWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbZCCTWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 14:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbZCCTWG
+	id S1757707AbZCCTWi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 14:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756472AbZCCTW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 14:22:06 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43969 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbZCCTWF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 14:22:05 -0500
-Message-ID: <49AD8262.6090605@cs.helsinki.fi>
-Date: Tue, 03 Mar 2009 21:17:54 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Tue, 3 Mar 2009 14:22:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34016 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756505AbZCCTW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 14:22:27 -0500
+Date: Tue, 3 Mar 2009 20:22:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org
+Subject: Re: Large amount of scsi-sgpool objects
+Message-ID: <20090303192212.GA20705@elte.hu>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr> <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-CC: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/mm] x86: set_highmem_pages_init() cleanup, fix !CONFIG_NUMA
- && CONFIG_HIGHMEM=y
-References: <1236082212.2675.24.camel@penberg-laptop> <tip-03787ceed8f7bf06af29f3b213017d89f8e9423d@git.kernel.org>
-In-Reply-To: <tip-03787ceed8f7bf06af29f3b213017d89f8e9423d@git.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236097526.3263.17.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Commit-ID:  03787ceed8f7bf06af29f3b213017d89f8e9423d
-> Gitweb:     http://git.kernel.org/tip/03787ceed8f7bf06af29f3b213017d89f8e9423d
-> Author:     "Ingo Molnar" <mingo@elte.hu>
-> AuthorDate: Tue, 3 Mar 2009 15:32:24 +0100
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Tue, 3 Mar 2009 15:32:24 +0100
-> 
-> x86: set_highmem_pages_init() cleanup, fix !CONFIG_NUMA && CONFIG_HIGHMEM=y
-> 
-> Impact: build fix
-> 
->  arch/x86/mm/highmem_32.c:187: error: static declaration of 'set_highmem_pages_init' follows non-static declaration
->  arch/x86/include/asm/numa_32.h:8: error: previous declaration of 'set_highmem_pages_init' was here
-> 
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> LKML-Reference: <1236082212.2675.24.camel@penberg-laptop>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  arch/x86/mm/highmem_32.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-> index 13a823c..00f127c 100644
-> --- a/arch/x86/mm/highmem_32.c
-> +++ b/arch/x86/mm/highmem_32.c
-> @@ -183,7 +183,7 @@ void __init set_highmem_pages_init(void)
->  	totalram_pages += totalhigh_pages;
->  }
->  #else
-> -static void __init set_highmem_pages_init(void)
-> +void __init set_highmem_pages_init(void)
->  {
->  	add_highpages_with_active_regions(0, highstart_pfn, highend_pfn);
->  
 
-I thought I tested that... The patch looks good. Thanks, Ingo!
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> On Tue, 2009-03-03 at 17:08 +0100, Jan Engelhardt wrote:
+> > On Tuesday 2009-03-03 16:21, James Bottomley wrote:
+> > >> > $ slabtop
+> > >> >   OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME                   
+> > >> > 818616 818616 100%    0.16K  34109       24    136436K sgpool-8
+> > >> > 253692 253692 100%    0.62K  42282        6    169128K sgpool-32
+> > >> >  52017  52016  99%    2.50K  17339        3    138712K sgpool-128
+> > >> >  26220  26219  99%    0.31K   2185       12      8740K sgpool-16
+> > >> >   8927   8574  96%    0.03K     79      113       316K size-32
+> > >> 
+> > >> Looks like a leak, by failing to call scsi_release_buffers()
+> > >> somehow. (Which was changed recently)
+> > >
+> > >Firstly, I have to say I don't see this in the mainline tree, so could
+> > >you try that with your setup just to verify (git head at 2.6.29-rc6).
+> > 
+> > Yes, looking at the rt patch (in broken-out it's in origin.diff),
+> > it seems a bit obvious - the scsi_release_buffers is not called anymore:
+> 
+> OK, this is a bad patch, so just revert it.  It was posted to 
+> linux-scsi initially in this form before the author posted a 
+> new one with the missing release buffers added.  It looks like 
+> the first incarnation got pulled into the -rt tree for some 
+> reasons.
+
+Uhm. I applied a test-patch from Alan Stern, to possibly fix an 
+SCSI lockup with aic7xxx that _I_ reported to you and then to 
+the scsi-list.
+
+You were Cc:-ed to that test patch and to my bugreport as well, 
+all the way. Do you claim that you dont remember it?
+
+The saga is still documented in tip:out-of-tree (which is a 
+special branch with out-of-tree hotfixes):
+
+ 7e4cbd1: fix "scsi: aic7xxx hang since v2.6.28-rc1"
+ e027abc: scsi: temporarily undo scsi reverts
+ 813104e: Revert "[SCSI] simplify scsi_io_completion()"
+ 84db545: Revert "[SCSI] Fix uninitialized variable error in scsi_io_completion"
+ 0eb6038: Revert "[SCSI] Fix error handling for DIF/DIX"
+ 3cd94dd: Revert "[SCSI] scsi_lib: don't decrement busy counters when inserting commands"
+ c27aed5: Revert "[SCSI] scsi_lib: fix DID_RESET status problems"
+
+I wasnt Cc:-ed on the updated patch AFAICS, so i didnt pick it 
+up.
+
+> So the real question is why does the -rt tree even have 
+> patches not in the vanilla SCSI tree?  This type of cockup 
+> clearly demonstrates why it's a bad idea.
+
+Believe me, i have better things to do than to track down your 
+regressions. I applied a fix/test patch sent to me by SCSI 
+folks.
+
+	Ingo
