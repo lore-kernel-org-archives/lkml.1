@@ -1,176 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbZCCUPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZCCUT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbZCCUPi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 15:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZCCUPb
+	id S1755330AbZCCUT7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 15:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZCCUTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 15:15:31 -0500
-Received: from naru.obs2.net ([84.20.150.76]:60152 "EHLO narury.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbZCCUPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 15:15:30 -0500
-Date: Tue, 3 Mar 2009 22:15:27 +0200
-From: Riku Voipio <riku.voipio@iki.fi>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Update email Address of Riku voipio
-Message-ID: <20090303201526.GB1119@kos.to>
-References: <20090128091438.GA30378@kos.to> <84144f020901280156l763b7d23o43fe0ea314aae24e@mail.gmail.com> <alpine.LNX.1.10.0901282128030.5377@jikos.suse.cz>
+	Tue, 3 Mar 2009 15:19:51 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:48165 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753413AbZCCUTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 15:19:50 -0500
+Message-ID: <49AD90E2.7050209@krogh.cc>
+Date: Tue, 03 Mar 2009 21:19:46 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="eJnRUKwClWJh1Khz"
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0901282128030.5377@jikos.suse.cz>
-X-message-flag: Warning: message not sent with a DRM-Certified client
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: john stultz <johnstul@us.ibm.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>	 <49A6F39F.9040801@krogh.cc>	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>	 <49A6FEE2.90700@krogh.cc>	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>	 <49A70B24.6090706@krogh.cc>	 <1235685269.6811.11.camel@localhost.localdomain>	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>	 <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>	 <1235766936.7402.5.camel@localhost.localdomain> <49ABACA0.3090300@krogh.cc>	 <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc> <1236110026.6068.18.camel@localhost>
+In-Reply-To: <1236110026.6068.18.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+john stultz wrote:
+> On Tue, 2009-03-03 at 07:04 +0100, Jesper Krogh wrote:
+>> john stultz wrote:
+>>> On Mon, 2009-03-02 at 10:53 +0100, Jesper Krogh wrote:
+>>>> john stultz wrote:
+>>>>> Ok, so it seems ntp hasn't really had a chance to settle down, its only
+>>>>> made a 10ppm adjustment so far. NTPd will stop corrections at ~
+>>>>> +/-500ppm, so you're not at that bound yet, where things would be really
+>>>>> broken.
+>>>>>
+>>>>> If the affected kernel isn't resetting in the logs anymore, I'd be
+>>>>> interested in what the new ppm value is.
+>>>> After 20 hours.. its still resetting.
+>>>> Mar  2 10:43:24 quad12 ntpd[4416]: synchronized to 10.194.133.12, stratum 4
+>>>> Mar  2 10:50:37 quad12 ntpd[4416]: time reset -1.103654 s
+>>> So what's the "ntpdc -c kerninfo" output now?
+>> Mar  3 06:41:10 quad12 ntpd[4416]: time reset -0.813957 s
+>> Mar  3 06:45:20 quad12 ntpd[4416]: synchronized to LOCAL(0), stratum 13
+>> Mar  3 06:45:36 quad12 ntpd[4416]: synchronized to 10.194.133.12, stratum 4
+>> Mar  3 06:51:57 quad12 ntpd[4416]: synchronized to 10.194.133.13, stratum 4
+>> Mar  3 07:00:29 quad12 ntpd[4416]: time reset -0.783390 s
+>> jk@quad12:~$ ntpdc -c kerninfo
+>> pll offset:           0 s
+>> pll frequency:        -28.691 ppm
+> 
+> 
+> This is baffling. You've only gone from -34.754ppm to -28.691ppm in over
+> a day? And you're still not syncing? If the calibration was so bad that
+> NTP couldn't sync, I'd expect the freq value to hit +/-500ppm before it
+> gave up. This just doesn't follow my expectations.
 
---eJnRUKwClWJh1Khz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It's resetting.. without deep knowledge about ntp, doesnt that mean 
+"start over again"? I believe it hits +/-500ppm
 
-On Wed, Jan 28, 2009 at 09:29:42PM +0100, Jiri Kosina wrote:
-> On Wed, 28 Jan 2009, Pekka Enberg wrote:
->=20
-> > > I have no longer access to the movial.fi mailbox.
-> > > Update to use the iki.fi permanent redirector service.
-> > > Signed-off-by: Riku Voipio <riku.voipio@iki.fi>
-> > Why not remove the email address completely from the source files and
-> > add yourself to CREDITS or MAINTAINERS instead?
->=20
-> Yes, I think so. IMHO the copyright notice shouldn't have e-mail address=
-=20
-> associated at all, or have it in a form that has been valid in the time=
-=20
-> the copyright has been acquired.
+> Could you provide:
+> /usr/sbin/ntpdc -c version
 
-Like this?
+$ ntpdc -c version
+ntpdc 4.2.4p4@1.1520-o Tue Jan  6 15:51:00 UTC 2009 (1)
 
-=46rom da32dfd3eb28aa6ec8318e9782254dd0baa54b23 Mon Sep 17 00:00:00 2001
-=46rom: Riku Voipio <riku.voipio@iki.fi>
-Date: Tue, 3 Mar 2009 21:37:17 +0200
-Subject: [PATCH] Update my email address
+> Do you see the same behavior if you drop all but one server (including
+> the local clock: 127.127.1.0)? 
+> 
+> You might also add "minpoll 4 maxpoll 4" to the server line to speed up
+> testing.
 
+Will try those option while debugging.
 
-Signed-off-by: Riku Voipio <riku.voipio@iki.fi>
----
- CREDITS                     |    6 ++++++
- MAINTAINERS                 |   11 +++++++++++
- drivers/hwmon/f75375s.c     |    4 ++--
- drivers/leds/leds-pca9532.c |    4 ++--
- 4 files changed, 21 insertions(+), 4 deletions(-)
+> Actually, if you could, I'd be interested if you could send your
+> ntp.conf 
 
-diff --git a/CREDITS b/CREDITS
-index 5e07367..71807f0 100644
---- a/CREDITS
-+++ b/CREDITS
-@@ -3571,6 +3571,12 @@ N: Dirk Verworner
- D: Co-author of German book ``Linux-Kernel-Programmierung''
- D: Co-founder of Berlin Linux User Group
-=20
-+N: Riku Voipio
-+E: riku.voipio@iki.fi
-+D: Author of PCA9532 LED and Fintek f75375s hwmon driver
-+D: Some random ARM board patches
-+S: Finland
-+
- N: Patrick Volkerding
- E: volkerdi@ftp.cdrom.com
- D: Produced the Slackware distribution, updated the SVGAlib
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 59fd2d1..0babab2 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1736,6 +1736,12 @@ M:	viro@zeniv.linux.org.uk
- L:	linux-fsdevel@vger.kernel.org
- S:	Maintained
-=20
-+FINTEK F75375S HARDWARE MONITOR AND FAN CONTROLLER DRIVER
-+P:	Riku Voipio
-+M:	riku.vipio@iki.fi
-+L:	lm-sensors@lm-sensors.org
-+S:	Maintained
-+
- FIREWIRE SUBSYSTEM (drivers/firewire, <linux/firewire*.h>)
- P:	Kristian Hoegsberg, Stefan Richter
- M:	krh@redhat.com, stefanr@s5r6.in-berlin.de
-@@ -3372,6 +3378,11 @@ P:	Jim Cromie
- M:	jim.cromie@gmail.com
- S:	Maintained
-=20
-+PCA9532 LED DRIVER
-+P:	Riku Voipio
-+M:	riku.voipio@iki.fi
-+S:	Maintained
-+
- PCI ERROR RECOVERY
- P:	Linas Vepstas
- M:	linas@austin.ibm.com
-diff --git a/drivers/hwmon/f75375s.c b/drivers/hwmon/f75375s.c
-index 1692de3..719f95b 100644
---- a/drivers/hwmon/f75375s.c
-+++ b/drivers/hwmon/f75375s.c
-@@ -1,7 +1,7 @@
- /*
-  * f75375s.c - driver for the Fintek F75375/SP and F75373
-  *             hardware monitoring features
-- * Copyright (C) 2006-2007  Riku Voipio <riku.voipio@movial.fi>
-+ * Copyright (C) 2006-2007  Riku Voipio
-  *
-  * Datasheets available at:
-  *
-@@ -721,7 +721,7 @@ static void __exit sensors_f75375_exit(void)
- 	i2c_del_driver(&f75375_driver);
- }
-=20
--MODULE_AUTHOR("Riku Voipio <riku.voipio@movial.fi>");
-+MODULE_AUTHOR("Riku Voipio");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("F75373/F75375 hardware monitoring driver");
-=20
-diff --git a/drivers/leds/leds-pca9532.c b/drivers/leds/leds-pca9532.c
-index 76ec749..bd3b431 100644
---- a/drivers/leds/leds-pca9532.c
-+++ b/drivers/leds/leds-pca9532.c
-@@ -1,7 +1,7 @@
- /*
-  * pca9532.c - 16-bit Led dimmer
-  *
-- * Copyright (C) 2008 Riku Voipio <riku.voipio@movial.fi>
-+ * Copyright (C) 2008 Riku Voipio
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -367,7 +367,7 @@ static void __exit pca9532_exit(void)
- 	i2c_del_driver(&pca9532_driver);
- }
-=20
--MODULE_AUTHOR("Riku Voipio <riku.voipio@movial.fi>");
-+MODULE_AUTHOR("Riku Voipio");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("PCA 9532 LED dimmer");
-=20
---=20
-1.6.1.3
+http://krogh.cc/~jesper/ntp.conf
 
---=20
-"rm -rf" only sounds scary if you don't have backups
+But this seems to be a "regression". Since 2.6.27.19 doesn't misbehave. 
+Same NTP, same configuration, same hardware. only change is the kernel 
+version. Or am I missing some parameter here?
 
---eJnRUKwClWJh1Khz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Would it make sense to try to bisect it?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Jesper
 
-iD8DBQFJrY/eibPvMsrqrwMRAoAEAJ97Bu5SBjJupotlINEiW5/poaS35ACdFQc9
-oEFNWAyQFHN+ZhSviwF2KNs=
-=Jebz
------END PGP SIGNATURE-----
-
---eJnRUKwClWJh1Khz--
+-- 
+Jesper
