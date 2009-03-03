@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761337AbZCCWMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbZCCWMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761337AbZCCWMH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 17:12:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbZCCWHl
+	id S1761437AbZCCWMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 17:12:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760538AbZCCWID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 17:07:41 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:34177 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759441AbZCCWHe (ORCPT
+	Tue, 3 Mar 2009 17:08:03 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58548 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760541AbZCCWIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 17:07:34 -0500
-Subject: Re: [Bug #12762] Disk errors loop forever in 2.6.29
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Sitsofe Wheeler <sitsofe@yahoo.com>
-In-Reply-To: <SLCXkuHtxAO.A.MVC.EVarJB@chimera>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-	 <SLCXkuHtxAO.A.MVC.EVarJB@chimera>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 16:07:29 -0600
-Message-Id: <1236118049.24019.6.camel@localhost.localdomain>
+	Tue, 3 Mar 2009 17:08:01 -0500
+Date: Tue, 3 Mar 2009 22:07:14 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] generic debug pagealloc
+Message-ID: <20090303220713.GC31911@flint.arm.linux.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-mm@kvack.org
+References: <20090303160103.GB5812@localhost.localdomain> <20090303133610.cb771fef.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090303133610.cb771fef.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 20:25 +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12762
-> Subject		: Disk errors loop forever in 2.6.29
-> Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-> Date		: 2009-02-19 13:53 (13 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b60af5b0adf0da24c673598c8d3fb4d4189a15ce
-> References	: http://marc.info/?l=linux-kernel&m=123505185407604&w=4
-> Handled-By	: James Bottomley <James.Bottomley@hansenpartnership.com>
-> Patch		: http://marc.info/?l=linux-kernel&m=123508030726900&w=4
+On Tue, Mar 03, 2009 at 01:36:10PM -0800, Andrew Morton wrote:
+> Alternatively, we could just not do the kmap_atomic() at all.  i386
+> won't be using this code and IIRC the only other highmem architecture
+> is powerpc32, and ppc32 appears to also have its own DEBUG_PAGEALLOC
+> implementation.  So you could remove the kmap_atomic() stuff and put
 
-In theory, the fix should be upstream here:
+ARM will also be joining the highmem club in due course, maybe during
+the next merge window depending on how things pan out.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=126c098296c8f96cf7f6ca0fdb47265ac7994f00
+The biggest issue we have is with kmaps interacting with ARM's DMA API
+code.  Nicolas Pitre currently has a work-around for it, but I believe
+it can be better handled by extending the generic kmap infrastructure
+to be able to grab a reference on an already kmapped page.  I've asked
+Nicolas to discuss this aspect of his patch set on lkml.
 
-(not in a released -rc yet, but should be in -rc7).
-
-James
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
