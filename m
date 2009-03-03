@@ -1,135 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZCCW4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZCCW5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbZCCW4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 17:56:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZCCW4O
+	id S1757317AbZCCW5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 17:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbZCCW5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 17:56:14 -0500
-Received: from el-out-1112.google.com ([209.85.162.179]:53137 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753560AbZCCW4N convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 17:56:13 -0500
+	Tue, 3 Mar 2009 17:57:19 -0500
+Received: from mail.lang.hm ([64.81.33.126]:48159 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753141AbZCCW5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 17:57:18 -0500
+Date: Tue, 3 Mar 2009 14:55:34 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <greg@kroah.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: Elaboration on "Equivalent fix must already exist in Linus'
+ tree"
+In-Reply-To: <43e72e890903031043m1fe417eay4420e734064a5882@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0903031454010.30837@asgard.lang.hm>
+References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>  <49ACC6B0.409@garzik.org>  <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>  <20090303072637.GB4440@kroah.com>  <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
+  <49AD4C74.1060704@s5r6.in-berlin.de>  <43e72e890903030923v27c47f5anc184c0e8085bc5c1@mail.gmail.com>  <49AD7361.308@s5r6.in-berlin.de> <43e72e890903031043m1fe417eay4420e734064a5882@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <200903030027.13884.rjw@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <200903030013.02805.rjw@sisk.pl>
-	 <d6200be20903021518r48fe6fb2vd07e9dedc4f5ff44@mail.gmail.com>
-	 <200903030027.13884.rjw@sisk.pl>
-Date: Tue, 3 Mar 2009 14:56:11 -0800
-Message-ID: <d6200be20903031456r7caa3c42qa7c31dc74768449c@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts during 
-	suspend-resume (rev. 4)
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: MULTIPART/MIXED; BOUNDARY="680960-2025645448-1236120935=:30837"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 2, 2009 at 3:27 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 03 March 2009, Arve Hjønnevåg wrote:
->> On Mon, Mar 2, 2009 at 3:13 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Tuesday 03 March 2009, Arve Hjønnevåg wrote:
->> >> On Sun, Mar 1, 2009 at 2:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> > From: Rafael J. Wysocki <rjw@sisk.pl>
->> >> >
->> >> > Introduce two helper functions allowing us to prevent device drivers
->> >> > from getting any interrupts (without disabling interrupts on the CPU)
->> >> > during suspend (or hibernation) and to make them start to receive
->> >> > interrupts again during the subsequent resume, respectively.  These
->> >> > functions make it possible to keep timer interrupts enabled while the
->> >> > "late" suspend and "early" resume callbacks provided by device
->> >> > drivers are being executed.
->> >> >
->> >> > Use these functions to rework the handling of interrupts during
->> >> > suspend (hibernation) and resume.  Namely, interrupts will only be
->> >> > disabled on the CPU right before suspending sysdevs, while device
->> >> > drivers will be prevented from receiving interrupts, with the help of
->> >> > the new helper function, before their "late" suspend callbacks run
->> >> > (and analogously during resume).
->> >> >
->> >> > In addition, since the device interrups are now disabled before the
->> >> > CPU has turned all interrupts off and the CPU will ACK the interrupts
->> >> > setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
->> >> > any wake-up interrupts are pending and abort suspend if that's the
->> >> > case.
->> >> >
->> >>
->> >>
->> >> > +void resume_device_irqs(void)
->> >> > +{
->> >> > +       struct irq_desc *desc;
->> >> > +       int irq;
->> >> > +
->> >> > +       for_each_irq_desc(irq, desc)
->> >> > +               if (desc->status & IRQ_SUSPENDED)
->> >> > +                       enable_irq(irq);
->> >> > +}
->> >>
->> >> I think you need to clear IRQ_SUSPENDED here, not in enable_irq.
->> >
->> > enable_irq() clears IRQ_SUSPENDED.  This has already been discussed btw.
->> >
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--680960-2025645448-1236120935=:30837
+Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 3 Mar 2009, Luis R. Rodriguez wrote:
+
+> On Tue, Mar 3, 2009 at 10:13 AM, Stefan Richter
+> <stefanr@s5r6.in-berlin.de> wrote:
+>> Luis R. Rodriguez wrote:
+>>> On Tue, Mar 3, 2009 at 7:27 AM, Stefan Richter
+>>> <stefanr@s5r6.in-berlin.de> wrote:
+>>>> Luis R. Rodriguez wrote:
+>>>>> OK small silly example is convincing distributions it may be a good
+>>>>> idea to carry linux-next kernel packages as options to users to
+>>>>> hopefully down the road reduce the delta between what they carry and
+>>>>> what is actually upstream.
+>>>> Distros would do their users a bigger favour if [...]
+>>>
+>>> I don't think I was very clear in what I meant about "carrying
+>>> linux-next kernel packages as an option". What I meant was carrying it
+>>> just as an option for those users who want to test bleeding edge
+>>> without compiling their own linux-next, _not_ to merge linux-next
+>>> things into their own default kernel release and shove it down users
+>>> throats.
 >>
->> I'm if I missed that discussion, but enable_irq cannot know who is
->> calling it and therefore cannot know if IRQ_SUSPENDED should be
->> cleared.
->
-> This change has been requested by Ingo and for a reason.
->
-> Ingo, what's your opinion?
->
->> >> > @@ -222,8 +222,9 @@ static void __enable_irq(struct irq_desc
->> >> >                WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
->> >> >                break;
->> >> >        case 1: {
->> >> > -               unsigned int status = desc->status & ~IRQ_DISABLED;
->> >> > +               unsigned int status;
->> >> >
->> >> > +               status = desc->status & ~(IRQ_DISABLED | IRQ_SUSPENDED);
->> >> >                /* Prevent probing on this irq: */
->> >> >                desc->status = status | IRQ_NOPROBE;
->> >> >                check_irq_resend(desc, irq);
->> >>
->> >> This only clears IRQ_SUSPENDED if the interrupt was not disabled
->> >> elsewhere. If a driver calls interrupt_disable in suspend_late, but
->> >> calls interrupt_enable lazily, resume_device_irqs will reenable the
->> >> interrupt even though the driver has a disable reference.
->> >
->> > Then I'd regard the driver as buggy.
+>> Sorry, I meant "bigger favour" relative to carrying an own delta of
+>> considerable size.
 >>
->> The bug is not in the driver. The driver called disable_irq once. You
->> called disable_irq once, but enable_irq twice.
+>> Packaging linux-next would be fine if the workload isn't a problem for
+>> the packager. Â As pointed out elsewhere, there are caveats with
+>> linux-next (e.g. a functionality which was in it yesterday could be gone
+>> today because of a merge issue), but that's the nature of bleeding edge
+>> of course.
 >
-> Please.
+> Sure, understood. That's all I meant really.
 >
-> Can you show me a _single_ _driver_ currently in the tree doing something
-> like you describe in suspend_late and resume_early?  If you can't, then please
-> give up.
+> My argument here I guess is that the reasons used to support the
+> "equivalent fix" policy for patches upstream makes it apparent why
+> linux-next is so important and my hope would be to get it more
+> exposure by having distributions let users test it (as an option to go
+> with bleeding edge) and this in turn help stabilize code in our next
+> release.
 
-I don't know if any drivers call disable_irq or enable_irq in their
-suspend hooks, but your change also allow timers, and I assume kernel
-threads, to run during this phase.
+what does "equivalent fix" in the linus tree have to do with -next?
 
-There are several drivers (keypad drivers in particular), in tree and
-out of tree, that call enable_irq from timers, and disable_irq from
-their interrupt handler. If you also apply your later change to
-disable non boot cpus after suspend_device_irqs, then on smp systems
-the interrupt handler may run at the same time as suspend_device_irqs.
-If suspend_device_irqs gets the spinlock first, then IRQ_SUSPENDED
-gets set. If another suspend/resume cycle happens before the timer
-runs, you will incorrectly enable the interrupt.
+patches don't go always go through -next to get to linus, things that are 
+in -next don't nessasarily _ever_ get to linus.
 
--- 
-Arve Hjønnevåg
+you are mixing issues here.
+
+David Lang
+
+--680960-2025645448-1236120935=:30837--
