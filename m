@@ -1,80 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbZCCCh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZCCCoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbZCCCh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 21:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZCCChO
+	id S1755689AbZCCCoJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 21:44:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbZCCCn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 21:37:14 -0500
-Received: from n30.bullet.mail.mud.yahoo.com ([68.142.207.49]:22583 "HELO
-	n30.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752399AbZCCChN (ORCPT
+	Mon, 2 Mar 2009 21:43:56 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42900 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752667AbZCCCn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 21:37:13 -0500
-X-Yahoo-Newman-Id: 751641.89587.bm@omp416.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mwY8iI0yx3Z/l5vhf8M8YNWnCs+5YZA96AbIu5o+iHmkBOz6dWo8ZXhrBxjQ21TB558svMJCGQLgnZAgEFWQnN6tBUMSyuhZkzS51h3M2FXRZLUkXu23toKL+cDr6wXtDABioA2EDjhp1j5V1iaLXE84Oq3ZmUWLWtMi12XJ7R4=  ;
-X-YMail-OSG: bb8q6G8VM1kqQ4DaoOv7NM_uvwExs3XCgND.nu.UG3RIKrGirG2Of2vohIb4Zf61N247VCrXtJiQocYxHZ7yeCx2qAhNQu2RMC7nBZCUKyJjTI4afbBTx4DmzL56IouOSwutpo0TNF3NqmavIdoGvFRJFsmiOG6ijefKZ0uo6VSN3IauLIrKyb3ZhtDh
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: lockdep and threaded IRQs (was: ...)
-Date: Mon, 2 Mar 2009 18:37:08 -0800
-User-Agent: KMail/1.9.10
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com,
-       tglx@linutronix.de
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200903021633.08736.david-b@pacbell.net> <20090303004427.GA8638@elte.hu>
-In-Reply-To: <20090303004427.GA8638@elte.hu>
+	Mon, 2 Mar 2009 21:43:56 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH 4/4] Memory controller soft limit reclaim on contention (v3)
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090302044406.GD11421@balbir.in.ibm.com>
+References: <20090302120052.6FEC.A69D9226@jp.fujitsu.com> <20090302044406.GD11421@balbir.in.ibm.com>
+Message-Id: <20090303095833.D9FC.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200903021837.08635.david-b@pacbell.net>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue,  3 Mar 2009 11:43:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 March 2009, Ingo Molnar wrote:
-> > 
-> > p.s. Note that those changes would still leave the
-> >      lockdep bug around ... it will still be breaking
-> >      various drivers that use normal IRQs, by forcibly
-> >      enabling IRQF_DISABLED.
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-03-02 12:08:01]:
 > 
-> it's not a bug - and i think Peter explained that already. 
+> > Hi Balbir,
+> > 
+> > > @@ -2015,9 +2016,12 @@ static int kswapd(void *p)
+> > >  		finish_wait(&pgdat->kswapd_wait, &wait);
+> > >  
+> > >  		if (!try_to_freeze()) {
+> > > +			struct zonelist *zl = pgdat->node_zonelists;
+> > >  			/* We can speed up thawing tasks if we don't call
+> > >  			 * balance_pgdat after returning from the refrigerator
+> > >  			 */
+> > > +			if (!order)
+> > > +				mem_cgroup_soft_limit_reclaim(zl, GFP_KERNEL);
+> > >  			balance_pgdat(pgdat, order);
+> > >  		}
+> > >  	}
+> > 
+> > kswapd's roll is increasing free pages until zone->pages_high in "own node".
+> > mem_cgroup_soft_limit_reclaim() free one (or more) exceed page in any node.
+> > 
+> > Oh, well.
+> > I think it is not consistency.
+> > 
+> > if mem_cgroup_soft_limit_reclaim() is aware to target node and its pages_high,
+> > I'm glad.
+> 
+> Yes, correct the role of kswapd is to keep increasing free pages until
+> zone->pages_high and the first set of pages to consider is the memory
+> controller over their soft limits. We pass the zonelist to ensure that
+> while doing soft reclaim, we focus on the zonelist associated with the
+> node. Kamezawa had concernes over calling the soft limit reclaim from
+> __alloc_pages_internal(), did you prefer that call path? 
 
-No.  But I did get a non-response that didn't include any
-explanation, and relied totally on unfounded assertions
-combined with the presumption that someday IRQF_DISABLED
-will be forced on in all drivers.
+I read your patch again.
+So, mem_cgroup_soft_limit_reclaim() caller place seems in balance_pgdat() is better.
+
+Please imazine most bad scenario.
+CPU0 (kswapd) take to continue shrinking.
+CPU1 take another activity and charge memcg conteniously.
+At that time, balance_pgdat() don't exit very long time. then 
+mem_cgroup_soft_limit_reclaim() is never called.
+
+In ideal, if another cpu take another charge, kswapd should shrink 
+soft limit again.
 
 
-> It's  
-> not really breaking things either - we've had this for more than 
-> 2 years.
+btw, I don't like "if (!order)" condition. memcg soft limit sould be
+always shrinked although 
+it's the order of because wakeup_kswapd() argument is merely hint.
 
-I happened across two MMC host adapter drivers which it
-broke.  They preceded the patch whereby lockdep changes
-request_irq() semantics.  The drivers break only with
-lockdep ... so platforms relying on those can't use lockdep.
-No reason to think there aren't more such bugs lurking.
-
-We also wasted quite a few months tracking down USB bugs
-that were masked by that patch ... the indeterminacy of
-IRQF_DISABLED behavior given IRQF_SHARED was hidden by
-enabling lockdep.  Led to a lot of totally crapulous oops
-traces, I assure you.
-
-So ... it has most certainly broken things.  There has
-seemed to be a bit of stick-fingers-in-ears going on, that
-prevents hearing about such problems though.
-
-- Dave
+another process want another order.
 
 
 
