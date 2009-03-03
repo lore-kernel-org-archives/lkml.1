@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbZCCXtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZCCXwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbZCCXtL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 18:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZCCXsw
+	id S1755584AbZCCXwS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 18:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZCCXwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 18:48:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46145 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754714AbZCCXsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 18:48:51 -0500
-Date: Wed, 4 Mar 2009 00:48:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Boaz Harrosh <bharrosh@panasas.com>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Large amount of scsi-sgpool objects
-Message-ID: <20090303234834.GA13389@elte.hu>
-References: <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain> <20090303192212.GA20705@elte.hu> <1236115544.15993.22.camel@localhost.localdomain> <20090303214454.GA8288@elte.hu> <1236119990.24019.35.camel@localhost.localdomain> <20090303230323.GA21644@elte.hu> <49ADBE29.4040706@s5r6.in-berlin.de>
+	Tue, 3 Mar 2009 18:52:01 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:3405 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbZCCXwA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 18:52:00 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49ADBE29.4040706@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090303135750.GC5060@elf.ucw.cz>
+References: <200902192215.18365.rjw@sisk.pl> <200902272155.42010.rjw@sisk.pl>
+	 <d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
+	 <200902281118.14595.rjw@sisk.pl>
+	 <d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
+	 <20090303135750.GC5060@elf.ucw.cz>
+Date: Tue, 3 Mar 2009 15:51:58 -0800
+Message-ID: <d6200be20903031551s1b834c77u1469ef9025fda904@mail.gmail.com>
+Subject: Re: [RFD] Automatic suspend
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 3, 2009 at 5:57 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> >> If you ignore wakelocks with timeouts, the current
+>> >> wakelock interface can be implemented with a global atomic_t to
+>> >> prevent suspend, and a per wakelock atomic_t to prevent a single
+>> >> client from changing the global reference count by more than one.
+>> >>
+>> >> There are a couple of reasons that I have not done this. It removes
+>> >> the ability to easily inspect the system when it is not suspending.
+>> >
+>> > Care to elaborate?
+>>
+>> If you have a single atomic_t and it is not 0, you do not know who
+>> incremented it.
+>
+> Which is okay for already debugged system. For debugging, yes some
+> support can be nice.
 
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+Yes, but installing an app can turn your debugged system into an
+undebugged system. I think is fine to have a kernel option to disable
+all debugging support, I just don't think it is the top priority. I
+have two options for making the no-stats no-timeout configuration
+faster. Option one, always use a reference count, and implement the
+other configurations on top of this. This makes the shipping
+configuration slower. Option two, use a completely separate
+implementation when stats or timeouts are enabled. This makes the fast
+version virtually untested. Neither of these are very appealing at the
+moment.
 
-> Ingo Molnar wrote:
-> > i picked up a v1 patch from the SCSI list that 
-> > i reported and which patch was sent to me. I did that in the 
-> > hope to fix a serious lockup bug that is still unfixed in the
-> > upstream kernel
-> 
-> Perhaps you could avoid putting such fixes into published 
-> merge branches.
-
-Yeah, these commits are in none of the topic branches that are 
-the git base of development, they are all already in a separate 
-branch named "tip:out-of-tree". That separate branch carries 
-assorted fixlets for various bugs we trigger in -tip qa. It 
-never goes upstream-wards, obviously. It's a bit like the 
-fixlets portion of -mm.
-
-	Ingo
+-- 
+Arve Hjønnevåg
