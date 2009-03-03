@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZCCF5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbZCCGBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbZCCF5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 00:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbZCCF5K
+	id S1756582AbZCCGBb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 01:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbZCCGBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 00:57:10 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:57525 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbZCCF5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 00:57:09 -0500
-Message-ID: <49ACC6B0.409@garzik.org>
-Date: Tue, 03 Mar 2009 00:57:04 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 3 Mar 2009 01:01:23 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:46247 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbZCCGBW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 01:01:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=G58bIwNtNw/pp3Iks6o0/PKx3kQ0FkwNOOiohflX36TD7Fy60sylDvP9Nh+oSB6VF
+	WhhoihzEv2AhgRqrK8aQA==
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-CC: wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Elaboration on "Equivalent fix must already exist in Linus' tree"
-References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
-In-Reply-To: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <49ACA13B.5050106@cn.fujitsu.com>
+References: <20090303013432.11211.18662.stgit@menage.corp.google.com>
+	 <49ACA13B.5050106@cn.fujitsu.com>
+Date: Mon, 2 Mar 2009 22:01:14 -0800
+Message-ID: <6599ad830903022201s4d2296c7u225e84a77f9f7167@mail.gmail.com>
+Subject: Re: [PATCH] Allow cpusets to be configured/built on non-SMP systems
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis R. Rodriguez wrote:
-> While extending the documentation for submitting Linux wireless bug
-> reports [1] we note the stable series policy on patches -- that of
-> having an equivalent fix already in Linus' tree. I find this
-> documented in Documentation/stable_kernel_rules.txt but I'm curious if
-> there is any other resource which documents this or elaborates on this
-> a bit more. I often tell people about this rule or push _really_ hard
-> on testing "upstream" but some people tend to not understand. I think
-> that elaborating a little on this can help and will hopefully create
-> more awareness around the importance of trees like Stephen's
-> linux-next tree.
+On Mon, Mar 2, 2009 at 7:17 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>> +static int generate_sched_domains(struct cpumask **domains,
+>> +                     struct sched_domain_attr **attributes)
+>> +{
+>
+> Except here should "return 0;", otherwise emit a compile warining.
+>
 
-Just have people google for GregKH's copious messages, telling people a 
-fix needs to be upstream before it goes into -stable.
+Good catch - the weird thing is that (in my UML build) it doesn't
+actually generate that warning. Mysterious.
 
-Typically you make things easy by emailing stable@kernel.org with a 
-commit id.
+I'll resend with the extra return.
 
-There are only two exceptions:
-* fix is upstream, but needs to be modified for -stable
-* fix is not needed at all in upstream, but -stable still needs it
-
-	Jeff
-
-
-
-
+Paul
