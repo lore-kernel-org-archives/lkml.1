@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbZCCKmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZCCKoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757130AbZCCKmm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 05:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZCCKmd
+	id S1756511AbZCCKoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 05:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZCCKoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 05:42:33 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54468 "EHLO
+	Tue, 3 Mar 2009 05:44:12 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54492 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754054AbZCCKmc (ORCPT
+	with ESMTP id S1752868AbZCCKoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 05:42:32 -0500
-Message-ID: <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <1236073236.18955.46.camel@twins>
+	Tue, 3 Mar 2009 05:44:11 -0500
+Message-ID: <8327107f58699f9fa733bddc75e3663c.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
 References: <49A65455.4030204@cn.fujitsu.com>
     <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
     <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
@@ -29,12 +29,14 @@ References: <49A65455.4030204@cn.fujitsu.com>
     <1236066689.18955.27.camel@twins>
     <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
     <1236073236.18955.46.camel@twins>
-Date: Tue, 3 Mar 2009 19:42:24 +0900 (JST)
+    <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
+Date: Tue, 3 Mar 2009 19:44:06 +0900 (JST)
 Subject: Re: [RFC][PATCH] remove rq->lock from cpuacct cgroup (Was Re:
  [PATCH] cpuacct: add a branch prediction
 From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
        paulmck@linux.vnet.ibm.com, "Bharata B Rao" <bharata.rao@gmail.com>,
        "Li Zefan" <lizf@cn.fujitsu.com>, "Ingo Molnar" <mingo@elte.hu>,
        "Paul Menage" <menage@google.com>,
@@ -50,30 +52,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra  wrote:
-> On Tue, 2009-03-03 at 18:04 +0900, KAMEZAWA Hiroyuki wrote:
->> Peter Zijlstra wrote:
->> > On Tue, 2009-03-03 at 08:42 +0900, KAMEZAWA Hiroyuki wrote:
->> >
->> >> > Furthermore, if you want something like schedule_work_on() for each
->> >> cpu,
->> >> > there's schedule_on_each_cpu().
->> >> >
->> >> It can't pass arguments...Maybe I should use rq->lock here to reset
->> >> other cpu's value.
->> >
->> > Why bother with serializing the reset code at all?
->> >
->>   I don't think reset v.s. read is problem but reset v.s. increment
->>   (read-modify-write) can't be ?
->
-> Sure, can be, do we care?
->
-If small/easy code allows us to declare "there are any racy case!
-and you don't have to check whether you successfully reseted",
-it's worth to do I think.
-
-Thanks,
+KAMEZAWA Hiroyuki wrote:
+> Peter Zijlstra  wrote:
+>> On Tue, 2009-03-03 at 18:04 +0900, KAMEZAWA Hiroyuki wrote:
+>>> Peter Zijlstra wrote:
+>>> > On Tue, 2009-03-03 at 08:42 +0900, KAMEZAWA Hiroyuki wrote:
+>>> >
+>>> >> > Furthermore, if you want something like schedule_work_on() for
+>>> each
+>>> >> cpu,
+>>> >> > there's schedule_on_each_cpu().
+>>> >> >
+>>> >> It can't pass arguments...Maybe I should use rq->lock here to reset
+>>> >> other cpu's value.
+>>> >
+>>> > Why bother with serializing the reset code at all?
+>>> >
+>>>   I don't think reset v.s. read is problem but reset v.s. increment
+>>>   (read-modify-write) can't be ?
+>>
+>> Sure, can be, do we care?
+>>
+> If small/easy code allows us to declare "there are any racy case!
+                                                     isn't...
+Sorry.
 -Kame
 
 
