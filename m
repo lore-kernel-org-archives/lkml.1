@@ -1,329 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760344AbZCCWYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763335AbZCCWYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760344AbZCCWYW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 17:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761475AbZCCWW2
+	id S1763335AbZCCWYl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 17:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760252AbZCCWW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 17:22:28 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:20998 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758821AbZCCWW0 (ORCPT
+	Tue, 3 Mar 2009 17:22:57 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:59844 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761477AbZCCWWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 17:22:26 -0500
-Message-ID: <49ADADB0.9000404@oracle.com>
-Date: Tue, 03 Mar 2009 14:22:40 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, eric@lammerts.org
-Subject: Re: [PATCH][retry 3] Conform L3 Cache Index Disable to Linuxstandards
- From:  Eric Lammerts <eric@lammerts.org>
-References: <200902201550.47415.mark.langsdorf@amd.com> <6453C3CB8E2B3646B0D020C112613273C5AEF2@sausexmb4.amd.com> <20090302200213.GA13699@elte.hu> <200903031614.06144.mark.langsdorf@amd.com>
-In-Reply-To: <200903031614.06144.mark.langsdorf@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 3 Mar 2009 17:22:55 -0500
+Subject: Re: Linux 2.6.29-rc6
+From: john stultz <johnstul@us.ibm.com>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+In-Reply-To: <49AD9598.3030308@krogh.cc>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
+	 <49A6F39F.9040801@krogh.cc>
+	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
+	 <49A6FEE2.90700@krogh.cc>
+	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
+	 <49A70B24.6090706@krogh.cc>
+	 <1235685269.6811.11.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
+	 <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>
+	 <1235766936.7402.5.camel@localhost.localdomain> <49ABACA0.3090300@krogh.cc>
+	 <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc>
+	 <1236110026.6068.18.camel@localhost> <49AD9598.3030308@krogh.cc>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 14:16:15 -0800
+Message-Id: <1236118575.6068.79.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010201.49ADAD5B.001C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Langsdorf wrote:
-> x86/kernel/built-in.o: In function `store_cache_disable':
->> intel_cacheinfo.c:(.text+0xd322): undefined reference to `k8_northbridges'
->> arch/x86/kernel/built-in.o: In function `show_cache_disable':
->> intel_cacheinfo.c:(.text+0xd52c): undefined reference to `k8_northbridges'
->>
->> so i've excluded it from tip:master for now. Please resubmit a 
->> fixed patch.
+On Tue, 2009-03-03 at 21:39 +0100, Jesper Krogh wrote:
+> john stultz wrote:
+> > Do you see the same behavior if you drop all but one server (including
+> > the local clock: 127.127.1.0)? 
 > 
-> I've tried to reproduce this problem and I can't.  k8_northbridges
-> is defined in <asm/k8.h> and it's included in the file.  I've
-> tried on i586 and x86_64 systems with both defconfig and 
-> allnoconfig without problem.
+> Yes.
+> Mar  3 21:20:59 quad12 ntpd[2435]: ntpd 4.2.4p4@1.1520-o Tue Jan  6 
+> 15:50:55 UTC 2009 (1)
+> Mar  3 21:20:59 quad12 ntpd[2436]: precision = 1.000 usec
+> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #0 wildcard, 
+> 0.0.0.0#123 Disabled
+> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #1 wildcard, 
+> ::#123 Disabled
+> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #2 lo, ::1#123 
+> Enabled
+> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #3 bond0, 
+> fe80::21e:68ff:fe57:8169#123 Enabled
+> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #4 lo, 
+> 127.0.0.1#123 Enabled
+> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #5 bond0, 
+> 10.194.132.91#123 Enabled
+> Mar  3 21:20:59 quad12 ntpd[2436]: kernel time sync status 0040
+> Mar  3 21:20:59 quad12 ntpd[2436]: frequency initialized -29.286 PPM 
+> from /var/lib/ntp/ntp.drift
+> Mar  3 21:21:58 quad12 ntpd[2436]: synchronized to 10.194.133.12, stratum 4
+> Mar  3 21:21:58 quad12 ntpd[2436]: time reset -6.148275 s
+> Mar  3 21:21:58 quad12 ntpd[2436]: kernel time sync status change 0001
+> Mar  3 21:25:01 quad12 ntpd[2436]: synchronized to 10.194.133.12, stratum 4
+> Mar  3 21:37:03 quad12 ntpd[2436]: time reset -0.664351 s
 > 
-> If this problem persists, I'd appreciate if someone could email
-> me instructions on how to reproduce it because I can't figure it
-> out.
+> Only one server and the minpoll 4 maxpoll 4 options to the server line.
 
-I reported the same problem on mmotm-02-24.  You were cc-ed on it.
-The email includes the failing .config file.
+Well, it may still need a few hours to settle. :)  Again, those time
+resets are seen when NTPd doesn't have a good drift ppm at startup, and
+it has to find it.
 
-http://lkml.org/lkml/2009/2/25/314
+thanks
+-john
 
-
-> -Mark Langsdorf
-> Operating System Resarch Center
-> AMD
-> 
-> 
-> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> commit 2c6521d5a6309d157682f600b0e9fa4eeccd3e1d
-> Author: Mark Langsdorf <mlangsdo@wshpnow.amd.com>
-> Date:   Fri Feb 20 15:22:00 2009 -0600
-> 
->     Add ABI Documentation entry and fix some /sys directory formating
->     issues with the L3 Cache Index Disable feature for future AMD
->     processors.  Add a check to disable it for family 0x10 models
->     that do not support it yet.
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-devices-cache_disable b/Documentation/ABI/testing/sysfs-devices-cache_disable
-> new file mode 100644
-> index 0000000..d2a7292
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-devices-cache_disable
-> @@ -0,0 +1,18 @@
-> +What:	    /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
-> +Date:	    August 2008
-> +KernelVersion:  2.6.27
-> +Contact:	 mark.langsdorf@amd.com
-> +Description:    These files exist in every cpu's cache index directories.
-> +		 There are currently 2 cache_disable_# files in each
-> +		 directory.  Reading from these files on a supported
-> +		 processor will return that cache disable index value
-> +		 for that processor and node.  Writing to one of these
-> +		 files will cause the specificed cache index to be disabled.
-> +
-> +		 Currently, only AMD Family 10h Processors support cache index
-> +		 disable, and only for their L3 caches.  See the BIOS and
-> +		 Kernel Developer's Guide at
-> +		 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/31116-Public-GH-BKDG_3.20_2-4-09.pdf
-> +		 for formatting information and other details on the
-> +		 cache index disable.
-> +Users:	   joachim.deguara@amd.com
-> diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> index 8e6ce2c..5ecac89 100644
-> --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-> +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> @@ -18,6 +18,9 @@
->  #include <asm/processor.h>
->  #include <asm/smp.h>
->  
-> +#include <linux/pci.h>
-> +#include <asm/k8.h>
-> +
->  #define LVL_1_INST	1
->  #define LVL_1_DATA	2
->  #define LVL_2		3
-> @@ -159,14 +162,6 @@ struct _cpuid4_info_regs {
->  	unsigned long can_disable;
->  };
->  
-> -#if defined(CONFIG_PCI) && defined(CONFIG_SYSFS)
-> -static struct pci_device_id k8_nb_id[] = {
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1103) },
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1203) },
-> -	{}
-> -};
-> -#endif
-> -
->  unsigned short			num_cache_leaves;
->  
->  /* AMD doesn't have CPUID4. Emulate it here to report the same
-> @@ -291,6 +286,12 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
->  {
->  	if (index < 3)
->  		return;
-> +	if (boot_cpu_data.x86 == 0x11)
-> +		return;
-> +
-> +	if ((boot_cpu_data.x86 == 0x10) && (boot_cpu_data.x86_model < 0x15))
-> +		return;
-> +
->  	this_leaf->can_disable = 1;
->  }
->  
-> @@ -639,6 +640,64 @@ static ssize_t show_##file_name						\
->  	return sprintf (buf, "%lu\n", (unsigned long)this_leaf->object + val); \
->  }
->  
-> +static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
-> +		 unsigned int index)
-> +{
-> +	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-> +	struct pci_dev *dev = k8_northbridges[node];
-> +	unsigned int reg = 0;
-> +
-> +	if (!this_leaf->can_disable)
-> +		return -EINVAL;
-> +
-> +	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
-> +	return sprintf(buf, "%x\n", reg);
-> +}
-> +
-> +#define SHOW_CACHE_DISABLE(index)					\
-> +static ssize_t								\
-> +show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)  	\
-> +{									\
-> +	return show_cache_disable(this_leaf, buf, index);		\
-> +}
-> +
-> +static ssize_t
-> +store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
-> +		 size_t count, unsigned int index)
-> +{
-> +	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-> +	struct pci_dev *dev = k8_northbridges[node];
-> +	unsigned long val = 0;
-> +
-> +	if (!this_leaf->can_disable)
-> +		return -EINVAL;
-> +
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
-> +
-> +	if (strict_strtoul(buf, 10, &val) < 0)
-> +		return -EINVAL;
-> +
-> +	val |= 0xc0000000;
-> +	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
-> +	wbinvd();
-> +	pci_write_config_dword(dev, 0x1BC + index * 4, val);
-> +	return count;
-> +}
-> +
-> +#define STORE_CACHE_DISABLE(index)					\
-> +static ssize_t								\
-> +store_cache_disable_##index(struct _cpuid4_info *this_leaf,	     	\
-> +		 const char *buf, size_t count)			     	\
-> +{									\
-> +	return store_cache_disable(this_leaf, buf, count, index);	\
-> +}
-> +
-> +SHOW_CACHE_DISABLE(0)
-> +STORE_CACHE_DISABLE(0)
-> +SHOW_CACHE_DISABLE(1)
-> +STORE_CACHE_DISABLE(1)
-> +
->  show_one_plus(level, eax.split.level, 0);
->  show_one_plus(coherency_line_size, ebx.split.coherency_line_size, 1);
->  show_one_plus(physical_line_partition, ebx.split.physical_line_partition, 1);
-> @@ -696,98 +755,6 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
->  #define to_object(k)	container_of(k, struct _index_kobject, kobj)
->  #define to_attr(a)	container_of(a, struct _cache_attr, attr)
->  
-> -#ifdef CONFIG_PCI
-> -static struct pci_dev *get_k8_northbridge(int node)
-> -{
-> -	struct pci_dev *dev = NULL;
-> -	int i;
-> -
-> -	for (i = 0; i <= node; i++) {
-> -		do {
-> -			dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
-> -			if (!dev)
-> -				break;
-> -		} while (!pci_match_id(&k8_nb_id[0], dev));
-> -		if (!dev)
-> -			break;
-> -	}
-> -	return dev;
-> -}
-> -#else
-> -static struct pci_dev *get_k8_northbridge(int node)
-> -{
-> -	return NULL;
-> -}
-> -#endif
-> -
-> -static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
-> -{
-> -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
-> -	int node = cpu_to_node(cpumask_first(mask));
-> -	struct pci_dev *dev = NULL;
-> -	ssize_t ret = 0;
-> -	int i;
-> -
-> -	if (!this_leaf->can_disable)
-> -		return sprintf(buf, "Feature not enabled\n");
-> -
-> -	dev = get_k8_northbridge(node);
-> -	if (!dev) {
-> -		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
-> -		return -EINVAL;
-> -	}
-> -
-> -	for (i = 0; i < 2; i++) {
-> -		unsigned int reg;
-> -
-> -		pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
-> -
-> -		ret += sprintf(buf, "%sEntry: %d\n", buf, i);
-> -		ret += sprintf(buf, "%sReads:  %s\tNew Entries: %s\n",  
-> -			buf,
-> -			reg & 0x80000000 ? "Disabled" : "Allowed",
-> -			reg & 0x40000000 ? "Disabled" : "Allowed");
-> -		ret += sprintf(buf, "%sSubCache: %x\tIndex: %x\n",
-> -			buf, (reg & 0x30000) >> 16, reg & 0xfff);
-> -	}
-> -	return ret;
-> -}
-> -
-> -static ssize_t
-> -store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
-> -		    size_t count)
-> -{
-> -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
-> -	int node = cpu_to_node(cpumask_first(mask));
-> -	struct pci_dev *dev = NULL;
-> -	unsigned int ret, index, val;
-> -
-> -	if (!this_leaf->can_disable)
-> -		return 0;
-> -
-> -	if (strlen(buf) > 15)
-> -		return -EINVAL;
-> -
-> -	ret = sscanf(buf, "%x %x", &index, &val);
-> -	if (ret != 2)
-> -		return -EINVAL;
-> -	if (index > 1)
-> -		return -EINVAL;
-> -
-> -	val |= 0xc0000000;
-> -	dev = get_k8_northbridge(node);
-> -	if (!dev) {
-> -		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
-> -		return -EINVAL;
-> -	}
-> -
-> -	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
-> -	wbinvd();
-> -	pci_write_config_dword(dev, 0x1BC + index * 4, val);
-> -
-> -	return 1;
-> -}
-> -
->  struct _cache_attr {
->  	struct attribute attr;
->  	ssize_t (*show)(struct _cpuid4_info *, char *);
-> @@ -808,7 +775,11 @@ define_one_ro(size);
->  define_one_ro(shared_cpu_map);
->  define_one_ro(shared_cpu_list);
->  
-> -static struct _cache_attr cache_disable = __ATTR(cache_disable, 0644, show_cache_disable, store_cache_disable);
-> +static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
-> +		 show_cache_disable_0, store_cache_disable_0);
-> +static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
-> +		 show_cache_disable_1, store_cache_disable_1);
-> +
->  
->  static struct attribute * default_attrs[] = {
->  	&type.attr,
-> @@ -820,7 +791,8 @@ static struct attribute * default_attrs[] = {
->  	&size.attr,
->  	&shared_cpu_map.attr,
->  	&shared_cpu_list.attr,
-> -	&cache_disable.attr,
-> +	&cache_disable_0.attr,
-> +	&cache_disable_1.attr,
->  	NULL
->  };
-
-
--- 
-~Randy
