@@ -1,93 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZCCFlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZCCFnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbZCCFlR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 00:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbZCCFlE
+	id S1756326AbZCCFnj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 00:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbZCCFn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 00:41:04 -0500
-Received: from mga09.intel.com ([134.134.136.24]:37703 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750924AbZCCFlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 00:41:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,294,1233561600"; 
-   d="asc'?scan'208";a="391115897"
-Subject: Re: [PATCH] Fix e820 end address with EFI
-From: Huang Ying <ying.huang@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+	Tue, 3 Mar 2009 00:43:29 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:19132 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750776AbZCCFn2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 00:43:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=wtB0tnVjDfUsznuymc7uDns1Swh/eMWdarMUC/LxdXtVnNgfIjSomkxkbWAUFLVN4Y
+         o3KoIwx5IHN3f11GEmNsxNgMhxEiN10KP2wtCmTVHc8hp3vnivqwnJJQV4eJd0R9ofT2
+         k2yGeskmbuaXPTDbuR6KdmWG3zg7fHgt/TsgM=
+MIME-Version: 1.0
+Date: Mon, 2 Mar 2009 21:43:26 -0800
+Message-ID: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
+Subject: Elaboration on "Equivalent fix must already exist in Linus' tree"
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: wireless <linux-wireless@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <49ACC205.2040504@kernel.org>
-References: <49A965AD.10701@redhat.com>
-	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>
-	 <49AAEC79.3000808@redhat.com>
-	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>
-	 <49AB38E7.60305@redhat.com>
-	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>
-	 <49AB4171.7000508@kernel.org>
-	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>
-	 <49AB4521.8010909@kernel.org>
-	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>
-	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>
-	 <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>
-	 <49AC51D7.1080203@kernel.org>
-	 <1236042459.6204.226.camel@yhuang-dev.sh.intel.com>
-	 <49AC87AE.60001@kernel.org>
-	 <1236046936.6204.243.camel@yhuang-dev.sh.intel.com>
-	 <49AC9B99.5020000@kernel.org>
-	 <1236049574.6204.253.camel@yhuang-dev.sh.intel.com>
-	 <49ACAAAF.90300@kernel.org>
-	 <1236058371.6204.267.camel@yhuang-dev.sh.intel.com>
-	 <49ACC205.2040504@kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-o/paKqoOa8RgRLzDS/aq"
-Date: Tue, 03 Mar 2009 13:40:58 +0800
-Message-Id: <1236058858.6204.273.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+While extending the documentation for submitting Linux wireless bug
+reports [1] we note the stable series policy on patches -- that of
+having an equivalent fix already in Linus' tree. I find this
+documented in Documentation/stable_kernel_rules.txt but I'm curious if
+there is any other resource which documents this or elaborates on this
+a bit more. I often tell people about this rule or push _really_ hard
+on testing "upstream" but some people tend to not understand. I think
+that elaborating a little on this can help and will hopefully create
+more awareness around the importance of trees like Stephen's
+linux-next tree.
 
---=-o/paKqoOa8RgRLzDS/aq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+[1] http://wireless.kernel.org/en/users/Documentation/Reporting_bugs
+[2] git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
 
-On Tue, 2009-03-03 at 13:37 +0800, Yinghai Lu wrote:
-[...]
-> > The dmesg with ignore_loglevel in kernel parameters is attached with th=
-e
-> > mail.
-> >=20
-> > init_memory_mapping: 0000000000000000-000000003f700000
-> >  0000000000 - 003f600000 page 2M
-> >  003f600000 - 003f700000 page 4k
-> > kernel direct mapping tables up to 3f700000 @ 8000-b000
-> > last_map_addr: 3f700000 end: 3f700000
-> >=20
-> > init_memory_mapping: 00000000fffb0000-00000000fffba000
-> >  00fffb0000 - 0100000000 page 4k
-> > last_map_addr: 100000000 end: fffba000
-> that is funny, the range calculating has some problem...when the range si=
-ze < 2M...
-
-Yes. Can you fix that? If you have no time, I can do that.
-
-Best Regards,
-Huang Ying
-
-
---=-o/paKqoOa8RgRLzDS/aq
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmswucACgkQKhFGF+eHlphItACeLRe9Vwqtikt78DiEhywCFwGu
-0awAoJt/FcqGYl0CB4EYtRGfNnTxVb5C
-=Uevd
------END PGP SIGNATURE-----
-
---=-o/paKqoOa8RgRLzDS/aq--
-
+  Luis
