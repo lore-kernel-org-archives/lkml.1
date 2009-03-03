@@ -1,344 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZCCQBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbZCCQDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbZCCQBg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZCCQB1
+	id S1757903AbZCCQDO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZCCQDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:01:27 -0500
-Received: from ti-out-0910.google.com ([209.85.142.191]:53676 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbZCCQBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:01:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=i4onFO3tyOyE7bVX1+XlJ0+piWPgfYAmm5Ec1Nnm4wvn8DflVFUrO4rbWro/xlXFj0
-         D3qOy65wTUb+9ngMbM5YMHmAFZVonG/o37NJvVEXK1HQxXXXMaKEjfaTB67u1TVxuFsa
-         /PpVWVTnNebJlUYke+8yovSf2U9Mpl1S2cFgo=
-Date: Wed, 4 Mar 2009 01:01:04 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH] generic debug pagealloc
-Message-ID: <20090303160103.GB5812@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Mar 2009 11:03:05 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:36050 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755152AbZCCQDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:03:02 -0500
+Date: Tue, 3 Mar 2009 08:02:56 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: sdrb <sdrb@onet.eu>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: sky2 and skge issue
+Message-ID: <20090303080256.53579d0d@nehalam>
+In-Reply-To: <49AD3229.6020105@onet.eu>
+References: <49AD3229.6020105@onet.eu>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.15.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_DEBUG_PAGEALLOC is now supported by x86, powerpc, sparc (64bit),
-and s390. This patch implements it for the rest of the architectures
-by filling the pages with poison byte patterns after free_pages() and
-verifying the poison patterns before alloc_pages().
+On Tue, 03 Mar 2009 14:35:37 +0100
+sdrb <sdrb@onet.eu> wrote:
 
-This generic one cannot detect invalid read accesses and it can only
-detect invalid write accesses after a long delay. But it is an feasible way
-for nommu architectures.
+> 
+> Hello,
+> 
+> Recently we've been trying to set up 2 bonding interfaces with Intel 
+> E1000/pro and 2 other ethernet cards for which we've been using skge and 
+> sky2 drivers. During configuration with ifenslave we've noticed some 
+> calltrace in system logs:
+> 
+> ----calltrace begin-----
+> e1000e: Intel(R) PRO/1000 Network Driver - 0.5.8.2-NAPI
+> e1000e: Copyright (c) 1999-2008 Intel Corporation.
+> e1000e 0000:0a:00.0: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+> e1000e 0000:0a:00.0: setting latency timer to 64
+> 0000:0a:00.0: : Failed to initialize MSI interrupts.  Falling back to 
+> legacy interrupts.
+> ACPI: Power Button (CM) [PWRB]
+> 0000:0a:00.0: eth0: (PCI Express:2.5GB/s:Width x4) 00:15:17:1b:b4:fd
+> 0000:0a:00.0: eth0: Intel(R) PRO/1000 Network Connection
+> 0000:0a:00.0: eth0: MAC: 1, PHY: 4, PBA No: d57995-004
+> e1000e 0000:0a:00.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> e1000e 0000:0a:00.1: setting latency timer to 64
+> 0000:0a:00.1: : Failed to initialize MSI interrupts.  Falling back to 
+> legacy interrupts.
+> 0000:0a:00.1: eth1: (PCI Express:2.5GB/s:Width x4) 00:15:17:1b:b4:fc
+> 0000:0a:00.1: eth1: Intel(R) PRO/1000 Network Connection
+> 0000:0a:00.1: eth1: MAC: 1, PHY: 4, PBA No: d57995-004
+> e1000e 0000:09:00.0: PCI INT B -> GSI 18 (level, low) -> IRQ 18
+> e1000e 0000:09:00.0: setting latency timer to 64
+> 0000:09:00.0: : Failed to initialize MSI interrupts.  Falling back to 
+> legacy interrupts.
+> 0000:09:00.0: eth2: (PCI Express:2.5GB/s:Width x4) 00:15:17:1b:b4:ff
+> 0000:09:00.0: eth2: Intel(R) PRO/1000 Network Connection
+> 0000:09:00.0: eth2: MAC: 1, PHY: 4, PBA No: d57995-004
+> e1000e 0000:09:00.1: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> e1000e 0000:09:00.1: setting latency timer to 64
+> 0000:09:00.1: : Failed to initialize MSI interrupts.  Falling back to 
+> legacy interrupts.
+> 0000:09:00.1: eth3: (PCI Express:2.5GB/s:Width x4) 00:15:17:1b:b4:fe
+> 0000:09:00.1: eth3: Intel(R) PRO/1000 Network Connection
+> 0000:09:00.1: eth3: MAC: 1, PHY: 4, PBA No: d57995-004
+> sky2 0000:03:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> sky2 0000:03:00.0: setting latency timer to 64
+> sky2 0000:03:00.0: v1.22 addr 0xff2fc000 irq 16 Yukon-2 EC rev 2
+> sky2 eth4: addr 00:1d:60:0e:a2:9e
+> skge 0000:01:05.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+> skge 1.13 addr 0xff0f0000 irq 21 chip Yukon-Lite rev 9
+> skge eth5: addr 00:1d:60:0e:a0:78
+> Ethernet Channel Bonding Driver: v3.3.0 (June 10, 2008)
+> bonding: MII link monitoring set to 50 ms
+> bonding: bond0 is being deleted...
+> bonding: bond0 is being created...
+> bonding: bond0: setting mode to balance-rr (0).
+> bonding: bond0: Setting MII monitoring interval to 50.
+> sky2 eth0: enabling interface
+> bonding: bond0: enslaving eth0 as an active interface with a down link.
+> skge eth1: enabling interface
+> bonding: bond0: enslaving eth1 as an active interface with a down link.
+> bonding: bond0: Unable to set primary slave; bond0 is in mode 0
+> bonding: bond1 is being created...
+> bonding: bond1: setting mode to balance-rr (0).
+> bonding: bond1: Setting MII monitoring interval to 50.
+> bonding: bond1: enslaving eth2 as an active interface with a down link.
+> bonding: bond1: enslaving eth3 as an active interface with a down link.
+> proc_dir_entry '16/eth4' already registered
+> Pid: 7984, comm: ifenslave Not tainted 2.6.27.10 #72
+>   [<c01b5d77>] proc_register+0xe7/0x100
+>   [<c01b5f2e>] proc_mkdir_mode+0x2e/0x50
+>   [<c015619d>] register_handler_proc+0x6d/0x80
+>   [<c0154d38>] setup_irq+0xf8/0x1b0
+>   [<e8f86f30>] e1000_intr+0x0/0x110 [e1000e]
+>   [<c0154f65>] request_irq+0x85/0xa0
+>   [<e8f87524>] e1000_request_irq+0x74/0xf0 [e1000e]
+>   [<e8f8901b>] e1000_open+0x7b/0x180 [e1000e]
+>   [<c0482487>] dev_open+0x87/0xb0
+>   [<e8fe263c>] bond_enslave+0x19c/0x8f0 [bonding]
+>   [<e8fe57f0>] bond_do_ioctl+0x0/0x260 [bonding]
+>   [<e8fe5a34>] bond_do_ioctl+0x244/0x260 [bonding]
+>   [<c0485905>] netdev_run_todo+0x35/0x140
+>   [<c04bf987>] devinet_ioctl+0x407/0x520
+>   [<c0481d37>] __dev_get_by_name+0x67/0x80
+>   [<e8fe57f0>] bond_do_ioctl+0x0/0x260 [bonding]
+>   [<c0484fd6>] dev_ifsioc+0x106/0x290
+>   [<c0485231>] dev_ioctl+0xd1/0x1e0
+>   [<c047791c>] sock_ioctl+0xfc/0x1f0
+>   [<c0477820>] sock_ioctl+0x0/0x1f0
+>   [<c018539c>] vfs_ioctl+0x5c/0x70
+>   [<c01855bc>] do_vfs_ioctl+0x4c/0x140
+>   [<c0185700>] sys_ioctl+0x50/0x60
+>   [<c0103a52>] syscall_call+0x7/0xb
+>   [<c0510000>] init_chipset_pdc202xx+0x30/0xd0
+>   =======================
+> bonding: bond1: enslaving eth4 as an active interface with a down link.
+> bonding: bond1: enslaving eth5 as an active interface with a down link.
+> bonding: bond1: Unable to set primary slave; bond1 is in mode 0
+> e1000e: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+> bonding: bond1: link status definitely up for interface eth2.
+> e1000e: eth5 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+> bonding: bond1: link status definitely up for interface eth5.
+> ----calltrace end-----
+> 
+> 
+> 
+> I think the most important line is: "proc_dir_entry '16/eth4' already 
+> registered".
+> 
+> As we can see in that dump log above - sky2 driver registered new 
+> network device as "eth4" while loading with insmod:
+>      sky2 eth4: addr 00:1d:60:0e:a2:9e
+> 
+> Then this name has been changed to "eth0":
+>      sky2 eth0: enabling interface
+> 
+> I assume that it is because udev changes network device names basing on 
+> MAC address. Then we get:
+>      proc_dir_entry '16/eth4' already registered
+> 
+> so it's look like sky2 didn't release interrupt 16 meanwhile udev 
+> changed name from eth4 to eth0.
+> 
+> 
+> 
+> 
+> I investigated this problem a little. I did some tests on another system 
+> - and I noticed identical problem with skge driver.
+> 
+> Here there is scenario of reproduction of the problem:
+> 
+> Let's assume that we have device 0x11ab:0x4320 and proper entry in udev 
+> for it:
+> 
+> # PCI device 0x11ab:0x4320 (skge)
+> SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{address}=="00:1d:60:0e:a0:a4", 
+> NAME="eth1"
+> 
+> 
+> after:
+>      # insmod skge.ko
+> 
+> 
+> we have following logs:
+> 
+> skge 0000:01:05.0: found PCI INT A -> IRQ 10
+> skge 1.13 addr 0xfe8ec000 irq 10 chip Yukon-Lite rev 9
+> skge eth0: addr 00:1d:60:0e:a0:a4
+> 
+> 
+> so the driver registered "eth0" but later udev changed it to eth1:
+> 
+>    # cat /proc/interrupts  |grep eth
+>      10:          0          0    XT-PIC-XT        uhci_hcd:usb3, eth1
+> 
+>    # ifconfig  -a
+>    eth1      Link encap:Ethernet  HWaddr 00:1D:60:0E:A0:A4
+> 	    BROADCAST MULTICAST  MTU:1500  Metric:1
+> 	    RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+> 	    TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+> 	    collisions:0 txqueuelen:1000
+> 	    RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+> 	    Interrupt:10
+> 
+> 
+> So we have "eth1" on interrupt 10, but if we do:
+> 
+>    # find /proc/irq/ -name 'eth*'
+>    /proc/irq/10/eth0
+> 
+> we still have "eth0" (should be "eth1") connected to interrupt 10.
+> 
+> 
+> The same effect we can achieve with manual changing name of interface 
+> (instead of using udev):
+> 
+>      # ifconfig eth1 down
+>      # ip link set eth1 name eth111
+>      # ifconfig eth1 up
+> 
+> 
+> 
+> For *testing only purposes* I've made some patch which enables 
+> interrupts not just after "insmod" but after "ifconfig ethX up" and 
+> disables interrupts after "ifconfig ethX down". It is attached to this 
+> email.
+> 
+> With this patch - when we do
+> 
+>      # ifconfig eth1 down
+>      # ip link set eth1 name eth111
+>      # ifconfig eth1 up
+> 
+> it doesn't keep old name of ethX in /proc/irq/*.
+> 
+> I compared this driver with e1000e-0.5.8.2 for intel e1000e, and
+> there after "ifconfig ethX down" they free interrupt handler, and
+> "ifconfig ethX up" register it again.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-arch@vger.kernel.org
-Cc: linux-mm@kvack.org
----
- arch/avr32/mm/fault.c      |   18 ----------
- arch/powerpc/Kconfig       |    3 +
- arch/powerpc/Kconfig.debug |    1 
- arch/s390/Kconfig          |    3 +
- arch/s390/Kconfig.debug    |    1 
- arch/sparc/Kconfig         |    3 +
- arch/sparc/Kconfig.debug   |    3 +
- arch/x86/Kconfig           |    3 +
- arch/x86/Kconfig.debug     |    1 
- include/linux/mm_types.h   |    4 ++
- include/linux/poison.h     |    3 +
- lib/Kconfig.debug          |    1 
- mm/Kconfig.debug           |    8 ++++
- mm/Makefile                |    1 
- mm/debug-pagealloc.c       |   81 +++++++++++++++++++++++++++++++++++++++++++++
- 15 files changed, 115 insertions(+), 19 deletions(-)
 
-Index: 2.6-poison/include/linux/poison.h
-===================================================================
---- 2.6-poison.orig/include/linux/poison.h
-+++ 2.6-poison/include/linux/poison.h
-@@ -17,6 +17,9 @@
-  */
- #define TIMER_ENTRY_STATIC	((void *) 0x74737461)
- 
-+/********** mm/debug-pagealloc.c **********/
-+#define PAGE_POISON 0xaa
-+
- /********** mm/slab.c **********/
- /*
-  * Magic nums for obj red zoning.
-Index: 2.6-poison/mm/debug-pagealloc.c
-===================================================================
---- /dev/null
-+++ 2.6-poison/mm/debug-pagealloc.c
-@@ -0,0 +1,81 @@
-+#include <linux/kernel.h>
-+#include <linux/highmem.h>
-+
-+static void poison_page(struct page *page)
-+{
-+	void *addr;
-+
-+	page->poison = true;
-+	addr = kmap_atomic(page, KM_USER0);
-+	memset(addr, PAGE_POISON, PAGE_SIZE);
-+	kunmap_atomic(addr, KM_USER0);
-+}
-+
-+static void poison_pages(struct page *page, int n)
-+{
-+	int i;
-+
-+	for (i = 0; i < n; i++)
-+		poison_page(page + i);
-+}
-+
-+static void dump_broken_mem(unsigned char *mem)
-+{
-+	int i;
-+	int start = 0;
-+	int end = PAGE_SIZE - 1;
-+
-+	for (i = 0; i < PAGE_SIZE; i++) {
-+		if (mem[i] != PAGE_POISON) {
-+			start = i;
-+			break;
-+		}
-+	}
-+	for (i = PAGE_SIZE - 1; i >= start; i--) {
-+		if (mem[i] != PAGE_POISON) {
-+			end = i;
-+			break;
-+		}
-+	}
-+	printk(KERN_ERR "Page corruption: %p-%p\n", mem + start, mem + end);
-+	print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1, mem + start,
-+			end - start + 1, 1);
-+}
-+
-+static void unpoison_page(struct page *page)
-+{
-+	unsigned char *mem;
-+	int i;
-+
-+	if (!page->poison)
-+		return;
-+
-+	mem = kmap_atomic(page, KM_USER0);
-+	for (i = 0; i < PAGE_SIZE; i++) {
-+		if (mem[i] != PAGE_POISON) {
-+			dump_broken_mem(mem);
-+			break;
-+		}
-+	}
-+	kunmap_atomic(mem, KM_USER0);
-+	page->poison = false;
-+}
-+
-+static void unpoison_pages(struct page *page, int n)
-+{
-+	int i;
-+
-+	for (i = 0; i < n; i++)
-+		unpoison_page(page + i);
-+}
-+
-+void kernel_map_pages(struct page *page, int numpages, int enable)
-+{
-+	if (!debug_pagealloc_enabled)
-+		return;
-+
-+	if (enable)
-+		unpoison_pages(page, numpages);
-+	else
-+		poison_pages(page, numpages);
-+}
-Index: 2.6-poison/mm/Kconfig.debug
-===================================================================
---- /dev/null
-+++ 2.6-poison/mm/Kconfig.debug
-@@ -0,0 +1,8 @@
-+config PAGE_POISONING
-+	bool "Debug page memory allocations"
-+	depends on !ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	select DEBUG_PAGEALLOC
-+	help
-+	   Fill the pages with poison patterns after free_pages() and verify
-+	   the patterns before alloc_pages(). This results in a large slowdown,
-+	   but helps to find certain types of memory corruptions.
-Index: 2.6-poison/mm/Makefile
-===================================================================
---- 2.6-poison.orig/mm/Makefile
-+++ 2.6-poison/mm/Makefile
-@@ -33,3 +33,4 @@ obj-$(CONFIG_MIGRATION) += migrate.o
- obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
-+obj-$(CONFIG_PAGE_POISONING) += debug-pagealloc.o
-Index: 2.6-poison/lib/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/lib/Kconfig.debug
-+++ 2.6-poison/lib/Kconfig.debug
-@@ -796,6 +796,7 @@ config SYSCTL_SYSCALL_CHECK
- 	  to properly maintain and use. This enables checks that help
- 	  you to keep things correct.
- 
-+source mm/Kconfig.debug
- source kernel/trace/Kconfig
- 
- config PROVIDE_OHCI1394_DMA_INIT
-Index: 2.6-poison/arch/powerpc/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/powerpc/Kconfig.debug
-+++ 2.6-poison/arch/powerpc/Kconfig.debug
-@@ -30,6 +30,7 @@ config DEBUG_STACK_USAGE
- config DEBUG_PAGEALLOC
-         bool "Debug page memory allocations"
-         depends on DEBUG_KERNEL && !HIBERNATION
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
-         help
-           Unmap pages from the kernel linear mapping after free_pages().
-           This results in a large slowdown, but helps to find certain types
-Index: 2.6-poison/arch/s390/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/s390/Kconfig.debug
-+++ 2.6-poison/arch/s390/Kconfig.debug
-@@ -9,6 +9,7 @@ source "lib/Kconfig.debug"
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
- 	depends on DEBUG_KERNEL
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a slowdown, but helps to find certain types of
-Index: 2.6-poison/arch/sparc/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/sparc/Kconfig.debug
-+++ 2.6-poison/arch/sparc/Kconfig.debug
-@@ -24,7 +24,8 @@ config STACK_DEBUG
- 
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
--	depends on SPARC64 && DEBUG_KERNEL && !HIBERNATION
-+	depends on DEBUG_KERNEL && !HIBERNATION
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a large slowdown, but helps to find certain types
-Index: 2.6-poison/arch/x86/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/x86/Kconfig
-+++ 2.6-poison/arch/x86/Kconfig
-@@ -160,6 +160,9 @@ config AUDIT_ARCH
- config ARCH_SUPPORTS_OPTIMIZED_INLINING
- 	def_bool y
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y
-+
- # Use the generic interrupt handling code in kernel/irq/:
- config GENERIC_HARDIRQS
- 	bool
-Index: 2.6-poison/arch/x86/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/x86/Kconfig.debug
-+++ 2.6-poison/arch/x86/Kconfig.debug
-@@ -75,6 +75,7 @@ config DEBUG_STACK_USAGE
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
- 	depends on DEBUG_KERNEL
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a large slowdown, but helps to find certain types
-Index: 2.6-poison/arch/powerpc/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/powerpc/Kconfig
-+++ 2.6-poison/arch/powerpc/Kconfig
-@@ -227,6 +227,9 @@ config PPC_OF_PLATFORM_PCI
- 	depends on PPC64 # not supported on 32 bits yet
- 	default n
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-Index: 2.6-poison/arch/sparc/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/sparc/Kconfig
-+++ 2.6-poison/arch/sparc/Kconfig
-@@ -124,6 +124,9 @@ config ARCH_NO_VIRT_TO_BUS
- config OF
- 	def_bool y
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y if SPARC64
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-Index: 2.6-poison/arch/avr32/mm/fault.c
-===================================================================
---- 2.6-poison.orig/arch/avr32/mm/fault.c
-+++ 2.6-poison/arch/avr32/mm/fault.c
-@@ -250,21 +250,3 @@ asmlinkage void do_bus_error(unsigned lo
- 	dump_dtlb();
- 	die("Bus Error", regs, SIGKILL);
- }
--
--/*
-- * This functionality is currently not possible to implement because
-- * we're using segmentation to ensure a fixed mapping of the kernel
-- * virtual address space.
-- *
-- * It would be possible to implement this, but it would require us to
-- * disable segmentation at startup and load the kernel mappings into
-- * the TLB like any other pages. There will be lots of trickery to
-- * avoid recursive invocation of the TLB miss handler, though...
-- */
--#ifdef CONFIG_DEBUG_PAGEALLOC
--void kernel_map_pages(struct page *page, int numpages, int enable)
--{
--
--}
--EXPORT_SYMBOL(kernel_map_pages);
--#endif
-Index: 2.6-poison/arch/s390/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/s390/Kconfig
-+++ 2.6-poison/arch/s390/Kconfig
-@@ -72,6 +72,9 @@ config PGSTE
- config VIRT_CPU_ACCOUNTING
- 	def_bool y
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y
-+
- mainmenu "Linux Kernel Configuration"
- 
- config S390
-Index: 2.6-poison/include/linux/mm_types.h
-===================================================================
---- 2.6-poison.orig/include/linux/mm_types.h
-+++ 2.6-poison/include/linux/mm_types.h
-@@ -94,6 +94,10 @@ struct page {
- 	void *virtual;			/* Kernel virtual address (NULL if
- 					   not kmapped, ie. highmem) */
- #endif /* WANT_PAGE_VIRTUAL */
-+
-+#ifdef CONFIG_PAGE_POISONING
-+	bool poison;
-+#endif /* CONFIG_PAGE_POISONING */
- };
- 
- /*
+There is one IRQ per device on E1000, and one IRQ per board
+that has several devices on skge/sky2.
+
+Your patch doesn't solve the issue when one device is fully up
+and another device is added.
+
+> 
+> What do you think about this - is it possible to change behaviour of 
+> sky2 and skge to the same as in e1000e?
+> 
+> 
+> regards,
+> sdrb
+> 
+
+It is a generic problem with how devices are renamed and IRQ assignments.
+The convention is to use the ethX name in the irq name; this convention
+is also assumed/supported by irqbalance. The problem is that there is no
+exposed interface to rename the irq!
+
+Probably the simplest workaround would be to make request_irq handle
+name overlap.  There is no requirement that /proc/irq exist for proper
+functioning of the device.
+
+More labor intensive solution would be to change the convention to not
+use the mutable network device name, but instead use something like:
+       eth-<drivername>-<counter>
+and for multiq drivers
+       eth-<drivername>-<counter>-tx-N
+That means changing ~200+ drivers.
+
+Another alternative would be to add a rename operation to irq management
+and network device notifications to every network device. This preserves
+existing naming scheme, but requires changing just as many devices
+with added complexity as well.
+
+
