@@ -1,133 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZCCXAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbZCCXDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbZCCXAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 18:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZCCXAG
+	id S1757439AbZCCXDw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 18:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbZCCXDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 18:00:06 -0500
-Received: from n18.bullet.mail.mud.yahoo.com ([68.142.206.145]:46623 "HELO
-	n18.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754653AbZCCXAE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 18:00:04 -0500
-X-Yahoo-Newman-Id: 756766.71191.bm@omp410.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=j1gL8FX7MDvmXRDryNTMC4Xu1i75/w2td3Rb12yGt3HFQF+lxXaoKrglVwzeekIxjXlyxz++DOA6e/SkTRWz1TLTF6MmgqPbn/A+9D0RZ886xeh48BKzetNv+jAe2BoQBpXM9TBSr9s8pHj7ECD3yPc/1KSi3t3ivLU2CEWVEYE=  ;
-X-YMail-OSG: OX5tHfgVM1l4tPKM17O7MFiHNqMdepNxPuhX1qNQwf9IBpaGvmzU1VYJbVjpn.jvIOJKhA93Xk.WiV2tR6WRiSnkQVWh0RxmQnu5khaKciMkag8LA18vbnQlOE7AZAm8RKpkPkEJE6NBU7y2s1c4Ipsz8PU._g_IJWEPIFESI6UHIaM5tOYGpI0cAL_yhv09iw5C4R1ThtksPM0d_l5iiO.Y5mnKuTnitmR2sUmyOowkzu5rxLxDNTvcQRux8sSMfR0LrWatwyaq5VxM1jtvxnCT3aykL8L2uBxNXw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [patch/rfc 2.6.29-rc6 2/2] regulator: twl4030 voltage enumeration (v2)
-Date: Tue, 3 Mar 2009 14:59:59 -0800
-User-Agent: KMail/1.9.10
-Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200902081037.06645.david-b@pacbell.net> <200902261602.58832.david-b@pacbell.net> <1235737930.31223.117.camel@vega.slimlogic.co.uk>
-In-Reply-To: <1235737930.31223.117.camel@vega.slimlogic.co.uk>
+	Tue, 3 Mar 2009 18:03:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45650 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753583AbZCCXDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 18:03:39 -0500
+Date: Wed, 4 Mar 2009 00:03:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Large amount of scsi-sgpool objects
+Message-ID: <20090303230323.GA21644@elte.hu>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr> <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain> <20090303192212.GA20705@elte.hu> <1236115544.15993.22.camel@localhost.localdomain> <20090303214454.GA8288@elte.hu> <1236119990.24019.35.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903031500.00166.david-b@pacbell.net>
+In-Reply-To: <1236119990.24019.35.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 February 2009, Liam Girdwood wrote:
-> Sorry, this didn't apply. It looks like I'm missing an earlier patch(s)
-> here. Could you regenerate this and your core patch against latest
-> for-next.
 
-Here you go.
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-- Dave
+> On Tue, 2009-03-03 at 22:44 +0100, Ingo Molnar wrote:
+> > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > > > So the real question is why does the -rt tree even have 
+> > > > > patches not in the vanilla SCSI tree?  This type of cockup 
+> > > > > clearly demonstrates why it's a bad idea.
+> > > > 
+> > > > Believe me, i have better things to do than to track down your 
+> > > > regressions. I applied a fix/test patch sent to me by SCSI 
+> > > > folks.
+> > > 
+> > > Look, I've no problem with you collecting random patches.  I 
+> > > have a problem when you start pushing random SCSI patches into 
+> > > other trees. [...]
+> > 
+> > Both -tip and -rt are generic trees and there's a connection 
+> > between them that the maintainers of both are one and the same 
+> > set of people.
+> > 
+> > So i'm not sure on what grounds you purport to be able to 
+> > prevent fixes from flowing from -tip into -rt and vice versa.
+> > 
+> > You have no monopoly on the propagation and testing of SCSI 
+> > fixes. We picked up a v1 patch from the SCSI list and did not 
+> > add nor remove anything from it.
+> 
+> OK, let me try and make the problem simpler for you:  If you pick up
+> random patches outside of your area [...]
 
+Dude, lets make it clear to you: it is not "your area" that you 
+own in any way and you have no monopoly on SCSI fixes. We acted 
+out of necessity because the SCSI tree is taking very long to 
+get fixes upstream.
 
-========== CUT HERE
-From: David Brownell <dbrownell@users.sourceforge.net>
+I reported this lockup bug to you on _January 15th_, more than 
+one and a half months ago - and it's still unfixed even today. 
+Alan sent his v2 fix on Feburary 19th - two weeks ago. We are 
+not asking you for much, is it really that hard to act like a 
+proper maintainer and get critical fixes upstream in a timely 
+manner?
 
-Minor cleanups to the twl403 regulator driver, mostly enabled
-by other recent changes:  comments, shrink memory usage, add
-definition for one bit.
+Again, i repeat, i picked up a v1 patch from the SCSI list that 
+i reported and which patch was sent to me. I did that in the 
+hope to fix a serious lockup bug that is still unfixed in the 
+upstream kernel here and today. That kind of bug can cause data 
+corruption and is serious and you should have given full, high 
+priority attention to it - but you didnt.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/regulator/twl4030-regulator.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+A v2 patch was sent too but i missed it because it had the exact 
+same subject line and no 'v2' in its title.
 
---- a/drivers/regulator/twl4030-regulator.c
-+++ b/drivers/regulator/twl4030-regulator.c
-@@ -36,13 +36,13 @@ struct twlreg_info {
- 	/* twl4030 resource ID, for resource control state machine */
- 	u8			id;
- 
-+	/* FIXED_LDO voltage */
-+	u8			deciV;
-+
- 	/* voltage in mV = table[VSEL]; table_len must be a power-of-two */
- 	u8			table_len;
- 	const u16		*table;
- 
--	/* chip constraints on regulator behavior */
--	u16			min_mV;
--
- 	/* used by regulator core */
- 	struct regulator_desc	desc;
- };
-@@ -93,6 +93,7 @@ static int twl4030reg_grp(struct regulat
- #define P3_GRP		BIT(7)		/* "peripherals" */
- #define P2_GRP		BIT(6)		/* secondary processor, modem, etc */
- #define P1_GRP		BIT(5)		/* CPU/Linux */
-+#define WARM_CFG	BIT(4)
- 
- static int twl4030reg_is_enabled(struct regulator_dev *rdev)
- {
-@@ -325,14 +326,14 @@ static int twl4030fixed_list_voltage(str
- {
- 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
- 
--	return info->min_mV * 1000;
-+	return info->deciV * 100 * 1000;
- }
- 
- static int twl4030fixed_get_voltage(struct regulator_dev *rdev)
- {
- 	struct twlreg_info	*info = rdev_get_drvdata(rdev);
- 
--	return info->min_mV * 1000;
-+	return info->deciV * 100 * 1000;
- }
- 
- static struct regulator_ops twl4030fixed_ops = {
-@@ -369,7 +370,7 @@ static struct regulator_ops twl4030fixed
- #define TWL_FIXED_LDO(label, offset, mVolts, num) { \
- 	.base = offset, \
- 	.id = num, \
--	.min_mV = mVolts, \
-+	.deciV = mVolts / 100 , \
- 	.desc = { \
- 		.name = #label, \
- 		.id = TWL4030_REG_##label, \
-@@ -381,7 +382,7 @@ static struct regulator_ops twl4030fixed
- 	}
- 
- /*
-- * We list regulators here if systems need some level of
-+ * We expose regulators here if systems need some level of
-  * software control over them after boot.
-  */
- static struct twlreg_info twl4030_regs[] = {
-@@ -435,6 +436,7 @@ static int twl4030reg_probe(struct platf
- 
- 	/* Constrain board-specific capabilities according to what
- 	 * this driver and the chip itself can actually do.
-+	 * (Regulator core now does this for voltage constraints.)
- 	 */
- 	c = &initdata->constraints;
- 	c->valid_modes_mask &= REGULATOR_MODE_NORMAL | REGULATOR_MODE_STANDBY;
+I did not do this out of fun - i did it to address a serious 
+regression that was unfixed upstream.
 
+If there's a failure here it's yours: your latency and 
+unreliability in SCSI bug fixing is forcing generic trees like 
+-tip or -rt (or -mm) to carry SCSI fixes while it should be 
+_your_ responsibility to act quickly to bugreports and get 
+critical fixes upstream as soon as possible.
 
-
+	Ingo
