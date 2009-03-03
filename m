@@ -1,91 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZCCH1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbZCCHbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbZCCH1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 02:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbZCCH04
+	id S1756234AbZCCHbp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 02:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbZCCHbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 02:26:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35819 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757904AbZCCH0y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 02:26:54 -0500
-Date: Mon, 2 Mar 2009 23:26:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: kernel BUG at kernel/workqueue.c:291
-Message-Id: <20090302232643.7c7ca284.akpm@linux-foundation.org>
-In-Reply-To: <49ABBA44.1060302@aei.mpg.de>
-References: <49A84376.6030800@aei.mpg.de>
-	<49ABBA44.1060302@aei.mpg.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 02:31:35 -0500
+Received: from kroah.org ([198.145.64.141]:35045 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751139AbZCCHbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 02:31:34 -0500
+Date: Mon, 2 Mar 2009 23:30:45 -0800
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jouni Malinen <j@w1.fi>, Sujith <m.sujith@gmail.com>,
+       Sujith <Sujith.Manoharan@atheros.com>,
+       Senthilkumar Balasubramanian 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Subject: Re: Staging, place holder for better company/community development
+	model
+Message-ID: <20090303073045.GA4528@kroah.com>
+References: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Mar 2009 11:51:48 +0100 Carsten Aulbert <carsten.aulbert@aei.mpg.de> wrote:
+On Mon, Mar 02, 2009 at 11:14:56PM -0800, Luis R. Rodriguez wrote:
+> A lot of people really hate the staging tree.
 
-> Hi again,
+They do?  I've not gotten any complaints that I can remember about it.
+
+> I don't but let me tell you why and I'd like to see if you concur with
+> these particular concrete use cases and ideas on how to further use
+> it.
 > 
-> in the mean time 43 of our nodes were struck with this error. It seems
-> that the jobs of a certain user can trigger this bug, however I have no
-> clue how to really trigger it manually.
-
-That's a lot of nodes.
-
-> My questions:
-> Is this a know bug for 2.6.27.14 (we can upgrade to .19 if necessary),
-> but as this file was not modyfied recently, I suspect there is no ready
-> fix for that.
+> The ath9k driver came to many as a big surprise -- and since it was a
+> surprise we had to do the work ourselves as a team at Atheros in
+> closed doors, without the community's involvement until we got
+> something standing up and not smelling as bad. Our own change in
+> direction to work on things upstream can be seen later as well by the
+> release of the 11n Otus driver and documentation provided to
+> interested developers to port it to mac80211 (not to mention similar
+> type of work for ath5k) -- Johannes quickly then ported it and created
+> the ar9170 11n USB driver which is its replacement for otus and
+> targeted for wireless-testing. Otus is currently part of the staging
+> tree. While ar9170 has no 802.11n support users wishing to test 11n
+> USB with an open driver can use the "vendor" driver. The idea is to
+> minimize as time goes by the "port" effort and get things out to the
+> community faster.
 > 
-> Do you need any more info of our systems (Intel X3220 based Supermirco
-> systems), the kernel config (deadline scheduler in use,...) or something
-> else?
+> With future devices we may want to create a better path for
+> integration into upstream drivers. But I also want users to get
+> support for the devices as soon as those devices hit shelves in the
+> market, maybe even before. So I would like to think of staging not
+> only as a place for people to put drivers which a company has no
+> resources to do the right job but also perhaps to _do_ the actual port
+> work _with_ the community together.
 
-Let's cc the NFS developers, see if this rpciod crash is familiar to them?
+This is already happening today, with at least two different network
+drivers, so I have no objection to this at all.
 
-> Carsten Aulbert schrieb:
-> > [228704.928037] ------------[ cut here ]------------
-> > [228704.928224] kernel BUG at kernel/workqueue.c:291!
-> > [228704.928404] invalid opcode: 0000 [1] SMP
-> > [228704.928647] CPU 0
-> > [228704.928852] Modules linked in: lm92 w83793 w83781d hwmon_vid hwmon nfs nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs autofs4 netconsole configfs ipmi_si ipmi_devintf ipmi_watchdog ipmi_poweroff ipmi_msghandler e1000e i2c_i801 8250_pnp 8250 serial_core i2c_core
-> > [228704.930002] Pid: 1609, comm: rpciod/0 Not tainted 2.6.27.14-nodes #1
-> > [228704.930002] RIP: 0010:[<ffffffff8023c6db>]  [<ffffffff8023c6db>] run_workqueue+0x6f/0x102
-> > [228704.930002] RSP: 0018:ffff880214bcdec0  EFLAGS: 00010207
-> > [228704.930002] RAX: 0000000000000000 RBX: ffff880214b82f40 RCX: ffff880215444418
-> > [228704.930002] RDX: ffff880187d07d58 RSI: ffff880214bcdee0 RDI: ffff880215444410
-> > [228704.930002] RBP: ffffffffa0077186 R08: ffff880214bcc000 R09: ffff88021491f808
-> > [228704.930002] R10: 0000000000000246 R11: ffff880187d07d50 R12: ffff880214ad7d28
-> > [228704.930002] R13: ffffffff806065a0 R14: ffffffff80607280 R15: 0000000000000000
-> > [228704.930002] FS:  0000000000000000(0000) GS:ffffffff80636040(0000) knlGS:0000000000000000
-> > [228704.930002] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > [228704.930002] CR2: 00007fc056333fd8 CR3: 00000001ed270000 CR4: 00000000000006e0
-> > [228704.930002] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > [228704.930002] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > [228704.930002] Process rpciod/0 (pid: 1609, threadinfo ffff880214bcc000, task ffff880217b08780)
-> > [228704.930002] Stack:  ffff880214b82f40 ffff880214b82f40 ffff880214b82f58 ffffffff8023cff3
-> > [228704.930002]  0000000000000000 ffff880217b08780 ffffffff8023f7d7 ffff880214bcdef8
-> > [228704.930002]  ffff880214bcdef8 ffffffff806065a0 ffffffff80607280 ffff880214b82f40
-> > [228704.930002] Call Trace:
-> > [228704.930002]  [<ffffffff8023cff3>] ? worker_thread+0x90/0x9b
-> > [228704.930002]  [<ffffffff8023f7d7>] ? autoremove_wake_function+0x0/0x2e
-> > [228704.930002]  [<ffffffff8023cf63>] ? worker_thread+0x0/0x9b
-> > [228704.930002]  [<ffffffff8023f6c2>] ? kthread+0x47/0x75
-> > [228704.930002]  [<ffffffff8022afa8>] ? schedule_tail+0x27/0x5f
-> > [228704.930002]  [<ffffffff8020ccb9>] ? child_rip+0xa/0x11
-> > [228704.930002]  [<ffffffff8023f67b>] ? kthread+0x0/0x75
-> > [228704.930002]  [<ffffffff8020ccaf>] ? child_rip+0x0/0x11
-> > [228704.930002]
-> > [228704.930002]
-> > [228704.930002] Code: 6f 18 48 89 7b 30 48 8b 11 48 8b 41 08 48 89 42 08 48 89 10 48 89 49 08 48 89 09 fe 03 fb 48 8b 41 f8 48 83 e0 fc 48 39 d8 74 04 <0f> 0b eb fe f0 80 61 f8 fe ff d5 65 48 8b 04 25 10 00 00 00 8b
-> > [228704.930002] RIP  [<ffffffff8023c6db>] run_workqueue+0x6f/0x102
-> > [228704.930002]  RSP <ffff880214bcdec0>
-> > [228704.941003] ---[ end trace deef6e5387b5a584 ]---
+> By doing so we get devices supported with whatever ugly piece of code
+> makes the device run (as long as its open, upstreamble, etc) but we
+> also can engage with the community on the actual engineering and
+> future of the actual driver we do want to support in Linux.
 > 
-> Thanks for any input, for reight now I'm quite helpless....
+> As time goes by hopefully staging will not be necessary as companies
+> (like ours) will have an immediate well defined structure for their
+> drivers to easily add support for further devices.
 
+Sounds fine to me.
+
+> If we should take this approach -- should we send patches for wireless
+> staging to John, or Greg? It would still be "crap" so I don't expect
+> John to accept to help maintain crap but what if its crap with a clear
+> defined path to un-crap land?
+
+I'll gladly take them, no objections from me.
+
+thanks,
+
+greg k-h
