@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZCCQp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbZCCQq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbZCCQp7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:45:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756342AbZCCQpk
+	id S1759050AbZCCQq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZCCQqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:45:40 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:22262 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755996AbZCCQpj (ORCPT
+	Tue, 3 Mar 2009 11:46:08 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:32883 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755704AbZCCQqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:45:39 -0500
-Message-ID: <49AD5F03.2050409@oracle.com>
-Date: Tue, 03 Mar 2009 08:46:59 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 3 (cpufreq)
-References: <20090303182633.4ad7831b.sfr@canb.auug.org.au>
-In-Reply-To: <20090303182633.4ad7831b.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.49AD5EA9.002D:SCFSTAT928724,ss=1,fgs=0
+	Tue, 3 Mar 2009 11:46:07 -0500
+Date: Tue, 3 Mar 2009 16:45:49 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
+Message-ID: <20090303164548.GD11096@n2100.arm.linux.org.uk>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk> <20090219121932.GL6407@n2100.arm.linux.org.uk> <13B9B4C6EF24D648824FF11BE896716203772C3680@dlee02.ent.ti.com> <20090223160349.GB27688@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0903021558360.30037@utopia.booyaka.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903021558360.30037@utopia.booyaka.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+On Mon, Mar 02, 2009 at 04:02:14PM -0700, Paul Walmsley wrote:
+> Suggest returning a more specific error than -EINVAL:
 > 
-> Changes since 20090302:
-> 
-> Undropped trees:
-> 	acpi
-> 	v4l-dvb
+> if (clk->usecount > 0)
+>         return -EBUSY;
 
-
-arch/x86/kernel/cpu/cpufreq/longhaul.c:308: error: implicit declaration of function 'acpi_set_register'
-
-
-
-I can't find any such function in the linux-next tree.
-
-
--- 
-~Randy
+Done.
