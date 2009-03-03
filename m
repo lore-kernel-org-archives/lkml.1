@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZCCS2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZCCScN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbZCCS2n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 13:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZCCS2e
+	id S1756144AbZCCScN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 13:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZCCSb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 13:28:34 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:46690 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZCCS2d (ORCPT
+	Tue, 3 Mar 2009 13:31:58 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33908 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbZCCSb5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 13:28:33 -0500
-Date: Tue, 3 Mar 2009 12:28:21 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Cedric Le Goater <legoater@free.fr>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
-       hpa@zytor.com, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090303182821.GA4088@us.ibm.com>
-References: <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226162755.GB1456@x200.localdomain> <20090226173302.GB29439@elte.hu> <20090226223112.GA2939@x200.localdomain> <20090301013304.GA2428@x200.localdomain> <20090301200231.GA25276@us.ibm.com> <20090301205659.GA7276@x200.localdomain> <49AD581F.2090903@free.fr>
+	Tue, 3 Mar 2009 13:31:57 -0500
+Date: Wed, 4 Mar 2009 03:28:02 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Johannes Weiner <jw@emlix.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oskar Schirmer <os@emlix.com>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] binfmt_flat: fix data sections alignment
+Message-ID: <20090303182801.GA6907@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Johannes Weiner <jw@emlix.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Oskar Schirmer <os@emlix.com>, David Howells <dhowells@redhat.com>,
+	Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linux-kernel@vger.kernel.org
+References: <E1LeXY0-0007Fb-KQ@mailer.emlix.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49AD581F.2090903@free.fr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <E1LeXY0-0007Fb-KQ@mailer.emlix.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Cedric Le Goater (legoater@free.fr):
+On Tue, Mar 03, 2009 at 05:33:13PM +0100, Johannes Weiner wrote:
+> The flat loader uses an architecture's flat_stack_align() to align the
+> stack but assumes word-alignment is enough for the data sections.
 > 
-> >> 1. cap_sys_admin check is unfortunate.  In discussions about Oren's
-> >> patchset we've agreed that not having that check from the outset forces
-> >> us to consider security with each new patch and feature, which is a good
-> >> thing.
-> > 
-> > Removing CAP_SYS_ADMIN on restore?
+> However, on the Xtensa S6000 we need an alignment of more than
+> wordsize for data that is loaded to 128bit wide registers.
 > 
-> we've kept the capabilities in our patchset but the user tools doing checkpoint
-> and restart are setcap'ed appropriately to be able to do different things like : 
-> 	
-> 	clone() the namespaces
-> 	mount /dev/mqueue
-> 	interact with net_ns
-> 	etc.
-
-Right, that stuff done in userspace requires capabilities.
-
-> at restart, the task are restarted through execve() so they loose their 
-> capabilities automatically.
+> This patch replaces the specific flat_stack_align() with a more
+> generic flat_data_align() that is then used for both stack, the data
+> and bss section.
 > 
-> but I think we could drop the CAP_SYS_ADMIN tests for some namespaces,
-> uts and ipc are good candidates. I guess network should require some 
-> privilege.  
+> It also fixes m32r which was obviously kaput, aligning an
+> uninitialized stack entry instead of the stack pointer.
+> 
+Can you provide a bit more information about this for your platform? I
+note that while this patch is aimed to generalize things for your
+platform, there is no Xtensa patch included here, making it difficult to
+Ack without having more context to go on.
 
-Eric and i have talked about that a lot, and so far are continuing
-to punt on it.  There are too many possibilities for subtle exploits
-so I'm not suggesting changing those now.
-
-But checkpoint and restart are entirely new.  If at each small step
-we accept that an unprivileged user should be able to use it safely,
-that will lead to a better design, i.e. doing may_ptrace before
-checkpoint, and always doing access checks before re-creating a
-resource.
-
-If we *don't* do that, we'll have a big-stick setuid root checkpoint
-and restart program which isn't at all trustworthy (bc it hasn't
-received due scrutiny at each commit point), but must be trusted by
-anyone wanting to use it.
-
-And if we're too afraid to remove CAP_SYS_ADMIN checks from unsharing
-one innocuous namespace, will we ever convince ourselves to remove it
-from an established feature that can recreate every type of resource on
-the system?
-
--serge
+Based on your description, it looks like you need register size alignment
+in the case where your registers are greater than BYTES_PER_WORD, or the
+pointer size. If this is the case, then you are going to have the same
+issues with the slab caches and need to set ARCH_SLAB_MINALIGN
+accordingly. This is presently a situation that exists for certain ARM
+and SH platforms already today, but none that are actively used in nommu
+configurations. It would be preferable to generalize this, rather than
+duplicating the special-cased alignment.
