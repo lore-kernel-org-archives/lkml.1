@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZCCH1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZCCH1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbZCCH1d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 02:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZCCH1V
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 02:27:21 -0500
-Received: from kroah.org ([198.145.64.141]:44357 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758010AbZCCH1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754919AbZCCH1T (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 3 Mar 2009 02:27:19 -0500
-Date: Mon, 2 Mar 2009 23:26:37 -0800
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Elaboration on "Equivalent fix must already exist in Linus'
-	tree"
-Message-ID: <20090303072637.GB4440@kroah.com>
-References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com> <49ACC6B0.409@garzik.org> <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbZCCH04
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 3 Mar 2009 02:26:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35819 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757904AbZCCH0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 02:26:54 -0500
+Date: Mon, 2 Mar 2009 23:26:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: kernel BUG at kernel/workqueue.c:291
+Message-Id: <20090302232643.7c7ca284.akpm@linux-foundation.org>
+In-Reply-To: <49ABBA44.1060302@aei.mpg.de>
+References: <49A84376.6030800@aei.mpg.de>
+	<49ABBA44.1060302@aei.mpg.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 10:44:40PM -0800, Luis R. Rodriguez wrote:
-> On Mon, Mar 2, 2009 at 9:57 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> > Luis R. Rodriguez wrote:
-> >>
-> >> While extending the documentation for submitting Linux wireless bug
-> >> reports [1] we note the stable series policy on patches -- that of
-> >> having an equivalent fix already in Linus' tree. I find this
-> >> documented in Documentation/stable_kernel_rules.txt but I'm curious if
-> >> there is any other resource which documents this or elaborates on this
-> >> a bit more. I often tell people about this rule or push _really_ hard
-> >> on testing "upstream" but some people tend to not understand. I think
-> >> that elaborating a little on this can help and will hopefully create
-> >> more awareness around the importance of trees like Stephen's
-> >> linux-next tree.
-> >
-> > Just have people google for GregKH's copious messages, telling people a fix
-> > needs to be upstream before it goes into -stable.
-> >
-> > Typically you make things easy by emailing stable@kernel.org with a commit
-> > id.
-> >
-> > There are only two exceptions:
-> > * fix is upstream, but needs to be modified for -stable
-> > * fix is not needed at all in upstream, but -stable still needs it
+On Mon, 02 Mar 2009 11:51:48 +0100 Carsten Aulbert <carsten.aulbert@aei.mpg.de> wrote:
+
+> Hi again,
 > 
-> This certainly helps, I'm also looking for good arguments to support
-> the reasoning behind the policy so that not only will people follow
-> this to help development but _understand_ it and so that they can
-> themselves promote things like linux-next and realize why its so
-> important. Mind you -- upstream for us in wireless for example is not
-> Linus its John's tree so what we promote is not to get the fix first
-> into Linus' tree but first into John's tree. Which is obvious to
-> developers but perhaps not to others.
+> in the mean time 43 of our nodes were struck with this error. It seems
+> that the jobs of a certain user can trigger this bug, however I have no
+> clue how to really trigger it manually.
 
-Who are these "people" that you are trying to convince?  If they aren't
-developers, why would any "others" care about our development
-proceedures?
+That's a lot of nodes.
 
-Heck, very few developers even read the Documentation files, I'd never
-expect an "other" to do that :)
+> My questions:
+> Is this a know bug for 2.6.27.14 (we can upgrade to .19 if necessary),
+> but as this file was not modyfied recently, I suspect there is no ready
+> fix for that.
+> 
+> Do you need any more info of our systems (Intel X3220 based Supermirco
+> systems), the kernel config (deadline scheduler in use,...) or something
+> else?
 
-thanks,
+Let's cc the NFS developers, see if this rpciod crash is familiar to them?
 
-greg k-h
+> Carsten Aulbert schrieb:
+> > [228704.928037] ------------[ cut here ]------------
+> > [228704.928224] kernel BUG at kernel/workqueue.c:291!
+> > [228704.928404] invalid opcode: 0000 [1] SMP
+> > [228704.928647] CPU 0
+> > [228704.928852] Modules linked in: lm92 w83793 w83781d hwmon_vid hwmon nfs nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs autofs4 netconsole configfs ipmi_si ipmi_devintf ipmi_watchdog ipmi_poweroff ipmi_msghandler e1000e i2c_i801 8250_pnp 8250 serial_core i2c_core
+> > [228704.930002] Pid: 1609, comm: rpciod/0 Not tainted 2.6.27.14-nodes #1
+> > [228704.930002] RIP: 0010:[<ffffffff8023c6db>]  [<ffffffff8023c6db>] run_workqueue+0x6f/0x102
+> > [228704.930002] RSP: 0018:ffff880214bcdec0  EFLAGS: 00010207
+> > [228704.930002] RAX: 0000000000000000 RBX: ffff880214b82f40 RCX: ffff880215444418
+> > [228704.930002] RDX: ffff880187d07d58 RSI: ffff880214bcdee0 RDI: ffff880215444410
+> > [228704.930002] RBP: ffffffffa0077186 R08: ffff880214bcc000 R09: ffff88021491f808
+> > [228704.930002] R10: 0000000000000246 R11: ffff880187d07d50 R12: ffff880214ad7d28
+> > [228704.930002] R13: ffffffff806065a0 R14: ffffffff80607280 R15: 0000000000000000
+> > [228704.930002] FS:  0000000000000000(0000) GS:ffffffff80636040(0000) knlGS:0000000000000000
+> > [228704.930002] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > [228704.930002] CR2: 00007fc056333fd8 CR3: 00000001ed270000 CR4: 00000000000006e0
+> > [228704.930002] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [228704.930002] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [228704.930002] Process rpciod/0 (pid: 1609, threadinfo ffff880214bcc000, task ffff880217b08780)
+> > [228704.930002] Stack:  ffff880214b82f40 ffff880214b82f40 ffff880214b82f58 ffffffff8023cff3
+> > [228704.930002]  0000000000000000 ffff880217b08780 ffffffff8023f7d7 ffff880214bcdef8
+> > [228704.930002]  ffff880214bcdef8 ffffffff806065a0 ffffffff80607280 ffff880214b82f40
+> > [228704.930002] Call Trace:
+> > [228704.930002]  [<ffffffff8023cff3>] ? worker_thread+0x90/0x9b
+> > [228704.930002]  [<ffffffff8023f7d7>] ? autoremove_wake_function+0x0/0x2e
+> > [228704.930002]  [<ffffffff8023cf63>] ? worker_thread+0x0/0x9b
+> > [228704.930002]  [<ffffffff8023f6c2>] ? kthread+0x47/0x75
+> > [228704.930002]  [<ffffffff8022afa8>] ? schedule_tail+0x27/0x5f
+> > [228704.930002]  [<ffffffff8020ccb9>] ? child_rip+0xa/0x11
+> > [228704.930002]  [<ffffffff8023f67b>] ? kthread+0x0/0x75
+> > [228704.930002]  [<ffffffff8020ccaf>] ? child_rip+0x0/0x11
+> > [228704.930002]
+> > [228704.930002]
+> > [228704.930002] Code: 6f 18 48 89 7b 30 48 8b 11 48 8b 41 08 48 89 42 08 48 89 10 48 89 49 08 48 89 09 fe 03 fb 48 8b 41 f8 48 83 e0 fc 48 39 d8 74 04 <0f> 0b eb fe f0 80 61 f8 fe ff d5 65 48 8b 04 25 10 00 00 00 8b
+> > [228704.930002] RIP  [<ffffffff8023c6db>] run_workqueue+0x6f/0x102
+> > [228704.930002]  RSP <ffff880214bcdec0>
+> > [228704.941003] ---[ end trace deef6e5387b5a584 ]---
+> 
+> Thanks for any input, for reight now I'm quite helpless....
+
