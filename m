@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZCCScN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZCCSno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbZCCScN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 13:32:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZCCSb6
+	id S1755497AbZCCSno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 13:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZCCSnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 13:31:58 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33908 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752688AbZCCSb5 (ORCPT
+	Tue, 3 Mar 2009 13:43:35 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:53663 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbZCCSne convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 13:31:57 -0500
-Date: Wed, 4 Mar 2009 03:28:02 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Johannes Weiner <jw@emlix.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oskar Schirmer <os@emlix.com>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] binfmt_flat: fix data sections alignment
-Message-ID: <20090303182801.GA6907@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Johannes Weiner <jw@emlix.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Oskar Schirmer <os@emlix.com>, David Howells <dhowells@redhat.com>,
-	Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-kernel@vger.kernel.org
-References: <E1LeXY0-0007Fb-KQ@mailer.emlix.com>
+	Tue, 3 Mar 2009 13:43:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kA9hfqPLcNqi7iWAFXSGF1rsB9PrsOZqoyK9XQQUrnNe27QrgSlILvAkg0XkLwTQrg
+         SSXtkg0Fr1Dr73AW2ArGPFM1KynnIQJEHOvWvrkesSdkxEWHaUprdZIsoXv4Suk8VVvL
+         jJp6Hrny24Zg9PWd5gd2j5ux7derpDZBaTX1Q=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LeXY0-0007Fb-KQ@mailer.emlix.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <49AD7361.308@s5r6.in-berlin.de>
+References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
+	 <49ACC6B0.409@garzik.org>
+	 <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>
+	 <20090303072637.GB4440@kroah.com>
+	 <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
+	 <49AD4C74.1060704@s5r6.in-berlin.de>
+	 <43e72e890903030923v27c47f5anc184c0e8085bc5c1@mail.gmail.com>
+	 <49AD7361.308@s5r6.in-berlin.de>
+Date: Tue, 3 Mar 2009 10:43:32 -0800
+Message-ID: <43e72e890903031043m1fe417eay4420e734064a5882@mail.gmail.com>
+Subject: Re: Elaboration on "Equivalent fix must already exist in Linus' tree"
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 05:33:13PM +0100, Johannes Weiner wrote:
-> The flat loader uses an architecture's flat_stack_align() to align the
-> stack but assumes word-alignment is enough for the data sections.
-> 
-> However, on the Xtensa S6000 we need an alignment of more than
-> wordsize for data that is loaded to 128bit wide registers.
-> 
-> This patch replaces the specific flat_stack_align() with a more
-> generic flat_data_align() that is then used for both stack, the data
-> and bss section.
-> 
-> It also fixes m32r which was obviously kaput, aligning an
-> uninitialized stack entry instead of the stack pointer.
-> 
-Can you provide a bit more information about this for your platform? I
-note that while this patch is aimed to generalize things for your
-platform, there is no Xtensa patch included here, making it difficult to
-Ack without having more context to go on.
+On Tue, Mar 3, 2009 at 10:13 AM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Luis R. Rodriguez wrote:
+>> On Tue, Mar 3, 2009 at 7:27 AM, Stefan Richter
+>> <stefanr@s5r6.in-berlin.de> wrote:
+>>> Luis R. Rodriguez wrote:
+>>>> OK small silly example is convincing distributions it may be a good
+>>>> idea to carry linux-next kernel packages as options to users to
+>>>> hopefully down the road reduce the delta between what they carry and
+>>>> what is actually upstream.
+>>> Distros would do their users a bigger favour if [...]
+>>
+>> I don't think I was very clear in what I meant about "carrying
+>> linux-next kernel packages as an option". What I meant was carrying it
+>> just as an option for those users who want to test bleeding edge
+>> without compiling their own linux-next, _not_ to merge linux-next
+>> things into their own default kernel release and shove it down users
+>> throats.
+>
+> Sorry, I meant "bigger favour" relative to carrying an own delta of
+> considerable size.
+>
+> Packaging linux-next would be fine if the workload isn't a problem for
+> the packager.  As pointed out elsewhere, there are caveats with
+> linux-next (e.g. a functionality which was in it yesterday could be gone
+> today because of a merge issue), but that's the nature of bleeding edge
+> of course.
 
-Based on your description, it looks like you need register size alignment
-in the case where your registers are greater than BYTES_PER_WORD, or the
-pointer size. If this is the case, then you are going to have the same
-issues with the slab caches and need to set ARCH_SLAB_MINALIGN
-accordingly. This is presently a situation that exists for certain ARM
-and SH platforms already today, but none that are actively used in nommu
-configurations. It would be preferable to generalize this, rather than
-duplicating the special-cased alignment.
+Sure, understood. That's all I meant really.
+
+My argument here I guess is that the reasons used to support the
+"equivalent fix" policy for patches upstream makes it apparent why
+linux-next is so important and my hope would be to get it more
+exposure by having distributions let users test it (as an option to go
+with bleeding edge) and this in turn help stabilize code in our next
+release.
+
+But I certainly don't expect every distribution to carry such a
+package, nor would I expect them to want to deal with it. Just wanted
+to build a good case for distributions to consider it.
+
+  Luis
