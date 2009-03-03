@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZCCPSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZCCPSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbZCCPSe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 10:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZCCPSZ
+	id S1756872AbZCCPSr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 10:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbZCCPSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 10:18:25 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:24764 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751994AbZCCPSY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 10:18:24 -0500
-Date: Tue, 03 Mar 2009 09:18:11 -0600
-From: Corey Minyard <minyard@acm.org>
-To: Andrew Morton <akpm@osdl.org>, Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
-Subject: [PATCH 1/5] IPMI: Fix platform return check
-Message-id: <20090303151811.GA7777@minyard.local>
-Reply-to: minyard@acm.org
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Mar 2009 10:18:30 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:33454 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754677AbZCCPS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 10:18:29 -0500
+Date: Tue, 3 Mar 2009 09:18:27 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/6 v6] SGI RTC: export schedule_on_each_cpu
+Message-ID: <20090303151827.GD20120@sgi.com>
+References: <20090303151044.GA20016@sgi.com> <20090303151357.GA20120@sgi.com> <20090303151524.GB20120@sgi.com> <20090303151657.GC20120@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090303151657.GC20120@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The wrong return value is being tested when allocating a platform
-device in the IPMI SI code.  Check the right value.
+Export schedule_on_each_cpu().
 
-Signed-off-by: Corey Minyard <minyard@acm.org>
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+
 ---
-Index: linux-2.6.25/drivers/char/ipmi/ipmi_si_intf.c
+
+ kernel/workqueue.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux/kernel/workqueue.c
 ===================================================================
---- linux-2.6.25.orig/drivers/char/ipmi/ipmi_si_intf.c
-+++ linux-2.6.25/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2864,7 +2864,7 @@ static int try_smi_init(struct smi_info 
- 		 */
- 		new_smi->pdev = platform_device_alloc("ipmi_si",
- 						      new_smi->intf_num);
--		if (rv) {
-+		if (!new_smi->pdev) {
- 			printk(KERN_ERR
- 			       "ipmi_si_intf:"
- 			       " Unable to allocate platform device\n");
+--- linux.orig/kernel/workqueue.c	2009-03-02 08:20:32.000000000 -0600
++++ linux/kernel/workqueue.c	2009-03-02 08:20:57.000000000 -0600
+@@ -705,6 +705,7 @@ int schedule_on_each_cpu(work_func_t fun
+ 	free_percpu(works);
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(schedule_on_each_cpu);
+ 
+ void flush_scheduled_work(void)
+ {
