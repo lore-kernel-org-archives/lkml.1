@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZCCUdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbZCCUg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbZCCUdp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 15:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZCCUdh
+	id S1756035AbZCCUg7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 15:36:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZCCUgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 15:33:37 -0500
-Received: from hera.cwi.nl ([192.16.191.8]:60426 "EHLO hera.cwi.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750915AbZCCUdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 15:33:36 -0500
-X-Greylist: delayed 1661 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Mar 2009 15:33:36 EST
-Date: Tue, 3 Mar 2009 21:05:31 +0100
-From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-To: linux-kernel@vger.kernel.org
-Subject: ext3 duplicate entries with readdir
-Message-ID: <20090303200526.GA20236@ub>
+	Tue, 3 Mar 2009 15:36:51 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:14818 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbZCCUgu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 15:36:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=eJE/4CdiLuFi4/KGZZeguc5eir3cWgbfde92cG/uYru/r589S2W8Qq0fWAOEvSZ/ic
+         afeZa4S/q8fcbKVyqnUdfrxBZeSeNygGQIW9Oif0j2pA4p0pIh9nC0DKhq8bX9qfBQZx
+         DHYWewECar6KMrnpYGHtV1gkzSyLkc1WjXHwk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Tue, 3 Mar 2009 12:36:48 -0800
+Message-ID: <dd18b0c30903031236t6ed1adaen64507b0ab4be34a4@mail.gmail.com>
+Subject: scripts/unifdef.c:209: error: conflicting types for 'getline'
+From: Justin Mattock <justinmattock@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In a largish directory (21292 files) a scan using ext3 readdir
-found 21293 files, returning one entry twice.
+Hello;
+I am unable to compile the kernel
+(just did a git pull a few minuets ago);
+here is what I see:
 
-Google "ext3 readdir twice" gives me a handful of identical complaints.
-I see reports from 2002-2008.
-So, this is an old and well-known symptom but seemingly still not fixed,
-at least not in the kernel on this machine here.
-This report is for Fedora release 8 (Werewolf) with kernel 2.6.24.5.
+WARNING: modpost: Found 1 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+  KSYM    .tmp_kallsyms1.S
+   AS      .tmp_kallsyms1.o
+  LD      .tmp_vmlinux2
+  KSYM    .tmp_kallsyms2.S
+  AS      .tmp_kallsyms2.o
+  CHK     include/linux/version.h
+  HOSTCC  scripts/unifdef
+scripts/unifdef.c:209: error: conflicting types for 'getline'
+/usr/include/stdio.h:651: note: previous declaration of 'getline' was here
+make[2]: *** [scripts/unifdef] Error 1
+make[1]: *** [__headers] Error 2
+make: *** [vmlinux] Error 2
 
-A 2002 post says "This is unfortunate, but the chances of our hitting
-this failure are relatively small".
+The only change to .config was:
 
-In http://www.redhat.com/archives/ext3-users/2008-August/msg00009.html
-tytso seems to understand what happens: a hash collision.
-But has this been fixed in the current tree?
+SYSFS_DEPRECATED_V2 [=y]
+to
+SYSFS_DEPRECATED_V2 [=n]
+to see if I can make udev from:
 
+udev: starting version 137
+[    7.557317] udev: deprecated sysfs layout; update the kernel or disable
+CONFIG_SYSFS_DEPRECATED; some udev features will not work correctly
 
-Andries
+giving me this message.
 
+also I did use a CFLAGS when compiling,
+but never received this when doing so for:
+2.6.29-rc5-00289-g460c133
 
-Thomas Trauner gave a test program. It prints
-expected 25989 files, but readdir reports 25990
+any info would be appreciated.
 
-So, yes, this is reproducible.
+regards;
 
-
+-- 
+Justin P. Mattock
