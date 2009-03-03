@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZCCPCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZCCPK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbZCCPCn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 10:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZCCPCY
+	id S1755045AbZCCPK7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 10:10:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZCCPKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 10:02:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48100 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753475AbZCCPCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 10:02:23 -0500
-Date: Tue, 3 Mar 2009 16:02:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, mingo@goodmis.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] fix for tip/tracing/ftrace
-Message-ID: <20090303150207.GA21686@elte.hu>
-References: <alpine.DEB.2.00.0903030954001.24890@gandalf.stny.rr.com>
+	Tue, 3 Mar 2009 10:10:51 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:41508 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753292AbZCCPKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 10:10:50 -0500
+Date: Tue, 3 Mar 2009 09:10:44 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6 v6] SGI RTC: add clocksource/clockevent driver and
+	generic vector
+Message-ID: <20090303151044.GA20016@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903030954001.24890@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following patches provide a driver for synchronized RTC clocksource and
+clockevents for SGI systems, as well as a generic system interrupt.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+With these patches, a module can be installed that registers the system-wide
+synchronized RTC clocksource and timers as both a clocksource and clockevents
+device running in high resolution mode.
 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (1):
->       tracing: fix return value to registering events
-> 
-> ----
->  kernel/trace/trace_events_stage_3.h |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
 
-Pulled, thanks Steve!
+Subject: [PATCH 1/6 v6] SGI RTC: add generic system interrupt
+Subject: [PATCH 2/6 v6] SGI RTC: export clocksource_unregister
+Subject: [PATCH 3/6 v6] SGI RTC: export clockevents_register_device
+Subject: [PATCH 4/6 v6] SGI RTC: export schedule_on_each_cpu
+Subject: [PATCH 5/6 v6] SGI RTC: loop through installed UV blades
+Subject: [PATCH 6/6 v6] SGI RTC: add clocksource driver
 
-	Ingo
