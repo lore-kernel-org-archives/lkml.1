@@ -1,128 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZCCQ2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZCCQcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209AbZCCQ2f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbZCCQ2Y
+	id S1756846AbZCCQcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZCCQcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:28:24 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:19392 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754269AbZCCQ2X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:28:23 -0500
-Date: Tue, 3 Mar 2009 10:28:21 -0600
-From: scameron@beardog.cca.cpqcorp.net
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
-Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-Message-ID: <20090303162821.GB15340@beardog.cca.cpqcorp.net>
-References: <20090302145650.GW15340@beardog.cca.cpqcorp.net> <20090303153402A.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090303153402A.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.9i
+	Tue, 3 Mar 2009 11:32:05 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43026 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753375AbZCCQcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:32:02 -0500
+Message-ID: <49AD5B55.10002@redhat.com>
+Date: Tue, 03 Mar 2009 11:31:17 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH] x86: make text_poke() atomic using fixmap
+References: <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <49AC7453.8020307@redhat.com> <20090303002214.GA4147@elte.hu> <49AC7A5F.7080009@redhat.com>
+In-Reply-To: <49AC7A5F.7080009@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 03:35:26PM +0900, FUJITA Tomonori wrote:
-> On Mon, 2 Mar 2009 08:56:50 -0600
-> scameron@beardog.cca.cpqcorp.net wrote:
+Masami Hiramatsu wrote:
+> Ingo Molnar wrote:
+>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>>
+>>> Ingo Molnar wrote:
+>>>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>>>>
+>>>>> Ingo Molnar wrote:
+>>>>>>>> So perhaps another approach to (re-)consider would be to go back 
+>>>>>>>> to atomic fixmaps here. It spends 3 slots but that's no big 
+>>>>>>>> deal.
+>>>>>>> Oh, it's a good idea! fixmaps must make it simpler.
+>>>>>>>
+>>>>>>>> In exchange it will be conceptually simpler, and will also scale 
+>>>>>>>> much better than a global spinlock. What do you think?
+>>>>>>> I think even if I use fixmaps, we have to use a spinlock to protect
+>>>>>>> the fixmap area from other threads...
+>>>>>> that's why i suggested to use an atomic-kmap, not a fixmap.
+>>>>> Even if the mapping is atomic, text_poke() has to protect pte
+>>>>> from other text_poke()s while changing code.
+>>>>> AFAIK, atomic-kmap itself doesn't ensure that, does it?
+>>>> Well, but text_poke() is not a serializing API to begin with. 
+>>>> It's normally used in code patching sequences when we 'know' 
+>>>> that there cannot be similar parallel activities. The kprobes 
+>>>> usage of text_poke() looks unsafe - and that needs to be fixed.
+>>> Oh, kprobes already prohibited parallel arming/disarming
+>>> by using kprobe_mutex. :-)
+>> yeah, but still the API is somewhat unsafe.
 > 
-> > [...]
-> > > > +     .this_id                = -1,
-> > > > +     .sg_tablesize           = MAXSGENTRIES,
-> > > 
-> > > MAXSGENTRIES (32) is the limitation of hardware? If not, it might be
-> > > better to enlarge this for better performance?
-> > 
-> > Yes, definitely, though this value varies from controller to controller,
-> > so this is just a default value that needs to be overridden, probably
-> > in hpsa_scsi_detect().
+> Yeah, kprobe_mutex protects text_poke from other kprobes, but
+> not from other text_poke() users...
 > 
-> I see. If we override this in hpsa_scsi_detect(), we need a trick for
-> SG in CommandList_struct, I guess.
-
-Yes.  There are some limits to what can be put into CommandList_struct
-directly, but there is also scatter gather chaining, in which we use
-the last element in the CommandList_struct to point to another buffer
-of SG entries.
-
-If you have a system with a lot of controllers, having a large number of 
-scatter gathers can be a bit of a memory hog, and since this memory is all
-via pci_alloc_consistent, that can be a concern.  It would be nice if
-there was a way for the user to specify differing amounts of scatter
-gathers for different controller instances so for instance the controller
-which he's running his big oracle database, or webserver or whatever on
-gets lots, while the controller he's booted from that's mostly idle
-gets not so many.  I don't know what a good way for a user to identify
-what controller he's talking about in a module parameter would be 
-though.  Maybe by pci domain/bus/device/function?  Maybe something along
-the lines of:
-
-	modprobe hpsa dev1=0:0e:00.0 sg1=1000 dev2=0:0b:00.0 sg2=31
-
-to say that one controller gets 1000 scatter gather elements, but
-another gets only 31.  But PCI busses can change if hardware 
-configuration changes, and this isn't exactly obvious, so seems less
-than ideal.  Any bright ideas on that front?
-
-We have some specialized versions of cciss around that have variable
-sized SG arrays in CommandList_struct as well as doing scatter gather
-chaining (not to be confused with the scatter gather chaining concept
-in the scsi mid layer.)
-
-[...snip...]
+>> In any case, you also answered your own question:
+>>
+>>>>> Even if the mapping is atomic, text_poke() has to protect pte
+>>>>> from other text_poke()s while changing code.
+>>>>> AFAIK, atomic-kmap itself doesn't ensure that, does it?
+>> kprobe_mutex does that.
 > 
+> Anyway, text_edit_lock ensures that.
 > 
-> > > > + * For operations that cannot sleep, a command block is allocated at init,
-> > > > + * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
-> > > > + * which ones are free or in use.  Lock must be held when calling this.
-> > > > + * cmd_free() is the complement.
-> > > > + */
-> > > > +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
-> > > > +{
-> > > > +     struct CommandList_struct *c;
-> > > > +     int i;
-> > > > +     union u64bit temp64;
-> > > > +     dma_addr_t cmd_dma_handle, err_dma_handle;
-> > > > +
-> > > > +     do {
-> > > > +             i = find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
-> > > > +             if (i == h->nr_cmds)
-> > > > +                     return NULL;
-> > > > +     } while (test_and_set_bit
-> > > > +              (i & (BITS_PER_LONG - 1),
-> > > > +               h->cmd_pool_bits + (i / BITS_PER_LONG)) != 0);
-> > > 
-> > > Using bitmap to manage free commands looks too complicated a bit to
-> > > me. Can we just use lists for command management?
-> > 
-> > Hmm, this doesn't seem all that complicated to me, and this code snippet
-> > has been pretty stable for about 10 years. it's nearly identical to what's in
-> > cpqarray in the 2.2.13 kernel from 1999:
-> > 
-> >                 do {
-> >                         i = find_first_zero_bit(h->cmd_pool_bits, NR_CMDS);
-> >                         if (i == NR_CMDS)
-> >                                 return NULL;
-> >                 } while(test_and_set_bit(i%32, h->cmd_pool_bits+(i/32)) != 0)
-> > 
-> > It's fast, works well, and has needed very little maintenance over the 
-> > years.  Without knowing what you have in mind specifically, I don't see a
-> > big need to change this.
-> 
-> I see. Seems that some drivers want something similar. I might come
-> back later on with a patch to replace this with library
-> functions.
+> By the way, I think set_fixmap/clear_fixmap seems simpler than
+> kmap_atomic() variant. Would you think improving kmap_atomic_prot()
+> is better?
 
-There was some other discussion about pushing this sort of thing to 
-upper layers, using a tag generated in the scsi layer as a means
-of allocating driver command buffers, since, presumably there's a
-one to one mapping.  (I didn't completely grok it all though.)
+Hi Ingo,
 
--- steve
+Here is the patch which uses fixmaps instead of vmap in text_poke().
+This made the code much simpler than I thought :).
+
+Thanks,
+
+----
+Use fixmaps instead of vmap/vunmap in text_poke() for avoiding page allocation
+and delayed unmapping.
+
+At the result of above change, text_poke() becomes atomic and can be called
+from stop_machine() etc.
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/x86/include/asm/fixmap_32.h |    2 ++
+ arch/x86/include/asm/fixmap_64.h |    2 ++
+ arch/x86/kernel/alternative.c    |   18 ++++++++++++------
+ 3 files changed, 16 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/fixmap_32.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/fixmap_32.h
++++ linux-2.6/arch/x86/include/asm/fixmap_32.h
+@@ -81,6 +81,8 @@ enum fixed_addresses {
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
++	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
++	FIX_TEXT_POKE1,
+ 	__end_of_permanent_fixed_addresses,
+ 	/*
+ 	 * 256 temporary boot-time mappings, used by early_ioremap(),
+Index: linux-2.6/arch/x86/include/asm/fixmap_64.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/fixmap_64.h
++++ linux-2.6/arch/x86/include/asm/fixmap_64.h
+@@ -49,6 +49,8 @@ enum fixed_addresses {
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
++	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
++	FIX_TEXT_POKE1,
+ 	__end_of_permanent_fixed_addresses,
+ #ifdef CONFIG_ACPI
+ 	FIX_ACPI_BEGIN,
+Index: linux-2.6/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/alternative.c
++++ linux-2.6/arch/x86/kernel/alternative.c
+@@ -12,7 +12,9 @@
+ #include <asm/nmi.h>
+ #include <asm/vsyscall.h>
+ #include <asm/cacheflush.h>
++#include <asm/tlbflush.h>
+ #include <asm/io.h>
++#include <asm/fixmap.h>
+
+ #define MAX_PATCH_LEN (255-1)
+
+@@ -495,12 +497,13 @@ void *text_poke_early(void *addr, const
+  * It means the size must be writable atomically and the address must be aligned
+  * in a way that permits an atomic write. It also makes sure we fit on a single
+  * page.
++ *
++ * Note: Must be called under text_mutex.
+  */
+ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+ {
+ 	unsigned long flags;
+ 	char *vaddr;
+-	int nr_pages = 2;
+ 	struct page *pages[2];
+ 	int i;
+
+@@ -513,14 +516,17 @@ void *__kprobes text_poke(void *addr, co
+ 		pages[1] = virt_to_page(addr + PAGE_SIZE);
+ 	}
+ 	BUG_ON(!pages[0]);
+-	if (!pages[1])
+-		nr_pages = 1;
+-	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+-	BUG_ON(!vaddr);
++	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
++	if (pages[1])
++		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
++	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
+ 	local_irq_save(flags);
+ 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+ 	local_irq_restore(flags);
+-	vunmap(vaddr);
++	clear_fixmap(FIX_TEXT_POKE0);
++	if (pages[1])
++		clear_fixmap(FIX_TEXT_POKE1);
++	local_flush_tlb();
+ 	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
