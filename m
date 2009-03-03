@@ -1,78 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZCCDxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbZCCD66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZCCDxf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 22:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZCCDx0
+	id S1756208AbZCCD66 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 22:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZCCD6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 22:53:26 -0500
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:21205 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753631AbZCCDxZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 22:53:25 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CagJXu8G2MocxoO8uHD9QD8umNMu7uFMPH2zNxC48M42igK1Z/JBYfyPdz6kW2qAt1ODkjMgZVRBuiGNQh6GnKsVp8ZKJwqimtO4Uyh2wJ7ArvPe1IAawUTetB0D6rQgd9fEoqL74731OuMEKX6rl8/WDRqkcE+nXPK/+K8Nyqo=  ;
-X-YMail-OSG: 5lmN84kVM1mZmCZCsfbBirrdAmi7LFmyQ_BHiGjP4TKfHGyI486brjQ5S2gucUoLRiHQ.u0ALV_cK5QZzXGtewpQPYcB9u2fZriMffb00KZLdJSIkuy2pwmD2kmMG.ds3_RCVZVj5XCs3iQG8R4nMyGmEPYSfK3YLp0xt3jPoFJWctS15FLYAzxF5.Opx_Nd72_1370l8tic6MRDNhuBd4w.NuJ7Y23..UQ-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: Question regarding concurrent accesses through block device and fs
-Date: Tue, 3 Mar 2009 14:52:42 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <m2hc2yulrw.fsf@gmail.com> <200903021811.43653.nickpiggin@yahoo.com.au> <38b2ab8a0903020530j18921202r32f73382ff5f0aa@mail.gmail.com>
-In-Reply-To: <38b2ab8a0903020530j18921202r32f73382ff5f0aa@mail.gmail.com>
+	Mon, 2 Mar 2009 22:58:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52663 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751817AbZCCD6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 22:58:49 -0500
+Message-ID: <49ACAAAF.90300@kernel.org>
+Date: Mon, 02 Mar 2009 19:57:35 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Huang Ying <ying.huang@intel.com>
+CC: Brian Maly <bmaly@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix e820 end address with EFI
+References: <49A965AD.10701@redhat.com>	 <86802c440902282142p14f623b8td8a88600ff2a6bbe@mail.gmail.com>	 <49AAEC79.3000808@redhat.com>	 <1235956068.6204.143.camel@yhuang-dev.sh.intel.com>	 <49AB38E7.60305@redhat.com>	 <1235960016.6204.170.camel@yhuang-dev.sh.intel.com>	 <49AB4171.7000508@kernel.org>	 <1235960708.6204.176.camel@yhuang-dev.sh.intel.com>	 <49AB4521.8010909@kernel.org>	 <1235961428.6204.190.camel@yhuang-dev.sh.intel.com>	 <86802c440903011851t17e240eu9dc25116a40ca85e@mail.gmail.com>	 <1235979959.6204.212.camel@yhuang-dev.sh.intel.com>	 <49AC51D7.1080203@kernel.org>	 <1236042459.6204.226.camel@yhuang-dev.sh.intel.com>	 <49AC87AE.60001@kernel.org>	 <1236046936.6204.243.camel@yhuang-dev.sh.intel.com>	 <49AC9B99.5020000@kernel.org> <1236049574.6204.253.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1236049574.6204.253.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903031452.43086.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 March 2009 00:30:18 Francis Moreau wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> > On Monday 02 March 2009 08:07:30 Francis Moreau wrote:
-> >> This is the case where I can't find when the metadata are actually
-> >> written back to the disk by the flushers. I looked at
-> >> writback_inodes() but I fail to find this out.
-> >>
-> >> Could you point out the place in the code where this happen ?
-> >
-> > I guess it picks them up via their block device inodes.
->
-> Probably but I don't find the actual place.
+Huang Ying wrote:
+> On Tue, 2009-03-03 at 10:53 +0800, Yinghai Lu wrote:
+>> Huang Ying wrote:
+>>> On Tue, 2009-03-03 at 09:28 +0800, Yinghai Lu wrote:
+>>>> Huang Ying wrote:
+>>>>> On Tue, 2009-03-03 at 05:38 +0800, Yinghai Lu wrote:
+>>>>>> Huang Ying wrote:
+>>>>>>> On Mon, 2009-03-02 at 10:51 +0800, Yinghai Lu wrote:
+>>>>>>>> On Sun, Mar 1, 2009 at 6:37 PM, Huang Ying <ying.huang@intel.com> wrote:
+>>>>>>>>>> so 64bit could use ioremap_cache() too?
+>>>>>>>>>> we may keep 32bit and 64bit a bit consistent.
+>>>>>>>>> If we use ioremap_cache(), kexec runtime service will not work in kexec
+>>>>>>>>> situation, which needs EFI runtime memory area to be mapped at exact
+>>>>>>>>> same location across kexec. I think we should support kexec if possible.
+>>>>>>>> sure.
+>>>>>>>>
+>>>>>>>> please don't touch max_low_pfn_mapped, because some range may not
+>>>>>>>> directly mapped under those efi run-time code
+>>>>>>> Find an issue to use init_memory_mapping() here.
+>>>>>>>
+>>>>>>> If the memory range to be mapped is less than 2M, the last mapped
+>>>>>>> address may be next 2M aligned position, this may lead mapping
+>>>>>>> overlapping between memory range. Such as:
+>>>>>>>
+>>>>>>> 0x3f388000 - 0x3f488000: real mapped	0x3f388000 - 0x3f600000
+>>>>>>> 0x3f590000 - 0x3f5bb000: real mapped	0x3f590000 - 0x3f600000
+>>>>>>>
+>>>>>>> The problem is that the memory range 0x3f400000 - 0x3f590000 is left not
+>>>>>>> mapped!
+>>>>>> what is max_low_pfn_mapped before that?
+>>>>> I don't know exactly what you mean. Can you elaborate a little?
+>>>>>
+>>>>> 0 ~ max_low_pfn_mapped ~ max_pfn_mapped can be mapped with
+>>>>> init_memory_mapping() properly.
+>>>>>
+>>>>> The issue of above example is that 0x3f400000 ~ 0x3f488000 is a
+>>>>> sub-range of 0x3f388000 ~ 0x3f488000, which should be mapped but is left
+>>>>> not mapped.
+>>>> what is max_low_pfn_mapped?
+>>>>
+>>>> what is init_memory_mapping() printout?
+>>> This does not comes from a real test case. To test the changes I made, I
+>>> make efi_ioremap() being used even if the corresponding memory range is
+>>> below max_low_pfn_mapped. The dmesg of test is attached with the mail.
+>>>
+>>> The printout of init_memory_mapping shows:
+>>>
+>>> init_memory_mapping: 000000003f488000-000000003f4bb000                          
+>>> last_map_addr: 3f600000 end: 3f4bb000
+>>> init_memory_mapping: 000000003f590000-000000003f5bb000                          
+>>> last_map_addr: 3f600000 end: 3f5bb000
+>> init_memory_mapping: 0000000000000000-000000003f700000                          
+>>
+>> last_map_addr: 3f700000 end: 3f700000                                           
+>>
+>> (6 early reservations) ==> bootmem [0000000000 - 003f700000]
+>>
+>> so max_low_pfn_mapped is (3f700000>>12)
+>> and you try to init_memory_mapping again before it
+> 
+> Yes. Just for testing, I want to use efi_ioremap() on more memory range
+> to test.
+> 
+>>> init_memory_mapping: 00000000fffb0000-00000000fffba000                          
+>>> last_map_addr: 100000000 end: fffba000
+>> this one is interesting... got over mapped...
+>>> So I think it is possible to have the issue I mentioned above.
+>> looks like.
+> 
+> So, If you have no time, I can try to fix that. Do you think
+> init_memory_mapping should stop at specified end page?
 
-It was an educated guess ;) I'm quite sure it does.
+you may boot with debug, so could figure out how init_memory_mapping want to map the range.
 
+it should stop at specified end page at least with 64bit.
 
-> I looked at the place where page are normally written back to disk (ie
-> in background_writeout()) but I can see only the writeback of data, not
-> metadata...
-
-What are you expecting writeback of metadata to look like? To the
-core kernel it looks the same as writeback of data.
-
-
-> >> This sounds very weird to me but I need to learn how things work
-> >> before doing any serious comments.
-> >
-> > Why would they? They just operate on their metadata, and the buffer
-> > cache is basically a transparent writeback cache to them.
->
-> Well the fact that metadata are written back to disk at an unknown point
-> in the time means that we don't know in which order metadata and data
-> are written. So it means that data can be written before or after
-> metadata or they can be mixed up.
-
-But the cache layer on top of that ensures it *appears* not to be mixed
-up. A problem arises when the system crashes in the middle of this, and
-we lose that information and see a mixed up filesystem. Hence journalling
-filesystems.
-
-
+YH
