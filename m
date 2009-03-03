@@ -1,96 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbZCCTWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZCCT2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757707AbZCCTWi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 14:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756472AbZCCTW2
+	id S1754990AbZCCT2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 14:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbZCCT2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 14:22:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34016 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756505AbZCCTW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 14:22:27 -0500
-Date: Tue, 3 Mar 2009 20:22:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-Subject: Re: Large amount of scsi-sgpool objects
-Message-ID: <20090303192212.GA20705@elte.hu>
-References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr> <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain>
+	Tue, 3 Mar 2009 14:28:06 -0500
+Received: from clegg.madduck.net ([193.242.105.96]:60494 "EHLO
+	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbZCCT2F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 14:28:05 -0500
+Date: Tue, 3 Mar 2009 20:27:47 +0100
+From: martin f krafft <madduck@madduck.net>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: /proc/sys/net/ip*/conf/all/* does not actually affect
+	interfaces
+Message-ID: <20090303192747.GA16226@piper.oerlikon.madduck.net>
+Mail-Followup-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <20090302122718.GA3906@piper.oerlikon.madduck.net> <20090303070025.GA5042@pmhahn.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
 Content-Disposition: inline
-In-Reply-To: <1236097526.3263.17.camel@localhost.localdomain>
+In-Reply-To: <20090303070025.GA5042@pmhahn.de>
+X-Motto: Keep the good times rollin'
+X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.26-1-amd64 x86_64
+X-Spamtrap: madduck.bogus@madduck.net
+X-Subliminal-Message: debian/rules!
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+--sm4nu43k4a2Rpi4c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 2009-03-03 at 17:08 +0100, Jan Engelhardt wrote:
-> > On Tuesday 2009-03-03 16:21, James Bottomley wrote:
-> > >> > $ slabtop
-> > >> >   OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME                   
-> > >> > 818616 818616 100%    0.16K  34109       24    136436K sgpool-8
-> > >> > 253692 253692 100%    0.62K  42282        6    169128K sgpool-32
-> > >> >  52017  52016  99%    2.50K  17339        3    138712K sgpool-128
-> > >> >  26220  26219  99%    0.31K   2185       12      8740K sgpool-16
-> > >> >   8927   8574  96%    0.03K     79      113       316K size-32
-> > >> 
-> > >> Looks like a leak, by failing to call scsi_release_buffers()
-> > >> somehow. (Which was changed recently)
-> > >
-> > >Firstly, I have to say I don't see this in the mainline tree, so could
-> > >you try that with your setup just to verify (git head at 2.6.29-rc6).
-> > 
-> > Yes, looking at the rt patch (in broken-out it's in origin.diff),
-> > it seems a bit obvious - the scsi_release_buffers is not called anymore:
-> 
-> OK, this is a bad patch, so just revert it.  It was posted to 
-> linux-scsi initially in this form before the author posted a 
-> new one with the missing release buffers added.  It looks like 
-> the first incarnation got pulled into the -rt tree for some 
-> reasons.
+also sprach Philipp Matthias Hahn <pmhahn@titan.lahn.de> [2009.03.03.0800 +=
+0100]:
+> "all" on the other hand allways gets applied in addition to the current
+> setting, but it depends on the exact setting, if its ORed, ANDed, or
+> whatevered:
+[...]
 
-Uhm. I applied a test-patch from Alan Stern, to possibly fix an 
-SCSI lockup with aic7xxx that _I_ reported to you and then to 
-the scsi-list.
+Oh wow. This is very underdocumented. Thanks Philipp for taking the
+time to reply!
 
-You were Cc:-ed to that test patch and to my bugreport as well, 
-all the way. Do you claim that you dont remember it?
+The only reference I could find was
 
-The saga is still documented in tip:out-of-tree (which is a 
-special branch with out-of-tree hotfixes):
+  http://lkml.indiana.edu/hypermail/linux/kernel/0103.0/0440.html
 
- 7e4cbd1: fix "scsi: aic7xxx hang since v2.6.28-rc1"
- e027abc: scsi: temporarily undo scsi reverts
- 813104e: Revert "[SCSI] simplify scsi_io_completion()"
- 84db545: Revert "[SCSI] Fix uninitialized variable error in scsi_io_completion"
- 0eb6038: Revert "[SCSI] Fix error handling for DIF/DIX"
- 3cd94dd: Revert "[SCSI] scsi_lib: don't decrement busy counters when inserting commands"
- c27aed5: Revert "[SCSI] scsi_lib: fix DID_RESET status problems"
+which was unanswered.
 
-I wasnt Cc:-ed on the updated patch AFAICS, so i didnt pick it 
-up.
+Can anyone recall the rationale for this somewhat complex-seeming
+solution?
 
-> So the real question is why does the -rt tree even have 
-> patches not in the vanilla SCSI tree?  This type of cockup 
-> clearly demonstrates why it's a bad idea.
+I suppose the goal is to allow all/* to override (which would be the
+right solution). However, it depends on whether the default is 0 or
+1 on whether to AND or OR. Example:
 
-Believe me, i have better things to do than to track down your 
-regressions. I applied a fix/test patch sent to me by SCSI 
-folks.
+> 	log_martians         OR
 
-	Ingo
+default off, to turn it on globally, I just need to set all=3D1 and
+the OR takes care of it.
+
+> 	rp_filter            AND
+
+default on, but to disable it globally (set all=3D0), it needs the
+AND.
+
+> (see include/linux/inetdevice.h:83 for IN_DEV_{AND,OR,MAX}CONF)
+
+Unfortunately, that's just ipv4/conf/* and I cannot seem to find the
+ipv6/conf/* counterparts.
+
+> Putting a new value in "all" doesn't change the value you read
+> from "$interface", but it only gets computed and used internally.
+
+Hm, that clears it up... kinda. It does *not* explain by the RAs
+were still accepted (ipv6.conf.all.accept_ra and .autoconf where
+both 0), so unless those values are (wrongly) OR'd, I will need to
+investigate this.
+
+I will also work on patches to fix the documentation of this, and
+that involves the kernel source as well as e.g. the IPv6 HOWTO and
+other docs and manpages.
+
+But to do this, I'd really like to know a bit more about the design
+motivation. Anyone?
+
+--=20
+martin | http://madduck.net/ | http://two.sentenc.es/
+=20
+before he died, rabbi zusya said: "in the world to come they will not
+ask me, 'why were you not moses?' they will ask me, 'why were you not
+zusya?'"
+=20
+spamtraps: madduck.bogus@madduck.net
+
+--sm4nu43k4a2Rpi4c
+Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
+Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmthLIACgkQIgvIgzMMSnWlegCg6Sx3QRTc0hLD13LrqdBqBoPK
+IJYAnii5Pqpy1cWK65re41xaQ8jSizsW
+=mlNp
+-----END PGP SIGNATURE-----
+
+--sm4nu43k4a2Rpi4c--
