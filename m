@@ -1,136 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbZCCVWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbZCCV0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757485AbZCCVWO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 16:22:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZCCVV5
+	id S1756284AbZCCV0A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 16:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbZCCVZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:21:57 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:45647 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752944AbZCCVV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:21:56 -0500
-Subject: Re: kernel BUG at kernel/workqueue.c:291
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <49AD4B55.5060504@aei.mpg.de>
-References: <49A84376.6030800@aei.mpg.de> <49ABBA44.1060302@aei.mpg.de>
-	 <20090302232643.7c7ca284.akpm@linux-foundation.org>
-	 <1236093413.9631.58.camel@heimdal.trondhjem.org>
-	 <49AD4B55.5060504@aei.mpg.de>
+	Tue, 3 Mar 2009 16:25:49 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51662 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753268AbZCCVZs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 16:25:48 -0500
+Subject: Re: Large amount of scsi-sgpool objects
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <20090303192212.GA20705@elte.hu>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>
+	 <49ACF8FE.2020904@panasas.com>
+	 <1236093718.3263.3.camel@localhost.localdomain>
+	 <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
+	 <1236097526.3263.17.camel@localhost.localdomain>
+	 <20090303192212.GA20705@elte.hu>
 Content-Type: text/plain
-Date: Tue, 03 Mar 2009 16:21:48 -0500
-Message-Id: <1236115308.9631.97.camel@heimdal.trondhjem.org>
+Date: Tue, 03 Mar 2009 15:25:43 -0600
+Message-Id: <1236115544.15993.22.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 80A97C9C02F4FE0D89DAF353D678D1378BB2E90A
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 8 max/h 1 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 16:23 +0100, Carsten Aulbert wrote:
-> Hi Trond,
+On Tue, 2009-03-03 at 20:22 +0100, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> Trond Myklebust schrieb:
-> > struct rpc_task does admittedly share storage for the work queue and the
-> > rpc wait queue links, but if that were to be causing the reported
-> > corruption, then it would mean that an rpc_task is simultaneously on a
-> > wait queue and trying to execute on a work queue. I have no history of
-> > that ever having happened.
+> > On Tue, 2009-03-03 at 17:08 +0100, Jan Engelhardt wrote:
+> > > On Tuesday 2009-03-03 16:21, James Bottomley wrote:
+> > > >> > $ slabtop
+> > > >> >   OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME                   
+> > > >> > 818616 818616 100%    0.16K  34109       24    136436K sgpool-8
+> > > >> > 253692 253692 100%    0.62K  42282        6    169128K sgpool-32
+> > > >> >  52017  52016  99%    2.50K  17339        3    138712K sgpool-128
+> > > >> >  26220  26219  99%    0.31K   2185       12      8740K sgpool-16
+> > > >> >   8927   8574  96%    0.03K     79      113       316K size-32
+> > > >> 
+> > > >> Looks like a leak, by failing to call scsi_release_buffers()
+> > > >> somehow. (Which was changed recently)
+> > > >
+> > > >Firstly, I have to say I don't see this in the mainline tree, so could
+> > > >you try that with your setup just to verify (git head at 2.6.29-rc6).
+> > > 
+> > > Yes, looking at the rt patch (in broken-out it's in origin.diff),
+> > > it seems a bit obvious - the scsi_release_buffers is not called anymore:
+> > 
+> > OK, this is a bad patch, so just revert it.  It was posted to 
+> > linux-scsi initially in this form before the author posted a 
+> > new one with the missing release buffers added.  It looks like 
+> > the first incarnation got pulled into the -rt tree for some 
+> > reasons.
 > 
-> Anything I might be able to give to you helping you to narrow it down
-> somewhat? As written I suspect a certain type of user jobs, but since
-> literally 1000s of these ran over the course of several days it might be
-> hard to trigger this reliably again.
+> Uhm. I applied a test-patch from Alan Stern, to possibly fix an 
+> SCSI lockup with aic7xxx that _I_ reported to you and then to 
+> the scsi-list.
+> 
+> You were Cc:-ed to that test patch and to my bugreport as well, 
+> all the way. Do you claim that you dont remember it?
 
-Could you try triggering it after applying the following patch? I think
-I've spotted a potential race condition.
+?  If I've just quoted the patch above why would I not remember it now.
+I've just said it's the cause of the problems in the -rt tree.
 
-Cheers
-  Trond
----------------------------------------------------------------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-SUNRPC: Tighten up the task locking rules in __rpc_execute()
+> The saga is still documented in tip:out-of-tree (which is a 
+> special branch with out-of-tree hotfixes):
+> 
+>  7e4cbd1: fix "scsi: aic7xxx hang since v2.6.28-rc1"
+>  e027abc: scsi: temporarily undo scsi reverts
+>  813104e: Revert "[SCSI] simplify scsi_io_completion()"
+>  84db545: Revert "[SCSI] Fix uninitialized variable error in scsi_io_completion"
+>  0eb6038: Revert "[SCSI] Fix error handling for DIF/DIX"
+>  3cd94dd: Revert "[SCSI] scsi_lib: don't decrement busy counters when inserting commands"
+>  c27aed5: Revert "[SCSI] scsi_lib: fix DID_RESET status problems"
+> 
+> I wasnt Cc:-ed on the updated patch AFAICS, so i didnt pick it 
+> up.
 
-We should probably not be testing any flags after we've cleared the
-RPC_TASK_RUNNING flag, since rpc_make_runnable() is then free to assign the
-rpc_task to another workqueue, which may then destroy it.
+Actually, you were cc'd, you probably just missed it.
 
-We can fix any races with rpc_make_runnable() by ensuring that we only
-clear the RPC_TASK_RUNNING flag while holding the rpc_wait_queue->lock that
-the task is supposed to be sleeping on (and then checking whether or not
-the task really is sleeping).
+> > So the real question is why does the -rt tree even have 
+> > patches not in the vanilla SCSI tree?  This type of cockup 
+> > clearly demonstrates why it's a bad idea.
+> 
+> Believe me, i have better things to do than to track down your 
+> regressions. I applied a fix/test patch sent to me by SCSI 
+> folks.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+Look, I've no problem with you collecting random patches.  I have a
+problem when you start pushing random SCSI patches into other trees.  I
+think this thread clearly illustrates why it's a problem.
 
- net/sunrpc/sched.c |   33 ++++++++++++++++++++-------------
- 1 files changed, 20 insertions(+), 13 deletions(-)
+Even if *I* sent you a patch asking if it fixes your bug, it doesn't
+mean you should be deploying it on production systems ... we have
+process, like code inspection and integration testing to got through
+before patches appear in the SCSI trees.
 
+For the particular patch in question (the corrected form).  I don't
+actually believe it's a bug fix.  I've gone over it and best I can tell,
+it does what it says it does (merely reposition the code) ... there's no
+actual logic alterations at all.  So I think, unfortunately, whatever
+the bug is, it's timing related (the patch does shorten some code
+paths).  Now, sure, we can cover it up and pretend it's gone, but it's
+bound to show up again down the road, so I'd like to find it's root
+cause now rather than later.
 
-diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
-index 385f427..ff50a05 100644
---- a/net/sunrpc/sched.c
-+++ b/net/sunrpc/sched.c
-@@ -293,11 +293,6 @@ static void rpc_make_runnable(struct rpc_task *task)
- 	rpc_clear_queued(task);
- 	if (rpc_test_and_set_running(task))
- 		return;
--	/* We might have raced */
--	if (RPC_IS_QUEUED(task)) {
--		rpc_clear_running(task);
--		return;
--	}
- 	if (RPC_IS_ASYNC(task)) {
- 		int status;
- 
-@@ -607,7 +602,9 @@ void rpc_release_calldata(const struct rpc_call_ops *ops, void *calldata)
-  */
- static void __rpc_execute(struct rpc_task *task)
- {
--	int		status = 0;
-+	struct rpc_wait_queue *queue;
-+	int task_is_async = RPC_IS_ASYNC(task);
-+	int status = 0;
- 
- 	dprintk("RPC: %5u __rpc_execute flags=0x%x\n",
- 			task->tk_pid, task->tk_flags);
-@@ -647,15 +644,25 @@ static void __rpc_execute(struct rpc_task *task)
- 		 */
- 		if (!RPC_IS_QUEUED(task))
- 			continue;
--		rpc_clear_running(task);
--		if (RPC_IS_ASYNC(task)) {
--			/* Careful! we may have raced... */
--			if (RPC_IS_QUEUED(task))
--				return;
--			if (rpc_test_and_set_running(task))
--				return;
-+		/*
-+		 * The queue->lock protects against races with
-+		 * rpc_make_runnable().
-+		 *
-+		 * Note that once we clear RPC_TASK_RUNNING on an asynchronous
-+		 * rpc_task, rpc_make_runnable() can assign it to a
-+		 * different workqueue. We therefore cannot assume that the
-+		 * rpc_task pointer may still be dereferenced.
-+		 */
-+		queue = task->tk_waitqueue;
-+		spin_lock_bh(&queue->lock);
-+		if (!RPC_IS_QUEUED(task)) {
-+			spin_unlock_bh(&queue->lock);
- 			continue;
- 		}
-+		rpc_clear_running(task);
-+		spin_unlock_bh(&queue->lock);
-+		if (task_is_async)
-+			return;
- 
- 		/* sync task: sleep here */
- 		dprintk("RPC: %5u sync task going to sleep\n", task->tk_pid);
+James
 
 
