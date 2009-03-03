@@ -1,94 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbZCCAxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbZCCBHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbZCCAxi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 19:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZCCAx0
+	id S1756046AbZCCBHm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 20:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZCCBHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 19:53:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:53153 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbZCCAxZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 19:53:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=NwZDxKKdVgULwIdV067sF0RHJoi94YfdLYC+51Ss1TTf9iecN9xg5FVchV9k2AIzKx
-         Sv56UR0+dkxKf/09Xn06Hhx3zvzXIUaFyFzGlujvIUeX0+vICLIdhyVFcX0DPZ2S4WC4
-         oqR7Imrcy7LC0E3pPa7RiBEwwGoYkmdoEqSVM=
-Message-ID: <49AC7F7A.9020101@gmail.com>
-Date: Mon, 02 Mar 2009 18:53:14 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 2 Mar 2009 20:07:33 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49158 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750882AbZCCBHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 20:07:32 -0500
+Message-ID: <49AC8307.7090008@cn.fujitsu.com>
+Date: Tue, 03 Mar 2009 09:08:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.ide,gmane.linux.kernel
-CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <liml@rtr.ca>, =?UTF-8?B?SGFubm8gQsO2Y2s=?= <hanno@hboeck.de>
-Subject: Re: [PATCH v2] libata: Don't trust current capacity values in identify
-   words 57-58
-References: <4999CA54.1060306@gmail.com> <4999CFEB.3030204@ru.mvista.com> <499A1DAC.6090200@gmail.com>
-In-Reply-To: <499A1DAC.6090200@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-To: unlisted-recipients:; (no To-header on input)
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH 0/4] cgroups: show correct file mode
+References: <49AB40BF.4030706@cn.fujitsu.com> <6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>
+In-Reply-To: <6599ad830903021019p3b29c173oc7772af6679d90e0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Hanno Böck reported a problem where an old Conner CP30254 240MB hard drive
-> was reported as 1.1TB in capacity by libata:
+Paul Menage wrote:
+> On Sun, Mar 1, 2009 at 6:13 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>> Now a cgroup subsystem can set default file mode of its control files,
+>> so here is a patchset to correct file mode of each subsystem's files.
 > 
-> http://lkml.org/lkml/2009/2/13/134
+> I really think that we should be defaulting this based on whether the
+> control file has read or write handlers.
 > 
-> This was caused by libata trusting the drive's reported current capacity in 
-> sectors in identify words 57 and 58 if the drive does not support LBA and the
-> current CHS translation values appear valid. Unfortunately it seems older
-> ATA specs were vague about what this field should contain and a number of drives
-> used values with wrong byte order or that were totally bogus. There's no
-> unique information that it conveys and so we can just calculate the number
-> of sectors from the reported current CHS values.
+> Sure, there are special cases like "tasks" that we'd need to set a
+> manual value for, but most of these patches would be unnecessary.
 > 
-> While we're at it, clean up this function to use named constants for the
-> identify word values.
-> 
-> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
 
-Jeff, any thoughts on this one? I would suggest it's -upstream material 
-(for .30)..
+Those patches are small and trivial, but it's ok for me to do this
+automatically. How about below patch.
 
-> 
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 9fbf059..33b5549 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -1322,14 +1322,16 @@ static u64 ata_id_n_sectors(const u16 *id)
->  {
->  	if (ata_id_has_lba(id)) {
->  		if (ata_id_has_lba48(id))
-> -			return ata_id_u64(id, 100);
-> +			return ata_id_u64(id, ATA_ID_LBA_CAPACITY_2);
->  		else
-> -			return ata_id_u32(id, 60);
-> +			return ata_id_u32(id, ATA_ID_LBA_CAPACITY);
->  	} else {
->  		if (ata_id_current_chs_valid(id))
-> -			return ata_id_u32(id, 57);
-> +			return id[ATA_ID_CUR_CYLS] * id[ATA_ID_CUR_HEADS] *
-> +			       id[ATA_ID_CUR_SECTORS];
->  		else
-> -			return id[1] * id[3] * id[6];
-> +			return id[ATA_ID_CYLS] * id[ATA_ID_HEADS] *
-> +			       id[ATA_ID_SECTORS];
->  	}
->  }
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Note cpuset.memory_pressure is read-only though it has read handler.
+Since if the read handler is removed, it'll return EINVAL instead of
+the current EACCESS, I think it's better to leave as it is.
+
+=====================
+
+cgroups: show correct file mode
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/linux/cgroup.h |    5 +++++
+ kernel/cgroup.c        |   30 ++++++++++++++++++++++++++++++
+ kernel/cpuset.c        |    1 +
+ 3 files changed, 36 insertions(+)
+
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 6ad1989..af3c10f 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -258,6 +258,11 @@ struct cftype {
+ 	 */
+ 	char name[MAX_CFTYPE_NAME];
+ 	int private;
++	/*
++	 * If not 0, file mode is set to this value, otherwise it will
++	 * be figured out automatically
++	 */
++	int mode;
+ 
+ 	/*
+ 	 * If non-zero, defines the maximum length of string that can
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 379baa3..0b19204 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1750,6 +1750,33 @@ static int cgroup_create_dir(struct cgroup *cgrp, struct dentry *dentry,
+ 	return error;
+ }
+ 
++/**
++ * cgroup_file_mode - deduce file mode of a control file
++ * @cft: the control file in question
++ *
++ * returns cftype->mode if ->mode is not 0
++ * returns 0644 if it has both a read and a write handler
++ * returns 0444 if it has only a read handler
++ * returns 0200 if it has only a write hander
++ */
++static int cgroup_file_mode(const struct cftype *cft)
++{
++	int mode = 0;
++
++	if (cft->mode)
++		return cft->mode;
++
++	if (cft->read || cft->read_u64 || cft->read_s64 ||
++	    cft->read_map || cft->read_seq_string)
++		mode += 0444;
++
++	if (cft->write || cft->write_u64 || cft->write_s64 ||
++	    cft->write_string || cft->trigger)
++		mode += 0200;
++
++	return mode;
++}
++
+ int cgroup_add_file(struct cgroup *cgrp,
+ 		       struct cgroup_subsys *subsys,
+ 		       const struct cftype *cft)
+@@ -1757,6 +1784,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+ 	struct dentry *dir = cgrp->dentry;
+ 	struct dentry *dentry;
+ 	int error;
++	int mode;
+ 
+ 	char name[MAX_CGROUP_TYPE_NAMELEN + MAX_CFTYPE_NAME + 2] = { 0 };
+ 	if (subsys && !test_bit(ROOT_NOPREFIX, &cgrp->root->flags)) {
+@@ -1767,6 +1795,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+ 	BUG_ON(!mutex_is_locked(&dir->d_inode->i_mutex));
+ 	dentry = lookup_one_len(name, dir, strlen(name));
+ 	if (!IS_ERR(dentry)) {
++		mode = cgroup_file_mode(cft);
+ 		error = cgroup_create_file(dentry, 0644 | S_IFREG,
+ 						cgrp->root->sb);
+ 		if (!error)
+@@ -2349,6 +2378,7 @@ static struct cftype files[] = {
+ 		.write_u64 = cgroup_tasks_write,
+ 		.release = cgroup_tasks_release,
+ 		.private = FILE_TASKLIST,
++		.mode = 0644,
+ 	},
+ 
+ 	{
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index a46d693..31e28b3 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1678,6 +1678,7 @@ static struct cftype files[] = {
+ 		.read_u64 = cpuset_read_u64,
+ 		.write_u64 = cpuset_write_u64,
+ 		.private = FILE_MEMORY_PRESSURE,
++		.mode = 0444,
+ 	},
+ 
+ 	{
 
