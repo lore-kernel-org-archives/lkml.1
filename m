@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbZCCV23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZCCVgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbZCCV23 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 16:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZCCV2S
+	id S1756117AbZCCVgG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 16:36:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZCCVfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:28:18 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:24408 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753894AbZCCV2R (ORCPT
+	Tue, 3 Mar 2009 16:35:54 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:51708 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087AbZCCVfy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:28:17 -0500
-Date: Tue, 3 Mar 2009 15:28:16 -0600
-From: scameron@beardog.cca.cpqcorp.net
-To: Mike Christie <michaelc@cs.wisc.edu>
-Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com, jens.axboe@oracle.com,
-       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       linux-scsi@vger.kernel.org, coldwell@redhat.com, hare@novell.com,
-       iss_storagedev@hp.com
-Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-Message-ID: <20090303212816.GC15340@beardog.cca.cpqcorp.net>
-References: <20090302145650.GW15340@beardog.cca.cpqcorp.net> <49AD5F8B.8060602@cs.wisc.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AD5F8B.8060602@cs.wisc.edu>
-User-Agent: Mutt/1.5.9i
+	Tue, 3 Mar 2009 16:35:54 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Ek2GC4bFwj6L7ff77NCQNQgXkt1YTMqh4ge6iqr/Zmbgxjxj9rWZfrZPXzw7wIZxv
+	NCN8uEqH/TNL64u4RRrLw==
+Date: Tue, 3 Mar 2009 13:35:08 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] slub: enforce cpuset restrictions for cpu slabs
+In-Reply-To: <alpine.DEB.1.10.0903031509380.25612@qirst.com>
+Message-ID: <alpine.DEB.2.00.0903031330090.23523@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com> <alpine.DEB.2.00.0903022011430.17284@chino.kir.corp.google.com> <alpine.DEB.1.10.0903031136380.26454@qirst.com> <alpine.DEB.2.00.0903030900580.6643@chino.kir.corp.google.com>
+ <alpine.DEB.1.10.0903031345150.9466@qirst.com> <alpine.DEB.2.00.0903031057110.15900@chino.kir.corp.google.com> <alpine.DEB.1.10.0903031509380.25612@qirst.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 10:49:15AM -0600, Mike Christie wrote:
-> scameron@beardog.cca.cpqcorp.net wrote:
+On Tue, 3 Mar 2009, Christoph Lameter wrote:
 
-[...]
+> SLUB is also "dismissing" lots of other NUMA locality requirements since
+> it relies on the page allocators for this. SLUB does *not* realize memory
+> policy and/or cpuset support for individual objects.
 
-> >It's fast, works well, and has needed very little maintenance over the 
-> >years.  Without knowing what you have in mind specifically, I don't see a
-> >big need to change this.
-> >
-> 
-> Other drivers have had to convert to and modify the host tagging to get 
-> merged. They too had stable and fast code, and we complained and fought 
-> against changing it :) I have had to convert or help convert libfc and 
-> qla4xxx and I will now convert iscsi, so I feel your pain :)
+Right, and this patch adds that.
 
-I wasn't complaining, or even resisting actually.  What I was replying to 
-there suggested we use "lists", with no more detail than that specified,
-and not anything like what you describe below, so it wasn't clear to me
-that anything concrete was being proposed instead of what we had.
-Given what was written, it seemed to be just complaining about 
-some code that looked a little bit complicated.  So *that* I was
-resisting a bit, or at least pushing for some justification, but if 
-there's an already established way to share the command allocation logic
-between the scsi layer and low level driver as you describe I've got no
-problem with that.
+> NUMA locality is
+> implemented only (aside from explicit requests of memory from a
+> certain node) when slab page allocations are performed.
+> 
 
-> 
-> To create the map call scsi_init_shared_tag_map after you allocate the 
-> scsi host and before you add it. Then in slave_alloc set the 
-> sdev->tag_supported  = 1 and call scsi_activate_tcq. Then replace your 
-> bitmap with:
-> 
-> for scsi commands:
-> 
-> c = h->cmd_pool + scsi_cmnd->request->tag
-> 
-> And for the reset path I was thinking you could use my patch in the 
-> other mail and do
-> 
-> tag = blk_map_start_tag(scsi_host->bqt, NULL, 0);
-> if (tag < 0)
-> 	goto fail;
-> c = h->cmd_pool + tag;
-> c->cmdindex = tag;
-> 
-> In the completion path you need to do a blk_map_end_tag(scsi_host->bqt, 
-> c->cmdindex);. The scsi/block layer will free the tag for scsi commadns.
+Yes, that is the current implementation.
 
-That makes sense.  Thanks.
+For systems that use multiple cpusets, this allows objects for a task to 
+be allocated on its assigned cpuset node(s); the only reasonable use case 
+would be for memory isolation and/or NUMA optimizations.
 
--- steve
-
+Unfortunately, we can't add a slab hardwall flag to the cpuset to 
+configure this behavior since that would require locking to dereference 
+in the fastpath.  
