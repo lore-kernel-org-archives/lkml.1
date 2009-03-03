@@ -1,56 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZCCQ0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZCCQ2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbZCCQ0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZCCQ0c
+	id S1758209AbZCCQ2f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbZCCQ2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:26:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44586 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753718AbZCCQ0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:26:32 -0500
-Date: Tue, 3 Mar 2009 17:26:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: svaidy@linux.vnet.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, efault@gmx.de,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2 2/3] sched: Fix the wakeup nomination for
-	sched_mc/smt_power_savings.
-Message-ID: <20090303162612.GA11208@elte.hu>
-References: <20090303114648.605.86920.stgit@sofia.in.ibm.com> <20090303115149.605.92140.stgit@sofia.in.ibm.com> <1236083033.5330.4204.camel@laptop> <20090303135907.GA23822@elte.hu> <20090303154537.GI4708@dirshya.in.ibm.com> <1236095306.5330.4777.camel@laptop>
-MIME-Version: 1.0
+	Tue, 3 Mar 2009 11:28:24 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:19392 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754269AbZCCQ2X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:28:23 -0500
+Date: Tue, 3 Mar 2009 10:28:21 -0600
+From: scameron@beardog.cca.cpqcorp.net
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+Message-ID: <20090303162821.GB15340@beardog.cca.cpqcorp.net>
+References: <20090302145650.GW15340@beardog.cca.cpqcorp.net> <20090303153402A.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236095306.5330.4777.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090303153402A.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Tue, 2009-03-03 at 21:15 +0530, Vaidyanathan Srinivasan wrote:
+On Tue, Mar 03, 2009 at 03:35:26PM +0900, FUJITA Tomonori wrote:
+> On Mon, 2 Mar 2009 08:56:50 -0600
+> scameron@beardog.cca.cpqcorp.net wrote:
 > 
-> > I had earlier posted cleanup for find_busiest_group(), but 
-> > Peter mentioned that he is changing the cpu_power 
-> > infrastructure and I can rework the cleanup after that.
+> > [...]
+> > > > +     .this_id                = -1,
+> > > > +     .sg_tablesize           = MAXSGENTRIES,
+> > > 
+> > > MAXSGENTRIES (32) is the limitation of hardware? If not, it might be
+> > > better to enlarge this for better performance?
+> > 
+> > Yes, definitely, though this value varies from controller to controller,
+> > so this is just a default value that needs to be overridden, probably
+> > in hpsa_scsi_detect().
 > 
-> Right, I need to get back to pondering that problem. The whole 
-> 1/x thing doesn't really work.
+> I see. If we override this in hpsa_scsi_detect(), we need a trick for
+> SG in CommandList_struct, I guess.
 
-well, the cleanups are needed in any case before we add more 
-changes to it - that function is a monster.
+Yes.  There are some limits to what can be put into CommandList_struct
+directly, but there is also scatter gather chaining, in which we use
+the last element in the CommandList_struct to point to another buffer
+of SG entries.
 
-	Ingo
+If you have a system with a lot of controllers, having a large number of 
+scatter gathers can be a bit of a memory hog, and since this memory is all
+via pci_alloc_consistent, that can be a concern.  It would be nice if
+there was a way for the user to specify differing amounts of scatter
+gathers for different controller instances so for instance the controller
+which he's running his big oracle database, or webserver or whatever on
+gets lots, while the controller he's booted from that's mostly idle
+gets not so many.  I don't know what a good way for a user to identify
+what controller he's talking about in a module parameter would be 
+though.  Maybe by pci domain/bus/device/function?  Maybe something along
+the lines of:
+
+	modprobe hpsa dev1=0:0e:00.0 sg1=1000 dev2=0:0b:00.0 sg2=31
+
+to say that one controller gets 1000 scatter gather elements, but
+another gets only 31.  But PCI busses can change if hardware 
+configuration changes, and this isn't exactly obvious, so seems less
+than ideal.  Any bright ideas on that front?
+
+We have some specialized versions of cciss around that have variable
+sized SG arrays in CommandList_struct as well as doing scatter gather
+chaining (not to be confused with the scatter gather chaining concept
+in the scsi mid layer.)
+
+[...snip...]
+> 
+> 
+> > > > + * For operations that cannot sleep, a command block is allocated at init,
+> > > > + * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
+> > > > + * which ones are free or in use.  Lock must be held when calling this.
+> > > > + * cmd_free() is the complement.
+> > > > + */
+> > > > +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
+> > > > +{
+> > > > +     struct CommandList_struct *c;
+> > > > +     int i;
+> > > > +     union u64bit temp64;
+> > > > +     dma_addr_t cmd_dma_handle, err_dma_handle;
+> > > > +
+> > > > +     do {
+> > > > +             i = find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
+> > > > +             if (i == h->nr_cmds)
+> > > > +                     return NULL;
+> > > > +     } while (test_and_set_bit
+> > > > +              (i & (BITS_PER_LONG - 1),
+> > > > +               h->cmd_pool_bits + (i / BITS_PER_LONG)) != 0);
+> > > 
+> > > Using bitmap to manage free commands looks too complicated a bit to
+> > > me. Can we just use lists for command management?
+> > 
+> > Hmm, this doesn't seem all that complicated to me, and this code snippet
+> > has been pretty stable for about 10 years. it's nearly identical to what's in
+> > cpqarray in the 2.2.13 kernel from 1999:
+> > 
+> >                 do {
+> >                         i = find_first_zero_bit(h->cmd_pool_bits, NR_CMDS);
+> >                         if (i == NR_CMDS)
+> >                                 return NULL;
+> >                 } while(test_and_set_bit(i%32, h->cmd_pool_bits+(i/32)) != 0)
+> > 
+> > It's fast, works well, and has needed very little maintenance over the 
+> > years.  Without knowing what you have in mind specifically, I don't see a
+> > big need to change this.
+> 
+> I see. Seems that some drivers want something similar. I might come
+> back later on with a patch to replace this with library
+> functions.
+
+There was some other discussion about pushing this sort of thing to 
+upper layers, using a tag generated in the scsi layer as a means
+of allocating driver command buffers, since, presumably there's a
+one to one mapping.  (I didn't completely grok it all though.)
+
+-- steve
+
