@@ -1,91 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbZCCAGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759334AbZCCAHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbZCCAGz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 19:06:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZCCAGq
+	id S1759334AbZCCAHY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 19:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbZCCAHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 19:06:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35974 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbZCCAGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 19:06:45 -0500
-Message-ID: <49AC7453.8020307@redhat.com>
-Date: Mon, 02 Mar 2009 19:05:39 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC][PATCH] x86: make text_poke() atomic
-References: <49A83237.40604@redhat.com> <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu>
-In-Reply-To: <20090302234910.GA17956@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Mar 2009 19:07:05 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:43428 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755355AbZCCAHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 19:07:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=BIJFFezLXsVTzqCNgeEpaKT+ABkW0hgifgfNj60iZBmRuLDzQIEPK9muChVcMuMQQl
+         mA1v2eOXnI+lOPcCBjTmX/BSRC60+2wZfqtmX6JYHCfYSut0lLPNcfSrIpkI+SilDl8C
+         EJ4rcy7Y7r6HUK5N5ckUqp4Y0ke5xY45dtZpY=
+Subject: [PATCH 1/2] byteorder: add load/store_{endian} API
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>
+Content-Type: text/plain
+Date: Mon, 02 Mar 2009 16:06:57 -0800
+Message-Id: <1236038817.5756.11.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+load_le16 is a synonym for the existing le16_to_cpup and is added to be
+symmetric with the load_le16_noalign API.  On arches where unaligned
+access is OK, the unaligned calls are replaced with aligned calls.
 
+store_le16 is a new API and is added to be symmetric with the unaligned
+functions.  It is implemented as a macro to allow compile-time
+byteswapping when the value is a constant.  This will also allow use in
+many places currently that are of the form:
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> Ingo Molnar wrote:
->>>>> So perhaps another approach to (re-)consider would be to go back 
->>>>> to atomic fixmaps here. It spends 3 slots but that's no big 
->>>>> deal.
->>>> Oh, it's a good idea! fixmaps must make it simpler.
->>>>
->>>>> In exchange it will be conceptually simpler, and will also scale 
->>>>> much better than a global spinlock. What do you think?
->>>> I think even if I use fixmaps, we have to use a spinlock to protect
->>>> the fixmap area from other threads...
->>> that's why i suggested to use an atomic-kmap, not a fixmap.
->> Even if the mapping is atomic, text_poke() has to protect pte
->> from other text_poke()s while changing code.
->> AFAIK, atomic-kmap itself doesn't ensure that, does it?
-> 
-> Well, but text_poke() is not a serializing API to begin with. 
-> It's normally used in code patching sequences when we 'know' 
-> that there cannot be similar parallel activities. The kprobes 
-> usage of text_poke() looks unsafe - and that needs to be fixed.
+*(__le16 *)ptr = cpu_to_le16(foo);
 
-Oh, kprobes already prohibited parallel arming/disarming
-by using kprobe_mutex. :-)
+In addition, some drivers/filesystems/arches already provide this API
+privately, which will allow them to be consolidated into this common code.
 
-> So indeed a new global lock is needed there.
-> 
-> It's fixable and we'll fixit, but text_poke() is really more 
-> complex than i'd like it to be.
-> 
-> stop_machine_run() is essentially instantaneous in practice and 
-> obviously serializing so it warrants a second look at least. 
-> Have you tried to use it in kprobes?
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Linus,
 
-No, but it seems that cost high for incremental use(registration)
-of kprobes...
+I'd like you to consider this for 2.6.29 as it just adds the new API using
+the old API as the implementation.  I've had multiple requests to get this
+in so that the typesafe unaligned bits can be used in 2.6.30 without waiting
+on the API additions to go in.
 
-Thank you,
+For 2.6.30 I have a series of patches to begin replacing users of the existing
+bits (aligned and unaligned) and make the tangle of headers more sane, but getting
+the API exposed would be great to avoid ordering headaches during the merge window.
 
-> 
-> 	Ingo
+ include/linux/byteorder/generic.h |   25 +++++++++++++++++++------
+ 1 files changed, 19 insertions(+), 6 deletions(-)
 
+diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+index 0846e6b..621a506 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -119,6 +119,19 @@
+ #define cpu_to_be16s __cpu_to_be16s
+ #define be16_to_cpus __be16_to_cpus
+ 
++#define load_le16 __le16_to_cpup
++#define load_le32 __le32_to_cpup
++#define load_le64 __le64_to_cpup
++#define load_be16 __be16_to_cpup
++#define load_be32 __be32_to_cpup
++#define load_be64 __be64_to_cpup
++#define store_le16(p, val) (*(__le16 *)(p) = cpu_to_le16(val))
++#define store_le32(p, val) (*(__le32 *)(p) = cpu_to_le32(val))
++#define store_le64(p, val) (*(__le64 *)(p) = cpu_to_le64(val))
++#define store_be16(p, val) (*(__be16 *)(p) = cpu_to_be16(val))
++#define store_be32(p, val) (*(__be32 *)(p) = cpu_to_be32(val))
++#define store_be64(p, val) (*(__be64 *)(p) = cpu_to_be64(val))
++
+ /*
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
+@@ -142,32 +155,32 @@
+ 
+ static inline void le16_add_cpu(__le16 *var, u16 val)
+ {
+-	*var = cpu_to_le16(le16_to_cpu(*var) + val);
++	store_le16(var, load_le16(var) + val);
+ }
+ 
+ static inline void le32_add_cpu(__le32 *var, u32 val)
+ {
+-	*var = cpu_to_le32(le32_to_cpu(*var) + val);
++	store_le32(var, load_le32(var) + val);
+ }
+ 
+ static inline void le64_add_cpu(__le64 *var, u64 val)
+ {
+-	*var = cpu_to_le64(le64_to_cpu(*var) + val);
++	store_le64(var, load_le64(var) + val);
+ }
+ 
+ static inline void be16_add_cpu(__be16 *var, u16 val)
+ {
+-	*var = cpu_to_be16(be16_to_cpu(*var) + val);
++	store_be16(var, load_be16(var) + val);
+ }
+ 
+ static inline void be32_add_cpu(__be32 *var, u32 val)
+ {
+-	*var = cpu_to_be32(be32_to_cpu(*var) + val);
++	store_be32(var, load_be32(var) + val);
+ }
+ 
+ static inline void be64_add_cpu(__be64 *var, u64 val)
+ {
+-	*var = cpu_to_be64(be64_to_cpu(*var) + val);
++	store_be64(var, load_be64(var) + val);
+ }
+ 
+ #endif /* _LINUX_BYTEORDER_GENERIC_H */
 -- 
-Masami Hiramatsu
+1.6.2.rc2.289.g2fa25
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
