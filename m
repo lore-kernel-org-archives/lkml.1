@@ -1,95 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbZCCQxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbZCCQ5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757813AbZCCQxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:53:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZCCQxP
+	id S1757647AbZCCQ5U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZCCQ5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:53:15 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:35098 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753263AbZCCQxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:53:14 -0500
-Message-ID: <49AD5F8B.8060602@cs.wisc.edu>
-Date: Tue, 03 Mar 2009 10:49:15 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: scameron@beardog.cca.cpqcorp.net
-CC: linux-kernel@vger.kernel.org, mike.miller@hp.com, jens.axboe@oracle.com,
-       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       linux-scsi@vger.kernel.org, coldwell@redhat.com, hare@novell.com,
-       iss_storagedev@hp.com
-Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-References: <20090302145650.GW15340@beardog.cca.cpqcorp.net>
-In-Reply-To: <20090302145650.GW15340@beardog.cca.cpqcorp.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 3 Mar 2009 11:57:12 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:48563 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753614AbZCCQ5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:57:11 -0500
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Message-Id: <A277CB1C-4258-42EC-B1D9-F5CAAB962B42@sgi.com>
+From: Felix Blyakher <felixb@sgi.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+In-Reply-To: <49AD5401.30803@sandeen.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: next-20090220: XFS: inconsistent lock state
+Date: Tue, 3 Mar 2009 10:57:07 -0600
+References: <a4423d670902200952v5dc2fd91w3b54ab1db51a7fe2@mail.gmail.com> <20090224200740.GA9266@infradead.org> <49AD5401.30803@sandeen.net>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-scameron@beardog.cca.cpqcorp.net wrote:
-> [...]
->>> +/*
->>> + * For operations that cannot sleep, a command block is allocated at init,
->>> + * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
->>> + * which ones are free or in use.  Lock must be held when calling this.
->>> + * cmd_free() is the complement.
->>> + */
->>> +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
->>> +{
->>> +     struct CommandList_struct *c;
->>> +     int i;
->>> +     union u64bit temp64;
->>> +     dma_addr_t cmd_dma_handle, err_dma_handle;
->>> +
->>> +     do {
->>> +             i = find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
->>> +             if (i == h->nr_cmds)
->>> +                     return NULL;
->>> +     } while (test_and_set_bit
->>> +              (i & (BITS_PER_LONG - 1),
->>> +               h->cmd_pool_bits + (i / BITS_PER_LONG)) != 0);
->> Using bitmap to manage free commands looks too complicated a bit to
->> me. Can we just use lists for command management?
-> 
-> Hmm, this doesn't seem all that complicated to me, and this code snippet
-> has been pretty stable for about 10 years. it's nearly identical to what's in
-> cpqarray in the 2.2.13 kernel from 1999:
-> 
->                 do {
->                         i = find_first_zero_bit(h->cmd_pool_bits, NR_CMDS);
->                         if (i == NR_CMDS)
->                                 return NULL;
->                 } while(test_and_set_bit(i%32, h->cmd_pool_bits+(i/32)) != 0)
-> 
-> It's fast, works well, and has needed very little maintenance over the 
-> years.  Without knowing what you have in mind specifically, I don't see a
-> big need to change this.
-> 
 
-Other drivers have had to convert to and modify the host tagging to get 
-merged. They too had stable and fast code, and we complained and fought 
-against changing it :) I have had to convert or help convert libfc and 
-qla4xxx and I will now convert iscsi, so I feel your pain :)
+On Mar 3, 2009, at 10:00 AM, Eric Sandeen wrote:
 
-To create the map call scsi_init_shared_tag_map after you allocate the 
-scsi host and before you add it. Then in slave_alloc set the 
-sdev->tag_supported  = 1 and call scsi_activate_tcq. Then replace your 
-bitmap with:
+> Christoph Hellwig wrote:
+>> On Fri, Feb 20, 2009 at 08:52:59PM +0300, Alexander Beregalov wrote:
+>>> Hi
+>>>
+>>> [ INFO: inconsistent lock state ]
+>>> 2.6.29-rc5-next-20090220 #2
+>>> ---------------------------------
+>>> inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R} usage.
+>>> kswapd0/324 [HC0[0]:SC0[0]:HE1:SE1] takes:
+>>> (&(&ip->i_lock)->mr_lock){+++++?}, at: [<ffffffff803ca60a>]
+>>> xfs_ilock+0xaa/0x120
+>>> {RECLAIM_FS-ON-W} state was registered at:
+>>
+>> That's a false positive.  While the ilock can be taken in reclaim the
+>> allocation here is done before the inode is added to the inode cache.
+>>
+>> The patch below should help avoiding the warning:
+>
+> Seems ok to me.  I hate to see the BUG() added but I guess in this  
+> case
+> something truly bizarre would have to happen for the ilock to fail on
+> this inode.
+>
+> on irc you sugggested ASSERT(0); instead of BUG();
 
-for scsi commands:
+That would mean that instead of bombing out here, we do it
+in xfs debug kernels only, which is a good thing. However,
+do we just silently ignore it in non debug kernels, and
+later try to unlock without locking first?
+Maybe the following be better:
 
-c = h->cmd_pool + scsi_cmnd->request->tag
+	if (lock_flags) {
+		if (!xfs_ilock_nowait(ip, lock_flags)) {
+			ASSERT(0);
+			error = EAGAIN;
+			goto out_destroy;
+		}
+	}
+				
+Or just keep the BUG(); , as it shouldn't happen (we hope).
 
-And for the reset path I was thinking you could use my patch in the 
-other mail and do
+Reviewed-by: Felix Blyakher <felixb@sgi.com>
 
-tag = blk_map_start_tag(scsi_host->bqt, NULL, 0);
-if (tag < 0)
-	goto fail;
-c = h->cmd_pool + tag;
-c->cmdindex = tag;
 
-In the completion path you need to do a blk_map_end_tag(scsi_host->bqt, 
-c->cmdindex);. The scsi/block layer will free the tag for scsi commadns.
+> I might prefer that
+> but either way:
+>
+> Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
+>
+>>
+>> Index: xfs/fs/xfs/xfs_iget.c
+>> ===================================================================
+>> --- xfs.orig/fs/xfs/xfs_iget.c	2009-02-24 20:56:00.716027739 +0100
+>> +++ xfs/fs/xfs/xfs_iget.c	2009-02-24 20:56:46.089031360 +0100
+>> @@ -246,9 +246,6 @@ xfs_iget_cache_miss(
+>> 		goto out_destroy;
+>> 	}
+>>
+>> -	if (lock_flags)
+>> -		xfs_ilock(ip, lock_flags);
+>> -
+>> 	/*
+>> 	 * Preload the radix tree so we can insert safely under the
+>> 	 * write spinlock. Note that we cannot sleep inside the preload
+>> @@ -259,6 +256,15 @@ xfs_iget_cache_miss(
+>> 		goto out_unlock;
+>> 	}
+>>
+>> +	/*
+>> +	 * Because the inode hasn't been added to the radix-tree yet it  
+>> can't
+>> +	 * be found by another thread, so we can do the non-sleeping lock  
+>> here.
+>> +	 */
+>> +	if (lock_flags) {
+>> +		if (!xfs_ilock_nowait(ip, lock_flags))
+>> +			BUG();
+>> +	}
+>> +
+>> 	mask = ~(((XFS_INODE_CLUSTER_SIZE(mp) >> mp->m_sb.sb_inodelog)) -  
+>> 1);
+>> 	first_index = agino & mask;
+>> 	write_lock(&pag->pag_ici_lock);
+>>
+>> _______________________________________________
+>> xfs mailing list
+>> xfs@oss.sgi.com
+>> http://oss.sgi.com/mailman/listinfo/xfs
+>>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
