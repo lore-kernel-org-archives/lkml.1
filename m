@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZCCKzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCCLGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbZCCKzl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 05:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZCCKzL
+	id S1755287AbZCCLGK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 06:06:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZCCLF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 05:55:11 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57360 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZCCKzJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 05:55:09 -0500
-Subject: [PATCH 2/2] x86: use roundup() instead of PAGE_ALIGN() in
-	find_early_table_space()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 03 Mar 2009 12:55:05 +0200
-Message-Id: <1236077705.2675.6.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 3 Mar 2009 06:05:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54622 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075AbZCCLFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 06:05:55 -0500
+Date: Tue, 3 Mar 2009 12:05:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Tim Blechmann <tim@klingt.org>, oprofile-list@lists.sf.net,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] oprofile: don't set counter width from cpuid on core2
+Message-ID: <20090303110545.GB11532@elte.hu>
+References: <20090216114010.GG25042@erda.amd.com> <20090219173403.49871cac@thinkpad> <20090303100412.GC10085@erda.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090303100412.GC10085@erda.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Impact: cleanup
+* Robert Richter <robert.richter@amd.com> wrote:
 
-This patch changes find_early_table_space() to use roundup() for rounding up
-tables to page size to unify the common parts of the 32-bit and 64-bit
-implementations.
+> On 19.02.09 17:34:03, Tim Blechmann wrote:
+> > resetting the counter width of the performance counters on intel's
+> > core2, breaks the delivery of NMIs, when running in x86_64 mode.
+> > 
+> > this should fix bug #12395:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12395
+> 
+> Applied to oprofile/fixes. Thanks Tim.
+> 
+> Ingo, please pull from
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git fixes
+> 
+> for v2.6.29-rc7.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- arch/x86/mm/init_32.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Pulled, thanks a lot Robert!
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 1a2e193..a0c32d5 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -824,10 +824,10 @@ static void __init find_early_table_space(unsigned long end, int use_pse)
- 	unsigned long puds, pmds, ptes, tables, start;
- 
- 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
--	tables = PAGE_ALIGN(puds * sizeof(pud_t));
-+	tables = roundup(puds * sizeof(pud_t), PAGE_SIZE);
- 
- 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
--	tables += PAGE_ALIGN(pmds * sizeof(pmd_t));
-+	tables += roundup(pmds * sizeof(pmd_t), PAGE_SIZE);
- 
- 	if (use_pse) {
- 		unsigned long extra;
-@@ -838,10 +838,10 @@ static void __init find_early_table_space(unsigned long end, int use_pse)
- 	} else
- 		ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 
--	tables += PAGE_ALIGN(ptes * sizeof(pte_t));
-+	tables += roundup(ptes * sizeof(pte_t), PAGE_SIZE);
- 
- 	/* for fixmap */
--	tables += PAGE_ALIGN(__end_of_fixed_addresses * sizeof(pte_t));
-+	tables += roundup(__end_of_fixed_addresses * sizeof(pte_t), PAGE_SIZE);
- 
- 	/*
- 	 * RED-PEN putting page tables only on node 0 could
--- 
-1.5.4.3
+Note: i amended the commit to add a tag for the .28 backport 
+[this fix is .28.x relevant] and to fix a few small details 
+(removed the goto, etc.).
 
-
-
+	Ingo
