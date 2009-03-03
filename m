@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZCCOvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZCCOyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZCCOvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 09:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZCCOvF
+	id S1755480AbZCCOyB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 09:54:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZCCOxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 09:51:05 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:50517 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbZCCOvD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 09:51:03 -0500
-Date: Tue, 3 Mar 2009 14:50:40 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [TIP,regression,i915] /dev/dri/card0 is no longer present
-Message-ID: <20090303145040.GA7979@silver.sucs.org>
-References: <20090301110455.GA18547@silver.sucs.org> <20090301113948.GA3602@elte.hu> <20090301134809.GA4753@silver.sucs.org> <1236020758.4586.76.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 3 Mar 2009 09:53:51 -0500
+Received: from kroah.org ([198.145.64.141]:41093 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751994AbZCCOxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 09:53:49 -0500
+Date: Tue, 3 Mar 2009 06:53:10 -0800
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Elaboration on "Equivalent fix must already exist in Linus'
+	tree"
+Message-ID: <20090303145310.GB5791@kroah.com>
+References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com> <49ACC6B0.409@garzik.org> <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com> <20090303072637.GB4440@kroah.com> <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236020758.4586.76.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 02, 2009 at 11:05:58AM -0800, Pallipadi, Venkatesh wrote:
-> On Sun, 2009-03-01 at 05:48 -0800, Sitsofe Wheeler wrote:
-> > On Sun, Mar 01, 2009 at 12:39:48PM +0100, Ingo Molnar wrote:
-> > >
-> > > Thanks, i've reverted the commit for now. Could you please send
-> > > a 'dmesg' from the bootup with the failed driver? By all
-> > > likelyhood an ioremap failure causes a driver failure.
-> > >
-> > 
-> > See below (drm says it initalized though...):
-> > 
-> > [    0.000000] Linux version 2.6.29-rc6-00006-g17581ad (@verona) (gcc version 4.2.4) #87 Sun Mar 1 13:42:28 GMT 2009
-> > [    0.000000] KERNEL supported cpus:
-> > [    0.000000]   Intel GenuineIntel
-> > [    0.000000] PAT WC disabled due to known CPU erratum.
+On Mon, Mar 02, 2009 at 11:37:33PM -0800, Luis R. Rodriguez wrote:
+> On Mon, Mar 2, 2009 at 11:26 PM, Greg KH <greg@kroah.com> wrote:
+> > - Show quoted text -
+> > On Mon, Mar 02, 2009 at 10:44:40PM -0800, Luis R. Rodriguez wrote:
+> >> On Mon, Mar 2, 2009 at 9:57 PM, Jeff Garzik <jeff@garzik.org> wrote:
+> >> > Luis R. Rodriguez wrote:
+> >> >>
+> >> >> While extending the documentation for submitting Linux wireless bug
+> >> >> reports [1] we note the stable series policy on patches -- that of
+> >> >> having an equivalent fix already in Linus' tree. I find this
+> >> >> documented in Documentation/stable_kernel_rules.txt but I'm curious if
+> >> >> there is any other resource which documents this or elaborates on this
+> >> >> a bit more. I often tell people about this rule or push _really_ hard
+> >> >> on testing "upstream" but some people tend to not understand. I think
+> >> >> that elaborating a little on this can help and will hopefully create
+> >> >> more awareness around the importance of trees like Stephen's
+> >> >> linux-next tree.
+> >> >
+> >> > Just have people google for GregKH's copious messages, telling people a fix
+> >> > needs to be upstream before it goes into -stable.
+> >> >
+> >> > Typically you make things easy by emailing stable@kernel.org with a commit
+> >> > id.
+> >> >
+> >> > There are only two exceptions:
+> >> > * fix is upstream, but needs to be modified for -stable
+> >> > * fix is not needed at all in upstream, but -stable still needs it
+> >>
+> >> This certainly helps, I'm also looking for good arguments to support
+> >> the reasoning behind the policy so that not only will people follow
+> >> this to help development but _understand_ it and so that they can
+> >> themselves promote things like linux-next and realize why its so
+> >> important. Mind you -- upstream for us in wireless for example is not
+> >> Linus its John's tree so what we promote is not to get the fix first
+> >> into Linus' tree but first into John's tree. Which is obvious to
+> >> developers but perhaps not to others.
+> >
+> > Who are these "people" that you are trying to convince?
 > 
-> Looks like PAT is getting disabled on this platform. Can you send the
-> output of /proc/cpuinfo please.
+> OK small silly example is convincing distributions it may be a good
+> idea to carry linux-next kernel packages as options to users to
+> hopefully down the road reduce the delta between what they carry and
+> what is actually upstream.
 
-The machine has a stepping of the Celeron M chip in it with PAT errata.
-I think it becomes disabled  because it would require a careful code to
-ensure that WC was only used in circumstances where the errata would not
-matter...
+Woah!
 
-Here's the contents of /proc/cpuinfo:
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 13
-model name	: Intel(R) Celeron(R) M processor          900MHz
-stepping	: 8
-cpu MHz		: 900.074
-cache size	: 512 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx bts
-bogomips	: 1800.14
-clflush size	: 64
-power management:
+You started out talking about -stable, and now you are trying to use
+that as a reason for a distro to carry -next?  Those are on the totally
+different end of the spectrum.
 
--- 
-Sitsofe | http://sucs.org/~sits/
+It's up to the individual distros if they want to carry portions of
+-next (and if you look, they all carry some parts, due to different
+reasons).
+
+thanks,
+
+greg k-h
