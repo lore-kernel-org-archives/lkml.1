@@ -1,159 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbZCCBbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZCCBh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbZCCBbh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 20:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZCCBb2
+	id S1756769AbZCCBh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 20:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZCCBhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 20:31:28 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:46620 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753062AbZCCBb1 (ORCPT
+	Mon, 2 Mar 2009 20:37:15 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:33140 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753085AbZCCBhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 20:31:27 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhwFACMXrElMQW1W/2dsb2JhbACBWdMlhAYG
-Date: Mon, 2 Mar 2009 20:31:24 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH] Text Edit Lock - kprobes architecture independent support
-	(v2)
-Message-ID: <20090303013124.GB7783@Krystal>
-References: <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <20090303000054.GC3906@Krystal> <20090303003237.GA30221@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Mar 2009 20:37:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=fooaIzr//Af/KDTyGx3Cql4h38SJ9+StaKrnQSnNQrhMTTQ+mZBURG/2ylIAYURpvT
+         htVz+BogQVvG3HgBSGOiNhDafpJnygT5FEbi1H6PeGwuVocFf8fEgpbcS8khczRzyKZI
+         l6KtUmLTl/OSpc09rKQLtBpaOB00cdIg76EwY=
+MIME-Version: 1.0
+Date: Mon, 2 Mar 2009 17:37:11 -0800
+Message-ID: <43e72e890903021737v7f5c4f06lb13e4f5d3ad67fd7@mail.gmail.com>
+Subject: hid-dummy.ko Input/output error -- causing huge delays
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090303003237.GA30221@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:30:30 up 2 days, 21:56,  4 users,  load average: 1.51, 0.63,
-	0.63
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the mutual exclusion provided by the text edit lock in the kprobes code. It
-allows coherent manipulation of the kernel code by other subsystems.
+FATAL: Error inserting hid_dummy
+(/lib/modules/2.6.29-rc6-wl/kernel/drivers/hid/hid-dummy.ko):
+Input/output error
 
-Changelog:
+I remember reading a thread where you said this was non-fatal and that
+hid-dummy.ko would go away. On my system, every now in a blue moon the
+above causes a huge delay during the bootup sequence. I'm talking
+about a full 1-2 minute delay. Why is the delay so sporadic?
 
-Move the kernel_text_lock/unlock out of the for loops.
-Use text_mutex directly instead of a function.
-
-(applies on 2.6.29-rc6)
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
-CC: Roel Kluin <12o3l@tiscali.nl>
----
- kernel/kprobes.c |   18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
-
-Index: linux-2.6-lttng/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2009-03-02 19:22:51.000000000 -0500
-+++ linux-2.6-lttng/kernel/kprobes.c	2009-03-02 19:27:26.000000000 -0500
-@@ -43,6 +43,7 @@
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
- #include <linux/kdebug.h>
-+#include <linux/memory.h>
- 
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
-@@ -699,9 +700,10 @@ int __kprobes register_kprobe(struct kpr
- 		goto out;
- 	}
- 
-+	mutex_lock(&text_mutex);
- 	ret = arch_prepare_kprobe(p);
- 	if (ret)
--		goto out;
-+		goto out_unlock_text;
- 
- 	INIT_HLIST_NODE(&p->hlist);
- 	hlist_add_head_rcu(&p->hlist,
-@@ -709,7 +711,8 @@ int __kprobes register_kprobe(struct kpr
- 
- 	if (kprobe_enabled)
- 		arch_arm_kprobe(p);
--
-+out_unlock_text:
-+	mutex_unlock(&text_mutex);
- out:
- 	mutex_unlock(&kprobe_mutex);
- 
-@@ -746,8 +749,11 @@ valid_p:
- 		 * enabled and not gone - otherwise, the breakpoint would
- 		 * already have been removed. We save on flushing icache.
- 		 */
--		if (kprobe_enabled && !kprobe_gone(old_p))
-+		if (kprobe_enabled && !kprobe_gone(old_p)) {
-+			mutex_lock(&text_mutex);
- 			arch_disarm_kprobe(p);
-+			mutex_unlock(&text_mutex);
-+		}
- 		hlist_del_rcu(&old_p->hlist);
- 	} else {
- 		if (p->break_handler && !kprobe_gone(p))
-@@ -918,7 +924,6 @@ static int __kprobes pre_handler_kretpro
- 		}
- 
- 		arch_prepare_kretprobe(ri, regs);
--
- 		/* XXX(hch): why is there no hlist_move_head? */
- 		INIT_HLIST_NODE(&ri->hlist);
- 		kretprobe_table_lock(hash, &flags);
-@@ -1280,12 +1285,14 @@ static void __kprobes enable_all_kprobes
- 	if (kprobe_enabled)
- 		goto already_enabled;
- 
-+	mutex_lock(&text_mutex);
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist)
- 			if (!kprobe_gone(p))
- 				arch_arm_kprobe(p);
- 	}
-+	mutex_unlock(&text_mutex);
- 
- 	kprobe_enabled = true;
- 	printk(KERN_INFO "Kprobes globally enabled\n");
-@@ -1310,6 +1317,7 @@ static void __kprobes disable_all_kprobe
- 
- 	kprobe_enabled = false;
- 	printk(KERN_INFO "Kprobes globally disabled\n");
-+	mutex_lock(&text_mutex);
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
-@@ -1317,7 +1325,7 @@ static void __kprobes disable_all_kprobe
- 				arch_disarm_kprobe(p);
- 		}
- 	}
--
-+	mutex_unlock(&text_mutex);
- 	mutex_unlock(&kprobe_mutex);
- 	/* Allow all currently running kprobes to complete */
- 	synchronize_sched();
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+  Luis
