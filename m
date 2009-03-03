@@ -1,135 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZCCTyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZCCTzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbZCCTyc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 14:54:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbZCCTyU
+	id S1754682AbZCCTzO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 14:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZCCTy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 14:54:20 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:53066 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755348AbZCCTyS (ORCPT
+	Tue, 3 Mar 2009 14:54:59 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:27358 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbZCCTy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 14:54:18 -0500
-Message-ID: <49AD8B2F.4060700@oracle.com>
-Date: Tue, 03 Mar 2009 11:55:27 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 3 Mar 2009 14:54:57 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -14.389
+Message-ID: <49AD8B0A.90901@tremplin-utc.net>
+Date: Tue, 03 Mar 2009 20:54:50 +0100
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Cheng Renquan <crquan@gmail.com>
-CC: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/6] [KBUILD] configuration system improvements
-References: <1235401804-8136-1-git-send-email-crquan@gmail.com>	 <49AB55B9.3050301@oracle.com> <91b13c310903022009l363497bbi380356c19caa53b3@mail.gmail.com> <49AD75D4.20600@oracle.com>
-In-Reply-To: <49AD75D4.20600@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 4/5] lis3: solve dependency between core and ACPI
+References: <49ABB22F.7040508@tremplin-utc.net> <1236004310-29196-1-git-send-email-daniel@caiaq.de> <1236004310-29196-2-git-send-email-daniel@caiaq.de> <1236004310-29196-3-git-send-email-daniel@caiaq.de> <1236004310-29196-4-git-send-email-daniel@caiaq.de>
+In-Reply-To: <1236004310-29196-4-git-send-email-daniel@caiaq.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.49AD8AD6.024E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Cheng Renquan wrote:
->> On Mon, Mar 2, 2009 at 11:42 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>> Cheng Renquan wrote:
->>>> This group of patches improve the usability of kernel configuration system,
->>>> mainly,
->>>>
->>>> 1. add symbol's value shown accompanied in config item's help message;
->>>> 2. move the real plumbing functions code from mconf.c to menu.c, make them
->>>>    be able to be shared with other configuration methods;
->>>> 3. add "symbol's value shown" support for gconfig/xconfig/config;
->>>>
->>>>   0001--KBUILD-add-symbol-value-to-help-find-the-real-depe.patch
->>>>   0002--KBUILD-add-menu_get_ext_help-function-to-display-m.patch
->>>>   0003--KBUILD-menuconfig-improvements.patch
->>>>   0004--KBUILD-make-use-of-menu_get_ext_help-in-gconfig.patch
->>>>   0005--KBUILD-make-use-of-menu_get_ext_help-in-qconfig.patch
->>>>   0006--KBUILD-make-use-of-menu_get_ext_help-in-make-conf.patch
->>>>
->>>> I found gconfig still lack of "search by symbol" support, and that would be
->>>> in another patch.
->>>>
->>>> Request for comments, thanks.
->>> Hi,
->>>
->>> I still like this idea a lot.  However, with "make gconfig" I am
->>> seeing a segfault when I click on "Firmware Drivers" in the main menu.
->>> I only see this with these patches applied.
->>>
->>> Other than that, they look good to me.
->>>
->>>
->>> Here's the gconfig info:
->>> rddunlap@chimera:linux-2.6.29-rc6-git5> make ARCH=x86_64 O=xx64 gconfig &
->>> [1] 10722
->>> rddunlap@chimera:linux-2.6.29-rc6-git5>   GEN     /local/linsrc/tmp/linux-2.6.29-rc6-git5/xx64/Makefile
->>> scripts/kconfig/gconf arch/x86/Kconfig
->>> make[2]: *** [gconfig] Segmentation fault
->>> make[1]: *** [gconfig] Error 2
->>> make: *** [sub-make] Error
->>>
->>>
->>> and from the kernel log:
->>>
->>> gconf[10868]: segfault at 0000000000000070 rip 00000000004111b6 rsp 00007ffff67cd6f0 error 4
->> Could you tell what distribution are you using? The versions of your
->> glibc, gtk+2.0, and glibc? If you can correctly build other gtk+
->> programs?
+Daniel Mack schreef:
+> This solves the dependency between lis3lv02d.[ch] and ACPI specific
+> methods. It introduces a ->bus_priv pointer to the device struct which
+> is casted to 'struct acpi_device' in the ACIP layer. Changed hp_accel.c
+> accordingly.
 > 
-> This is on OpenSUSE 10.3 on x86_64.
-> 
-> glibc-2.6.1-18
-> gtk2-2.12.0-5
-> 
-> I don't know that I have any other gtk+ programs.
-> 
->> I have developed these patches on default Fedora 10 i686, it runs
->> well, and today I have tested it under a latest Gentoo x86_64 desktop,
->> all seems run well here.
-> 
-> Here's a backtrace from gdb.  gconfig was built without -d, however.
-
-Here's a better backtrace; gconfig was built with -g (not -d ??!?).
-
-Program received signal SIGSEGV, Segmentation fault.
-0x00000000004111b6 in get_symbol_str ()
-(gdb) #0  0x00000000004111b6 in get_symbol_str ()
-#1  0x0000000000408acb in on_treeview2_cursor_changed (
-    treeview=<value optimized out>, user_data=<value optimized out>)
-    at /local/linsrc/tmp/linux-2.6.29-rc6-git5/scripts/kconfig/gconf.c:461
-#2  0x00002b61af79bd2f in g_closure_invoke ()
-   from /usr/lib64/libgobject-2.0.so.0
-#3  0x00002b61af7ae1fd in ?? () from /usr/lib64/libgobject-2.0.so.0
-#4  0x00002b61af7afc55 in g_signal_emit_valist ()
-   from /usr/lib64/libgobject-2.0.so.0
-#5  0x00002b61af7b0043 in g_signal_emit () from /usr/lib64/libgobject-2.0.so.0
-#6  0x00002b61ae31bada in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
-#7  0x00002b61ae3225de in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
-#8  0x00002b61ae22dbbf in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
-#9  0x00002b61af79bd2f in g_closure_invoke ()
-   from /usr/lib64/libgobject-2.0.so.0
-#10 0x00002b61af7ae5f6 in ?? () from /usr/lib64/libgobject-2.0.so.0
-#11 0x00002b61af7af989 in g_signal_emit_valist ()
-   from /usr/lib64/libgobject-2.0.so.0
-#12 0x00002b61af7b0043 in g_signal_emit () from /usr/lib64/libgobject-2.0.so.0
-#13 0x00002b61ae334ff5 in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
-#14 0x00002b61ae226ef2 in gtk_propagate_event ()
-   from /usr/lib64/libgtk-x11-2.0.so.0
-#15 0x00002b61ae227e95 in gtk_main_do_event ()
-   from /usr/lib64/libgtk-x11-2.0.so.0
-#16 0x00002b61aea307bc in ?? () from /usr/lib64/libgdk-x11-2.0.so.0
-#17 0x00002b61afe0c064 in g_main_context_dispatch ()
-   from /usr/lib64/libglib-2.0.so.0
-#18 0x00002b61afe0f35d in ?? () from /usr/lib64/libglib-2.0.so.0
-#19 0x00002b61afe0f657 in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
-#20 0x00002b61ae228263 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
-#21 0x000000000040a7c5 in main (ac=2, av=0x7ffffd048228)
-    at /local/linsrc/tmp/linux-2.6.29-rc6-git5/scripts/kconfig/gconf.c:1609
+> This also moves the read_8() and read_16() routines from hp_accel.c to
+> lis3lv02d.c as they are not specific to ACPI.
+Hello,
+I've tried the patch series on my laptop. This particular patch burst
+the driver... need some work :-) The values are not read correctly and
+the IRQ is not detected. See down in the code...
 
 
--- 
-~Randy
+> @@ -291,23 +284,9 @@ static int lis3lv02d_add(struct acpi_device *device)
+>  	strcpy(acpi_device_class(device), ACPI_MDPS_CLASS);
+>  	device->driver_data = &lis3_dev;
+>  
+> -	lis3lv02d_acpi_read(device->handle, WHO_AM_I, &lis3_dev.whoami);
+> -	switch (lis3_dev.whoami) {
+> -	case LIS_DOUBLE_ID:
+> -		printk(KERN_INFO DRIVER_NAME ": 2-byte sensor found\n");
+> -		lis3_dev.read_data = lis3lv02d_read_16;
+> -		lis3_dev.mdps_max_val = 2048;
+> -		break;
+> -	case LIS_SINGLE_ID:
+> -		printk(KERN_INFO DRIVER_NAME ": 1-byte sensor found\n");
+> -		lis3_dev.read_data = lis3lv02d_read_8;
+> -		lis3_dev.mdps_max_val = 128;
+> -		break;
+> -	default:
+> -		printk(KERN_ERR DRIVER_NAME
+> -			": unknown sensor type 0x%X\n", lis3_dev.whoami);
+> -		return -EINVAL;
+> -	}
+> +	ret = lis3lv02d_init_device(&lis3_dev);
+> +	if (ret)
+> +		return ret;
+>  
+>  	/* If possible use a "standard" axes order */
+>  	if (dmi_check_system(lis3lv02d_dmi_ids) == 0) {
+> @@ -318,19 +297,16 @@ static int lis3lv02d_add(struct acpi_device *device)
+>  
+>  	INIT_WORK(&hpled_led.work, delayed_set_status_worker);
+>  	ret = led_classdev_register(NULL, &hpled_led.led_classdev);
+> -	if (ret)
+> -		return ret;
+> -
+> -	/* obtain IRQ number of our device from ACPI */
+> -	lis3lv02d_enum_resources(lis3_dev.device);
+> -
+> -	ret = lis3lv02d_init_device(&lis3_dev);
+>  	if (ret) {
+> +		lis3lv02d_joystick_disable();
+> +		lis3lv02d_poweroff(&lis3_dev);
+>  		flush_work(&hpled_led.work);
+> -		led_classdev_unregister(&hpled_led.led_classdev);
+>  		return ret;
+>  	}
+>  
+> +	/* obtain IRQ number of our device from ACPI */
+> +	lis3lv02d_enum_resources(device);
+> +
+>  	return ret;
+>  }
+So now, we first try to set up the IRQ, in lis3lv02d_init_device() and
+only after look for a IRQ number with lis3lv02d_enum_resources()... that
+doesn't work.
+
+>  
+> -static s16 lis3lv02d_read_16(acpi_handle handle, int reg)
+> -{
+> -	u8 lo, hi;
+> -
+> -	lis3_dev.read(handle, reg - 1, &lo);
+> -	lis3_dev.read(handle, reg, &hi);
+> -	/* In "12 bit right justified" mode, bit 6, bit 7, bit 8 = bit 5 */
+> -	return (s16)((hi << 8) | lo);
+> -}
+:
+> +static s16 lis3lv02d_read_16(struct lis3lv02d *lis3, int reg)
+>  {
+>  	u8 lo, hi;
+>  
+> -	lis3_dev.read(handle, reg, &lo);
+> -	lis3_dev.read(handle, reg + 1, &hi);
+> +	lis3->read(lis3, reg, &lo);
+> +	lis3->read(lis3, reg + 1, &hi);
+>  	/* In "12 bit right justified" mode, bit 6, bit 7, bit 8 = bit 5 */
+>  	return (s16)((hi << 8) | lo);
+>  }
+Looking at it I cannot beleive we ended up with two versions of
+lis3lv02d_read_16()!
+Anyway, you want the logic of the above version, the one with "- 1".
+
+Eric
+
