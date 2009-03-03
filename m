@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZCCLwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbZCCLyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbZCCLwx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 06:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbZCCLwE
+	id S1758010AbZCCLyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 06:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCCLyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 06:52:04 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:50003 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757704AbZCCLwB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 06:52:01 -0500
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH 2 3/3] sched: Fix sd_parent_degenerate for
-	SD_POWERSAVINGS_BALANCE.
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
-       "Balbir Singh" <balbir@in.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>
-Cc: "Dipankar Sarma" <dipankar@in.ibm.com>, efault@gmx.de, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Tue, 03 Mar 2009 17:21:54 +0530
-Message-ID: <20090303115154.605.63799.stgit@sofia.in.ibm.com>
-In-Reply-To: <20090303114648.605.86920.stgit@sofia.in.ibm.com>
-References: <20090303114648.605.86920.stgit@sofia.in.ibm.com>
-User-Agent: StGIT/0.14.2
+	Tue, 3 Mar 2009 06:54:10 -0500
+Received: from www.tglx.de ([62.245.132.106]:51090 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751139AbZCCLyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 06:54:09 -0500
+Date: Tue, 3 Mar 2009 12:53:02 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Brownell <david-b@pacbell.net>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, dmitry.torokhov@gmail.com, sameo@openedhand.com
+Subject: Re: lockdep and threaded IRQs (was: ...)
+In-Reply-To: <200903021542.25153.david-b@pacbell.net>
+Message-ID: <alpine.LFD.2.00.0903031207240.29264@localhost.localdomain>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200903021520.30826.david-b@pacbell.net> <20090302232650.GA14515@elte.hu> <200903021542.25153.david-b@pacbell.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently a sched_domain having a single group can be prevented from getting
-degenerated if it contains a SD_POWERSAVINGS_BALANCE flag. But since it has
-only one group, it won't have any scope for performing powersavings balance as
-it does not have a sibling group to pull from.
+On Mon, 2 Mar 2009, David Brownell wrote:
 
-Apart from not provide any powersavings, it also fails to participate
-in normal load-balancing.
+> On Monday 02 March 2009, Ingo Molnar wrote:
+> > If you want to work on genirq threaded IRQ handlers them please 
+> > check out and test the threaded IRQ handlers patches that are 
+> > being worked on at lkml. See:
+> > 
+> > [patch 0/4] genirq: add infrastructure for threaded interrupt handlers V2
+> 
+> I did check them out, as noted earlier in this thread.
+> 
+> The significant omission is lack of support for chaining
+> such threads.  Example, an I2C device that exposes
+> several dozen IRQs with mask/ack/... operations that
+> require I2C access.
 
-Fix this by allowing such a sched_domain to degenerate and pass on the
-responsibility of performing the POWERSAVINGS_BALANCE to it's parent domain.
+Well, the significant omission is on your side. Instead of talking to
+us about the problems and possible shortcomings of the genirq code you
+went there and created your private form of abuse and now you are
+complaining about that. The lockdep issue is not caused by lockdep,
+it's caused by your using code which is designed to run in hardirq
+context from a thread context. It does not become more correct just
+because it works fine w/o lockdep.
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
+> I'm not sure what Thomas intends to do with that issue,
 
- kernel/sched.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+I can do something about that, when I know about it, but I have just
+learned about the details in the last few days.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 7d22a96..765e3e9 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6957,6 +6957,20 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
- 				SD_SHARE_PKG_RESOURCES);
- 		if (nr_node_ids == 1)
- 			pflags &= ~SD_SERIALIZE;
-+
-+		/*
-+		 * If the only flag that is preventing us from degenerating
-+		 * a domain with a single group is SD_POWERSAVINGS_BALANCE
-+		 * check if it can be transferred to the new parent,
-+		 * and degenerate this domain. With a single
-+		 * group, it anyway can't contribute to power-aware load
-+		 * balancing.
-+		 */
-+		if (pflags & SD_POWERSAVINGS_BALANCE && parent->parent) {
-+			pflags &= ~SD_POWERSAVINGS_BALANCE;
-+			parent->parent->flags |=
-+				sd_power_saving_flags(parent->level);
-+		}
- 	}
- 	if (~cflags & pflags)
- 		return 0;
+> if anything.  It does touch on messy bits of genirq.
 
+Which mess are you referring to ? 
+
+The problem you described is straight forward and as I said before
+it's not rocket science to provide support for that in the genirq
+code. Your use case does not need to use the chained handler setup at
+all, it just needs to request the main IRQ as a simple type and handle
+the ack/mask/unmask from the two handler parts.
+
+irqreturn_t hardirq_handler()
+{
+	ack_mask(irq);
+	return IRQ_WAKE_THREAD;
+}    
+
+irqreturn_t thread_handler()
+{
+	pending = read_i2c_pending_irqs();
+
+	while (pending) {
+	      ....
+	      d->handle_irq(module_irq, d);
+	}
+	unmask(irq);
+}
+
+The only change in the generic code which is needed is a new handler
+function for the chained irqs "handle_irq_simple_threaded()" which is
+designed to handle the calls from thread context.
+
+Thanks,
+
+	tglx
