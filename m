@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbZCCHsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbZCCHwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758019AbZCCHsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 02:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZCCHsA
+	id S1757668AbZCCHwE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 02:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZCCHvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 02:48:00 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:39712 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbZCCHr7 (ORCPT
+	Tue, 3 Mar 2009 02:51:53 -0500
+Received: from viefep18-int.chello.at ([62.179.121.38]:44270 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbZCCHvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 02:47:59 -0500
-Date: Tue, 3 Mar 2009 08:47:46 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: djwong@us.ibm.com, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] lm90: Support the MAX6648/6692 chips
-Message-ID: <20090303084746.14462e04@hyperion.delvare>
-In-Reply-To: <20090302150426.b22100c1.akpm@linux-foundation.org>
-References: <20090302210106.GD6550@plum>
-	<20090302150426.b22100c1.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+	Tue, 3 Mar 2009 02:51:53 -0500
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC][PATCH] remove rq->lock from cpuacct cgroup (Was Re:
+ [PATCH] cpuacct: add a branch prediction
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: paulmck@linux.vnet.ibm.com, Bharata B Rao <bharata.rao@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
+References: <49A65455.4030204@cn.fujitsu.com>
+	 <20090226174033.094e4834.kamezawa.hiroyu@jp.fujitsu.com>
+	 <344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
+	 <18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
+	 <1235645076.4645.4781.camel@laptop>
+	 <934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com>
+	 <1235647682.4948.15.camel@laptop>
+	 <145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
+	 <20090226164509.GB6634@linux.vnet.ibm.com>
+	 <20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090227012915.GF6634@linux.vnet.ibm.com>
+	 <20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1236005770.5330.583.camel@laptop>
+	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 08:51:29 +0100
+Message-Id: <1236066689.18955.27.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Tue, 2009-03-03 at 08:42 +0900, KAMEZAWA Hiroyuki wrote:
 
-On Mon, 2 Mar 2009 15:04:26 -0800, Andrew Morton wrote:
-> On Mon, 2 Mar 2009 13:01:06 -0800
-> "Darrick J. Wong" <djwong@us.ibm.com> wrote:
-> 
-> > @@ -776,7 +776,12 @@ static int lm90_detect(struct i2c_client *new_client, int kind,
-> >  			 && (reg_config1 & 0x3f) == 0x00
-> >  			 && reg_convrate <= 0x07) {
-> >  				kind = max6646;
-> > -			}
-> > +			} else
-> > +			/* The MAX6648/6692 chips have a working man/chip id
-> > +			 * and the same register set as the 6657.
-> > +			 */
-> > +			if (chip_id == 0x59 && address == 0x4C)
-> > +				kind = max6657;
-> >  		}
-> 
-> gack, the indenting and layout there is totally busted.
+> > Furthermore, if you want something like schedule_work_on() for each cpu,
+> > there's schedule_on_each_cpu().
+> > 
+> It can't pass arguments...Maybe I should use rq->lock here to reset
+> other cpu's value.
 
-This specific layout is consistently used through the whole function,
-and checkpatch.pl doesn't complain about it. While unconventional, it
-has its advantages, in particular it avoids extra indentation that
-would make some lines too long. At any rate it doesn't make sense to
-change this last chunk without changing all the rest if this layout is
-deemed unacceptable.
+Why bother with serializing the reset code at all?
 
-> --- a/drivers/hwmon/lm90.c~lm90-support-the-max6648-6692-chips-fix
-> +++ a/drivers/hwmon/lm90.c
-> @@ -776,12 +776,14 @@ static int lm90_detect(struct i2c_client
->  			 && (reg_config1 & 0x3f) == 0x00
->  			 && reg_convrate <= 0x07) {
->  				kind = max6646;
-> -			} else
-> -			/* The MAX6648/6692 chips have a working man/chip id
-> -			 * and the same register set as the 6657.
-> -			 */
-> -			if (chip_id == 0x59 && address == 0x4C)
-> +			} else if (chip_id == 0x59 && address == 0x4C) {
-> +				/*
-> +				 * The MAX6648/6692 chips have a working
-> +				 * man/chip id and the same register set as the
-> +				 * 6657.
-> +				 */
->  				kind = max6657;
-> +			}
->  		}
->  
->  		if (kind <= 0) { /* identification failed */
+But there's always smp_call_function() I suppose.
 
-I thus nack this change of yours.
-
--- 
-Jean Delvare
