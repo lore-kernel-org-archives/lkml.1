@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZCCSNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZCCSOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbZCCSNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 13:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbZCCSNF
+	id S1755567AbZCCSOg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 13:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZCCSO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 13:13:05 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51329 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbZCCSNE (ORCPT
+	Tue, 3 Mar 2009 13:14:28 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34039 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbZCCSO1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 13:13:04 -0500
-Subject: Re: Regression - locking (all from 2.6.28)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jan sonnek <ha2nny@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, Catalin Marinas <catalin.marinas@arm.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <20090302121127.e46dc4be.akpm@linux-foundation.org>
-References: <49AC334A.9030800@gmail.com>
-	 <20090302121127.e46dc4be.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 19:12:41 +0100
-Message-Id: <1236103961.5330.5108.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
+	Tue, 3 Mar 2009 13:14:27 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49AD7361.308@s5r6.in-berlin.de>
+Date: Tue, 03 Mar 2009 19:13:53 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+MIME-Version: 1.0
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: Elaboration on "Equivalent fix must already exist in Linus' tree"
+References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>	 <49ACC6B0.409@garzik.org>	 <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>	 <20090303072637.GB4440@kroah.com>	 <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>	 <49AD4C74.1060704@s5r6.in-berlin.de> <43e72e890903030923v27c47f5anc184c0e8085bc5c1@mail.gmail.com>
+In-Reply-To: <43e72e890903030923v27c47f5anc184c0e8085bc5c1@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 12:11 -0800, Andrew Morton wrote:
-
-> > Mar  1 00:07:03 localhost kernel: [   86.440261] =========================================================
-> > Mar  1 00:07:03 localhost kernel: [   86.440266] [ INFO: possible irq lock inversion dependency detected ]
-> > Mar  1 00:07:03 localhost kernel: [   86.440271] 2.6.29-rc6-mm1-hanny #17
-> > Mar  1 00:07:03 localhost kernel: [   86.440273] ---------------------------------------------------------
+Luis R. Rodriguez wrote:
+> On Tue, Mar 3, 2009 at 7:27 AM, Stefan Richter
+> <stefanr@s5r6.in-berlin.de> wrote:
+>> Luis R. Rodriguez wrote:
+>>> OK small silly example is convincing distributions it may be a good
+>>> idea to carry linux-next kernel packages as options to users to
+>>> hopefully down the road reduce the delta between what they carry and
+>>> what is actually upstream.
+>> Distros would do their users a bigger favour if [...]
 > 
-> I stared at this for a while, but my brain broke trying to work out
-> what lockdep is trying to tell us.
-> 
-> > Mar  1 00:07:03 localhost kernel: [   86.440277] Xorg/2733 just changed the state of lock:
-> > Mar  1 00:07:03 localhost kernel: [   86.440280]  (fasync_lock){.-....}, at: [<c01952bb>] kill_fasync+0x20/0x3a
-> > Mar  1 00:07:03 localhost kernel: [   86.440292] but this lock took another, HARDIRQ-READ-irq-unsafe lock in the past:
-> > Mar  1 00:07:03 localhost kernel: [   86.440296]  (&f->f_lock){+.+...}
-> 
-> This message needs help.  A lock cannot "take" another lock. 
+> I don't think I was very clear in what I meant about "carrying
+> linux-next kernel packages as an option". What I meant was carrying it
+> just as an option for those users who want to test bleeding edge
+> without compiling their own linux-next, _not_ to merge linux-next
+> things into their own default kernel release and shove it down users
+> throats.
 
-It seemed a simple enough way to tell that the latter lock nests inside
-the former lock.
+Sorry, I meant "bigger favour" relative to carrying an own delta of
+considerable size.
 
-So what its saying is that we have:
-
-  fasync_lock
-    f->f_lock
-
-nesting, and fasync_lock got used in hardirq context, but the lock that
-was previously found to nest inside, was an IRQ-unsafe lock.
-
-So $CODE code take f->f_lock, then IRQ could happen and fasync_lock,
-f->f_lock could happen and we'd be stuck.
-
-Would something like:
-
-"but this lock had a %s-irq-unsafe nestee in the past:" read better?
-
-> And why
-> is f_lock described as "HARDIRQ-READ-irq-unsafe"?  It's a spinlock and
-> the "READ" part is not relevant.
-
-I think that's a bug due to the recent irq state tracking generalization
-patches, will hunt.
-
-> > Mar  1 00:07:03 localhost kernel: [   86.440299] 
-> > Mar  1 00:07:03 localhost kernel: [   86.440300] and interrupts could create inverse lock ordering between them.
-> > Mar  1 00:07:03 localhost kernel: [   86.440302] 
-
-
-
+Packaging linux-next would be fine if the workload isn't a problem for
+the packager.  As pointed out elsewhere, there are caveats with
+linux-next (e.g. a functionality which was in it yesterday could be gone
+today because of a merge issue), but that's the nature of bleeding edge
+of course.
+-- 
+Stefan Richter
+-=====-==--= --== ---==
+http://arcgraph.de/sr/
