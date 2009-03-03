@@ -1,158 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbZCCEVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756961AbZCCE2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbZCCEVs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 23:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZCCEVk
+	id S1756961AbZCCE2a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 23:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZCCE2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 23:21:40 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:20939 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753715AbZCCEVj (ORCPT
+	Mon, 2 Mar 2009 23:28:21 -0500
+Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:57058 "EHLO
+	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751215AbZCCE2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 23:21:39 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=wv0k3jz7udJ4VIhSfwBpfJ5m+kxvFaulDlhdqPZYmv7XDtFXwGfhBVsjdUxXNsaS39TToOlJNw5YhNpUpltSXEmgcETHecfvT32Tuh4FdRF8HyEv3nSzBU+Xvvl+b6TSNe9EmtAqoa5bBVRtn7wqUR7lDDsYctJAGqldd4v5pAk=  ;
-X-YMail-OSG: Ylw7u2QVM1kZnnaUA8nGWRGPriXYbU_o9b_kkgJlLC3EeSGBX7qCC4GltRSW54BCayMBpJsTWxVkHYZ6FwCigImfvO7ZowB3pLMc1mevrP5htonAIgTlIsqE2AT5Dl30e233UCRFWA8P7MjvPk2sb19NKI31oaNP.iPXO03IqHEMb90NESAf7TEbyeCWZg--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
-Date: Tue, 3 Mar 2009 15:20:59 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       mingo@elte.hu, sqazi@google.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-References: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain> <200903020106.51865.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903021255020.3111@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903021255020.3111@localhost.localdomain>
+	Mon, 2 Mar 2009 23:28:20 -0500
+X-Greylist: delayed 430 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Mar 2009 23:28:19 EST
+From: Aaron Carroll <aaronc@cse.unsw.edu.au>
+To: xiegang112@gmail.com
+Date: Tue, 03 Mar 2009 15:21:01 +1100
+Message-ID: <49ACB02D.8070300@cse.unsw.edu.au>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090126)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903031521.00217.nickpiggin@yahoo.com.au>
+CC: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: The difference of request dir between AS and Deadline I/O scheduler?
+References: <d364733c0903012106g2625d433o4cdbbbcc5a9ff19a@mail.gmail.com>
+In-Reply-To: <d364733c0903012106g2625d433o4cdbbbcc5a9ff19a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 March 2009 08:16:23 Linus Torvalds wrote:
-> On Mon, 2 Mar 2009, Nick Piggin wrote:
-> > I would expect any high performance CPU these days to combine entries
-> > in the store queue, even for normal store instructions (especially for
-> > linear memcpy patterns). Isn't this likely to be the case?
->
-> None of this really matters.
+� wrote:
+> Hi,
+> 
+> I'm little confused about the defination of request dir in AS and
+> Deadline I/O scheduler.
+> In AS, the request dir is defined by wheher it's sync:
+> 
+> data_dir = rq_is_sync(rq);
+> 
+> But in Deadline, the requests are grouped by read and write.
+> 
+> Why is there the difference since AS is an extension of Deadline?
+> what's the consideration?
 
-Well that's just what I was replying to. Of course nontemporal/uncached
-stores can't avoid cc operations either, but somebody was hoping that
-they would avoid the write-allocate / RMW behaviour. I just replied because
-I think that modern CPUs can combine stores in their store queues to get
-the same result for cacheable stores.
+I also thought it was silly to have different behaviours, so I tried
+the following patch that makes deadline use sync/async instead of
+read/write.  All the benchmarks I tried showed that performance
+dropped or remained constant at best, so I didn't propose it.
+Maybe you will have more luck...
 
-Of course it doesn't make it free especially if it is a cc protocol that
-has to go on the interconnect anyway. But avoiding the RAM read is a
-good thing anyway.
+--
 
+From: Aaron Carroll <aaronc@cse.unsw.edu.au>
+Date: Sat, 4 Oct 2008 11:58:23 +1000
+Subject: [PATCH] deadline-iosched: support SYNC bio/request flag
 
-> The big issue is that before you can do any write to any cacheline, if the
-> memory is cacheable, it needs the cache coherency protocol to synchronize
-> with any other CPU's that may have that line in the cache.
->
-> The _only_ time a write is "free" is when you already have that cacheline
-> in your own cache, and in an "exclusive" state. If that is the case, then
-> you know that you don't need to do anything else.
->
-> In _any_ other case, before you do the write, you need to make sure that
-> no other CPU in the system has that line in its cache. Whether you do that
-> with a "write and invalidate" model (which would be how a store buffer
-> would do it or a write-through cache would work), or whether you do it
-> with a "acquire exclusive cacheline" (which is how the cache coherency
-> protocol would do it), it's going to end up using cache coherency
-> bandwidth.
->
-> Of course, what will be the limiting factor is unclear. On a single-socket
-> thing, you don't have any cache coherency issues, an the only bandwidth
-> you'd end up using is the actual memory write at the memory controller
-> (which may be on-die, and entirely separate from the cache coherency
-> protocol). It may be idle and the write queue may be deep enough that you
-> reach memory speeds and the write buffer is the optimal approach.
->
-> On many sockets, the limiting factor will almost certainly be the cache
-> coherency overhead (since the cache coherency traffic needs to go to _all_
-> sockets, rather than just one stream to memory), at least unless you have
-> a good cache coherency filter that can filter out part of the traffic
-> based on whether it could be cached or not on some socket(s).
->
-> IOW, it's almost impossible to tell what is the best approach. It will
-> depend on number of sockets, it will depend on size of cache, and it will
-> depend on the capabilities and performance of the memory controllers vs
-> the cache coherency protocol.
->
-> On a "single shared bus" model, the "write with invalidate" is fine, and
-> it basically ends up working a lot like a single socket even if you
-> actually have multiple sockets - it just won't scale much beyond two
-> sockets. With HT or QPI, things are different, and the presense or absense
-> of a snoop filter could make a big difference for 4+ socket situations.
->
-> There simply is no single answer.
->
-> And we really should keep that in mind. There is no right answer, and the
-> right answer will depend on hardware. Playing cache games in software is
-> almost always futile. It can be a huge improvement, but it can be a huge
-> deprovement too, and it really tends to be only worth it if you (a) know
-> your hardware really quite well and (b) know your _load_ pretty well too.
->
-> We can play games in the kernel. We do know how many sockets there are. We
-> do know the cache size. We _could_ try to make an educated guess at
-> whether the next user of the data will be DMA or not. So there are
-> unquestionably heuristics we could apply, but I also do suspect that
-> they'd inevitably be pretty arbitrary.
->
-> I suspect that we could make some boot-time (or maybe CPU hotplug time)
-> decision that simply just sets a threshold value for when it is worth
-> using non-temporal stores. With smaller caches, and with a single socket
-> (or a single bus), it likely makes sense to use non-temporal stores
-> earlier.
->
-> But even with some rough heuristic, it will be wrong part of the time. So
-> I think "simple and predictable" in the end tends to be better than
-> "complex and still known to be broken".
->
-> Btw, the "simple and predictable" could literally look at _where_ in the
-> file the IO is. Because I know there are papers on the likelihood of
-> re-use of data depending on where in the file it is written. Data written
-> to low offsets is more likely to be accessed again (think temp-files),
-> while data written to big offsets are much more likely to be random or to
-> be written out (think databases or simply just large streaming files).
->
-> So I suspect a "simple and predictable" algorithm could literally be
-> something like
->
->  - use nontemporal stores only if you are writing a whole page, and the
->    byte offset of the page is larger than 'x', where 'x' may optionally
->    even depend on size of cache.
->
-> But removing it entirely may be fine too.
->
-> What I _don't_ think is fine is to think that you've "solved" it, or that
-> you should even try!
+Support sync/async requests in deadline rather than read/write, as is
+done in AS and CFQ.
 
-Right. I don't know if you misunderstood me or aimed this post at the
-general discussion rather than my reply specifically.
+Signed-off-by: Aaron Carroll <aaronc@cse.unsw.edu.au>
+---
+ block/deadline-iosched.c |   63 ++++++++++++++++++++++++---------------------
+ 1 files changed, 34 insertions(+), 29 deletions(-)
 
-I know even if a CPU does write combining in the store buffer and even
-if it does have "big-hammer" nontemporal stores like x86 apparently does,
-then there are still cases where nontemporal stores will win if the data
-doesn't get used by the CPU again.
-
-I agree that if a heuristic can't get it right a *significant* amount of
-time, then it is not worthwhile. Even if it gets it right a little more
-often than wrong, the unpredictability is a negative factor. I agree
-completely with you there :)
-
-I would like to remove it, as in Ingo's last patch, FWIW. But I can see
-obviously there are cases where nontemporal helps, so there will never be
-a "right" answer.
-
+diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
+index 342448c..b2cfd47 100644
+--- a/block/deadline-iosched.c
++++ b/block/deadline-iosched.c
+@@ -23,6 +23,11 @@ static const int writes_starved = 2;    /* max times reads can starve a write */
+ static const int fifo_batch = 16;       /* # of sequential requests treated as one
+ 				     by the above parameters. For throughput. */
+ 
++enum {
++	REQ_ASYNC,
++	REQ_SYNC,
++};
++
+ struct deadline_data {
+ 	/*
+ 	 * run time data
+@@ -53,7 +58,7 @@ struct deadline_data {
+ 
+ static void deadline_move_request(struct deadline_data *, struct request *);
+ 
+-#define RQ_RB_ROOT(dd, rq)	(&(dd)->sort_list[rq_data_dir((rq))])
++#define RQ_RB_ROOT(dd, rq)	(&(dd)->sort_list[rq_is_sync((rq))])
+ 
+ /*
+  * get the request after `rq' in sector-sorted order
+@@ -86,7 +91,7 @@ retry:
+ static inline void
+ deadline_del_rq_rb(struct deadline_data *dd, struct request *rq)
+ {
+-	const int data_dir = rq_data_dir(rq);
++	const int data_dir = rq_is_sync(rq);
+ 
+ 	if (dd->next_rq[data_dir] == rq)
+ 		dd->next_rq[data_dir] = deadline_latter_request(rq);
+@@ -101,7 +106,7 @@ static void
+ deadline_add_request(struct request_queue *q, struct request *rq)
+ {
+ 	struct deadline_data *dd = q->elevator->elevator_data;
+-	const int data_dir = rq_data_dir(rq);
++	const int data_dir = rq_is_sync(rq);
+ 
+ 	deadline_add_rq_rb(dd, rq);
+ 
+@@ -206,10 +211,10 @@ deadline_move_to_dispatch(struct deadline_data *dd, struct request *rq)
+ static void
+ deadline_move_request(struct deadline_data *dd, struct request *rq)
+ {
+-	const int data_dir = rq_data_dir(rq);
++	const int data_dir = rq_is_sync(rq);
+ 
+-	dd->next_rq[READ] = NULL;
+-	dd->next_rq[WRITE] = NULL;
++	dd->next_rq[REQ_SYNC] = NULL;
++	dd->next_rq[REQ_ASYNC] = NULL;
+ 	dd->next_rq[data_dir] = deadline_latter_request(rq);
+ 
+ 	dd->last_sector = rq->sector + rq->nr_sectors;
+@@ -245,18 +250,18 @@ static inline int deadline_check_fifo(struct deadline_data *dd, int ddir)
+ static int deadline_dispatch_requests(struct request_queue *q, int force)
+ {
+ 	struct deadline_data *dd = q->elevator->elevator_data;
+-	const int reads = !list_empty(&dd->fifo_list[READ]);
+-	const int writes = !list_empty(&dd->fifo_list[WRITE]);
++	const int reads = !list_empty(&dd->fifo_list[REQ_SYNC]);
++	const int writes = !list_empty(&dd->fifo_list[REQ_ASYNC]);
+ 	struct request *rq;
+ 	int data_dir;
+ 
+ 	/*
+ 	 * batches are currently reads XOR writes
+ 	 */
+-	if (dd->next_rq[WRITE])
+-		rq = dd->next_rq[WRITE];
++	if (dd->next_rq[REQ_ASYNC])
++		rq = dd->next_rq[REQ_ASYNC];
+ 	else
+-		rq = dd->next_rq[READ];
++		rq = dd->next_rq[REQ_SYNC];
+ 
+ 	if (rq) {
+ 		/* we have a "next request" */
+@@ -276,12 +281,12 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
+ 	 */
+ 
+ 	if (reads) {
+-		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[READ]));
++		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[REQ_SYNC]));
+ 
+ 		if (writes && (dd->starved++ >= dd->writes_starved))
+ 			goto dispatch_writes;
+ 
+-		data_dir = READ;
++		data_dir = REQ_SYNC;
+ 
+ 		goto dispatch_find_request;
+ 	}
+@@ -292,11 +297,11 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
+ 
+ 	if (writes) {
+ dispatch_writes:
+-		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[WRITE]));
++		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[REQ_ASYNC]));
+ 
+ 		dd->starved = 0;
+ 
+-		data_dir = WRITE;
++		data_dir = REQ_ASYNC;
+ 
+ 		goto dispatch_find_request;
+ 	}
+@@ -338,16 +343,16 @@ static int deadline_queue_empty(struct request_queue *q)
+ {
+ 	struct deadline_data *dd = q->elevator->elevator_data;
+ 
+-	return list_empty(&dd->fifo_list[WRITE])
+-		&& list_empty(&dd->fifo_list[READ]);
++	return list_empty(&dd->fifo_list[REQ_ASYNC])
++		&& list_empty(&dd->fifo_list[REQ_SYNC]);
+ }
+ 
+ static void deadline_exit_queue(elevator_t *e)
+ {
+ 	struct deadline_data *dd = e->elevator_data;
+ 
+-	BUG_ON(!list_empty(&dd->fifo_list[READ]));
+-	BUG_ON(!list_empty(&dd->fifo_list[WRITE]));
++	BUG_ON(!list_empty(&dd->fifo_list[REQ_SYNC]));
++	BUG_ON(!list_empty(&dd->fifo_list[REQ_ASYNC]));
+ 
+ 	kfree(dd);
+ }
+@@ -363,12 +368,12 @@ static void *deadline_init_queue(struct request_queue *q)
+ 	if (!dd)
+ 		return NULL;
+ 
+-	INIT_LIST_HEAD(&dd->fifo_list[READ]);
+-	INIT_LIST_HEAD(&dd->fifo_list[WRITE]);
+-	dd->sort_list[READ] = RB_ROOT;
+-	dd->sort_list[WRITE] = RB_ROOT;
+-	dd->fifo_expire[READ] = read_expire;
+-	dd->fifo_expire[WRITE] = write_expire;
++	INIT_LIST_HEAD(&dd->fifo_list[REQ_SYNC]);
++	INIT_LIST_HEAD(&dd->fifo_list[REQ_ASYNC]);
++	dd->sort_list[REQ_SYNC] = RB_ROOT;
++	dd->sort_list[REQ_ASYNC] = RB_ROOT;
++	dd->fifo_expire[REQ_SYNC] = read_expire;
++	dd->fifo_expire[REQ_ASYNC] = write_expire;
+ 	dd->writes_starved = writes_starved;
+ 	dd->front_merges = 1;
+ 	dd->fifo_batch = fifo_batch;
+@@ -403,8 +408,8 @@ static ssize_t __FUNC(elevator_t *e, char *page)			\
+ 		__data = jiffies_to_msecs(__data);			\
+ 	return deadline_var_show(__data, (page));			\
+ }
+-SHOW_FUNCTION(deadline_read_expire_show, dd->fifo_expire[READ], 1);
+-SHOW_FUNCTION(deadline_write_expire_show, dd->fifo_expire[WRITE], 1);
++SHOW_FUNCTION(deadline_read_expire_show, dd->fifo_expire[REQ_SYNC], 1);
++SHOW_FUNCTION(deadline_write_expire_show, dd->fifo_expire[REQ_ASYNC], 1);
+ SHOW_FUNCTION(deadline_writes_starved_show, dd->writes_starved, 0);
+ SHOW_FUNCTION(deadline_front_merges_show, dd->front_merges, 0);
+ SHOW_FUNCTION(deadline_fifo_batch_show, dd->fifo_batch, 0);
+@@ -426,8 +431,8 @@ static ssize_t __FUNC(elevator_t *e, const char *page, size_t count)	\
+ 		*(__PTR) = __data;					\
+ 	return ret;							\
+ }
+-STORE_FUNCTION(deadline_read_expire_store, &dd->fifo_expire[READ], 0, INT_MAX, 1);
+-STORE_FUNCTION(deadline_write_expire_store, &dd->fifo_expire[WRITE], 0, INT_MAX, 1);
++STORE_FUNCTION(deadline_read_expire_store, &dd->fifo_expire[REQ_SYNC], 0, INT_MAX, 1);
++STORE_FUNCTION(deadline_write_expire_store, &dd->fifo_expire[REQ_ASYNC], 0, INT_MAX, 1);
+ STORE_FUNCTION(deadline_writes_starved_store, &dd->writes_starved, INT_MIN, INT_MAX, 0);
+ STORE_FUNCTION(deadline_front_merges_store, &dd->front_merges, 0, 1, 0);
+ STORE_FUNCTION(deadline_fifo_batch_store, &dd->fifo_batch, 0, INT_MAX, 0);
