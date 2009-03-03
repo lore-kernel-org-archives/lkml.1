@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZCCPq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbZCCPsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbZCCPq6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 10:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZCCPqu
+	id S1756884AbZCCPsu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 10:48:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZCCPsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 10:46:50 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:38834 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbZCCPqt (ORCPT
+	Tue, 3 Mar 2009 10:48:45 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50402 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009AbZCCPso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 10:46:49 -0500
-Date: Tue, 3 Mar 2009 16:46:29 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] Add to_delayed_work macro
-Message-ID: <20090303164629.10d80a82@hyperion.delvare>
-In-Reply-To: <49AD4DA0.6040400@s5r6.in-berlin.de>
-References: <20090303083440.57df68c3@hyperion.delvare>
-	<20090303002952.80f1afc8.akpm@linux-foundation.org>
-	<20090303102236.1ad909ad@hyperion.delvare>
-	<49AD4DA0.6040400@s5r6.in-berlin.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+	Tue, 3 Mar 2009 10:48:44 -0500
+Subject: Re: [PATCH 2 2/3] sched: Fix the wakeup nomination for
+ sched_mc/smt_power_savings.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: svaidy@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, efault@gmx.de,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090303154537.GI4708@dirshya.in.ibm.com>
+References: <20090303114648.605.86920.stgit@sofia.in.ibm.com>
+	 <20090303115149.605.92140.stgit@sofia.in.ibm.com>
+	 <1236083033.5330.4204.camel@laptop> <20090303135907.GA23822@elte.hu>
+	 <20090303154537.GI4708@dirshya.in.ibm.com>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 16:48:26 +0100
+Message-Id: <1236095306.5330.4777.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.25.91 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Mar 2009 16:32:48 +0100, Stefan Richter wrote:
-> Jean Delvare wrote:
-> > On Tue, 3 Mar 2009 00:29:52 -0800, Andrew Morton wrote:
-> >> On Tue, 3 Mar 2009 08:34:40 +0100 Jean Delvare <khali@linux-fr.org> wrote:
-> >> 
-> >> > +#define to_delayed_work(_work)	container_of(_work, struct delayed_work, work)
-> >> 
-> >> As this is specifically designed to operate on a `struct work*', as
-> >> opposed to "any struct which has a field called `work'", we can get
-> >> additional type-safety by putting a C interface around it.
-> > 
-> > This is what I wanted to do in the first place, but then I noticed that
-> > _all_ such wrappers around container_of are implemented as macros
-> > rather than inline functions.
-> 
-> /Almost/ all.
-> 
-> http://lxr.linux.no/linux+v2.6.28/drivers/firewire/fw-device.h#L73
+On Tue, 2009-03-03 at 21:15 +0530, Vaidyanathan Srinivasan wrote:
 
-Ah, I missed that one because it's not named to_<something>, sorry.
+> I had earlier posted cleanup for find_busiest_group(), but Peter
+> mentioned that he is changing the cpu_power infrastructure and I can
+> rework the cleanup after that.
 
-> > So I decided to follow the crowd. Any idea why it is so?
-> 
-> Merely old habits.
+Right, I need to get back to pondering that problem. The whole 1/x thing
+doesn't really work.
 
-
--- 
-Jean Delvare
