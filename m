@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZCCQRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZCCQRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbZCCQRf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbZCCQRT
+	id S1756922AbZCCQRy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbZCCQRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:17:19 -0500
-Received: from mx1.emlix.com ([193.175.82.87]:57503 "EHLO mx1.emlix.com"
+	Tue, 3 Mar 2009 11:17:23 -0500
+Received: from mx1.emlix.com ([193.175.82.87]:35430 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755905AbZCCQRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:17:18 -0500
+	id S1756666AbZCCQRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:17:21 -0500
 References: <E1LeXCe-0006wA-5k@mailer.emlix.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 03 Mar 2009 16:30:45 +0100
+Date: Tue, 03 Mar 2009 16:30:46 +0100
 From: Johannes Weiner <jw@emlix.com>
 To: Chris Zankel <chris@zankel.net>
 Cc: linux-kernel@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>
-Subject: [patch 2/3] xtensa: remove platform rtc hooks
-Content-Disposition: inline; filename=xtensa-remove-platform-rtc.patch
-Message-Id: <E1LeXIx-00071s-Tp@mailer.emlix.com>
+Subject: [patch 3/3] xtensa: ccount clocksource
+Content-Disposition: inline; filename=xtensa-ccount-clocksource.patch
+Message-Id: <E1LeXJ1-00071v-Dy@mailer.emlix.com>
 Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,124 +25,155 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Johannes Weiner <hannes@cmpxchg.org>
 
-platform_get/set_rtc_time() is not implemented by any of the supported
-xtensa platforms.  Remove the facility completely.
-
-The initial seconds for xtime come from read_persistent_clock() which
-returns just 0 in the generic implementation.  Platforms that sport a
-persistent clock can implement this function.
-
-This is needed to implement the ccount register as a clock source.
+Switch to GENERIC_TIME by using the ccount register as a clock source.
 
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 ---
- arch/xtensa/include/asm/platform.h |   11 -----------
- arch/xtensa/kernel/platform.c      |    2 --
- arch/xtensa/kernel/time.c          |   29 +----------------------------
- 3 files changed, 1 insertion(+), 41 deletions(-)
+ arch/xtensa/Kconfig       |    3 +
+ arch/xtensa/kernel/time.c |   92 ++++++++++------------------------------------
+ 2 files changed, 23 insertions(+), 72 deletions(-)
 
+--- a/arch/xtensa/Kconfig
++++ b/arch/xtensa/Kconfig
+@@ -45,6 +45,9 @@ config HZ
+ 	int
+ 	default 100
+ 
++config GENERIC_TIME
++	def_bool y
++
+ source "init/Kconfig"
+ source "kernel/Kconfig.freezer"
+ 
 --- a/arch/xtensa/kernel/time.c
 +++ b/arch/xtensa/kernel/time.c
-@@ -14,7 +14,6 @@
+@@ -14,6 +14,7 @@
  
  #include <linux/errno.h>
  #include <linux/time.h>
--#include <linux/timex.h>
++#include <linux/clocksource.h>
  #include <linux/interrupt.h>
  #include <linux/module.h>
  #include <linux/init.h>
-@@ -25,18 +24,11 @@
- #include <asm/timex.h>
- #include <asm/platform.h>
- 
--
--DEFINE_SPINLOCK(rtc_lock);
--EXPORT_SYMBOL(rtc_lock);
--
--
- #ifdef CONFIG_XTENSA_CALIBRATE_CCOUNT
- unsigned long ccount_per_jiffy;		/* per 1/HZ */
+@@ -29,6 +30,19 @@ unsigned long ccount_per_jiffy;		/* per 
  unsigned long nsec_per_ccount;		/* nsec per ccount increment */
  #endif
  
--static long last_rtc_update = 0;
--
++static cycle_t ccount_read(void)
++{
++	return (cycle_t)get_ccount();
++}
++
++static struct clocksource ccount_clocksource = {
++	.name = "ccount",
++	.rating = 200,
++	.read = ccount_read,
++	.mask = CLOCKSOURCE_MASK(32),
++	.mult = NSEC_PER_CCOUNT,
++};
++
  static irqreturn_t timer_interrupt(int irq, void *dev_id);
  static struct irqaction timer_irqaction = {
  	.handler =	timer_interrupt,
-@@ -46,8 +38,6 @@ static struct irqaction timer_irqaction 
+@@ -38,9 +52,11 @@ static struct irqaction timer_irqaction 
  
  void __init time_init(void)
  {
--	time_t sec_o, sec_n = 0;
--
- 	/* The platform must provide a function to calibrate the processor
- 	 * speed for the CALIBRATE.
- 	 */
-@@ -59,15 +49,8 @@ void __init time_init(void)
- 			(int)(ccount_per_jiffy/(10000/HZ))%100);
- #endif
- 
--	/* Set time from RTC (if provided) */
--
--	if (platform_get_rtc_time(&sec_o) == 0)
--		while (platform_get_rtc_time(&sec_n))
--			if (sec_o != sec_n)
--				break;
--
- 	xtime.tv_nsec = 0;
--	last_rtc_update = xtime.tv_sec = sec_n;
+-	/* The platform must provide a function to calibrate the processor
+-	 * speed for the CALIBRATE.
+-	 */
++	xtime.tv_nsec = 0;
 +	xtime.tv_sec = read_persistent_clock();
- 
- 	set_normalized_timespec(&wall_to_monotonic,
- 		-xtime.tv_sec, -xtime.tv_nsec);
-@@ -169,16 +152,6 @@ again:
- 		next += CCOUNT_PER_JIFFY;
- 		set_linux_timer(next);
- 
--		if (ntp_synced() &&
--		    xtime.tv_sec - last_rtc_update >= 659 &&
--		    abs((xtime.tv_nsec/1000)-(1000000-1000000/HZ))<5000000/HZ) {
--
--			if (platform_set_rtc_time(xtime.tv_sec+1) == 0)
--				last_rtc_update = xtime.tv_sec+1;
--			else
--				/* Do it again in 60 s */
--				last_rtc_update += 60;
--		}
- 		write_sequnlock(&xtime_lock);
- 	}
- 
---- a/arch/xtensa/include/asm/platform.h
-+++ b/arch/xtensa/include/asm/platform.h
-@@ -74,16 +74,5 @@ extern int platform_pcibios_fixup (void)
-  */
- extern void platform_calibrate_ccount (void);
- 
--/*
-- * platform_get_rtc_time returns RTC seconds (returns 0 for no error)
-- */
--extern int platform_get_rtc_time(time_t*);
--
--/*
-- * platform_set_rtc_time set RTC seconds (returns 0 for no error)
-- */
--extern int platform_set_rtc_time(time_t);
--
--
- #endif	/* _XTENSA_PLATFORM_H */
- 
---- a/arch/xtensa/kernel/platform.c
-+++ b/arch/xtensa/kernel/platform.c
-@@ -36,8 +36,6 @@ _F(void, power_off, (void), { while(1); 
- _F(void, idle, (void), { __asm__ __volatile__ ("waiti 0" ::: "memory"); });
- _F(void, heartbeat, (void), { });
- _F(int,  pcibios_fixup, (void), { return 0; });
--_F(int, get_rtc_time, (time_t* t), { return 0; });
--_F(int, set_rtc_time, (time_t t), { return 0; });
++
++	set_normalized_timespec(&wall_to_monotonic,
++		-xtime.tv_sec, -xtime.tv_nsec);
  
  #ifdef CONFIG_XTENSA_CALIBRATE_CCOUNT
- _F(void, calibrate_ccount, (void),
+ 	printk("Calibrating CPU frequency ");
+@@ -48,12 +64,7 @@ void __init time_init(void)
+ 	printk("%d.%02d MHz\n", (int)ccount_per_jiffy/(1000000/HZ),
+ 			(int)(ccount_per_jiffy/(10000/HZ))%100);
+ #endif
+-
+-	xtime.tv_nsec = 0;
+-	xtime.tv_sec = read_persistent_clock();
+-
+-	set_normalized_timespec(&wall_to_monotonic,
+-		-xtime.tv_sec, -xtime.tv_nsec);
++	clocksource_register(&ccount_clocksource);
+ 
+ 	/* Initialize the linux timer interrupt. */
+ 
+@@ -61,69 +72,6 @@ void __init time_init(void)
+ 	set_linux_timer(get_ccount() + CCOUNT_PER_JIFFY);
+ }
+ 
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	time_t wtm_sec, sec = tv->tv_sec;
+-	long wtm_nsec, nsec = tv->tv_nsec;
+-	unsigned long delta;
+-
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irq(&xtime_lock);
+-
+-	/* This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * made, and then undo it!
+-	 */
+-
+-	delta = CCOUNT_PER_JIFFY;
+-	delta += get_ccount() - get_linux_timer();
+-	nsec -= delta * NSEC_PER_CCOUNT;
+-
+-	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+-
+-	set_normalized_timespec(&xtime, sec, nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+-
+-	ntp_clear();
+-	write_sequnlock_irq(&xtime_lock);
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+-
+-
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long volatile sec, usec, delta, seq;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-
+-		sec = xtime.tv_sec;
+-		usec = (xtime.tv_nsec / NSEC_PER_USEC);
+-
+-		delta = get_linux_timer() - get_ccount();
+-
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	usec += (((unsigned long) CCOUNT_PER_JIFFY - delta)
+-		 * (unsigned long) NSEC_PER_CCOUNT) / NSEC_PER_USEC;
+-
+-	for (; usec >= 1000000; sec++, usec -= 1000000)
+-		;
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+ /*
+  * The timer interrupt is called HZ times per second.
+  */
 
 -- 
 
