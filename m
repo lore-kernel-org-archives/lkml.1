@@ -1,222 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZCCIFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbZCCIIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbZCCIFd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 03:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZCCIFZ
+	id S1758102AbZCCIIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 03:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZCCIIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 03:05:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57262 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751599AbZCCIFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 03:05:24 -0500
-Date: Tue, 3 Mar 2009 00:04:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: djwong@us.ibm.com, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] lm90: Support the MAX6648/6692 chips
-Message-Id: <20090303000412.3c38c266.akpm@linux-foundation.org>
-In-Reply-To: <20090303084746.14462e04@hyperion.delvare>
-References: <20090302210106.GD6550@plum>
-	<20090302150426.b22100c1.akpm@linux-foundation.org>
-	<20090303084746.14462e04@hyperion.delvare>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 03:08:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54445 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750868AbZCCIII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 03:08:08 -0500
+Date: Tue, 3 Mar 2009 08:06:31 GMT
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, h-shimamoto@ct.jp.nec.com, hpa@zytor.com,
+       mingo@redhat.com, efault@gmx.de, jaswinder@kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, h-shimamoto@ct.jp.nec.com,
+       linux-kernel@vger.kernel.org, jaswinder@kernel.org, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49AC85C1.7060600@ct.jp.nec.com>
+References: <49AC85C1.7060600@ct.jp.nec.com>
+Subject: [tip:x86/signal] x86, signals: fix xine & firefox bustage
+Message-ID: <tip-2505170211f7630361a852e25b60f4df4c878daa@git.kernel.org>
+Git-Commit-ID: 2505170211f7630361a852e25b60f4df4c878daa
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 03 Mar 2009 08:06:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Mar 2009 08:47:46 +0100 Jean Delvare <khali@linux-fr.org> wrote:
+Commit-ID:  2505170211f7630361a852e25b60f4df4c878daa
+Gitweb:     http://git.kernel.org/tip/2505170211f7630361a852e25b60f4df4c878daa
+Author:     "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>
+AuthorDate: Mon, 2 Mar 2009 17:20:01 -0800
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 3 Mar 2009 09:03:12 +0100
 
-> Hi Andrew,
-> 
-> On Mon, 2 Mar 2009 15:04:26 -0800, Andrew Morton wrote:
-> > On Mon, 2 Mar 2009 13:01:06 -0800
-> > "Darrick J. Wong" <djwong@us.ibm.com> wrote:
-> > 
-> > > @@ -776,7 +776,12 @@ static int lm90_detect(struct i2c_client *new_client, int kind,
-> > >  			 && (reg_config1 & 0x3f) == 0x00
-> > >  			 && reg_convrate <= 0x07) {
-> > >  				kind = max6646;
-> > > -			}
-> > > +			} else
-> > > +			/* The MAX6648/6692 chips have a working man/chip id
-> > > +			 * and the same register set as the 6657.
-> > > +			 */
-> > > +			if (chip_id == 0x59 && address == 0x4C)
-> > > +				kind = max6657;
-> > >  		}
-> > 
-> > gack, the indenting and layout there is totally busted.
-> 
-> This specific layout is consistently used through the whole function,
-> and checkpatch.pl doesn't complain about it. While unconventional, it
-> has its advantages, in particular it avoids extra indentation that
-> would make some lines too long. At any rate it doesn't make sense to
-> change this last chunk without changing all the rest if this layout is
-> deemed unacceptable.
+x86, signals: fix xine & firefox bustage
 
-lol, be serious.
+Impact: fix bad frame in rt_sigreturn on 64-bit
 
-> > --- a/drivers/hwmon/lm90.c~lm90-support-the-max6648-6692-chips-fix
-> > +++ a/drivers/hwmon/lm90.c
-> > @@ -776,12 +776,14 @@ static int lm90_detect(struct i2c_client
-> >  			 && (reg_config1 & 0x3f) == 0x00
-> >  			 && reg_convrate <= 0x07) {
-> >  				kind = max6646;
-> > -			} else
-> > -			/* The MAX6648/6692 chips have a working man/chip id
-> > -			 * and the same register set as the 6657.
-> > -			 */
-> > -			if (chip_id == 0x59 && address == 0x4C)
-> > +			} else if (chip_id == 0x59 && address == 0x4C) {
-> > +				/*
-> > +				 * The MAX6648/6692 chips have a working
-> > +				 * man/chip id and the same register set as the
-> > +				 * 6657.
-> > +				 */
-> >  				kind = max6657;
-> > +			}
-> >  		}
-> >  
-> >  		if (kind <= 0) { /* identification failed */
-> 
-> I thus nack this change of yours.
+After commit 97286a2b64725aac2d584ddd1f94871f9991d5a1 some applications
+fail to return from signal handler:
 
-Something like this...
+[  145.150133] firefox[3250] bad frame in rt_sigreturn frame:00007f902b44eb28 ip:352e80b307 sp:7f902b44ef70 orax:ffffffffffffffff in libpthread-2.9.so[352e800000+17000]
+[  665.519017] firefox[5420] bad frame in rt_sigreturn frame:00007faa8deaeb28 ip:352e80b307 sp:7faa8deaef70 orax:ffffffffffffffff in libpthread-2.9.so[352e800000+17000]
 
-diff -puN drivers/hwmon/lm90.c~drivers-hwmon-lm90c-fix-coding-style drivers/hwmon/lm90.c
---- a/drivers/hwmon/lm90.c~drivers-hwmon-lm90c-fix-coding-style
-+++ a/drivers/hwmon/lm90.c
-@@ -694,22 +694,22 @@ static int lm90_detect(struct i2c_client
- 						LM90_REG_R_CONVRATE)) < 0)
- 			return -ENODEV;
- 		
--		if ((address == 0x4C || address == 0x4D)
--		 && man_id == 0x01) { /* National Semiconductor */
-+		if ((address == 0x4C || address == 0x4D) && man_id == 0x01) {
-+			/* National Semiconductor */
- 			int reg_config2;
+The root cause is forgetting to keep 64 byte aligned value of
+fpstate for next stack pointer calculation.
+
+Reported-by: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Reported-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+LKML-Reference: <49AC85C1.7060600@ct.jp.nec.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/signal.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index dde3f2a..d2cc642 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -240,11 +240,10 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
  
- 			if ((reg_config2 = i2c_smbus_read_byte_data(new_client,
- 						LM90_REG_R_CONFIG2)) < 0)
- 				return -ENODEV;
+ 	if (used_math()) {
+ 		sp -= sig_xstate_size;
+-#ifdef CONFIG_X86_32
+-		*fpstate = (void __user *) sp;
+-#else /* !CONFIG_X86_32 */
+-		*fpstate = (void __user *)round_down(sp, 64);
+-#endif /* CONFIG_X86_32 */
++#ifdef CONFIG_X86_64
++		sp = round_down(sp, 64);
++#endif /* CONFIG_X86_64 */
++		*fpstate = (void __user *)sp;
  
--			if ((reg_config1 & 0x2A) == 0x00
--			 && (reg_config2 & 0xF8) == 0x00
--			 && reg_convrate <= 0x09) {
--				if (address == 0x4C
--				 && (chip_id & 0xF0) == 0x20) { /* LM90 */
-+			if ((reg_config1 & 0x2A) == 0x00 &&
-+			    (reg_config2 & 0xF8) == 0x00 &&
-+			    reg_convrate <= 0x09) {
-+				if (address == 0x4C &&
-+				    (chip_id & 0xF0) == 0x20) { /* LM90 */
- 					kind = lm90;
--				} else
--				if ((chip_id & 0xF0) == 0x30) { /* LM89/LM99 */
-+				} else if ((chip_id & 0xF0) == 0x30) {
-+					/* LM89/LM99 */
- 					kind = lm99;
- 					dev_info(&adapter->dev,
- 						 "Assuming LM99 chip at "
-@@ -720,27 +720,24 @@ static int lm90_detect(struct i2c_client
- 						 "loading the lm90 driver\n",
- 						 i2c_adapter_id(adapter),
- 						 address);
--				} else
--				if (address == 0x4C
--				 && (chip_id & 0xF0) == 0x10) { /* LM86 */
-+				} else if (address == 0x4C &&
-+					(chip_id & 0xF0) == 0x10) { /* LM86 */
- 					kind = lm86;
- 				}
- 			}
--		} else
--		if ((address == 0x4C || address == 0x4D)
--		 && man_id == 0x41) { /* Analog Devices */
--			if ((chip_id & 0xF0) == 0x40 /* ADM1032 */
--			 && (reg_config1 & 0x3F) == 0x00
--			 && reg_convrate <= 0x0A) {
-+		} else if ((address == 0x4C || address == 0x4D) &&
-+				man_id == 0x41) {
-+			/* Analog Devices */
-+			if ((chip_id & 0xF0) == 0x40  && /* ADM1032 */
-+			    (reg_config1 & 0x3F) == 0x00 &&
-+			    reg_convrate <= 0x0A) {
- 				kind = adm1032;
--			} else
--			if (chip_id == 0x51 /* ADT7461 */
--			 && (reg_config1 & 0x1B) == 0x00
--			 && reg_convrate <= 0x0A) {
-+			} else if (chip_id == 0x51 && /* ADT7461 */
-+				 (reg_config1 & 0x1B) == 0x00 &&
-+				 reg_convrate <= 0x0A) {
- 				kind = adt7461;
- 			}
--		} else
--		if (man_id == 0x4D) { /* Maxim */
-+		} else if (man_id == 0x4D) { /* Maxim */
- 			/*
- 			 * The MAX6657, MAX6658 and MAX6659 do NOT have a
- 			 * chip_id register. Reading from that address will
-@@ -750,31 +747,32 @@ static int lm90_detect(struct i2c_client
- 			 * will be those of the previous read, so in our case
- 			 * those of the man_id register.
- 			 */
--			if (chip_id == man_id
--			 && (address == 0x4C || address == 0x4D)
--			 && (reg_config1 & 0x1F) == (man_id & 0x0F)
--			 && reg_convrate <= 0x09) {
-+			if (chip_id == man_id &&
-+			    (address == 0x4C || address == 0x4D) &&
-+			    (reg_config1 & 0x1F) == (man_id & 0x0F) &&
-+			    reg_convrate <= 0x09) {
- 			 	kind = max6657;
--			} else
--			/* The chip_id register of the MAX6680 and MAX6681
--			 * holds the revision of the chip.
--			 * the lowest bit of the config1 register is unused
--			 * and should return zero when read, so should the
--			 * second to last bit of config1 (software reset)
--			 */
--			if (chip_id == 0x01
--			 && (reg_config1 & 0x03) == 0x00
--			 && reg_convrate <= 0x07) {
-+			} else if (chip_id == 0x01 &&
-+					(reg_config1 & 0x03) == 0x00 &&
-+				 	reg_convrate <= 0x07) {
-+				/*
-+				 * The chip_id register of the MAX6680 and
-+				 * MAX6681 holds the revision of the chip.
-+				 * the lowest bit of the config1 register is
-+				 * unused and should return zero when read, so
-+				 * should the second to last bit of config1
-+				 * (software reset)
-+				 */
- 			 	kind = max6680;
--			} else
--			/* The chip_id register of the MAX6646/6647/6649
--			 * holds the revision of the chip.
--			 * The lowest 6 bits of the config1 register are
--			 * unused and should return zero when read.
--			 */
--			if (chip_id == 0x59
--			 && (reg_config1 & 0x3f) == 0x00
--			 && reg_convrate <= 0x07) {
-+			} else if (chip_id == 0x59 &&
-+					(reg_config1 & 0x3f) == 0x00 &&
-+					 reg_convrate <= 0x07) {
-+				/*
-+				 * The chip_id register of the MAX6646/6647/6649
-+				 * holds the revision of the chip.
-+				 * The lowest 6 bits of the config1 register are
-+				 * unused and should return zero when read.
-+				 */
- 				kind = max6646;
- 			} else if (chip_id == 0x59 && address == 0x4C) {
- 				/*
-_
-
+ 		if (save_i387_xstate(*fpstate) < 0)
+ 			return (void __user *)-1L;
