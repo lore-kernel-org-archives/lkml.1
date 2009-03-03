@@ -1,213 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbZCCQlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbZCCQm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbZCCQlj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZCCQl2
+	id S1757439AbZCCQm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZCCQmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:41:28 -0500
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:31238
-	"EHLO natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751412AbZCCQl1 (ORCPT
+	Tue, 3 Mar 2009 11:42:49 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:60794 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752463AbZCCQms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:41:27 -0500
-X-Greylist: delayed 979 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Mar 2009 11:41:26 EST
-Message-ID: <49AD59B4.1060304@panasas.com>
-Date: Tue, 03 Mar 2009 18:24:20 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org,
+	Tue, 3 Mar 2009 11:42:48 -0500
+Date: Tue, 3 Mar 2009 11:31:46 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Lin Ming <ming.m.lin@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Large amount of scsi-sgpool objects
-References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>  <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Mar 2009 16:24:51.0781 (UTC) FILETIME=[944C3750:01C99C1C]
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
+In-Reply-To: <20090302112122.GC21145@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903031130550.26454@qirst.com>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie> <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie> <1235647139.16552.34.camel@penberg-laptop> <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr>
+ <20090302112122.GC21145@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Tuesday 2009-03-03 16:21, James Bottomley wrote:
->>>> $ slabtop
->>>>   OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME                   
->>>> 818616 818616 100%    0.16K  34109       24    136436K sgpool-8
->>>> 253692 253692 100%    0.62K  42282        6    169128K sgpool-32
->>>>  52017  52016  99%    2.50K  17339        3    138712K sgpool-128
->>>>  26220  26219  99%    0.31K   2185       12      8740K sgpool-16
->>>>   8927   8574  96%    0.03K     79      113       316K size-32
->>> Looks like a leak, by failing to call scsi_release_buffers()
->>> somehow. (Which was changed recently)
->> Firstly, I have to say I don't see this in the mainline tree, so could
->> you try that with your setup just to verify (git head at 2.6.29-rc6).
-> 
-> Yes, looking at the rt patch (in broken-out it's in origin.diff),
-> it seems a bit obvious - the scsi_release_buffers is not called anymore:
-> 
-> 
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index 940dc32..d4c6ac3 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -703,71 +703,6 @@ void scsi_run_host_queues(struct Scsi_Host *shost)
->  
->  static void __scsi_release_buffers(struct scsi_cmnd *, int);
->  
-> -/*
-> - * Function:    scsi_end_request()
-> - *
-> - * Purpose:     Post-processing of completed commands (usually invoked at end
-> - *		of upper level post-processing and scsi_io_completion).
-> - *
-> - * Arguments:   cmd	 - command that is complete.
-> - *              error    - 0 if I/O indicates success, < 0 for I/O error.
-> - *              bytes    - number of bytes of completed I/O
-> - *		requeue  - indicates whether we should requeue leftovers.
-> - *
-> - * Lock status: Assumed that lock is not held upon entry.
-> - *
-> - * Returns:     cmd if requeue required, NULL otherwise.
-> - *
-> - * Notes:       This is called for block device requests in order to
-> - *              mark some number of sectors as complete.
-> - * 
-> - *		We are guaranteeing that the request queue will be goosed
-> - *		at some point during this call.
-> - * Notes:	If cmd was requeued, upon return it will be a stale pointer.
-> - */
-> -static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int error,
-> -					  int bytes, int requeue)
-> -{
-> -	struct request_queue *q = cmd->device->request_queue;
-> -	struct request *req = cmd->request;
-> -
-> -	/*
-> -	 * If there are blocks left over at the end, set up the command
-> -	 * to queue the remainder of them.
-> -	 */
-> -	if (blk_end_request(req, error, bytes)) {
-> -		int leftover = (req->hard_nr_sectors << 9);
-> -
-> -		if (blk_pc_request(req))
-> -			leftover = req->data_len;
-> -
-> -		/* kill remainder if no retrys */
-> -		if (error && scsi_noretry_cmd(cmd))
-> -			blk_end_request(req, error, leftover);
-> -		else {
-> -			if (requeue) {
-> -				/*
-> -				 * Bleah.  Leftovers again.  Stick the
-> -				 * leftovers in the front of the
-> -				 * queue, and goose the queue again.
-> -				 */
-> -				scsi_release_buffers(cmd);
-> -				scsi_requeue_command(q, cmd);
-> -				cmd = NULL;
-> -			}
-> -			return cmd;
-> -		}
-> -	}
-> -
-> -	/*
-> -	 * This will goose the queue request function at the end, so we don't
-> -	 * need to worry about launching another command.
-> -	 */
-> -	__scsi_release_buffers(cmd, 0);
-> -	scsi_next_command(cmd);
-> -	return NULL;
-> -}
-> -
->  static inline unsigned int scsi_sgtable_index(unsigned short nents)
->  {
->  	unsigned int index;
-> @@ -929,7 +864,6 @@ static void scsi_end_bidi_request(struct scsi_cmnd *cmd)
->  void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
->  {
->  	int result = cmd->result;
-> -	int this_count;
->  	struct request_queue *q = cmd->device->request_queue;
->  	struct request *req = cmd->request;
->  	int error = 0;
-> @@ -980,18 +914,30 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
->  	SCSI_LOG_HLCOMPLETE(1, printk("%ld sectors total, "
->  				      "%d bytes done.\n",
->  				      req->nr_sectors, good_bytes));
-> -
-> -	/* A number of bytes were successfully read.  If there
-> -	 * are leftovers and there is some kind of error
-> -	 * (result != 0), retry the rest.
-> -	 */
-> -	if (scsi_end_request(cmd, error, good_bytes, result == 0) == NULL)
-> +	if (blk_end_request(req, error, good_bytes) == 0) {
-> +		/* This request is completely finished; start the next one */
-> +		scsi_next_command(cmd);
->  		return;
-> -	this_count = blk_rq_bytes(req);
-> +	}
->  
->  	error = -EIO;
->  
-> -	if (host_byte(result) == DID_RESET) {
-> +	/* The request isn't finished yet.  Figure out what to do next. */
-> +	if (result == 0) {
-> +		/* No error, so carry out the remainder of the request.
-> +		 * Failure to make forward progress counts against the
-> +		 * the number of retries.
-> +		 */
-> +		if (good_bytes > 0 || --req->retries >= 0)
-> +			action = ACTION_REPREP;
-> +		else {
-> +			action = ACTION_FAIL;
-> +			description = "Retries exhausted";
-> +		}
-> +	} else if (error && scsi_noretry_cmd(cmd)) {
-> +		/* Retrys are disallowed, so kill the remainder. */
-> +		action = ACTION_FAIL;
-> +	} else if (host_byte(result) == DID_RESET) {
->  		/* Third party bus reset or reset for error recovery
->  		 * reasons.  Just retry the command and see what
->  		 * happens.
-> 
-> 
-> 
-> Would you happen to know where I have to reinsert them in the
-> rt modification shown here?
-> 
+On Mon, 2 Mar 2009, Mel Gorman wrote:
 
-You lost me. Why does rt needs to patch scsi_io_completion at all?
-You should remove any rt patches that modify scsi_lib.c and revert to
-vanilla 2.6.29-rc6 (scsi wise that is).
+> Going by the vanilla kernel, a *large* amount of time is spent doing
+> high-order allocations. Over 25% of the cost of buffered_rmqueue() is in
+> the branch dealing with high-order allocations. Does UDP-U-4K mean that 8K
+> pages are required for the packets? That means high-order allocations and
+> high contention on the zone-list. That is bad obviously and has implications
+> for the SLUB-passthru patch because whether 8K allocations are handled by
+> SL*B or the page allocator has a big impact on locking.
+>
+> Next, a little over 50% of the cost get_page_from_freelist() is being spent
+> acquiring the zone spinlock. The implication is that the SL*B allocators
+> passing in order-1 allocations to the page allocator are currently going to
+> hit scalability problems in a big way. The solution may be to extend the
+> per-cpu allocator to handle magazines up to PAGE_ALLOC_COSTLY_ORDER. I'll
+> check it out.
 
-The above diff looks like something that was sent in the past to the mailing
-list, but only half of it. It was sent by Alan Stern. It might patch but
-it is not applicable any more because of changes made since. 
-
->> If this holds true, there must be a bad patch in the -rt tree.  You
->> should be able to diff scsi_lib.c to see if there's something missing.
->>
->> Finally, there are one or two drivers (SCSI target) that do their own
->> buffer management, so what drivers are you using?
-> 
-> 
-> ata1.00: ATA-5: WDC WD400EB-00CPF0, 06.04G06, max UDMA/100
-> ata1.00: 78165360 sectors, multi 16: LBA
-> ata1.01: ATAPI: HL-DT-ST DVDRAM GSA-4160B, A301, max UDMA/66
-> ata1.00: configured for UDMA/100
-> ata1.01: configured for UDMA/66
-> scsi 0:0:0:0: Direct-Access     ATA      WDC WD400EB-00CP 06.0 PQ: 0 ANSI: 5
-> scsi 0:0:1:0: CD-ROM            HL-DT-ST DVDRAM GSA-4160B A301 PQ: 0 ANSI: 5
-> ata2.00: ATA-7: DIAMOND  250G 2B5400, RAMB1TU0, max UDMA/133
-> ata2.00: 490234752 sectors, multi 16: LBA48
-> ata2.00: configured for UDMA/133
-> scsi 1:0:0:0: Direct-Access     ATA      DIAMOND  250G 2B RAMB PQ: 0 ANSI: 5
-> 
-> 
-> 
-> 
-> Jan
+Then we are increasing the number of queues dramatically in the page
+allocator. More of a memory sink. Less cache hotness.
 
