@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbZCCWQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbZCCWRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759570AbZCCWQZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 17:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758370AbZCCWO4
+	id S1758697AbZCCWRG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 17:17:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758623AbZCCWO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 17:14:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39605 "EHLO ogre.sisk.pl"
+	Tue, 3 Mar 2009 17:14:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39614 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757801AbZCCWOz convert rfc822-to-8bit (ORCPT
+	id S1758044AbZCCWO4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 17:14:55 -0500
+	Tue, 3 Mar 2009 17:14:56 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Miklos Szeredi" <miklos@szeredi.hu>
+       "Andi Kleen" <ak@linux.intel.com>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Tim Blechmann" <tim@klingt.org>
 References: <r4SCKuuJK0F.A.UrB.QdarJB@chimera>
 In-Reply-To: <r4SCKuuJK0F.A.UrB.QdarJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <pRIaSZpQ1ON.A.osD.jearJB@chimera>
-Subject: [Bug #12208] uml is very slow on 2.6.28 host
+Message-ID: <pRIaSZpQ1ON.A.0eD.KearJB@chimera>
+Subject: [Bug #12395] 2.6.28-rc9: oprofile regression
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Tue,  3 Mar 2009 20:41:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +37,14 @@ introduced between 2.6.27 and 2.6.28.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
-Subject		: uml is very slow on 2.6.28 host
-Submitter	: Miklos Szeredi <miklos@szeredi.hu>
-Date		: 2008-12-12 9:35 (82 days old)
-References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12395
+Subject		: 2.6.28-rc9: oprofile regression
+Submitter	: Tim Blechmann <tim@klingt.org>
+Date		: 2008-12-21 14:23 (73 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b99170288421c79f0c2efa8b33e26e65f4bb7fb8
+References	: http://marc.info/?l=linux-kernel&m=122986946614791&w=4
+Handled-By	: Andi Kleen <ak@linux.intel.com>
+		  Tim Blechmann <tim@klingt.org>
+Patch		: http://marc.info/?l=linux-kernel&m=123506131927371&w=4
 
 
