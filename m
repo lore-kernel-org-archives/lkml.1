@@ -1,239 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763400AbZCCWZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbZCCW07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763400AbZCCWZA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 17:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763031AbZCCWXA
+	id S1758385AbZCCW07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 17:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZCCW0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 17:23:00 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:59094 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763017AbZCCWW6 (ORCPT
+	Tue, 3 Mar 2009 17:26:45 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33171 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753000AbZCCW0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 17:22:58 -0500
-Subject: Re: Linux 2.6.29-rc6
-From: john stultz <johnstul@us.ibm.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 3 Mar 2009 17:26:43 -0500
+Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
+	scsi-sgpool)objects
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-In-Reply-To: <49AD90E2.7050209@krogh.cc>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
-	 <49A6F39F.9040801@krogh.cc>
-	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
-	 <49A6FEE2.90700@krogh.cc>
-	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
-	 <49A70B24.6090706@krogh.cc>
-	 <1235685269.6811.11.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
-	 <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>
-	 <1235766936.7402.5.camel@localhost.localdomain> <49ABACA0.3090300@krogh.cc>
-	 <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc>
-	 <1236110026.6068.18.camel@localhost> <49AD90E2.7050209@krogh.cc>
-Content-Type: multipart/mixed; boundary="=-Nuzx9kdWq+l8zxjCJEeY"
-Date: Tue, 03 Mar 2009 14:22:49 -0800
-Message-Id: <1236118969.6068.87.camel@localhost>
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0903032247170.29264@localhost.localdomain>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>
+	 <49ACF8FE.2020904@panasas.com>
+	 <1236093718.3263.3.camel@localhost.localdomain>
+	 <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
+	 <1236097526.3263.17.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0903031818230.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903032247170.29264@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 16:26:35 -0600
+Message-Id: <1236119195.24019.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-Nuzx9kdWq+l8zxjCJEeY
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Tue, 2009-03-03 at 21:19 +0100, Jesper Krogh wrote:
-> john stultz wrote:
-> > On Tue, 2009-03-03 at 07:04 +0100, Jesper Krogh wrote:
-> >> john stultz wrote:
-> >>> On Mon, 2009-03-02 at 10:53 +0100, Jesper Krogh wrote:
-> >>>> john stultz wrote:
-> >>>>> Ok, so it seems ntp hasn't really had a chance to settle down, its only
-> >>>>> made a 10ppm adjustment so far. NTPd will stop corrections at ~
-> >>>>> +/-500ppm, so you're not at that bound yet, where things would be really
-> >>>>> broken.
-> >>>>>
-> >>>>> If the affected kernel isn't resetting in the logs anymore, I'd be
-> >>>>> interested in what the new ppm value is.
-> >>>> After 20 hours.. its still resetting.
-> >>>> Mar  2 10:43:24 quad12 ntpd[4416]: synchronized to 10.194.133.12, stratum 4
-> >>>> Mar  2 10:50:37 quad12 ntpd[4416]: time reset -1.103654 s
-> >>> So what's the "ntpdc -c kerninfo" output now?
-> >> Mar  3 06:41:10 quad12 ntpd[4416]: time reset -0.813957 s
-> >> Mar  3 06:45:20 quad12 ntpd[4416]: synchronized to LOCAL(0), stratum 13
-> >> Mar  3 06:45:36 quad12 ntpd[4416]: synchronized to 10.194.133.12, stratum 4
-> >> Mar  3 06:51:57 quad12 ntpd[4416]: synchronized to 10.194.133.13, stratum 4
-> >> Mar  3 07:00:29 quad12 ntpd[4416]: time reset -0.783390 s
-> >> jk@quad12:~$ ntpdc -c kerninfo
-> >> pll offset:           0 s
-> >> pll frequency:        -28.691 ppm
-> > 
-> > 
-> > This is baffling. You've only gone from -34.754ppm to -28.691ppm in over
-> > a day? And you're still not syncing? If the calibration was so bad that
-> > NTP couldn't sync, I'd expect the freq value to hit +/-500ppm before it
-> > gave up. This just doesn't follow my expectations.
+On Tue, 2009-03-03 at 23:07 +0100, Thomas Gleixner wrote:
+> On Tue, 3 Mar 2009, Thomas Gleixner wrote:
+> > My bad. I was playing with that to get rid of the aic7xxx wreckage on
+> > one of my test boxen and forgot to remove it.
 > 
-> It's resetting.. without deep knowledge about ntp, doesnt that mean 
-> "start over again"? I believe it hits +/-500ppm
-
-No, the "time reset" message means that when the offset is larger
-then .125sec (the slew boundary), NTPd has corrected it by calling
-settimeofday instead of slewing the clock.
-
-Here's some background about how NTP and the kernel interact:
-Every time NTPd calls adjtimex(), its provides the current offset from
-the tracked ntp server. The kernel takes this offset and applies a
-temporary correction factor to the clocksource frequency to converge
-that offset. It also takes the provided offset, dampens it, and then
-uses the result to adjust the frequency value. Once the freq value hits
-the max adjustment value (+/- 500ppm), then NTP will start throwing
-error messages and give up.
-
-The part that is so odd with your data, is that the freq value isn't
-changing very much. After a time reset, I'd expect to see adjustments in
-the 100us, then multiple ms, and only once we get above 100ms to see
-another time reset. All the while, these adjustment values should be
-tweaking the freq value, causing the clocks to converge.
-
-The case I can think of that could cause this, is if the drift is
-somehow jumping above the slew boundary before NTPd actually makes any
-adjtimex calls, so we end up with minimal correction to the freq value,
-but that still doesn't completely vibe with the data.
-
-
-> > Could you provide:
-> > /usr/sbin/ntpdc -c version
+> While the one below is definitey not my fault. It's on Linus latest:
 > 
-> $ ntpdc -c version
-> ntpdc 4.2.4p4@1.1520-o Tue Jan  6 15:51:00 UTC 2009 (1)
+>  commit 2450cf51a1bdba7037e91b1bcc494b01c58aaf66
 > 
-> > Do you see the same behavior if you drop all but one server (including
-> > the local clock: 127.127.1.0)? 
-> > 
-> > You might also add "minpoll 4 maxpoll 4" to the server line to speed up
-> > testing.
+> While compiling a kernel I triggerred the BUG below. Not so nice as it
+> took a whole filesystem with it. fsck took more than 20 min to recover
+> the leftovers :(
 > 
-> Will try those option while debugging.
+> Thanks,
 > 
-> > Actually, if you could, I'd be interested if you could send your
-> > ntp.conf 
+> 	tglx
 > 
-> http://krogh.cc/~jesper/ntp.conf
-
-Cool, I see you're collecting stats already. Depending on the results of
-the tests above I may want to check those out as well.
-
-> But this seems to be a "regression". Since 2.6.27.19 doesn't misbehave. 
-> Same NTP, same configuration, same hardware. only change is the kernel 
-> version. Or am I missing some parameter here?
 > 
-> Would it make sense to try to bisect it?
+> ------------[ cut here ]------------
+> kernel BUG at /home/tglx/work/kernel/git/linux-2.6/drivers/scsi/scsi_lib.c:1141!
 
-Well, I suspect you'll just bisect it to the fast-pit TSC calibration
-causing a different correction freq to be needed for synchronization.
-The odd part is that the userland NTPd isn't behaving as I'd expect if
-the TSC calibration was really so bad that NTP couldn't handle it.
+This is BUG_ON(count > sdb->table.nents);
 
-Bisection may be something worth trying just to verify or disprove that
-theory, so if you have the time, it would be interesting to see. But if
-the theory is true then we're back to the same spot.
+It looks like the sg list got split and grew in size ... I suspect this
+might be libata related, so cc'ing the ide list.  I suspect either the
+block layer initially parametrised this wrongly (tomo bug) or a sg list
+got split then requeued (something in libata?).
 
-I guess something to test my idea above (that the drift is bad enough
-that NTPd isn't making slew adjustments via adjtimex offset) is to
-remove NTPd from the init.d startup.
-
-Then after rebooting (into 2.6.29), run the attached python script for
-10 minutes or so to get an idea of the ppm drift. Then repeat with
-2.6.26.
-
-To run: 
-./drift-test.py <ntp server>
-
-It will give some wild ppm numbers, but after a few minutes it should
-settle down to the "natural drift" of the system.
-
-thanks
--john
+James
 
 
---=-Nuzx9kdWq+l8zxjCJEeY
-Content-Disposition: attachment; filename="drift-test.py"
-Content-Type: text/x-python; name="drift-test.py"; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-
-#!/usr/bin/python
-
-# Time Drift Script
-#		Periodically checks and displays time drift
-#		by john stultz (jstultz@us.ibm.com)
-
-import commands
-import sys
-import string
-import time
-
-server_default = "yourserverhere"
-sleep_time_default  = 60
-
-server = ""
-sleep_time = 0
-set_time = 0
-
-#parse args
-for arg in sys.argv[1:]:
-	if arg == "-s":
-		set_time = 1
-	elif server == "":
-		server = arg
-	elif sleep_time == 0:
-		sleep_time = string.atoi(arg)
-
-if server == "":
-	server = server_default
-if sleep_time == 0:
-	sleep_time = sleep_time_default
-
-#set time
-if (set_time == 1):
-	cmd = commands.getoutput('/usr/sbin/ntpdate -ub ' + server)
-
-cmd = commands.getoutput('/usr/sbin/ntpdate -uq ' + server)
-line = string.split(cmd)
-
-#parse original offset
-start_offset = string.atof(line[-2]);
-#parse original time
-start_time = time.localtime(time.time())
-datestr = time.strftime("%d %b %Y %H:%M:%S", start_time)
-
-time.sleep(1)
-while 1:
-	cmd = commands.getoutput('/usr/sbin/ntpdate -uq ' + server)
-	line = string.split(cmd)
-
-	#parse offset
-	now_offset = string.atof(line[-2]);
-
-	#parse time
-	now_time = time.localtime(time.time())
-	datestr = time.strftime("%d %b %Y %H:%M:%S", now_time)
-
-	# calculate drift
-	delta_time = time.mktime(now_time) - time.mktime(start_time)
-	delta_offset = now_offset - start_offset
-	drift =  delta_offset / delta_time * 1000000
-
-	#print output
-	print time.strftime("%d %b %H:%M:%S",now_time), 
-	print "	offset:", now_offset , 
-	print "	drift:", drift ,"ppm"
-	sys.stdout.flush()
-
-	#sleep 
-	time.sleep(sleep_time)
-
---=-Nuzx9kdWq+l8zxjCJEeY--
+> invalid opcode: 0000 [#1] SMP 
+> last sysfs file: /sys/devices/pci0000:00/0000:00:1c.5/0000:03:00.0/irq
+> CPU 0 
+> Modules linked in: ext2 ipt_MASQUERADE iptable_nat nf_nat bridge stp autofs4 coretemp lm85 hwmon_vid hwmon nfs lockd nfs_acl auth_rpcgss fuse sunrpc 8139too mii ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT ip6t_ipv6header xt_tcpudp nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 dm_mirror dm_region_hash dm_log dm_multipath dm_mod raid0 kvm_intel kvm uinput snd_hda_codec_idt snd_hda_intel snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd ppdev i2c_i801 firewire_ohci soundcore parport_pc i82975x_edac e1000e firewire_core snd_page_alloc i2c_core iTCO_wdt sr_mod edac_core parport sg floppy crc_itu_t iTCO_vendor_support pcspkr serio_raw cdrom ata_piix sata_sil ahci libata sd_mod scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: freq_table]
+> Pid: 16556, comm: cc1 Not tainted 2.6.29-rc6 #155         
+> RIP: 0010:[<ffffffffa00ad30b>]  [<ffffffffa00ad30b>] scsi_init_sgtable+0x51/0x9f [scsi_mod]
+> RSP: 0000:ffffffff8163cb40  EFLAGS: 00010002
+> RAX: 000000000000002d RBX: ffff88004b7a3590 RCX: 00000000ffffffff
+> RDX: 000000000000000b RSI: ffff880034b4d0a0 RDI: 0000000000002000
+> RBP: ffffffff8163cb50 R08: ffff880001017b50 R09: ffffffff8163cb90
+> R10: ffff88007d281000 R11: 0000000000000000 R12: ffff88003b323c58
+> R13: 00000000082b73a7 R14: ffffffff8163cc48 R15: 00000000000003f0
+> FS:  00007fe47f3ea6f0(0000) GS:ffffffff81645080(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> CR2: 00007fe47a37f000 CR3: 00000000443a8000 CR4: 00000000000026e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process cc1 (pid: 16556, threadinfo ffff88001c332000, task ffff880008398000)
+> Stack:
+>  ffff88003b323c00 ffff88007d281000 ffffffff8163cb70 ffffffffa00ad550
+>  ffff88004b7a3590 ffff88007d281000 ffffffff8163cba0 ffffffffa00ad6b1
+>  ffff88007d1f1410 ffff88007d1f0000 ffff88004b7a3590 ffff88007d281000
+> Call Trace:
+>  <IRQ> <0> [<ffffffffa00ad550>] scsi_init_io+0x1f/0xc9 [scsi_mod]
+>  [<ffffffffa00ad6b1>] scsi_setup_fs_cmnd+0xb7/0xbf [scsi_mod]
+>  [<ffffffffa00d5175>] sd_prep_fn+0x65/0x81c [sd_mod]
+>  [<ffffffffa00a768c>] ? scsi_done+0x0/0x12 [scsi_mod]
+>  [<ffffffffa00a768c>] ? scsi_done+0x0/0x12 [scsi_mod]
+>  [<ffffffff8114345e>] elv_next_request+0xd7/0x19e
+>  [<ffffffffa00acc45>] scsi_request_fn+0x90/0x4cf [scsi_mod]
+>  [<ffffffff81144e86>] blk_invoke_request_fn+0x75/0x14a
+>  [<ffffffff8114547a>] __blk_run_queue+0x25/0x29
+>  [<ffffffff8114549f>] blk_run_queue+0x21/0x35
+>  [<ffffffffa00ac4f3>] scsi_run_queue+0x2e3/0x37d [scsi_mod]
+>  [<ffffffffa00ad2aa>] scsi_next_command+0x36/0x46 [scsi_mod]
+>  [<ffffffffa00addd7>] scsi_io_completion+0x3df/0x423 [scsi_mod]
+>  [<ffffffffa00df3ad>] ? __ata_qc_complete+0xc0/0xc9 [libata]
+>  [<ffffffffa00e1011>] ? ata_qc_complete+0x1ea/0x1f3 [libata]
+>  [<ffffffffa00a7683>] scsi_finish_command+0xe9/0xf2 [scsi_mod]
+>  [<ffffffffa00adf45>] scsi_softirq_done+0x11a/0x123 [scsi_mod]
+>  [<ffffffff81149275>] blk_done_softirq+0x69/0x79
+>  [<ffffffff810412b7>] __do_softirq+0x83/0x144
+>  [<ffffffff8100d23c>] call_softirq+0x1c/0x28
+>  [<ffffffff8100e17c>] do_softirq+0x34/0x76
+>  [<ffffffff81040fd1>] irq_exit+0x3f/0x79
+>  [<ffffffff8100e43f>] do_IRQ+0x130/0x155
+>  [<ffffffff8100cb13>] ret_from_intr+0x0/0xa
+>  <EOI> <0>Code: 80 00 00 00 4c 89 e7 e8 0a 0d 0b e1 85 c0 74 45 48 c7 c2 59 d3 0a a0 be 80 00 00 00 4c 89 e7 e8 78 09 0b e1 b8 02 00 00 00 eb 25 <0f> 0b eb fe 41 89 44 24 08 83 7b 4c 02 75 08 8b 83 18 01 00 00 
+> RIP  [<ffffffffa00ad30b>] scsi_init_sgtable+0x51/0x9f [scsi_mod]
+>  RSP <ffffffff8163cb40>
+> ---[ end trace 1b0175d9b3d81293 ]---
 
