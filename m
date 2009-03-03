@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZCCUZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbZCCU2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbZCCUZX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 15:25:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZCCUZK
+	id S1755511AbZCCU2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 15:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbZCCU2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 15:25:10 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:43800 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750711AbZCCUZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 15:25:09 -0500
-Date: Tue, 3 Mar 2009 14:25:06 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6 v6] SGI RTC: add clocksource driver
-Message-ID: <20090303202506.GA31426@sgi.com>
-References: <20090303151044.GA20016@sgi.com> <20090303151357.GA20120@sgi.com> <20090303151524.GB20120@sgi.com> <20090303151657.GC20120@sgi.com> <20090303151827.GD20120@sgi.com> <20090303152016.GE20120@sgi.com> <20090303152206.GF20120@sgi.com> <1236110492.6068.22.camel@localhost>
+	Tue, 3 Mar 2009 15:28:09 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:34765 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753126AbZCCU2I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 15:28:08 -0500
+Date: Tue, 3 Mar 2009 15:14:07 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: David Rientjes <rientjes@google.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] slub: enforce cpuset restrictions for cpu slabs
+In-Reply-To: <alpine.DEB.2.00.0903031057110.15900@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0903031509380.25612@qirst.com>
+References: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com> <alpine.DEB.2.00.0903022011430.17284@chino.kir.corp.google.com> <alpine.DEB.1.10.0903031136380.26454@qirst.com> <alpine.DEB.2.00.0903030900580.6643@chino.kir.corp.google.com>
+ <alpine.DEB.1.10.0903031345150.9466@qirst.com> <alpine.DEB.2.00.0903031057110.15900@chino.kir.corp.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236110492.6068.22.camel@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 12:01:32PM -0800, john stultz wrote:
-> On Tue, 2009-03-03 at 09:22 -0600, Dimitri Sivanich wrote:
-> > +
-> > +static struct clocksource clocksource_uv = {
-> > +	.name		= RTC_NAME,
-> > +	.rating		= 400,
-> > +	.read		= uv_read_rtc,
-> > +	.mask		= (cycle_t)UVH_RTC_REAL_TIME_CLOCK_MASK,
-> > +	.shift		= 10,
-> 
-> 
-> What is the expected value for sn_rtc_cycles_per_second ? 
-> 
-> I ask because a shift value of 10 seems a bit low. It could very well be
-> appropriate, but I just wanted to check.
-> 
+On Tue, 3 Mar 2009, David Rientjes wrote:
 
-Likely in the range of 20,000,000 - 40,000,000.
+> This change doesn't affect the fastpath in any significant way for systems
+> that have not configured multiple cpusets; systems that have configured
+> more than one cpuset may have specific NUMA locality requirements that
+> slub is dismissing without this patch.
+
+SLUB is also "dismissing" lots of other NUMA locality requirements since
+it relies on the page allocators for this. SLUB does *not* realize memory
+policy and/or cpuset support for individual objects. NUMA locality is
+implemented only (aside from explicit requests of memory from a
+certain node) when slab page allocations are performed.
+
