@@ -1,41 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZCCQtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbZCCQxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbZCCQtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCCQtF
+	id S1757813AbZCCQxZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZCCQxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:49:05 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:55318 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752650AbZCCQtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:49:04 -0500
-Date: Tue, 3 Mar 2009 11:36:35 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] cpusets: replace zone allowed functions with node
- allowed
-In-Reply-To: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0903031136030.26454@qirst.com>
-References: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 3 Mar 2009 11:53:15 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:35098 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753263AbZCCQxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:53:14 -0500
+Message-ID: <49AD5F8B.8060602@cs.wisc.edu>
+Date: Tue, 03 Mar 2009 10:49:15 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: scameron@beardog.cca.cpqcorp.net
+CC: linux-kernel@vger.kernel.org, mike.miller@hp.com, jens.axboe@oracle.com,
+       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
+       linux-scsi@vger.kernel.org, coldwell@redhat.com, hare@novell.com,
+       iss_storagedev@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+References: <20090302145650.GW15340@beardog.cca.cpqcorp.net>
+In-Reply-To: <20090302145650.GW15340@beardog.cca.cpqcorp.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009, David Rientjes wrote:
+scameron@beardog.cca.cpqcorp.net wrote:
+> [...]
+>>> +/*
+>>> + * For operations that cannot sleep, a command block is allocated at init,
+>>> + * and managed by cmd_alloc() and cmd_free() using a simple bitmap to track
+>>> + * which ones are free or in use.  Lock must be held when calling this.
+>>> + * cmd_free() is the complement.
+>>> + */
+>>> +static struct CommandList_struct *cmd_alloc(struct ctlr_info *h)
+>>> +{
+>>> +     struct CommandList_struct *c;
+>>> +     int i;
+>>> +     union u64bit temp64;
+>>> +     dma_addr_t cmd_dma_handle, err_dma_handle;
+>>> +
+>>> +     do {
+>>> +             i = find_first_zero_bit(h->cmd_pool_bits, h->nr_cmds);
+>>> +             if (i == h->nr_cmds)
+>>> +                     return NULL;
+>>> +     } while (test_and_set_bit
+>>> +              (i & (BITS_PER_LONG - 1),
+>>> +               h->cmd_pool_bits + (i / BITS_PER_LONG)) != 0);
+>> Using bitmap to manage free commands looks too complicated a bit to
+>> me. Can we just use lists for command management?
+> 
+> Hmm, this doesn't seem all that complicated to me, and this code snippet
+> has been pretty stable for about 10 years. it's nearly identical to what's in
+> cpqarray in the 2.2.13 kernel from 1999:
+> 
+>                 do {
+>                         i = find_first_zero_bit(h->cmd_pool_bits, NR_CMDS);
+>                         if (i == NR_CMDS)
+>                                 return NULL;
+>                 } while(test_and_set_bit(i%32, h->cmd_pool_bits+(i/32)) != 0)
+> 
+> It's fast, works well, and has needed very little maintenance over the 
+> years.  Without knowing what you have in mind specifically, I don't see a
+> big need to change this.
+> 
 
-> The cpuset_zone_allowed() variants are actually only a function of the
-> zone's node.
+Other drivers have had to convert to and modify the host tagging to get 
+merged. They too had stable and fast code, and we complained and fought 
+against changing it :) I have had to convert or help convert libfc and 
+qla4xxx and I will now convert iscsi, so I feel your pain :)
 
-Good observation.
+To create the map call scsi_init_shared_tag_map after you allocate the 
+scsi host and before you add it. Then in slave_alloc set the 
+sdev->tag_supported  = 1 and call scsi_activate_tcq. Then replace your 
+bitmap with:
 
-Acked-by: Christoph Lameter <cl@linux-foundation.org>
+for scsi commands:
 
+c = h->cmd_pool + scsi_cmnd->request->tag
+
+And for the reset path I was thinking you could use my patch in the 
+other mail and do
+
+tag = blk_map_start_tag(scsi_host->bqt, NULL, 0);
+if (tag < 0)
+	goto fail;
+c = h->cmd_pool + tag;
+c->cmdindex = tag;
+
+In the completion path you need to do a blk_map_end_tag(scsi_host->bqt, 
+c->cmdindex);. The scsi/block layer will free the tag for scsi commadns.
