@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbZCCSYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbZCCSZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbZCCSYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 13:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZCCSYH
+	id S1756659AbZCCSZB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 13:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZCCSYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 13:24:07 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50234 "EHLO
+	Tue, 3 Mar 2009 13:24:49 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50241 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751130AbZCCSYG (ORCPT
+	by vger.kernel.org with ESMTP id S1752849AbZCCSYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 13:24:06 -0500
-Date: Tue, 3 Mar 2009 18:24:03 +0000
+	Tue, 3 Mar 2009 13:24:47 -0500
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Jiri Slaby <jirislaby@gmail.com>,
        Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Subject: [PATCH 0/5] WM97xx updates
-Message-ID: <20090303182402.GA29542@rakim.wolfsonmicro.main>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Cookie: BOFH excuse
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       Mike Rapoport <mike@compulab.co.il>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 1/5] Input: wm97xx: add BTN_TOUCH event to wm97xx to use it with Android
+Date: Tue,  3 Mar 2009 18:24:40 +0000
+Message-Id: <1236104684-30214-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <20090303182402.GA29542@rakim.wolfsonmicro.main>
+References: <20090303182402.GA29542@rakim.wolfsonmicro.main>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series updates the review feedback from the first round and
-rolls in the additional patches from Mike Rapoport.  I've not addressed
-any of the comments for the at32 driver since I have no ability to test
-any changes to that driver but repost it for completeness.
+From: Mike Rapoport <mike@compulab.co.il>
 
-Hans-Christian Egtvedt (1):
-      Input: add wm97xx accelerated driver for AVR32 AT32AP700X microprocessors
+Please CC me, I'm not subscribed to linux-input
 
-Mark Brown (2):
-      Input: Use disable_irq_nosync() for Mainstone
-      Input: Accelerated touchscreen support for Marvell Zylonite
+Android expects BTN_TOUCH events when pen state changes. Add BTN_TOUCH
+event reporting to allow use of wm97xx touchscreen controller wiht
+Android devices.
 
-Mike Rapoport (2):
-      Input: wm97xx: add BTN_TOUCH event to wm97xx to use it with Android
-      Input: add BTN_TOUCH event
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/input/touchscreen/wm97xx-core.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
- drivers/input/touchscreen/Kconfig            |   28 ++
- drivers/input/touchscreen/Makefile           |    2 +
- drivers/input/touchscreen/at32-wm97xx.c      |  416 ++++++++++++++++++++++++++
- drivers/input/touchscreen/at32-wm97xx.h      |   48 +++
- drivers/input/touchscreen/mainstone-wm97xx.c |    3 +-
- drivers/input/touchscreen/ucb1400_ts.c       |    5 +-
- drivers/input/touchscreen/wm97xx-core.c      |    4 +
- drivers/input/touchscreen/zylonite-wm97xx.c  |  239 +++++++++++++++
- 8 files changed, 743 insertions(+), 2 deletions(-)
- create mode 100644 drivers/input/touchscreen/at32-wm97xx.c
- create mode 100644 drivers/input/touchscreen/at32-wm97xx.h
- create mode 100644 drivers/input/touchscreen/zylonite-wm97xx.c
+diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
+index d15aa11..4551f88 100644
+--- a/drivers/input/touchscreen/wm97xx-core.c
++++ b/drivers/input/touchscreen/wm97xx-core.c
+@@ -409,6 +409,7 @@ static int wm97xx_read_samples(struct wm97xx *wm)
+ 			wm->pen_is_down = 0;
+ 			dev_dbg(wm->dev, "pen up\n");
+ 			input_report_abs(wm->input_dev, ABS_PRESSURE, 0);
++			input_report_key(wm->input_dev, BTN_TOUCH, 0);
+ 			input_sync(wm->input_dev);
+ 		} else if (!(rc & RC_AGAIN)) {
+ 			/* We need high frequency updates only while
+@@ -433,6 +434,7 @@ static int wm97xx_read_samples(struct wm97xx *wm)
+ 		input_report_abs(wm->input_dev, ABS_X, data.x & 0xfff);
+ 		input_report_abs(wm->input_dev, ABS_Y, data.y & 0xfff);
+ 		input_report_abs(wm->input_dev, ABS_PRESSURE, data.p & 0xfff);
++		input_report_key(wm->input_dev, BTN_TOUCH, 1);
+ 		input_sync(wm->input_dev);
+ 		wm->pen_is_down = 1;
+ 		wm->ts_reader_interval = wm->ts_reader_min_interval;
+@@ -629,9 +631,11 @@ static int wm97xx_probe(struct device *dev)
+ 	wm->input_dev->open = wm97xx_ts_input_open;
+ 	wm->input_dev->close = wm97xx_ts_input_close;
+ 	set_bit(EV_ABS, wm->input_dev->evbit);
++	set_bit(EV_KEY, wm->input_dev->evbit);
+ 	set_bit(ABS_X, wm->input_dev->absbit);
+ 	set_bit(ABS_Y, wm->input_dev->absbit);
+ 	set_bit(ABS_PRESSURE, wm->input_dev->absbit);
++	set_bit(BTN_TOUCH, wm->input_dev->keybit);
+ 	input_set_abs_params(wm->input_dev, ABS_X, abs_x[0], abs_x[1],
+ 			     abs_x[2], 0);
+ 	input_set_abs_params(wm->input_dev, ABS_Y, abs_y[0], abs_y[1],
+-- 
+1.6.1.3
+
