@@ -1,154 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbZCCACc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbZCCADN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759519AbZCCACc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 19:02:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbZCCAB4
+	id S1759601AbZCCADN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 19:03:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbZCCACz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 19:01:56 -0500
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:60820 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758158AbZCCABy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 19:01:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhwFABsBrElMQW1W/2dsb2JhbACBWdNYhAYG
-Date: Mon, 2 Mar 2009 19:01:51 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH] Text Edit Lock - kprobes architecture independent support
-Message-ID: <20090303000151.GD3906@Krystal>
-References: <20090227185316.GA19811@Krystal> <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Mar 2009 19:02:55 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:43303 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757236AbZCCACy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 19:02:54 -0500
+Message-ID: <49AC73A9.4040804@us.ibm.com>
+Date: Mon, 02 Mar 2009 16:02:49 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: "lkml, " <linux-kernel@vger.kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <srostedt@redhat.com>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: [TIP][RFC 0/7] requeue pi implemenation
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090302234910.GA17956@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:00:55 up 2 days, 20:27,  3 users,  load average: 0.76, 0.67,
-	0.60
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the mutual exclusion provided by the text edit lock in the kprobes code. It
-allows coherent manipulation of the kernel code by other subsystems.
+The following series is v5 of the requeue_pi patches against
+linux-2.6-tip/core/futexes.  The current futex implementation doesn't
+allow for requeueing of PI futexes, which leads to a thundering herd
+during pthread_cond_broadcast (as opposed to a civilized priority
+ordered wakeup sequence).  The core of the problem is that the
+underlying rt_mutex can not be left with waiters and no owner (which
+would break the PI logic).  This patch series updates the futex requeue
+code to allow for requeueing from non-pi to pi futexes in support of PI
+aware pthread_cond_* calls along with some needful rt_mutex helper
+routines.  The credit for the design goes to Thomas Gleixner, while the
+bugs and other idiocies present in this implementation should be
+attributed to me.
 
-Changelog:
+I'd really appreciate feedback on the implementation as well as any
+design critiques.  Answers to the questions posed in the patch headers
+and patches are particularly welcome.
 
-Move the kernel_text_lock/unlock out of the for loops.
+This patch series has a known race condition that I'm currently
+debugging (see 5/7), as well as notes, questions and FIXMEs in the
+comments. These will be resolved and removed prior to submission
 
-(applies on 2.6.29-rc6)
+Each patch contains some documentation, but the bulk of the general
+approach is outlined in 6/7.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
-CC: Roel Kluin <12o3l@tiscali.nl>
----
- kernel/kprobes.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+Darren Hart (6):
+    RFC: futex: add requeue_pi calls
+    RFC: rt_mutex: add proxy lock routines
+    RFC: futex: finish_futex_lock_pi()
+    RFC: futex: futex_lock_pi_atomic()
+    RFC: futex: futex_top_waiter()
+    RFC: futex: futex_wait_queue_me()
 
-Index: linux-2.6-lttng/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2009-01-30 10:24:45.000000000 -0500
-+++ linux-2.6-lttng/kernel/kprobes.c	2009-01-30 10:27:56.000000000 -0500
-@@ -43,6 +43,7 @@
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
- #include <linux/kdebug.h>
-+#include <linux/memory.h>
- 
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
-@@ -699,9 +700,10 @@ int __kprobes register_kprobe(struct kpr
- 		goto out;
- 	}
- 
-+	kernel_text_lock();
- 	ret = arch_prepare_kprobe(p);
- 	if (ret)
--		goto out;
-+		goto out_unlock_text;
- 
- 	INIT_HLIST_NODE(&p->hlist);
- 	hlist_add_head_rcu(&p->hlist,
-@@ -709,7 +711,8 @@ int __kprobes register_kprobe(struct kpr
- 
- 	if (kprobe_enabled)
- 		arch_arm_kprobe(p);
--
-+out_unlock_text:
-+	kernel_text_unlock();
- out:
- 	mutex_unlock(&kprobe_mutex);
- 
-@@ -746,8 +749,11 @@ valid_p:
- 		 * enabled and not gone - otherwise, the breakpoint would
- 		 * already have been removed. We save on flushing icache.
- 		 */
--		if (kprobe_enabled && !kprobe_gone(old_p))
-+		if (kprobe_enabled && !kprobe_gone(old_p)) {
-+			kernel_text_lock();
- 			arch_disarm_kprobe(p);
-+			kernel_text_unlock();
-+		}
- 		hlist_del_rcu(&old_p->hlist);
- 	} else {
- 		if (p->break_handler && !kprobe_gone(p))
-@@ -918,7 +924,6 @@ static int __kprobes pre_handler_kretpro
- 		}
- 
- 		arch_prepare_kretprobe(ri, regs);
--
- 		/* XXX(hch): why is there no hlist_move_head? */
- 		INIT_HLIST_NODE(&ri->hlist);
- 		kretprobe_table_lock(hash, &flags);
-@@ -1280,12 +1285,14 @@ static void __kprobes enable_all_kprobes
- 	if (kprobe_enabled)
- 		goto already_enabled;
- 
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist)
- 			if (!kprobe_gone(p))
- 				arch_arm_kprobe(p);
- 	}
-+	kernel_text_unlock();
- 
- 	kprobe_enabled = true;
- 	printk(KERN_INFO "Kprobes globally enabled\n");
-@@ -1310,6 +1317,7 @@ static void __kprobes disable_all_kprobe
- 
- 	kprobe_enabled = false;
- 	printk(KERN_INFO "Kprobes globally disabled\n");
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
-@@ -1317,6 +1325,7 @@ static void __kprobes disable_all_kprobe
- 				arch_disarm_kprobe(p);
- 		}
- 	}
-+	kernel_text_unlock();
- 
- 	mutex_unlock(&kprobe_mutex);
- 	/* Allow all currently running kprobes to complete */
+$ git diff HEAD~6 | diffstat
+include/asm-generic/errno.h |    2 
+include/linux/futex.h       |    8 
+include/linux/thread_info.h |    4 
+kernel/futex.c              | 1205 +++++++++++++++++++++++++++++++++-----------
+kernel/rtmutex.c            |  192 +++++--
+kernel/rtmutex_common.h     |    8 
+6 files changed, 1104 insertions(+), 315 deletions(-)
+
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
+
+
