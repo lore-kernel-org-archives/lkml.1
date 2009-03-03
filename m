@@ -1,36 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZCCCA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbZCCCBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbZCCCA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 21:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZCCCAO
+	id S1756752AbZCCCBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 21:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZCCCBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 21:00:14 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57503 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752338AbZCCCAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 21:00:13 -0500
-Message-ID: <49AC8F5D.5010104@cn.fujitsu.com>
-Date: Tue, 03 Mar 2009 10:01:01 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 2 Mar 2009 21:01:15 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:32010 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752338AbZCCCBO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 21:01:14 -0500
+Message-ID: <49AC8F98.10101@oracle.com>
+Date: Mon, 02 Mar 2009 18:02:00 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] Allow cpusets to be configured/built on non-SMP systems
-References: <20090303013432.11211.18662.stgit@menage.corp.google.com>
-In-Reply-To: <20090303013432.11211.18662.stgit@menage.corp.google.com>
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm 2009-03-02-17-09 uploaded
+References: <200903030109.n2319UeR010057@imap1.linux-foundation.org>
+In-Reply-To: <200903030109.n2319UeR010057@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49AC8F40.00F7:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static int generate_sched_domains(struct cpumask **domains,
-> +			struct sched_domain_attr **attributes)
-> +{
+akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2009-03-02-17-09 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> and will soon be available at
+> 
+>    git://git.zen-sources.org/zen/mmotm.git
+> 
+> It contains the following patches against 2.6.29-rc6:
 
-return 0;
 
-> +}
+> relay-fix-for-possible-loss-corruption-of-produced-subbufs.patch
+
+
+diffstat for this patch says:
+
+ kernel/relay.c      |    8 
+ kernel/relay.c.orig | 1406 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 1411 insertions(+), 3 deletions(-)
+
+
+and quilt stops applying the series file when it has this error:
+
+Applying patch relay-fix-for-possible-loss-corruption-of-produced-subbufs.patch
+patching file kernel/relay.c
+The next patch would create the file kernel/relay.c.orig,
+which already exists!  Applying it anyway.
+patching file kernel/relay.c.orig
+[31mPatch attempted to create file kernel/relay.c.orig, which already exists.[00m
+[31mHunk #1 FAILED at 1.[00m
+[31m1 out of 1 hunk FAILED -- rejects in file kernel/relay.c.orig[00m
+Patch relay-fix-for-possible-loss-corruption-of-produced-subbufs.patch does not apply (enforce with -f)
+-- 
+~Randy
