@@ -1,52 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZCCBwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZCCCA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbZCCBwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 20:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbZCCBvv
+	id S1755878AbZCCCA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 21:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZCCCAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 20:51:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35374 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754520AbZCCBvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Mar 2009 20:51:50 -0500
-Date: Mon, 2 Mar 2009 17:51:24 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: [PATCH 1/2] byteorder: add load/store_{endian} API
-In-Reply-To: <1236040845.5756.33.camel@brick>
-Message-ID: <alpine.LFD.2.00.0903021749030.3111@localhost.localdomain>
-References: <1236038817.5756.11.camel@brick>  <alpine.LFD.2.00.0903021613590.3111@localhost.localdomain>  <1236039944.5756.19.camel@brick>  <alpine.LFD.2.00.0903021632320.3111@localhost.localdomain> <1236040845.5756.33.camel@brick>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 2 Mar 2009 21:00:14 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57503 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752338AbZCCCAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Mar 2009 21:00:13 -0500
+Message-ID: <49AC8F5D.5010104@cn.fujitsu.com>
+Date: Tue, 03 Mar 2009 10:01:01 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] Allow cpusets to be configured/built on non-SMP systems
+References: <20090303013432.11211.18662.stgit@menage.corp.google.com>
+In-Reply-To: <20090303013432.11211.18662.stgit@menage.corp.google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +static int generate_sched_domains(struct cpumask **domains,
+> +			struct sched_domain_attr **attributes)
+> +{
 
+return 0;
 
-On Mon, 2 Mar 2009, Harvey Harrison wrote:
-> 
-> OK, static inline it is then. Would you be opposed to an API like:
-> 
-> get_le16
-> put_le16
-> 
-> to match with 
->
-> get_unaligned_le16
-> put_unaligned_le16
-> 
-> And make the existing unaligned helpers typesafe?
-
-That sounds much better to me. That said, I'm also wondering what the 
-upside is of this all?
-
-		Linus
+> +}
