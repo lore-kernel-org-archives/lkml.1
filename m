@@ -1,77 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZCCLtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZCCLvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbZCCLtZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 06:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZCCLtQ
+	id S1756656AbZCCLvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 06:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZCCLvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 06:49:16 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:55812 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZCCLtP (ORCPT
+	Tue, 3 Mar 2009 06:51:03 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37562 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbZCCLvB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 06:49:15 -0500
-Message-ID: <49AD1914.8030705@nokia.com>
-Date: Tue, 03 Mar 2009 13:48:36 +0200
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 3 Mar 2009 06:51:01 -0500
+Message-ID: <52c02febf1e87a4f0a6e81124e00876a.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090303111244.GP11421@balbir.in.ibm.com>
+References: <20090302044043.GC11421@balbir.in.ibm.com>
+    <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090302060519.GG11421@balbir.in.ibm.com>
+    <20090302152128.e74f51ef.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090302063649.GJ11421@balbir.in.ibm.com>
+    <20090302160602.521928a5.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090302124210.GK11421@balbir.in.ibm.com>
+    <c31ccd23cb41f0f7594b3f56b20f0165.squirrel@webmail-b.css.fujitsu.com>
+    <20090302174156.GM11421@balbir.in.ibm.com>
+    <20090303085914.555089b1.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090303111244.GP11421@balbir.in.ibm.com>
+Date: Tue, 3 Mar 2009 20:50:56 +0900 (JST)
+Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       "Bharata B Rao" <bharata@in.ibm.com>, "Paul Menage" <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "David Rientjes" <rientjes@google.com>,
+       "Pavel Emelianov" <xemul@openvz.org>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-CC: Matt Fleming <matt@console-pimps.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
-References: <4991A00B.8040002@nokia.com>	<20090211133004.GH478@console-pimps.org>	<4992D90E.10506@nokia.com>	<4992E597.2030404@nokia.com>	<20090218211627.7c16339a@mjolnir.ossman.eu>	<499D0B5C.4000005@nokia.com>	<20090219112243.GB25903@console-pimps.org>	<499D4CB6.3070807@nokia.com> <20090302205548.223003d5@mjolnir.ossman.eu>
-In-Reply-To: <20090302205548.223003d5@mjolnir.ossman.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Mar 2009 11:48:29.0329 (UTC) FILETIME=[F862D810:01C99BF5]
-X-Nokia-AV: Clean
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 58e858f20149d279368441055d8ba3ae43a1fc6d Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Tue, 10 Feb 2009 16:32:33 +0200
-Subject: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
+Balbir Singh wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-03
+> 08:59:14]:
+>> But, on NUMA, because memcg just checks "usage" and doesn't check
+>> "usage-per-node", there can be memory shortage and this kind of
+>> soft-limit
+>> sounds attractive for me.
+>>
+>
+>
+> Could you please elaborate further on this?
+>
+Try to explain by artificial example..
+.
+Assume a system with 4 nodes, and 1G of memory per node.
+==
+     Node0 -- 1G
+     Node1 -- 1G
+     Node2 -- 1G
+     Node3 -- 1G
+==
+And assume there are 3 memory cgroups of following hard-limit.
+==
+    GroupA -- 1G
+    GroupB -- 0.6G
+    GroupC -- 0.6G
+==
+If the machine is not-NUMA and 4G SMP, we expect 1.8G of free memory and
+we can assume "global memory shortage" is a rare event.
 
-Commit 0d3e0460f307e84904968aad6cff97bd688583d8
-"MMC: CSD and CID timeout values" inadvertently broke
-the timeout for the MMC command SEND_EXT_CSD.
+But on NUMA, memory usage can be following.
+==
+     GroupA -- 950M of usage
+     GrouoB -- 550M of usage
+     GroupC -- 550M of usage
+and
+     Node0 -- usage=1G
+     Node1 -- usage=1G
+     Node2 -- usage=50M
+     Node2 -- Usage=0
+==
+In this case, kswapd will work on Node0, and Node1.
+Softlimit will have chance to work. If the user declares GroupA's softlimit
+is 800M, GroupA will be victim in this case.
 
-This patch puts it back again.
+But we have to admit this is hard-to-use scheduling paramter. Almost all
+administrator will not be able to set proper value.
+A useful case I can think of is creating some "victim" group and guard
+other groups from global memory reclaim. I think I need some study about
+how-to-use softlimit. But we'll need this kind of paramater,anyway and
+I don't have onjection to add this kind of scheduling parameter.
+But implementation should be simple at this stage and we should
+find best scheduling algorithm under use-case finally...
 
-Depending on the characteristics of the controller,
-this bug may prevent the use of MMC cards.
+Thanks,
+-Kame
 
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- drivers/mmc/core/mmc_ops.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/mmc/core/mmc_ops.c b/drivers/mmc/core/mmc_ops.c
-index 9c50e6f..34ce270 100644
---- a/drivers/mmc/core/mmc_ops.c
-+++ b/drivers/mmc/core/mmc_ops.c
-@@ -248,12 +248,15 @@ mmc_send_cxd_data(struct mmc_card *card, struct mmc_host *host,
- 
- 	sg_init_one(&sg, data_buf, len);
- 
--	/*
--	 * The spec states that CSR and CID accesses have a timeout
--	 * of 64 clock cycles.
--	 */
--	data.timeout_ns = 0;
--	data.timeout_clks = 64;
-+	if (opcode == MMC_SEND_CSD || opcode == MMC_SEND_CID) {
-+		/*
-+		 * The spec states that CSR and CID accesses have a timeout
-+		 * of 64 clock cycles.
-+		 */
-+		data.timeout_ns = 0;
-+		data.timeout_clks = 64;
-+	} else
-+		mmc_set_data_timeout(&data, card);
- 
- 	mmc_wait_for_req(host, &mrq);
- 
--- 
-1.5.6.3
