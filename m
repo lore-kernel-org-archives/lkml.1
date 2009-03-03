@@ -1,106 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbZCCRT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZCCRXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbZCCRT5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 12:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbZCCRTm
+	id S1756925AbZCCRXy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 12:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbZCCRXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 12:19:42 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:52448 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756255AbZCCRTl (ORCPT
+	Tue, 3 Mar 2009 12:23:45 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:36312 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754248AbZCCRXo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 12:19:41 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=UDwdTO5HKn90ECSLKX0JrKP5oGYWlLyTk2PItjTG6L8+rhG4cyIR0VYuwg3Og7pfs
-	mZ+LkgU4UP3+AMp+A+O5g==
-Date: Tue, 3 Mar 2009 09:19:07 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] slub: enforce cpuset restrictions for cpu slabs
-In-Reply-To: <alpine.DEB.1.10.0903031136380.26454@qirst.com>
-Message-ID: <alpine.DEB.2.00.0903030900580.6643@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com> <alpine.DEB.2.00.0903022011430.17284@chino.kir.corp.google.com> <alpine.DEB.1.10.0903031136380.26454@qirst.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Mar 2009 12:23:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QGtWe7t0ynHkk9Am/6EC4UrhgrBJXMatZ+Z3uTQBEoF6DpumjgyWVDsUXu7u6lLHHF
+         meHshTGF/BAH5UVRRgVU0x4Pc8QpRdQyLRCwAJptiDWwXzAvdqDt6ICiX/nWNPVwThs5
+         DjM/xLwB9uAJp5eMfot65VCr1KuqT30U8ogCM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <49AD4C74.1060704@s5r6.in-berlin.de>
+References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
+	 <49ACC6B0.409@garzik.org>
+	 <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>
+	 <20090303072637.GB4440@kroah.com>
+	 <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
+	 <49AD4C74.1060704@s5r6.in-berlin.de>
+Date: Tue, 3 Mar 2009 09:23:41 -0800
+Message-ID: <43e72e890903030923v27c47f5anc184c0e8085bc5c1@mail.gmail.com>
+Subject: Re: Elaboration on "Equivalent fix must already exist in Linus' tree"
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Mar 2009, Christoph Lameter wrote:
+On Tue, Mar 3, 2009 at 7:27 AM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Luis R. Rodriguez wrote:
+>> On Mon, Mar 2, 2009 at 11:26 PM, Greg KH <greg@kroah.com> wrote:
+>>> Who are these "people" that you are trying to convince?
+>>
+>> OK small silly example is convincing distributions it may be a good
+>> idea to carry linux-next kernel packages as options to users to
+>> hopefully down the road reduce the delta between what they carry and
+>> what is actually upstream.
+>
+> Distros would do their users a bigger favour if they didn't just dump a
+> random new driver into their kernel package, but if they instead (or in
+> addition) support the process to get new drivers into the mainline.
+>
+> It's a favour to their users because maintenance in mainline generally
+> means better quality.  (Less drivers which break suspend/resume etc. pp.).
+>
+> It's also a favour to themselves because the maintenance of their kernel
+> as a whole will cost less if it is a stabilized derivative of the
+> mainline instead of an unstable (and merely potential) predecessor of
+> the mainline.
 
-> > Slab allocations should respect cpuset hardwall restrictions.  Otherwise,
-> > it is possible for tasks in a cpuset to fill slabs allocated on mems
-> > assigned to a disjoint cpuset.
-> 
-> Not sure that I understand this correctly. If multiple tasks are running
-> on the same processor that are part of disjoint cpusets and both taska are
-> performing slab allocations without specifying a node then one task could
-> allocate a page from the first cpuset, take one object from it and then
-> the second task on the same cpu could consume the rest from a nodeset that
-> it would otherwise not be allowed to access. On the other hand it is
-> likely that the second task will also allocate memory from its allowed
-> nodes that are then consumed by the first task. This is a tradeoff coming
-> with the pushing of the enforcement of memory policy / cpuset stuff out of
-> the slab allocator and relying for this on the page allocator.
-> 
+I don't think I was very clear in what I meant about "carrying
+linux-next kernel packages as an option". What I meant was carrying it
+just as an option for those users who want to test bleeding edge
+without compiling their own linux-next, _not_ to merge linux-next
+things into their own default kernel release and shove it down users
+throats.
 
-Yes, I agree that it's a significant optimization to allow the cpu slab to 
-be used by tasks that are not allowed, either because of its mempolicy or 
-cpuset restriction, to access the node on which it was allocated.  That's 
-especially true for small object sizes or short-lived allocations where 
-the hardwall infringment is acceptable for the speed-up.
-
-Unfortunately, it also leads to a violation of the user imposed 
-restriction on acceptable memory usage.  One of the important aspects of 
-cpusets is to allow memory isolation from other siblings.  It should be 
-possible to kill all tasks in a cpuset, for example, and expect its 
-partial list to be emptied and not heavily fragmented by long-lived 
-allocations that could prevent any partial slab freeing, which is possible 
-when heavy slab users are allowed to allocate objects anywhere.
-
-> > If an allocation is intended for a particular node that the task does not
-> > have access to because of its cpuset, an allowed partial slab is used
-> > instead of failing.
-> 
-> This would get us back to the slab allocator enforcing memory policies.
-> 
-
-Is that a problem?  get_any_partial() already enforces cpuset-aware memory 
-policies when defragmenting remote partial slabs.
-
-> > -static inline int node_match(struct kmem_cache_cpu *c, int node)
-> > +static inline int node_match(struct kmem_cache_cpu *c, int node, gfp_t gfpflags)
-> >  {
-> >  #ifdef CONFIG_NUMA
-> >  	if (node != -1 && c->node != node)
-> >  		return 0;
-> >  #endif
-> > -	return 1;
-> > +	return cpuset_node_allowed_hardwall(c->node, gfpflags);
-> >  }
-> 
-> This is a hotpath function and doing an expensive function call here would
-> significantly impact performance.
-> 
-
-It's not expensive.  It's a no-op for !CONFIG_CPUSETS configs and only a 
-global variable read for machines running with a single cpuset.  When the 
-machine has multiple cpusets, it indicates that memory restrictions are in 
-place so checking current->mems_allowed is required and its performance 
-impact should be assumed.
-
-> It also will cause a reloading of the per cpu slab after each task switch
-> in the scenario discussed above.
-> 
-
-There is no alternative solution to prevent egregious amounts of slab to 
-be allocated in a disjoint cpuset that is supposedly mem_exclusive.
+  Luis
