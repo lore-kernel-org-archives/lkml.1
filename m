@@ -1,116 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbZCCLX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZCCLZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbZCCLX0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 06:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZCCLXS
+	id S1756872AbZCCLZX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 06:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZCCLZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 06:23:18 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:41222 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753528AbZCCLXR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 06:23:17 -0500
-Date: Tue, 3 Mar 2009 16:53:06 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
-Message-ID: <20090303112305.GR11421@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain> <20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com> <20090302044043.GC11421@balbir.in.ibm.com> <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com> <20090302060519.GG11421@balbir.in.ibm.com> <20090302151830.3770e528.kamezawa.hiroyu@jp.fujitsu.com> <20090302175235.GN11421@balbir.in.ibm.com> <20090303090303.ca430b43.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 3 Mar 2009 06:25:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41837 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855AbZCCLZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 06:25:08 -0500
+Date: Tue, 3 Mar 2009 11:24:40 GMT
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       arjan@linux.intel.com, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, arjan@linux.intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1236078904.2675.17.camel@penberg-laptop>
+References: <1236078904.2675.17.camel@penberg-laptop>
+Subject: [tip:x86/mm] x86: make sure initmem is writable on 64-bit
+Message-ID: <tip-e087edd8c056292191bb989baf49f83ee509e624@git.kernel.org>
+Git-Commit-ID: e087edd8c056292191bb989baf49f83ee509e624
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090303090303.ca430b43.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 03 Mar 2009 11:24:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-03 09:03:03]:
+Commit-ID:  e087edd8c056292191bb989baf49f83ee509e624
+Gitweb:     http://git.kernel.org/tip/e087edd8c056292191bb989baf49f83ee509e624
+Author:     "Pekka Enberg" <penberg@cs.helsinki.fi>
+AuthorDate: Tue, 3 Mar 2009 13:15:04 +0200
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 3 Mar 2009 12:21:18 +0100
 
-> On Mon, 2 Mar 2009 23:22:35 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 15:18:30]:
-> > 
-> > > On Mon, 2 Mar 2009 11:35:19 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > > Then, not-sorted RB-tree can be there.
-> > > > > 
-> > > > > BTW,
-> > > > >    time_after(jiffies, 0)
-> > > > > is buggy (see definition). If you want make this true always,
-> > > > >    time_after(jiffies, jiffies +1)
-> > > > >
-> > > > 
-> > > > HZ/4 is 250/4 jiffies in the worst case (62). We have
-> > > > time_after(jiffies, next_update_interval) and next_update_interval is
-> > > > set to last_tree_update + 62. Not sure if I got what you are pointing
-> > > > to.
-> > > > 
-> > > +	unsigned long next_update = 0;
-> > > +	unsigned long flags;
-> > > +
-> > > +	if (!css_tryget(&mem->css))
-> > > +		return;
-> > > +	prev_usage_in_excess = mem->usage_in_excess;
-> > > +	new_usage_in_excess = res_counter_soft_limit_excess(&mem->res);
-> > > +
-> > > +	if (time_check)
-> > > +		next_update = mem->last_tree_update +
-> > > +				MEM_CGROUP_TREE_UPDATE_INTERVAL;
-> > > +	if (new_usage_in_excess && time_after(jiffies, next_update)) {
-> > > +		if (prev_usage_in_excess)
-> > > +			mem_cgroup_remove_exceeded(mem);
-> > > +		mem_cgroup_insert_exceeded(mem);
-> > > +		updated_tree = true;
-> > > +	} else if (prev_usage_in_excess && !new_usage_in_excess) {
-> > > +		mem_cgroup_remove_exceeded(mem);
-> > > +		updated_tree = true;
-> > > +	}
-> > > 
-> > > My point is what happens if time_check==false.
-> > > time_afrter(jiffies, 0) is buggy.
-> > >
-> > 
-> > I see your point now, but the idea behind doing so is that
-> > time_after(jiffies, 0) will always return false, which forces the
-> > prev_usage_in_excess and !new_usage_in_excess check to execute. We set
-> > the value to false only from __mem_cgroup_free().
-> > 
-> > Are you suggesting that calling time_after(jiffies, 0) is buggy?
-> > The comment
-> > 
-> >   Do this with "<0" and ">=0" to only test the sign of the result. A
-> >  
-> > I think refers to the comparison check and not to the parameters. I
-> > hope I am reading this right.
-> 
->  106 #define time_after(a,b)         \
->  107         (typecheck(unsigned long, a) && \
->  108          typecheck(unsigned long, b) && \
->  109          ((long)(b) - (long)(a) < 0))
-> 
-> Reading above.
-> 
->   if b==0.
->      if (long)a <0  -> false
->      if (long)a >0  -> true
-> 
-> jiffies is unsigned value. please think of bit-pattern of signed/unsigned value.
+x86: make sure initmem is writable on 64-bit
 
-Fair enough, the cast to long will be an issue. I'll fix it.
+Impact: unification
 
--- 
-	Balbir
+This patch ports commit 3c1df68b848b39270752ff8d4b956cc4a4dce0f6 ("x86: make
+sure initmem is writable") to the 64-bit version to unify implementations of
+free_init_pages().
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+LKML-Reference: <1236078904.2675.17.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/mm/init_64.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index e6d36b4..03da903 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -962,6 +962,13 @@ void free_init_pages(char *what, unsigned long begin, unsigned long end)
+ 		begin, PAGE_ALIGN(end));
+ 	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
+ #else
++	/*
++	 * We just marked the kernel text read only above, now that
++	 * we are going to free part of that, we need to make that
++	 * writeable first.
++	 */
++	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
++
+ 	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
+ 
+ 	for (; addr < end; addr += PAGE_SIZE) {
