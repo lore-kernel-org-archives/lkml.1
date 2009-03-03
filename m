@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZCCH7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbZCCID4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbZCCH7h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 02:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbZCCH72
+	id S1758063AbZCCID4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 03:03:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZCCIDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 02:59:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43517 "EHLO mx2.mail.elte.hu"
+	Tue, 3 Mar 2009 03:03:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56911 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753715AbZCCH71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 02:59:27 -0500
-Date: Tue, 3 Mar 2009 08:59:00 +0100
+	id S1751794AbZCCIDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 03:03:47 -0500
+Date: Tue, 3 Mar 2009 09:03:33 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com,
-       balbir@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
-       lizf@cn.fujitsu.cn, menage@google.com
-Subject: Re: +
-	cgroup-allow-subsys-to-set-default-mode-of-its-own-file.patch added
-	to -mm tree
-Message-ID: <20090303075900.GB10019@elte.hu>
-References: <200902262100.n1QL0EoR021847@imap1.linux-foundation.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: x86-tip: xine bustage bisection fingers commit
+	97286a2b64725aac2d584ddd1f94871f9991d5a1
+Message-ID: <20090303080333.GA11484@elte.hu>
+References: <1235984665.6195.12.camel@marge.simson.net> <20090302093319.GB20897@elte.hu> <49AC85C1.7060600@ct.jp.nec.com> <1236060298.6060.1.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902262100.n1QL0EoR021847@imap1.linux-foundation.org>
+In-Reply-To: <1236060298.6060.1.camel@marge.simson.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,12 +37,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+* Mike Galbraith <efault@gmx.de> wrote:
 
-> +		int mode = 0644;
-> +		if (cft->mode)
-> +			mode = cft->mode;
+> On Mon, 2009-03-02 at 17:20 -0800, Hiroshi Shimamoto wrote:
+> 
+> > I made a patch to fix this issue.
+> > This patch is against tip/x86/signal.
+> 
+> Yes, this fixed my xine woes.
 
-ditto...
+Applied, thanks guys!
 
 	Ingo
