@@ -1,48 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZCCVle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZCCVpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZCCVle (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 16:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbZCCVlZ
+	id S1756878AbZCCVpY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 16:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZCCVpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:41:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39179 "EHLO ogre.sisk.pl"
+	Tue, 3 Mar 2009 16:45:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59303 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754069AbZCCVlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:41:24 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #12395] 2.6.28-rc9: oprofile regression
-Date: Tue, 3 Mar 2009 22:40:52 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Robert Richter <robert.richter@amd.com>,
+	id S1754473AbZCCVpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 16:45:04 -0500
+Date: Tue, 3 Mar 2009 22:44:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>, Tim Blechmann <tim@klingt.org>
-References: <HFSEX4uppGO.A.JSG.2yzoJB@chimera> <200903032055.23969.rjw@sisk.pl> <20090303204504.GA20038@elte.hu>
-In-Reply-To: <20090303204504.GA20038@elte.hu>
+       linux-rt-users@vger.kernel.org
+Subject: Re: Large amount of scsi-sgpool objects
+Message-ID: <20090303214454.GA8288@elte.hu>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr> <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain> <20090303192212.GA20705@elte.hu> <1236115544.15993.22.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903032240.53039.rjw@sisk.pl>
+In-Reply-To: <1236115544.15993.22.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 March 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > On Tuesday 03 March 2009, Robert Richter wrote:
-> > > Fix upstream in tip/x86/urgent:
-> > > 
-> > > 780eef9492b16a1543a3b2ae9f9526a735fc9856
+
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> On Tue, 2009-03-03 at 20:22 +0100, Ingo Molnar wrote:
+> > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > > 
-> > URL, please?
+> > > On Tue, 2009-03-03 at 17:08 +0100, Jan Engelhardt wrote:
+> > > > On Tuesday 2009-03-03 16:21, James Bottomley wrote:
+> > > > >> > $ slabtop
+> > > > >> >   OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME                   
+> > > > >> > 818616 818616 100%    0.16K  34109       24    136436K sgpool-8
+> > > > >> > 253692 253692 100%    0.62K  42282        6    169128K sgpool-32
+> > > > >> >  52017  52016  99%    2.50K  17339        3    138712K sgpool-128
+> > > > >> >  26220  26219  99%    0.31K   2185       12      8740K sgpool-16
+> > > > >> >   8927   8574  96%    0.03K     79      113       316K size-32
+> > > > >> 
+> > > > >> Looks like a leak, by failing to call scsi_release_buffers()
+> > > > >> somehow. (Which was changed recently)
+> > > > >
+> > > > >Firstly, I have to say I don't see this in the mainline tree, so could
+> > > > >you try that with your setup just to verify (git head at 2.6.29-rc6).
+> > > > 
+> > > > Yes, looking at the rt patch (in broken-out it's in origin.diff),
+> > > > it seems a bit obvious - the scsi_release_buffers is not called anymore:
+> > > 
+> > > OK, this is a bad patch, so just revert it.  It was posted to 
+> > > linux-scsi initially in this form before the author posted a 
+> > > new one with the missing release buffers added.  It looks like 
+> > > the first incarnation got pulled into the -rt tree for some 
+> > > reasons.
+> > 
+> > Uhm. I applied a test-patch from Alan Stern, to possibly fix an 
+> > SCSI lockup with aic7xxx that _I_ reported to you and then to 
+> > the scsi-list.
+> > 
+> > You were Cc:-ed to that test patch and to my bugreport as well, 
+> > all the way. Do you claim that you dont remember it?
 > 
-> The fix is not yet in Linus's tree - the commit is below.
+> ?  If I've just quoted the patch above why would I not remember it now.
+> I've just said it's the cause of the problems in the -rt tree.
+> 
+> > The saga is still documented in tip:out-of-tree (which is a 
+> > special branch with out-of-tree hotfixes):
+> > 
+> >  7e4cbd1: fix "scsi: aic7xxx hang since v2.6.28-rc1"
+> >  e027abc: scsi: temporarily undo scsi reverts
+> >  813104e: Revert "[SCSI] simplify scsi_io_completion()"
+> >  84db545: Revert "[SCSI] Fix uninitialized variable error in scsi_io_completion"
+> >  0eb6038: Revert "[SCSI] Fix error handling for DIF/DIX"
+> >  3cd94dd: Revert "[SCSI] scsi_lib: don't decrement busy counters when inserting commands"
+> >  c27aed5: Revert "[SCSI] scsi_lib: fix DID_RESET status problems"
+> > 
+> > I wasnt Cc:-ed on the updated patch AFAICS, so i didnt pick it 
+> > up.
+> 
+> Actually, you were cc'd, you probably just missed it.
 
-Thanks a lot!
+Correct, see my earlier reply to Alan Stern for the details of 
+why it got missed.
 
-Rafael
+> > > So the real question is why does the -rt tree even have 
+> > > patches not in the vanilla SCSI tree?  This type of cockup 
+> > > clearly demonstrates why it's a bad idea.
+> > 
+> > Believe me, i have better things to do than to track down your 
+> > regressions. I applied a fix/test patch sent to me by SCSI 
+> > folks.
+> 
+> Look, I've no problem with you collecting random patches.  I 
+> have a problem when you start pushing random SCSI patches into 
+> other trees. [...]
+
+Both -tip and -rt are generic trees and there's a connection 
+between them that the maintainers of both are one and the same 
+set of people.
+
+So i'm not sure on what grounds you purport to be able to 
+prevent fixes from flowing from -tip into -rt and vice versa.
+
+You have no monopoly on the propagation and testing of SCSI 
+fixes. We picked up a v1 patch from the SCSI list and did not 
+add nor remove anything from it.
+
+Yes, v1 was buggy and I missed the v2 patch because it had the 
+same subject line and no easily visible differentiator that it 
+was a v2 patch.
+
+In fact you should be happy that people are helping you out 
+fixing your bugs. I never even thought of flaming anyone for 
+having picked up a v1 scheduler fix and getting burned by it 
+while a v2 existed. I find it unexplainable and irrational that 
+you feel the need to do so for SCSI fixes.
+
+	Ingo
