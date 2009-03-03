@@ -1,51 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZCCKfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZCCKgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbZCCKfV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 05:35:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZCCKfH
+	id S1756116AbZCCKgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 05:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZCCKgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 05:35:07 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:60001 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750901AbZCCKfG (ORCPT
+	Tue, 3 Mar 2009 05:36:33 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:17310 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbZCCKgc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 05:35:06 -0500
-Date: Tue, 3 Mar 2009 10:35:02 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Subject: Re: [PATCH 2/2] Input: add wm97xx accelerated driver for AVR32
-	AT32AP700X microprocessors
-Message-ID: <20090303103501.GA19086@rakim.wolfsonmicro.main>
-References: <1236000228-13025-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1236000228-13025-2-git-send-email-broonie@opensource.wolfsonmicro.com> <20090303091322.GA14557@dtor-d630.eng.vmware.com>
+	Tue, 3 Mar 2009 05:36:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=et9ybHt5PNggkEMFT/M6oLxlASHFuaT8e5poAeVEZ4afz33tA4ObX5AmKLLfVjhJ1N
+         CqNQBcoeR8NAV0yOuajTJRIjSLRGdFZQ5nU0Wb+Q1XUcnsEBI/L0SRwQFcyrHodWDVqd
+         HkJYWFisAQEAqqFGLOpBXCadLt63xIv9668m8=
+Date: Tue, 3 Mar 2009 18:36:02 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH]some cleanup on drivers/base/sys.c
+Message-ID: <20090303103602.GA9658@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090303091322.GA14557@dtor-d630.eng.vmware.com>
-X-Cookie: TAILFINS!! ... click ...
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 01:13:23AM -0800, Dmitry Torokhov wrote:
-> Hi Mark,
 
-This is actually Hans-Christian's patch but here goes...
+do some cleanup on drivers/base/sys.c
 
-> > +		if (!pressure && source == WM97XX_ADCSEL_Y) {
-> > +			input_report_abs(wm->input_dev, ABS_X, at32_wm97xx->x);
-> > +			input_report_abs(wm->input_dev, ABS_Y, at32_wm97xx->y);
-> > +			input_report_abs(wm->input_dev, ABS_PRESSURE, pen_down);
+>From ca17f201964ccd9f305808617560fd1945bf4046 Mon Sep 17 00:00:00 2001
+From: Zhenwen Xu <helight.xu@gmail.com>
+Date: Tue, 3 Mar 2009 18:23:29 +0800
+Subject: [PATCH] some cleanup on drivers/base/sys.c
 
-> Please do not report pressure (and don't advertise ABS_PRESSURE) if you don't
-> actually read it. I have seen a follow-up patch that adds BTN_TOUCH that should
-> work just fine here. The usage below is good since there you actually do provide
-> true pressure readings. BTW, why would one not want pressure readings?
 
-These parts are usually deployed in embedded systems where performance
-is sufficiently tightly constrained that the additional work involved in
-taking pressure measurements is noticable.  This is mostly the case
-where PIO is used but users have reported problems even when using DMA
-so idiomatically WM97xx drivers provide the option.
+Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+---
+ drivers/base/sys.c |   54 ++++++++++++++++++++++++++--------------------------
+ 1 files changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index b428c8c..cbd36cf 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -30,10 +30,10 @@
+ 
+ 
+ static ssize_t
+-sysdev_show(struct kobject * kobj, struct attribute * attr, char * buffer)
++sysdev_show(struct kobject *kobj, struct attribute *attr, char *buffer)
+ {
+-	struct sys_device * sysdev = to_sysdev(kobj);
+-	struct sysdev_attribute * sysdev_attr = to_sysdev_attr(attr);
++	struct sys_device *sysdev = to_sysdev(kobj);
++	struct sysdev_attribute *sysdev_attr = to_sysdev_attr(attr);
+ 
+ 	if (sysdev_attr->show)
+ 		return sysdev_attr->show(sysdev, sysdev_attr, buffer);
+@@ -42,11 +42,11 @@ sysdev_show(struct kobject * kobj, struct attribute * attr, char * buffer)
+ 
+ 
+ static ssize_t
+-sysdev_store(struct kobject * kobj, struct attribute * attr,
+-	     const char * buffer, size_t count)
++sysdev_store(struct kobject *kobj, struct attribute *attr,
++	     const char *buffer, size_t count)
+ {
+-	struct sys_device * sysdev = to_sysdev(kobj);
+-	struct sysdev_attribute * sysdev_attr = to_sysdev_attr(attr);
++	struct sys_device *sysdev = to_sysdev(kobj);
++	struct sysdev_attribute *sysdev_attr = to_sysdev_attr(attr);
+ 
+ 	if (sysdev_attr->store)
+ 		return sysdev_attr->store(sysdev, sysdev_attr, buffer, count);
+@@ -63,13 +63,13 @@ static struct kobj_type ktype_sysdev = {
+ };
+ 
+ 
+-int sysdev_create_file(struct sys_device * s, struct sysdev_attribute * a)
++int sysdev_create_file(struct sys_device *s, struct sysdev_attribute *a)
+ {
+ 	return sysfs_create_file(&s->kobj, &a->attr);
+ }
+ 
+ 
+-void sysdev_remove_file(struct sys_device * s, struct sysdev_attribute * a)
++void sysdev_remove_file(struct sys_device *s, struct sysdev_attribute *a)
+ {
+ 	sysfs_remove_file(&s->kobj, &a->attr);
+ }
+@@ -84,7 +84,7 @@ EXPORT_SYMBOL_GPL(sysdev_remove_file);
+ static ssize_t sysdev_class_show(struct kobject *kobj, struct attribute *attr,
+ 				 char *buffer)
+ {
+-	struct sysdev_class * class = to_sysdev_class(kobj);
++	struct sysdev_class *class = to_sysdev_class(kobj);
+ 	struct sysdev_class_attribute *class_attr = to_sysdev_class_attr(attr);
+ 
+ 	if (class_attr->show)
+@@ -95,8 +95,8 @@ static ssize_t sysdev_class_show(struct kobject *kobj, struct attribute *attr,
+ static ssize_t sysdev_class_store(struct kobject *kobj, struct attribute *attr,
+ 				  const char *buffer, size_t count)
+ {
+-	struct sysdev_class * class = to_sysdev_class(kobj);
+-	struct sysdev_class_attribute * class_attr = to_sysdev_class_attr(attr);
++	struct sysdev_class *class = to_sysdev_class(kobj);
++	struct sysdev_class_attribute *class_attr = to_sysdev_class_attr(attr);
+ 
+ 	if (class_attr->store)
+ 		return class_attr->store(class, buffer, count);
+@@ -128,7 +128,7 @@ EXPORT_SYMBOL_GPL(sysdev_class_remove_file);
+ 
+ static struct kset *system_kset;
+ 
+-int sysdev_class_register(struct sysdev_class * cls)
++int sysdev_class_register(struct sysdev_class *cls)
+ {
+ 	pr_debug("Registering sysdev class '%s'\n", cls->name);
+ 
+@@ -141,7 +141,7 @@ int sysdev_class_register(struct sysdev_class * cls)
+ 	return kset_register(&cls->kset);
+ }
+ 
+-void sysdev_class_unregister(struct sysdev_class * cls)
++void sysdev_class_unregister(struct sysdev_class *cls)
+ {
+ 	pr_debug("Unregistering sysdev class '%s'\n",
+ 		 kobject_name(&cls->kset.kobj));
+@@ -203,8 +203,8 @@ int sysdev_driver_register(struct sysdev_class *cls, struct sysdev_driver *drv)
+  *	@cls:	Class driver belongs to.
+  *	@drv:	Driver.
+  */
+-void sysdev_driver_unregister(struct sysdev_class * cls,
+-			      struct sysdev_driver * drv)
++void sysdev_driver_unregister(struct sysdev_class *cls,
++			      struct sysdev_driver *drv)
+ {
+ 	mutex_lock(&sysdev_drivers_lock);
+ 	list_del_init(&drv->entry);
+@@ -229,10 +229,10 @@ EXPORT_SYMBOL_GPL(sysdev_driver_unregister);
+  *	@sysdev:	device in question
+  *
+  */
+-int sysdev_register(struct sys_device * sysdev)
++int sysdev_register(struct sys_device *sysdev)
+ {
+ 	int error;
+-	struct sysdev_class * cls = sysdev->cls;
++	struct sysdev_class *cls = sysdev->cls;
+ 
+ 	if (!cls)
+ 		return -EINVAL;
+@@ -252,7 +252,7 @@ int sysdev_register(struct sys_device * sysdev)
+ 				     sysdev->id);
+ 
+ 	if (!error) {
+-		struct sysdev_driver * drv;
++		struct sysdev_driver *drv;
+ 
+ 		pr_debug("Registering sys device '%s'\n",
+ 			 kobject_name(&sysdev->kobj));
+@@ -274,9 +274,9 @@ int sysdev_register(struct sys_device * sysdev)
+ 	return error;
+ }
+ 
+-void sysdev_unregister(struct sys_device * sysdev)
++void sysdev_unregister(struct sys_device *sysdev)
+ {
+-	struct sysdev_driver * drv;
++	struct sysdev_driver *drv;
+ 
+ 	mutex_lock(&sysdev_drivers_lock);
+ 	list_for_each_entry(drv, &sysdev->cls->drivers, entry) {
+@@ -305,19 +305,19 @@ void sysdev_unregister(struct sys_device * sysdev)
+  */
+ void sysdev_shutdown(void)
+ {
+-	struct sysdev_class * cls;
++	struct sysdev_class *cls;
+ 
+ 	pr_debug("Shutting Down System Devices\n");
+ 
+ 	mutex_lock(&sysdev_drivers_lock);
+ 	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
+-		struct sys_device * sysdev;
++		struct sys_device *sysdev;
+ 
+ 		pr_debug("Shutting down type '%s':\n",
+ 			 kobject_name(&cls->kset.kobj));
+ 
+ 		list_for_each_entry(sysdev, &cls->kset.list, kobj.entry) {
+-			struct sysdev_driver * drv;
++			struct sysdev_driver *drv;
+ 			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
+ 
+ 			/* Call auxillary drivers first */
+@@ -364,7 +364,7 @@ static void __sysdev_resume(struct sys_device *dev)
+  */
+ int sysdev_suspend(pm_message_t state)
+ {
+-	struct sysdev_class * cls;
++	struct sysdev_class *cls;
+ 	struct sys_device *sysdev, *err_dev;
+ 	struct sysdev_driver *drv, *err_drv;
+ 	int ret;
+@@ -442,12 +442,12 @@ EXPORT_SYMBOL_GPL(sysdev_suspend);
+  */
+ int sysdev_resume(void)
+ {
+-	struct sysdev_class * cls;
++	struct sysdev_class *cls;
+ 
+ 	pr_debug("Resuming System Devices\n");
+ 
+ 	list_for_each_entry(cls, &system_kset->list, kset.kobj.entry) {
+-		struct sys_device * sysdev;
++		struct sys_device *sysdev;
+ 
+ 		pr_debug("Resuming type '%s':\n",
+ 			 kobject_name(&cls->kset.kobj));
+-- 
+1.5.6.5
+
+-- 
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+My Studio:	http://dim4.cn
