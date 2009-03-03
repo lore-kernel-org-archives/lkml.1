@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbZCCEup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbZCCEvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbZCCEup (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Mar 2009 23:50:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZCCEue
+	id S1758411AbZCCEvP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Mar 2009 23:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCCEuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Mar 2009 23:50:34 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:3040 "EHLO
+	Mon, 2 Mar 2009 23:50:35 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:3041 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601AbZCCEud (ORCPT
+	with ESMTP id S1753582AbZCCEud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 2 Mar 2009 23:50:33 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=xwZQJAIP2DNBSeMDyCg2uCDwr482ayZFSx8KX4DgNP0k6Bg3qbq+BeuYCO8XRDIr9
-	vRuLtYAGFg8YdCbdNF8Yg==
-Date: Mon, 2 Mar 2009 20:50:18 -0800 (PST)
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=K0mnPjBSkZv1YxKIXYykN7ar+4POSSyrT39Bd30hDAPDpErBe38IsjUzPkERTfrvU
+	9bAzbQ1+4UArPWxiY8JRw==
+Date: Mon, 2 Mar 2009 20:50:17 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Pekka Enberg <penberg@cs.helsinki.fi>,
@@ -23,10 +23,9 @@ To: Pekka Enberg <penberg@cs.helsinki.fi>,
 cc: Paul Menage <menage@google.com>,
        Christoph Lameter <cl@linux-foundation.org>,
        Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: [patch 2/2] slub: enforce cpuset restrictions for cpu slabs
-In-Reply-To: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.0903022011430.17284@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com>
+Subject: [patch 1/2] cpusets: replace zone allowed functions with node
+ allowed
+Message-ID: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -35,67 +34,192 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Slab allocations should respect cpuset hardwall restrictions.  Otherwise,
-it is possible for tasks in a cpuset to fill slabs allocated on mems
-assigned to a disjoint cpuset.
+The cpuset_zone_allowed() variants are actually only a function of the
+zone's node.
 
-When an allocation is attempted for a cpu slab that resides on a node that
-is not allowed by a task's cpuset, an appropriate partial slab or new slab
-is allocated.
-
-If an allocation is intended for a particular node that the task does not
-have access to because of its cpuset, an allowed partial slab is used
-instead of failing.
-
+Cc: Paul Menage <menage@google.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- mm/slub.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ include/linux/cpuset.h |   33 ++++++++++++++++++++++-----
+ kernel/cpuset.c        |   59 ++++++++++++++++++++---------------------------
+ 2 files changed, 52 insertions(+), 40 deletions(-)
 
-diff --git a/mm/slub.c b/mm/slub.c
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1353,6 +1353,8 @@ static struct page *get_partial(struct kmem_cache *s, gfp_t flags, int node)
- 	struct page *page;
- 	int searchnode = (node == -1) ? numa_node_id() : node;
+diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
+--- a/include/linux/cpuset.h
++++ b/include/linux/cpuset.h
+@@ -12,6 +12,7 @@
+ #include <linux/cpumask.h>
+ #include <linux/nodemask.h>
+ #include <linux/cgroup.h>
++#include <linux/mm.h>
  
-+	if (!cpuset_node_allowed_hardwall(searchnode, flags))
-+		searchnode = cpuset_mem_spread_node();
- 	page = get_partial_node(get_node(s, searchnode));
- 	if (page || (flags & __GFP_THISNODE))
- 		return page;
-@@ -1477,13 +1479,13 @@ static void flush_all(struct kmem_cache *s)
-  * Check if the objects in a per cpu structure fit numa
-  * locality expectations.
-  */
--static inline int node_match(struct kmem_cache_cpu *c, int node)
-+static inline int node_match(struct kmem_cache_cpu *c, int node, gfp_t gfpflags)
+ #ifdef CONFIG_CPUSETS
+ 
+@@ -29,19 +30,29 @@ void cpuset_init_current_mems_allowed(void);
+ void cpuset_update_task_memory_state(void);
+ int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask);
+ 
+-extern int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask);
+-extern int __cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask);
++extern int __cpuset_node_allowed_softwall(int node, gfp_t gfp_mask);
++extern int __cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask);
+ 
+-static int inline cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
++static inline int cpuset_node_allowed_softwall(int node, gfp_t gfp_mask)
  {
- #ifdef CONFIG_NUMA
- 	if (node != -1 && c->node != node)
- 		return 0;
- #endif
--	return 1;
-+	return cpuset_node_allowed_hardwall(c->node, gfpflags);
+ 	return number_of_cpusets <= 1 ||
+-		__cpuset_zone_allowed_softwall(z, gfp_mask);
++		__cpuset_node_allowed_softwall(node, gfp_mask);
+ }
+ 
+-static int inline cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
++static inline int cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask)
+ {
+ 	return number_of_cpusets <= 1 ||
+-		__cpuset_zone_allowed_hardwall(z, gfp_mask);
++		__cpuset_node_allowed_hardwall(node, gfp_mask);
++}
++
++static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
++{
++	return cpuset_node_allowed_softwall(zone_to_nid(z), gfp_mask);
++}
++
++static inline int cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
++{
++	return cpuset_node_allowed_hardwall(zone_to_nid(z), gfp_mask);
+ }
+ 
+ extern int cpuset_mems_allowed_intersects(const struct task_struct *tsk1,
+@@ -112,6 +123,16 @@ static inline int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
+ 	return 1;
+ }
+ 
++static inline int cpuset_node_allowed_softwall(int node, gfp_t gfp_mask)
++{
++	return 1;
++}
++
++static inline int cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask)
++{
++	return 1;
++}
++
+ static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
+ {
+ 	return 1;
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -2206,26 +2206,24 @@ static const struct cpuset *nearest_hardwall_ancestor(const struct cpuset *cs)
+ }
+ 
+ /**
+- * cpuset_zone_allowed_softwall - Can we allocate on zone z's memory node?
+- * @z: is this zone on an allowed node?
++ * cpuset_node_allowed_softwall - Can we allocate on a memory node?
++ * @node: is this an allowed node?
+  * @gfp_mask: memory allocation flags
+  *
+- * If we're in interrupt, yes, we can always allocate.  If
+- * __GFP_THISNODE is set, yes, we can always allocate.  If zone
+- * z's node is in our tasks mems_allowed, yes.  If it's not a
+- * __GFP_HARDWALL request and this zone's nodes is in the nearest
+- * hardwalled cpuset ancestor to this tasks cpuset, yes.
+- * If the task has been OOM killed and has access to memory reserves
+- * as specified by the TIF_MEMDIE flag, yes.
++ * If we're in interrupt, yes, we can always allocate.  If __GFP_THISNODE is
++ * set, yes, we can always allocate.  If node is in our task's mems_allowed,
++ * yes.  If it's not a __GFP_HARDWALL request and this node is in the nearest
++ * hardwalled cpuset ancestor to this task's cpuset, yes.  If the task has been
++ * OOM killed and has access to memory reserves as specified by the TIF_MEMDIE
++ * flag, yes.
+  * Otherwise, no.
+  *
+- * If __GFP_HARDWALL is set, cpuset_zone_allowed_softwall()
+- * reduces to cpuset_zone_allowed_hardwall().  Otherwise,
+- * cpuset_zone_allowed_softwall() might sleep, and might allow a zone
+- * from an enclosing cpuset.
++ * If __GFP_HARDWALL is set, cpuset_node_allowed_softwall() reduces to
++ * cpuset_node_allowed_hardwall().  Otherwise, cpuset_node_allowed_softwall()
++ * might sleep, and might allow a node from an enclosing cpuset.
+  *
+- * cpuset_zone_allowed_hardwall() only handles the simpler case of
+- * hardwall cpusets, and never sleeps.
++ * cpuset_node_allowed_hardwall() only handles the simpler case of hardwall
++ * cpusets, and never sleeps.
+  *
+  * The __GFP_THISNODE placement logic is really handled elsewhere,
+  * by forcibly using a zonelist starting at a specified node, and by
+@@ -2264,20 +2262,17 @@ static const struct cpuset *nearest_hardwall_ancestor(const struct cpuset *cs)
+  *	GFP_USER     - only nodes in current tasks mems allowed ok.
+  *
+  * Rule:
+- *    Don't call cpuset_zone_allowed_softwall if you can't sleep, unless you
++ *    Don't call cpuset_node_allowed_softwall if you can't sleep, unless you
+  *    pass in the __GFP_HARDWALL flag set in gfp_flag, which disables
+  *    the code that might scan up ancestor cpusets and sleep.
+  */
+-
+-int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
++int __cpuset_node_allowed_softwall(int node, gfp_t gfp_mask)
+ {
+-	int node;			/* node that zone z is on */
+ 	const struct cpuset *cs;	/* current cpuset ancestors */
+ 	int allowed;			/* is allocation in zone z allowed? */
+ 
+ 	if (in_interrupt() || (gfp_mask & __GFP_THISNODE))
+ 		return 1;
+-	node = zone_to_nid(z);
+ 	might_sleep_if(!(gfp_mask & __GFP_HARDWALL));
+ 	if (node_isset(node, current->mems_allowed))
+ 		return 1;
+@@ -2306,15 +2301,15 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
  }
  
  /*
-@@ -1517,7 +1519,7 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
- 		goto new_slab;
- 
- 	slab_lock(c->page);
--	if (unlikely(!node_match(c, node)))
-+	if (unlikely(!node_match(c, node, gfpflags)))
- 		goto another_slab;
- 
- 	stat(c, ALLOC_REFILL);
-@@ -1604,7 +1606,7 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
- 	local_irq_save(flags);
- 	c = get_cpu_slab(s, smp_processor_id());
- 	objsize = c->objsize;
--	if (unlikely(!c->freelist || !node_match(c, node)))
-+	if (unlikely(!c->freelist || !node_match(c, node, gfpflags)))
- 
- 		object = __slab_alloc(s, gfpflags, node, addr, c);
- 
+- * cpuset_zone_allowed_hardwall - Can we allocate on zone z's memory node?
+- * @z: is this zone on an allowed node?
++ * cpuset_node_allowed_hardwall - Can we allocate on a memory node?
++ * @node: is this an allowed node?
+  * @gfp_mask: memory allocation flags
+  *
+- * If we're in interrupt, yes, we can always allocate.
+- * If __GFP_THISNODE is set, yes, we can always allocate.  If zone
+- * z's node is in our tasks mems_allowed, yes.   If the task has been
+- * OOM killed and has access to memory reserves as specified by the
+- * TIF_MEMDIE flag, yes.  Otherwise, no.
++ * If we're in interrupt, yes, we can always allocate.  If __GFP_THISNODE is
++ * set, yes, we can always allocate.  If node is in our task's mems_allowed,
++ * yes.  If the task has been OOM killed and has access to memory reserves as
++ * specified by the TIF_MEMDIE flag, yes.
++ * Otherwise, no.
+  *
+  * The __GFP_THISNODE placement logic is really handled elsewhere,
+  * by forcibly using a zonelist starting at a specified node, and by
+@@ -2322,20 +2317,16 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
+  * any node on the zonelist except the first.  By the time any such
+  * calls get to this routine, we should just shut up and say 'yes'.
+  *
+- * Unlike the cpuset_zone_allowed_softwall() variant, above,
+- * this variant requires that the zone be in the current tasks
++ * Unlike the cpuset_node_allowed_softwall() variant, above,
++ * this variant requires that the node be in the current task's
+  * mems_allowed or that we're in interrupt.  It does not scan up the
+  * cpuset hierarchy for the nearest enclosing mem_exclusive cpuset.
+  * It never sleeps.
+  */
+-
+-int __cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
++int __cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask)
+ {
+-	int node;			/* node that zone z is on */
+-
+ 	if (in_interrupt() || (gfp_mask & __GFP_THISNODE))
+ 		return 1;
+-	node = zone_to_nid(z);
+ 	if (node_isset(node, current->mems_allowed))
+ 		return 1;
+ 	/*
