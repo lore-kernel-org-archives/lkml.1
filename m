@@ -1,149 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZCCN3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZCCN3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755880AbZCCN3b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 08:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZCCN3D
+	id S1756246AbZCCN3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 08:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZCCN3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 08:29:03 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51058 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753216AbZCCN3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 08:29:01 -0500
-Message-ID: <49AD3038.7010907@cn.fujitsu.com>
-Date: Tue, 03 Mar 2009 21:27:20 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] slqb: cleanup for concatenating kmlist
-Content-Type: text/plain; charset=UTF-8
+	Tue, 3 Mar 2009 08:29:06 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:22668 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbZCCN3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 08:29:05 -0500
+Date: Tue, 3 Mar 2009 14:28:49 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] Add to_delayed_work helper function
+Message-ID: <20090303142849.41b7f413@hyperion.delvare>
+In-Reply-To: <20090303121138.GB5740@elte.hu>
+References: <20090303083440.57df68c3@hyperion.delvare>
+	<20090303002952.80f1afc8.akpm@linux-foundation.org>
+	<20090303130601.2c8f4bb0@hyperion.delvare>
+	<20090303121138.GB5740@elte.hu>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 3 Mar 2009 13:11:38 +0100, Ingo Molnar wrote:
+> 
+> * Jean Delvare <khali@linux-fr.org> wrote:
+> 
+> > It is a fairly common operation to have a pointer to a work and to
+> > need a pointer to the delayed work it is contained in. In particular,
+> > all delayed works which want to rearm themselves will have to do that.
+> > So it would seem fair to offer a helper function for this operation.
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > ---
+> > Andrew, does this variant please you better?
+> > 
+> >  arch/powerpc/kernel/vio.c                               |    2 +-
+> >  drivers/crypto/hifn_795x.c                              |    2 +-
+> >  drivers/input/mouse/hgpk.c                              |    2 +-
+> >  drivers/net/dm9000.c                                    |    2 +-
+> >  drivers/net/mlx4/en_netdev.c                            |    2 +-
+> >  drivers/net/mlx4/en_rx.c                                |    2 +-
+> >  drivers/s390/scsi/zfcp_fc.c                             |    2 +-
+> >  drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |    8 ++++----
+> >  drivers/staging/rtl8187se/r8180_core.c                  |    8 ++++----
+> >  drivers/staging/rtl8187se/r8180_dm.c                    |    6 +++---
+> >  drivers/usb/wusbcore/devconnect.c                       |    2 +-
+> >  include/linux/workqueue.h                               |    5 +++++
+> >  mm/slab.c                                               |    3 +--
+> >  13 files changed, 25 insertions(+), 21 deletions(-)
+> 
+> looks good,
+> 
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-move duplicate code into a inline functions.
+Thanks for the review.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/mm/slqb.c b/mm/slqb.c
-index 07bf5b3..48bdf3b 100644
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -307,6 +307,23 @@ static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
- 	*(void **)(object + s->offset) = fp;
- }
- 
-+static inline void __kmlist_concat(struct kmem_cache *s, struct kmlist *dest,
-+		void **head, void **tail, int nr)
-+{
-+	if (!dest->head)
-+		dest->head = head;
-+	else
-+		set_freepointer(s, dest->tail, head);
-+	dest->tail = tail;
-+	dest->nr += nr;
-+}
-+
-+static inline void kmlist_concat(struct kmem_cache *s, struct kmlist *dest,
-+		struct kmlist *src)
-+{
-+	__kmlist_concat(s, dest, src->head, src->tail, src->nr);
-+}
-+
- /* Loop over all objects in a slab */
- #define for_each_object(__p, __s, __addr) \
- 	for (__p = (__addr); __p < (__addr) + (__s)->objects * (__s)->size;\
-@@ -1152,8 +1169,7 @@ static void flush_free_list_all(struct kmem_cache *s, struct kmem_cache_list *l)
- static void claim_remote_free_list(struct kmem_cache *s,
- 					struct kmem_cache_list *l)
- {
--	void **head, **tail;
--	int nr;
-+	struct kmlist tmp_list;
- 
- 	if (!l->remote_free.list.nr)
- 		return;
-@@ -1161,29 +1177,20 @@ static void claim_remote_free_list(struct kmem_cache *s,
- 	spin_lock(&l->remote_free.lock);
- 
- 	l->remote_free_check = 0;
--	head = l->remote_free.list.head;
-+	tmp_list = l->remote_free.list;
-+
- 	l->remote_free.list.head = NULL;
--	tail = l->remote_free.list.tail;
- 	l->remote_free.list.tail = NULL;
--	nr = l->remote_free.list.nr;
- 	l->remote_free.list.nr = 0;
- 
- 	spin_unlock(&l->remote_free.lock);
- 
--	VM_BUG_ON(!nr);
--
--	if (!l->freelist.nr) {
--		/* Get head hot for likely subsequent allocation or flush */
--		prefetchw(head);
--		l->freelist.head = head;
--	} else
--		set_freepointer(s, l->freelist.tail, head);
--	l->freelist.tail = tail;
-+	VM_BUG_ON(!tmp_list.nr);
- 
--	l->freelist.nr += nr;
-+	kmlist_concat(s, &l->freelist, &tmp_list);
- 
- 	slqb_stat_inc(l, CLAIM_REMOTE_LIST);
--	slqb_stat_add(l, CLAIM_REMOTE_LIST_OBJECTS, nr);
-+	slqb_stat_add(l, CLAIM_REMOTE_LIST_OBJECTS, tmp_list.nr);
- }
- #endif
- 
-@@ -1549,22 +1556,16 @@ static void flush_remote_free_cache(struct kmem_cache *s,
- 
- 	spin_lock(&dst->remote_free.lock);
- 
--	if (!dst->remote_free.list.head)
--		dst->remote_free.list.head = src->head;
--	else
--		set_freepointer(s, dst->remote_free.list.tail, src->head);
--	dst->remote_free.list.tail = src->tail;
--
--	src->head = NULL;
--	src->tail = NULL;
--	src->nr = 0;
--
- 	if (dst->remote_free.list.nr < slab_freebatch(s))
- 		set = 1;
- 	else
- 		set = 0;
- 
--	dst->remote_free.list.nr += nr;
-+	kmlist_concat(s, &dst->remote_free.list, src);
-+
-+	src->head = NULL;
-+	src->tail = NULL;
-+	src->nr = 0;
- 
- 	if (unlikely(dst->remote_free.list.nr >= slab_freebatch(s) && set))
- 		dst->remote_free_check = 1;
-@@ -1593,13 +1594,8 @@ static noinline void slab_free_to_remote(struct kmem_cache *s,
- 	}
- 
- 	r = &c->rlist;
--	if (!r->head)
--		r->head = object;
--	else
--		set_freepointer(s, r->tail, object);
- 	set_freepointer(s, object, NULL);
--	r->tail = object;
--	r->nr++;
-+	__kmlist_concat(s, r, object, object, 1);
- 
- 	if (unlikely(r->nr > slab_freebatch(s)))
- 		flush_remote_free_cache(s, c);
+> one small detail:
+> 
+> > --- linux-2.6.29-rc6.orig/include/linux/workqueue.h	2009-01-29 08:27:20.000000000 +0100
+> > +++ linux-2.6.29-rc6/include/linux/workqueue.h	2009-03-03 10:36:53.000000000 +0100
+> > @@ -41,6 +41,11 @@ struct delayed_work {
+> >  	struct timer_list timer;
+> >  };
+> >  
+> > +static inline struct delayed_work *to_delayed_work(struct work_struct *_work)
+> > +{
+> > +	return container_of(_work, struct delayed_work, work);
+> > +}
+> > +
+> 
+> there's no need to name it _work i think and '*work' should be 
+> just fine - this isnt a macro so there's no danger of namespace 
+> interactions.
 
+I was too chicken to do it because container_of itself is a macro. But
+I tried it and you are correct. Updated patch follows.
 
+-- 
+Jean Delvare
