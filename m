@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZCCQMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbZCCQRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408AbZCCQMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbZCCQMm
+	id S1756448AbZCCQRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZCCQRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:12:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:34555 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756229AbZCCQMl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:12:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=nXWrSJiOGUbPaidxXXcN2AoyGyoAGznaoLn6YKw/YaHecoEgQ303G0QWryfOpUCjve
-         R1+MJrD7ye52Vn9X0pSpG0OJY3cotZGQ270Yv+S+WXxBGneyV0ofVXjfyheIyCjV7aID
-         dlLez46MHm8hDKCMC2GPp4QNIjdjkDYYZKASQ=
-Message-ID: <49AD56F3.6020305@gmail.com>
-Date: Tue, 03 Mar 2009 17:12:35 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Akinobu Mita <akinobu.mita@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] generic debug pagealloc
-References: <20090303160103.GB5812@localhost.localdomain>
-In-Reply-To: <20090303160103.GB5812@localhost.localdomain>
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 11:17:13 -0500
+Received: from mx1.emlix.com ([193.175.82.87]:49935 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754151AbZCCQRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:17:13 -0500
+References: <E1LeXCe-0006wA-5k@mailer.emlix.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 03 Mar 2009 16:30:44 +0100
+From: Johannes Weiner <jw@emlix.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: linux-kernel@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>
+Subject: [patch 1/3] xtensa: use generic sched_clock()
+Content-Disposition: inline; filename=xtensa-generic-sched_clock.patch
+Message-Id: <E1LeXIs-00071p-UP@mailer.emlix.com>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3.3.2009 17:01, Akinobu Mita wrote:
-...
-> +static void dump_broken_mem(unsigned char *mem)
-> +{
-> +	int i;
-> +	int start = 0;
-> +	int end = PAGE_SIZE - 1;
-> +
-> +	for (i = 0; i<  PAGE_SIZE; i++) {
-> +		if (mem[i] != PAGE_POISON) {
-> +			start = i;
-> +			break;
-> +		}
-> +	}
-> +	for (i = PAGE_SIZE - 1; i>= start; i--) {
-> +		if (mem[i] != PAGE_POISON) {
-> +			end = i;
-> +			break;
-> +		}
-> +	}
-> +	printk(KERN_ERR "Page corruption: %p-%p\n", mem + start, mem + end);
-> +	print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1, mem + start,
-> +			end - start + 1, 1);
-> +}
-> +
-> +static void unpoison_page(struct page *page)
-> +{
-> +	unsigned char *mem;
-> +	int i;
-> +
-> +	if (!page->poison)
-> +		return;
-> +
-> +	mem = kmap_atomic(page, KM_USER0);
-> +	for (i = 0; i<  PAGE_SIZE; i++) {
-> +		if (mem[i] != PAGE_POISON) {
-> +			dump_broken_mem(mem);
+From: Johannes Weiner <hannes@cmpxchg.org>
 
-Just an optimisation: pass the i to the dump_broken_mem as a start index.
+Current xtensa implementation of sched_clock() is the same as the
+generic one.  Just remove it, the weak symbol in kernel/sched_clock.c
+will be used instead.
 
-> +			break;
-> +		}
-> +	}
-> +	kunmap_atomic(mem, KM_USER0);
-> +	page->poison = false;
-> +}
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+ arch/xtensa/kernel/time.c |    9 ---------
+ 1 file changed, 9 deletions(-)
+
+--- a/arch/xtensa/kernel/time.c
++++ b/arch/xtensa/kernel/time.c
+@@ -37,15 +37,6 @@ unsigned long nsec_per_ccount;		/* nsec 
+ 
+ static long last_rtc_update = 0;
+ 
+-/*
+- * Scheduler clock - returns current tim in nanosec units.
+- */
+-
+-unsigned long long sched_clock(void)
+-{
+-	return (unsigned long long)jiffies * (1000000000 / HZ);
+-}
+-
+ static irqreturn_t timer_interrupt(int irq, void *dev_id);
+ static struct irqaction timer_irqaction = {
+ 	.handler =	timer_interrupt,
+
+-- 
+
