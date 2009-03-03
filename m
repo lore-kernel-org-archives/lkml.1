@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZCCTKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZCCTWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZCCTKT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 14:10:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZCCTKE
+	id S1755984AbZCCTWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 14:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbZCCTWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 14:10:04 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42053 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752654AbZCCTKB (ORCPT
+	Tue, 3 Mar 2009 14:22:06 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:43969 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbZCCTWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 14:10:01 -0500
-Date: Wed, 4 Mar 2009 04:06:10 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
-       David Woodhouse <dwmw2@infradead.org>, linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
-Message-ID: <20090303190609.GB6907@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
-	David Woodhouse <dwmw2@infradead.org>, linux-parisc@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Kyle McMartin <kyle@mcmartin.ca>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux/m68k <linux-m68k@vger.kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20090224231154.60ba18d6@i1501.lan.towertech.it> <1235514727.18632.93.camel@macbook.infradead.org> <alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be> <20090225111836.621412c1@i1501.lan.towertech.it> <20090227185514.GA1071@linux-m68k.org> <alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be> <20090302110310.35af50ea@i1501.lan.towertech.it> <alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be> <20090302120950.0d35e06c@i1501.lan.towertech.it> <alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
+	Tue, 3 Mar 2009 14:22:05 -0500
+Message-ID: <49AD8262.6090605@cs.helsinki.fi>
+Date: Tue, 03 Mar 2009 21:17:54 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/mm] x86: set_highmem_pages_init() cleanup, fix !CONFIG_NUMA
+ && CONFIG_HIGHMEM=y
+References: <1236082212.2675.24.camel@penberg-laptop> <tip-03787ceed8f7bf06af29f3b213017d89f8e9423d@git.kernel.org>
+In-Reply-To: <tip-03787ceed8f7bf06af29f3b213017d89f8e9423d@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 11:41:23AM +0100, Geert Uytterhoeven wrote:
-> So would you accept a patch series that:
->   1. Adds the missing module aliases to rtc-parisc (which is a bugfix),
->   2. Moves the platform device creation out of rtc-ppc and into arch-specific
->      code (which is also a bugfix),
->   3. Consolidates rtc-parisc and rtc-ppc into rtc-generic (which is a cleanup),
->   4. Makes rtc-generic dependent on PARISC, PPC, and M68K (the existing
->      [sg]et_rtc_time() users):
->        a. without introducing ARCH_HAS_GENERIC_RTC,
->        b. with a big fat warning in the Kconfig comment not relaxing the
->           dependencies, as it's supposed to go away.
->   4. Converts the PS3 RTC support into a separate driver, called rtc-ps3
->      (as a bonus ;-)
+Ingo Molnar wrote:
+> Commit-ID:  03787ceed8f7bf06af29f3b213017d89f8e9423d
+> Gitweb:     http://git.kernel.org/tip/03787ceed8f7bf06af29f3b213017d89f8e9423d
+> Author:     "Ingo Molnar" <mingo@elte.hu>
+> AuthorDate: Tue, 3 Mar 2009 15:32:24 +0100
+> Commit:     Ingo Molnar <mingo@elte.hu>
+> CommitDate: Tue, 3 Mar 2009 15:32:24 +0100
 > 
-> ? If yes, I'll cook it up.
+> x86: set_highmem_pages_init() cleanup, fix !CONFIG_NUMA && CONFIG_HIGHMEM=y
 > 
-> Other RTC platform support can be converted into separate drivers later.
+> Impact: build fix
 > 
-Did you miss the rtc-firmware thread?
+>  arch/x86/mm/highmem_32.c:187: error: static declaration of 'set_highmem_pages_init' follows non-static declaration
+>  arch/x86/include/asm/numa_32.h:8: error: previous declaration of 'set_highmem_pages_init' was here
+> 
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> LKML-Reference: <1236082212.2675.24.camel@penberg-laptop>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  arch/x86/mm/highmem_32.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+> index 13a823c..00f127c 100644
+> --- a/arch/x86/mm/highmem_32.c
+> +++ b/arch/x86/mm/highmem_32.c
+> @@ -183,7 +183,7 @@ void __init set_highmem_pages_init(void)
+>  	totalram_pages += totalhigh_pages;
+>  }
+>  #else
+> -static void __init set_highmem_pages_init(void)
+> +void __init set_highmem_pages_init(void)
+>  {
+>  	add_highpages_with_active_regions(0, highstart_pfn, highend_pfn);
+>  
 
-http://groups.google.com/group/rtc-linux/browse_thread/thread/53e8d98966048f66/1d730cb4aa2f85f0?lnk=gst&q=rtc-firmware#1d730cb4aa2f85f0
-http://groups.google.com/group/rtc-linux/browse_thread/thread/b3d10115c7e147f2/cb9c1530d9c3a433?lnk=gst&q=rtc-firmware#cb9c1530d9c3a433
+I thought I tested that... The patch looks good. Thanks, Ingo!
