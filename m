@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760626AbZCCWIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbZCCWIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760626AbZCCWIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 17:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbZCCWAp
+	id S1760693AbZCCWIw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 17:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbZCCWAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 17:00:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39387 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758241AbZCCWAf convert rfc822-to-8bit (ORCPT
+	Tue, 3 Mar 2009 17:00:47 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47934 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758274AbZCCWAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 17:00:35 -0500
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Kalev Lember" <kalev@colleduc.ee>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-In-Reply-To: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Tue, 3 Mar 2009 17:00:38 -0500
+Message-ID: <49ADA840.4010909@zytor.com>
+Date: Tue, 03 Mar 2009 13:59:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <SLCXkuHtxAO.A.70B.5UarJB@chimera>
-Subject: [Bug #12771] Oops in i915_gem_flush
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue,  3 Mar 2009 20:25:57 +0100 (CET)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Dimitri Sivanich <sivanich@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6 v6] SGI RTC: add clocksource driver
+References: <20090303151044.GA20016@sgi.com> <20090303151357.GA20120@sgi.com> <20090303151524.GB20120@sgi.com> <20090303151657.GC20120@sgi.com> <20090303151827.GD20120@sgi.com> <20090303152016.GE20120@sgi.com> <20090303152206.GF20120@sgi.com> <20090303153553.GB29454@elte.hu>
+In-Reply-To: <20090303153553.GB29454@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+Ingo Molnar wrote:
+> * Dimitri Sivanich <sivanich@sgi.com> wrote:
+> 
+>>  drivers/clocksource/Makefile |    1 
+>>  drivers/clocksource/rtc_uv.c |  381 +++++++++++++++++++++++++++++++++++++++
+>>  drivers/misc/Kconfig         |    9 
+> 
+> btw., since this is a platform driver, i'd suggest to move it to 
+> arch/x86/kernel/uv_time.c or so.
+> 
 
-The following bug entry is on the current list of known regressions
-from 2.6.28.  Please verify if it still should be listed and let me know
-(either way).
+I thought we agreed platforms drivers go in drivers/x86?
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12771
-Subject		: Oops in i915_gem_flush
-Submitter	: Kalev Lember <kalev@colleduc.ee>
-Date		: 2009-02-24 08:35 (8 days old)
-
-
+	-hpa
