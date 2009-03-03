@@ -1,104 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZCCHnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbZCCHp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254AbZCCHnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 02:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZCCHnF
+	id S1757906AbZCCHp1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 02:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZCCHpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 02:43:05 -0500
-Received: from mail.lang.hm ([64.81.33.126]:40408 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750944AbZCCHnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 02:43:04 -0500
-Date: Mon, 2 Mar 2009 23:42:45 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Elaboration on "Equivalent fix must already exist in Linus'
- tree"
-In-Reply-To: <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0903022340060.14744@asgard.lang.hm>
-References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>  <49ACC6B0.409@garzik.org>  <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>  <20090303072637.GB4440@kroah.com> <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 3 Mar 2009 02:45:18 -0500
+Received: from rv-out-0506.google.com ([209.85.198.226]:14035 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbZCCHpR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 02:45:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rj9EvCQAc11FdlZlbJLhWDhtr9o3Gdhe+zveWPuu9EWmqVoUqRyeChxZnlPFwY/RLP
+         esrFkPatEEU7TzMltwtY+jCDlWNrlMl8rAUdrWxzCzve7k765U8+7LoobWBMguewC0v6
+         J/QKSoFZSKgrFU1ylMsUal0ss5SX8acB/NAdU=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <20090303073045.GA4528@kroah.com>
+References: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
+	 <20090303073045.GA4528@kroah.com>
+Date: Mon, 2 Mar 2009 23:45:14 -0800
+Message-ID: <43e72e890903022345n4af6c54fnf7a6fe7245e24e72@mail.gmail.com>
+Subject: Re: Staging, place holder for better company/community development 
+	model
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jouni Malinen <j@w1.fi>, Sujith <m.sujith@gmail.com>,
+       Sujith <Sujith.Manoharan@atheros.com>,
+       Senthilkumar Balasubramanian 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009, Luis R. Rodriguez wrote:
+On Mon, Mar 2, 2009 at 11:30 PM, Greg KH <greg@kroah.com> wrote:
+> On Mon, Mar 02, 2009 at 11:14:56PM -0800, Luis R. Rodriguez wrote:
+>> A lot of people really hate the staging tree.
+>
+> They do?  I've not gotten any complaints that I can remember about it.
 
-> On Mon, Mar 2, 2009 at 11:26 PM, Greg KH <greg@kroah.com> wrote:
->> - Show quoted text -
->> On Mon, Mar 02, 2009 at 10:44:40PM -0800, Luis R. Rodriguez wrote:
->>> On Mon, Mar 2, 2009 at 9:57 PM, Jeff Garzik <jeff@garzik.org> wrote:
->>>> Luis R. Rodriguez wrote:
->>>>>
->>>>> While extending the documentation for submitting Linux wireless bug
->>>>> reports [1] we note the stable series policy on patches -- that of
->>>>> having an equivalent fix already in Linus' tree. I find this
->>>>> documented in Documentation/stable_kernel_rules.txt but I'm curious if
->>>>> there is any other resource which documents this or elaborates on this
->>>>> a bit more. I often tell people about this rule or push _really_ hard
->>>>> on testing "upstream" but some people tend to not understand. I think
->>>>> that elaborating a little on this can help and will hopefully create
->>>>> more awareness around the importance of trees like Stephen's
->>>>> linux-next tree.
->>>>
->>>> Just have people google for GregKH's copious messages, telling people a fix
->>>> needs to be upstream before it goes into -stable.
->>>>
->>>> Typically you make things easy by emailing stable@kernel.org with a commit
->>>> id.
->>>>
->>>> There are only two exceptions:
->>>> * fix is upstream, but needs to be modified for -stable
->>>> * fix is not needed at all in upstream, but -stable still needs it
->>>
->>> This certainly helps, I'm also looking for good arguments to support
->>> the reasoning behind the policy so that not only will people follow
->>> this to help development but _understand_ it and so that they can
->>> themselves promote things like linux-next and realize why its so
->>> important. Mind you -- upstream for us in wireless for example is not
->>> Linus its John's tree so what we promote is not to get the fix first
->>> into Linus' tree but first into John's tree. Which is obvious to
->>> developers but perhaps not to others.
+Heh.......
+
+>> I don't but let me tell you why and I'd like to see if you concur with
+>> these particular concrete use cases and ideas on how to further use
+>> it.
 >>
->> Who are these "people" that you are trying to convince?
+>> The ath9k driver came to many as a big surprise -- and since it was a
+>> surprise we had to do the work ourselves as a team at Atheros in
+>> closed doors, without the community's involvement until we got
+>> something standing up and not smelling as bad. Our own change in
+>> direction to work on things upstream can be seen later as well by the
+>> release of the 11n Otus driver and documentation provided to
+>> interested developers to port it to mac80211 (not to mention similar
+>> type of work for ath5k) -- Johannes quickly then ported it and created
+>> the ar9170 11n USB driver which is its replacement for otus and
+>> targeted for wireless-testing. Otus is currently part of the staging
+>> tree. While ar9170 has no 802.11n support users wishing to test 11n
+>> USB with an open driver can use the "vendor" driver. The idea is to
+>> minimize as time goes by the "port" effort and get things out to the
+>> community faster.
+>>
+>> With future devices we may want to create a better path for
+>> integration into upstream drivers. But I also want users to get
+>> support for the devices as soon as those devices hit shelves in the
+>> market, maybe even before. So I would like to think of staging not
+>> only as a place for people to put drivers which a company has no
+>> resources to do the right job but also perhaps to _do_ the actual port
+>> work _with_ the community together.
 >
-> OK small silly example is convincing distributions it may be a good
-> idea to carry linux-next kernel packages as options to users to
-> hopefully down the road reduce the delta between what they carry and
-> what is actually upstream.
+> This is already happening today, with at least two different network
+> drivers, so I have no objection to this at all.
 
-linux-next is a testing tree for developers, it changes day to day, 
-doesn't contain all relavent changes, and is definantly _not_ something 
-that distros should be pushing to users.
+Oh nice, which ones and what companies if you can say.
 
-kernel.org kernels (and _possibly_ rc's) would have value (I'm glad to see 
-Ubuntu making this move), but linux-next is not something that should be 
-pushed out.
-
->> If they aren't
->> developers, why would any "others" care about our development
->> proceedures?
+>> By doing so we get devices supported with whatever ugly piece of code
+>> makes the device run (as long as its open, upstreamble, etc) but we
+>> also can engage with the community on the actual engineering and
+>> future of the actual driver we do want to support in Linux.
+>>
+>> As time goes by hopefully staging will not be necessary as companies
+>> (like ours) will have an immediate well defined structure for their
+>> drivers to easily add support for further devices.
 >
-> Right -- in this case above "others" could be developers but could
-> also be distribution guys. Essentially I was looking for arguments to
-> push and show why linux-next is the next best thing since sliced bread
-> for all those nasty deltas.
+> Sounds fine to me.
 >
-> Which OK -- maybe they can never disappear (?) but hopefully it can at
-> least be reduced in size over time.
+>> If we should take this approach -- should we send patches for wireless
+>> staging to John, or Greg? It would still be "crap" so I don't expect
+>> John to accept to help maintain crap but what if its crap with a clear
+>> defined path to un-crap land?
 >
->> Heck, very few developers even read the Documentation files, I'd never
->> expect an "other" to do that :)
->
-> Heh.. Maybe I expect too much of people and things.
+> I'll gladly take them, no objections from me.
 
-I think you are misunderstanding linux-next and how it relates to users 
-and distros.
+Alright nice, will bounce this internally now.
 
-David Lang
+   Luis
