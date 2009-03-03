@@ -1,123 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbZCCMFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbZCCMG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757195AbZCCMFe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 07:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZCCMFZ
+	id S1758029AbZCCMG0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 07:06:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZCCMGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 07:05:25 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:35185 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751077AbZCCMFY convert rfc822-to-8bit (ORCPT
+	Tue, 3 Mar 2009 07:06:18 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:35217 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751077AbZCCMGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 07:05:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Xay2lNOrE9OL4B0qMRwR5l5bUYTK75wVad6ROgjC757I0WnKaKxmMmOykkjsDwqYcm
-         vQNQvfqF2h/ujfr0Fjnib5M9DyB0l3IsjwyD8igFKpo49PvhlUL7+qbZNnq8If2B+X6l
-         VJ0AC/l4IhAXox66+1iScIuedkZlER4AcRKQo=
-MIME-Version: 1.0
-In-Reply-To: <20090302231628.GA7228@cmpxchg.org>
-References: <20090302183148.a4dfcc22.minchan.kim@barrios-desktop>
-	 <20090302142757.1cc014aa.akpm@linux-foundation.org>
-	 <20090302231628.GA7228@cmpxchg.org>
-Date: Tue, 3 Mar 2009 21:05:22 +0900
-Message-ID: <28c262360903030405uf54660axebce0ee19e27f7c@mail.gmail.com>
-Subject: Re: [PATCH] mmtom : add VM_BUG_ON in __get_free_pages
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 3 Mar 2009 07:06:17 -0500
+Date: Tue, 3 Mar 2009 13:06:01 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       David Howells <dhowells@redhat.com>
+Subject: [PATCH] Add to_delayed_work helper function
+Message-ID: <20090303130601.2c8f4bb0@hyperion.delvare>
+In-Reply-To: <20090303002952.80f1afc8.akpm@linux-foundation.org>
+References: <20090303083440.57df68c3@hyperion.delvare>
+	<20090303002952.80f1afc8.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Hannes.
-Thanks for careful review.
+It is a fairly common operation to have a pointer to a work and to
+need a pointer to the delayed work it is contained in. In particular,
+all delayed works which want to rearm themselves will have to do that.
+So it would seem fair to offer a helper function for this operation.
 
-On Tue, Mar 3, 2009 at 8:16 AM, Johannes Weiner <hannes@cmpxchg.org> wrote:
-> On Mon, Mar 02, 2009 at 02:27:57PM -0800, Andrew Morton wrote:
->> On Mon, 2 Mar 2009 18:31:48 +0900
->> MinChan Kim <minchan.kim@gmail.com> wrote:
->>
->> >
->> > The __get_free_pages is used in many place.
->> > Also, driver developers can use it freely due to export function.
->> > Some developers might use it to allocate high pages by mistake.
->> >
->> > The __get_free_pages can allocate high page using alloc_pages,
->> > but it can't return linear address for high page.
->> >
->> > Even worse, in this csse, caller can't free page which are there in high zone.
->> > So, It would be better to add VM_BUG_ON.
->> >
->> > It's based on mmtom 2009-02-27-13-54.
->> >
->> > Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
->> > ---
->> >  mm/page_alloc.c |    7 +++++++
->> >  1 files changed, 7 insertions(+), 0 deletions(-)
->> >
->> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> > index 8294107..381056b 100644
->> > --- a/mm/page_alloc.c
->> > +++ b/mm/page_alloc.c
->> > @@ -1681,6 +1681,13 @@ EXPORT_SYMBOL(__alloc_pages_internal);
->> >  unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
->> >  {
->> >     struct page * page;
->> > +
->> > +   /*
->> > +    * __get_free_pages() returns a 32-bit address, which cannot represent
->> > +    * a highmem page
->> > +    */
->> > +   VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
->> > +
->> >     page = alloc_pages(gfp_mask, order);
->> >     if (!page)
->> >             return 0;
->>
->> If someone calls __get_free_pages(__GFP_HIGHMEM) then page_address()
->> will reliably return NULL and the caller's code will oops.
->
-> It will allocate a page, fail to translate it to a virtual address,
-> return 0 and the caller will think allocation failed because it checks
-> for the return value.
->
-> But the highmem page is still allocated and now leaked, isn't it?
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+Andrew, does this variant please you better?
 
-That was my point.
+ arch/powerpc/kernel/vio.c                               |    2 +-
+ drivers/crypto/hifn_795x.c                              |    2 +-
+ drivers/input/mouse/hgpk.c                              |    2 +-
+ drivers/net/dm9000.c                                    |    2 +-
+ drivers/net/mlx4/en_netdev.c                            |    2 +-
+ drivers/net/mlx4/en_rx.c                                |    2 +-
+ drivers/s390/scsi/zfcp_fc.c                             |    2 +-
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |    8 ++++----
+ drivers/staging/rtl8187se/r8180_core.c                  |    8 ++++----
+ drivers/staging/rtl8187se/r8180_dm.c                    |    6 +++---
+ drivers/usb/wusbcore/devconnect.c                       |    2 +-
+ include/linux/workqueue.h                               |    5 +++++
+ mm/slab.c                                               |    3 +--
+ 13 files changed, 25 insertions(+), 21 deletions(-)
 
->> Yes, there's a decent (and increasing) risk that the developer won't be
->> testing the code on a highmem machine, but there are enough highmem
->> machines out there that the bug should be discovered pretty quickly.
->
-> Another thing is that a device driver developer does not necessarily
-> has CONFIG_DEBUG_VM set.  Can we expect him to?
-
-Hmm. I agree.
-Even, Many embedded guys don't upload their driver source to mainline
-for revewing and testing.
-so, others who have high mem machine can't review and test driver code.
-Of couse, It depends on their willing but it would be better to care them.
-
->> So I'm not sure that this test is worth the additional overhead to a
->> fairly frequently called function?
->
-> Well, it's only done conditionally if you want to debug the thing
-> anyway.  But as mentioned above, maybe this isn't the right condition.
->
-I added VM_DEUBG_ON as referencing get_zeroed_page without serious considering.
-I agree with your opinion.
-so, we have to change __get_free_page and get_zeroed_page.
-Do you mean BUG_ON instead of VM_BUG_ON ?
-
-Andrew, How about that ?
-you think it is rather big overhead even if it's vm debug mode ?
+--- linux-2.6.29-rc6.orig/arch/powerpc/kernel/vio.c	2009-01-29 08:27:18.000000000 +0100
++++ linux-2.6.29-rc6/arch/powerpc/kernel/vio.c	2009-03-03 12:56:30.000000000 +0100
+@@ -482,7 +482,7 @@ static void vio_cmo_balance(struct work_
+ 	cmo->excess.size = cmo->entitled - cmo->reserve.size;
+ 	cmo->excess.free = cmo->excess.size - need;
+ 
+-	cancel_delayed_work(container_of(work, struct delayed_work, work));
++	cancel_delayed_work(to_delayed_work(work));
+ 	spin_unlock_irqrestore(&vio_cmo.lock, flags);
+ }
+ 
+--- linux-2.6.29-rc6.orig/drivers/crypto/hifn_795x.c	2009-01-11 10:57:16.000000000 +0100
++++ linux-2.6.29-rc6/drivers/crypto/hifn_795x.c	2009-03-03 12:56:30.000000000 +0100
+@@ -1882,7 +1882,7 @@ static void hifn_clear_rings(struct hifn
+ 
+ static void hifn_work(struct work_struct *work)
+ {
+-	struct delayed_work *dw = container_of(work, struct delayed_work, work);
++	struct delayed_work *dw = to_delayed_work(work);
+ 	struct hifn_device *dev = container_of(dw, struct hifn_device, work);
+ 	unsigned long flags;
+ 	int reset = 0;
+--- linux-2.6.29-rc6.orig/drivers/input/mouse/hgpk.c	2009-01-11 10:57:21.000000000 +0100
++++ linux-2.6.29-rc6/drivers/input/mouse/hgpk.c	2009-03-03 12:56:30.000000000 +0100
+@@ -381,7 +381,7 @@ static void hgpk_disconnect(struct psmou
+ 
+ static void hgpk_recalib_work(struct work_struct *work)
+ {
+-	struct delayed_work *w = container_of(work, struct delayed_work, work);
++	struct delayed_work *w = to_delayed_work(work);
+ 	struct hgpk_data *priv = container_of(w, struct hgpk_data, recalib_wq);
+ 	struct psmouse *psmouse = priv->psmouse;
+ 
+--- linux-2.6.29-rc6.orig/drivers/net/dm9000.c	2009-01-11 10:57:25.000000000 +0100
++++ linux-2.6.29-rc6/drivers/net/dm9000.c	2009-03-03 12:56:30.000000000 +0100
+@@ -559,7 +559,7 @@ static void dm9000_show_carrier(board_in
+ static void
+ dm9000_poll_work(struct work_struct *w)
+ {
+-	struct delayed_work *dw = container_of(w, struct delayed_work, work);
++	struct delayed_work *dw = to_delayed_work(w);
+ 	board_info_t *db = container_of(dw, board_info_t, phy_poll);
+ 	struct net_device *ndev = db->ndev;
+ 
+--- linux-2.6.29-rc6.orig/drivers/net/mlx4/en_netdev.c	2009-01-17 09:06:20.000000000 +0100
++++ linux-2.6.29-rc6/drivers/net/mlx4/en_netdev.c	2009-03-03 12:56:30.000000000 +0100
+@@ -505,7 +505,7 @@ out:
+ 
+ static void mlx4_en_do_get_stats(struct work_struct *work)
+ {
+-	struct delayed_work *delay = container_of(work, struct delayed_work, work);
++	struct delayed_work *delay = to_delayed_work(work);
+ 	struct mlx4_en_priv *priv = container_of(delay, struct mlx4_en_priv,
+ 						 stats_task);
+ 	struct mlx4_en_dev *mdev = priv->mdev;
+--- linux-2.6.29-rc6.orig/drivers/net/mlx4/en_rx.c	2009-01-11 10:57:26.000000000 +0100
++++ linux-2.6.29-rc6/drivers/net/mlx4/en_rx.c	2009-03-03 12:56:30.000000000 +0100
+@@ -298,7 +298,7 @@ static void mlx4_en_free_rx_buf(struct m
+ 
+ void mlx4_en_rx_refill(struct work_struct *work)
+ {
+-	struct delayed_work *delay = container_of(work, struct delayed_work, work);
++	struct delayed_work *delay = to_delayed_work(work);
+ 	struct mlx4_en_priv *priv = container_of(delay, struct mlx4_en_priv,
+ 						 refill_task);
+ 	struct mlx4_en_dev *mdev = priv->mdev;
+--- linux-2.6.29-rc6.orig/drivers/s390/scsi/zfcp_fc.c	2009-01-11 10:57:32.000000000 +0100
++++ linux-2.6.29-rc6/drivers/s390/scsi/zfcp_fc.c	2009-03-03 12:56:30.000000000 +0100
+@@ -94,7 +94,7 @@ static int zfcp_wka_port_get(struct zfcp
+ 
+ static void zfcp_wka_port_offline(struct work_struct *work)
+ {
+-	struct delayed_work *dw = container_of(work, struct delayed_work, work);
++	struct delayed_work *dw = to_delayed_work(work);
+ 	struct zfcp_wka_port *wka_port =
+ 			container_of(dw, struct zfcp_wka_port, work);
+ 
+--- linux-2.6.29-rc6.orig/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c	2009-01-11 10:57:37.000000000 +0100
++++ linux-2.6.29-rc6/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c	2009-03-03 12:56:30.000000000 +0100
+@@ -719,7 +719,7 @@ void ieee80211_softmac_scan(struct ieee8
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_softmac_scan_wq(struct work_struct *work)
+ {
+-	struct delayed_work *dwork = container_of(work, struct delayed_work, work);
++	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork, struct ieee80211_device, softmac_scan_wq);
+ #else
+ void ieee80211_softmac_scan_wq(struct ieee80211_device *ieee)
+@@ -777,7 +777,7 @@ out:
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_softmac_scan_wq(struct work_struct *work)
+ {
+-        struct delayed_work *dwork = container_of(work, struct delayed_work, work);
++        struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, softmac_scan_wq);
+ #else
+ void ieee80211_softmac_scan_wq(struct ieee80211_device *ieee)
+@@ -2980,7 +2980,7 @@ void ieee80211_start_monitor_mode(struct
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_start_ibss_wq(struct work_struct *work)
+ {
+-	struct delayed_work *dwork = container_of(work, struct delayed_work, work);
++	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork, struct ieee80211_device, start_ibss_wq);
+ #else
+ void ieee80211_start_ibss_wq(struct ieee80211_device *ieee)
+@@ -3162,7 +3162,7 @@ void ieee80211_disassociate(struct ieee8
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_associate_retry_wq(struct work_struct *work)
+ {
+-	struct delayed_work *dwork = container_of(work, struct delayed_work, work);
++	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork, struct ieee80211_device, associate_retry_wq);
+ #else
+ void ieee80211_associate_retry_wq(struct ieee80211_device *ieee)
+--- linux-2.6.29-rc6.orig/drivers/staging/rtl8187se/r8180_core.c	2009-03-02 08:44:13.000000000 +0100
++++ linux-2.6.29-rc6/drivers/staging/rtl8187se/r8180_core.c	2009-03-03 12:56:30.000000000 +0100
+@@ -5438,7 +5438,7 @@ void rtl8180_hw_wakeup_wq (struct work_s
+ //	struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+ //	struct ieee80211_device * ieee = (struct ieee80211_device*)
+ //	                                       container_of(work, struct ieee80211_device, watch_dog_wq);
+-	struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_wakeup_wq);
+ 	struct net_device *dev = ieee->dev;
+ #else
+@@ -5459,7 +5459,7 @@ void rtl8180_hw_sleep_wq (struct work_st
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+ //      struct ieee80211_device * ieee = (struct ieee80211_device*)
+ //                                             container_of(work, struct ieee80211_device, watch_dog_wq);
+-        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++        struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_sleep_wq);
+         struct net_device *dev = ieee->dev;
+ #else
+@@ -6407,7 +6407,7 @@ priv->txnpring)/8);
+ void rtl8180_tx_irq_wq(struct work_struct *work)
+ {
+ 	//struct r8180_priv *priv = container_of(work, struct r8180_priv, reset_wq);
+-        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++        struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device * ieee = (struct ieee80211_device*)
+ 	                                       container_of(dwork, struct ieee80211_device, watch_dog_wq);
+ 	struct net_device *dev = ieee->dev;
+@@ -6691,7 +6691,7 @@ lizhaoming--------------------------- RF
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void GPIOChangeRFWorkItemCallBack(struct work_struct *work)
+ {
+-	//struct delayed_work *dwork = container_of(work, struct delayed_work, work);
++	//struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, GPIOChangeRFWorkItem.work);
+ 	struct net_device *dev = ieee->dev;
+ 	struct r8180_priv *priv = ieee80211_priv(dev);
+--- linux-2.6.29-rc6.orig/drivers/staging/rtl8187se/r8180_dm.c	2009-01-11 10:57:38.000000000 +0100
++++ linux-2.6.29-rc6/drivers/staging/rtl8187se/r8180_dm.c	2009-03-03 12:56:30.000000000 +0100
+@@ -132,7 +132,7 @@ void rtl8180_tx_pw_wq (struct work_struc
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+ //      struct ieee80211_device * ieee = (struct ieee80211_device*)
+ //                                             container_of(work, struct ieee80211_device, watch_dog_wq);
+-        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++        struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,tx_pw_wq);
+         struct net_device *dev = ieee->dev;
+ #else
+@@ -314,7 +314,7 @@ void rtl8180_hw_dig_wq (struct work_stru
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+ //      struct ieee80211_device * ieee = (struct ieee80211_device*)
+ //                                             container_of(work, struct ieee80211_device, watch_dog_wq);
+-        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++        struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_dig_wq);
+         struct net_device *dev = ieee->dev;
+ #else
+@@ -1250,7 +1250,7 @@ SetInitialGain:
+ #if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
+ void rtl8180_rate_adapter(struct work_struct * work)
+ {
+-	struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,rate_adapter_wq);
+         struct net_device *dev = ieee->dev;
+ #else
+--- linux-2.6.29-rc6.orig/drivers/usb/wusbcore/devconnect.c	2009-02-09 09:44:25.000000000 +0100
++++ linux-2.6.29-rc6/drivers/usb/wusbcore/devconnect.c	2009-03-03 12:56:30.000000000 +0100
+@@ -471,7 +471,7 @@ static void __wusbhc_keep_alive(struct w
+  */
+ static void wusbhc_keep_alive_run(struct work_struct *ws)
+ {
+-	struct delayed_work *dw = container_of(ws, struct delayed_work, work);
++	struct delayed_work *dw = to_delayed_work(ws);
+ 	struct wusbhc *wusbhc =	container_of(dw, struct wusbhc, keep_alive_timer);
+ 
+ 	mutex_lock(&wusbhc->mutex);
+--- linux-2.6.29-rc6.orig/include/linux/workqueue.h	2009-01-29 08:27:20.000000000 +0100
++++ linux-2.6.29-rc6/include/linux/workqueue.h	2009-03-03 10:36:53.000000000 +0100
+@@ -41,6 +41,11 @@ struct delayed_work {
+ 	struct timer_list timer;
+ };
+ 
++static inline struct delayed_work *to_delayed_work(struct work_struct *_work)
++{
++	return container_of(_work, struct delayed_work, work);
++}
++
+ struct execute_work {
+ 	struct work_struct work;
+ };
+--- linux-2.6.29-rc6.orig/mm/slab.c	2009-02-14 10:49:51.000000000 +0100
++++ linux-2.6.29-rc6/mm/slab.c	2009-03-03 12:56:30.000000000 +0100
+@@ -3988,8 +3988,7 @@ static void cache_reap(struct work_struc
+ 	struct kmem_cache *searchp;
+ 	struct kmem_list3 *l3;
+ 	int node = numa_node_id();
+-	struct delayed_work *work =
+-		container_of(w, struct delayed_work, work);
++	struct delayed_work *work = to_delayed_work(w);
+ 
+ 	if (!mutex_trylock(&cache_chain_mutex))
+ 		/* Give up. Setup the next iteration. */
 
 -- 
-Kinds regards,
-Minchan Kim
+Jean Delvare
