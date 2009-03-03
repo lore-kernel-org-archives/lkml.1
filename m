@@ -1,49 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbZCCLWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbZCCLX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757795AbZCCLWc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 06:22:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZCCLWX
+	id S1758181AbZCCLX0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 06:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZCCLXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 06:22:23 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:44224 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753528AbZCCLWW (ORCPT
+	Tue, 3 Mar 2009 06:23:18 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:41222 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbZCCLXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 06:22:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=ioNIlLex3a9haj7Yiyx8zS8i69m9yZ4nfAU3X4VF2zRmY7qS5BhQtVhw5vkUQ1l9kn
-         0mL0NXbnkvYPoCBv7eQta1bJ1VUx1aPCt1WZxSTqZv69bpeY1SPWFOEEg52JMZbY+mgB
-         JR6apSuJe1TByecsKq9twoWAJzWVYWyKGbeqA=
+	Tue, 3 Mar 2009 06:23:17 -0500
+Date: Tue, 3 Mar 2009 16:53:06 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
+Message-ID: <20090303112305.GR11421@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090301062959.31557.31079.sendpatchset@localhost.localdomain> <20090302092404.1439d2a6.kamezawa.hiroyu@jp.fujitsu.com> <20090302044043.GC11421@balbir.in.ibm.com> <20090302143250.f47758f9.kamezawa.hiroyu@jp.fujitsu.com> <20090302060519.GG11421@balbir.in.ibm.com> <20090302151830.3770e528.kamezawa.hiroyu@jp.fujitsu.com> <20090302175235.GN11421@balbir.in.ibm.com> <20090303090303.ca430b43.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Date: Tue, 3 Mar 2009 12:22:18 +0100
-Message-ID: <5b9cce670903030322m9a5553fx2aa19f1591833f44@mail.gmail.com>
-Subject: memory allocation over 4gb under x86_64
-From: protagora27 protagora27 <protagora27@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090303090303.ca430b43.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello folks,
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-03 09:03:03]:
 
-I have a 64 bit dma that I have to program with 64 bit physical
-address
-beyond 4 gb because I have to test dma with memory allocation beyond
-4 gb.
-I 'm using linux x86_64 2.6.24 and I have 8 gb ram.
-How can I allocate physical dma memory beyond 4gb ? In x86_64
-can I use __pa to have physical address ?
-I have used kmalloc giving virtual address : ffff810225d10340
-and using __pa i have: 225d10340 that is over 8 gb .
-Does it mean that kmalloc return address is not linear mapped with phys ram ?
+> On Mon, 2 Mar 2009 23:22:35 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-02 15:18:30]:
+> > 
+> > > On Mon, 2 Mar 2009 11:35:19 +0530
+> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > > Then, not-sorted RB-tree can be there.
+> > > > > 
+> > > > > BTW,
+> > > > >    time_after(jiffies, 0)
+> > > > > is buggy (see definition). If you want make this true always,
+> > > > >    time_after(jiffies, jiffies +1)
+> > > > >
+> > > > 
+> > > > HZ/4 is 250/4 jiffies in the worst case (62). We have
+> > > > time_after(jiffies, next_update_interval) and next_update_interval is
+> > > > set to last_tree_update + 62. Not sure if I got what you are pointing
+> > > > to.
+> > > > 
+> > > +	unsigned long next_update = 0;
+> > > +	unsigned long flags;
+> > > +
+> > > +	if (!css_tryget(&mem->css))
+> > > +		return;
+> > > +	prev_usage_in_excess = mem->usage_in_excess;
+> > > +	new_usage_in_excess = res_counter_soft_limit_excess(&mem->res);
+> > > +
+> > > +	if (time_check)
+> > > +		next_update = mem->last_tree_update +
+> > > +				MEM_CGROUP_TREE_UPDATE_INTERVAL;
+> > > +	if (new_usage_in_excess && time_after(jiffies, next_update)) {
+> > > +		if (prev_usage_in_excess)
+> > > +			mem_cgroup_remove_exceeded(mem);
+> > > +		mem_cgroup_insert_exceeded(mem);
+> > > +		updated_tree = true;
+> > > +	} else if (prev_usage_in_excess && !new_usage_in_excess) {
+> > > +		mem_cgroup_remove_exceeded(mem);
+> > > +		updated_tree = true;
+> > > +	}
+> > > 
+> > > My point is what happens if time_check==false.
+> > > time_afrter(jiffies, 0) is buggy.
+> > >
+> > 
+> > I see your point now, but the idea behind doing so is that
+> > time_after(jiffies, 0) will always return false, which forces the
+> > prev_usage_in_excess and !new_usage_in_excess check to execute. We set
+> > the value to false only from __mem_cgroup_free().
+> > 
+> > Are you suggesting that calling time_after(jiffies, 0) is buggy?
+> > The comment
+> > 
+> >   Do this with "<0" and ">=0" to only test the sign of the result. A
+> >  
+> > I think refers to the comparison check and not to the parameters. I
+> > hope I am reading this right.
+> 
+>  106 #define time_after(a,b)         \
+>  107         (typecheck(unsigned long, a) && \
+>  108          typecheck(unsigned long, b) && \
+>  109          ((long)(b) - (long)(a) < 0))
+> 
+> Reading above.
+> 
+>   if b==0.
+>      if (long)a <0  -> false
+>      if (long)a >0  -> true
+> 
+> jiffies is unsigned value. please think of bit-pattern of signed/unsigned value.
 
-I would like to find a function that returns a physical adddres beyond
-4gb
-and then i write phys address in dma register .
+Fair enough, the cast to long will be an issue. I'll fix it.
 
-Thanks.
+-- 
+	Balbir
