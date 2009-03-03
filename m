@@ -1,86 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZCCSno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbZCCSwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbZCCSno (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 13:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZCCSnf
+	id S1755438AbZCCSwu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 13:52:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZCCSwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 13:43:35 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:53663 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbZCCSne convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 13:43:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kA9hfqPLcNqi7iWAFXSGF1rsB9PrsOZqoyK9XQQUrnNe27QrgSlILvAkg0XkLwTQrg
-         SSXtkg0Fr1Dr73AW2ArGPFM1KynnIQJEHOvWvrkesSdkxEWHaUprdZIsoXv4Suk8VVvL
-         jJp6Hrny24Zg9PWd5gd2j5ux7derpDZBaTX1Q=
+	Tue, 3 Mar 2009 13:52:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58495 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753341AbZCCSwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 13:52:41 -0500
+Date: Tue, 3 Mar 2009 19:52:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6 v6] SGI RTC: add generic system interrupt
+Message-ID: <20090303185225.GA5057@elte.hu>
+References: <20090303151044.GA20016@sgi.com> <20090303151357.GA20120@sgi.com> <20090303153433.GA29454@elte.hu> <20090303173943.GA30012@sgi.com>
 MIME-Version: 1.0
-In-Reply-To: <49AD7361.308@s5r6.in-berlin.de>
-References: <43e72e890903022143k83890afr6673753f52c5ff8@mail.gmail.com>
-	 <49ACC6B0.409@garzik.org>
-	 <43e72e890903022244j2b2f4276lf6e318f3dad3df@mail.gmail.com>
-	 <20090303072637.GB4440@kroah.com>
-	 <43e72e890903022337k5281a790j8641f93cce3f9c70@mail.gmail.com>
-	 <49AD4C74.1060704@s5r6.in-berlin.de>
-	 <43e72e890903030923v27c47f5anc184c0e8085bc5c1@mail.gmail.com>
-	 <49AD7361.308@s5r6.in-berlin.de>
-Date: Tue, 3 Mar 2009 10:43:32 -0800
-Message-ID: <43e72e890903031043m1fe417eay4420e734064a5882@mail.gmail.com>
-Subject: Re: Elaboration on "Equivalent fix must already exist in Linus' tree"
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090303173943.GA30012@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 3, 2009 at 10:13 AM, Stefan Richter
-<stefanr@s5r6.in-berlin.de> wrote:
-> Luis R. Rodriguez wrote:
->> On Tue, Mar 3, 2009 at 7:27 AM, Stefan Richter
->> <stefanr@s5r6.in-berlin.de> wrote:
->>> Luis R. Rodriguez wrote:
->>>> OK small silly example is convincing distributions it may be a good
->>>> idea to carry linux-next kernel packages as options to users to
->>>> hopefully down the road reduce the delta between what they carry and
->>>> what is actually upstream.
->>> Distros would do their users a bigger favour if [...]
->>
->> I don't think I was very clear in what I meant about "carrying
->> linux-next kernel packages as an option". What I meant was carrying it
->> just as an option for those users who want to test bleeding edge
->> without compiling their own linux-next, _not_ to merge linux-next
->> things into their own default kernel release and shove it down users
->> throats.
->
-> Sorry, I meant "bigger favour" relative to carrying an own delta of
-> considerable size.
->
-> Packaging linux-next would be fine if the workload isn't a problem for
-> the packager.  As pointed out elsewhere, there are caveats with
-> linux-next (e.g. a functionality which was in it yesterday could be gone
-> today because of a merge issue), but that's the nature of bleeding edge
-> of course.
 
-Sure, understood. That's all I meant really.
+* Dimitri Sivanich <sivanich@sgi.com> wrote:
 
-My argument here I guess is that the reasons used to support the
-"equivalent fix" policy for patches upstream makes it apparent why
-linux-next is so important and my hope would be to get it more
-exposure by having distributions let users test it (as an option to go
-with bleeding edge) and this in turn help stabilize code in our next
-release.
+> On Tue, Mar 03, 2009 at 04:34:33PM +0100, Ingo Molnar wrote:
+> > 
+> > * Dimitri Sivanich <sivanich@sgi.com> wrote:
+> > 
+> > > This patch allocates a system interrupt vector for various 
+> > > platform specific uses.
+> > 
+> > this is really ugly.
+> > 
+> > Also, why are all these symbols exported? There's no need to 
+> > build the UV RTC driver as a module. It's either built-in or not 
+> > built-in - it's small enough.
+> 
+> OK.
+> 
+> > 
+> > this stuff:
+> > 
+> > > +/* Function pointer for generic interrupt vector handling */
+> > > +static void (*generic_interrupt_extension)(void);
+> > > +static char generic_show_string[28];
+> > > +static char generic_show_prefix[6];
+> > > +
+> > > +int is_generic_interrupt_registered()
+> > > +{
+> > > +	if (generic_interrupt_extension)
+> > > +		return 1;
+> > > +	else
+> > > +		return 0;
+> > > +}
+> > > +
+> > > +char *generic_interrupt_string(void)
+> > > +{
+> > > +	return generic_show_string;
+> > > +}
+> > > +
+> > > +char *generic_interrupt_prefix(void)
+> > > +{
+> > > +	return generic_show_prefix;
+> > > +}
+> > 
+> > is SMP unsafe, etc. etc. - not something we should ever call 
+> > from a module. We just shouldnt do it in this form. What 
+> > necessiates it?
+> 
+> I wanted a way to show specific strings when displaying irq statistics.  We could show these in a more generic way I suppose.
+> 
+> Any given platform should just be changing these once, hence the lack of need for locking.
+> 
+> > 
+> > All we need is:
+> > 
+> > > +	/* generic IPI for platform specific use */
+> > > +	alloc_intr_gate(GENERIC_INTERRUPT_VECTOR, generic_interrupt);
+> > 
+> > plus one trivial callback function - and then the UV platform 
+> > uses it for its own purpose. It's not like two platforms will be 
+> > running at once so there's no locking needed, etc.
+> 
+> Right.  But still register the callback function as I have it 
+> now?
 
-But I certainly don't expect every distribution to carry such a
-package, nor would I expect them to want to deal with it. Just wanted
-to build a good case for distributions to consider it.
+i'd suggest to just override that global function pointer from 
+the UV detection routines.
 
-  Luis
+this way we have it in a minimalistically generic fashion, but 
+with a minimum amount of fuss around it.
+
+	Ingo
