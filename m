@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbZCCMMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZCCMPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbZCCMMQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 07:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZCCMMA
+	id S1756806AbZCCMPz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 07:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbZCCMPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 07:12:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35836 "EHLO mx2.mail.elte.hu"
+	Tue, 3 Mar 2009 07:15:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46068 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750768AbZCCML7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 07:11:59 -0500
-Date: Tue, 3 Mar 2009 13:11:38 +0100
+	id S1750768AbZCCMPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 07:15:46 -0500
+Date: Tue, 3 Mar 2009 13:15:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] Add to_delayed_work helper function
-Message-ID: <20090303121138.GB5740@elte.hu>
-References: <20090303083440.57df68c3@hyperion.delvare> <20090303002952.80f1afc8.akpm@linux-foundation.org> <20090303130601.2c8f4bb0@hyperion.delvare>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] x86: set_highmem_pages_init() cleanup
+Message-ID: <20090303121532.GC5740@elte.hu>
+References: <1236082212.2675.24.camel@penberg-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090303130601.2c8f4bb0@hyperion.delvare>
+In-Reply-To: <1236082212.2675.24.camel@penberg-laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,52 +34,103 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jean Delvare <khali@linux-fr.org> wrote:
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> It is a fairly common operation to have a pointer to a work and to
-> need a pointer to the delayed work it is contained in. In particular,
-> all delayed works which want to rearm themselves will have to do that.
-> So it would seem fair to offer a helper function for this operation.
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Impact: cleanup
+> 
+> This patch moves set_highmem_pages_init() to arch/x86/mm/highmem_32.c. The
+> declaration of the function is kept in asm/numa_32.h because asm/highmem.h is
+> included only CONFIG_HIGHMEM is enabled so we can't put the empty static inline
+> function there.
+> 
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 > ---
-> Andrew, does this variant please you better?
-> 
->  arch/powerpc/kernel/vio.c                               |    2 +-
->  drivers/crypto/hifn_795x.c                              |    2 +-
->  drivers/input/mouse/hgpk.c                              |    2 +-
->  drivers/net/dm9000.c                                    |    2 +-
->  drivers/net/mlx4/en_netdev.c                            |    2 +-
->  drivers/net/mlx4/en_rx.c                                |    2 +-
->  drivers/s390/scsi/zfcp_fc.c                             |    2 +-
->  drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |    8 ++++----
->  drivers/staging/rtl8187se/r8180_core.c                  |    8 ++++----
->  drivers/staging/rtl8187se/r8180_dm.c                    |    6 +++---
->  drivers/usb/wusbcore/devconnect.c                       |    2 +-
->  include/linux/workqueue.h                               |    5 +++++
->  mm/slab.c                                               |    3 +--
->  13 files changed, 25 insertions(+), 21 deletions(-)
+>  arch/x86/include/asm/numa_32.h |    6 +++++-
+>  arch/x86/mm/highmem_32.c       |   34 ++++++++++++++++++++++++++++++++++
+>  arch/x86/mm/init_32.c          |   12 ------------
+>  arch/x86/mm/numa_32.c          |   26 --------------------------
+>  4 files changed, 39 insertions(+), 39 deletions(-)
 
-looks good,
+Applied, thanks!
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+One question:
 
-one small detail:
-
-> --- linux-2.6.29-rc6.orig/include/linux/workqueue.h	2009-01-29 08:27:20.000000000 +0100
-> +++ linux-2.6.29-rc6/include/linux/workqueue.h	2009-03-03 10:36:53.000000000 +0100
-> @@ -41,6 +41,11 @@ struct delayed_work {
->  	struct timer_list timer;
->  };
+> diff --git a/arch/x86/include/asm/numa_32.h b/arch/x86/include/asm/numa_32.h
+> index e9f5db7..a372290 100644
+> --- a/arch/x86/include/asm/numa_32.h
+> +++ b/arch/x86/include/asm/numa_32.h
+> @@ -4,8 +4,12 @@
+>  extern int pxm_to_nid(int pxm);
+>  extern void numa_remove_cpu(int cpu);
 >  
-> +static inline struct delayed_work *to_delayed_work(struct work_struct *_work)
+> -#ifdef CONFIG_NUMA
+> +#ifdef CONFIG_HIGHMEM
+>  extern void set_highmem_pages_init(void);
+> +#else
+> +static inline void set_highmem_pages_init(void)
 > +{
-> +	return container_of(_work, struct delayed_work, work);
 > +}
+>  #endif
+>  
+>  #endif /* _ASM_X86_NUMA_32_H */
+> diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+> index bcc079c..13a823c 100644
+> --- a/arch/x86/mm/highmem_32.c
+> +++ b/arch/x86/mm/highmem_32.c
+> @@ -1,5 +1,6 @@
+>  #include <linux/highmem.h>
+>  #include <linux/module.h>
+> +#include <linux/swap.h> /* for totalram_pages */
+>  
+>  void *kmap(struct page *page)
+>  {
+> @@ -156,3 +157,36 @@ EXPORT_SYMBOL(kmap);
+>  EXPORT_SYMBOL(kunmap);
+>  EXPORT_SYMBOL(kmap_atomic);
+>  EXPORT_SYMBOL(kunmap_atomic);
 > +
+> +#ifdef CONFIG_NUMA
+> +void __init set_highmem_pages_init(void)
+> +{
+> +	struct zone *zone;
+> +	int nid;
+> +
+> +	for_each_zone(zone) {
+> +		unsigned long zone_start_pfn, zone_end_pfn;
+> +
+> +		if (!is_highmem(zone))
+> +			continue;
+> +
+> +		zone_start_pfn = zone->zone_start_pfn;
+> +		zone_end_pfn = zone_start_pfn + zone->spanned_pages;
+> +
+> +		nid = zone_to_nid(zone);
+> +		printk(KERN_INFO "Initializing %s for node %d (%08lx:%08lx)\n",
+> +				zone->name, nid, zone_start_pfn, zone_end_pfn);
+> +
+> +		add_highpages_with_active_regions(nid, zone_start_pfn,
+> +				 zone_end_pfn);
+> +	}
+> +	totalram_pages += totalhigh_pages;
+> +}
+> +#else
+> +static void __init set_highmem_pages_init(void)
+> +{
+> +	add_highpages_with_active_regions(0, highstart_pfn, highend_pfn);
+> +
+> +	totalram_pages += totalhigh_pages;
+> +}
+> +#endif /* CONFIG_NUMA */
 
-there's no need to name it _work i think and '*work' should be 
-just fine - this isnt a macro so there's no danger of namespace 
-interactions.
+Couldnt we just wrap the !NUMA case into the NUMA case and just 
+have the NUMA function present, by making for_each_zone() a 
+two-entries matter and making the second entry contain:
+
+   zone->zone_start_pfn := highstart_pfn
+   zone->spanned_pages := highend_pfn-highstart_pfn 
+
+?
 
 	Ingo
