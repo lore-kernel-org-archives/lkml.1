@@ -1,193 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZCCQcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbZCCQdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbZCCQcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZCCQcF
+	id S1757600AbZCCQdt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZCCQdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:32:05 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43026 "EHLO mx2.redhat.com"
+	Tue, 3 Mar 2009 11:33:40 -0500
+Received: from mx1.emlix.com ([193.175.82.87]:44773 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753375AbZCCQcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:32:02 -0500
-Message-ID: <49AD5B55.10002@redhat.com>
-Date: Tue, 03 Mar 2009 11:31:17 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH] x86: make text_poke() atomic using fixmap
-References: <49A853CD.3020607@redhat.com> <49AC10E9.1090102@redhat.com> <20090302171914.GB21735@Krystal> <49AC5A87.7000604@redhat.com> <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <49AC7453.8020307@redhat.com> <20090303002214.GA4147@elte.hu> <49AC7A5F.7080009@redhat.com>
-In-Reply-To: <49AC7A5F.7080009@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752845AbZCCQdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:33:39 -0500
+Date: Tue, 3 Mar 2009 17:33:13 +0100
+From: Johannes Weiner <jw@emlix.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oskar Schirmer <os@emlix.com>, David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+Subject: [patch] binfmt_flat: fix data sections alignment
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
+Message-Id: <E1LeXY0-0007Fb-KQ@mailer.emlix.com>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Ingo Molnar wrote:
->> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>
->>> Ingo Molnar wrote:
->>>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>>>
->>>>> Ingo Molnar wrote:
->>>>>>>> So perhaps another approach to (re-)consider would be to go back 
->>>>>>>> to atomic fixmaps here. It spends 3 slots but that's no big 
->>>>>>>> deal.
->>>>>>> Oh, it's a good idea! fixmaps must make it simpler.
->>>>>>>
->>>>>>>> In exchange it will be conceptually simpler, and will also scale 
->>>>>>>> much better than a global spinlock. What do you think?
->>>>>>> I think even if I use fixmaps, we have to use a spinlock to protect
->>>>>>> the fixmap area from other threads...
->>>>>> that's why i suggested to use an atomic-kmap, not a fixmap.
->>>>> Even if the mapping is atomic, text_poke() has to protect pte
->>>>> from other text_poke()s while changing code.
->>>>> AFAIK, atomic-kmap itself doesn't ensure that, does it?
->>>> Well, but text_poke() is not a serializing API to begin with. 
->>>> It's normally used in code patching sequences when we 'know' 
->>>> that there cannot be similar parallel activities. The kprobes 
->>>> usage of text_poke() looks unsafe - and that needs to be fixed.
->>> Oh, kprobes already prohibited parallel arming/disarming
->>> by using kprobe_mutex. :-)
->> yeah, but still the API is somewhat unsafe.
-> 
-> Yeah, kprobe_mutex protects text_poke from other kprobes, but
-> not from other text_poke() users...
-> 
->> In any case, you also answered your own question:
->>
->>>>> Even if the mapping is atomic, text_poke() has to protect pte
->>>>> from other text_poke()s while changing code.
->>>>> AFAIK, atomic-kmap itself doesn't ensure that, does it?
->> kprobe_mutex does that.
-> 
-> Anyway, text_edit_lock ensures that.
-> 
-> By the way, I think set_fixmap/clear_fixmap seems simpler than
-> kmap_atomic() variant. Would you think improving kmap_atomic_prot()
-> is better?
+From: Oskar Schirmer <os@emlix.com>
 
-Hi Ingo,
+The flat loader uses an architecture's flat_stack_align() to align the
+stack but assumes word-alignment is enough for the data sections.
 
-Here is the patch which uses fixmaps instead of vmap in text_poke().
-This made the code much simpler than I thought :).
+However, on the Xtensa S6000 we need an alignment of more than
+wordsize for data that is loaded to 128bit wide registers.
 
-Thanks,
+This patch replaces the specific flat_stack_align() with a more
+generic flat_data_align() that is then used for both stack, the data
+and bss section.
 
-----
-Use fixmaps instead of vmap/vunmap in text_poke() for avoiding page allocation
-and delayed unmapping.
+It also fixes m32r which was obviously kaput, aligning an
+uninitialized stack entry instead of the stack pointer.
 
-At the result of above change, text_poke() becomes atomic and can be called
-from stop_machine() etc.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Oskar Schirmer <os@emlix.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Bryan Wu <cooloney@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Signed-off-by: Johannes Weiner <jw@emlix.com>
 ---
- arch/x86/include/asm/fixmap_32.h |    2 ++
- arch/x86/include/asm/fixmap_64.h |    2 ++
- arch/x86/kernel/alternative.c    |   18 ++++++++++++------
- 3 files changed, 16 insertions(+), 6 deletions(-)
+ arch/arm/include/asm/flat.h      |    4 +---
+ arch/blackfin/include/asm/flat.h |    2 +-
+ arch/h8300/include/asm/flat.h    |    2 +-
+ arch/m68k/include/asm/flat.h     |    2 +-
+ arch/sh/include/asm/flat.h       |    2 +-
+ fs/binfmt_flat.c                 |   28 ++++++++++++++--------------
+ include/asm-m32r/flat.h          |    2 +-
+ 7 files changed, 20 insertions(+), 22 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/fixmap_32.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/fixmap_32.h
-+++ linux-2.6/arch/x86/include/asm/fixmap_32.h
-@@ -81,6 +81,8 @@ enum fixed_addresses {
- #ifdef CONFIG_PARAVIRT
- 	FIX_PARAVIRT_BOOTMAP,
- #endif
-+	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
-+	FIX_TEXT_POKE1,
- 	__end_of_permanent_fixed_addresses,
- 	/*
- 	 * 256 temporary boot-time mappings, used by early_ioremap(),
-Index: linux-2.6/arch/x86/include/asm/fixmap_64.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/fixmap_64.h
-+++ linux-2.6/arch/x86/include/asm/fixmap_64.h
-@@ -49,6 +49,8 @@ enum fixed_addresses {
- #ifdef CONFIG_PARAVIRT
- 	FIX_PARAVIRT_BOOTMAP,
- #endif
-+	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
-+	FIX_TEXT_POKE1,
- 	__end_of_permanent_fixed_addresses,
- #ifdef CONFIG_ACPI
- 	FIX_ACPI_BEGIN,
-Index: linux-2.6/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/alternative.c
-+++ linux-2.6/arch/x86/kernel/alternative.c
-@@ -12,7 +12,9 @@
- #include <asm/nmi.h>
- #include <asm/vsyscall.h>
- #include <asm/cacheflush.h>
-+#include <asm/tlbflush.h>
- #include <asm/io.h>
-+#include <asm/fixmap.h>
+We tried to verify brain-wise that all the alignments on other archs
+are still correct but please note that we have only one xtensa-based
+box to test this patch on.  It works here with a required data
+alignment of 16 bytes.
 
- #define MAX_PATCH_LEN (255-1)
-
-@@ -495,12 +497,13 @@ void *text_poke_early(void *addr, const
-  * It means the size must be writable atomically and the address must be aligned
-  * in a way that permits an atomic write. It also makes sure we fit on a single
-  * page.
-+ *
-+ * Note: Must be called under text_mutex.
-  */
- void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
- {
- 	unsigned long flags;
- 	char *vaddr;
--	int nr_pages = 2;
- 	struct page *pages[2];
- 	int i;
-
-@@ -513,14 +516,17 @@ void *__kprobes text_poke(void *addr, co
- 		pages[1] = virt_to_page(addr + PAGE_SIZE);
+--- a/fs/binfmt_flat.c
++++ b/fs/binfmt_flat.c
+@@ -115,19 +115,17 @@ static unsigned long create_flat_tables(
+ 	char uninitialized_var(dummy);
+ 
+ 	sp = (unsigned long *) ((-(unsigned long)sizeof(char *))&(unsigned long) p);
++	sp -= (envc + argc + 2) + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
++	sp = (unsigned long *) ((-(unsigned long)flat_data_align())&(unsigned long) sp);
++	argv = sp + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
++	envp = argv + (argc + 1);
+ 
+-	sp -= envc+1;
+-	envp = sp;
+-	sp -= argc+1;
+-	argv = sp;
+-
+-	flat_stack_align(sp);
+ 	if (flat_argvp_envp_on_stack()) {
+-		--sp; put_user((unsigned long) envp, sp);
+-		--sp; put_user((unsigned long) argv, sp);
++		put_user((unsigned long) envp, sp + 2);
++		put_user((unsigned long) argv, sp + 1);
  	}
- 	BUG_ON(!pages[0]);
--	if (!pages[1])
--		nr_pages = 1;
--	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
--	BUG_ON(!vaddr);
-+	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
-+	if (pages[1])
-+		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
-+	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
- 	local_irq_save(flags);
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
- 	local_irq_restore(flags);
--	vunmap(vaddr);
-+	clear_fixmap(FIX_TEXT_POKE0);
-+	if (pages[1])
-+		clear_fixmap(FIX_TEXT_POKE1);
-+	local_flush_tlb();
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+ 
+-	put_user(argc,--sp);
++	put_user(argc,sp);
+ 	current->mm->arg_start = (unsigned long) p;
+ 	while (argc-->0) {
+ 		put_user((unsigned long) p, argv++);
+@@ -558,7 +556,8 @@ static int load_flat_file(struct linux_b
+ 			ret = realdatastart;
+ 			goto err;
+ 		}
+-		datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
++		datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
++				flat_data_align());
+ 
+ 		DBG_FLT("BINFMT_FLAT: Allocated data+bss+stack (%d bytes): %x\n",
+ 				(int)(data_len + bss_len + stack_len), (int)datapos);
+@@ -604,9 +603,10 @@ static int load_flat_file(struct linux_b
+ 		}
+ 
+ 		realdatastart = textpos + ntohl(hdr->data_start);
+-		datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
+-		reloc = (unsigned long *) (textpos + ntohl(hdr->reloc_start) +
+-				MAX_SHARED_LIBS * sizeof(unsigned long));
++		datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
++				flat_data_align());
++
++		reloc = (unsigned long *) (datapos+(ntohl(hdr->reloc_start)-text_len));
+ 		memp = textpos;
+ 		memp_size = len;
+ #ifdef CONFIG_BINFMT_ZFLAT
+@@ -854,7 +854,7 @@ static int load_flat_binary(struct linux
+ 	stack_len = TOP_OF_ARGS - bprm->p;             /* the strings */
+ 	stack_len += (bprm->argc + 1) * sizeof(char *); /* the argv array */
+ 	stack_len += (bprm->envc + 1) * sizeof(char *); /* the envp array */
+-
++	stack_len += flat_data_align();
+ 	
+ 	res = load_flat_file(bprm, &libinfo, 0, &stack_len);
+ 	if (res > (unsigned long)-4096)
+--- a/arch/arm/include/asm/flat.h
++++ b/arch/arm/include/asm/flat.h
+@@ -5,9 +5,7 @@
+ #ifndef __ARM_FLAT_H__
+ #define __ARM_FLAT_H__
+ 
+-/* An odd number of words will be pushed after this alignment, so
+-   deliberately misalign the value.  */
+-#define	flat_stack_align(sp)	sp = (void *)(((unsigned long)(sp) - 4) | 4)
++#define	flat_data_align()			8
+ #define	flat_argvp_envp_on_stack()		1
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+--- a/arch/blackfin/include/asm/flat.h
++++ b/arch/blackfin/include/asm/flat.h
+@@ -10,7 +10,7 @@
+ 
+ #include <asm/unaligned.h>
+ 
+-#define	flat_stack_align(sp)	/* nothing needed */
++#define	flat_data_align()			sizeof(void *)
+ #define	flat_argvp_envp_on_stack()		0
+ #define	flat_old_ram_flag(flags)		(flags)
+ 
+--- a/arch/h8300/include/asm/flat.h
++++ b/arch/h8300/include/asm/flat.h
+@@ -5,7 +5,7 @@
+ #ifndef __H8300_FLAT_H__
+ #define __H8300_FLAT_H__
+ 
+-#define	flat_stack_align(sp)			/* nothing needed */
++#define	flat_data_align()			sizeof(void *)
+ #define	flat_argvp_envp_on_stack()		1
+ #define	flat_old_ram_flag(flags)		1
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+--- a/arch/m68k/include/asm/flat.h
++++ b/arch/m68k/include/asm/flat.h
+@@ -5,7 +5,7 @@
+ #ifndef __M68KNOMMU_FLAT_H__
+ #define __M68KNOMMU_FLAT_H__
+ 
+-#define	flat_stack_align(sp)			/* nothing needed */
++#define	flat_data_align(sp)			sizeof(void *)
+ #define	flat_argvp_envp_on_stack()		1
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+--- a/arch/sh/include/asm/flat.h
++++ b/arch/sh/include/asm/flat.h
+@@ -12,7 +12,7 @@
+ #ifndef __ASM_SH_FLAT_H
+ #define __ASM_SH_FLAT_H
+ 
+-#define	flat_stack_align(sp)			/* nothing needed */
++#define	flat_data_align(sp)			sizeof(void *)
+ #define	flat_argvp_envp_on_stack()		0
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+--- a/include/asm-m32r/flat.h
++++ b/include/asm-m32r/flat.h
+@@ -12,7 +12,7 @@
+ #ifndef __ASM_M32R_FLAT_H
+ #define __ASM_M32R_FLAT_H
+ 
+-#define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
++#define	flat_data_align()			sizeof(void *)
+ #define	flat_argvp_envp_on_stack()		0
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_set_persistent(relval, p)		0
