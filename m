@@ -1,51 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZCDL3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbZCDL37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZCDL3c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZCDL3X
+	id S1756649AbZCDL37 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:29:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbZCDL3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:29:23 -0500
-Received: from relay.atmel.no ([80.232.32.139]:56381 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751903AbZCDL3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:29:22 -0500
-Message-ID: <49AE65FF.2060309@atmel.com>
-Date: Wed, 04 Mar 2009 12:29:03 +0100
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 4 Mar 2009 06:29:46 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:38836 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003AbZCDL3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:29:45 -0500
+From: Markus <M4rkusXXL@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: drop_caches ...
+Date: Wed, 4 Mar 2009 12:29:40 +0100
+User-Agent: KMail/1.9.10
+Cc: Wu Fengguang <fengguang.wu@intel.com>
+References: <200903041057.34072.M4rkusXXL@web.de> <200903041132.04451.M4rkusXXL@web.de> <20090304110558.GA17014@localhost>
+In-Reply-To: <20090304110558.GA17014@localhost>
 MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Subject: Re: [PATCH 0/5] WM97xx updates
-References: <20090303182402.GA29542@rakim.wolfsonmicro.main> <20090304091538.GD7394@dtor-d630.eng.vmware.com> <49AE492F.6020006@atmel.com> <20090304105358.GA32107@rakim.wolfsonmicro.main>
-In-Reply-To: <20090304105358.GA32107@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903041229.41482.M4rkusXXL@web.de>
+X-Provags-ID: V01U2FsdGVkX19CnpN+wyuiB8+vcRM2/sh+jMwV7U2XMofQLtRx
+	o8knSmxjir0FUwmPYnDfgnH7XFjtdrBzkHwcT/1Ta53BJ00irV
+	2Hms9hCjQ=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Wed, Mar 04, 2009 at 10:26:07AM +0100, Hans-Christian Egtvedt wrote:
+> > > The memory mapped pages won't be dropped in this way.
+> > > "cat /proc/meminfo" will show you the number of mapped pages.
+> > 
+> > # sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m ; 
+cat /proc/meminfo
+> >              total       used       free     shared    buffers     
+> > cached
+> > Mem:          3950       3262        688          0          0        
+> > 359
+> > -/+ buffers/cache:       2902       1047
+> > Swap:         5890       1509       4381
+> > MemTotal:        4045500 kB
+> > MemFree:          705180 kB
+> > Buffers:             508 kB
+> > Cached:           367748 kB
+> > SwapCached:       880744 kB
+> > Active:          1555032 kB
+> > Inactive:        1634868 kB
+> > Active(anon):    1527100 kB
+> > Inactive(anon):  1607328 kB
+> > Active(file):      27932 kB
+> > Inactive(file):    27540 kB
+> > Unevictable:         816 kB
+> > Mlocked:               0 kB
+> > SwapTotal:       6032344 kB
+> > SwapFree:        4486496 kB
+> > Dirty:                 0 kB
+> > Writeback:             0 kB
+> > AnonPages:       2378112 kB
+> > Mapped:            52196 kB
+> > Slab:              65640 kB
+> > SReclaimable:      46192 kB
+> > SUnreclaim:        19448 kB
+> > PageTables:        28200 kB
+> > NFS_Unstable:          0 kB
+> > Bounce:                0 kB
+> > WritebackTmp:          0 kB
+> > CommitLimit:     8055092 kB
+> > Committed_AS:    4915636 kB
+> > VmallocTotal:   34359738367 kB
+> > VmallocUsed:       44580 kB
+> > VmallocChunk:   34359677239 kB
+> > DirectMap4k:     3182528 kB
+> > DirectMap2M:     1011712 kB
+> > 
+> > The cached reduced to 359 MB (after the dropping).
+> > I dont know where to read the "number of mapped pages".
+> > "Mapped" is about 51 MB.
 > 
->> The only thing catched by review was a leaking irq line, do you plan to  
->> fixup that Mark?
-> 
-> Jiri also had some further comments from the initial posting (mail
-> attached).  I can probably try to fix up most things blind but I'll need
-> to at least set up an at32 toolchain to build test.  The workqueue thing
-> might be better to test on hardware, though, just in case there's some
-> noticable performance impact.  I wouldn't expect so but it'd be safer.
-> 
+> Does your tmpfs store lots of files?
 
-I'll see what I can manage to squeeze in of testing, there is always the 
-in-between-time.
+Dont think so:
 
-What is this patch based against? Linus tree, master branch?
+# df -h
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/md6               14G  8.2G  5.6G  60% /
+udev                   10M  304K  9.8M   3% /dev
+cachedir              4.0M  100K  4.0M   3% /lib64/splash/cache
+/dev/md4               19G   15G  3.1G  83% /home
+/dev/md3              8.3G  4.5G  3.9G  55% /usr/portage
+shm                   2.0G     0  2.0G   0% /dev/shm
+/dev/md1               99M   19M   76M  20% /boot
 
--- 
-Best regards,
-Hans-Christian Egtvedt
+# mount
+/dev/md6 on / type ext3 (rw,noatime,nodiratime,barrier=0)
+/proc on /proc type proc (rw,noexec,nosuid,noatime,nodiratime)
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec)
+udev on /dev type tmpfs (rw,nosuid,size=10240k,mode=755)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,gid=5,mode=620)
+cachedir on /lib64/splash/cache type tmpfs (rw,size=4096k,mode=644)
+/dev/md4 on /home type ext3 (rw,noatime,nodiratime,barrier=0)
+/dev/md3 on /usr/portage type ext4 (rw,noatime,nodiratime,barrier=0)
+shm on /dev/shm type tmpfs (rw,noexec,nosuid,nodev)
+usbfs on /proc/bus/usb type usbfs 
+(rw,noexec,nosuid,devmode=0664,devgid=85)
+automount(pid6507) on /mnt/.autofs/misc type autofs 
+(rw,fd=4,pgrp=6507,minproto=2,maxproto=4)
+automount(pid6521) on /mnt/.autofs/usb type autofs 
+(rw,fd=4,pgrp=6521,minproto=2,maxproto=4)
+/dev/md1 on /boot type ext2 (rw,noatime,nodiratime)
+
+I dont know what exactly all that memory is used for. It varies from 
+about 300 MB to up to one GB.
+Tell me where to look and I will!
+
+Thanks!
+
+Markus
