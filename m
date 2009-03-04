@@ -1,160 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbZCDLH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZCDLHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbZCDLH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZCDLHM
+	id S1753943AbZCDLHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZCDLHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:07:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42213 "EHLO hera.kernel.org"
+	Wed, 4 Mar 2009 06:07:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46520 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752796AbZCDLHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:07:09 -0500
-Date: Wed, 4 Mar 2009 11:06:35 GMT
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1236160001.29024.29.camel@penberg-laptop>
-References: <1236160001.29024.29.camel@penberg-laptop>
-Subject: [tip:x86/mm] x86: move devmem_is_allowed() to common mm/init.c
-Message-ID: <tip-540aca06b737cc38965b52eeceefba3d24376461@git.kernel.org>
-Git-Commit-ID: 540aca06b737cc38965b52eeceefba3d24376461
-X-Mailer: tip-git-log-daemon
+	id S1755532AbZCDLHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:07:23 -0500
+Date: Wed, 4 Mar 2009 12:07:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Tejun Heo <tj@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: 32bit panic on 4 sockets
+Message-ID: <20090304110708.GA4645@elte.hu>
+References: <86802c440903031458p4a72f8c8x6f91e9f58ac6bc26@mail.gmail.com> <86802c440903031751y136b506uc163dd2c9023de9b@mail.gmail.com> <49ADE201.7010506@kernel.org> <86802c440903032257l6607972dqe2390958b18454bd@mail.gmail.com> <1236155659.5330.6837.camel@laptop> <20090304103405.GA4879@elte.hu> <1236163190.5330.7091.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 11:06:37 +0000 (UTC)
+In-Reply-To: <1236163190.5330.7091.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  540aca06b737cc38965b52eeceefba3d24376461
-Gitweb:     http://git.kernel.org/tip/540aca06b737cc38965b52eeceefba3d24376461
-Author:     "Pekka Enberg" <penberg@cs.helsinki.fi>
-AuthorDate: Wed, 4 Mar 2009 11:46:40 +0200
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Mar 2009 11:40:04 +0100
 
-x86: move devmem_is_allowed() to common mm/init.c
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-Impact: cleanup
+> On Wed, 2009-03-04 at 11:34 +0100, Ingo Molnar wrote:
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Tue, 2009-03-03 at 22:57 -0800, Yinghai Lu wrote:
+> > > > On Tue, Mar 3, 2009 at 6:05 PM, Tejun Heo <tj@kernel.org> wrote:
+> > > > > Looks like a genuine bootmem bug.  Cc'ing Johannes and
+> > > > > quoting whole body.
+> > > > 
+> > > > it is x86 32bit numa code problem. it assume bootmem will 
+> > > > sit on first node only.
+> > > 
+> > > Seems a bit daft to run a 32bit kernel on such a machine.. at 
+> > > some point we should just give up and not push this 32 bit 
+> > > madness any further.
+> > 
+> > it works just fine on a lot of systems - and since we keep 
+> > unifying a lot of these codepaths we are better off keeping it 
+> > all working.
+> 
+> Sure, but eg. running with 16GB on a 32bit system just isn't 
+> going to work well. Same with large cpu-count, at some point 
+> you might be able to boot, but not much else.
 
-The function is identical on 32-bit and 64-bit configurations so move
-it to the common mm/init.c file.
+Sure.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-LKML-Reference: <1236160001.29024.29.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/mm/init.c    |   24 ++++++++++++++++++++++++
- arch/x86/mm/init_32.c |   21 ---------------------
- arch/x86/mm/init_64.c |   22 ----------------------
- 3 files changed, 24 insertions(+), 43 deletions(-)
-
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index ce6a722..f89df52 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -1,9 +1,33 @@
-+#include <linux/ioport.h>
- #include <linux/swap.h>
-+
- #include <asm/cacheflush.h>
- #include <asm/page.h>
-+#include <asm/page_types.h>
- #include <asm/sections.h>
- #include <asm/system.h>
- 
-+/*
-+ * devmem_is_allowed() checks to see if /dev/mem access to a certain address
-+ * is valid. The argument is a physical page number.
-+ *
-+ *
-+ * On x86, access has to be given to the first megabyte of ram because that area
-+ * contains bios code and data regions used by X and dosemu and similar apps.
-+ * Access has to be given to non-kernel-ram areas as well, these contain the PCI
-+ * mmio resources as well as potential bios/acpi data regions.
-+ */
-+int devmem_is_allowed(unsigned long pagenr)
-+{
-+	if (pagenr <= 256)
-+		return 1;
-+	if (iomem_is_exclusive(pagenr << PAGE_SHIFT))
-+		return 0;
-+	if (!page_is_ram(pagenr))
-+		return 1;
-+	return 0;
-+}
-+
- void free_init_pages(char *what, unsigned long begin, unsigned long end)
- {
- 	unsigned long addr = begin;
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 0b087dc..917c4e6 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -354,27 +354,6 @@ repeat:
- 	}
- }
- 
--/*
-- * devmem_is_allowed() checks to see if /dev/mem access to a certain address
-- * is valid. The argument is a physical page number.
-- *
-- *
-- * On x86, access has to be given to the first megabyte of ram because that area
-- * contains bios code and data regions used by X and dosemu and similar apps.
-- * Access has to be given to non-kernel-ram areas as well, these contain the PCI
-- * mmio resources as well as potential bios/acpi data regions.
-- */
--int devmem_is_allowed(unsigned long pagenr)
--{
--	if (pagenr <= 256)
--		return 1;
--	if (iomem_is_exclusive(pagenr << PAGE_SHIFT))
--		return 0;
--	if (!page_is_ram(pagenr))
--		return 1;
--	return 0;
--}
--
- pte_t *kmap_pte;
- pgprot_t kmap_prot;
- 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 724e537..074435e 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -876,28 +876,6 @@ EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
- 
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
--/*
-- * devmem_is_allowed() checks to see if /dev/mem access to a certain address
-- * is valid. The argument is a physical page number.
-- *
-- *
-- * On x86, access has to be given to the first megabyte of ram because that area
-- * contains bios code and data regions used by X and dosemu and similar apps.
-- * Access has to be given to non-kernel-ram areas as well, these contain the PCI
-- * mmio resources as well as potential bios/acpi data regions.
-- */
--int devmem_is_allowed(unsigned long pagenr)
--{
--	if (pagenr <= 256)
--		return 1;
--	if (iomem_is_exclusive(pagenr << PAGE_SHIFT))
--		return 0;
--	if (!page_is_ram(pagenr))
--		return 1;
--	return 0;
--}
--
--
- static struct kcore_list kcore_mem, kcore_vmalloc, kcore_kernel,
- 			 kcore_modules, kcore_vsyscall;
- 
+	Ingo
