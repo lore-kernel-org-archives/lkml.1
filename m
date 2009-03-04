@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbZCDRiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZCDRk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbZCDRiz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:38:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZCDRiq
+	id S1756159AbZCDRk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZCDRkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:38:46 -0500
-Received: from gw.goop.org ([64.81.55.164]:53631 "EHLO mail.goop.org"
+	Wed, 4 Mar 2009 12:40:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35602 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753948AbZCDRip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:38:45 -0500
-Message-ID: <49AEBCA2.8020307@goop.org>
-Date: Wed, 04 Mar 2009 09:38:42 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1751639AbZCDRkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 12:40:11 -0500
+Date: Wed, 4 Mar 2009 17:39:32 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1236175192.5330.7585.camel@laptop>
+References: <1236175192.5330.7585.camel@laptop>
+Subject: [tip:core/locking] lockdep: remove extra "irq" string
+Message-ID: <tip-26575e28df5eb2050c02369843faba38cecb4d8c@git.kernel.org>
+Git-Commit-ID: 26575e28df5eb2050c02369843faba38cecb4d8c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] xen: core dom0 support
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org>	<200902282309.07576.nickpiggin@yahoo.com.au>	<49AB19E1.4050604@goop.org>	<200903021737.24903.nickpiggin@yahoo.com.au> <49AB9336.7010103@goop.org> <49AEBB8C.2000405@codemonkey.ws>
-In-Reply-To: <49AEBB8C.2000405@codemonkey.ws>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 17:39:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Jeremy Fitzhardinge wrote:
->> Nick Piggin wrote:
->
->> It really depends on the workload.  There's three cases to consider: 
->> software shadow pagetables, hardware nested pagetables, and Xen 
->> direct pagetables.  Even now, Xen's (highly optimised) shadow 
->> pagetable code generally out-performs modern nested pagetables, at 
->> least when running Windows (for which that code was most heavily tuned).
->
-> Can you point to benchmarks?  I have a hard time believing this.
+Commit-ID:  26575e28df5eb2050c02369843faba38cecb4d8c
+Gitweb:     http://git.kernel.org/tip/26575e28df5eb2050c02369843faba38cecb4d8c
+Author:     "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 4 Mar 2009 14:53:24 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 4 Mar 2009 18:38:34 +0100
 
-Erm, not that I know of off-hand.  I don't really have any interest in 
-Windows performance, so I'm reduced to repeating (highly reliable) Xen 
-Summit corridor chat.
+lockdep: remove extra "irq" string
 
-> How can shadow paging beat nested paging assuming the presence of 
-> large pages? 
+Impact: clarify lockdep printk text
 
-I think large pages do turn the tables, and its close to parity with 
-shadow with 4k pages on recent cpus.  But see above for reliability on 
-that info.
+print_irq_inversion_bug() gets handed state strings of the form
 
-    J
+  "HARDIRQ", "SOFTIRQ", "RECLAIM_FS"
 
+and appends "-irq-{un,}safe" to them, which is either redudant for *IRQ or
+confusing in the RECLAIM_FS case.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1236175192.5330.7585.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/lockdep.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index ef6584f..02014f7 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -1900,9 +1900,9 @@ print_irq_inversion_bug(struct task_struct *curr, struct lock_class *other,
+ 		curr->comm, task_pid_nr(curr));
+ 	print_lock(this);
+ 	if (forwards)
+-		printk("but this lock took another, %s-irq-unsafe lock in the past:\n", irqclass);
++		printk("but this lock took another, %s-unsafe lock in the past:\n", irqclass);
+ 	else
+-		printk("but this lock was taken by another, %s-irq-safe lock in the past:\n", irqclass);
++		printk("but this lock was taken by another, %s-safe lock in the past:\n", irqclass);
+ 	print_lock_name(other);
+ 	printk("\n\nand interrupts could create inverse lock ordering between them.\n\n");
+ 
