@@ -1,52 +1,1056 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbZCDN5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZCDN5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755661AbZCDN5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 08:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZCDN5I
+	id S1756524AbZCDN5h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 08:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZCDN51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 08:57:08 -0500
-Received: from mx1.emlix.com ([193.175.82.87]:44632 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752667AbZCDN5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 08:57:06 -0500
-Date: Wed, 4 Mar 2009 14:57:30 +0100
-From: Johannes Weiner <jw@emlix.com>
-To: Chris Zankel <chris@zankel.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch] xtensa: add flat support
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
-Message-Id: <E1Lerap-0000Rw-Ul@mailer.emlix.com>
-Organization: emlix gmbh, Goettingen, Germany
+	Wed, 4 Mar 2009 08:57:27 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:50652 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753473AbZCDN5Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 08:57:24 -0500
+Date: Wed, 4 Mar 2009 14:57:20 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>
+cc: Vivien Chappelier <vivien.chappelier@free.fr>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org
+Subject: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
+ RAM as block device
+Message-ID: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oskar Schirmer <os@emlix.com>
+	Hi,
 
-Add the arch-specific header for flat support on xtensa in preparation
-for the Xtensa S6000 nommu port.
+Below is the rewrite of the PS3 Video RAM Storage Driver as a plain block
+device, as requested by Arnd Bergmann.
 
-Signed-off-by: Oskar Schirmer <os@emlix.com>
-Signed-off-by: Johannes Weiner <jw@emlix.com>
+The MTD-based PS3 Video RAM Storage Driver was integrated into the mainline
+kernel in 2.6.29-rc1.
+
+Ideally, we think it would be best if the existing MTD-based ps3vram driver
+would be replaced by the new block-based ps3vram driver before 2.6.29 is
+released. This would relieve the burden of supporting two different swap space
+schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the distro
+maintainer's shoulders, as in that case there would never have been a stable
+kernel version containing the MTD-based ps3vram driver.
+
+What do you think? If this is accepted, I'll submit a patch to remove the MTD
+ps3vram and add the new driver as ps3vram (instead of ps3vram-ng).
+
+Thanks for your (review and other) comments!
+
 ---
- arch/xtensa/include/asm/flat.h |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+>From e19ce619675bc150cd82701e7b272f7018c36527 Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date: Wed, 25 Feb 2009 18:32:10 +0100
+Subject: [PATCH] ps3/block: Add ps3vram-ng driver for accessing video RAM as block device
 
+Add ps3vram-ng driver, which exposes unused video RAM on the PS3 as a block
+device suitable for storage or swap.  Fast data transfer is achieved
+using a local cache in system RAM and DMA transfers via the GPU.
+
+Notes:
+  - As both the existing MTD ps3vram and ps3vram-ng bind to the same PS3 system
+    bus device, the driver which is loaded first by udev wins. However, you can
+    unload ps3vram, and load ps3vram-ng later.
+  - ps3vram-ng is faster than ps3vram:
+      o 1 MiB blocks: +50% (read), +5% (write)
+      o 4 KiB blocks: +50% (read), +5% (write)
+      o 512 B blocks: +10% (read), +10% (write)
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Jim Paris <jim@jtan.com>
+Cc: Vivien Chappelier <vivien.chappelier@free.fr>
+---
+ arch/powerpc/platforms/ps3/Kconfig |    7 +
+ drivers/block/Makefile             |    1 +
+ drivers/block/ps3vram_ng.c         |  916 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 924 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/block/ps3vram_ng.c
+
+diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
+index 920cf7a..b3b7a20 100644
+--- a/arch/powerpc/platforms/ps3/Kconfig
++++ b/arch/powerpc/platforms/ps3/Kconfig
+@@ -128,6 +128,13 @@ config PS3_FLASH
+ 	  be disabled on the kernel command line using "ps3flash=off", to
+ 	  not allocate this fixed buffer.
+ 
++config PS3_VRAM
++	tristate "PS3 Video RAM Storage Driver"
++	depends on PPC_PS3 && BLOCK
++	help
++	  This driver allows you to use excess PS3 video RAM as volatile
++	  storage or system swap.
++
+ config PS3_LPM
+ 	tristate "PS3 Logical Performance Monitor support"
+ 	depends on PPC_PS3
+diff --git a/drivers/block/Makefile b/drivers/block/Makefile
+index 204332b..ad3e45e 100644
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_MAC_FLOPPY)	+= swim3.o
+ obj-$(CONFIG_BLK_DEV_FD)	+= floppy.o
+ obj-$(CONFIG_AMIGA_FLOPPY)	+= amiflop.o
+ obj-$(CONFIG_PS3_DISK)		+= ps3disk.o
++obj-$(CONFIG_PS3_VRAM)		+= ps3vram_ng.o
+ obj-$(CONFIG_ATARI_FLOPPY)	+= ataflop.o
+ obj-$(CONFIG_AMIGA_Z2RAM)	+= z2ram.o
+ obj-$(CONFIG_BLK_DEV_RAM)	+= brd.o
+diff --git a/drivers/block/ps3vram_ng.c b/drivers/block/ps3vram_ng.c
+new file mode 100644
+index 0000000..fa24a17
 --- /dev/null
-+++ b/arch/xtensa/include/asm/flat.h
-@@ -0,0 +1,12 @@
-+#ifndef __ASM_XTENSA_FLAT_H
-+#define __ASM_XTENSA_FLAT_H
++++ b/drivers/block/ps3vram_ng.c
+@@ -0,0 +1,916 @@
++/*
++ * ps3vram - Use extra PS3 video ram as MTD block device.
++ *
++ * Copyright 2009 Sony Corporation
++ *
++ * Based on the MTD ps3vram driver, which is
++ * Copyright (c) 2007-2008 Jim Paris <jim@jtan.com>
++ * Added support RSX DMA Vivien Chappelier <vivien.chappelier@free.fr>
++ */
 +
-+#define flat_argvp_envp_on_stack()			0
-+#define flat_old_ram_flag(flags)			(flags)
-+#define flat_reloc_valid(reloc, size)			((reloc) <= (size))
-+#define flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
-+#define flat_put_addr_at_rp(rp, val, relval	)	put_unaligned(val, rp)
-+#define flat_get_relocate_addr(rel)			(rel)
-+#define flat_set_persistent(relval, p)			0
++#include <linux/blkdev.h>
++#include <linux/delay.h>
++#include <linux/kthread.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
 +
-+#endif /* __ASM_XTENSA_FLAT_H */
++#include <asm/firmware.h>
++#include <asm/lv1call.h>
++#include <asm/ps3.h>
++
++
++#define DEVICE_NAME		"ps3vram"
++
++
++#define XDR_BUF_SIZE (2 * 1024 * 1024) /* XDR buffer (must be 1MiB aligned) */
++#define XDR_IOIF 0x0c000000
++
++#define FIFO_BASE XDR_IOIF
++#define FIFO_SIZE (64 * 1024)
++
++#define DMA_PAGE_SIZE (4 * 1024)
++
++#define CACHE_PAGE_SIZE (256 * 1024)
++#define CACHE_PAGE_COUNT ((XDR_BUF_SIZE - FIFO_SIZE) / CACHE_PAGE_SIZE)
++
++#define CACHE_OFFSET CACHE_PAGE_SIZE
++#define FIFO_OFFSET 0
++
++#define CTRL_PUT 0x10
++#define CTRL_GET 0x11
++#define CTRL_TOP 0x15
++
++#define UPLOAD_SUBCH	1
++#define DOWNLOAD_SUBCH	2
++
++#define NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN	0x0000030c
++#define NV_MEMORY_TO_MEMORY_FORMAT_NOTIFY	0x00000104
++
++#define L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT 0x601
++
++#define CACHE_PAGE_PRESENT 1
++#define CACHE_PAGE_DIRTY   2
++
++struct ps3vram_tag {
++	unsigned int address;
++	unsigned int flags;
++};
++
++struct ps3vram_cache {
++	unsigned int page_count;
++	unsigned int page_size;
++	struct ps3vram_tag *tags;
++	unsigned int hit;
++	unsigned int miss;
++};
++
++struct ps3vram_priv {
++	spinlock_t lock;		/* Request queue spinlock */
++	struct task_struct *thread;
++	struct request_queue *queue;
++	struct gendisk *gendisk;
++
++	u64 size;
++
++	u64 memory_handle;
++	u64 context_handle;
++	u32 *ctrl;
++	u32 *reports;
++	u8 __iomem *ddr_base;
++	u8 *xdr_buf;
++
++	u32 *fifo_base;
++	u32 *fifo_ptr;
++
++	struct ps3vram_cache cache;
++};
++
++
++static int ps3vram_major;
++
++
++static struct block_device_operations ps3vram_fops = {
++	.owner		= THIS_MODULE,
++};
++
++
++#define DMA_NOTIFIER_HANDLE_BASE 0x66604200 /* first DMA notifier handle */
++#define DMA_NOTIFIER_OFFSET_BASE 0x1000     /* first DMA notifier offset */
++#define DMA_NOTIFIER_SIZE        0x40
++#define NOTIFIER 7	/* notifier used for completion report */
++
++/* A trailing '-' means to subtract off ps3fb_videomemory.size */
++static char *size = "256M-";
++module_param(size, charp, 0);
++MODULE_PARM_DESC(size, "memory size");
++
++static u32 *ps3vram_get_notifier(u32 *reports, int notifier)
++{
++	return (void *)reports + DMA_NOTIFIER_OFFSET_BASE +
++	       DMA_NOTIFIER_SIZE * notifier;
++}
++
++static void ps3vram_notifier_reset(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
++	int i;
++
++	for (i = 0; i < 4; i++)
++		notify[i] = 0xffffffff;
++}
++
++static int ps3vram_notifier_wait(struct ps3_system_bus_device *dev,
++				 unsigned int timeout_ms)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
++	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
++
++	do {
++		if (!notify[3])
++			return 0;
++		msleep(1);
++	} while (time_before(jiffies, timeout));
++
++	return -ETIMEDOUT;
++}
++
++static void ps3vram_init_ring(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	priv->ctrl[CTRL_PUT] = FIFO_BASE + FIFO_OFFSET;
++	priv->ctrl[CTRL_GET] = FIFO_BASE + FIFO_OFFSET;
++}
++
++static int ps3vram_wait_ring(struct ps3_system_bus_device *dev,
++			     unsigned int timeout_ms)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
++
++	do {
++		if (priv->ctrl[CTRL_PUT] == priv->ctrl[CTRL_GET])
++			return 0;
++		msleep(1);
++	} while (time_before(jiffies, timeout));
++
++	dev_dbg(&dev->core, "FIFO timeout (%08x/%08x/%08x)\n",
++		priv->ctrl[CTRL_PUT], priv->ctrl[CTRL_GET],
++		priv->ctrl[CTRL_TOP]);
++
++	return -ETIMEDOUT;
++}
++
++static void ps3vram_out_ring(struct ps3vram_priv *priv, u32 data)
++{
++	*(priv->fifo_ptr)++ = data;
++}
++
++static void ps3vram_begin_ring(struct ps3vram_priv *priv, u32 chan, u32 tag,
++			       u32 size)
++{
++	ps3vram_out_ring(priv, (size << 18) | (chan << 13) | tag);
++}
++
++static void ps3vram_rewind_ring(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	u64 status;
++
++	ps3vram_out_ring(priv, 0x20000000 | (FIFO_BASE + FIFO_OFFSET));
++
++	priv->ctrl[CTRL_PUT] = FIFO_BASE + FIFO_OFFSET;
++
++	/* asking the HV for a blit will kick the FIFO */
++	status = lv1_gpu_context_attribute(priv->context_handle,
++					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT, 0,
++					   0, 0, 0);
++	if (status)
++		dev_err(&dev->core,
++			"%s: lv1_gpu_context_attribute failed %llu\n",
++			__func__, status);
++
++	priv->fifo_ptr = priv->fifo_base;
++}
++
++static void ps3vram_fire_ring(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	u64 status;
++
++	mutex_lock(&ps3_gpu_mutex);
++
++	priv->ctrl[CTRL_PUT] = FIFO_BASE + FIFO_OFFSET +
++			       (priv->fifo_ptr - priv->fifo_base) * sizeof(u32);
++
++	/* asking the HV for a blit will kick the FIFO */
++	status = lv1_gpu_context_attribute(priv->context_handle,
++					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT, 0,
++					   0, 0, 0);
++	if (status)
++		dev_err(&dev->core,
++			"%s: lv1_gpu_context_attribute failed %llu\n",
++			__func__, status);
++
++	if ((priv->fifo_ptr - priv->fifo_base) * sizeof(u32) >
++	    FIFO_SIZE - 1024) {
++		dev_dbg(&dev->core, "FIFO full, rewinding\n");
++		ps3vram_wait_ring(dev, 200);
++		ps3vram_rewind_ring(dev);
++	}
++
++	mutex_unlock(&ps3_gpu_mutex);
++}
++
++static void ps3vram_bind(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	ps3vram_begin_ring(priv, UPLOAD_SUBCH, 0, 1);
++	ps3vram_out_ring(priv, 0x31337303);
++	ps3vram_begin_ring(priv, UPLOAD_SUBCH, 0x180, 3);
++	ps3vram_out_ring(priv, DMA_NOTIFIER_HANDLE_BASE + NOTIFIER);
++	ps3vram_out_ring(priv, 0xfeed0001);	/* DMA system RAM instance */
++	ps3vram_out_ring(priv, 0xfeed0000);     /* DMA video RAM instance */
++
++	ps3vram_begin_ring(priv, DOWNLOAD_SUBCH, 0, 1);
++	ps3vram_out_ring(priv, 0x3137c0de);
++	ps3vram_begin_ring(priv, DOWNLOAD_SUBCH, 0x180, 3);
++	ps3vram_out_ring(priv, DMA_NOTIFIER_HANDLE_BASE + NOTIFIER);
++	ps3vram_out_ring(priv, 0xfeed0000);	/* DMA video RAM instance */
++	ps3vram_out_ring(priv, 0xfeed0001);	/* DMA system RAM instance */
++
++	ps3vram_fire_ring(dev);
++}
++
++static int ps3vram_upload(struct ps3_system_bus_device *dev,
++			  unsigned int src_offset, unsigned int dst_offset,
++			  int len, int count)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	ps3vram_begin_ring(priv, UPLOAD_SUBCH,
++			   NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN, 8);
++	ps3vram_out_ring(priv, XDR_IOIF + src_offset);
++	ps3vram_out_ring(priv, dst_offset);
++	ps3vram_out_ring(priv, len);
++	ps3vram_out_ring(priv, len);
++	ps3vram_out_ring(priv, len);
++	ps3vram_out_ring(priv, count);
++	ps3vram_out_ring(priv, (1 << 8) | 1);
++	ps3vram_out_ring(priv, 0);
++
++	ps3vram_notifier_reset(dev);
++	ps3vram_begin_ring(priv, UPLOAD_SUBCH,
++			   NV_MEMORY_TO_MEMORY_FORMAT_NOTIFY, 1);
++	ps3vram_out_ring(priv, 0);
++	ps3vram_begin_ring(priv, UPLOAD_SUBCH, 0x100, 1);
++	ps3vram_out_ring(priv, 0);
++	ps3vram_fire_ring(dev);
++	if (ps3vram_notifier_wait(dev, 200) < 0) {
++		dev_dbg(&dev->core, "%s: Notifier timeout\n", __func__);
++		return -1;
++	}
++
++	return 0;
++}
++
++static int ps3vram_download(struct ps3_system_bus_device *dev,
++			    unsigned int src_offset, unsigned int dst_offset,
++			    int len, int count)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	ps3vram_begin_ring(priv, DOWNLOAD_SUBCH,
++			   NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN, 8);
++	ps3vram_out_ring(priv, src_offset);
++	ps3vram_out_ring(priv, XDR_IOIF + dst_offset);
++	ps3vram_out_ring(priv, len);
++	ps3vram_out_ring(priv, len);
++	ps3vram_out_ring(priv, len);
++	ps3vram_out_ring(priv, count);
++	ps3vram_out_ring(priv, (1 << 8) | 1);
++	ps3vram_out_ring(priv, 0);
++
++	ps3vram_notifier_reset(dev);
++	ps3vram_begin_ring(priv, DOWNLOAD_SUBCH,
++			   NV_MEMORY_TO_MEMORY_FORMAT_NOTIFY, 1);
++	ps3vram_out_ring(priv, 0);
++	ps3vram_begin_ring(priv, DOWNLOAD_SUBCH, 0x100, 1);
++	ps3vram_out_ring(priv, 0);
++	ps3vram_fire_ring(dev);
++	if (ps3vram_notifier_wait(dev, 200) < 0) {
++		dev_dbg(&dev->core, "%s: Notifier timeout\n", __func__);
++		return -1;
++	}
++
++	return 0;
++}
++
++static void ps3vram_cache_evict(struct ps3_system_bus_device *dev, int entry)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	struct ps3vram_cache *cache = &priv->cache;
++
++	if (!(cache->tags[entry].flags & CACHE_PAGE_DIRTY))
++		return;
++
++	dev_dbg(&dev->core, "Flushing %d: 0x%08x\n", entry,
++		cache->tags[entry].address);
++	if (ps3vram_upload(dev, CACHE_OFFSET + entry * cache->page_size,
++			   cache->tags[entry].address, DMA_PAGE_SIZE,
++			   cache->page_size / DMA_PAGE_SIZE) < 0) {
++		dev_err(&dev->core,
++			"Failed to upload from 0x%x to " "0x%x size 0x%x\n",
++			entry * cache->page_size, cache->tags[entry].address,
++			cache->page_size);
++	}
++	cache->tags[entry].flags &= ~CACHE_PAGE_DIRTY;
++}
++
++static void ps3vram_cache_load(struct ps3_system_bus_device *dev, int entry,
++			       unsigned int address)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	struct ps3vram_cache *cache = &priv->cache;
++
++	dev_dbg(&dev->core, "Fetching %d: 0x%08x\n", entry, address);
++	if (ps3vram_download(dev, address,
++			     CACHE_OFFSET + entry * cache->page_size,
++			     DMA_PAGE_SIZE,
++			     cache->page_size / DMA_PAGE_SIZE) < 0) {
++		dev_err(&dev->core,
++			"Failed to download from 0x%x to 0x%x size 0x%x\n",
++			address, entry * cache->page_size, cache->page_size);
++	}
++
++	cache->tags[entry].address = address;
++	cache->tags[entry].flags |= CACHE_PAGE_PRESENT;
++}
++
++
++static void ps3vram_cache_flush(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	struct ps3vram_cache *cache = &priv->cache;
++	int i;
++
++	dev_dbg(&dev->core, "FLUSH\n");
++	for (i = 0; i < cache->page_count; i++) {
++		ps3vram_cache_evict(dev, i);
++		cache->tags[i].flags = 0;
++	}
++}
++
++static unsigned int ps3vram_cache_match(struct ps3_system_bus_device *dev,
++					loff_t address)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	struct ps3vram_cache *cache = &priv->cache;
++	unsigned int base;
++	unsigned int offset;
++	int i;
++	static int counter;
++
++	offset = (unsigned int) (address & (cache->page_size - 1));
++	base = (unsigned int) (address - offset);
++
++	/* fully associative check */
++	for (i = 0; i < cache->page_count; i++) {
++		if ((cache->tags[i].flags & CACHE_PAGE_PRESENT) &&
++		    cache->tags[i].address == base) {
++			cache->hit++;
++			dev_dbg(&dev->core, "Found entry %d: 0x%08x\n", i,
++				cache->tags[i].address);
++			return i;
++		}
++	}
++
++	/* choose a random entry */
++	i = (jiffies + (counter++)) % cache->page_count;
++	dev_dbg(&dev->core, "Using entry %d\n", i);
++
++	ps3vram_cache_evict(dev, i);
++	ps3vram_cache_load(dev, i, base);
++
++	cache->miss++;
++	return i;
++}
++
++static int ps3vram_cache_init(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	priv->cache.page_count = CACHE_PAGE_COUNT;
++	priv->cache.page_size = CACHE_PAGE_SIZE;
++	priv->cache.tags = kzalloc(sizeof(struct ps3vram_tag) *
++				   CACHE_PAGE_COUNT, GFP_KERNEL);
++	if (priv->cache.tags == NULL) {
++		dev_err(&dev->core, "Could not allocate cache tags\n");
++		return -ENOMEM;
++	}
++
++	dev_info(&dev->core, "Created ram cache: %d entries, %d KiB each\n",
++		CACHE_PAGE_COUNT, CACHE_PAGE_SIZE / 1024);
++
++	return 0;
++}
++
++static void ps3vram_cache_cleanup(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	ps3vram_cache_flush(dev);
++	kfree(priv->cache.tags);
++}
++
++static int ps3vram_read(struct ps3_system_bus_device *dev, loff_t from,
++			size_t len, size_t *retlen, u_char *buf)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	unsigned int cached, count;
++
++	dev_dbg(&dev->core, "%s: from=0x%08x len=0x%zx\n", __func__,
++		(unsigned int)from, len);
++
++	if (from >= priv->size)
++		return -EINVAL;
++
++	if (len > priv->size - from)
++		len = priv->size - from;
++
++	/* Copy from vram to buf */
++	count = len;
++	while (count) {
++		unsigned int offset, avail;
++		unsigned int entry;
++
++		offset = (unsigned int) (from & (priv->cache.page_size - 1));
++		avail  = priv->cache.page_size - offset;
++
++		entry = ps3vram_cache_match(dev, from);
++		cached = CACHE_OFFSET + entry * priv->cache.page_size + offset;
++
++		dev_dbg(&dev->core, "%s: from=%08x cached=%08x offset=%08x "
++			"avail=%08x count=%08x\n", __func__,
++			(unsigned int)from, cached, offset, avail, count);
++
++		if (avail > count)
++			avail = count;
++		memcpy(buf, priv->xdr_buf + cached, avail);
++
++		buf += avail;
++		count -= avail;
++		from += avail;
++	}
++
++	*retlen = len;
++	return 0;
++}
++
++static int ps3vram_write(struct ps3_system_bus_device *dev, loff_t to,
++			 size_t len, size_t *retlen, const u_char *buf)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	unsigned int cached, count;
++
++	if (to >= priv->size)
++		return -EINVAL;
++
++	if (len > priv->size - to)
++		len = priv->size - to;
++
++	/* Copy from buf to vram */
++	count = len;
++	while (count) {
++		unsigned int offset, avail;
++		unsigned int entry;
++
++		offset = (unsigned int) (to & (priv->cache.page_size - 1));
++		avail  = priv->cache.page_size - offset;
++
++		entry = ps3vram_cache_match(dev, to);
++		cached = CACHE_OFFSET + entry * priv->cache.page_size + offset;
++
++		dev_dbg(&dev->core, "%s: to=%08x cached=%08x offset=%08x "
++			"avail=%08x count=%08x\n", __func__, (unsigned int)to,
++			cached, offset, avail, count);
++
++		if (avail > count)
++			avail = count;
++		memcpy(priv->xdr_buf + cached, buf, avail);
++
++		priv->cache.tags[entry].flags |= CACHE_PAGE_DIRTY;
++
++		buf += avail;
++		count -= avail;
++		to += avail;
++	}
++
++	*retlen = len;
++	return 0;
++}
++
++static int ps3vram_proc_show(struct seq_file *m, void *v)
++{
++	struct ps3vram_priv *priv = m->private;
++
++	seq_printf(m, "hit:%u\nmiss:%u\n", priv->cache.hit, priv->cache.miss);
++	return 0;
++}
++
++static int ps3vram_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, ps3vram_proc_show, PDE(inode)->data);
++}
++
++static const struct file_operations ps3vram_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= ps3vram_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static void __devinit ps3vram_proc_init(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	struct proc_dir_entry *pde;
++
++	pde = proc_create(DEVICE_NAME, 0444, NULL, &ps3vram_proc_fops);
++	if (!pde) {
++		dev_warn(&dev->core, "failed to create /proc entry\n");
++		return;
++	}
++
++	pde->owner = THIS_MODULE;
++	pde->data = priv;
++}
++
++static void ps3vram_do_request(struct ps3_system_bus_device *dev,
++			       struct request *req)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	int write, res, uptodate = 0;
++	const char *op;
++	sector_t start_sector;
++	unsigned int sectors;
++	loff_t offset;
++	size_t len, retlen;
++
++	write = rq_data_dir(req);
++	op = write ? "write" : "read";
++
++	start_sector = req->sector;
++	sectors = req->current_nr_sectors;
++	dev_dbg(&dev->core, "%s %u sectors starting at %lu\n", op, sectors,
++		start_sector);
++
++	offset = start_sector << 9;
++	len = sectors << 9;
++
++	if (write)
++		res = ps3vram_write(dev, offset, len, &retlen, req->buffer);
++	else
++		res = ps3vram_read(dev, offset, len, &retlen, req->buffer);
++
++	if (res) {
++		dev_err(&dev->core, "%s failed\n", op);
++		goto out;
++	}
++
++	if (retlen != len) {
++		dev_err(&dev->core, "Short %s\n", op);
++		goto out;
++	}
++
++	dev_dbg(&dev->core, "%s completed\n", op);
++
++	uptodate = 1;
++
++out:
++	spin_lock_irq(&priv->lock);
++	end_request(req, uptodate);
++	spin_unlock_irq(&priv->lock);
++}
++
++static int ps3vram_thread(void *data)
++{
++	struct ps3_system_bus_device *dev = data;
++	struct ps3vram_priv *priv = dev->core.driver_data;
++	struct request_queue *q = priv->queue;
++	struct request *req;
++
++	dev_dbg(&dev->core, "%s init\n", __func__);
++
++	current->flags |= PF_NOFREEZE;
++
++	while (!kthread_should_stop()) {
++		spin_lock_irq(&priv->lock);
++		set_current_state(TASK_INTERRUPTIBLE);
++		req = elv_next_request(q);
++		if (!req) {
++			spin_unlock_irq(&priv->lock);
++			schedule();
++			continue;
++		}
++		if (!blk_fs_request(req)) {
++			blk_dump_rq_flags(req, DEVICE_NAME " bad request");
++			end_request(req, 0);
++			spin_unlock_irq(&priv->lock);
++			continue;
++		}
++		spin_unlock_irq(&priv->lock);
++		ps3vram_do_request(dev, req);
++	}
++
++	dev_dbg(&dev->core, "%s exit\n", __func__);
++	return 0;
++}
++
++static void ps3vram_request(struct request_queue *q)
++{
++	struct ps3_system_bus_device *dev = q->queuedata;
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	dev_dbg(&dev->core, "Waking up thread\n");
++	wake_up_process(priv->thread);
++}
++
++
++static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv;
++	int error, status;
++	struct request_queue *queue;
++	struct gendisk *gendisk;
++	u64 ddr_lpar, ctrl_lpar, info_lpar, reports_lpar, ddr_size,
++	    reports_size;
++	char *rest;
++	struct task_struct *task;
++
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv) {
++		error = -ENOMEM;
++		goto fail;
++	}
++
++	dev->core.driver_data = priv;
++	spin_lock_init(&priv->lock);
++
++	priv = dev->core.driver_data;
++
++	/* Allocate XDR buffer (1MiB aligned) */
++	priv->xdr_buf = (void *)__get_free_pages(GFP_KERNEL,
++		get_order(XDR_BUF_SIZE));
++	if (priv->xdr_buf == NULL) {
++		dev_dbg(&dev->core, "Could not allocate XDR buffer\n");
++		error = -ENOMEM;
++		goto fail_free_priv;
++	}
++
++	/* Put FIFO at begginning of XDR buffer */
++	priv->fifo_base = (u32 *) (priv->xdr_buf + FIFO_OFFSET);
++	priv->fifo_ptr = priv->fifo_base;
++
++	/* XXX: Need to open GPU, in case ps3fb or snd_ps3 aren't loaded */
++	if (ps3_open_hv_device(dev)) {
++		dev_err(&dev->core, "ps3_open_hv_device failed\n");
++		error = -EAGAIN;
++		goto out_close_gpu;
++	}
++
++	/* Request memory */
++	status = -1;
++	ddr_size = memparse(size, &rest);
++	if (*rest == '-')
++		ddr_size -= ps3fb_videomemory.size;
++	ddr_size = ALIGN(ddr_size, 1024*1024);
++	if (ddr_size <= 0) {
++		dev_err(&dev->core, "Specified size is too small\n");
++		error = -EINVAL;
++		goto out_close_gpu;
++	}
++
++	while (ddr_size > 0) {
++		status = lv1_gpu_memory_allocate(ddr_size, 0, 0, 0, 0,
++						 &priv->memory_handle,
++						 &ddr_lpar);
++		if (!status)
++			break;
++		ddr_size -= 1024*1024;
++	}
++	if (status || ddr_size <= 0) {
++		dev_err(&dev->core, "lv1_gpu_memory_allocate failed %d\n",
++			status);
++		error = -ENOMEM;
++		goto out_free_xdr_buf;
++	}
++
++	/* Request context */
++	status = lv1_gpu_context_allocate(priv->memory_handle, 0,
++					  &priv->context_handle, &ctrl_lpar,
++					  &info_lpar, &reports_lpar,
++					  &reports_size);
++	if (status) {
++		dev_err(&dev->core, "lv1_gpu_context_allocate failed %d\n",
++			status);
++		error = -ENOMEM;
++		goto out_free_memory;
++	}
++
++	/* Map XDR buffer to RSX */
++	status = lv1_gpu_context_iomap(priv->context_handle, XDR_IOIF,
++				       ps3_mm_phys_to_lpar(__pa(priv->xdr_buf)),
++				       XDR_BUF_SIZE, 0);
++	if (status) {
++		dev_err(&dev->core, "lv1_gpu_context_iomap failed %d\n",
++			status);
++		error = -ENOMEM;
++		goto out_free_context;
++	}
++
++	priv->ddr_base = ioremap_flags(ddr_lpar, ddr_size, _PAGE_NO_CACHE);
++
++	if (!priv->ddr_base) {
++		dev_err(&dev->core, "ioremap DDR failed\n");
++		error = -ENOMEM;
++		goto out_free_context;
++	}
++
++	priv->ctrl = ioremap(ctrl_lpar, 64 * 1024);
++	if (!priv->ctrl) {
++		dev_err(&dev->core, "ioremap CTRL failed\n");
++		error = -ENOMEM;
++		goto out_unmap_vram;
++	}
++
++	priv->reports = ioremap(reports_lpar, reports_size);
++	if (!priv->reports) {
++		dev_err(&dev->core, "ioremap REPORTS failed\n");
++		error = -ENOMEM;
++		goto out_unmap_ctrl;
++	}
++
++	mutex_lock(&ps3_gpu_mutex);
++	ps3vram_init_ring(dev);
++	mutex_unlock(&ps3_gpu_mutex);
++
++	priv->size = ddr_size;
++
++	ps3vram_bind(dev);
++
++	mutex_lock(&ps3_gpu_mutex);
++	error = ps3vram_wait_ring(dev, 100);
++	mutex_unlock(&ps3_gpu_mutex);
++	if (error < 0) {
++		dev_err(&dev->core, "Failed to initialize channels\n");
++		error = -ETIMEDOUT;
++		goto out_unmap_reports;
++	}
++
++	ps3vram_cache_init(dev);
++	ps3vram_proc_init(dev);
++
++	queue = blk_init_queue(ps3vram_request, &priv->lock);
++	if (!queue) {
++		dev_err(&dev->core, "blk_init_queue failed\n");
++		error = -ENOMEM;
++		goto out_cache_cleanup;
++	}
++
++	priv->queue = queue;
++	queue->queuedata = dev;
++
++	gendisk = alloc_disk(1);
++	if (!gendisk) {
++		dev_err(&dev->core, "alloc_disk failed\n");
++		error = -ENOMEM;
++		goto fail_cleanup_queue;
++	}
++
++	priv->gendisk = gendisk;
++	gendisk->major = ps3vram_major;
++	gendisk->first_minor = 0;
++	gendisk->fops = &ps3vram_fops;
++	gendisk->queue = queue;
++	gendisk->private_data = dev;
++	gendisk->driverfs_dev = &dev->core;
++	strlcpy(gendisk->disk_name, DEVICE_NAME, sizeof(gendisk->disk_name));
++	set_capacity(gendisk, priv->size >> 9);
++
++	task = kthread_run(ps3vram_thread, dev, DEVICE_NAME);
++	if (IS_ERR(task)) {
++		error = PTR_ERR(task);
++		goto fail_free_disk;
++	}
++	priv->thread = task;
++
++	dev_info(&dev->core, "%s: Using %lu MiB of GPU memory\n",
++		 gendisk->disk_name, get_capacity(gendisk) >> 11);
++
++	add_disk(gendisk);
++	return 0;
++
++fail_free_disk:
++	put_disk(priv->gendisk);
++fail_cleanup_queue:
++	blk_cleanup_queue(queue);
++out_cache_cleanup:
++	remove_proc_entry(DEVICE_NAME, NULL);
++	ps3vram_cache_cleanup(dev);
++out_unmap_reports:
++	iounmap(priv->reports);
++out_unmap_ctrl:
++	iounmap(priv->ctrl);
++out_unmap_vram:
++	iounmap(priv->ddr_base);
++out_free_context:
++	lv1_gpu_context_free(priv->context_handle);
++out_free_memory:
++	lv1_gpu_memory_free(priv->memory_handle);
++out_close_gpu:
++	ps3_close_hv_device(dev);
++out_free_xdr_buf:
++	free_pages((unsigned long) priv->xdr_buf, get_order(XDR_BUF_SIZE));
++fail_free_priv:
++	kfree(priv);
++	dev->core.driver_data = NULL;
++fail:
++	return error;
++}
++
++static int ps3vram_remove(struct ps3_system_bus_device *dev)
++{
++	struct ps3vram_priv *priv = dev->core.driver_data;
++
++	BUG_ON(!elv_queue_empty(priv->queue));
++
++	kthread_stop(priv->thread);
++	del_gendisk(priv->gendisk);
++	blk_cleanup_queue(priv->queue);
++	put_disk(priv->gendisk);
++	remove_proc_entry(DEVICE_NAME, NULL);
++	ps3vram_cache_cleanup(dev);
++	iounmap(priv->reports);
++	iounmap(priv->ctrl);
++	iounmap(priv->ddr_base);
++	lv1_gpu_context_free(priv->context_handle);
++	lv1_gpu_memory_free(priv->memory_handle);
++	ps3_close_hv_device(dev);
++	free_pages((unsigned long) priv->xdr_buf, get_order(XDR_BUF_SIZE));
++	kfree(priv);
++	dev->core.driver_data = NULL;
++	return 0;
++}
++
++static struct ps3_system_bus_driver ps3vram = {
++	.match_id	= PS3_MATCH_ID_GPU,
++	.match_sub_id	= PS3_MATCH_SUB_ID_GPU_RAMDISK,
++	.core.name	= DEVICE_NAME,
++	.core.owner	= THIS_MODULE,
++	.probe		= ps3vram_probe,
++	.remove		= ps3vram_remove,
++	.shutdown	= ps3vram_remove,
++};
++
++
++static int __init ps3vram_init(void)
++{
++	int error;
++
++	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
++		return -ENODEV;
++
++	error = register_blkdev(0, DEVICE_NAME);
++	if (error <= 0) {
++		pr_err("%s: register_blkdev failed %d\n", DEVICE_NAME, error);
++		return error;
++	}
++	ps3vram_major = error;
++
++	pr_info("%s: registered block device major %d\n", DEVICE_NAME,
++		ps3vram_major);
++
++	error = ps3_system_bus_driver_register(&ps3vram);
++	if (error)
++		unregister_blkdev(ps3vram_major, DEVICE_NAME);
++
++	return error;
++}
++
++static void __exit ps3vram_exit(void)
++{
++	ps3_system_bus_driver_unregister(&ps3vram);
++	unregister_blkdev(ps3vram_major, DEVICE_NAME);
++}
++
++module_init(ps3vram_init);
++module_exit(ps3vram_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("PS3 Video RAM Storage Driver");
++MODULE_AUTHOR("Sony Corporation");
++MODULE_ALIAS(PS3_MODULE_ALIAS_GPU_RAMDISK);
+-- 
+1.6.0.4
+
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village � Da Vincilaan 7-D1 � B-1935 Zaventem � Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 � RPR Brussels
+Fortis � BIC GEBABEBB � IBAN BE41293037680010
