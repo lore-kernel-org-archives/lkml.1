@@ -1,95 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZCDJ0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbZCDJ0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbZCDJ0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 04:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZCDJ0H
+	id S1756618AbZCDJ0m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 04:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZCDJ0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 04:26:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41725 "EHLO hera.kernel.org"
+	Wed, 4 Mar 2009 04:26:25 -0500
+Received: from relay.atmel.no ([80.232.32.139]:54892 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbZCDJ0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 04:26:05 -0500
-Message-ID: <49AE4901.3090801@kernel.org>
-Date: Wed, 04 Mar 2009 01:25:21 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1756484AbZCDJ0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 04:26:24 -0500
+Message-ID: <49AE492F.6020006@atmel.com>
+Date: Wed, 04 Mar 2009 10:26:07 +0100
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: ioremap mptable
-References: <49AE485B.8000902@kernel.org>
-In-Reply-To: <49AE485B.8000902@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Subject: Re: [PATCH 0/5] WM97xx updates
+References: <20090303182402.GA29542@rakim.wolfsonmicro.main> <20090304091538.GD7394@dtor-d630.eng.vmware.com>
+In-Reply-To: <20090304091538.GD7394@dtor-d630.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dmitry Torokhov wrote:
+> On Tue, Mar 03, 2009 at 06:24:03PM +0000, Mark Brown wrote:
+>> This patch series updates the review feedback from the first round and
+>> rolls in the additional patches from Mike Rapoport.  I've not addressed
+>> any of the comments for the at32 driver since I have no ability to test
+>> any changes to that driver but repost it for completeness.
+>>
+> 
+> I applied first 4 patches to 'next' and will wait for Hans-Christian
+> comments on the at32 driver.
+> 
 
-Impact: fix boot with mptable above max_low_mapped
+The only thing catched by review was a leaking irq line, do you plan to 
+fixup that Mark?
 
-try to use early_ioremap to map mpc to make sure it works even it is
-at end of ram on system.
+I also think the header file could go into the source code, to make it 
+one file less.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
+Also, please note that I've gotten a new email address. The old one is 
+quite annoying since it sends email back about my new address...
 
----
- arch/x86/kernel/mpparse.c |   26 +++++++++++++++++++++++---
- 1 file changed, 23 insertions(+), 3 deletions(-)
+I'll not be able to test the driver immediately, my hardware is out at 
+customers and the eight new prototypes needs some resoldering before I 
+can work with them. Nothing has changed in hardware though, so it should 
+fly out of the box.
 
-Index: linux-2.6/arch/x86/kernel/mpparse.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/mpparse.c
-+++ linux-2.6/arch/x86/kernel/mpparse.c
-@@ -558,6 +558,19 @@ static inline void __init construct_defa
- 
- static struct mpf_intel *mpf_found;
- 
-+static unsigned long __init get_mpc_size(unsigned long physptr)
-+{
-+	struct mpc_table *mpc;
-+	unsigned long size;
-+
-+	mpc = early_ioremap(physptr, PAGE_SIZE);
-+	size = mpc->length;
-+	early_iounmap(mpc, PAGE_SIZE);
-+	apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", physptr, physptr + size);
-+
-+	return size;
-+}
-+
- /*
-  * Scan the memory blocks for an SMP configuration block.
-  */
-@@ -611,12 +624,16 @@ static void __init __get_smp_config(unsi
- 		construct_default_ISA_mptable(mpf->feature1);
- 
- 	} else if (mpf->physptr) {
-+		struct mpc_table *mpc;
-+		unsigned long size;
- 
-+		size = get_mpc_size(mpf->physptr);
-+		mpc = early_ioremap(mpf->physptr, size);
- 		/*
- 		 * Read the physical hardware table.  Anything here will
- 		 * override the defaults.
- 		 */
--		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
-+		if (!smp_read_mpc(mpc, early)) {
- #ifdef CONFIG_X86_LOCAL_APIC
- 			smp_found_config = 0;
- #endif
-@@ -624,8 +641,10 @@ static void __init __get_smp_config(unsi
- 			       "BIOS bug, MP table errors detected!...\n");
- 			printk(KERN_ERR "... disabling SMP support. "
- 			       "(tell your hw vendor)\n");
-+			early_iounmap(mpc, size);
- 			return;
- 		}
-+		early_iounmap(mpc, size);
- 
- 		if (early)
- 			return;
+-- 
+Best regards,
+Hans-Christian Egtvedt
