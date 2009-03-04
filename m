@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZCDLpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbZCDLqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZCDLpy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZCDLpk
+	id S1756800AbZCDLqx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZCDLqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:45:40 -0500
-Received: from stinky.trash.net ([213.144.137.162]:33717 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755554AbZCDLpi (ORCPT
+	Wed, 4 Mar 2009 06:46:42 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57262 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753611AbZCDLql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:45:38 -0500
-Message-ID: <49AE69DD.80802@trash.net>
-Date: Wed, 04 Mar 2009 12:45:33 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 4 Mar 2009 06:46:41 -0500
+Date: Wed, 4 Mar 2009 12:46:37 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Jay Vosburgh <fubar@us.ibm.com>
+cc: Brian Haley <brian.haley@hp.com>, Andrey Borzenkov <arvidjaar@mail.ru>,
+       "J.A. Magall"@us.ibm.com, =?UTF-8?Q?=C3=B3n?= <jamagallon@ono.com>,
+       netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, bonding-devel@lists.sourcefor
+Subject: Re: [Bonding-devel] 2.6.29 regression? Bonding tied to IPV6 in
+ 29-rc5
+In-Reply-To: <21405.1234909454@death.nxdomain.ibm.com>
+Message-ID: <alpine.LSU.2.00.0903041244400.31513@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <200902172117.22671.arvidjaar@mail.ru> <499B19AF.1000003@hp.com> <16929.1234904788@death.nxdomain.ibm.com>
+ <499B30DC <21405.1234909454@death.nxdomain.ibm.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: bart@jukie.net, greearb@candelatech.com, shemminger@vyatta.com,
-       dada1@cosmosbay.com, frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
-References: <20090228180541.GA729@jukie.net>	<20090303.234327.81716668.davem@davemloft.net>	<49AE509B.3000305@trash.net> <20090304.025914.149394356.davem@davemloft.net>
-In-Reply-To: <20090304.025914.149394356.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Wed, 04 Mar 2009 10:57:47 +0100
-> 
->>>> I can reproduce it reliably with:
->>>>
->>>>   $ modprobe 8021q
->>>>   $ vconfig add eth1 5
->>>>   $ ifconfig eth1.5 up
->>>>   $ vconfig add eth1.5 4
->>> Stephen please fix this.
->> I'm maintaining vlan :) I haven't been able to look into this yet,
->> but I should be later today.
-> 
-> Ok, I don't actually care who fixes it :-)
-> 
-> I asked Stephen because this appears like it might be netdev_ops
-> fallout.
 
-Good point. I think I know whats happening. The VLAN devices are
-registered with vlan_netdev_ops, the ->init function then potentially
-replaces them based on whether the underlying device supports HW
-acceleration. At this point the register_netdev() function already
-has used the first netdev_ops structure to initialize the compat
-pointers, meaning the new assignment is largely without effect and
-causes incorrect ops to be used with HW acceleration
+On Tuesday 2009-02-17 23:24, Jay Vosburgh wrote:
+>Brian Haley <brian.haley@hp.com> wrote:
+>
+>	I don't see any reason to change the IPv4 bits;
+>
+>there won't ever be a case of ipv4 not being loaded,
 
-This probably causes the slab corruption since the HW accelerated
-VLAN device doesn't increase the headroom, but the non-accelerated
-functions try to add a hard header anyways.
+I would not be so sure of that.
 
-This is a bit tricky to fix since we actually need some valid
-ops before invoking ->init(). One way would be to move the compat
-ops initialization to a seperate function and have VLAN use it to
-switch its ops.
+>>> 	To answer your question, I have come across this (aliasing ipv6
+>>> to nothing in modprobe.conf to disable IPv6) from time to time, but
+>>> didn't think of it when the NA code was added to bonding.
+>>
+>>So I guess I'll start hacking the above, unless someone has a better
+>>suggestion.
+>
+>	Well, I think this is pretty heinous, but I don't have a better
+>idea at the moment.
+
+IMO, a better solution could be to add a dummy ipv6 module that returns 
+-EOPNOTSOPP or appropriate for most calls.
