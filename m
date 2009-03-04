@@ -1,213 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZCDCFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbZCDCGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbZCDCFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 21:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZCDCFf
+	id S1753579AbZCDCGG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 21:06:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZCDCFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 21:05:35 -0500
-Received: from mga05.intel.com ([192.55.52.89]:32551 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752966AbZCDCFe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 21:05:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,297,1233561600"; 
-   d="scan'208";a="670126986"
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Lin Ming <ming.m.lin@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+	Tue, 3 Mar 2009 21:05:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59262 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753194AbZCDCFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 21:05:51 -0500
+Message-ID: <49ADE201.7010506@kernel.org>
+Date: Wed, 04 Mar 2009 11:05:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090302112122.GC21145@csn.ul.ie>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
-	 <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie>
-	 <1235647139.16552.34.camel@penberg-laptop>
-	 <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr>
-	 <20090302112122.GC21145@csn.ul.ie>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 04 Mar 2009 10:05:07 +0800
-Message-Id: <1236132307.2567.25.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: 32bit panic on 4 sockets
+References: <86802c440903031458p4a72f8c8x6f91e9f58ac6bc26@mail.gmail.com> <86802c440903031751y136b506uc163dd2c9023de9b@mail.gmail.com>
+In-Reply-To: <86802c440903031751y136b506uc163dd2c9023de9b@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 02:05:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-02 at 11:21 +0000, Mel Gorman wrote:
-> (Added Ingo as a second scheduler guy as there are queries on tg_shares_up)
-> 
-> On Fri, Feb 27, 2009 at 04:44:43PM +0800, Lin Ming wrote:
-> > On Thu, 2009-02-26 at 19:22 +0800, Mel Gorman wrote: 
-> > > In that case, Lin, could I also get the profiles for UDP-U-4K please so I
-> > > can see how time is being spent and why it might have gotten worse?
-> > 
-> > I have done the profiling (oltp and UDP-U-4K) with and without your v2
-> > patches applied to 2.6.29-rc6.
-> > I also enabled CONFIG_DEBUG_INFO so you can translate address to source
-> > line with addr2line.
-> > 
-> > You can download the oprofile data and vmlinux from below link,
-> > http://www.filefactory.com/file/af2330b/
-> > 
-> 
-> Perfect, thanks a lot for profiling this. It is a big help in figuring out
-> how the allocator is actually being used for your workloads.
-> 
-> The OLTP results had the following things to say about the page allocator.
-In case we might mislead you guys, I want to clarify that here OLTP is
-sysbench (oltp)+mysql, not the famous OLTP which needs lots of disks and big
-memory.
+Looks like a genuine bootmem bug.  Cc'ing Johannes and
+quoting whole body.
 
-Ma Chinang, another Intel guy, does work on the famous OLTP running.
+Yinghai Lu wrote:
+> linus tree is broken too, it is one 4 sockets system and every sockets
+> hold 2g ram...
+> other system with more than 4g on every socket, works well.
+> maybe it never work...
+> 
+> 
+> Initializing cgroup subsys cpuset.....
+> Linux version 2.6.29-rc6-00305-g2450cf5 (yhlu@linux-mstp) (gcc version 4.3.2 [gc
+> c-4_3-branch revision 141291] (SUSE Linux) ) #696 SMP Tue Mar 3 17:42:09 PST 200
+> 9
+> KERNEL supported cpus:
+>   Intel GenuineIntel
+>   AMD AuthenticAMD
+>   NSC Geode by NSC
+>   Cyrix CyrixInstead
+>   Centaur CentaurHauls
+>   Transmeta GenuineTMx86
+>   Transmeta TransmetaCPU
+>   UMC UMC UMC UMC
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 0000000000099800 (usable)
+>  BIOS-e820: 0000000000099800 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 00000000d7fa0000 (usable)
+>  BIOS-e820: 00000000d7fae000 - 00000000d7fb0000 (usable)
+>  BIOS-e820: 00000000d7fb0000 - 00000000d7fbe000 (ACPI data)
+>  BIOS-e820: 00000000d7fbe000 - 00000000d7ff0000 (ACPI NVS)
+>  BIOS-e820: 00000000d7ff0000 - 00000000d8000000 (reserved)
+>  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+>  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+>  BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
+>  BIOS-e820: 00000000ff700000 - 0000000100000000 (reserved)
+>  BIOS-e820: 0000000100000000 - 0000000228000000 (usable)
+> Early serial console at I/O port 0x3f8 (options '115200n8')
+> console [uart0] enabled
+> DMI present.
+> AMI BIOS detected: BIOS may corrupt low RAM, working around it.
+> last_pfn = 0x228000 max_arch_pfn = 0x1000000
+> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> kernel direct mapping tables up to b73fe000 @ 10000-1b000
+> NX (Execute Disable) protection: active
+> RAMDISK: 7ea35000 - 7ffffe57
+> ACPI: RSDP 000FA570, 0014 (r0 ACPIAM)
+> ACPI: RSDT D7FB0000, 005C (r1 SUN    X4x40          52 MSFT       97)
+> ACPI: FACP D7FB0200, 0084 (r2 SUN    X4x40          52 MSFT       97)
+> FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
+> ACPI: DSDT D7FB05D0, 7EB4 (r1 SUN    X4x40          52 INTL 20051117)
+> ACPI: FACS D7FBE000, 0040
+> ACPI: APIC D7FB0390, 00EC (r1 SUN    X4x40          52 MSFT       97)
+> ACPI: SPCR D7FB0480, 0050 (r1 SUN    X4x40          52 MSFT       97)
+> ACPI: MCFG D7FB04D0, 003C (r1 SUN    OEMMCFG        52 MSFT       97)
+> ACPI: SLIT D7FB0540, 003C (r1 SUN    OEMSLIT        52 MSFT       97)
+> ACPI: SPMI D7FB0580, 0041 (r1 SUN    OEMSPMI        52 MSFT       97)
+> ACPI: OEMB D7FBE040, 00AE (r1 SUN    X4x40          52 MSFT       97)
+> ACPI: SRAT D7FB8490, 0220 (r1 AMD    FAM_F_10        2 AMD         1)
+> ACPI: HPET D7FB86B0, 0038 (r1 SUN    OEMHPET0       52 MSFT       97)
+> ACPI: EINJ D7FB86F0, 0130 (r1  AMIER AMI_EINJ 10000815 MSFT       97)
+> ACPI: BERT D7FB8880, 0030 (r1  AMIER AMI_BERT 10000815 MSFT       97)
+> ACPI: ERST D7FB88B0, 01B0 (r1  AMIER AMI_ERST 10000815 MSFT       97)
+> ACPI: HEST D7FB8A60, 00A8 (r1  AMIER AMI_HEST 10000815 MSFT       97)
+> ACPI: SSDT D7FB8B10, 21C4 (r1 A M I  POWERNOW        1 AMD         1)
+> ACPI: Local APIC address 0xfee00000
+> CPU 04 in proximity domain 00
+> CPU 05 in proximity domain 00
+> CPU 06 in proximity domain 00
+> CPU 07 in proximity domain 00
+> CPU 08 in proximity domain 01
+> CPU 09 in proximity domain 01
+> CPU 0a in proximity domain 01
+> CPU 0b in proximity domain 01
+> CPU 0c in proximity domain 02
+> CPU 0d in proximity domain 02
+> CPU 0e in proximity domain 02
+> CPU 0f in proximity domain 02
+> CPU 10 in proximity domain 03
+> CPU 11 in proximity domain 03
+> CPU 12 in proximity domain 03
+> CPU 13 in proximity domain 03
+> Memory range 00000000 to 000000a0 in proximity domain 00 enabled
+> Memory range 00000100 to 00080000 in proximity domain 00 enabled
+> Memory range 00080000 to 000d8000 in proximity domain 01 enabled
+> Memory range 00100000 to 00128000 in proximity domain 01 enabled
+> Memory range 00128000 to 001a8000 in proximity domain 02 enabled
+> Memory range 001a8000 to 00228000 in proximity domain 03 enabled
+> pxm bitmap: 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>  00 00 00 00 00 00 00 00 00
+> Number of logical nodes in system = 4
+> Number of memory chunks in system = 6
+> chunk 0 nid 0 start_pfn 00000000 end_pfn 000000a0
+> chunk 1 nid 0 start_pfn 00000100 end_pfn 00080000
+> chunk 2 nid 1 start_pfn 00080000 end_pfn 000d8000
+> chunk 3 nid 1 start_pfn 00100000 end_pfn 00128000
+> chunk 4 nid 2 start_pfn 00128000 end_pfn 001a8000
+> chunk 5 nid 3 start_pfn 001a8000 end_pfn 00228000
+> node 0 pfn: [0 - 80000]
+> Reserving 4608 pages of KVA for lmem_map of node 0 at 7d800
+> remove_active_range (0, 514048, 518656)
+> node 1 pfn: [80000 - 128000]
+> Reserving 5632 pages of KVA for lmem_map of node 1 at 126a00
+> remove_active_range (1, 1206784, 1212416)
+> node 2 pfn: [128000 - 1a8000]
+> Reserving 4608 pages of KVA for lmem_map of node 2 at 1a6e00
+> remove_active_range (2, 1732096, 1736704)
+> node 3 pfn: [1a8000 - 228000]
+> Reserving 4608 pages of KVA for lmem_map of node 3 at 226e00
+> remove_active_range (3, 2256384, 2260992)
+> Reserving total of 4c00 pages for numa KVA remap
+> kva_start_pfn ~ 80000 max_low_pfn ~ b73fe
+> max_pfn = 228000
+> 5900MB HIGHMEM available.
+> 2931MB LOWMEM available.
+> max_low_pfn = b73fe, highstart_pfn = b73fe
+> Low memory ends at vaddr f73fe000
+> node 0 will remap to vaddr c0000000 - c1200000
+> allocate_pgdat: node 0 NODE_DATA c0000000
+> node 1 will remap to vaddr c1200000 - c2800000
+> allocate_pgdat: node 1 NODE_DATA c1200000
+> node 2 will remap to vaddr c2800000 - c3a00000
+> allocate_pgdat: node 2 NODE_DATA c2800000
+> node 3 will remap to vaddr c3a00000 - c4c00000
+> allocate_pgdat: node 3 NODE_DATA c3a00000
+> remap_numa_kva: node 0
+> remap_numa_kva: c0000000 to pfn 0007d800
+> remap_numa_kva: c0200000 to pfn 0007da00
+> remap_numa_kva: c0400000 to pfn 0007dc00
+> remap_numa_kva: c0600000 to pfn 0007de00
+> remap_numa_kva: c0800000 to pfn 0007e000
+> remap_numa_kva: c0a00000 to pfn 0007e200
+> remap_numa_kva: c0c00000 to pfn 0007e400
+> remap_numa_kva: c0e00000 to pfn 0007e600
+> remap_numa_kva: c1000000 to pfn 0007e800
+> remap_numa_kva: node 1
+> remap_numa_kva: c1200000 to pfn 00126a00
+> remap_numa_kva: c1400000 to pfn 00126c00
+> remap_numa_kva: c1600000 to pfn 00126e00
+> remap_numa_kva: c1800000 to pfn 00127000
+> remap_numa_kva: c1a00000 to pfn 00127200
+> remap_numa_kva: c1c00000 to pfn 00127400
+> remap_numa_kva: c1e00000 to pfn 00127600
+> remap_numa_kva: c2000000 to pfn 00127800
+> remap_numa_kva: c2200000 to pfn 00127a00
+> remap_numa_kva: c2400000 to pfn 00127c00
+> remap_numa_kva: c2600000 to pfn 00127e00
+> remap_numa_kva: node 2
+> remap_numa_kva: c2800000 to pfn 001a6e00
+> remap_numa_kva: c2a00000 to pfn 001a7000
+> remap_numa_kva: c2c00000 to pfn 001a7200
+> remap_numa_kva: c2e00000 to pfn 001a7400
+> remap_numa_kva: c3000000 to pfn 001a7600
+> remap_numa_kva: c3200000 to pfn 001a7800
+> remap_numa_kva: c3400000 to pfn 001a7a00
+> remap_numa_kva: c3600000 to pfn 001a7c00
+> remap_numa_kva: c3800000 to pfn 001a7e00
+> remap_numa_kva: node 3
+> remap_numa_kva: c3a00000 to pfn 00226e00
+> remap_numa_kva: c3c00000 to pfn 00227000
+> remap_numa_kva: c3e00000 to pfn 00227200
+> remap_numa_kva: c4000000 to pfn 00227400
+> remap_numa_kva: c4200000 to pfn 00227600
+> remap_numa_kva: c4400000 to pfn 00227800
+> remap_numa_kva: c4600000 to pfn 00227a00
+> remap_numa_kva: c4800000 to pfn 00227c00
+> remap_numa_kva: c4a00000 to pfn 00227e00
+> High memory starts at vaddr f73fe000
+>   mapped low ram: 0 - b73fe000
+>   low ram: 00000000 - b73fe000
+>   bootmap 00016000 - 0002ce80
+> Pid: 0, comm: swapper Not tainted 2.6.29-rc6-00305-g2450cf5 #696
+> Call Trace:
+>  [<40c62315>] ? mark_bootmem_node+0x44/0x7d
+>  [<40c62449>] ? free_bootmem_node+0x20/0x24
+>  [<40c63047>] ? free_bootmem_with_active_regions+0x63/0x94
+>  [<40c5d688>] ? setup_bootmem_allocator+0xe4/0x12e
+>  [<40c5e75d>] ? initmem_init+0x60e/0x620
+>  [<40c69bb6>] ? acpi_table_parse+0x55/0x5c
+>  [<40c5188d>] ? setup_arch+0x756/0x957
+>  [<4023eb9c>] ? up+0x2b/0x2f
+>  [<40c53aef>] ? __reserve_early+0xe4/0xf8
+>  [<40c4b5a1>] ? start_kernel+0x6d/0x2d6
+>  [<40c4b085>] ? __init_begin+0x85/0x8d
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-> 
-> Samples in the free path
-> 	vanilla:	6207
-> 	mg-v2:		4911
-> Samples in the allocation path
-> 	vanilla		19948
-> 	mg-v2:		14238
-> 
-> This is based on glancing at the following graphs and not counting the VM
-> counters as it can't be determined which samples are due to the allocator
-> and which are due to the rest of the VM accounting.
-> 
-> http://www.csn.ul.ie/~mel/postings/lin-20090228/free_pages-vanilla-oltp.png
-> http://www.csn.ul.ie/~mel/postings/lin-20090228/free_pages-mgv2-oltp.png
-> 
-> So the path costs are reduced in both cases. Whatever caused the regression
-> there doesn't appear to be in time spent in the allocator but due to
-> something else I haven't imagined yet. Other oddness
-> 
-> o According to the profile, something like 45% of time is spent entering
->   the __alloc_pages_nodemask() function. Function entry costs but not
->   that much. Another significant part appears to be in checking a simple
->   mask. That doesn't make much sense to me so I don't know what to do with
->   that information yet.
-> 
-> o In get_page_from_freelist(), 9% of the time is spent deleting a page
->   from the freelist.
-> 
-> Neither of these make sense, we're not spending time where I would expect
-> to at all. One of two things are happening. Something like cache misses or
-> bounces are dominating for some reason that is specific to this machine. Cache
-> misses are one possibility that I'll check out. The other is that the sample
-> rate is too low and the profile counts are hence misleading.
-> 
-> Question 1: Would it be possible to increase the sample rate and track cache
-> misses as well please?
-I will try to capture cache miss with oprofile.
 
-> 
-> Another interesting fact is that we are spending about 15% of the overall
-> time is spent in tg_shares_up() for both kernels but the vanilla kernel
-> recorded 977348 samples and the patched kernel recorded 514576 samples. We
-> are spending less time in the kernel and it's not obvious why or if that is
-> a good thing or not. You'd think less time in kernel is good but it might
-> mean we are doing less work overall.
-> 
-> Total aside from the page allocator, I checked what we were doing
-> in tg_shares_up where the vast amount of time is being spent. This has
-> something to do with CONFIG_FAIR_GROUP_SCHED. 
-> 
-> Question 2: Scheduler guys, can you think of what it means to be spending
-> less time in tg_shares_up please?
-> 
-> I don't know enough of how it works to guess why we are in there. FWIW,
-> we are appear to be spending the most time in the following lines
-> 
->                 weight = tg->cfs_rq[i]->load.weight;
->                 if (!weight)
->                         weight = NICE_0_LOAD;
-> 
->                 tg->cfs_rq[i]->rq_weight = weight;
->                 rq_weight += weight;
->                 shares += tg->cfs_rq[i]->shares;
-> 
-> So.... cfs_rq is SMP aligned, but we iterate though it with for_each_cpu()
-> and we're writing to it. How often is this function run by multiple CPUs? If
-> the answer is "lots", does that not mean we are cache line bouncing in
-> here like mad? Another crazy amount of time is spent accessing tg->se when
-> validating. Basically, any access of the task_group appears to incur huge
-> costs and cache line bounces would be the obvious explanation.
-﻿FAIR_GROUP_SCHED is a feature to support configurable cpu weight for different users.
-We did find it takes lots of time to check/update the share weight which might create
-lots of cache ping-pang. With sysbench(oltp)+mysql, that becomes more severe because
-mysql runs as user mysql and sysbench runs as another regular user. When starting
-the testing with 1 thread in command line, there are 2 mysql threads and 1 sysbench
-thread are proactive.
-
-> 
-> More stupid poking around. We appear to update these share things on each
-> fork().
-> 
-> Question 3: Scheduler guys, If the database or clients being used for OLTP is
-> fork-based instead of thread-based, then we are going to be balancing a lot,
-> right? What does that mean, how can it be avoided?
-> 
-> Question 4: Lin, this is unrelated to the page allocator but do you know
-> what the performance difference between vanilla-with-group-sched and
-> vanilla-without-group-sched is?
-When ﻿FAIR_GROUP_SCHED appeared in kernel at the first time, we did many such testing.
-There is another thread to discuss it at http://lkml.org/lkml/2008/9/10/214.
-
-set s﻿ched_shares_ratelimit to a large value could reduce the regression.
-
-Scheduler guys keep improving it. 
-
-> 
-> The UDP results are screwy as the profiles are not matching up to the
-> images. For example
-Mostly, it's caused by not cleaning up old oprofile data when starting
-new sampling.
-
-I will retry.
-
-> 
-> oltp.oprofile.2.6.29-rc6:           ffffffff802808a0 11022     0.1727  get_page_from_freelist
-> oltp.oprofile.2.6.29-rc6-mg-v2:     ffffffff80280610 7958      0.2403  get_page_from_freelist
-> UDP-U-4K.oprofile.2.6.29-rc6:       ffffffff802808a0 29914     1.2866  get_page_from_freelist
-> UDP-U-4K.oprofile.2.6.29-rc6-mg-v2: ffffffff802808a0 28153     1.1708  get_page_from_freelist
-> 
-> Look at the addresses. UDP-U-4K.oprofile.2.6.29-rc6-mg-v2 has the address
-> for UDP-U-4K.oprofile.2.6.29-rc6 so I have no idea what I'm looking at here
-> for the patched kernel :(.
-> 
-> Question 5: Lin, would it be possible to get whatever script you use for
-> running netperf so I can try reproducing it?
-Below is a simple script. As for formal testing, we add parameter "-i 50,3 -I" 99,5"
-to get a more stable result.
-
-PROG_DIR=/home/ymzhang/test/netperf/src
-taskset -c 0 ${PROG_DIR}/netserver
-sleep 2
-taskset -c 7 ${PROG_DIR}/netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -- -P 15895 12391 -s 32768 -S 32768 -m 4096
-killall netserver
-
-
-Basically, we start 1 client and bind client/server to different physical cpu.
-
-> 
-> Going by the vanilla kernel, a *large* amount of time is spent doing
-> high-order allocations. Over 25% of the cost of buffered_rmqueue() is in
-> the branch dealing with high-order allocations. Does UDP-U-4K mean that 8K
-> pages are required for the packets? That means high-order allocations and
-> high contention on the zone-list. That is bad obviously and has implications
-> for the SLUB-passthru patch because whether 8K allocations are handled by
-> SL*B or the page allocator has a big impact on locking.
-> 
-> Next, a little over 50% of the cost get_page_from_freelist() is being spent
-> acquiring the zone spinlock. The implication is that the SL*B allocators
-> passing in order-1 allocations to the page allocator are currently going to
-> hit scalability problems in a big way. The solution may be to extend the
-> per-cpu allocator to handle magazines up to PAGE_ALLOC_COSTLY_ORDER. I'll
-> check it out.
-> 
-
+-- 
+tejun
