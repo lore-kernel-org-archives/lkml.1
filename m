@@ -1,357 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbZCDLdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZCDLiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbZCDLdW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:33:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZCDLdO
+	id S1755907AbZCDLiq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:38:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZCDLii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:33:14 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42768 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbZCDLdN (ORCPT
+	Wed, 4 Mar 2009 06:38:38 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:42771 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbZCDLih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:33:13 -0500
-Subject: [PATCH -v2] tracing: lockdep tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090304112345.GB6032@nowhere>
-References: <1236164586.5330.7142.camel@laptop>
-	 <20090304112345.GB6032@nowhere>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 12:32:55 +0100
-Message-Id: <1236166375.5330.7209.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Wed, 4 Mar 2009 06:38:37 -0500
+Date: Wed, 4 Mar 2009 17:08:22 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, efault@gmx.de,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/3] sched: Extend sched_mc/smt_power_savings
+	framework
+Message-ID: <20090304113822.GA31307@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090303114648.605.86920.stgit@sofia.in.ibm.com> <1236082917.5330.4195.camel@laptop> <20090303152504.GH4708@dirshya.in.ibm.com> <1236094110.5330.4733.camel@laptop> <20090304110643.GM4708@dirshya.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090304110643.GM4708@dirshya.in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 12:23 +0100, Frederic Weisbecker wrote:
-> > ---
-> > Subject: tracing: lockdep tracepoints
-> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Date: Tue Mar 03 22:03:08 CET 2009
-> > 
-> > Augment the traces with lock names when lockdep is available:
-> > 
-> >  1)               |  down_read_trylock() {
-> >  1)               |    _spin_lock_irqsave() {
-> >  1)               |      /* lock_acquire: name: &sem->wait_lock */
-> >  1)   4.201 us    |    }
-> >  1)               |    _spin_unlock_irqrestore() {
-> >  1)               |      /* lock_release: name: &sem->wait_lock */
+On Wed, Mar 04, 2009 at 04:36:43PM +0530, Vaidyanathan Srinivasan wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-03-03 16:28:30]:
 > 
-> Nice idea.
-> I would just suggest to drop the "name:" since the comment is intuitive enough
-> to figure out what we have after lock_{release,acquire}: 
+> > On Tue, 2009-03-03 at 20:55 +0530, Vaidyanathan Srinivasan wrote:
+> > >  
+> > > > It would be good to mention something about how power usage is measured.
+> > > 
+> > > Power usage is measured by computing the energy consumed over the
+> > > benchmark duration and then finding average power by dividing
+> > > energy/time.  The relative power consumption is for the entire system.
+> > 
+> > Is this measured using an external (indepedent) power monitor, or
+> > looking at system internal power usage stats?
+> > 
+> > Have you compared these two methods, if so, do they give comparable
+> > results?
+> 
+> Since we are doing relative power comparison, the absolute power value
+> and the method would not affect the results.
+> 
+> Your question is more relevant for SPECPower type of benchmarks where
+> the score depends on the average power consumed and accuracy or method
+> of measurement can affect the score.
+> 
+> > > > Furthermore, do we really need those separate mc/smt power savings
+> > > > settings? -- It appears to me we ought to consolidate some of that and
+> > > > provide a single knob to save power.
+> > > 
+> > > Yes, having one sched_power_savings will definitely help.  However,
+> > > mapping the various combination of settings to a single knob that will
+> > > provide consistent behavior across workloads and system configuration
+> > > is a challenge.
+> > 
+> > Would it be an option to provide a single knob for users and have some
+> > fine grained feature set for developing/debugging, much like we have
+> > sched_features?
+> 
+> Yes, that will be very good.  Let me explore if sched_features can
+> include the power saving attributes while the sched_power_savings can
+> be a simple and coarse control for end-users.
 
-Makes sense I guess..
+Currently each of sched_smt_power_savings and sched_mc_power_savings
+tunables can take the values (0, 1, 2).
 
-Here goes.. one s/name: //g later
+However, based on the combinations of
+(sched_smt_power_savings, sched_mc_power_savings) values,
+the system can be in one of the 5 (and not 9) states mentioned below:
+[in the increasing order of aggressiveness of the task consolidation]
 
----
-Subject: tracing: lockdep tracepoints
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue Mar 03 22:03:08 CET 2009
+0. { (0, 0) }
+1. { (0, 1) }
+2. { (0, 2) }
+3. { (1, 0), (1, 1) }
+4. { (1, 2), (2, 0), (2, 1), (2, 2)}
 
-Augment the traces with lock names when lockdep is available:
+4 and 5 are because sched_smt_power_savings implies sched_mc_power_savings.
 
- 1)               |  down_read_trylock() {
- 1)               |    _spin_lock_irqsave() {
- 1)               |      /* lock_acquire: &sem->wait_lock */
- 1)   4.201 us    |    }
- 1)               |    _spin_unlock_irqrestore() {
- 1)               |      /* lock_release: &sem->wait_lock */
- 1)   3.523 us    |    }
- 1)               |  /* lock_acquire: try read &mm->mmap_sem */
- 1) + 13.386 us   |  }
- 1)   1.635 us    |  find_vma();
- 1)               |  handle_mm_fault() {
- 1)               |    __do_fault() {
- 1)               |      filemap_fault() {
- 1)               |        find_lock_page() {
- 1)               |          find_get_page() {
- 1)               |            /* lock_acquire: read rcu_read_lock */
- 1)               |            /* lock_release: rcu_read_lock */
- 1)   5.697 us    |          }
- 1)   8.158 us    |        }
- 1) + 11.079 us   |      }
- 1)               |      _spin_lock() {
- 1)               |        /* lock_acquire: __pte_lockptr(page) */
- 1)   3.949 us    |      }
- 1)   1.460 us    |      page_add_file_rmap();
- 1)               |      _spin_unlock() {
- 1)               |        /* lock_release: __pte_lockptr(page) */
- 1)   3.115 us    |      }
- 1)               |      unlock_page() {
- 1)   1.421 us    |        page_waitqueue();
- 1)   1.220 us    |        __wake_up_bit();
- 1)   6.519 us    |      }
- 1) + 34.328 us   |    }
- 1) + 37.452 us   |  }
- 1)               |  up_read() {
- 1)               |  /* lock_release: &mm->mmap_sem */
- 1)               |    _spin_lock_irqsave() {
- 1)               |      /* lock_acquire: &sem->wait_lock */
- 1)   3.865 us    |    }
- 1)               |    _spin_unlock_irqrestore() {
- 1)               |      /* lock_release: &sem->wait_lock */
- 1)   8.562 us    |    }
- 1) + 17.370 us   |  }
+So, on a system that has multiple cores and multiple threads, the single
+knob can take values (0, 1, 2, 3, 4).
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/trace/lockdep.h             |    9 +++++++
- include/trace/lockdep_event_types.h |   44 ++++++++++++++++++++++++++++++++++++
- include/trace/trace_event_types.h   |    1 
- include/trace/trace_events.h        |    1 
- kernel/lockdep.c                    |   17 +++++++++++++
- kernel/trace/trace.c                |   14 ++++++-----
- kernel/trace/trace_events_stage_3.h |    4 +--
- 7 files changed, 82 insertions(+), 8 deletions(-)
+On systems that have only multiple cores, the knob can take values
+(0, 1, 2).
 
-Index: linux-2.6/include/trace/lockdep.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/trace/lockdep.h
-@@ -0,0 +1,9 @@
-+#ifndef _TRACE_LOCKDEP_H
-+#define _TRACE_LOCKDEP_H
-+
-+#include <linux/lockdep.h>
-+#include <linux/tracepoint.h>
-+
-+#include <trace/lockdep_event_types.h>
-+
-+#endif
-Index: linux-2.6/include/trace/lockdep_event_types.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/trace/lockdep_event_types.h
-@@ -0,0 +1,44 @@
-+
-+#ifndef TRACE_EVENT_FORMAT
-+# error Do not include this file directly.
-+# error Unless you know what you are doing.
-+#endif
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM lock
-+
-+#ifdef CONFIG_LOCKDEP
-+
-+TRACE_FORMAT(lock_acquire,
-+	TPPROTO(struct lockdep_map *lock, unsigned int subclass,
-+		int trylock, int read, int check,
-+		struct lockdep_map *next_lock, unsigned long ip),
-+	TPARGS(lock, subclass, trylock, read, check, next_lock, ip),
-+	TPFMT("%s%s%s", trylock ? "try " : "",
-+		read ? "read " : "", lock->name)
-+	);
-+
-+TRACE_FORMAT(lock_release,
-+	TPPROTO(struct lockdep_map *lock, int nested, unsigned long ip),
-+	TPARGS(lock, nested, ip),
-+	TPFMT("%s", lock->name)
-+	);
-+
-+#ifdef CONFIG_LOCK_STAT
-+
-+TRACE_FORMAT(lock_contended,
-+	TPPROTO(struct lockdep_map *lock, unsigned long ip),
-+	TPARGS(lock, ip),
-+	TPFMT("%s", lock->name)
-+	);
-+
-+TRACE_FORMAT(lock_acquired,
-+	TPPROTO(struct lockdep_map *lock, unsigned long ip),
-+	TPARGS(lock, ip),
-+	TPFMT("%s", lock->name)
-+	);
-+
-+#endif
-+#endif
-+
-+#undef TRACE_SYSTEM
-Index: linux-2.6/include/trace/trace_events.h
-===================================================================
---- linux-2.6.orig/include/trace/trace_events.h
-+++ linux-2.6/include/trace/trace_events.h
-@@ -2,3 +2,4 @@
- 
- #include <trace/sched.h>
- #include <trace/irq.h>
-+#include <trace/lockdep.h>
-Index: linux-2.6/kernel/lockdep.c
-===================================================================
---- linux-2.6.orig/kernel/lockdep.c
-+++ linux-2.6/kernel/lockdep.c
-@@ -42,6 +42,7 @@
- #include <linux/hash.h>
- #include <linux/ftrace.h>
- #include <linux/stringify.h>
-+#include <trace/lockdep.h>
- 
- #include <asm/sections.h>
- 
-@@ -2912,6 +2913,8 @@ void lock_set_class(struct lockdep_map *
- }
- EXPORT_SYMBOL_GPL(lock_set_class);
- 
-+DEFINE_TRACE(lock_acquire);
-+
- /*
-  * We are not always called with irqs disabled - do that here,
-  * and also avoid lockdep recursion:
-@@ -2922,6 +2925,8 @@ void lock_acquire(struct lockdep_map *lo
- {
- 	unsigned long flags;
- 
-+	trace_lock_acquire(lock, subclass, trylock, read, check, nest_lock, ip);
-+
- 	if (unlikely(current->lockdep_recursion))
- 		return;
- 
-@@ -2936,11 +2941,15 @@ void lock_acquire(struct lockdep_map *lo
- }
- EXPORT_SYMBOL_GPL(lock_acquire);
- 
-+DEFINE_TRACE(lock_release);
-+
- void lock_release(struct lockdep_map *lock, int nested,
- 			  unsigned long ip)
- {
- 	unsigned long flags;
- 
-+	trace_lock_release(lock, nested, ip);
-+
- 	if (unlikely(current->lockdep_recursion))
- 		return;
- 
-@@ -3089,10 +3098,14 @@ found_it:
- 	lock->ip = ip;
- }
- 
-+DEFINE_TRACE(lock_contended);
-+
- void lock_contended(struct lockdep_map *lock, unsigned long ip)
- {
- 	unsigned long flags;
- 
-+	trace_lock_contended(lock, ip);
-+
- 	if (unlikely(!lock_stat))
- 		return;
- 
-@@ -3108,10 +3121,14 @@ void lock_contended(struct lockdep_map *
- }
- EXPORT_SYMBOL_GPL(lock_contended);
- 
-+DEFINE_TRACE(lock_acquired);
-+
- void lock_acquired(struct lockdep_map *lock, unsigned long ip)
- {
- 	unsigned long flags;
- 
-+	trace_lock_acquired(lock, ip);
-+
- 	if (unlikely(!lock_stat))
- 		return;
- 
-Index: linux-2.6/kernel/trace/trace.c
-===================================================================
---- linux-2.6.orig/kernel/trace/trace.c
-+++ linux-2.6/kernel/trace/trace.c
-@@ -624,7 +624,7 @@ static unsigned map_pid_to_cmdline[PID_M
- static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
- static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
- static int cmdline_idx;
--static DEFINE_SPINLOCK(trace_cmdline_lock);
-+static raw_spinlock_t trace_cmdline_lock = __RAW_SPIN_LOCK_UNLOCKED;
- 
- /* temporary disable recording */
- static atomic_t trace_record_cmdline_disabled __read_mostly;
-@@ -736,7 +736,7 @@ static void trace_save_cmdline(struct ta
- 	 * nor do we want to disable interrupts,
- 	 * so if we miss here, then better luck next time.
- 	 */
--	if (!spin_trylock(&trace_cmdline_lock))
-+	if (!__raw_spin_trylock(&trace_cmdline_lock))
- 		return;
- 
- 	idx = map_pid_to_cmdline[tsk->pid];
-@@ -754,7 +754,7 @@ static void trace_save_cmdline(struct ta
- 
- 	memcpy(&saved_cmdlines[idx], tsk->comm, TASK_COMM_LEN);
- 
--	spin_unlock(&trace_cmdline_lock);
-+	__raw_spin_unlock(&trace_cmdline_lock);
- }
- 
- char *trace_find_cmdline(int pid)
-@@ -3491,7 +3491,7 @@ static __init int tracer_init_debugfs(vo
- 
- int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
- {
--	static DEFINE_SPINLOCK(trace_buf_lock);
-+	static raw_spinlock_t trace_buf_lock = __RAW_SPIN_LOCK_UNLOCKED;
- 	static char trace_buf[TRACE_BUF_SIZE];
- 
- 	struct ring_buffer_event *event;
-@@ -3513,7 +3513,8 @@ int trace_vprintk(unsigned long ip, int 
- 		goto out;
- 
- 	pause_graph_tracing();
--	spin_lock_irqsave(&trace_buf_lock, irq_flags);
-+	raw_local_irq_save(irq_flags);
-+	__raw_spin_lock(&trace_buf_lock);
- 	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
- 
- 	len = min(len, TRACE_BUF_SIZE-1);
-@@ -3532,7 +3533,8 @@ int trace_vprintk(unsigned long ip, int 
- 	ring_buffer_unlock_commit(tr->buffer, event);
- 
-  out_unlock:
--	spin_unlock_irqrestore(&trace_buf_lock, irq_flags);
-+	__raw_spin_unlock(&trace_buf_lock);
-+	raw_local_irq_restore(irq_flags);
- 	unpause_graph_tracing();
-  out:
- 	preempt_enable_notrace();
-Index: linux-2.6/kernel/trace/trace_events_stage_3.h
-===================================================================
---- linux-2.6.orig/kernel/trace/trace_events_stage_3.h
-+++ linux-2.6/kernel/trace/trace_events_stage_3.h
-@@ -5,7 +5,7 @@
-  *
-  * static void ftrace_event_<call>(proto)
-  * {
-- * 	event_trace_printk(_RET_IP_, "(<call>) " <fmt>);
-+ * 	event_trace_printk(_RET_IP_, "<call>: " <fmt>);
-  * }
-  *
-  * static int ftrace_reg_event_<call>(void)
-@@ -112,7 +112,7 @@
- #define _TRACE_FORMAT(call, proto, args, fmt)				\
- static void ftrace_event_##call(proto)					\
- {									\
--	event_trace_printk(_RET_IP_, "(" #call ") " fmt);		\
-+	event_trace_printk(_RET_IP_, #call ": " fmt);			\
- }									\
- 									\
- static int ftrace_reg_event_##call(void)				\
-Index: linux-2.6/include/trace/trace_event_types.h
-===================================================================
---- linux-2.6.orig/include/trace/trace_event_types.h
-+++ linux-2.6/include/trace/trace_event_types.h
-@@ -2,3 +2,4 @@
- 
- #include <trace/sched_event_types.h>
- #include <trace/irq_event_types.h>
-+#include <trace/lockdep_event_types.h>
+> --Vaidy
 
-
+-- 
+Thanks and Regards
+gautham
