@@ -1,86 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbZCDLBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZCDLDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756291AbZCDLBX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZCDLBO
+	id S1755469AbZCDLDe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZCDLDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:01:14 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54720 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753943AbZCDLBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:01:13 -0500
-To: jeremy.fitzhardinge@citrix.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [x86] warning: parameter has incomplete type
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Message-Id: <200903042001.FBI26540.QFHLFSMJVFOOtO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Wed, 4 Mar 2009 20:01:08 +0900
+	Wed, 4 Mar 2009 06:03:25 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43255 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbZCDLDY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:03:24 -0500
+Subject: [PATCH] tracing: lockdep tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 12:03:06 +0100
+Message-Id: <1236164586.5330.7142.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Lets add LKML this time :-)
 
-Is there a patch to suppress below warning messages (which are printed for every
-file when compiling kernel using gcc 3.3.5)?
+---
+Subject: tracing: lockdep tracepoints
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue Mar 03 22:03:08 CET 2009
 
-Regards.
---------------------
-# cat ~/warn.sh
-#! /bin/sh
-make -s oldconfig
-touch init/main.c
-make init/main.o > /tmp/log 2>&1
-grep -qF "warning: parameter has incomplete type" /tmp/log && exit 1
-exit 0
-# git bisect start next-20090227 v2.6.29-rc6 --
-Bisecting: 4206 revisions left to test after this
-[617e8ed824f58c467b97d3c08ad3fc46efc9041c] Merge commit 'kvm/master'
-# git bisect run ~/warn.sh
-running /root/warn.sh
-#
-# configuration written to .config
-#
-In file included from /usr/src/all/linux-next/arch/x86/include/asm/page.h:8,
-                 from /usr/src/all/linux-next/arch/x86/include/asm/processor.h:18,
-                 from /usr/src/all/linux-next/arch/x86/include/asm/atomic_32.h:6,
-                 from /usr/src/all/linux-next/arch/x86/include/asm/atomic.h:2,
-                 from include/linux/crypto.h:20,
-                 from arch/x86/kernel/asm-offsets_32.c:7,
-                 from arch/x86/kernel/asm-offsets.c:2:
-/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:54: warning: parameter has incomplete type
-/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:56: warning: parameter has incomplete type
-In file included from /usr/src/all/linux-next/arch/x86/include/asm/page.h:8,
-                 from /usr/src/all/linux-next/arch/x86/include/asm/processor.h:18,
-                 from include/linux/prefetch.h:14,
-                 from include/linux/list.h:6,
-                 from include/linux/module.h:9,
-                 from init/main.c:13:
-/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:54: warning: parameter has incomplete type
-/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:56: warning: parameter has incomplete type
-(... snipped ...)
-Bisecting: 0 revisions left to test after this
-[e2f5bda94152fa567f6b48126741014123f982b8] x86: define pud_flags and pud_large properly to allow non-PAE builds
-running /root/warn.sh
-#
-# configuration written to .config
-#
-54321d947ae9d6a051b81e3eccaf2d8658aeecc6 is first bad commit
-commit 54321d947ae9d6a051b81e3eccaf2d8658aeecc6
-Author: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Date:   Wed Feb 11 10:20:05 2009 -0800
+Augment the traces with lock names when lockdep is available:
 
-    x86: move pte types into pgtable*.h
+ 1)               |  down_read_trylock() {
+ 1)               |    _spin_lock_irqsave() {
+ 1)               |      /* lock_acquire: name: &sem->wait_lock */
+ 1)   4.201 us    |    }
+ 1)               |    _spin_unlock_irqrestore() {
+ 1)               |      /* lock_release: name: &sem->wait_lock */
+ 1)   3.523 us    |    }
+ 1)               |  /* lock_acquire: try read name: &mm->mmap_sem */
+ 1) + 13.386 us   |  }
+ 1)   1.635 us    |  find_vma();
+ 1)               |  handle_mm_fault() {
+ 1)               |    __do_fault() {
+ 1)               |      filemap_fault() {
+ 1)               |        find_lock_page() {
+ 1)               |          find_get_page() {
+ 1)               |            /* lock_acquire: read name: rcu_read_lock */
+ 1)               |            /* lock_release: name: rcu_read_lock */
+ 1)   5.697 us    |          }
+ 1)   8.158 us    |        }
+ 1) + 11.079 us   |      }
+ 1)               |      _spin_lock() {
+ 1)               |        /* lock_acquire: name: __pte_lockptr(page) */
+ 1)   3.949 us    |      }
+ 1)   1.460 us    |      page_add_file_rmap();
+ 1)               |      _spin_unlock() {
+ 1)               |        /* lock_release: name: __pte_lockptr(page) */
+ 1)   3.115 us    |      }
+ 1)               |      unlock_page() {
+ 1)   1.421 us    |        page_waitqueue();
+ 1)   1.220 us    |        __wake_up_bit();
+ 1)   6.519 us    |      }
+ 1) + 34.328 us   |    }
+ 1) + 37.452 us   |  }
+ 1)               |  up_read() {
+ 1)               |  /* lock_release: name: &mm->mmap_sem */
+ 1)               |    _spin_lock_irqsave() {
+ 1)               |      /* lock_acquire: name: &sem->wait_lock */
+ 1)   3.865 us    |    }
+ 1)               |    _spin_unlock_irqrestore() {
+ 1)               |      /* lock_release: name: &sem->wait_lock */
+ 1)   8.562 us    |    }
+ 1) + 17.370 us   |  }
 
-    pgtable*.h is intended for definitions relating to actual pagetables
-    and their entries, so move all the definitions for
-    (pte|pmd|pud|pgd)(val)?_t to the appropriate pgtable*.h headers.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/trace/lockdep.h             |    9 +++++++
+ include/trace/lockdep_event_types.h |   44 ++++++++++++++++++++++++++++++++++++
+ include/trace/trace_event_types.h   |    1 
+ include/trace/trace_events.h        |    1 
+ kernel/lockdep.c                    |   17 +++++++++++++
+ kernel/trace/trace.c                |   14 ++++++-----
+ kernel/trace/trace_events_stage_3.h |    4 +--
+ 7 files changed, 82 insertions(+), 8 deletions(-)
 
-    Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Index: linux-2.6/include/trace/lockdep.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/trace/lockdep.h
+@@ -0,0 +1,9 @@
++#ifndef _TRACE_LOCKDEP_H
++#define _TRACE_LOCKDEP_H
++
++#include <linux/lockdep.h>
++#include <linux/tracepoint.h>
++
++#include <trace/lockdep_event_types.h>
++
++#endif
+Index: linux-2.6/include/trace/lockdep_event_types.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/trace/lockdep_event_types.h
+@@ -0,0 +1,44 @@
++
++#ifndef TRACE_EVENT_FORMAT
++# error Do not include this file directly.
++# error Unless you know what you are doing.
++#endif
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM lock
++
++#ifdef CONFIG_LOCKDEP
++
++TRACE_FORMAT(lock_acquire,
++	TPPROTO(struct lockdep_map *lock, unsigned int subclass,
++		int trylock, int read, int check,
++		struct lockdep_map *next_lock, unsigned long ip),
++	TPARGS(lock, subclass, trylock, read, check, next_lock, ip),
++	TPFMT("%s%sname: %s", trylock ? "try " : "",
++		read ? "read " : "", lock->name)
++	);
++
++TRACE_FORMAT(lock_release,
++	TPPROTO(struct lockdep_map *lock, int nested, unsigned long ip),
++	TPARGS(lock, nested, ip),
++	TPFMT("name: %s", lock->name)
++	);
++
++#ifdef CONFIG_LOCK_STAT
++
++TRACE_FORMAT(lock_contended,
++	TPPROTO(struct lockdep_map *lock, unsigned long ip),
++	TPARGS(lock, ip),
++	TPFMT("name: %s", lock->name)
++	);
++
++TRACE_FORMAT(lock_acquired,
++	TPPROTO(struct lockdep_map *lock, unsigned long ip),
++	TPARGS(lock, ip),
++	TPFMT("name: %s", lock->name)
++	);
++
++#endif
++#endif
++
++#undef TRACE_SYSTEM
+Index: linux-2.6/include/trace/trace_events.h
+===================================================================
+--- linux-2.6.orig/include/trace/trace_events.h
++++ linux-2.6/include/trace/trace_events.h
+@@ -2,3 +2,4 @@
+ 
+ #include <trace/sched.h>
+ #include <trace/irq.h>
++#include <trace/lockdep.h>
+Index: linux-2.6/kernel/lockdep.c
+===================================================================
+--- linux-2.6.orig/kernel/lockdep.c
++++ linux-2.6/kernel/lockdep.c
+@@ -42,6 +42,7 @@
+ #include <linux/hash.h>
+ #include <linux/ftrace.h>
+ #include <linux/stringify.h>
++#include <trace/lockdep.h>
+ 
+ #include <asm/sections.h>
+ 
+@@ -2912,6 +2913,8 @@ void lock_set_class(struct lockdep_map *
+ }
+ EXPORT_SYMBOL_GPL(lock_set_class);
+ 
++DEFINE_TRACE(lock_acquire);
++
+ /*
+  * We are not always called with irqs disabled - do that here,
+  * and also avoid lockdep recursion:
+@@ -2922,6 +2925,8 @@ void lock_acquire(struct lockdep_map *lo
+ {
+ 	unsigned long flags;
+ 
++	trace_lock_acquire(lock, subclass, trylock, read, check, nest_lock, ip);
++
+ 	if (unlikely(current->lockdep_recursion))
+ 		return;
+ 
+@@ -2936,11 +2941,15 @@ void lock_acquire(struct lockdep_map *lo
+ }
+ EXPORT_SYMBOL_GPL(lock_acquire);
+ 
++DEFINE_TRACE(lock_release);
++
+ void lock_release(struct lockdep_map *lock, int nested,
+ 			  unsigned long ip)
+ {
+ 	unsigned long flags;
+ 
++	trace_lock_release(lock, nested, ip);
++
+ 	if (unlikely(current->lockdep_recursion))
+ 		return;
+ 
+@@ -3089,10 +3098,14 @@ found_it:
+ 	lock->ip = ip;
+ }
+ 
++DEFINE_TRACE(lock_contended);
++
+ void lock_contended(struct lockdep_map *lock, unsigned long ip)
+ {
+ 	unsigned long flags;
+ 
++	trace_lock_contended(lock, ip);
++
+ 	if (unlikely(!lock_stat))
+ 		return;
+ 
+@@ -3108,10 +3121,14 @@ void lock_contended(struct lockdep_map *
+ }
+ EXPORT_SYMBOL_GPL(lock_contended);
+ 
++DEFINE_TRACE(lock_acquired);
++
+ void lock_acquired(struct lockdep_map *lock, unsigned long ip)
+ {
+ 	unsigned long flags;
+ 
++	trace_lock_acquired(lock, ip);
++
+ 	if (unlikely(!lock_stat))
+ 		return;
+ 
+Index: linux-2.6/kernel/trace/trace.c
+===================================================================
+--- linux-2.6.orig/kernel/trace/trace.c
++++ linux-2.6/kernel/trace/trace.c
+@@ -624,7 +624,7 @@ static unsigned map_pid_to_cmdline[PID_M
+ static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
+ static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
+ static int cmdline_idx;
+-static DEFINE_SPINLOCK(trace_cmdline_lock);
++static raw_spinlock_t trace_cmdline_lock = __RAW_SPIN_LOCK_UNLOCKED;
+ 
+ /* temporary disable recording */
+ static atomic_t trace_record_cmdline_disabled __read_mostly;
+@@ -736,7 +736,7 @@ static void trace_save_cmdline(struct ta
+ 	 * nor do we want to disable interrupts,
+ 	 * so if we miss here, then better luck next time.
+ 	 */
+-	if (!spin_trylock(&trace_cmdline_lock))
++	if (!__raw_spin_trylock(&trace_cmdline_lock))
+ 		return;
+ 
+ 	idx = map_pid_to_cmdline[tsk->pid];
+@@ -754,7 +754,7 @@ static void trace_save_cmdline(struct ta
+ 
+ 	memcpy(&saved_cmdlines[idx], tsk->comm, TASK_COMM_LEN);
+ 
+-	spin_unlock(&trace_cmdline_lock);
++	__raw_spin_unlock(&trace_cmdline_lock);
+ }
+ 
+ char *trace_find_cmdline(int pid)
+@@ -3491,7 +3491,7 @@ static __init int tracer_init_debugfs(vo
+ 
+ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+ {
+-	static DEFINE_SPINLOCK(trace_buf_lock);
++	static raw_spinlock_t trace_buf_lock = __RAW_SPIN_LOCK_UNLOCKED;
+ 	static char trace_buf[TRACE_BUF_SIZE];
+ 
+ 	struct ring_buffer_event *event;
+@@ -3513,7 +3513,8 @@ int trace_vprintk(unsigned long ip, int 
+ 		goto out;
+ 
+ 	pause_graph_tracing();
+-	spin_lock_irqsave(&trace_buf_lock, irq_flags);
++	raw_local_irq_save(irq_flags);
++	__raw_spin_lock(&trace_buf_lock);
+ 	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+ 
+ 	len = min(len, TRACE_BUF_SIZE-1);
+@@ -3532,7 +3533,8 @@ int trace_vprintk(unsigned long ip, int 
+ 	ring_buffer_unlock_commit(tr->buffer, event);
+ 
+  out_unlock:
+-	spin_unlock_irqrestore(&trace_buf_lock, irq_flags);
++	__raw_spin_unlock(&trace_buf_lock);
++	raw_local_irq_restore(irq_flags);
+ 	unpause_graph_tracing();
+  out:
+ 	preempt_enable_notrace();
+Index: linux-2.6/kernel/trace/trace_events_stage_3.h
+===================================================================
+--- linux-2.6.orig/kernel/trace/trace_events_stage_3.h
++++ linux-2.6/kernel/trace/trace_events_stage_3.h
+@@ -5,7 +5,7 @@
+  *
+  * static void ftrace_event_<call>(proto)
+  * {
+- * 	event_trace_printk(_RET_IP_, "(<call>) " <fmt>);
++ * 	event_trace_printk(_RET_IP_, "<call>: " <fmt>);
+  * }
+  *
+  * static int ftrace_reg_event_<call>(void)
+@@ -112,7 +112,7 @@
+ #define _TRACE_FORMAT(call, proto, args, fmt)				\
+ static void ftrace_event_##call(proto)					\
+ {									\
+-	event_trace_printk(_RET_IP_, "(" #call ") " fmt);		\
++	event_trace_printk(_RET_IP_, #call ": " fmt);			\
+ }									\
+ 									\
+ static int ftrace_reg_event_##call(void)				\
+Index: linux-2.6/include/trace/trace_event_types.h
+===================================================================
+--- linux-2.6.orig/include/trace/trace_event_types.h
++++ linux-2.6/include/trace/trace_event_types.h
+@@ -2,3 +2,4 @@
+ 
+ #include <trace/sched_event_types.h>
+ #include <trace/irq_event_types.h>
++#include <trace/lockdep_event_types.h>
 
-:040000 040000 b7eda528704700c2e053ba659b4b6823d044d741 f169afe254054f023240ccc371def6774385e742 M      arch
-bisect run success
+
