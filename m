@@ -1,52 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbZCDJv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZCDJ4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755490AbZCDJv1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 04:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbZCDJvT
+	id S1755096AbZCDJ4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 04:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZCDJ4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 04:51:19 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:42061 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753990AbZCDJvS (ORCPT
+	Wed, 4 Mar 2009 04:56:14 -0500
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:40337 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750875AbZCDJ4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 04:51:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=IQjHJ6uzqZTphAJ5M+M2wgY0xuJ2S/xVGQyygjVeyZIVAeXpwVN0BOy5l+e7tCGzHb
-         5Cs1Vd2bB48/AAYPUvbG2IhaG8Lu5u7LW+38dsBUQ+AK9tacsuHXufKbrAfCvevErO9u
-         AVhKc+qMtu+oNLootp37tun9oWa6ShbrMRqgI=
+	Wed, 4 Mar 2009 04:56:13 -0500
+Message-ID: <49AE5039.5050105@vmware.com>
+Date: Wed, 04 Mar 2009 10:56:09 +0100
+From: Thomas Hellstrom <thellstrom@vmware.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-In-Reply-To: <49AE48B4.8010907@kernel.org>
-References: <49AE485B.8000902@kernel.org> <49AE48B4.8010907@kernel.org>
-Date: Wed, 4 Mar 2009 11:51:14 +0200
-X-Google-Sender-Auth: 01d2c4fa6d4e5f23
-Message-ID: <84144f020903040151o7793bd92k9b8849bf9155eb43@mail.gmail.com>
-Subject: Re: [PATCH] x86: make 32bit init_memory_mapping range change more 
-	like 64bit
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: 2.6.29 pat issue
+References: <498ADFE3.9020907@vmware.com> <1233856988.4286.83.camel@localhost.localdomain> <498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org> <498C062C.201@vmware.com> <20090304060857.GA18318@linux-os.sc.intel.com>
+In-Reply-To: <20090304060857.GA18318@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 11:24 AM, Yinghai Lu <yinghai@kernel.org> wrote:
->
-> Impact: clean up
->
-> make code more readable and more like 64bit
->
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Hi!
 
-This is a nice step towards unifying 32-bit and 64-bit
-init_memory_mapping() implementations!
+Pallipadi, Venkatesh wrote:
+> On Fri, Feb 06, 2009 at 01:43:08AM -0800, Thomas Hellström wrote:
+>   
+>> Eric W. Biederman wrote:
+>>     
+>>> Thomas Hellstrom <thellstrom@vmware.com> writes:
+>>>
+>>>
+>>>
+>>>       
+>>>> Indeed, it's crucial to keep the mappings consistent, but failure to do so is a
+>>>> kernel driver bug, it should never be the result of invalid user data.
+>>>>
+>>>>         
+>>> It easily can be.  Think of an X server mmaping frame buffers. Or other
+>>> device bars.
+>>>
+>>>
+>>>       
+>> Hmm, Yes  you're right, although I'm still a bit doubtful about RAM pages.
+>>
+>> Wait. Now I see what's causing the problems. The code is  assuming that
+>> VM_PFNMAP vmas never map RAM pages. That's also an invalid assumption.
+>> See comments in mm/memory.c
+>>
+>> So probably the attribute check should be done for the insert_pfn path
+>> of VM_MIXEDMAP as well. That's not done today.
+>>
+>> So there are three distinct bugs at this point:
+>>
+>> 1) VMAs with VM_PFNMAP are incorrectly assumed to be linear if
+>> vma->vm_pgoff non-null.
+>> 2) VM_PFNMAP VMA PTEs are incorrectly assumed to never point to physical
+>> RAM.
+>> 3) There is no check for the insert_pfn  path of vm_insert_mixed().
+>>
+>>     
+>
+> Patch below will solve (1) above.
+>   
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Yes, hmm, but how about remap_pfn_range() having an optimized function 
+to call into directly, instead of
+track_pfn_vma_new?
+
+> About (2), Yes. we can optimize the PAT code if we use struct page to track
+> PFNMAP as long at memory is backed by a struct page. It has some complications
+> with refcounting the number of mappings and related things. We are actively
+> looking at it. 
+
+Cool. Still, there needs to be a check for non-io pages in vm_insert_pfn 
+to avoid hitting the WARN_ON_ONCE:
++ if (!pfn_valid(pfn)) //Pfn pointing to a non-ram page.
+    track_pfn_vma_new()
+
+> About (3), vm_insert_mixed was not used by any in kernel driver,
+> so, we did not add checks there, with the intention of fixing most commonly
+> used remap_pfn_range and vm_insert_pfn first.
+>
+> Below patch should fix the regression upstream. 
+
+Not completely, I think the above check is needed for (2) as well.
+
+> I don't like the way we
+> overloaded a bit here. But, we don't seem to see any other option.
+> Nick: Do you see any cleaner way to do this?
+>
+> Thanks,
+> Venki
+>
+>   
+
+Thanks,
+Thomas
+
+
+> Subject: [PATCH] VM, x86 PAT: Change implementation of is_linear_pfn_mapping
+>
+> Use of vma->vm_pgoff to identify the pfnmaps that are fully mapped at
+> mmap time is broken, as vm_pgoff can also be set when full mapping is
+> not setup at mmap time.
+> http://marc.info/?l=linux-kernel&m=123383810628583&w=2
+>
+> Change the logic to overload VM_NONLINEAR flag along with VM_PFNMAP to
+> mean full mapping setup at mmap time. This distinction is needed by x86 PAT
+> code.
+>
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
+>  include/linux/mm.h |    8 +++++++-
+>  mm/memory.c        |    2 ++
+>  2 files changed, 9 insertions(+), 1 deletions(-)
+>
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 065cdf8..6c3fc3a 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -127,6 +127,12 @@ extern unsigned int kobjsize(const void *objp);
+>  #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_RESERVED | VM_PFNMAP)
+>  
+>  /*
+> + * pfnmap vmas that are fully mapped at mmap time (not mapped on fault).
+> + * Used by x86 PAT to identify such PFNMAP mappings and optimize their handling.
+> + */
+> +#define VM_PFNMAP_AT_MMAP (VM_NONLINEAR | VM_PFNMAP)
+> +
+> +/*
+>   * mapping from the currently active vm_flags protection bits (the
+>   * low four bits) to a page protection mask..
+>   */
+> @@ -145,7 +151,7 @@ extern pgprot_t protection_map[16];
+>   */
+>  static inline int is_linear_pfn_mapping(struct vm_area_struct *vma)
+>  {
+> -	return ((vma->vm_flags & VM_PFNMAP) && vma->vm_pgoff);
+> +	return ((vma->vm_flags & VM_PFNMAP_AT_MMAP) == VM_PFNMAP_AT_MMAP);
+>  }
+>  
+>  static inline int is_pfn_mapping(struct vm_area_struct *vma)
+> diff --git a/mm/memory.c b/mm/memory.c
+> index baa999e..457e97e 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1671,6 +1671,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
+>  		return -EINVAL;
+>  
+>  	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
+> +	vma->vm_flags |= VM_PFNMAP_AT_MMAP;
+>  
+>  	err = track_pfn_vma_new(vma, &prot, pfn, PAGE_ALIGN(size));
+>  	if (err) {
+> @@ -1679,6 +1680,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
+>  		 * needed from higher level routine calling unmap_vmas
+>  		 */
+>  		vma->vm_flags &= ~(VM_IO | VM_RESERVED | VM_PFNMAP);
+> +		vma->vm_flags &= ~VM_PFNMAP_AT_MMAP;
+>  		return -EINVAL;
+>  	}
+>  
+>   
+
