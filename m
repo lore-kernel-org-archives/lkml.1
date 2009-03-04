@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbZCDOv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbZCDOxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbZCDOv7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 09:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZCDOvj
+	id S1756495AbZCDOxH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 09:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbZCDOwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 09:51:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47361 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753874AbZCDOvi (ORCPT
+	Wed, 4 Mar 2009 09:52:53 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:43248 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752853AbZCDOww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 09:51:38 -0500
-Date: Wed, 4 Mar 2009 09:51:34 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Martin Bligh <mbligh@google.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mrubin@google.com, md@google.com
-Subject: Re: [PATCH 0/5] [RFC] binary reading of ftrace ring buffers
-In-Reply-To: <20090304102640.GB31239@elte.hu>
-Message-ID: <alpine.DEB.2.00.0903040949070.7995@gandalf.stny.rr.com>
-References: <20090304024921.153061228@goodmis.org> <20090304102640.GB31239@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 4 Mar 2009 09:52:52 -0500
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org
+References: <1235410082-5016-1-git-send-email-matthew@wil.cx>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 04 Mar 2009 06:52:39 -0800
+In-Reply-To: <1235410082-5016-1-git-send-email-matthew@wil.cx> (Matthew Wilcox's message of "Mon\, 23 Feb 2009 12\:27\:56 -0500")
+Message-ID: <m17i35z6fc.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: matthew@wil.cx, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Matthew Wilcox <matthew@wil.cx>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: Support for multiple MSI
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Mar 2009, Ingo Molnar wrote:
-> > 
-> >  The splice C code:
-> >    http://www.kernel.org/pub/linux/kernel/people/rostedt/splice.c
-> > 
-> >  The perl script to parse:
-> >    http://www.kernel.org/pub/linux/kernel/people/rostedt/rb-read.pl
-> > 
-> >  And yes I know, they are both ugly :-p
-> 
-> Any chance of merging them into a single perl script? I.e. the 
-> perl script would embedd the .c code and build it on every 
-> invocation (into /tmp), so that one can do single-tool tracing 
-> with no immediate binary components. Such self-sufficiency is 
-> very handy when probing systems in a minimally invasive way.
-> 
-> And we could also have twice the ugliness for the same price.
-> 
+Matthew Wilcox <matthew@wil.cx> writes:
 
-Gag, that would really be ugly code ;-)
+> Currently, Linux supports multiple MSI-X interrupts per device, but only
+> a single MSI interrupt.  This patch series adds support to the generic
+> PCI code for supporting multiple MSI interrupts.  Architectures will
+> need to add support for multiple MSIs, and I have a patch to do that for
+> x86 (which needs some more work).  Getting this patch series in first
+> is important so we can start supporting this interface in drivers and
+> architectures independently.
 
-If anything I might actually want to break up the perl script. This was 
-just made to be an example. Any serious user would most likely write their 
-own user apps. This was more of a proof of concept.
+Do we have any benchmarks anywhere that show that multiple msi support
+gains us something?
 
-I could clean up that code, and then have one big file that does all the 
-ugliness for those that just want to tinker with it. But that is low on 
-the totem pole ;-)
+The requirement to allocate a contiguous block of vector numbers worries
+me for the x86 implementation.  I don't like the idea of having to deal
+with allocations that can fail because of fragmentation.
 
--- Steve
+The fact that we also can not honor the irq affinity properly for multiple
+msi also disturbs me.
 
+At a quick skim your patchset is only the generic code without a single
+architecture specific implementation so it appears you have not done the
+hard work on figuring out how to deal with multiple msi in the real
+world.
+
+Given that msi-x does not have any of these issues without data to say
+that there is a true gain in supporting multi-msi I don't see the point
+of supporting it.
+
+Eric
