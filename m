@@ -1,151 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZCDF6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbZCDGA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbZCDF6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 00:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZCDF6X
+	id S1753754AbZCDGA4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 01:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZCDGAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 00:58:23 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:34344 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbZCDF6X (ORCPT
+	Wed, 4 Mar 2009 01:00:47 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:10733 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbZCDGAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 00:58:23 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Wed, 04 Mar 2009 00:58:13 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: [RFC] atomic highmem kmap page pinning
-Message-id: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 4 Mar 2009 01:00:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=b+fC7XFk4gwGezs9D26DRZpu6kYAkiG35F8VZW3PT/zOsffMLNCLUmF6gqQ2UtPPg8
+         6rzgBhDDPuMamhfnqsZkulwV7qDBuSA+uZ4FoVQz+scRbPYcpGpmNf7djaHZ3uc1usRO
+         rD1A3kXwkT75PjTiggnBuo+y85/9+xJ0faUzg=
+MIME-Version: 1.0
+Date: Wed, 4 Mar 2009 15:00:45 +0900
+Message-ID: <79a3cd740903032200g5c0af4cbr12e03355c9c614b0@mail.gmail.com>
+Subject: Question regarding direntry read error in fat filesystem when a 
+	device is removed
+From: YS Kim <historic59@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've implemented highmem for ARM.  Yes, some ARM machines do have lots 
-of memory...
+Hi,
 
-The problem is that most ARM machines have a non IO coherent cache, 
-meaning that the dma_map_* set of functions must clean and/or invalidate 
-the affected memory manually.  And because the majority of those 
-machines have a VIVT cache, the cache maintenance operations must be 
-performed using virtual addresses.
+I have a question about too many error messages from FAT when
+unexpected device removal occurs.
+I got the following error messages when I unplugged a USB
+drive(formatted as FAT) during direntry reading.
 
-In dma_map_page(), an highmem pages could still be mapped and cached 
-even after kunmap() was called on it.  As long as highmem pages are 
-mapped, page_address(page) is non null and we can use that to 
-synchronize the cache.
+sd 0:0:0:0: rejecting I/O to device being removed
+FAT: Directory bread(block 1478192) failed
+sd 0:0:0:0: rejecting I/O to device being removed
+FAT: Directory bread(block 1478193) failed
+sd 0:0:0:0: rejecting I/O to device being removed
+FAT: Directory bread(block 1478194) failed
+sd 0:0:0:0: rejecting I/O to device being removed
+FAT: Directory bread(block 1478195) failed
+...
 
-It is unlikely but still possible for kmap() to race and recycle the 
-obtained virtual address above, and use it for another page though.  In 
-that case, the new mapping could end up with dirty cache lines for 
-another page, and the unsuspecting cache invalidation loop in 
-dma_map_page() won't notice resulting in data loss.  Hence the need for 
-some kind of kmap page pinning which can be used in any context, 
-including IRQ context.
+>From the code of fat__get_entry in dir.c, I found that it continues to
+read the next device block
+even if the block reading has been failed. Because of this continuous
+read, a lot of error messages
+come up if the device itself is removed during reading fairly many
+files, and it causes the malfunction
+of my embedded system.
 
-This is a RFC patch implementing the necessary part in the core code, as 
-suggested by RMK. Please comment.
+I think this code is to make the filesystem available to read the next
+block when a storage contains
+bad blocks, so that a user can backup remainings in case that some
+portion of a storage are dead.
 
-diff --git a/mm/highmem.c b/mm/highmem.c
-index b36b83b..548ca77 100644
---- a/mm/highmem.c
-+++ b/mm/highmem.c
-@@ -113,9 +113,9 @@ static void flush_all_zero_pkmaps(void)
-  */
- void kmap_flush_unused(void)
- {
--	spin_lock(&kmap_lock);
-+	spin_lock_irq(&kmap_lock);
- 	flush_all_zero_pkmaps();
--	spin_unlock(&kmap_lock);
-+	spin_unlock_irq(&kmap_lock);
- }
- 
- static inline unsigned long map_new_virtual(struct page *page)
-@@ -145,10 +145,10 @@ start:
- 
- 			__set_current_state(TASK_UNINTERRUPTIBLE);
- 			add_wait_queue(&pkmap_map_wait, &wait);
--			spin_unlock(&kmap_lock);
-+			spin_unlock_irq(&kmap_lock);
- 			schedule();
- 			remove_wait_queue(&pkmap_map_wait, &wait);
--			spin_lock(&kmap_lock);
-+			spin_lock_irq(&kmap_lock);
- 
- 			/* Somebody else might have mapped it while we slept */
- 			if (page_address(page))
-@@ -184,19 +184,43 @@ void *kmap_high(struct page *page)
- 	 * For highmem pages, we can't trust "virtual" until
- 	 * after we have the lock.
- 	 */
--	spin_lock(&kmap_lock);
-+	spin_lock_irq(&kmap_lock);
- 	vaddr = (unsigned long)page_address(page);
- 	if (!vaddr)
- 		vaddr = map_new_virtual(page);
- 	pkmap_count[PKMAP_NR(vaddr)]++;
- 	BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 2);
--	spin_unlock(&kmap_lock);
-+	spin_unlock_irq(&kmap_lock);
- 	return (void*) vaddr;
- }
- 
- EXPORT_SYMBOL(kmap_high);
- 
- /**
-+ * kmap_high_get - pin a highmem page into memory
-+ * @page: &struct page to pin
-+ *
-+ * Returns the page's current virtual memory address, or NULL if no mapping
-+ * exists.  When and only when a non null address is returned then a
-+ * matching call to kunmap_high() is necessary.
-+ *
-+ * This can be called from interrupt context.
-+ */
-+void *kmap_high_get(struct page *page)
-+{
-+	unsigned long vaddr, flags;
-+
-+	spin_lock_irqsave(&kmap_lock, flags);
-+	vaddr = (unsigned long)page_address(page);
-+	if (vaddr) {
-+		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
-+		pkmap_count[PKMAP_NR(vaddr)]++;
-+	}
-+	spin_unlock_irqrestore(&kmap_lock, flags);
-+	return (void*) vaddr;
-+}
-+
-+/**
-  * kunmap_high - map a highmem page into memory
-  * @page: &struct page to unmap
-  */
-@@ -204,9 +228,10 @@ void kunmap_high(struct page *page)
- {
- 	unsigned long vaddr;
- 	unsigned long nr;
-+	unsigned long flags;
- 	int need_wakeup;
- 
--	spin_lock(&kmap_lock);
-+	spin_lock_irqsave(&kmap_lock, flags);
- 	vaddr = (unsigned long)page_address(page);
- 	BUG_ON(!vaddr);
- 	nr = PKMAP_NR(vaddr);
-@@ -232,7 +257,7 @@ void kunmap_high(struct page *page)
- 		 */
- 		need_wakeup = waitqueue_active(&pkmap_map_wait);
- 	}
--	spin_unlock(&kmap_lock);
-+	spin_unlock_irqrestore(&kmap_lock, flags);
- 
- 	/* do wake-up, if needed, race-free outside of the spin lock */
- 	if (need_wakeup)
+However, if the storage is a NAND flash memory, the flash driver is
+supposed to perform bad block
+management (because of the NAND charateristics) before the filesystem
+encounters the bad block.
 
-
-Nicolas
+Thus, if I modify the code to just return error when fat__get_entry
+fails to read blocks, could it be
+cause any side effects? Except the purpose of backup/recovery, is
+there any other reason for
+the continuous block read?
