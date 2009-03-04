@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbZCDUCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbZCDUCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757872AbZCDUCX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 15:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbZCDUCH
+	id S1757975AbZCDUCj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 15:02:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbZCDUCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 15:02:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32996 "EHLO hera.kernel.org"
+	Wed, 4 Mar 2009 15:02:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33013 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756988AbZCDUCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 15:02:03 -0500
-Date: Wed, 4 Mar 2009 20:00:30 GMT
+	id S1757760AbZCDUCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 15:02:13 -0500
+Date: Wed, 4 Mar 2009 20:00:39 GMT
 From: Yinghai Lu <yinghai@kernel.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,135 +18,214 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        yinghai@kernel.org, akpm@linux-foundation.org, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <49AE485B.8000902@kernel.org>
-References: <49AE485B.8000902@kernel.org>
-Subject: [tip:x86/mm] x86: fix bootmem cross node for 32bit numa
-Message-ID: <tip-a71edd1f46c8a599509bda478fb4eea27fb0da63@git.kernel.org>
-Git-Commit-ID: a71edd1f46c8a599509bda478fb4eea27fb0da63
+In-Reply-To: <49AE48B4.8010907@kernel.org>
+References: <49AE48B4.8010907@kernel.org>
+Subject: [tip:x86/mm] x86: make 32-bit init_memory_mapping range change more like 64-bit
+Message-ID: <tip-b68adb16f29c8ea02f21f5ebf65bcabffe217e9f@git.kernel.org>
+Git-Commit-ID: b68adb16f29c8ea02f21f5ebf65bcabffe217e9f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 20:00:32 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 20:00:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a71edd1f46c8a599509bda478fb4eea27fb0da63
-Gitweb:     http://git.kernel.org/tip/a71edd1f46c8a599509bda478fb4eea27fb0da63
+Commit-ID:  b68adb16f29c8ea02f21f5ebf65bcabffe217e9f
+Gitweb:     http://git.kernel.org/tip/b68adb16f29c8ea02f21f5ebf65bcabffe217e9f
 Author:     "Yinghai Lu" <yinghai@kernel.org>
-AuthorDate: Wed, 4 Mar 2009 01:22:35 -0800
+AuthorDate: Wed, 4 Mar 2009 01:24:04 -0800
 Commit:     Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 4 Mar 2009 20:55:03 +0100
 
-x86: fix bootmem cross node for 32bit numa
+x86: make 32-bit init_memory_mapping range change more like 64-bit
 
-Impact: fix panic on system 2g x4 sockets
+Impact: cleanup
 
-Found one system with 4 sockets and every sockets has 2g can not boot
-with numa32 because boot mem is crossing nodes.
-
-So try to have numa version of setup_bootmem_allocator().
+make code more readable and more like 64-bit
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <49AE485B.8000902@kernel.org>
+LKML-Reference: <49AE48B4.8010907@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/mm/init_32.c |   46 ++++++++++++++++++++++++++++++++++++++++------
- arch/x86/mm/numa_32.c |    5 +++--
- 2 files changed, 43 insertions(+), 8 deletions(-)
+ arch/x86/mm/init_32.c |  126 ++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 94 insertions(+), 32 deletions(-)
 
 diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 917c4e6..67bdb59 100644
+index 67bdb59..37aeaf3 100644
 --- a/arch/x86/mm/init_32.c
 +++ b/arch/x86/mm/init_32.c
-@@ -776,9 +776,37 @@ static void __init zone_sizes_init(void)
- 	free_area_init_nodes(max_zone_pfns);
+@@ -885,29 +885,55 @@ static void __init find_early_table_space(unsigned long end, int use_pse)
+ 		(table_start << PAGE_SHIFT) + tables);
  }
  
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
-+static unsigned long __init setup_node_bootmem(int nodeid,
-+				 unsigned long start_pfn,
-+				 unsigned long end_pfn,
-+				 unsigned long bootmap)
++struct map_range {
++	unsigned long start;
++	unsigned long end;
++	unsigned page_size_mask;
++};
++
++#define NR_RANGE_MR 3
++
++static int save_mr(struct map_range *mr, int nr_range,
++		   unsigned long start_pfn, unsigned long end_pfn,
++		   unsigned long page_size_mask)
 +{
-+	unsigned long bootmap_size;
++	if (start_pfn < end_pfn) {
++		if (nr_range >= NR_RANGE_MR)
++			panic("run out of range for init_memory_mapping\n");
++		mr[nr_range].start = start_pfn<<PAGE_SHIFT;
++		mr[nr_range].end   = end_pfn<<PAGE_SHIFT;
++		mr[nr_range].page_size_mask = page_size_mask;
++		nr_range++;
++	}
 +
-+	if (start_pfn > max_low_pfn)
-+		return bootmap;
-+	if (end_pfn > max_low_pfn)
-+		end_pfn = max_low_pfn;
-+
-+	/* don't touch min_low_pfn */
-+	bootmap_size = init_bootmem_node(NODE_DATA(nodeid),
-+					 bootmap >> PAGE_SHIFT,
-+					 start_pfn, end_pfn);
-+	printk(KERN_INFO "  node %d low ram: %08lx - %08lx\n",
-+		nodeid, start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
-+	printk(KERN_INFO "  node %d bootmap %08lx - %08lx\n",
-+		 nodeid, bootmap, bootmap + bootmap_size);
-+	free_bootmem_with_active_regions(nodeid, end_pfn);
-+	early_res_to_bootmem(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
-+
-+	return bootmap + bootmap_size;
++	return nr_range;
 +}
-+#endif
 +
- void __init setup_bootmem_allocator(void)
+ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 						unsigned long end)
  {
--	int i;
-+	int nodeid;
- 	unsigned long bootmap_size, bootmap;
- 	/*
- 	 * Initialize the boot-time allocator (with low memory only):
-@@ -791,18 +819,24 @@ void __init setup_bootmem_allocator(void)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
- 	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
- 
--	/* don't touch min_low_pfn */
--	bootmap_size = init_bootmem_node(NODE_DATA(0), bootmap >> PAGE_SHIFT,
--					 min_low_pfn, max_low_pfn);
- 	printk(KERN_INFO "  mapped low ram: 0 - %08lx\n",
- 		 max_pfn_mapped<<PAGE_SHIFT);
- 	printk(KERN_INFO "  low ram: %08lx - %08lx\n",
- 		 min_low_pfn<<PAGE_SHIFT, max_low_pfn<<PAGE_SHIFT);
+ 	pgd_t *pgd_base = swapper_pg_dir;
++	unsigned long page_size_mask = 0;
+ 	unsigned long start_pfn, end_pfn;
+-	unsigned long big_page_start;
++	unsigned long pos;
 +
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
-+	for_each_online_node(nodeid)
-+		bootmap = setup_node_bootmem(nodeid, node_start_pfn[nodeid],
-+					node_end_pfn[nodeid], bootmap);
-+#else
-+	/* don't touch min_low_pfn */
-+	bootmap_size = init_bootmem_node(NODE_DATA(0), bootmap >> PAGE_SHIFT,
-+					 min_low_pfn, max_low_pfn);
- 	printk(KERN_INFO "  bootmap %08lx - %08lx\n",
- 		 bootmap, bootmap + bootmap_size);
--	for_each_online_node(i)
--		free_bootmem_with_active_regions(i, max_low_pfn);
-+	free_bootmem_with_active_regions(0, max_low_pfn);
- 	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
-+#endif
++	struct map_range mr[NR_RANGE_MR];
++	int nr_range, i;
++	int use_pse;
++
++	printk(KERN_INFO "init_memory_mapping: %08lx-%08lx\n", start, end);
++
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ 	/*
+ 	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
+ 	 * This will simplify cpa(), which otherwise needs to support splitting
+ 	 * large pages into small in interrupt context, etc.
+ 	 */
+-	int use_pse = 0;
++	use_pse = 0;
+ #else
+-	int use_pse = cpu_has_pse;
++	use_pse = cpu_has_pse;
+ #endif
  
- 	after_init_bootmem = 1;
- }
-diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
-index 451fe95..3daefa0 100644
---- a/arch/x86/mm/numa_32.c
-+++ b/arch/x86/mm/numa_32.c
-@@ -416,10 +416,11 @@ void __init initmem_init(unsigned long start_pfn,
- 	for_each_online_node(nid)
- 		propagate_e820_map_node(nid);
+-	/*
+-	 * Find space for the kernel direct mapping tables.
+-	 */
+-	if (!after_init_bootmem)
+-		find_early_table_space(end, use_pse);
+-
+ #ifdef CONFIG_X86_PAE
+ 	set_nx();
+ 	if (nx_enabled)
+@@ -924,45 +950,81 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 		__supported_pte_mask |= _PAGE_GLOBAL;
+ 	}
  
--	for_each_online_node(nid)
-+	for_each_online_node(nid) {
- 		memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
-+		NODE_DATA(nid)->bdata = &bootmem_node_data[nid];
++	memset(mr, 0, sizeof(mr));
++	nr_range = 0;
++
++	if (use_pse)
++		page_size_mask |= 1 << PG_LEVEL_2M;
++
+ 	/*
+ 	 * Don't use a large page for the first 2/4MB of memory
+ 	 * because there are often fixed size MTRRs in there
+ 	 * and overlapping MTRRs into large pages can cause
+ 	 * slowdowns.
+ 	 */
+-	big_page_start = PMD_SIZE;
+-
+-	if (start < big_page_start) {
+-		start_pfn = start >> PAGE_SHIFT;
+-		end_pfn = min(big_page_start>>PAGE_SHIFT, end>>PAGE_SHIFT);
+-	} else {
+-		/* head is not big page alignment ? */
+-		start_pfn = start >> PAGE_SHIFT;
+-		end_pfn = ((start + (PMD_SIZE - 1))>>PMD_SHIFT)
++	/* head could not be big page alignment ? */
++	start_pfn = start >> PAGE_SHIFT;
++	pos = start_pfn << PAGE_SHIFT;
++	if (pos == 0)
++		end_pfn = 1<<(PMD_SHIFT - PAGE_SHIFT);
++	else
++		end_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
+ 				 << (PMD_SHIFT - PAGE_SHIFT);
++	if (end_pfn > (end>>PAGE_SHIFT))
++		end_pfn = end>>PAGE_SHIFT;
++	if (start_pfn < end_pfn) {
++		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
++		pos = end_pfn << PAGE_SHIFT;
+ 	}
+-	if (start_pfn < end_pfn)
+-		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn, 0);
+ 
+ 	/* big page range */
+-	start_pfn = ((start + (PMD_SIZE - 1))>>PMD_SHIFT)
++	start_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
+ 			 << (PMD_SHIFT - PAGE_SHIFT);
+-	if (start_pfn < (big_page_start >> PAGE_SHIFT))
+-		start_pfn =  big_page_start >> PAGE_SHIFT;
+ 	end_pfn = (end>>PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
+-	if (start_pfn < end_pfn)
+-		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn,
+-					     use_pse);
++	if (start_pfn < end_pfn) {
++		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
++				page_size_mask & (1<<PG_LEVEL_2M));
++		pos = end_pfn << PAGE_SHIFT;
 +	}
  
--	NODE_DATA(0)->bdata = &bootmem_node_data[0];
- 	setup_bootmem_allocator();
- }
+ 	/* tail is not big page alignment ? */
+-	start_pfn = end_pfn;
+-	if (start_pfn > (big_page_start>>PAGE_SHIFT)) {
+-		end_pfn = end >> PAGE_SHIFT;
+-		if (start_pfn < end_pfn)
+-			kernel_physical_mapping_init(pgd_base, start_pfn,
+-							 end_pfn, 0);
++	start_pfn = pos>>PAGE_SHIFT;
++	end_pfn = end>>PAGE_SHIFT;
++	if (start_pfn < end_pfn)
++		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
++
++	/* try to merge same page size and continuous */
++	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
++		unsigned long old_start;
++		if (mr[i].end != mr[i+1].start ||
++		    mr[i].page_size_mask != mr[i+1].page_size_mask)
++			continue;
++		/* move it */
++		old_start = mr[i].start;
++		memmove(&mr[i], &mr[i+1],
++			(nr_range - 1 - i) * sizeof(struct map_range));
++		mr[i--].start = old_start;
++		nr_range--;
+ 	}
  
++	for (i = 0; i < nr_range; i++)
++		printk(KERN_DEBUG " %08lx - %08lx page %s\n",
++			mr[i].start, mr[i].end,
++			(mr[i].page_size_mask & (1<<PG_LEVEL_2M)) ?
++				  "big page" : "4k");
++
++	/*
++	 * Find space for the kernel direct mapping tables.
++	 */
++	if (!after_init_bootmem)
++		find_early_table_space(end, use_pse);
++
++	for (i = 0; i < nr_range; i++)
++		kernel_physical_mapping_init(pgd_base,
++				mr[i].start >> PAGE_SHIFT,
++				mr[i].end >> PAGE_SHIFT,
++				mr[i].page_size_mask == (1<<PG_LEVEL_2M));
++
+ 	early_ioremap_page_table_range_init(pgd_base);
+ 
+ 	load_cr3(swapper_pg_dir);
