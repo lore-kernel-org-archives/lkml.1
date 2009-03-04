@@ -1,196 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbZCCQdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbZCCQiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600AbZCCQdt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 11:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZCCQdk
+	id S1756640AbZCCQiR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 11:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZCCQiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 11:33:40 -0500
-Received: from mx1.emlix.com ([193.175.82.87]:44773 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752845AbZCCQdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 11:33:39 -0500
-Date: Tue, 3 Mar 2009 17:33:13 +0100
-From: Johannes Weiner <jw@emlix.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oskar Schirmer <os@emlix.com>, David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-Subject: [patch] binfmt_flat: fix data sections alignment
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Mar 2009 11:38:03 -0500
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:29825 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753408AbZCCQiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 11:38:01 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=BRTDbC5bcYaVIKYiPcERvv/lkHRrZhWUlsb3aSEwoKOLIJ+mwdhE12siQtzCb+Mnww4Z8hMOjwU3enhiAb8G8I4eH7T5Vmhx6K10c/t3BJF6e9jADXRLVDxRo4hUIaSJEYjThh53aYZRfX7Dp74fpl1MpqC7nV/lniFmjEOZbGY=  ;
+X-YMail-OSG: xD5i.nAVM1n10b4e3wphH41YQIPNuEUAm.94rm_Oxn1eYWJZ33mrXhDItiNpGHH1wD6QPSF7nB_mtHl5ywtlgqqSFdYmFRJ8Zrs17hvHwhrmlzM8CXJmf5AgDhtcbxQn0QzhKtpz.Xam33cnrt3nN6n6vkln7zQ2Jb_rqM9AwY7_GbBHObUDxyM6jTuM6Wk47D1mtBaHNNrrWxF0llV_7tSN0CJBcSHALrs-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] x86, mm: pass in 'total' to __copy_from_user_*nocache()
+Date: Wed, 4 Mar 2009 14:37:15 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       sqazi@google.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
+References: <alpine.LFD.2.00.0902280904271.3111@localhost.localdomain> <200903031521.00217.nickpiggin@yahoo.com.au> <20090303090252.GC11484@elte.hu>
+In-Reply-To: <20090303090252.GC11484@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
-Message-Id: <E1LeXY0-0007Fb-KQ@mailer.emlix.com>
-Organization: emlix gmbh, Goettingen, Germany
+Message-Id: <200903041437.16360.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oskar Schirmer <os@emlix.com>
+On Tuesday 03 March 2009 20:02:52 Ingo Molnar wrote:
+> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > On Tuesday 03 March 2009 08:16:23 Linus Torvalds wrote:
+> > > On Mon, 2 Mar 2009, Nick Piggin wrote:
+> > > > I would expect any high performance CPU these days to combine entries
+> > > > in the store queue, even for normal store instructions (especially
+> > > > for linear memcpy patterns). Isn't this likely to be the case?
+> > >
+> > > None of this really matters.
+> >
+> > Well that's just what I was replying to. Of course
+> > nontemporal/uncached stores can't avoid cc operations either,
+> > but somebody was hoping that they would avoid the
+> > write-allocate / RMW behaviour. I just replied because I think
+> > that modern CPUs can combine stores in their store queues to
+> > get the same result for cacheable stores.
+> >
+> > Of course it doesn't make it free especially if it is a cc
+> > protocol that has to go on the interconnect anyway. But
+> > avoiding the RAM read is a good thing anyway.
+>
+> Hm, why do you assume that there is a RAM read?
 
-The flat loader uses an architecture's flat_stack_align() to align the
-stack but assumes word-alignment is enough for the data sections.
+I don't ;) Re-read back a few posts. I thought that nontemporal stores
+would not necessarily have an advantage with avoiding write allocate
+behaviour. Because I thought CPUs should combine stores in their store
+buffer.
 
-However, on the Xtensa S6000 we need an alignment of more than
-wordsize for data that is loaded to 128bit wide registers.
+Doing some simple tests is showing that a nontemporal stores takes about
+0.7 the time of doing a rep stosq here, if the destination is much larger
+than cache. So the CPU isn't quite as clever as I assumed.
 
-This patch replaces the specific flat_stack_align() with a more
-generic flat_data_align() that is then used for both stack, the data
-and bss section.
+I can't find any references to back up my assumption, but I thought I
+heard it somewhere. It might have been in relation to some powerpc CPUs
+not requiring their cacheline clear instruction because they combine
+store buffer entries. But I could be way off.
 
-It also fixes m32r which was obviously kaput, aligning an
-uninitialized stack entry instead of the stack pointer.
 
-Signed-off-by: Oskar Schirmer <os@emlix.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Bryan Wu <cooloney@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: Johannes Weiner <jw@emlix.com>
----
- arch/arm/include/asm/flat.h      |    4 +---
- arch/blackfin/include/asm/flat.h |    2 +-
- arch/h8300/include/asm/flat.h    |    2 +-
- arch/m68k/include/asm/flat.h     |    2 +-
- arch/sh/include/asm/flat.h       |    2 +-
- fs/binfmt_flat.c                 |   28 ++++++++++++++--------------
- include/asm-m32r/flat.h          |    2 +-
- 7 files changed, 20 insertions(+), 22 deletions(-)
+> A sufficiently
+> advanced x86 CPU will have good string moves with full cacheline
+> transfers - removing partial cachelines and removing the need
+> for the physical read.
 
-We tried to verify brain-wise that all the alignments on other archs
-are still correct but please note that we have only one xtensa-based
-box to test this patch on.  It works here with a required data
-alignment of 16 bytes.
+I thought this should be the case even with a plain sequence of normal
+stores. But that's taking about 1.4 the time of rep sto, so again
+maybe I overestimate. I don't know.
 
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -115,19 +115,17 @@ static unsigned long create_flat_tables(
- 	char uninitialized_var(dummy);
- 
- 	sp = (unsigned long *) ((-(unsigned long)sizeof(char *))&(unsigned long) p);
-+	sp -= (envc + argc + 2) + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
-+	sp = (unsigned long *) ((-(unsigned long)flat_data_align())&(unsigned long) sp);
-+	argv = sp + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
-+	envp = argv + (argc + 1);
- 
--	sp -= envc+1;
--	envp = sp;
--	sp -= argc+1;
--	argv = sp;
--
--	flat_stack_align(sp);
- 	if (flat_argvp_envp_on_stack()) {
--		--sp; put_user((unsigned long) envp, sp);
--		--sp; put_user((unsigned long) argv, sp);
-+		put_user((unsigned long) envp, sp + 2);
-+		put_user((unsigned long) argv, sp + 1);
- 	}
- 
--	put_user(argc,--sp);
-+	put_user(argc,sp);
- 	current->mm->arg_start = (unsigned long) p;
- 	while (argc-->0) {
- 		put_user((unsigned long) p, argv++);
-@@ -558,7 +556,8 @@ static int load_flat_file(struct linux_b
- 			ret = realdatastart;
- 			goto err;
- 		}
--		datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
-+		datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
-+				flat_data_align());
- 
- 		DBG_FLT("BINFMT_FLAT: Allocated data+bss+stack (%d bytes): %x\n",
- 				(int)(data_len + bss_len + stack_len), (int)datapos);
-@@ -604,9 +603,10 @@ static int load_flat_file(struct linux_b
- 		}
- 
- 		realdatastart = textpos + ntohl(hdr->data_start);
--		datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
--		reloc = (unsigned long *) (textpos + ntohl(hdr->reloc_start) +
--				MAX_SHARED_LIBS * sizeof(unsigned long));
-+		datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
-+				flat_data_align());
-+
-+		reloc = (unsigned long *) (datapos+(ntohl(hdr->reloc_start)-text_len));
- 		memp = textpos;
- 		memp_size = len;
- #ifdef CONFIG_BINFMT_ZFLAT
-@@ -854,7 +854,7 @@ static int load_flat_binary(struct linux
- 	stack_len = TOP_OF_ARGS - bprm->p;             /* the strings */
- 	stack_len += (bprm->argc + 1) * sizeof(char *); /* the argv array */
- 	stack_len += (bprm->envc + 1) * sizeof(char *); /* the envp array */
--
-+	stack_len += flat_data_align();
- 	
- 	res = load_flat_file(bprm, &libinfo, 0, &stack_len);
- 	if (res > (unsigned long)-4096)
---- a/arch/arm/include/asm/flat.h
-+++ b/arch/arm/include/asm/flat.h
-@@ -5,9 +5,7 @@
- #ifndef __ARM_FLAT_H__
- #define __ARM_FLAT_H__
- 
--/* An odd number of words will be pushed after this alignment, so
--   deliberately misalign the value.  */
--#define	flat_stack_align(sp)	sp = (void *)(((unsigned long)(sp) - 4) | 4)
-+#define	flat_data_align()			8
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
---- a/arch/blackfin/include/asm/flat.h
-+++ b/arch/blackfin/include/asm/flat.h
-@@ -10,7 +10,7 @@
- 
- #include <asm/unaligned.h>
- 
--#define	flat_stack_align(sp)	/* nothing needed */
-+#define	flat_data_align()			sizeof(void *)
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- 
---- a/arch/h8300/include/asm/flat.h
-+++ b/arch/h8300/include/asm/flat.h
-@@ -5,7 +5,7 @@
- #ifndef __H8300_FLAT_H__
- #define __H8300_FLAT_H__
- 
--#define	flat_stack_align(sp)			/* nothing needed */
-+#define	flat_data_align()			sizeof(void *)
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		1
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
---- a/arch/m68k/include/asm/flat.h
-+++ b/arch/m68k/include/asm/flat.h
-@@ -5,7 +5,7 @@
- #ifndef __M68KNOMMU_FLAT_H__
- #define __M68KNOMMU_FLAT_H__
- 
--#define	flat_stack_align(sp)			/* nothing needed */
-+#define	flat_data_align(sp)			sizeof(void *)
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
---- a/arch/sh/include/asm/flat.h
-+++ b/arch/sh/include/asm/flat.h
-@@ -12,7 +12,7 @@
- #ifndef __ASM_SH_FLAT_H
- #define __ASM_SH_FLAT_H
- 
--#define	flat_stack_align(sp)			/* nothing needed */
-+#define	flat_data_align(sp)			sizeof(void *)
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
---- a/include/asm-m32r/flat.h
-+++ b/include/asm-m32r/flat.h
-@@ -12,7 +12,7 @@
- #ifndef __ASM_M32R_FLAT_H
- #define __ASM_M32R_FLAT_H
- 
--#define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
-+#define	flat_data_align()			sizeof(void *)
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_set_persistent(relval, p)		0
