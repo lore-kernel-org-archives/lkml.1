@@ -1,74 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZCDBWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZCDB3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbZCDBWi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 20:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbZCDBWc
+	id S1755477AbZCDB3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 20:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZCDB2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 20:22:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41042 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752301AbZCDBWb (ORCPT
+	Tue, 3 Mar 2009 20:28:52 -0500
+Received: from silene.metacarta.com ([208.80.142.18]:49285 "EHLO
+	silene.metacarta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753015AbZCDB2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 20:22:31 -0500
-Date: Tue, 3 Mar 2009 20:22:29 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ppc: detect sbc610 boards and only fixup nec usb on them
-Message-ID: <20090304012229.GN28503@bombadil.infradead.org>
+	Tue, 3 Mar 2009 20:28:51 -0500
+Date: Tue, 3 Mar 2009 20:28:46 -0500 (EST)
+From: Joe Malicki <jmalicki@metacarta.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Kenneth Baker <bakerkj@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <5025982.10132161236130126636.JavaMail.root@ouachita>
+In-Reply-To: <Pine.LNX.4.64.0903031037590.13485@blonde.anvils>
+Subject: Re: BUG: setuid sometimes doesn't.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [66.31.17.145]
+X-Mailer: Zimbra 5.0.9_GA_2533.UBUNTU6 (ZimbraWebClient - FF3.0 (Linux)/5.0.9_GA_2533.UBUNTU6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kyle McMartin <kyle@redhat.com>
+----- "Hugh Dickins" <hugh@veritas.com> wrote:
 
-Bug #486511 in Fedora, this is getting applied to any machine with a NEC
-USB pci device if this CONFIG_GEF_SBC610 is on (as it was in Fedora.)
-Obviously this isn't appropriate to do in any more than the SBC610
-case..., so flag that we're a sbc610 board, and skip the fixup if we're
-not.
+> > 
+> > Thanks for the attention!  This didn't seem to fix our problem
+> > (surprisingly) since it does seem to fit with the finer details:
+> 
+> I'm sorry if I've wasted your time, but I am not surprised now.
 
-(Fedora: Should fix USB on Mac G4/G5...)
+Oh, not at all!  We're glad to help you out since we have a platform
+that can reproduce, it's not that much work at this point to test a
+patch (given we've already got a minimal reproduction case etc.)
 
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
+> I went back to look closer, and the fs->count on /proc/*/{cwd,root}
+> is merely the most obvious case: files->count is equally vulnerable
+> to lookups on /proc/*/fd/*, via get_files_struct() calls (but the
+> third LSM_UNSAFE_SHARE, sighand->count, appears to be of no
+> interest to /proc, so safe from this point of view).
 
----
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-index fb371f5..54afda2 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-@@ -51,6 +51,8 @@
+Good catch, I missed that (I had trouble tracking down everything
+involved in /proc - I was looking for that case but overlooked it).
+
+> So I think my patch was seriously incomplete.  However, the
+> files->count
+> case looks a lot harder to fix than the fs->count one.  Having
+> started
+> on this issue, I'd better do my best to come up with a fix to the
+> files
+> count side of it too, but must give it a little thought and time, and
+> will need to CC some good people even if I do manage a patch - it's
+> all too easy to fix this but introduce other more serious security
+> or data lifetime errors.
+>
+> It would be nice to offer a preliminary patch which at least confirms
+> that it is this /proc access which is causing the problem; but I
+> didn't
+> see how to do that without going all out for a fix.  Perhaps I'll
+> have
+> to compromise on a racy patch just to confirm the issue, we'll see.
+
+I suppose we can test by ignoring the files->count for LSM_UNSAFE_SHARE
+(it doesn't prove it's /proc, but at least narrows things down somewhat).
  
- void __iomem *sbc610_regs;
+> > 
+> > 1) The software load we were running it on does a health check every
+> few minutes
+> >    which, among other things, executes several lsof and ss
+> (sockstat) processes.
+> 
+> lsof, yes, that fits exactly (perhaps ss equally but I don't know).
+> 
+> I'm afraid your health check is endangering the health of your
+> system!
+> But I do think the kernel's unreliable setuid is unacceptable
+> behaviour.
+
+The irony!
+
  
-+static int is_sbc610;
-+
- static void __init gef_sbc610_init_irq(void)
- {
- 	struct device_node *cascade_node = NULL;
-@@ -142,6 +144,9 @@ static void __init gef_sbc610_nec_fixup(struct pci_dev *pdev)
- {
- 	unsigned int val;
- 
-+	if (!is_sbc610)
-+		return;
-+
- 	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
- 
- 	/* Ensure ports 1, 2, 3, 4 & 5 are enabled */
-@@ -166,8 +171,10 @@ static int __init gef_sbc610_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	if (of_flat_dt_is_compatible(root, "gef,sbc610"))
-+	if (of_flat_dt_is_compatible(root, "gef,sbc610")) {
-+		is_sbc610 = 1;
- 		return 1;
-+	}
- 
- 	return 0;
- }
+> > 
+> > I could not reproduce the problem without our system-health-monitor
+> process,
+> > or on several other machines at home (Ubuntu 8.04 and Ubuntu 8.10
+> with updated
+> > kernels, running multicore).  So I am very suspicious of that race,
+> although your
+> > patch didn't seem to fix it.... (?!?!)
+> 
+> I didn't manage to reproduce it here myself either,
+> though perhaps I should have tried on more machines.
+
+I suspect it is something subtle about our workload that we haven't
+entirely isolated (merely running lsof in a loop oddly doesn't seem
+sufficient...)
+
+> I'll get back to you... but not immediately.
+> 
+> Hugh
+
+Given that this bug occurs exceedingly rarely "in the wild" outside of
+our minimal test case, a delay isn't a concern.
+
+Thanks!
+Joe Malicki
