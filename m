@@ -1,468 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZCDTtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbZCDTur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbZCDTtx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 14:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757206AbZCDTtc
+	id S1757579AbZCDTur (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 14:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZCDTuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 14:49:32 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44748 "EHLO hera.kernel.org"
+	Wed, 4 Mar 2009 14:50:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35864 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757188AbZCDTta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 14:49:30 -0500
-Date: Wed, 4 Mar 2009 19:48:59 GMT
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       sivanich@sgi.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, johnstul@us.ibm.com, tglx@linutronix.de,
-       sivanich@sgi.com, mingo@elte.hu
-In-Reply-To: <20090304185918.GC24419@sgi.com>
-References: <20090304185918.GC24419@sgi.com>
-Subject: [tip:x86/uv] x86: UV, SGI RTC: add UV RTC clocksource/clockevents
-Message-ID: <tip-5ab5ab34498f94d60884c4ccea890601e429042e@git.kernel.org>
-Git-Commit-ID: 5ab5ab34498f94d60884c4ccea890601e429042e
-X-Mailer: tip-git-log-daemon
+	id S1755867AbZCDTuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 14:50:37 -0500
+Date: Wed, 4 Mar 2009 20:50:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: ioremap mptable
+Message-ID: <20090304195014.GA21488@elte.hu>
+References: <49AE485B.8000902@kernel.org> <49AE4901.3090801@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 19:49:01 +0000 (UTC)
+In-Reply-To: <49AE4901.3090801@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5ab5ab34498f94d60884c4ccea890601e429042e
-Gitweb:     http://git.kernel.org/tip/5ab5ab34498f94d60884c4ccea890601e429042e
-Author:     "Dimitri Sivanich" <sivanich@sgi.com>
-AuthorDate: Wed, 4 Mar 2009 12:59:18 -0600
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Mar 2009 20:25:38 +0100
 
-x86: UV, SGI RTC: add UV RTC clocksource/clockevents
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-This patch provides a high resolution clock/timer source using the
-SGI UV system-wide synchronized RTC clock/timer hardware.
+> 
+> Impact: fix boot with mptable above max_low_mapped
+> 
+> try to use early_ioremap to map mpc to make sure it works even it is
+> at end of ram on system.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
+> 
+> ---
+>  arch/x86/kernel/mpparse.c |   26 +++++++++++++++++++++++---
+>  1 file changed, 23 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/kernel/mpparse.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/mpparse.c
+> +++ linux-2.6/arch/x86/kernel/mpparse.c
+> @@ -558,6 +558,19 @@ static inline void __init construct_defa
+>  
+>  static struct mpf_intel *mpf_found;
+>  
+> +static unsigned long __init get_mpc_size(unsigned long physptr)
+> +{
+> +	struct mpc_table *mpc;
+> +	unsigned long size;
+> +
+> +	mpc = early_ioremap(physptr, PAGE_SIZE);
+> +	size = mpc->length;
+> +	early_iounmap(mpc, PAGE_SIZE);
+> +	apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", physptr, physptr + size);
+> +
+> +	return size;
+> +}
+> +
+>  /*
+>   * Scan the memory blocks for an SMP configuration block.
+>   */
+> @@ -611,12 +624,16 @@ static void __init __get_smp_config(unsi
+>  		construct_default_ISA_mptable(mpf->feature1);
+>  
+>  	} else if (mpf->physptr) {
+> +		struct mpc_table *mpc;
+> +		unsigned long size;
+>  
+> +		size = get_mpc_size(mpf->physptr);
+> +		mpc = early_ioremap(mpf->physptr, size);
+>  		/*
+>  		 * Read the physical hardware table.  Anything here will
+>  		 * override the defaults.
+>  		 */
+> -		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
+> +		if (!smp_read_mpc(mpc, early)) {
+>  #ifdef CONFIG_X86_LOCAL_APIC
+>  			smp_found_config = 0;
+>  #endif
+> @@ -624,8 +641,10 @@ static void __init __get_smp_config(unsi
+>  			       "BIOS bug, MP table errors detected!...\n");
+>  			printk(KERN_ERR "... disabling SMP support. "
+>  			       "(tell your hw vendor)\n");
+> +			early_iounmap(mpc, size);
+>  			return;
+>  		}
+> +		early_iounmap(mpc, size);
+>  
+>  		if (early)
+>  			return;
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: john stultz <johnstul@us.ibm.com>
-LKML-Reference: <20090304185918.GC24419@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+the whole "else if" branch here:
 
+ 	} else if (mpf->physptr) {
 
----
- arch/x86/kernel/Makefile  |    2 +-
- arch/x86/kernel/uv_time.c |  391 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 392 insertions(+), 1 deletions(-)
+should move into a helper function, not just get_mpc_size().
 
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 95f216b..339ce35 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -111,7 +111,7 @@ obj-$(CONFIG_SWIOTLB)			+= pci-swiotlb_64.o # NB rename without _64
- ###
- # 64 bit specific files
- ifeq ($(CONFIG_X86_64),y)
--	obj-$(CONFIG_X86_UV)		+= tlb_uv.o bios_uv.o uv_irq.o uv_sysfs.o
-+	obj-$(CONFIG_X86_UV)		+= tlb_uv.o bios_uv.o uv_irq.o uv_sysfs.o uv_time.o
- 	obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
- 	obj-$(CONFIG_AUDIT)		+= audit_64.o
- 
-diff --git a/arch/x86/kernel/uv_time.c b/arch/x86/kernel/uv_time.c
-new file mode 100644
-index 0000000..6f8e325
---- /dev/null
-+++ b/arch/x86/kernel/uv_time.c
-@@ -0,0 +1,391 @@
-+/*
-+ * SGI RTC clock/timer routines.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2009 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Dimitri Sivanich
-+ */
-+#include <linux/clockchips.h>
-+
-+#include <asm/uv/uv_mmrs.h>
-+#include <asm/uv/uv_hub.h>
-+#include <asm/uv/bios.h>
-+#include <asm/uv/uv.h>
-+
-+#define RTC_NAME		"sgi_rtc"
-+
-+static cycle_t uv_read_rtc(void);
-+static int uv_rtc_next_event(unsigned long, struct clock_event_device *);
-+static void uv_rtc_timer_setup(enum clock_event_mode,
-+				struct clock_event_device *);
-+
-+static struct clocksource clocksource_uv = {
-+	.name		= RTC_NAME,
-+	.rating		= 400,
-+	.read		= uv_read_rtc,
-+	.mask		= (cycle_t)UVH_RTC_REAL_TIME_CLOCK_MASK,
-+	.shift		= 10,
-+	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+static struct clock_event_device clock_event_device_uv = {
-+	.name		= RTC_NAME,
-+	.features	= CLOCK_EVT_FEAT_ONESHOT,
-+	.shift		= 20,
-+	.rating		= 400,
-+	.irq		= -1,
-+	.set_next_event	= uv_rtc_next_event,
-+	.set_mode	= uv_rtc_timer_setup,
-+	.event_handler	= NULL,
-+};
-+
-+static DEFINE_PER_CPU(struct clock_event_device, cpu_ced);
-+
-+/* There is one of these allocated per node */
-+struct uv_rtc_timer_head {
-+	spinlock_t	lock;
-+	/* next cpu waiting for timer, local node relative: */
-+	int		next_cpu;
-+	/* number of cpus on this node: */
-+	int		ncpus;
-+	struct {
-+		int	lcpu;		/* systemwide logical cpu number */
-+		u64	expires;	/* next timer expiration for this cpu */
-+	} cpu[1];
-+};
-+
-+/*
-+ * Access to uv_rtc_timer_head via blade id.
-+ */
-+static struct uv_rtc_timer_head		**blade_info __read_mostly;
-+
-+static int				uv_rtc_enable;
-+
-+/*
-+ * Hardware interface routines
-+ */
-+
-+/* Send IPIs to another node */
-+static void uv_rtc_send_IPI(int cpu)
-+{
-+	unsigned long apicid, val;
-+	int pnode;
-+
-+	apicid = per_cpu(x86_cpu_to_apicid, cpu);
-+	pnode = uv_apicid_to_pnode(apicid);
-+	val = (1UL << UVH_IPI_INT_SEND_SHFT) |
-+	      (apicid << UVH_IPI_INT_APIC_ID_SHFT) |
-+	      (GENERIC_INTERRUPT_VECTOR << UVH_IPI_INT_VECTOR_SHFT);
-+
-+	uv_write_global_mmr64(pnode, UVH_IPI_INT, val);
-+}
-+
-+/* Check for an RTC interrupt pending */
-+static int uv_intr_pending(int pnode)
-+{
-+	return uv_read_global_mmr64(pnode, UVH_EVENT_OCCURRED0) &
-+		UVH_EVENT_OCCURRED0_RTC1_MASK;
-+}
-+
-+/* Setup interrupt and return non-zero if early expiration occurred. */
-+static int uv_setup_intr(int cpu, u64 expires)
-+{
-+	u64 val;
-+	int pnode = uv_cpu_to_pnode(cpu);
-+
-+	uv_write_global_mmr64(pnode, UVH_RTC1_INT_CONFIG,
-+		UVH_RTC1_INT_CONFIG_M_MASK);
-+	uv_write_global_mmr64(pnode, UVH_INT_CMPB, -1L);
-+
-+	uv_write_global_mmr64(pnode, UVH_EVENT_OCCURRED0_ALIAS,
-+		UVH_EVENT_OCCURRED0_RTC1_MASK);
-+
-+	val = (GENERIC_INTERRUPT_VECTOR << UVH_RTC1_INT_CONFIG_VECTOR_SHFT) |
-+		((u64)cpu_physical_id(cpu) << UVH_RTC1_INT_CONFIG_APIC_ID_SHFT);
-+
-+	/* Set configuration */
-+	uv_write_global_mmr64(pnode, UVH_RTC1_INT_CONFIG, val);
-+	/* Initialize comparator value */
-+	uv_write_global_mmr64(pnode, UVH_INT_CMPB, expires);
-+
-+	return (expires < uv_read_rtc() && !uv_intr_pending(pnode));
-+}
-+
-+/*
-+ * Per-cpu timer tracking routines
-+ */
-+
-+static __init void uv_rtc_deallocate_timers(void)
-+{
-+	int bid;
-+
-+	for_each_possible_blade(bid) {
-+		kfree(blade_info[bid]);
-+	}
-+	kfree(blade_info);
-+}
-+
-+/* Allocate per-node list of cpu timer expiration times. */
-+static __init int uv_rtc_allocate_timers(void)
-+{
-+	int cpu;
-+
-+	blade_info = kmalloc(uv_possible_blades * sizeof(void *), GFP_KERNEL);
-+	if (!blade_info)
-+		return -ENOMEM;
-+	memset(blade_info, 0, uv_possible_blades * sizeof(void *));
-+
-+	for_each_present_cpu(cpu) {
-+		int nid = cpu_to_node(cpu);
-+		int bid = uv_cpu_to_blade_id(cpu);
-+		int bcpu = uv_cpu_hub_info(cpu)->blade_processor_id;
-+		struct uv_rtc_timer_head *head = blade_info[bid];
-+
-+		if (!head) {
-+			head = kmalloc_node(sizeof(struct uv_rtc_timer_head) +
-+				(uv_blade_nr_possible_cpus(bid) *
-+					2 * sizeof(u64)),
-+				GFP_KERNEL, nid);
-+			if (!head) {
-+				uv_rtc_deallocate_timers();
-+				return -ENOMEM;
-+			}
-+			spin_lock_init(&head->lock);
-+			head->ncpus = uv_blade_nr_possible_cpus(bid);
-+			head->next_cpu = -1;
-+			blade_info[bid] = head;
-+		}
-+
-+		head->cpu[bcpu].lcpu = cpu;
-+		head->cpu[bcpu].expires = ULLONG_MAX;
-+	}
-+
-+	return 0;
-+}
-+
-+/* Find and set the next expiring timer.  */
-+static void uv_rtc_find_next_timer(struct uv_rtc_timer_head *head, int pnode)
-+{
-+	u64 lowest = ULLONG_MAX;
-+	int c, bcpu = -1;
-+
-+	head->next_cpu = -1;
-+	for (c = 0; c < head->ncpus; c++) {
-+		u64 exp = head->cpu[c].expires;
-+		if (exp < lowest) {
-+			bcpu = c;
-+			lowest = exp;
-+		}
-+	}
-+	if (bcpu >= 0) {
-+		head->next_cpu = bcpu;
-+		c = head->cpu[bcpu].lcpu;
-+		if (uv_setup_intr(c, lowest))
-+			/* If we didn't set it up in time, trigger */
-+			uv_rtc_send_IPI(c);
-+	} else {
-+		uv_write_global_mmr64(pnode, UVH_RTC1_INT_CONFIG,
-+			UVH_RTC1_INT_CONFIG_M_MASK);
-+	}
-+}
-+
-+/*
-+ * Set expiration time for current cpu.
-+ *
-+ * Returns 1 if we missed the expiration time.
-+ */
-+static int uv_rtc_set_timer(int cpu, u64 expires)
-+{
-+	int pnode = uv_cpu_to_pnode(cpu);
-+	int bid = uv_cpu_to_blade_id(cpu);
-+	struct uv_rtc_timer_head *head = blade_info[bid];
-+	int bcpu = uv_cpu_hub_info(cpu)->blade_processor_id;
-+	u64 *t = &head->cpu[bcpu].expires;
-+	unsigned long flags;
-+	int next_cpu;
-+
-+	spin_lock_irqsave(&head->lock, flags);
-+
-+	next_cpu = head->next_cpu;
-+	*t = expires;
-+	/* Will this one be next to go off? */
-+	if (next_cpu < 0 || bcpu == next_cpu ||
-+			expires < head->cpu[next_cpu].expires) {
-+		head->next_cpu = bcpu;
-+		if (uv_setup_intr(cpu, expires)) {
-+			*t = ULLONG_MAX;
-+			uv_rtc_find_next_timer(head, pnode);
-+			spin_unlock_irqrestore(&head->lock, flags);
-+			return 1;
-+		}
-+	}
-+
-+	spin_unlock_irqrestore(&head->lock, flags);
-+	return 0;
-+}
-+
-+/*
-+ * Unset expiration time for current cpu.
-+ *
-+ * Returns 1 if this timer was pending.
-+ */
-+static int uv_rtc_unset_timer(int cpu)
-+{
-+	int pnode = uv_cpu_to_pnode(cpu);
-+	int bid = uv_cpu_to_blade_id(cpu);
-+	struct uv_rtc_timer_head *head = blade_info[bid];
-+	int bcpu = uv_cpu_hub_info(cpu)->blade_processor_id;
-+	u64 *t = &head->cpu[bcpu].expires;
-+	unsigned long flags;
-+	int rc = 0;
-+
-+	spin_lock_irqsave(&head->lock, flags);
-+
-+	if (head->next_cpu == bcpu && uv_read_rtc() >= *t)
-+		rc = 1;
-+
-+	*t = ULLONG_MAX;
-+
-+	/* Was the hardware setup for this timer? */
-+	if (head->next_cpu == bcpu)
-+		uv_rtc_find_next_timer(head, pnode);
-+
-+	spin_unlock_irqrestore(&head->lock, flags);
-+
-+	return rc;
-+}
-+
-+
-+/*
-+ * Kernel interface routines.
-+ */
-+
-+/*
-+ * Read the RTC.
-+ */
-+static cycle_t uv_read_rtc(void)
-+{
-+	return (cycle_t)uv_read_local_mmr(UVH_RTC);
-+}
-+
-+/*
-+ * Program the next event, relative to now
-+ */
-+static int uv_rtc_next_event(unsigned long delta,
-+			     struct clock_event_device *ced)
-+{
-+	int ced_cpu = cpumask_first(ced->cpumask);
-+
-+	return uv_rtc_set_timer(ced_cpu, delta + uv_read_rtc());
-+}
-+
-+/*
-+ * Setup the RTC timer in oneshot mode
-+ */
-+static void uv_rtc_timer_setup(enum clock_event_mode mode,
-+			       struct clock_event_device *evt)
-+{
-+	int ced_cpu = cpumask_first(evt->cpumask);
-+
-+	switch (mode) {
-+	case CLOCK_EVT_MODE_PERIODIC:
-+	case CLOCK_EVT_MODE_ONESHOT:
-+	case CLOCK_EVT_MODE_RESUME:
-+		/* Nothing to do here yet */
-+		break;
-+	case CLOCK_EVT_MODE_UNUSED:
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		uv_rtc_unset_timer(ced_cpu);
-+		break;
-+	}
-+}
-+
-+static void uv_rtc_interrupt(void)
-+{
-+	struct clock_event_device *ced = &__get_cpu_var(cpu_ced);
-+	int cpu = smp_processor_id();
-+
-+	if (!ced || !ced->event_handler)
-+		return;
-+
-+	if (uv_rtc_unset_timer(cpu) != 1)
-+		return;
-+
-+	ced->event_handler(ced);
-+}
-+
-+static int __init uv_enable_rtc(char *str)
-+{
-+	uv_rtc_enable = 1;
-+
-+	return 1;
-+}
-+__setup("uvrtc", uv_enable_rtc);
-+
-+static __init void uv_rtc_register_clockevents(struct work_struct *dummy)
-+{
-+	struct clock_event_device *ced = &__get_cpu_var(cpu_ced);
-+
-+	*ced = clock_event_device_uv;
-+	ced->cpumask = cpumask_of(smp_processor_id());
-+	clockevents_register_device(ced);
-+}
-+
-+static __init int uv_rtc_setup_clock(void)
-+{
-+	int rc;
-+
-+	if (!uv_rtc_enable || !is_uv_system() || generic_interrupt_extension)
-+		return -ENODEV;
-+
-+	generic_interrupt_extension = uv_rtc_interrupt;
-+
-+	clocksource_uv.mult = clocksource_hz2mult(sn_rtc_cycles_per_second,
-+				clocksource_uv.shift);
-+
-+	rc = clocksource_register(&clocksource_uv);
-+	if (rc) {
-+		generic_interrupt_extension = NULL;
-+		return rc;
-+	}
-+
-+	/* Setup and register clockevents */
-+	rc = uv_rtc_allocate_timers();
-+	if (rc) {
-+		clocksource_unregister(&clocksource_uv);
-+		generic_interrupt_extension = NULL;
-+		return rc;
-+	}
-+
-+	clock_event_device_uv.mult = div_sc(sn_rtc_cycles_per_second,
-+				NSEC_PER_SEC, clock_event_device_uv.shift);
-+
-+	clock_event_device_uv.min_delta_ns = NSEC_PER_SEC /
-+						sn_rtc_cycles_per_second;
-+
-+	clock_event_device_uv.max_delta_ns = clocksource_uv.mask *
-+				(NSEC_PER_SEC / sn_rtc_cycles_per_second);
-+
-+	rc = schedule_on_each_cpu(uv_rtc_register_clockevents);
-+	if (rc) {
-+		clocksource_unregister(&clocksource_uv);
-+		generic_interrupt_extension = NULL;
-+		uv_rtc_deallocate_timers();
-+	}
-+
-+	return rc;
-+}
-+arch_initcall(uv_rtc_setup_clock);
+	Ingo
