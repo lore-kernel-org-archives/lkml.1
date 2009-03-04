@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZCDReL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZCDRec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbZCDReL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbZCDRd6
+	id S1756091AbZCDRec (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZCDReW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:33:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47536 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753620AbZCDRd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:33:57 -0500
-Date: Wed, 4 Mar 2009 18:33:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-Subject: Re: [v2 PATCH 0/4] timers: framework for migration between CPU
-Message-ID: <20090304173321.GB25962@elte.hu>
-References: <20090304121249.GA9855@linux.vnet.ibm.com>
+	Wed, 4 Mar 2009 12:34:22 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:43933 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754696AbZCDReW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 12:34:22 -0500
+Message-ID: <49AEBB8C.2000405@codemonkey.ws>
+Date: Wed, 04 Mar 2009 11:34:04 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090304121249.GA9855@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] xen: core dom0 support
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org>	<200902282309.07576.nickpiggin@yahoo.com.au>	<49AB19E1.4050604@goop.org>	<200903021737.24903.nickpiggin@yahoo.com.au> <49AB9336.7010103@goop.org>
+In-Reply-To: <49AB9336.7010103@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
+> It really depends on the workload.  There's three cases to consider: 
+> software shadow pagetables, hardware nested pagetables, and Xen direct 
+> pagetables.  Even now, Xen's (highly optimised) shadow pagetable code 
+> generally out-performs modern nested pagetables, at least when running 
+> Windows (for which that code was most heavily tuned).
 
-> $taskset -c 4,5,6,7 make -j4
-> 
-> my_driver queuing timers continuously on CPU 10.
-> 
-> idle load balancer currently on CPU 15
-> 
-> 
-> Case1: Without timer migration		Case2: With timer migration
-> 
->    --------------------			   --------------------
->    | Core | LOC Count |			   | Core | LOC Count |
->    | 4    |   2504    |			   | 4    |   2503    |
->    | 5    |   2502    |			   | 5    |   2503    |
->    | 6    |   2502    |			   | 6    |   2502    |
->    | 7    |   2498    |			   | 7    |   2500    |
->    | 10   |   2501    |			   | 10   |     35    |
->    | 15   |   2501    |			   | 15   |   2501    |
->    --------------------			   --------------------
-> 
->    ---------------------		   --------------------
->    | Core | Sleep time |		   | Core | Sleep time |
->    | 4    |    0.47168 |		   | 4    |    0.49601 |
->    | 5    |    0.44301 |		   | 5    |    0.37153 |
->    | 6    |    0.38979 |		   | 6    |    0.51286 |
->    | 7    |    0.42829 |		   | 7    |    0.49635 |
->    | 10   |    9.86652 |		   | 10   |   10.04216 |
->    | 15   |    0.43048 |		   | 15   |    0.49056 |
->    ---------------------		   ---------------------
-> 
-> Here, all the timers queued by the driver on CPU10 are moved to CPU15,
-> which is the idle load balancer.
+Can you point to benchmarks?  I have a hard time believing this.
 
-The numbers with this automatic method based on the ilb-cpu look 
-pretty convincing. Is this what you expected it to be?
+How can shadow paging beat nested paging assuming the presence of large 
+pages?
 
-	Ingo
+Regards,
+
+Anthony Liguori
