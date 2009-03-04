@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZCDU7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZCDVHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbZCDU7B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 15:59:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbZCDU6w
+	id S1756806AbZCDVHK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 16:07:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZCDVG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 15:58:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44485 "EHLO mx2.mail.elte.hu"
+	Wed, 4 Mar 2009 16:06:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44614 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754491AbZCDU6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 15:58:52 -0500
-Date: Wed, 4 Mar 2009 21:58:33 +0100
+	id S1754066AbZCDVG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 16:06:56 -0500
+Date: Wed, 4 Mar 2009 22:06:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Dimitri Sivanich <sivanich@sgi.com>
+To: Yinghai Lu <yinghai@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/3 v7] SGI RTC: fix uv_time for UP
-Message-ID: <20090304205833.GB3527@elte.hu>
-References: <20090304185413.GA24385@sgi.com> <20090304194658.GA18096@elte.hu> <20090304204522.GA25430@sgi.com>
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: ioremap mptable
+Message-ID: <20090304210643.GC3527@elte.hu>
+References: <49AE485B.8000902@kernel.org> <49AE4901.3090801@kernel.org> <20090304195014.GA21488@elte.hu> <49AEE494.7070104@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090304204522.GA25430@sgi.com>
+In-Reply-To: <49AEE494.7070104@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,16 +36,89 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dimitri Sivanich <sivanich@sgi.com> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> Fix UP build of uv_time.c.
+> Ingo Molnar wrote:
+> > * Yinghai Lu <yinghai@kernel.org> wrote:
+> > 
+> >> Impact: fix boot with mptable above max_low_mapped
+> >>
+> >> try to use early_ioremap to map mpc to make sure it works even it is
+> >> at end of ram on system.
+> >>
+> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >> Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
+> >>
+> >> ---
+> >>  arch/x86/kernel/mpparse.c |   26 +++++++++++++++++++++++---
+> >>  1 file changed, 23 insertions(+), 3 deletions(-)
+> >>
+> >> Index: linux-2.6/arch/x86/kernel/mpparse.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/kernel/mpparse.c
+> >> +++ linux-2.6/arch/x86/kernel/mpparse.c
+> >> @@ -558,6 +558,19 @@ static inline void __init construct_defa
+> >>  
+> >>  static struct mpf_intel *mpf_found;
+> >>  
+> >> +static unsigned long __init get_mpc_size(unsigned long physptr)
+> >> +{
+> >> +	struct mpc_table *mpc;
+> >> +	unsigned long size;
+> >> +
+> >> +	mpc = early_ioremap(physptr, PAGE_SIZE);
+> >> +	size = mpc->length;
+> >> +	early_iounmap(mpc, PAGE_SIZE);
+> >> +	apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", physptr, physptr + size);
+> >> +
+> >> +	return size;
+> >> +}
+> >> +
+> >>  /*
+> >>   * Scan the memory blocks for an SMP configuration block.
+> >>   */
+> >> @@ -611,12 +624,16 @@ static void __init __get_smp_config(unsi
+> >>  		construct_default_ISA_mptable(mpf->feature1);
+> >>  
+> >>  	} else if (mpf->physptr) {
+> >> +		struct mpc_table *mpc;
+> >> +		unsigned long size;
+> >>  
+> >> +		size = get_mpc_size(mpf->physptr);
+> >> +		mpc = early_ioremap(mpf->physptr, size);
+> >>  		/*
+> >>  		 * Read the physical hardware table.  Anything here will
+> >>  		 * override the defaults.
+> >>  		 */
+> >> -		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
+> >> +		if (!smp_read_mpc(mpc, early)) {
+> >>  #ifdef CONFIG_X86_LOCAL_APIC
+> >>  			smp_found_config = 0;
+> >>  #endif
+> >> @@ -624,8 +641,10 @@ static void __init __get_smp_config(unsi
+> >>  			       "BIOS bug, MP table errors detected!...\n");
+> >>  			printk(KERN_ERR "... disabling SMP support. "
+> >>  			       "(tell your hw vendor)\n");
+> >> +			early_iounmap(mpc, size);
+> >>  			return;
+> >>  		}
+> >> +		early_iounmap(mpc, size);
+> >>  
+> >>  		if (early)
+> >>  			return;
+> > 
+> > the whole "else if" branch here:
+> > 
+> >  	} else if (mpf->physptr) {
+> > 
+> > should move into a helper function, not just get_mpc_size().
+> > 
+> 
+> will check that.
+> 
+> another solution is change smp_read_mpc interface, let it pass 
+> mpf->physptr directly.
 
-it's not against tip:x86/uv as i asked ...
-
-(i did a few cleanups of the file so your patch does not apply.)
-
-If you have -tip as a remote you can check it out via:
-
-  git checkout tip/x86/uv
+ok. Please pick the cleaner variant.
 
 	Ingo
