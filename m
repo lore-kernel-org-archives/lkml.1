@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZCDJZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZCDJ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbZCDJZU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 04:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZCDJYy
+	id S1756307AbZCDJ0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 04:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZCDJ0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 04:24:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41685 "EHLO hera.kernel.org"
+	Wed, 4 Mar 2009 04:26:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41725 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbZCDJYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 04:24:52 -0500
-Message-ID: <49AE48B4.8010907@kernel.org>
-Date: Wed, 04 Mar 2009 01:24:04 -0800
+	id S1752244AbZCDJ0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 04:26:05 -0500
+Message-ID: <49AE4901.3090801@kernel.org>
+Date: Wed, 04 Mar 2009 01:25:21 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -18,8 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: make 32bit init_memory_mapping range change more like
- 64bit
+Subject: [PATCH] x86: ioremap mptable
 References: <49AE485B.8000902@kernel.org>
 In-Reply-To: <49AE485B.8000902@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -29,187 +28,68 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: clean up
+Impact: fix boot with mptable above max_low_mapped
 
-make code more readable and more like 64bit
+try to use early_ioremap to map mpc to make sure it works even it is
+at end of ram on system.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Reported-and-tested-by: Kevin O'Connor <kevin@koconnor.net>
 
 ---
- arch/x86/mm/init_32.c |  126 +++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 94 insertions(+), 32 deletions(-)
+ arch/x86/kernel/mpparse.c |   26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/arch/x86/mm/init_32.c
+Index: linux-2.6/arch/x86/kernel/mpparse.c
 ===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -889,29 +889,55 @@ static void __init find_early_table_spac
- 		(table_start << PAGE_SHIFT) + tables);
- }
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -558,6 +558,19 @@ static inline void __init construct_defa
  
-+struct map_range {
-+	unsigned long start;
-+	unsigned long end;
-+	unsigned page_size_mask;
-+};
-+
-+#define NR_RANGE_MR 3
-+
-+static int save_mr(struct map_range *mr, int nr_range,
-+		   unsigned long start_pfn, unsigned long end_pfn,
-+		   unsigned long page_size_mask)
+ static struct mpf_intel *mpf_found;
+ 
++static unsigned long __init get_mpc_size(unsigned long physptr)
 +{
-+	if (start_pfn < end_pfn) {
-+		if (nr_range >= NR_RANGE_MR)
-+			panic("run out of range for init_memory_mapping\n");
-+		mr[nr_range].start = start_pfn<<PAGE_SHIFT;
-+		mr[nr_range].end   = end_pfn<<PAGE_SHIFT;
-+		mr[nr_range].page_size_mask = page_size_mask;
-+		nr_range++;
-+	}
++	struct mpc_table *mpc;
++	unsigned long size;
 +
-+	return nr_range;
++	mpc = early_ioremap(physptr, PAGE_SIZE);
++	size = mpc->length;
++	early_iounmap(mpc, PAGE_SIZE);
++	apic_printk(APIC_VERBOSE, "  mpc: %lx-%lx\n", physptr, physptr + size);
++
++	return size;
 +}
 +
- unsigned long __init_refok init_memory_mapping(unsigned long start,
- 						unsigned long end)
- {
- 	pgd_t *pgd_base = swapper_pg_dir;
-+	unsigned long page_size_mask = 0;
- 	unsigned long start_pfn, end_pfn;
--	unsigned long big_page_start;
-+	unsigned long pos;
-+
-+	struct map_range mr[NR_RANGE_MR];
-+	int nr_range, i;
-+	int use_pse;
-+
-+	printk(KERN_INFO "init_memory_mapping: %08lx-%08lx\n", start, end);
-+
- #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
- 	/*
- 	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
- 	 * This will simplify cpa(), which otherwise needs to support splitting
- 	 * large pages into small in interrupt context, etc.
- 	 */
--	int use_pse = 0;
-+	use_pse = 0;
- #else
--	int use_pse = cpu_has_pse;
-+	use_pse = cpu_has_pse;
+ /*
+  * Scan the memory blocks for an SMP configuration block.
+  */
+@@ -611,12 +624,16 @@ static void __init __get_smp_config(unsi
+ 		construct_default_ISA_mptable(mpf->feature1);
+ 
+ 	} else if (mpf->physptr) {
++		struct mpc_table *mpc;
++		unsigned long size;
+ 
++		size = get_mpc_size(mpf->physptr);
++		mpc = early_ioremap(mpf->physptr, size);
+ 		/*
+ 		 * Read the physical hardware table.  Anything here will
+ 		 * override the defaults.
+ 		 */
+-		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
++		if (!smp_read_mpc(mpc, early)) {
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 			smp_found_config = 0;
  #endif
+@@ -624,8 +641,10 @@ static void __init __get_smp_config(unsi
+ 			       "BIOS bug, MP table errors detected!...\n");
+ 			printk(KERN_ERR "... disabling SMP support. "
+ 			       "(tell your hw vendor)\n");
++			early_iounmap(mpc, size);
+ 			return;
+ 		}
++		early_iounmap(mpc, size);
  
--	/*
--	 * Find space for the kernel direct mapping tables.
--	 */
--	if (!after_init_bootmem)
--		find_early_table_space(end, use_pse);
--
- #ifdef CONFIG_X86_PAE
- 	set_nx();
- 	if (nx_enabled)
-@@ -928,45 +954,81 @@ unsigned long __init_refok init_memory_m
- 		__supported_pte_mask |= _PAGE_GLOBAL;
- 	}
- 
-+	memset(mr, 0, sizeof(mr));
-+	nr_range = 0;
-+
-+	if (use_pse)
-+		page_size_mask |= 1 << PG_LEVEL_2M;
-+
- 	/*
- 	 * Don't use a large page for the first 2/4MB of memory
- 	 * because there are often fixed size MTRRs in there
- 	 * and overlapping MTRRs into large pages can cause
- 	 * slowdowns.
- 	 */
--	big_page_start = PMD_SIZE;
--
--	if (start < big_page_start) {
--		start_pfn = start >> PAGE_SHIFT;
--		end_pfn = min(big_page_start>>PAGE_SHIFT, end>>PAGE_SHIFT);
--	} else {
--		/* head is not big page alignment ? */
--		start_pfn = start >> PAGE_SHIFT;
--		end_pfn = ((start + (PMD_SIZE - 1))>>PMD_SHIFT)
-+	/* head could not be big page alignment ? */
-+	start_pfn = start >> PAGE_SHIFT;
-+	pos = start_pfn << PAGE_SHIFT;
-+	if (pos == 0)
-+		end_pfn = 1<<(PMD_SHIFT - PAGE_SHIFT);
-+	else
-+		end_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
- 				 << (PMD_SHIFT - PAGE_SHIFT);
-+	if (end_pfn > (end>>PAGE_SHIFT))
-+		end_pfn = end>>PAGE_SHIFT;
-+	if (start_pfn < end_pfn) {
-+		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
-+		pos = end_pfn << PAGE_SHIFT;
- 	}
--	if (start_pfn < end_pfn)
--		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn, 0);
- 
- 	/* big page range */
--	start_pfn = ((start + (PMD_SIZE - 1))>>PMD_SHIFT)
-+	start_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
- 			 << (PMD_SHIFT - PAGE_SHIFT);
--	if (start_pfn < (big_page_start >> PAGE_SHIFT))
--		start_pfn =  big_page_start >> PAGE_SHIFT;
- 	end_pfn = (end>>PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
--	if (start_pfn < end_pfn)
--		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn,
--					     use_pse);
-+	if (start_pfn < end_pfn) {
-+		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
-+				page_size_mask & (1<<PG_LEVEL_2M));
-+		pos = end_pfn << PAGE_SHIFT;
-+	}
- 
- 	/* tail is not big page alignment ? */
--	start_pfn = end_pfn;
--	if (start_pfn > (big_page_start>>PAGE_SHIFT)) {
--		end_pfn = end >> PAGE_SHIFT;
--		if (start_pfn < end_pfn)
--			kernel_physical_mapping_init(pgd_base, start_pfn,
--							 end_pfn, 0);
-+	start_pfn = pos>>PAGE_SHIFT;
-+	end_pfn = end>>PAGE_SHIFT;
-+	if (start_pfn < end_pfn)
-+		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
-+
-+	/* try to merge same page size and continuous */
-+	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
-+		unsigned long old_start;
-+		if (mr[i].end != mr[i+1].start ||
-+		    mr[i].page_size_mask != mr[i+1].page_size_mask)
-+			continue;
-+		/* move it */
-+		old_start = mr[i].start;
-+		memmove(&mr[i], &mr[i+1],
-+			(nr_range - 1 - i) * sizeof(struct map_range));
-+		mr[i--].start = old_start;
-+		nr_range--;
- 	}
- 
-+	for (i = 0; i < nr_range; i++)
-+		printk(KERN_DEBUG " %08lx - %08lx page %s\n",
-+			mr[i].start, mr[i].end,
-+			(mr[i].page_size_mask & (1<<PG_LEVEL_2M)) ?
-+				  "big page" : "4k");
-+
-+	/*
-+	 * Find space for the kernel direct mapping tables.
-+	 */
-+	if (!after_init_bootmem)
-+		find_early_table_space(end, use_pse);
-+
-+	for (i = 0; i < nr_range; i++)
-+		kernel_physical_mapping_init(pgd_base,
-+				mr[i].start >> PAGE_SHIFT,
-+				mr[i].end >> PAGE_SHIFT,
-+				mr[i].page_size_mask == (1<<PG_LEVEL_2M));
-+
- 	early_ioremap_page_table_range_init(pgd_base);
- 
- 	load_cr3(swapper_pg_dir);
+ 		if (early)
+ 			return;
