@@ -1,137 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZCDAkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZCDAkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbZCDAkW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZCDAkI
+	id S1753490AbZCDAkp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZCDAk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:40:08 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:62931 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbZCDAkH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:40:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sHGOBUTAZfu2P2mStwYFX2TrppsyHyQzT+r0YJyHExICwIc2Nf/RQ0gtubPlIoRMze
-         rmIiJte6fK7RIYiyC+5FnoYslDPGEiNq+8yRQKUoyhIH20dv1e4e96268/2hDMYLDVjD
-         mcG7phpo0/wDdCCr7CyE0NRNag8M1kmPhLQLQ=
+	Tue, 3 Mar 2009 19:40:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51364 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755224AbZCDAkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 19:40:25 -0500
+Date: Wed, 4 Mar 2009 01:39:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Large amount of scsi-sgpool objects
+Message-ID: <20090304003959.GA11782@elte.hu>
+References: <49ACF8FE.2020904@panasas.com> <1236093718.3263.3.camel@localhost.localdomain> <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr> <1236097526.3263.17.camel@localhost.localdomain> <20090303192212.GA20705@elte.hu> <1236115544.15993.22.camel@localhost.localdomain> <20090303214454.GA8288@elte.hu> <1236119990.24019.35.camel@localhost.localdomain> <20090303230323.GA21644@elte.hu> <1236124861.24019.78.camel@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <dd18b0c30903031436v34f9fe1bh82d0e18580293066@mail.gmail.com>
-References: <dd18b0c30903031236t6ed1adaen64507b0ab4be34a4@mail.gmail.com>
-	 <49AD97BF.3050909@oracle.com>
-	 <dd18b0c30903031300w2144e9e7i64ab912542f3e42f@mail.gmail.com>
-	 <49AD9C11.60504@oracle.com> <20090303212013.GA22332@cmpxchg.org>
-	 <dd18b0c30903031436v34f9fe1bh82d0e18580293066@mail.gmail.com>
-Date: Tue, 3 Mar 2009 16:40:04 -0800
-Message-ID: <dd18b0c30903031640r6644e878pb1eb943fb34f9c59@mail.gmail.com>
-Subject: Re: scripts/unifdef.c:209: error: conflicting types for 'getline'
-From: Justin Mattock <justinmattock@gmail.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236124861.24019.78.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 3, 2009 at 2:36 PM, Justin Mattock <justinmattock@gmail.com> wrote:
-> On Tue, Mar 3, 2009 at 1:20 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
->> On Tue, Mar 03, 2009 at 01:07:29PM -0800, Randy Dunlap wrote:
->>> Justin Mattock wrote:
->>> > On Tue, Mar 3, 2009 at 12:49 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>> >> Justin Mattock wrote:
->>> >>> Hello;
->>> >>> I am unable to compile the kernel
->>> >>> (just did a git pull a few minuets ago);
->>> >>> here is what I see:
->>> >>>
->>> >>> WARNING: modpost: Found 1 section mismatch(es).
->>> >>> To see full details build your kernel with:
->>> >>> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->>> >>>   GEN     .version
->>> >>>   CHK     include/linux/compile.h
->>> >>>   UPD     include/linux/compile.h
->>> >>>   CC      init/version.o
->>> >>>   LD      init/built-in.o
->>> >>>   LD      .tmp_vmlinux1
->>> >>>   KSYM    .tmp_kallsyms1.S
->>> >>>    AS      .tmp_kallsyms1.o
->>> >>>   LD      .tmp_vmlinux2
->>> >>>   KSYM    .tmp_kallsyms2.S
->>> >>>   AS      .tmp_kallsyms2.o
->>> >>>   CHK     include/linux/version.h
->>> >>>   HOSTCC  scripts/unifdef
->>> >>> scripts/unifdef.c:209: error: conflicting types for 'getline'
->>> >>> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
->>> >>> make[2]: *** [scripts/unifdef] Error 1
->>> >>> make[1]: *** [__headers] Error 2
->>> >>> make: *** [vmlinux] Error 2
->>> >>>
->>> >>> The only change to .config was:
->>> >>>
->>> >>> SYSFS_DEPRECATED_V2 [=y]
->>> >>> to
->>> >>> SYSFS_DEPRECATED_V2 [=n]
->>> >>> to see if I can make udev from:
->>> >>>
->>> >>> udev: starting version 137
->>> >>> [    7.557317] udev: deprecated sysfs layout; update the kernel or disable
->>> >>> CONFIG_SYSFS_DEPRECATED; some udev features will not work correctly
->>> >>>
->>> >>> giving me this message.
->>> >>>
->>> >>> also I did use a CFLAGS when compiling,
->>> >>> but never received this when doing so for:
->>> >>> 2.6.29-rc5-00289-g460c133
->>> >>>
->>> >>> any info would be appreciated.
->>> >> What CFLAGS?  I can't reproduce the problem.
->>> >>
->>> >>
->>> >> --
->>> >> ~Randy
->>> >>
->>> >
->>> > make CC=/usr/bin/i686-pc-linux-gnu-gcc-4.4.0 CFLAGS="-march=core2
->>> > -mtune=core2 -O2 -pipe -fomit-frame-pointer"
->>> > CXXFLAGS="${CFLAGS}" MAKEOPTS="-j3"
->>>
->>> I still can't reproduce the problem by using those CFLAGS/CXXFLAGS.
->>
->> chigurh:~/linux/linux-2.6/scripts$ make unifdef CFLAGS="-D_GNU_SOURCE"
->> cc -D_GNU_SOURCE    unifdef.c   -o unifdef
->> unifdef.c:209: error: conflicting types for `getline'
->> /usr/include/stdio.h:649: error: previous declaration of `getline' was here
->> make: *** [unifdef] Error 1
->> chigurh:~/linux/linux-2.6/scripts$ make unifdef
->> cc     unifdef.c   -o unifdef
->> chigurh:~/linux/linux-2.6/scripts$
->>
->>> > I also just loaded the latest libc
->>> > (not sure if this has anything to do);
->>>
->>> That probably updated /usr/include/stdio.h (?; I'm just guessing here).
->>
->> Perhaps getline() is now defined even without _GNU_SOURCE?  But I
->> doubt that...
->>
->>        Hannes
->>
->
-> Well, maybe I need to just do a
-> make clean
-> before compiling.
->
->
-> --
-> Justin P. Mattock
->
 
-Well, that didn't seem to be a simple solution.
-I guess I'm stuck with what I have.
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
--- 
-Justin P. Mattock
+> > Dude, lets make it clear to you: it is not "your area" that 
+> > you own in any way and you have no monopoly on SCSI fixes.
+> 
+> The fact that I can spot a missing release buffers and you, 
+> apparently, can't does lend credence to a claim of greater 
+> expertise in the SCSI area.
+
+Uhm, i dont maintain SCSI and dont intend to. I got a fix patch 
+from an SCSI person for a lockup bug i reported on the SCSI 
+list, caused by a commit authored by that same SCSI person, and 
+i applied the fix.
+
+The real question is, why didnt your review and testing skills 
+catch the serious lockups caused by:
+
+    commit b60af5b0adf0da24c673598c8d3fb4d4189a15ce
+    Date:   Mon Nov 3 15:56:47 2008 -0500
+    [SCSI] simplify scsi_io_completion()
+
+... and why is the bug still unfixed today in the upstream 
+kernel?
+
+The thing is, we triggered the lockups quite easily in -rt and 
+-tip testing - and we are not set up to catch SCSI bugs at all. 
+We are set up to test and catch bugs in the areas of the kernel 
+we are interested in mainly.
+
+> >  We acted out of necessity because the SCSI tree is taking 
+> > very long to get fixes upstream.
+> 
+> To get upstream, there first has to be a fix.  I've already 
+> explained why I don't think the patch in question is a fix.
+
+Uhm, then why didnt you revert the original commit? I clearly 
+identified it to you as the root trigger of the lockup and 
+confirmed that reverting it fixes the hang, and i invested many 
+days of testing into that.
+ 
+When i reported this very serious and potentially data 
+corrupting bug to you on January 15th you immediately suggested 
+it's a problem with the commit above.
+
+So you were in full knowledge of the root cause of the breakage 
+- but why have you not reverted it? Doing a speedy revert is a 
+must-have for any bug that has data corruption potential.
+
+What you did is akin to playing russian roulette with other 
+people's data. You knew about a serious, data corruptor 
+breakage, you knew which change caused it, but still you didnt 
+act to revert the patch or resolve the problem.
+
+The expected behavior from an upstream maintainer is not to 
+introduce breakages and wait until the "real cause" is 
+understood. The expected behavior is to either fix or revert a 
+commit that has been pinpointed as the source of a serious bug. 
+You didnt do that - why?
+
+> > I reported this lockup bug to you on _January 15th_, more 
+> > than one and a half months ago - and it's still unfixed even 
+> > today. Alan sent his v2 fix on Feburary 19th - two weeks 
+> > ago.
+> 
+> OK, so why don't you humour me and try applying the diagnostic 
+> patch I sent you on the 24th of January? [...]
+
+Uhm, below is the so-called "diagnostic" patch you sent to me 
+and the problem with that "patch" is that it does not tell us 
+anything we did not know already.
+
+It just confirms that the function locks up - and we already 
+knew that much from all the logs i sent to you. I.e. that 
+"patch" is an utter waste of my time and you should know that.
+
+I bisect commits, i test fixes, but i dont test silly 
+half-hearted "diagnostic" patches which must have taken you less 
+than 1 minute to write and would waste 30 minutes of my time to 
+test - for no objective purpose. It has no chance to give us any 
+new information. I really have better things to do with my time.
+
+James, you ned to try harder to get bugs fixed and you need to 
+treat your testers better. Come up with a real diagnostic patch 
+that tells us something useful and i'll run it. Until then i'll 
+just ignore your rants.
+
+	Ingo
+
+--------------------->
+From: James Bottomley
+
+On Wed, 2009-01-21 at 16:44 +0100, Ingo Molnar wrote:
+> > One thought I had is that somehow the starved list processing in 
+> > scsi_run_queue might never be terminating.  This should be easy to 
+> > verify: just put a counter inside the while(!list_empty(&starved_list)) 
+> > and print if it gets ridiculously large (like > 1000).
+> 
+> i deal with about a dozen regressions a day, so it would really help if 
+> you could send me a debug patch to apply. I can then turn off the reverts 
+> for that testbox and wait for another hang to occur.
+
+OK, try this.
+
+But could we take this to the scsi-list so that others get a chance to
+give suggestions and you're not single threaded on me.
+
+Thanks,
+
+James
+
+---
+
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 940dc32..5919dd0 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -593,6 +593,7 @@ static void scsi_run_queue(struct request_queue *q)
+ 	struct Scsi_Host *shost = sdev->host;
+ 	LIST_HEAD(starved_list);
+ 	unsigned long flags;
++	int count = 0;
+ 
+ 	if (scsi_target(sdev)->single_lun)
+ 		scsi_single_lun_run(sdev);
+@@ -603,6 +604,8 @@ static void scsi_run_queue(struct request_queue *q)
+ 	while (!list_empty(&starved_list)) {
+ 		int flagset;
+ 
++		BUG_ON(count++ > 1000);
++
+ 		/*
+ 		 * As long as shost is accepting commands and we have
+ 		 * starved queues, call blk_run_queue. scsi_request_fn
+
