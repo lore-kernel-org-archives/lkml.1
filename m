@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZCDNJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbZCDNQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbZCDNJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 08:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbZCDNJP
+	id S1754011AbZCDNQS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 08:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbZCDNQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 08:09:15 -0500
-Received: from mail.polezero.com ([216.68.55.34]:52432 "EHLO
+	Wed, 4 Mar 2009 08:16:04 -0500
+Received: from mail.polezero.com ([216.68.55.34]:54099 "EHLO
 	firewall.polezero.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750717AbZCDNJO (ORCPT
+	with ESMTP id S1750752AbZCDNQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 08:09:14 -0500
+	Wed, 4 Mar 2009 08:16:03 -0500
 Subject: Re: New HID device support
 From: Jason Noble <nobleja@polezero.com>
 To: Jiri Kosina <jkosina@suse.cz>
@@ -20,8 +20,8 @@ References: <1236096277.26321.29.camel@paradox.pz.local>
 	 <1236107096.7793.1.camel@paradox.pz.local>
 	 <alpine.LNX.2.00.0903041144310.4971@jikos.suse.cz>
 Content-Type: text/plain
-Date: Wed, 04 Mar 2009 08:08:50 -0500
-Message-Id: <1236172130.21288.2.camel@paradox.pz.local>
+Date: Wed, 04 Mar 2009 08:15:44 -0500
+Message-Id: <1236172544.21288.3.camel@paradox.pz.local>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,12 +29,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Should this apply against 2.6.28.7?
-Sorry, I'm probably doing something wrong, I've only ever applied whole
-kernel patches.
+2.6.28.7
 
-cd /usr/src
-patch -p0 < patch-file-name-here
+patching file a/drivers/hid/Kconfig
+Hunk #1 succeeded at 157 with fuzz 2 (offset 7 lines).
+patching file a/drivers/hid/Makefile
+Hunk #1 FAILED at 29.
+1 out of 1 hunk FAILED -- saving rejects to file
+a/drivers/hid/Makefile.rej
+patching file a/drivers/hid/hid-core.c
+Hunk #1 FAILED at 1270.
+1 out of 1 hunk FAILED -- saving rejects to file
+a/drivers/hid/hid-core.c.rej
+patching file a/drivers/hid/hid-dummy.c
+Hunk #1 succeeded at 34 with fuzz 2 (offset -3 lines).
+patching file a/drivers/hid/hid-ids.h
+Hunk #1 FAILED at 274.
+1 out of 1 hunk FAILED -- saving rejects to file
+a/drivers/hid/hid-ids.h.rej
+patching file b/drivers/hid/hid-kensington.c
+
 
 On Wed, 2009-03-04 at 11:45 +0100, Jiri Kosina wrote:
 > On Tue, 3 Mar 2009, Jason Noble wrote:
@@ -193,4 +207,9 @@ On Wed, 2009-03-04 at 11:45 +0100, Jiri Kosina wrote:
 > +MODULE_LICENSE("GPL");
 > +
 > +HID_COMPAT_LOAD_DRIVER(kensington);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
