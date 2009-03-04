@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZCDAH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZCDAHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756561AbZCDAH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbZCDAHL
+	id S1756383AbZCDAHn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZCDAHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:07:11 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:56234 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754304AbZCDAHK convert rfc822-to-8bit (ORCPT
+	Tue, 3 Mar 2009 19:07:31 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51777 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756723AbZCDAH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:07:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kAxkapIlSGEGJVUMelVp++6h2RG/40e7seTsyE0uPBat3nMuZKO5RT8dGplp8uEOll
-         pc9YQKtQLrMjgHq+HbX/j0bAwKbWr3stu9+7gYvNlRUT/AmBmqgzfDglpvPDNZ+SshWm
-         jUNWzsxyQ/eCLOx6VfvfnCkGM4jDY4xg8xhqc=
+	Tue, 3 Mar 2009 19:07:29 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH 4/4] Memory controller soft limit reclaim on contention (v3)
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090303111713.GQ11421@balbir.in.ibm.com>
+References: <20090303095833.D9FC.A69D9226@jp.fujitsu.com> <20090303111713.GQ11421@balbir.in.ibm.com>
+Message-Id: <20090304084928.FD57.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <49AD17DD.1030206@gmail.com>
-References: <43e72e890903021737v7f5c4f06lb13e4f5d3ad67fd7@mail.gmail.com>
-	 <43e72e890903021751m3f17206dge880dfc4d2c56711@mail.gmail.com>
-	 <49AD17DD.1030206@gmail.com>
-Date: Tue, 3 Mar 2009 16:07:06 -0800
-Message-ID: <43e72e890903031607k4e2ce36csb7c48de2f01a6de6@mail.gmail.com>
-Subject: Re: hid-dummy.ko Input/output error -- causing huge delays
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed,  4 Mar 2009 09:07:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 3, 2009 at 3:43 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 3.3.2009 02:51, Luis R. Rodriguez wrote:
->>
->> On Mon, Mar 2, 2009 at 5:37 PM, Luis R. Rodriguez<mcgrof@gmail.com>
->>  wrote:
->>>
->>> FATAL: Error inserting hid_dummy
->>> (/lib/modules/2.6.29-rc6-wl/kernel/drivers/hid/hid-dummy.ko):
->>> Input/output error
->>>
->>> I remember reading a thread where you said this was non-fatal and that
->>> hid-dummy.ko would go away. On my system, every now in a blue moon the
->>> above causes a huge delay during the bootup sequence. I'm talking
->>> about a full 1-2 minute delay. Why is the delay so sporadic?
->>
->> s/once in a blue moon/often/
->>
->> as it seems I get this now upon every reboot.
->
-> So I suppose the problem goes away, when you change -EIO to 0 in
-> drivers/hid/hid-dummy.c
+Hi Balbir
 
-Yeap.
+> > > > kswapd's roll is increasing free pages until zone->pages_high in "own node".
+> > > > mem_cgroup_soft_limit_reclaim() free one (or more) exceed page in any node.
+> > > > 
+> > > > Oh, well.
+> > > > I think it is not consistency.
+> > > > 
+> > > > if mem_cgroup_soft_limit_reclaim() is aware to target node and its pages_high,
+> > > > I'm glad.
+> > > 
+> > > Yes, correct the role of kswapd is to keep increasing free pages until
+> > > zone->pages_high and the first set of pages to consider is the memory
+> > > controller over their soft limits. We pass the zonelist to ensure that
+> > > while doing soft reclaim, we focus on the zonelist associated with the
+> > > node. Kamezawa had concernes over calling the soft limit reclaim from
+> > > __alloc_pages_internal(), did you prefer that call path? 
+> > 
+> > I read your patch again.
+> > So, mem_cgroup_soft_limit_reclaim() caller place seems in balance_pgdat() is better.
+> > 
+> > Please imazine most bad scenario.
+> > CPU0 (kswapd) take to continue shrinking.
+> > CPU1 take another activity and charge memcg conteniously.
+> > At that time, balance_pgdat() don't exit very long time. then 
+> > mem_cgroup_soft_limit_reclaim() is never called.
+> > 
+> 
+> Yes, true... that is why I added the hooks in __alloc_pages_internal()
+> in the first two revisions, but Kamezawa objected to them. In the
+> scenario that you mention that balance_pgdat() is busy, if we are
+> under global system memory pressure, even after freeing memory from
+> soft limited cgroups, we don't have sufficient free memory. We need to
+> go reclaim from the whole system. An administrator can easily avoid
+> the above scenario by using hard limits on the cgroup running on CPU1.
 
-  Luis
+I agree with soft limit implementation is difficult.
+
+but I still don't like soft limit in __alloc_pages_internal().
+if it does, kswapd reclaim the pages from global LRU *before*
+shrinking soft limit.
+
+again, linux reclaim policy is
+
+	free < pages_low:  run kswapd
+	free < pages_min:  foreground reclaim via __alloc_pages_internal()
+
+then, if soft limit reclaim put into __alloc_pages_internal(),
+
+	free < pages_low:  run kswapd
+	free < pages_min:  soft limit reclaim and 
+                           foreground reclaim via __alloc_pages_internal()
+
+it seems unintetional behavior.
+
+In addition, I still strongly oppose againt global lock although 
+soft limit shrinking don't put into __alloc_pages_internal().
+I think it doesn't depend on caller place.
+
+
