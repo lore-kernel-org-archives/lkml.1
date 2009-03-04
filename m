@@ -1,567 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZCDJcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbZCDJjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098AbZCDJcz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 04:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZCDJcq
+	id S1755385AbZCDJjV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 04:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZCDJjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 04:32:46 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:62909 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbZCDJcp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 04:32:45 -0500
-X-Greylist: delayed 609 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Mar 2009 04:32:45 EST
-X-IronPort-AV: E=Sophos;i="4.38,299,1233550800"; 
-   d="scan'208";a="67381314"
-Subject: Re: [PATCH] [kgdb] Switch master cpu after gdb thread command for
-	SMP (v4)
-From: sonic zhang <sonic.adi@gmail.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       kgdb mailing list <kgdb-bugreport@lists.sourceforge.net>
-In-Reply-To: <1234949874.17467.6.camel@eight.analog.com>
-References: <1234949874.17467.6.camel@eight.analog.com>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 17:17:26 +0800
-Message-Id: <1236158246.7519.3.camel@eight.analog.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 4 Mar 2009 04:39:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37693 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750762AbZCDJjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 04:39:09 -0500
+Message-ID: <49AE4C26.4040104@kernel.org>
+Date: Wed, 04 Mar 2009 18:38:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Mike Galbraith <efault@gmx.de>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86-tip: cpufreq breakage - bisection	fingers	89c9215165ca609096e845926d9a18f1306176a4
+References: <1236085632.5958.8.camel@marge.simson.net>	 <20090303143106.GA12248@elte.hu> <1236098338.5926.0.camel@marge.simson.net>	 <49ADE077.1060606@kernel.org>  <1236138205.6119.12.camel@marge.simson.net> <1236147277.6049.3.camel@marge.simson.net> <49AE2028.8040402@kernel.org>
+In-Reply-To: <49AE2028.8040402@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 09:38:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forget to include Macro KGDB_THR_PROC_SWAP in last patch. So, Send again.
-
-This is the updated kgdb SMP patch, which is tested on blackfin bf561 dual core
-system. A new bug is fixed, which causes debugging halt in SMP kernel if a
-breakpoint is hit and cpu is switched in gdb before continue running kernel.
-
-   In blackfin SMP architecture, different core has its own L1 SRAM and MMR
-   memory, which code running on the other core can't access. In current kgdb
-   impelemntation, cpus are represented by thread with minus prefix.
-
-If user run thread command in gdb to switch to the thread of the other cpu,
-kgdb should:
-1. send IPI signal to master cpu
-2. release the specific passive cpu waiting in IPI handler
-3. exit kgdb exception loop on master cpu and trap into kgdb wait in IPI handler
-4. trap the released passive cpu into kgdb exception in IPI handler
-
-
-Signed-off-by: Sonic Zhang <sonic.adi@gmail.com>
----
- include/linux/kgdb.h
- kernel/kgdb.c
-
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 6adcc29..664e396 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -107,6 +107,7 @@
- #endif
- 
- #define KGDB_HW_BREAKPOINT	1
-+#define KGDB_THR_PROC_SWAP	2
- 
- /*
-  * Functions each KGDB-supporting architecture must provide:
-@@ -203,6 +204,19 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
-  */
- extern void kgdb_roundup_cpus(unsigned long flags);
- 
-+/**
-+ *	kgdb_roundup_cpu - Get spcific CPU into a holding pattern
-+ *	@cpu: Specific cpu id
-+ *	@flags: Current IRQ state
-+ *
-+ *	On SMP systems, we need to switch cpu from current active one to
-+ *	the other passive one. This get current active CPU into a known state
-+ *	in kgdb_wait(). 
-+ *
-+ *	On non-SMP systems, this is not called.
-+ */
-+extern void kgdb_roundup_cpu(int cpu, unsigned long flags);
-+
- /* Optional functions. */
- extern int kgdb_validate_break_address(unsigned long addr);
- extern int kgdb_arch_set_breakpoint(unsigned long addr, char *saved_instr);
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index e4dcfb2..277986d 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -565,6 +565,7 @@
- {
- 	unsigned long flags;
- 	int cpu;
-+	struct task_struct *thread;
- 
- 	local_irq_save(flags);
- 	cpu = raw_smp_processor_id();
-@@ -577,10 +578,26 @@
- 	smp_wmb();
- 	atomic_set(&cpu_in_kgdb[cpu], 1);
- 
-+	kgdb_disable_hw_debug(regs);
-+
- 	/* Wait till primary CPU is done with debugging */
- 	while (atomic_read(&passive_cpu_wait[cpu]))
- 		cpu_relax();
- 
-+	/* Trap into kgdb as the active CPU if gdb asks to switch. */
-+	thread = getthread(regs, -raw_smp_processor_id() - 2);
-+	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-+		kgdb_contthread && kgdb_contthread == current) {
-+		kgdb_breakpoint();
-+
-+		kgdb_info[cpu].debuggerinfo = NULL;
-+		kgdb_info[cpu].task = NULL;
-+
-+		clocksource_touch_watchdog();
-+		local_irq_restore(flags);
-+		return;
-+	}
-+ 
- 	kgdb_info[cpu].debuggerinfo = NULL;
- 	kgdb_info[cpu].task = NULL;
- 
-@@ -1066,13 +1083,16 @@
- 			sprintf(tmpstr, "shadowCPU%d",
- 					(int)(-ks->threadid - 2));
- 			kgdb_mem2hex(tmpstr, remcom_out_buffer, strlen(tmpstr));
-+
-+			if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
-+				ks->thr_query = 1;
- 		}
- 		break;
- 	}
- }
- 
- /* Handle the 'H' task query packets */
--static void gdb_cmd_task(struct kgdb_state *ks)
-+static int gdb_cmd_task(struct kgdb_state *ks)
- {
- 	struct task_struct *thread;
- 	char *ptr;
-@@ -1089,6 +1109,15 @@
- 		kgdb_usethread = thread;
- 		ks->kgdb_usethreadid = ks->threadid;
- 		strcpy(remcom_out_buffer, "OK");
-+#ifdef CONFIG_SMP
-+		if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-+			!ks->thr_query && ks->kgdb_usethreadid < -1 &&
-+			- ks->kgdb_usethreadid - 2 != raw_smp_processor_id()) {
-+			kgdb_roundup_cpu(raw_smp_processor_id(), 0);
-+			kgdb_contthread = kgdb_usethread;
-+			return 1;
-+		}
-+#endif
- 		break;
- 	case 'c':
- 		ptr = &remcom_in_buffer[2];
-@@ -1102,10 +1131,27 @@
- 				break;
- 			}
- 			kgdb_contthread = thread;
-+#ifdef CONFIG_SMP
-+			if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-+				thread != current) {
-+				int cpu;
-+				for_each_online_cpu(cpu) {
-+					if (thread == kgdb_info[cpu].task) {
-+						kgdb_roundup_cpu(
-+							raw_smp_processor_id(),
-+							0);
-+						ks->kgdb_usethreadid = -cpu-2;
-+						return 1;
-+					}
-+				}
-+			}
-+#endif
- 		}
- 		strcpy(remcom_out_buffer, "OK");
- 		break;
- 	}
-+
-+	return 0;
- }
- 
- /* Handle the 'T' thread query packets */
-@@ -1114,6 +1160,9 @@
- 	char *ptr = &remcom_in_buffer[1];
- 	struct task_struct *thread;
- 
-+	if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
-+		ks->thr_query = 0;
-+
- 	kgdb_hex2long(&ptr, &ks->threadid);
- 	thread = getthread(ks->linux_regs, ks->threadid);
- 	if (thread)
-@@ -1223,7 +1272,12 @@
- 	/* Clear the out buffer. */
- 	memset(remcom_out_buffer, 0, sizeof(remcom_out_buffer));
- 
--	if (kgdb_connected) {
-+	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) && kgdb_contthread) {
-+		remcom_out_buffer[0] = 'O';
-+		remcom_out_buffer[1] = 'K';
-+		remcom_out_buffer[2] = 0;
-+		put_packet(remcom_out_buffer);
-+	} else if (kgdb_connected) {
- 		unsigned char thref[8];
- 		char *ptr;
- 
-@@ -1238,6 +1292,7 @@
- 		put_packet(remcom_out_buffer);
- 	}
- 
-+	kgdb_contthread = current;
- 	kgdb_usethread = kgdb_info[ks->cpu].task;
- 	ks->kgdb_usethreadid = shadow_pid(kgdb_info[ks->cpu].task->pid);
- 	ks->pass_exception = 0;
-@@ -1284,7 +1339,8 @@
- 			gdb_cmd_query(ks);
- 			break;
- 		case 'H': /* task related */
--			gdb_cmd_task(ks);
-+			if (gdb_cmd_task(ks))
-+				goto kgdb_exit;
- 			break;
- 		case 'T': /* Query thread status */
- 			gdb_cmd_thread(ks);
-@@ -1324,6 +1380,7 @@
- 			if (error >= 0 || remcom_in_buffer[0] == 'D' ||
- 			    remcom_in_buffer[0] == 'k') {
- 				error = 0;
-+				kgdb_contthread = NULL;
- 				goto kgdb_exit;
- 			}
- 
-@@ -1464,11 +1521,15 @@
- 	 * Get the passive CPU lock which will hold all the non-primary
- 	 * CPU in a spin state while the debugger is active
- 	 */
--	if (!kgdb_single_step) {
-+	if (!kgdb_single_step && !kgdb_contthread) {
- 		for (i = 0; i < NR_CPUS; i++)
- 			atomic_set(&passive_cpu_wait[i], 1);
- 	}
- 
-+	if (kgdb_contthread)
-+		atomic_set(&passive_cpu_wait[raw_smp_processor_id()], 1);
-+ 
-+
- 	/*
- 	 * spin_lock code is good enough as a barrier so we don't
- 	 * need one here:
-@@ -1477,7 +1538,7 @@
- 
- #ifdef CONFIG_SMP
- 	/* Signal the other CPUs to enter kgdb_wait() */
--	if ((!kgdb_single_step) && kgdb_do_roundup)
-+	if ((!kgdb_single_step && !kgdb_contthread) && kgdb_do_roundup)
- 		kgdb_roundup_cpus(flags);
- #endif
- 
-@@ -1496,7 +1557,6 @@
- 	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
- 	kgdb_deactivate_sw_breakpoints();
- 	kgdb_single_step = 0;
--	kgdb_contthread = current;
- 	exception_level = 0;
- 
- 	/* Talk to debugger with gdbserial protocol */
-@@ -1510,7 +1570,14 @@
- 	kgdb_info[ks->cpu].task = NULL;
- 	atomic_set(&cpu_in_kgdb[ks->cpu], 0);
- 
--	if (!kgdb_single_step) {
-+#ifdef CONFIG_SMP
-+	i = -(ks->kgdb_usethreadid + 2);
-+	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-+		kgdb_contthread && i != cpu) {
-+		atomic_set(&passive_cpu_wait[i], 0);
-+	}
-+#endif
-+	if (!kgdb_single_step && !kgdb_contthread) {
- 		for (i = NR_CPUS-1; i >= 0; i--)
- 			atomic_set(&passive_cpu_wait[i], 0);
- 		/*
-@@ -1536,9 +1603,9 @@
- int kgdb_nmicallback(int cpu, void *regs)
- {
- #ifdef CONFIG_SMP
--	if (!atomic_read(&cpu_in_kgdb[cpu]) &&
-+	if (!atomic_read(&cpu_in_kgdb[cpu]) && (kgdb_contthread ||
- 			atomic_read(&kgdb_active) != cpu &&
--			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)])) {
-+			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)]))) {
- 		kgdb_wait((struct pt_regs *)regs);
- 		return 0;
- 	}
--- 
-1.6.0
-
-
-
-
-On Wed, 2009-02-18 at 17:37 +0800, sonic zhang wrote:
-> Hi Jason,
+Tejun Heo wrote:
+> Hello, Mike.
 > 
-> This is the updated kgdb SMP patch, which is tested on blackfin bf561 dual core
-> system. A new bug is fixed, which causes debugging halt in SMP kernel if a
-> breakpoint is hit and cpu is switched in gdb before continue running kernel.
+> Mike Galbraith wrote:
+>> On Wed, 2009-03-04 at 04:43 +0100, Mike Galbraith wrote:
+>>> On Wed, 2009-03-04 at 10:59 +0900, Tejun Heo wrote:
+>>>
+>>>> I can't reproduce the problem here.
+>>> Guess I'll have to sharpen a stick or two then.
+>> With monkey-see-monkey-do-stick, box becomes happy camper again.
+>>
+>> diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+>> index c29f301..bc9972a 100644
+>> --- a/arch/x86/kernel/setup_percpu.c
+>> +++ b/arch/x86/kernel/setup_percpu.c
+>> @@ -256,6 +256,11 @@ static struct page * __init pcpue_get_page(unsigned int cpu, int pageno)
+>>  			    + ((size_t)pageno << PAGE_SHIFT));
+>>  }
+>>  
+>> +static void __init embed_populate_pte(unsigned long addr)
+>> +{
+>> +	populate_extra_pte(addr);
+>> +}
+>> +
+>>  static ssize_t __init setup_pcpu_embed(size_t static_size)
+>>  {
+>>  	unsigned int cpu;
+>> @@ -284,10 +289,15 @@ static ssize_t __init setup_pcpu_embed(size_t static_size)
+>>  	pr_info("PERCPU: Embedded %zu pages at %p, static data %zu bytes\n",
+>>  		pcpue_unit_size >> PAGE_SHIFT, pcpue_ptr, static_size);
+>>  
+>> +#if 0
+>>  	return pcpu_setup_first_chunk(pcpue_get_page, static_size,
+>>  				      pcpue_unit_size,
+>>  				      pcpue_unit_size - static_size, pcpue_ptr,
+>>  				      NULL);
+>> +#else
+>> +	return pcpu_setup_first_chunk(pcpue_get_page, static_size,
+>> +				      0, 0, NULL, embed_populate_pte);
+>> +#endif
+>>  }
 > 
->    In blackfin SMP architecture, different core has its own L1 SRAM and MMR
->    memory, which code running on the other core can't access. In current kgdb
->    impelemntation, cpus are represented by thread with minus prefix.
-> 
-> If user run thread command in gdb to switch to the thread of the other cpu,
-> kgdb should:
-> 1. send IPI signal to master cpu
-> 2. release the specific passive cpu waiting in IPI handler
-> 3. exit kgdb exception loop on master cpu and trap into kgdb wait in IPI handler
-> 4. trap the released passive cpu into kgdb exception in IPI handler
-> 
-> Signed-off-by: Sonic Zhang <sonic.adi@gmail.com>
-> ---
->  include/linux/kgdb.h
->  kernel/kgdb.c
-> 
-> diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-> index 6adcc29..664e396 100644
-> --- a/include/linux/kgdb.h
-> +++ b/include/linux/kgdb.h
-> @@ -203,6 +204,19 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
->   */
->  extern void kgdb_roundup_cpus(unsigned long flags);
->  
-> +/**
-> + *	kgdb_roundup_cpu - Get spcific CPU into a holding pattern
-> + *	@cpu: Specific cpu id
-> + *	@flags: Current IRQ state
-> + *
-> + *	On SMP systems, we need to switch cpu from current active one to
-> + *	the other passive one. This get current active CPU into a known state
-> + *	in kgdb_wait(). 
-> + *
-> + *	On non-SMP systems, this is not called.
-> + */
-> +extern void kgdb_roundup_cpu(int cpu, unsigned long flags);
-> +
->  /* Optional functions. */
->  extern int kgdb_validate_break_address(unsigned long addr);
->  extern int kgdb_arch_set_breakpoint(unsigned long addr, char *saved_instr);
-> diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-> index e4dcfb2..277986d 100644
-> --- a/kernel/kgdb.c
-> +++ b/kernel/kgdb.c
-> @@ -565,6 +565,7 @@
->  {
->  	unsigned long flags;
->  	int cpu;
-> +	struct task_struct *thread;
->  
->  	local_irq_save(flags);
->  	cpu = raw_smp_processor_id();
-> @@ -577,10 +578,26 @@
->  	smp_wmb();
->  	atomic_set(&cpu_in_kgdb[cpu], 1);
->  
-> +	kgdb_disable_hw_debug(regs);
-> +
->  	/* Wait till primary CPU is done with debugging */
->  	while (atomic_read(&passive_cpu_wait[cpu]))
->  		cpu_relax();
->  
-> +	/* Trap into kgdb as the active CPU if gdb asks to switch. */
-> +	thread = getthread(regs, -raw_smp_processor_id() - 2);
-> +	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-> +		kgdb_contthread && kgdb_contthread == current) {
-> +		kgdb_breakpoint();
-> +
-> +		kgdb_info[cpu].debuggerinfo = NULL;
-> +		kgdb_info[cpu].task = NULL;
-> +
-> +		clocksource_touch_watchdog();
-> +		local_irq_restore(flags);
-> +		return;
-> +	}
-> + 
->  	kgdb_info[cpu].debuggerinfo = NULL;
->  	kgdb_info[cpu].task = NULL;
->  
-> @@ -1066,13 +1083,16 @@
->  			sprintf(tmpstr, "shadowCPU%d",
->  					(int)(-ks->threadid - 2));
->  			kgdb_mem2hex(tmpstr, remcom_out_buffer, strlen(tmpstr));
-> +
-> +			if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
-> +				ks->thr_query = 1;
->  		}
->  		break;
->  	}
->  }
->  
->  /* Handle the 'H' task query packets */
-> -static void gdb_cmd_task(struct kgdb_state *ks)
-> +static int gdb_cmd_task(struct kgdb_state *ks)
->  {
->  	struct task_struct *thread;
->  	char *ptr;
-> @@ -1089,6 +1109,15 @@
->  		kgdb_usethread = thread;
->  		ks->kgdb_usethreadid = ks->threadid;
->  		strcpy(remcom_out_buffer, "OK");
-> +#ifdef CONFIG_SMP
-> +		if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-> +			!ks->thr_query && ks->kgdb_usethreadid < -1 &&
-> +			- ks->kgdb_usethreadid - 2 != raw_smp_processor_id()) {
-> +			kgdb_roundup_cpu(raw_smp_processor_id(), 0);
-> +			kgdb_contthread = kgdb_usethread;
-> +			return 1;
-> +		}
-> +#endif
->  		break;
->  	case 'c':
->  		ptr = &remcom_in_buffer[2];
-> @@ -1102,10 +1131,27 @@
->  				break;
->  			}
->  			kgdb_contthread = thread;
-> +#ifdef CONFIG_SMP
-> +			if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-> +				thread != current) {
-> +				int cpu;
-> +				for_each_online_cpu(cpu) {
-> +					if (thread == kgdb_info[cpu].task) {
-> +						kgdb_roundup_cpu(
-> +							raw_smp_processor_id(),
-> +							0);
-> +						ks->kgdb_usethreadid = -cpu-2;
-> +						return 1;
-> +					}
-> +				}
-> +			}
-> +#endif
->  		}
->  		strcpy(remcom_out_buffer, "OK");
->  		break;
->  	}
-> +
-> +	return 0;
->  }
->  
->  /* Handle the 'T' thread query packets */
-> @@ -1114,6 +1160,9 @@
->  	char *ptr = &remcom_in_buffer[1];
->  	struct task_struct *thread;
->  
-> +	if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
-> +		ks->thr_query = 0;
-> +
->  	kgdb_hex2long(&ptr, &ks->threadid);
->  	thread = getthread(ks->linux_regs, ks->threadid);
->  	if (thread)
-> @@ -1223,7 +1272,12 @@
->  	/* Clear the out buffer. */
->  	memset(remcom_out_buffer, 0, sizeof(remcom_out_buffer));
->  
-> -	if (kgdb_connected) {
-> +	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) && kgdb_contthread) {
-> +		remcom_out_buffer[0] = 'O';
-> +		remcom_out_buffer[1] = 'K';
-> +		remcom_out_buffer[2] = 0;
-> +		put_packet(remcom_out_buffer);
-> +	} else if (kgdb_connected) {
->  		unsigned char thref[8];
->  		char *ptr;
->  
-> @@ -1238,6 +1292,7 @@
->  		put_packet(remcom_out_buffer);
->  	}
->  
-> +	kgdb_contthread = current;
->  	kgdb_usethread = kgdb_info[ks->cpu].task;
->  	ks->kgdb_usethreadid = shadow_pid(kgdb_info[ks->cpu].task->pid);
->  	ks->pass_exception = 0;
-> @@ -1284,7 +1339,8 @@
->  			gdb_cmd_query(ks);
->  			break;
->  		case 'H': /* task related */
-> -			gdb_cmd_task(ks);
-> +			if (gdb_cmd_task(ks))
-> +				goto kgdb_exit;
->  			break;
->  		case 'T': /* Query thread status */
->  			gdb_cmd_thread(ks);
-> @@ -1324,6 +1380,7 @@
->  			if (error >= 0 || remcom_in_buffer[0] == 'D' ||
->  			    remcom_in_buffer[0] == 'k') {
->  				error = 0;
-> +				kgdb_contthread = NULL;
->  				goto kgdb_exit;
->  			}
->  
-> @@ -1464,11 +1521,15 @@
->  	 * Get the passive CPU lock which will hold all the non-primary
->  	 * CPU in a spin state while the debugger is active
->  	 */
-> -	if (!kgdb_single_step) {
-> +	if (!kgdb_single_step && !kgdb_contthread) {
->  		for (i = 0; i < NR_CPUS; i++)
->  			atomic_set(&passive_cpu_wait[i], 1);
->  	}
->  
-> +	if (kgdb_contthread)
-> +		atomic_set(&passive_cpu_wait[raw_smp_processor_id()], 1);
-> + 
-> +
->  	/*
->  	 * spin_lock code is good enough as a barrier so we don't
->  	 * need one here:
-> @@ -1477,7 +1538,7 @@
->  
->  #ifdef CONFIG_SMP
->  	/* Signal the other CPUs to enter kgdb_wait() */
-> -	if ((!kgdb_single_step) && kgdb_do_roundup)
-> +	if ((!kgdb_single_step && !kgdb_contthread) && kgdb_do_roundup)
->  		kgdb_roundup_cpus(flags);
->  #endif
->  
-> @@ -1496,7 +1557,6 @@
->  	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
->  	kgdb_deactivate_sw_breakpoints();
->  	kgdb_single_step = 0;
-> -	kgdb_contthread = current;
->  	exception_level = 0;
->  
->  	/* Talk to debugger with gdbserial protocol */
-> @@ -1510,7 +1570,14 @@
->  	kgdb_info[ks->cpu].task = NULL;
->  	atomic_set(&cpu_in_kgdb[ks->cpu], 0);
->  
-> -	if (!kgdb_single_step) {
-> +#ifdef CONFIG_SMP
-> +	i = -(ks->kgdb_usethreadid + 2);
-> +	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-> +		kgdb_contthread && i != cpu) {
-> +		atomic_set(&passive_cpu_wait[i], 0);
-> +	}
-> +#endif
-> +	if (!kgdb_single_step && !kgdb_contthread) {
->  		for (i = NR_CPUS-1; i >= 0; i--)
->  			atomic_set(&passive_cpu_wait[i], 0);
->  		/*
-> @@ -1536,9 +1603,9 @@
->  int kgdb_nmicallback(int cpu, void *regs)
->  {
->  #ifdef CONFIG_SMP
-> -	if (!atomic_read(&cpu_in_kgdb[cpu]) &&
-> +	if (!atomic_read(&cpu_in_kgdb[cpu]) && (kgdb_contthread ||
->  			atomic_read(&kgdb_active) != cpu &&
-> -			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)])) {
-> +			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)]))) {
->  		kgdb_wait((struct pt_regs *)regs);
->  		return 0;
->  	}
+> That isn't quite correct but is still very interesting that it fixes
+> the build issue.  Super weird.  I'm almost done setting up 11.0 system.
+> I'll dig into it as soon as I'm done with sata_nv -stable issue.
+
+Hmm... on my openSUSE 11.0 it builds just fine.
+
+  $ gcc --version
+  gcc (SUSE Linux) 4.3.1 20080507 (prerelease) [gcc-4_3-branch revision 135036]
+  Copyright (C) 2008 Free Software Foundation, Inc.
+  This is free software; see the source for copying conditions.  There is NO
+  warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+  $ ld --version
+  GNU ld (GNU Binutils; openSUSE 11.0) 2.18.50.20080409-11.1
+  Copyright 2007 Free Software Foundation, Inc.
+  This program is free software; you may redistribute it under the terms of
+  the GNU General Public License version 3 or (at your option) a later version.
+  This program has absolutely no warranty.
+
+I've used the config file you attached and the commit ID I used is
+d0c4f570276cb4d2dc4215b90eb7cb6e2bdd4a15.
+
+I wonder what is going on.  I'll try again with
+89c9215165ca609096e845926d9a18f1306176a4.  Argh... weird.
+
+Thanks.
+
+--
+tejun
