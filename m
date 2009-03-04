@@ -1,251 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZCDGeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZCDGe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbZCDGeK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 01:34:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbZCDGd5
+	id S1754990AbZCDGe2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 01:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbZCDGeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 01:33:57 -0500
-Received: from smtp4.tech.numericable.fr ([82.216.111.40]:50703 "EHLO
-	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbZCDGdz (ORCPT
+	Wed, 4 Mar 2009 01:34:08 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42288 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753193AbZCDGeG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 01:33:55 -0500
-Message-ID: <49AE20CF.1030601@numericable.fr>
-Date: Wed, 04 Mar 2009 07:33:51 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: LSM <linux-security-module@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul.moore@hp.com>
-Subject: [patch][smack][2.6.29-rc] fixes for unlabeled host support
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Mar 2009 01:34:06 -0500
+Date: Wed, 4 Mar 2009 15:32:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
+       Bharata B Rao <bharata.rao@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, kenchen@google.com
+Subject: [PATCH] remove rq->lock from cpuacct cgroup v2
+Message-Id: <20090304153245.109eada4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1236081288.5330.4105.camel@laptop>
+References: <49A65455.4030204@cn.fujitsu.com>
+	<344eb09a0902260210y44c0684by9b22f041116d3f7c@mail.gmail.com>
+	<18f6db017e5d44596e828e0753f28e75.squirrel@webmail-b.css.fujitsu.com>
+	<1235645076.4645.4781.camel@laptop>
+	<934198669efa83e838a52284e2c4f8b5.squirrel@webmail-b.css.fujitsu.com>
+	<1235647682.4948.15.camel@laptop>
+	<145d0010d65060bb089d5a87e06cbd0d.squirrel@webmail-b.css.fujitsu.com>
+	<20090226164509.GB6634@linux.vnet.ibm.com>
+	<20090227095856.ef8c1c05.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090227012915.GF6634@linux.vnet.ibm.com>
+	<20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
+	<1236005770.5330.583.camel@laptop>
+	<20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
+	<1236066689.18955.27.camel@twins>
+	<d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
+	<1236073236.18955.46.camel@twins>
+	<2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
+	<1236081288.5330.4105.camel@laptop>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-The following patch (against 2.6.29rc5) fixes a few issues in the smack/netlabel 
-"unlabeled host support" functionnality that was added in 2.6.29rc.
-It should go in before -final.
+cgroup/cpuacct subsystem counts cpu usage by 64bit coutnter in
+per-cpu object. In read-side (via cpuacct.usage file), for reading 64bit
+value in safe manner, it takes rq->lock of (other) cpus.
 
+In general, taking rq->lock of other cpus from codes not for scheduler
+is not good. This patch tries to remove rq->lock in read-side.
 
-1) smack_host_label disregard a "0.0.0.0/0 @" rule (or other label), preventing 'tagged' tasks to access Internet (many systems drop packets with IP options)
-2) netmasks were not handled correctly, they were stored in a way _not equivalent_  to conversion to be32 (it was equivalent for /0, /8, /16, /24, /32 masks but not other masks)
-3) smack_netlbladdr prefixes (IP/mask) were not consistent (mask&IP was not done), so there could have been different list entries for the same IP prefix; if those entries had different labels, well ... 
-4) they were not sorted 
+To read 64bit value in atomic, this patch uses seqcounter.
 
-1) 2) 3) are bugs, 4) is a more cosmetic issue.
-The patch :
--creates a new helper smk_netlbladdr_insert to insert a smk_netlbladdr, sorted by netmask length
--use the new sorted nature of  smack_netlbladdrs list to simplify smack_host_label : 
- the first match _will_ be the more specific
--corrects endianness issues in smk_write_netlbladdr &  netlbladdr_seq_show
+Pros.
+  - rq->lock is not necessary.
+Cons.
+  - When updating counter, sequence number must be updated.
+    (I hope this per-cpu sequence number is on cache...)
 
+Changelog: v1->v2
+ - checking calling context of all calls and avoid unnecessary
+   preempt_disable calls.
+ - use on_each_cpu() instead of workqueue, at reset
 
-regards,
-Etienne Basset
-
-Signed-off-by: <etienne.basset@numericable.fr>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
-
-
-security/smack/smack_lsm.c |   43 +++++------------------------
- security/smack/smackfs.c   |   64 +++++++++++++++++++++++++++++++++----------
- 2 files changed, 57 insertions(+), 50 deletions(-)
-
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 0278bc0..e7ded13 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -1498,58 +1498,31 @@ static int smack_socket_post_create(struct socket *sock, int family,
-  * looks for host based access restrictions
-  *
-  * This version will only be appropriate for really small
-- * sets of single label hosts. Because of the masking
-- * it cannot shortcut out on the first match. There are
-- * numerious ways to address the problem, but none of them
-- * have been applied here.
-+ * sets of single label hosts.
-  *
-  * Returns the label of the far end or NULL if it's not special.
-  */
- static char *smack_host_label(struct sockaddr_in *sip)
- {
- 	struct smk_netlbladdr *snp;
--	char *bestlabel = NULL;
- 	struct in_addr *siap = &sip->sin_addr;
--	struct in_addr *liap;
--	struct in_addr *miap;
--	struct in_addr bestmask;
+Index: mmotm-2.6.29-Mar3/kernel/sched.c
+===================================================================
+--- mmotm-2.6.29-Mar3.orig/kernel/sched.c
++++ mmotm-2.6.29-Mar3/kernel/sched.c
+@@ -9581,6 +9581,71 @@ struct cgroup_subsys cpu_cgroup_subsys =
  
- 	if (siap->s_addr == 0)
- 		return NULL;
+ #ifdef CONFIG_CGROUP_CPUACCT
  
--	bestmask.s_addr = 0;
--
- 	for (snp = smack_netlbladdrs; snp != NULL; snp = snp->smk_next) {
--		liap = &snp->smk_host.sin_addr;
--		miap = &snp->smk_mask;
--		/*
--		 * If the addresses match after applying the list entry mask
--		 * the entry matches the address. If it doesn't move along to
--		 * the next entry.
--		 */
--		if ((liap->s_addr & miap->s_addr) !=
--		    (siap->s_addr & miap->s_addr))
--			continue;
- 		/*
--		 * If the list entry mask identifies a single address
--		 * it can't get any more specific.
-+		 * we break after finding the first match because
-+		 * the list is sorted from longest to shortest mask
-+		 * so we have found the most specific match
- 		 */
--		if (miap->s_addr == 0xffffffff)
-+		if ((&snp->smk_host.sin_addr)->s_addr  ==
-+			(siap->s_addr & (&snp->smk_mask)->s_addr)) {
- 			return snp->smk_label;
--		/*
--		 * If the list entry mask is less specific than the best
--		 * already found this entry is uninteresting.
--		 */
--		if ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr)
--			continue;
--		/*
--		 * This is better than any entry found so far.
--		 */
--		bestmask.s_addr = miap->s_addr;
--		bestlabel = snp->smk_label;
-+		}
- 	}
- 
--	return bestlabel;
-+	return NULL;
- }
- 
- /**
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index 8e42800..51f0efc 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -650,10 +650,6 @@ static void *netlbladdr_seq_next(struct seq_file *s, void *v, loff_t *pos)
- 
- 	return skp;
- }
--/*
--#define BEMASK	0x80000000
--*/
--#define BEMASK	0x00000001
- #define BEBITS	(sizeof(__be32) * 8)
- 
- /*
-@@ -663,12 +659,10 @@ static int netlbladdr_seq_show(struct seq_file *s, void *v)
- {
- 	struct smk_netlbladdr *skp = (struct smk_netlbladdr *) v;
- 	unsigned char *hp = (char *) &skp->smk_host.sin_addr.s_addr;
--	__be32 bebits;
--	int maskn = 0;
-+	int maskn;
-+	u32 temp_mask = be32_to_cpu(skp->smk_mask.s_addr);
- 
--	for (bebits = BEMASK; bebits != 0; maskn++, bebits <<= 1)
--		if ((skp->smk_mask.s_addr & bebits) == 0)
--			break;
-+	for (maskn = 0; temp_mask; temp_mask <<= 1, maskn++);
- 
- 	seq_printf(s, "%u.%u.%u.%u/%d %s\n",
- 		hp[0], hp[1], hp[2], hp[3], maskn, skp->smk_label);
-@@ -702,6 +696,42 @@ static int smk_open_netlbladdr(struct inode *inode, struct file *file)
- }
- 
- /**
-+ * smk_netlbladdr_insert
-+ * @new : netlabel to insert
-+ *
-+ * This helper insert netlabel in the smack_netlbladdrs list
-+ * sorted by netmask length (longest to smallest)
++#ifndef CONFIG_64BIT
++/* seq counter for handle 64bit counter on 32bit system */
++DEFINE_PER_CPU(struct seqcount, cpuacct_cgroup_seq);
++
++/*
++ * Counter update happens while rq->lock is held and we don't need to
++ * disable preempt explcitly.
 + */
-+static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
++static inline void cpuacct_start_counter_update(void)
 +{
-+	struct smk_netlbladdr *m;
++	/* This is called under rq->lock and IRQ is off */
++	struct seqcount *s = &__get_cpu_var(cpuacct_cgroup_seq);
 +
-+	if (smack_netlbladdrs == NULL) {
-+		smack_netlbladdrs = new;
-+		return;
-+	}
-+
-+	/* the comparison '>' is a bit hacky, but works */
-+	if (new->smk_mask.s_addr > smack_netlbladdrs->smk_mask.s_addr) {
-+		new->smk_next = smack_netlbladdrs;
-+		smack_netlbladdrs = new;
-+		return;
-+	}
-+	for (m = smack_netlbladdrs; m != NULL; m = m->smk_next) {
-+		if (m->smk_next == NULL) {
-+			m->smk_next = new;
-+			return;
-+		}
-+		if (new->smk_mask.s_addr > m->smk_next->smk_mask.s_addr) {
-+			new->smk_next = m->smk_next;
-+			m->smk_next = new;
-+			return;
-+		}
-+	}
++	write_seqcount_begin(s);
 +}
 +
++static inline void cpuacct_end_counter_update(void)
++{
++	struct seqcount *s = &__get_cpu_var(cpuacct_cgroup_seq);
 +
-+/**
-  * smk_write_netlbladdr - write() for /smack/netlabel
-  * @filp: file pointer, not actually used
-  * @buf: where to get the data from
-@@ -724,8 +754,9 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	struct netlbl_audit audit_info;
- 	struct in_addr mask;
- 	unsigned int m;
--	__be32 bebits = BEMASK;
-+	u32 mask_bits = (1<<31);
- 	__be32 nsa;
-+	u32 temp_mask;
++	write_seqcount_end(s);
++}
++
++static inline u64
++cpuacct_read_counter(u64 *val, int cpu)
++{
++	struct seqcount *s = &per_cpu(cpuacct_cgroup_seq, cpu);
++	unsigned int seq;
++	u64 data;
++
++	do {
++		seq = read_seqcount_begin(s);
++		data = *val;
++	} while (read_seqcount_retry(s, seq));
++	return data;
++}
++/* This is a special funtion called against "offline" cpus. */
++static inline void cpuacct_reset_offline_counter(u64 *val, int cpu)
++{
++	struct seqcount *s = &per_cpu(cpuacct_cgroup_seq, cpu);
++
++	write_seqcount_begin(s);
++	*val = 0;
++	write_seqcount_end(s);
++}
++#else
++static inline void cpuacct_start_counter_update(void)
++{
++}
++
++static inline void cpuacct_end_counter_update(void)
++{
++}
++
++static inline u64 cpuacct_read_counter(u64 *val, int cpu)
++{
++	return *val;
++}
++
++static inline void cpuacct_reset_offline_counter(u64 *val, int cpu)
++{
++	*val = 0;
++}
++#endif
++
+ /*
+  * CPU accounting code for task groups.
+  *
+@@ -9643,39 +9708,27 @@ cpuacct_destroy(struct cgroup_subsys *ss
+ 	kfree(ca);
+ }
  
- 	/*
- 	 * Must have privilege.
-@@ -761,10 +792,13 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	if (sp == NULL)
- 		return -EINVAL;
++/* In 32bit enviroment, seqcounter is used for reading 64bit in safe way */
+ static u64 cpuacct_cpuusage_read(struct cpuacct *ca, int cpu)
+ {
+ 	u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
+ 	u64 data;
  
--	for (mask.s_addr = 0; m > 0; m--) {
--		mask.s_addr |= bebits;
--		bebits <<= 1;
-+	for (temp_mask = 0; m > 0; m--) {
-+		temp_mask |= mask_bits;
-+		mask_bits >>= 1;
+-#ifndef CONFIG_64BIT
+-	/*
+-	 * Take rq->lock to make 64-bit read safe on 32-bit platforms.
+-	 */
+-	spin_lock_irq(&cpu_rq(cpu)->lock);
+-	data = *cpuusage;
+-	spin_unlock_irq(&cpu_rq(cpu)->lock);
+-#else
+-	data = *cpuusage;
+-#endif
++	data = cpuacct_read_counter(cpuusage, cpu);
+ 
+ 	return data;
+ }
+ 
+-static void cpuacct_cpuusage_write(struct cpuacct *ca, int cpu, u64 val)
++/* called by per-cpu smp call function (in non-preemptable context) */
++static void cpuacct_cpuusage_reset_cpu(void *data)
+ {
++	int cpu = smp_processor_id();
++	struct cpuacct *ca = data;
+ 	u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
+ 
+-#ifndef CONFIG_64BIT
+-	/*
+-	 * Take rq->lock to make 64-bit write safe on 32-bit platforms.
+-	 */
+-	spin_lock_irq(&cpu_rq(cpu)->lock);
+-	*cpuusage = val;
+-	spin_unlock_irq(&cpu_rq(cpu)->lock);
+-#else
+-	*cpuusage = val;
+-#endif
++	cpuacct_start_counter_update();
++	*cpuusage = 0;
++	cpuacct_end_counter_update();
+ }
+ 
+ /* return total cpu usage (in nanoseconds) of a group */
+@@ -9691,23 +9744,30 @@ static u64 cpuusage_read(struct cgroup *
+ 	return totalcpuusage;
+ }
+ 
+-static int cpuusage_write(struct cgroup *cgrp, struct cftype *cftype,
+-								u64 reset)
++static int cpuacct_cpuusage_reset(struct cgroup *cgrp, unsigned int event)
+ {
+ 	struct cpuacct *ca = cgroup_ca(cgrp);
+-	int err = 0;
+-	int i;
++	int cpu;
++	/*
++	 * We prevent cpu hotplug while we do reset.
++	 */
++	get_online_cpus();
++	/*
++	 * clear all online cpu's status (including local one)
++	 * This reseting uses nowait smp call and counter will be cleared in
++	 * asynchronous way.
++	 */
++	on_each_cpu(cpuacct_cpuusage_reset_cpu, ca, 0);
+ 
+-	if (reset) {
+-		err = -EINVAL;
+-		goto out;
++	/* clear all present but offline cpus' */
++	for_each_possible_cpu(cpu) {
++		if (!cpu_online(cpu)) {
++			u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
++			cpuacct_reset_offline_counter(cpuusage, cpu);
++		}
  	}
-+	mask.s_addr = cpu_to_be32(temp_mask);
-+
-+	newname.sin_addr.s_addr &= mask.s_addr;
- 	/*
- 	 * Only allow one writer at a time. Writes should be
- 	 * quite rare and small in any case.
-@@ -772,6 +806,7 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	mutex_lock(&smk_netlbladdr_lock);
+-
+-	for_each_present_cpu(i)
+-		cpuacct_cpuusage_write(ca, i, 0);
+-
+-out:
+-	return err;
++	put_online_cpus();
++	return 0;
+ }
  
- 	nsa = newname.sin_addr.s_addr;
-+	/* try to find if the prefix is already in the list */
- 	for (skp = smack_netlbladdrs; skp != NULL; skp = skp->smk_next)
- 		if (skp->smk_host.sin_addr.s_addr == nsa &&
- 		    skp->smk_mask.s_addr == mask.s_addr)
-@@ -787,9 +822,8 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 			rc = 0;
- 			skp->smk_host.sin_addr.s_addr = newname.sin_addr.s_addr;
- 			skp->smk_mask.s_addr = mask.s_addr;
--			skp->smk_next = smack_netlbladdrs;
- 			skp->smk_label = sp;
--			smack_netlbladdrs = skp;
-+			smk_netlbladdr_insert(skp);
- 		}
- 	} else {
- 		rc = netlbl_cfg_unlbl_static_del(&init_net, NULL,
+ static int cpuacct_percpu_seq_read(struct cgroup *cgroup, struct cftype *cft,
+@@ -9729,7 +9789,7 @@ static struct cftype files[] = {
+ 	{
+ 		.name = "usage",
+ 		.read_u64 = cpuusage_read,
+-		.write_u64 = cpuusage_write,
++		.trigger = cpuacct_cpuusage_reset,
+ 	},
+ 	{
+ 		.name = "usage_percpu",
+@@ -9759,10 +9819,12 @@ static void cpuacct_charge(struct task_s
+ 	cpu = task_cpu(tsk);
+ 	ca = task_ca(tsk);
+ 
++	cpuacct_start_counter_update();
+ 	for (; ca; ca = ca->parent) {
+ 		u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
+ 		*cpuusage += cputime;
+ 	}
++	cpuacct_end_counter_update();
+ }
+ 
+ struct cgroup_subsys cpuacct_subsys = {
 
