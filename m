@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbZCDNRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZCDNSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbZCDNRo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 08:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbZCDNRg
+	id S1755922AbZCDNSx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 08:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZCDNSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 08:17:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38681 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbZCDNRf (ORCPT
+	Wed, 4 Mar 2009 08:18:45 -0500
+Received: from ms04.ethome.com.tw ([211.76.112.37]:59999 "EHLO
+	ms04-i.ethome.com.tw" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750752AbZCDNSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 08:17:35 -0500
-Subject: [PATCH] lockdep: fix incorrect state name
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 14:17:26 +0100
-Message-Id: <1236172646.5330.7450.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 08:18:44 -0500
+From: "cmj1001" <cmj1001@ethome.com.tw>
+To: undisclosed-recipients:;
+Subject: Re: Represent DTL in your Region
+Date: Wed, 4 Mar 2009 19:49:10 +0800
+Message-Id: <20090304112550.M35819@ethome.com.tw>
+X-Mailer: KBronet Webmail 2.01 20030425
+X-OriginatingIP: 212.100.69.6 (cmj1001@ethome.com.tw)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=big5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: lockdep: fix incorrect state name
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Wed Mar 04 13:51:13 CET 2009
+HONGKONG DTL INDUSTRIAL&TRADING LIMITED
+#103 chicheng road linhai zhejiang
+Ref 289/rep
 
-In the recent mark_lock_irq() rework a bug snuck in that would report the
-state of write locks causing irq inversion under a read lock as a read
-lock.
+Would you like to work and Represent DTL online from Home/Temporarily and get paid Monthly?
+We are glad to offer you a job/position at HONGKONG DTL TRADING LIMITED
+You do not need to have an Office and this certainly will not affect your present job.
+You will be receiving outstanding payments from our clients.
 
-Fix this by masking the read bit of the state when validating write
-dependencies.
+* No form of investments from you.
+* This job takes only 1 hour per day
+If interested reply with below information to
+hongkondtl7@gmail.com
 
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/lockdep.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+*Full Names
+*Age
+*Home Address (not P.o Box)
+*City
+*State
+*Zip
+*Ocupation.
+*Phone number
 
-Index: linux-2.6/kernel/lockdep.c
-===================================================================
---- linux-2.6.orig/kernel/lockdep.c
-+++ linux-2.6/kernel/lockdep.c
-@@ -2016,7 +2016,8 @@ typedef int (*check_usage_f)(struct task
- 			     enum lock_usage_bit bit, const char *name);
- 
- static int
--mark_lock_irq(struct task_struct *curr, struct held_lock *this, int new_bit)
-+mark_lock_irq(struct task_struct *curr, struct held_lock *this,
-+		enum lock_usage_bit new_bit)
- {
- 	int excl_bit = exclusive_bit(new_bit);
- 	int read = new_bit & 1;
-@@ -2044,7 +2045,7 @@ mark_lock_irq(struct task_struct *curr, 
- 	 * states.
- 	 */
- 	if ((!read || !dir || STRICT_READ_CHECKS) &&
--			!usage(curr, this, excl_bit, state_name(new_bit)))
-+			!usage(curr, this, excl_bit, state_name(new_bit & ~1)))
- 		return 0;
- 
- 	/*
+Best Regards,
+Andy Xu
 
-
+N.B. Send all your response to hongkondtl7@gmail.com
