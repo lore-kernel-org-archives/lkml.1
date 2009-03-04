@@ -1,151 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZCDADa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbZCDADx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbZCDADa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbZCDADW
+	id S1754742AbZCDADx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbZCDADk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:03:22 -0500
-Received: from ozlabs.org ([203.10.76.45]:53492 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753216AbZCDADV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:03:21 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu 
- =?iso-8859-1?q?chunk=09allocation?=
-Date: Wed, 4 Mar 2009 10:33:08 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224141217.GA17287@elte.hu> <49A40624.4000100@kernel.org>
-In-Reply-To: <49A40624.4000100@kernel.org>
+	Tue, 3 Mar 2009 19:03:40 -0500
+Received: from h155.mvista.com ([63.81.120.158]:55716 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753216AbZCDADj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 19:03:39 -0500
+Message-ID: <49ADC559.7040705@ct.jp.nec.com>
+Date: Tue, 03 Mar 2009 16:03:37 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: minyard@acm.org, linux-kernel@vger.kernel.org,
+       openipmi-developer@lists.sourceforge.net
+Subject: Re: [PATCH 4/5] IPMI: Add console oops catcher
+References: <20090303152123.GD7777@minyard.local> <20090303132046.a8975963.akpm@linux-foundation.org>
+In-Reply-To: <20090303132046.a8975963.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200903041033.09502.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 February 2009 01:07:24 Tejun Heo wrote:
-> it always
-> saves a 2MB TLB entry for all the non-NUMA machines out there.
+Andrew Morton wrote:
+> On Tue, 03 Mar 2009 09:21:23 -0600
+> Corey Minyard <minyard@acm.org> wrote:
+> 
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>
+>> Console messages on oops or panic are very important to investigate problem.
+>> Logging oops or panic messages to SEL is useful because SEL is a non
+>> volatile memory.
+>>
+>> Implement a console driver to log messages to SEL when oops_in_progress is
+>> not zero. The first message just after oops, panic or every 10 seconds from
+>> last timestamp are logged as OEM event with timestamp, others are logged as
+>> OEM event without timestamp.
+>>
+>> Enable config IPMI_OOPS_CONSOLE and add console=ttyIPMI to kernel command
+>> line to log panic or oops messages to IPMI SEL.
+>>
+>> The number of entries for this output is limited by msg_limit paramter,
+>> and the default value is 100.
+>>
+>>
+>> ...
+>>
+>> +static void ipmi_oops_console_log_to_sel(int timestamp)
+>> +{
+>> +	struct ipmi_system_interface_addr si;
+>> +	struct kernel_ipmi_msg msg;
+>> +	unsigned int len;
+>> +	unsigned char data[16];
+>> +	unsigned char my_addr;
+>> +
+>> +	if (!oops_user || !msg_len || msg_count >= msg_limit)
+>> +		return;
+>> +
+>> +	len = min((timestamp ? SEL_MSGSIZE_TIMESTAMP : SEL_MSGSIZE), msg_len);
+>> +
+>> +	si.addr_type = IPMI_SYSTEM_INTERFACE_ADDR_TYPE;
+>> +	si.channel = IPMI_BMC_CHANNEL;
+>> +	si.lun = 0;
+>> +
+>> +	msg.netfn = IPMI_NETFN_STORAGE_REQUEST;
+>> +	msg.cmd = IPMI_ADD_SEL_ENTRY_CMD;
+>> +	msg.data = data;
+>> +	msg.data_len = 16;
+>> +
+>> +	memset(data, 0, sizeof(data));
+>> +	if (timestamp) {
+>> +		len = min(SEL_MSGSIZE_TIMESTAMP, msg_len);
+>> +		data[2] = 0xd1; /* OEM event with timestamp */
+>> +		memcpy(data + 10, msg_ptr, len);
+>> +		msg_jiffies = jiffies; /* save jiffies at timestamp */
+>> +	} else {
+>> +		len = min(SEL_MSGSIZE, msg_len);
+>> +		data[2] = 0xf1; /* OEM event without timestamp */
+>> +		memcpy(data + 3, msg_ptr, len);
+>> +	}
+>> +
+>> +	preempt_disable();
+> 
+> This reader is unable to determine what the mystery preempt_disable()
+> is here for.  It needs a comment, please.
 
-Note that everyone keeps talking about "a" TLB entry; I wanted to make
-sure (esp. for those of us reading from the sidelines), it's not: it's
-up to num_possible_cpus() TLB entries.  Of course, many paths won't access
-other CPU's data, but it'd be interesting (and pretty easy) to actually
-instrument how rare this is...
+I cannot recall why it's here. So a comment is really needed.
+This preempt_disable() may not be needed.
 
-Hmm, fairly rare, but not incredibly:
+> 
+> 
+>> +	if (ipmi_get_my_address(oops_user, 0, &my_addr))
+>> +		goto out;
+>> +
+>> +	atomic_set(&oops_counter, 2);
+> 
+> What happens if two CPUs oops at the same time (which is fairly common)?
 
-percpu: measure use
+OK. I'll look at this.
 
-With the idea of using virtual mappings for percpu regions, we wonder
-how often we access other CPU's per-cpu variables.
+> 
+>> +	if (ipmi_request_supply_msgs(oops_user, (struct ipmi_addr *)&si,
+>> +				     0, &msg, NULL, &oops_smi_msg,
+>> +				     &oops_recv_msg, 1) < 0)
+>> +		goto out;
+>> +	while (atomic_read(&oops_counter) > 0) {
+>> +		ipmi_poll_interface(oops_user);
+>> +		cpu_relax();
+>> +	}
+> 
+> It would be prudent to have a timeout in this loop.  The machine has
+> crashed and subsystems and hardware and memory are in an unknown and
+> possibly bad state.
 
-32-bit 4-way SMP (under kvm), kernel make -j4:
-get_cpu_var()         52,358,618
-raw_get_cpu_var()        287,191
-per_cpu():            17,371,648
-per_cpu(same):        16,020,390
+Right.
 
-Total same-cpu calls: 68,666,199
-Cross-per-cpu calls:   1,351,258
+> 
+>> +	++msg_count;
+>> +	msg_len -= len;
+>> +	msg_ptr = msg_len ? &oops_msg[len] : oops_msg;
+>> +out:
+>> +	preempt_enable();
+>> +}
+>> +
+>>
+>> ...
+>>
+>> +static struct console oops_console = {
+>> +	.name	= "ttyIPMI",
+>> +	.write	= ipmi_oops_console_write,
+>> +	.unblank = ipmi_oops_console_sync,
+>> +	.index	= -1,
+>> +};
+> 
+> This looks like we're abusing the "unblank" method.
+> 
+> If you think that the console subsystem is missing some capability
+> which this driver needs then please do prefer to fix the console
+> subsystem, rather than awkwardly making things fit.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/x86/Makefile_32.cpu     |    2 +-
- include/asm-generic/percpu.h |   10 +++++++---
- kernel/module.c              |   11 +++++++++++
- kernel/smp.c                 |   21 +++++++++++++++++++++
- 4 files changed, 40 insertions(+), 4 deletions(-)
+OK. Will take a look about this point.
 
-diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
---- a/arch/x86/Makefile_32.cpu
-+++ b/arch/x86/Makefile_32.cpu
-@@ -47,5 +47,5 @@ cflags-$(CONFIG_X86_GENERIC) 	+= $(call 
- # Bug fix for binutils: this option is required in order to keep
- # binutils from generating NOPL instructions against our will.
- ifneq ($(CONFIG_X86_P6_NOP),y)
--cflags-y			+= $(call cc-option,-Wa$(comma)-mtune=generic32,)
-+#cflags-y			+= $(call cc-option,-Wa$(comma)-mtune=generic32,)
- endif
-diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
---- a/include/asm-generic/percpu.h
-+++ b/include/asm-generic/percpu.h
-@@ -53,12 +53,16 @@ extern unsigned long __per_cpu_offset[NR
-  * established ways to produce a usable pointer from the percpu variable
-  * offset.
-  */
-+void count_per_cpu(unsigned int cpu);
-+void count_get_cpu_var(void);
-+void count_raw_get_cpu_var(void);
-+
- #define per_cpu(var, cpu) \
--	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
-+	(*(count_per_cpu(cpu), SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu))))
- #define __get_cpu_var(var) \
--	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
-+	(*(count_get_cpu_var(), SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset)))
- #define __raw_get_cpu_var(var) \
--	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset))
-+	(*(count_raw_get_cpu_var(), SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset)))
- 
- 
- #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
-diff --git a/kernel/module.c b/kernel/module.c
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2705,6 +2705,17 @@ static const struct seq_operations modul
- 
- static int modules_open(struct inode *inode, struct file *file)
- {
-+	extern atomic_t get_cpu_var_count, raw_get_cpu_var_count, per_cpu_count[], unnecessary_count[];
-+	unsigned int i;
-+
-+	printk("get_cpu_var_count: %i\n", atomic_xchg(&get_cpu_var_count, 0));
-+	printk("raw_get_cpu_var_count: %i\n",
-+	       atomic_xchg(&raw_get_cpu_var_count, 0));
-+	for_each_online_cpu(i)
-+		printk("per_cpu %i: %u (%u self)\n",
-+		       i, atomic_xchg(&per_cpu_count[i], 0),
-+		       atomic_xchg(&unnecessary_count[i], 0));
-+
- 	return seq_open(file, &modules_op);
- }
- 
-diff --git a/kernel/smp.c b/kernel/smp.c
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -10,6 +10,27 @@
- #include <linux/rcupdate.h>
- #include <linux/rculist.h>
- #include <linux/smp.h>
-+
-+atomic_t get_cpu_var_count, raw_get_cpu_var_count, per_cpu_count[CONFIG_NR_CPUS], unnecessary_count[CONFIG_NR_CPUS];
-+void count_per_cpu(unsigned int cpu)
-+{
-+	if (cpu == raw_smp_processor_id())
-+		atomic_inc(&unnecessary_count[cpu]);
-+	atomic_inc(&per_cpu_count[cpu]);
-+}
-+EXPORT_SYMBOL(count_per_cpu);
-+
-+void count_get_cpu_var(void)
-+{
-+	atomic_inc(&get_cpu_var_count);
-+}
-+EXPORT_SYMBOL(count_get_cpu_var);
-+
-+void count_raw_get_cpu_var(void)
-+{
-+	atomic_inc(&raw_get_cpu_var_count);
-+}
-+EXPORT_SYMBOL(count_raw_get_cpu_var);
- 
- static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
- static LIST_HEAD(call_function_queue);
+Thanks,
+Hiroshi
+
