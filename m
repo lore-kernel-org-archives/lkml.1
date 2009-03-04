@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZCDIBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZCDICa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZCDIBD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 03:01:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZCDIAt
+	id S1755645AbZCDICa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 03:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZCDICW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 03:00:49 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49573 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753079AbZCDIAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 03:00:48 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+4kIh2+w+4pKa5lkacBUSC4lrc+YuCvQayPUVp8B
-	VwTy9qnG80eZb5
-Subject: Re: Large amount of scsi-sgpool objects
-From: Mike Galbraith <efault@gmx.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Boaz Harrosh <bharrosh@panasas.com>, linux-scsi@vger.kernel.org,
+	Wed, 4 Mar 2009 03:02:22 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59531 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbZCDICW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 03:02:22 -0500
+Date: Wed, 4 Mar 2009 09:02:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jesse Barnes <jesse.barnes@intel.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <49AE32B5.9040603@s5r6.in-berlin.de>
-References: <49ACF8FE.2020904@panasas.com>
-	 <1236093718.3263.3.camel@localhost.localdomain>
-	 <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
-	 <1236097526.3263.17.camel@localhost.localdomain>
-	 <20090303192212.GA20705@elte.hu>
-	 <1236115544.15993.22.camel@localhost.localdomain>
-	 <20090303214454.GA8288@elte.hu>
-	 <1236119990.24019.35.camel@localhost.localdomain>
-	 <20090303230323.GA21644@elte.hu> <49ADBE29.4040706@s5r6.in-berlin.de>
-	 <20090303234834.GA13389@elte.hu>  <49AE221D.9010909@s5r6.in-berlin.de>
-	 <1236150752.6049.19.camel@marge.simson.net>
-	 <49AE32B5.9040603@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 04 Mar 2009 09:00:40 +0100
-Message-Id: <1236153640.6729.3.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
+	standard config registers of all devices early)
+Message-ID: <20090304080212.GA1489@ucw.cz>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902032253.42709.rjw@sisk.pl> <1233700390.16867.97.camel@pasglop> <200902032344.22348.rjw@sisk.pl> <1233702327.16867.109.camel@pasglop> <alpine.LFD.2.00.0902031514510.3247@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902031514510.3247@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 08:50 +0100, Stefan Richter wrote:
-> Mike Galbraith wrote:
-> > On Wed, 2009-03-04 at 07:39 +0100, Stefan Richter wrote:
-> >> Ingo Molnar wrote:
-> >>> Yeah, these commits are in none of the topic branches that are 
-> >>> the git base of development, they are all already in a separate 
-> >>> branch named "tip:out-of-tree".
-> >> So people should remember to retry without out-of-tree before reporting
-> >> problems == remember to report against the development base.
-> > 
-> > I'll bite, how does a gut-fu white belt accomplish that?
+On Tue 2009-02-03 15:18:14, Linus Torvalds wrote:
 > 
-> How to do it is currently not quite obvious
->   - for linux-2.6-x86.git users because the master branch contains
->     out-of-tree.¹  Or maybe nobody should use the master branch,
->     I don't know.
+> 
+> On Wed, 4 Feb 2009, Benjamin Herrenschmidt wrote:
+> > 
+> > Wait wait wait ... the -whole- point of the exercise, wether using
+> > local_irq_save or disable_irq, -is- to put the ACPI bit -after- setting
+> > the device in low power state and before the restore on wakeup...
+> 
+> You're missing context.
+> 
+> ACPI isn't just for the device power settings. It's for the CPU's too, and 
+> it's for things like "prepare to sleep". And they all have _different_ 
+> requirements.
 
-Ah, ok.  I thought there might be an un-merge incantation or whatnot.
+As long as we claim to support cpu hotplug, suspending the cpus early
+should work. User might have unplugged the cpu manually...
 
-(seems to have just been an oopsie anyway)
+If something is broken in acpi, we may need to disable  cpu*/onlone on
+ affected systems.
+								Pavel
 
-	-Mike
+> 
+> What Rafael is trying to tell you is that we have ACPI-initiated ordering 
+> requirements between turning CPU's off, and turning devices off, and he's 
+> not willing to change that.
+> 
+> > The -one- thing that indeed conflicts here is that we disable nonboot
+> > CPUs earlier. Right ?
+> 
+> This.
+> 
+> > Now, I doubt that would be a big issue
+> 
+> With ACPI, there is no such thing as a "big issue". There are only tons of 
+> small horrid details that. And the "big issue" is that all the small 
+> details are insane.
+> 
+> 		Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
