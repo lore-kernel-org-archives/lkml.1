@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZCDBgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbZCDBin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZCDBgH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 20:36:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZCDBfy
+	id S1756009AbZCDBin (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 20:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZCDBif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 20:35:54 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:46146 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbZCDBfx (ORCPT
+	Tue, 3 Mar 2009 20:38:35 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:9810 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbZCDBif convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 20:35:53 -0500
-Message-ID: <49ADDB0B.1050002@oracle.com>
-Date: Tue, 03 Mar 2009 17:36:11 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 3 Mar 2009 20:38:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Z157DLAlZlWJsIaf8zxcC9+EKVAV1N/ePAl0X6weqzz8zRcwSrZcAN6CyS+ub6yE38
+         JTflAlra+0aljp1/q9GUbAH5So8uqATZLnvEuh0qsbylrvYkk3T6LR52CNcPZXqhsorc
+         5HNa65R8p+ClYisrXNZHAhNB9sg3wE1DcOFaU=
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Sarah Sharp <sarah.a.sharp@intel.com>, Greg KH <gregkh@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: EHCI debug documentation
-References: <20090303235354.GA7145@gamba.jf.intel.com> <86802c440903031731x36c1180dk72a3631bb4397319@mail.gmail.com>
-In-Reply-To: <86802c440903031731x36c1180dk72a3631bb4397319@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49ADDAB1.00DA:SCFSTAT928724,ss=1,fgs=0
+In-Reply-To: <43e72e890903031607k4e2ce36csb7c48de2f01a6de6@mail.gmail.com>
+References: <43e72e890903021737v7f5c4f06lb13e4f5d3ad67fd7@mail.gmail.com>
+	 <43e72e890903021751m3f17206dge880dfc4d2c56711@mail.gmail.com>
+	 <49AD17DD.1030206@gmail.com>
+	 <43e72e890903031607k4e2ce36csb7c48de2f01a6de6@mail.gmail.com>
+Date: Tue, 3 Mar 2009 17:38:32 -0800
+Message-ID: <43e72e890903031738w12a726d4ga3f998d8e4263a73@mail.gmail.com>
+Subject: Re: hid-dummy.ko Input/output error -- causing huge delays
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Tue, Mar 3, 2009 at 3:53 PM, Sarah Sharp <sarah.a.sharp@intel.com> wrote:
->> Greetings,
+On Tue, Mar 3, 2009 at 4:07 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Tue, Mar 3, 2009 at 3:43 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>> On 3.3.2009 02:51, Luis R. Rodriguez wrote:
+>>>
+>>> On Mon, Mar 2, 2009 at 5:37 PM, Luis R. Rodriguez<mcgrof@gmail.com>
+>>>  wrote:
+>>>>
+>>>> FATAL: Error inserting hid_dummy
+>>>> (/lib/modules/2.6.29-rc6-wl/kernel/drivers/hid/hid-dummy.ko):
+>>>> Input/output error
+>>>>
+>>>> I remember reading a thread where you said this was non-fatal and that
+>>>> hid-dummy.ko would go away. On my system, every now in a blue moon the
+>>>> above causes a huge delay during the bootup sequence. I'm talking
+>>>> about a full 1-2 minute delay. Why is the delay so sporadic?
+>>>
+>>> s/once in a blue moon/often/
+>>>
+>>> as it seems I get this now upon every reboot.
 >>
->> You wrote the EHCI debug port patch for early printk back in July 2008
->> (commit 5c05917e7fe313a187ad6ebb94c1c6cf42862a0b).  Can you add some
->> documentation to the Documentation directory about how a Linux user
->> would set up a system (cables, files to open to get the printks, etc.)?
-> 
-> please check
-> 
-> ==========================================================================================
-> USB Debug port using Howto
-> 
-> 1. HW:
-> 
-> a. target system need to have debug port
-> 
-> 00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2
-> EHCI Controller #1 (rev 03) (prog-if 20 [EHCI])
->         Subsystem: Lenovo ThinkPad T61
->         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-> ParErr- Stepping- SERR+ FastB2B- DisINTx-
->         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
->> TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 0
->         Interrupt: pin D routed to IRQ 19
->         Region 0: Memory at fe227000 (32-bit, non-prefetchable) [size=1K]
->         Capabilities: [50] Power Management version 2
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->                 Status: D0 PME-Enable- DSel=0 DScale=0 PME+
->         Capabilities: [58] Debug port: BAR=1 offset=00a0
->         Kernel driver in use: ehci_hcd
->         Kernel modules: ehci-hcd
-> 00: 86 80 36 28 06 01 90 02 03 20 03 0c 00 00 00 00
-> 10: 00 70 22 fe 00 00 00 00 00 00 00 00 00 00 00 00
-> 20: 00 00 00 00 00 00 00 00 00 00 00 00 aa 17 ab 20
-> 30: 00 00 00 00 50 00 00 00 00 00 00 00 0b 04 00 00
-> 40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 50: 01 58 c2 c9 00 80 00 00 0a 00 a0 20 00 00 00 00
-> 60: 20 20 9f 01 00 00 00 00 01 00 00 01 00 00 08 80
-> 70: c0 00 17 3f 00 00 00 00 00 00 00 00 00 00 00 00
-> 80: 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00
-> 90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> d0: 00 00 00 00 00 aa ff 00 00 00 00 00 00 00 00 00
-> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> f0: 00 00 00 00 88 85 40 00 86 0f 05 00 06 17 02 20
-> 
-> b. netchip USB debug cable
+>> So I suppose the problem goes away, when you change -EIO to 0 in
+>> drivers/hid/hid-dummy.c
+>
+> Yeap.
 
-http://www.plxtech.com/products/NET2000/NET20DC/default.asp
+Well now I see FC10 say its starting udev and it just sits there
+waiting for the same period of time so maybe it was that (?). But at
+the console the hid-dummy is not the last message I see now, but I
+guess I wouldn't because it returns 0 now huh.
 
-
-> c. console system: have USB port
-> 
-> 2. SW setting
-> a. console system: need to have kernel config
->    CONFIG_USB_SERIAL_DEBUG
->    you should get /dev/ttyUSBx
-> 
->    # cat /dev/ttyUSBx could get output
-> 
-> b. target system: need to have kernel config
->    CONFIG_EARLY_PRINTK_DBGP
-> 
->    boot command line: earlyprintk=dbgp
-> 
-> c. for Nvidia Southbridge based system: kernel will try to probe and
-> find out which port has debug device connected.
-
-
--- 
-~Randy
+  Luis
