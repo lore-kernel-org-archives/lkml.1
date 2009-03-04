@@ -1,126 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZCDKcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbZCDKeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZCDKcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 05:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZCDKcJ
+	id S1755624AbZCDKeb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 05:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZCDKeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 05:32:09 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:43710 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbZCDKcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 05:32:08 -0500
-From: Markus <M4rkusXXL@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: drop_caches ...
-Date: Wed, 4 Mar 2009 11:32:02 +0100
-User-Agent: KMail/1.9.10
-Cc: Wu Fengguang <fengguang.wu@intel.com>
-References: <200903041057.34072.M4rkusXXL@web.de> <20090304100420.GA16859@localhost>
-In-Reply-To: <20090304100420.GA16859@localhost>
+	Wed, 4 Mar 2009 05:34:23 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49174 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750768AbZCDKeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 05:34:23 -0500
+Date: Wed, 4 Mar 2009 11:34:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Tejun Heo <tj@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: 32bit panic on 4 sockets
+Message-ID: <20090304103405.GA4879@elte.hu>
+References: <86802c440903031458p4a72f8c8x6f91e9f58ac6bc26@mail.gmail.com> <86802c440903031751y136b506uc163dd2c9023de9b@mail.gmail.com> <49ADE201.7010506@kernel.org> <86802c440903032257l6607972dqe2390958b18454bd@mail.gmail.com> <1236155659.5330.6837.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903041132.04451.M4rkusXXL@web.de>
-X-Provags-ID: V01U2FsdGVkX1+eIAo6Wnt0HsFideS6gHzfOtYxVgywEHX7be9y
-	cfMFWS82J2IRqJJ5PxAxIl0qxDn5Xtvq3IoXUrr/nVapihTP6W
-	6UfizmIx0=
+In-Reply-To: <1236155659.5330.6837.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Fengguang!
 
-> Hi Markus,
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Tue, 2009-03-03 at 22:57 -0800, Yinghai Lu wrote:
+> > On Tue, Mar 3, 2009 at 6:05 PM, Tejun Heo <tj@kernel.org> wrote:
+> > > Looks like a genuine bootmem bug.  Cc'ing Johannes and
+> > > quoting whole body.
+> > 
+> > it is x86 32bit numa code problem. it assume bootmem will 
+> > sit on first node only.
 > 
-> On Wed, Mar 04, 2009 at 10:57:33AM +0100, Markus wrote:
-> > Hello!
-> > 
-> > I have a small problem. Maybe its just a misunderstanding but I cant 
-> > solve it.
-> > 
-> > I think that writing "3" to drop_caches should drop all buffers and 
-> > caches which are already written. So its recommended to put a "sync" 
-> > infront of it.
-> > So I did "free -m ; sync ; echo 3 > /proc/sys/vm/drop_caches ; 
-free -m"
-> > And it gave me:
-> >              total       used       free     shared    buffers     
-> > cached
-> > Mem:          3950       3922         28          0          1        
-> > 879
-> > -/+ buffers/cache:       3041        909
-> > Swap:         5342        205       5136
-> >              total       used       free     shared    buffers     
-> > cached
-> > Mem:          3950       3907         43          0          0        
-> > 864
-> > -/+ buffers/cache:       3041        908
-> > Swap:         5341        206       5135
-> > 
-> > So the buffer was 1 and is 0 afterthat. But cached is at 879 MB 
-before 
-> > and is still 864 MB (!!!) after that!
-> > 
-> > I am at swappiness=0 and when I remove and readd one swap-partition 
-> > after another (so there is always swap). It will keep the cached and 
-> > put the swapped memory on other swaps?!
-> > 
-> > I _think_ thats not the way it should go?
-> > 
-> > It would be really kind if someone could explain that issue and 
-> > what "cached" is at all!
-> 
-> The memory mapped pages won't be dropped in this way.
-> "cat /proc/meminfo" will show you the number of mapped pages.
+> Seems a bit daft to run a 32bit kernel on such a machine.. at 
+> some point we should just give up and not push this 32 bit 
+> madness any further.
 
-# sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m ; cat /proc/meminfo
-             total       used       free     shared    buffers     
-cached
-Mem:          3950       3262        688          0          0        
-359
--/+ buffers/cache:       2902       1047
-Swap:         5890       1509       4381
-MemTotal:        4045500 kB
-MemFree:          705180 kB
-Buffers:             508 kB
-Cached:           367748 kB
-SwapCached:       880744 kB
-Active:          1555032 kB
-Inactive:        1634868 kB
-Active(anon):    1527100 kB
-Inactive(anon):  1607328 kB
-Active(file):      27932 kB
-Inactive(file):    27540 kB
-Unevictable:         816 kB
-Mlocked:               0 kB
-SwapTotal:       6032344 kB
-SwapFree:        4486496 kB
-Dirty:                 0 kB
-Writeback:             0 kB
-AnonPages:       2378112 kB
-Mapped:            52196 kB
-Slab:              65640 kB
-SReclaimable:      46192 kB
-SUnreclaim:        19448 kB
-PageTables:        28200 kB
-NFS_Unstable:          0 kB
-Bounce:                0 kB
-WritebackTmp:          0 kB
-CommitLimit:     8055092 kB
-Committed_AS:    4915636 kB
-VmallocTotal:   34359738367 kB
-VmallocUsed:       44580 kB
-VmallocChunk:   34359677239 kB
-DirectMap4k:     3182528 kB
-DirectMap2M:     1011712 kB
+it works just fine on a lot of systems - and since we keep 
+unifying a lot of these codepaths we are better off keeping it 
+all working.
 
-The cached reduced to 359 MB (after the dropping).
-I dont know where to read the "number of mapped pages".
-"Mapped" is about 51 MB.
-
-thanks in advance
-
-Markus
+	Ingo
