@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZCDWk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZCDWpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbZCDWk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 17:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZCDWkN
+	id S1754708AbZCDWpR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 17:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZCDWpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 17:40:13 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:54264 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750868AbZCDWkM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 17:40:12 -0500
-Date: Wed, 4 Mar 2009 23:43:10 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Michael =?unknown-8bit?B?QsO8a2Vy?= <m.bueker@berlin.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-Message-ID: <20090304224310.GA29043@electric-eye.fr.zoreil.com>
-References: <200903041828.49972.m.bueker@berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200903041828.49972.m.bueker@berlin.de>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Mar 2009 17:45:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43836 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbZCDWpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 17:45:03 -0500
+Date: Thu, 5 Mar 2009 09:44:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 4
+Message-Id: <20090305094452.0e544eee.sfr@canb.auug.org.au>
+In-Reply-To: <10f740e80903041357w7314dc0ar1781f13fbe8afc5c@mail.gmail.com>
+References: <20090304180630.047dac29.sfr@canb.auug.org.au>
+	<10f740e80903041357w7314dc0ar1781f13fbe8afc5c@mail.gmail.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__5_Mar_2009_09_44_52_+1100_TDhMrfFDJWjJ7aDC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Büker <m.bueker@berlin.de> :
-[...]
-> With both 2.6.27.19 and 2.6.28.7, I am experiencing "transmit timed out" 
-> errors as reported by the netdev watchdog, for both my PCMCIA Ethernet 
-> adapters, using the r8169 and 8139too drivers respectively.
+--Signature=_Thu__5_Mar_2009_09_44_52_+1100_TDhMrfFDJWjJ7aDC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Can you describe the symptoms a bit more specifically ?
+Hi Geert,
 
-The kernel displays a scary warning, I can guess that it is almost surely
-associated with some loss of network connectivity for a few seconds at the
-very least but it is a bit hard to figure the real scale of your problem.
+On Wed, 4 Mar 2009 22:57:32 +0100 Geert Uytterhoeven <geert@linux-m68k.org>=
+ wrote:
+>
+> It seems http://kisskb.ellerman.id.au/linux-next and
+> http://kisskb.ellerman.id.au/kisskb/matrix/
+> are not being updated? The most recent results are dated March 1.
 
-Please scare me. :o)
+Thanks for the heads up, I will check it out.
 
-[...]
-> as both kernel config files. I'll gladly provide more information as it is 
-> requested.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-lspci -vx and a complete dmesg.
+--Signature=_Thu__5_Mar_2009_09_44_52_+1100_TDhMrfFDJWjJ7aDC
+Content-Type: application/pgp-signature
 
-Can you identify a kernel which worked flawlessly ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--- 
-Ueimor
+iEYEARECAAYFAkmvBGQACgkQjjKRsyhoI8zIKACeNfP+KgCr/GFgIEiAN9luunia
+we4AnjE59xgKHDWXD4tUXSyrA2vqSNOw
+=YM4O
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__5_Mar_2009_09_44_52_+1100_TDhMrfFDJWjJ7aDC--
