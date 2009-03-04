@@ -1,56 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZCDKoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZCDKpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbZCDKoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 05:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbZCDKoa
+	id S1756189AbZCDKpj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 05:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbZCDKpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 05:44:30 -0500
-Received: from mail.gmx.net ([213.165.64.20]:50894 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751168AbZCDKo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 05:44:29 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/mENNdcTjmfEHUunEr9X+oGZx0+H36yTgcU2jmlr
-	xbntXku0Wl3xEz
-Subject: Re: x86-tip: cpufreq breakage -
-	bisection	fingers	89c9215165ca609096e845926d9a18f1306176a4
-From: Mike Galbraith <efault@gmx.de>
-To: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <49AE4D40.3050705@kernel.org>
-References: <1236085632.5958.8.camel@marge.simson.net>
-	 <20090303143106.GA12248@elte.hu> <1236098338.5926.0.camel@marge.simson.net>
-	 <49ADE077.1060606@kernel.org> <1236138205.6119.12.camel@marge.simson.net>
-	 <1236147277.6049.3.camel@marge.simson.net> <49AE2028.8040402@kernel.org>
-	 <49AE4C26.4040104@kernel.org>  <49AE4D40.3050705@kernel.org>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 11:44:20 +0100
-Message-Id: <1236163460.6101.7.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+	Wed, 4 Mar 2009 05:45:31 -0500
+Received: from mx1.suse.de ([195.135.220.2]:59103 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751168AbZCDKpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 05:45:30 -0500
+Date: Wed, 4 Mar 2009 11:45:26 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jason Noble <nobleja@polezero.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: New HID device support
+In-Reply-To: <1236107096.7793.1.camel@paradox.pz.local>
+Message-ID: <alpine.LNX.2.00.0903041144310.4971@jikos.suse.cz>
+References: <1236096277.26321.29.camel@paradox.pz.local>  <alpine.LNX.2.00.0903031720380.5295@jikos.suse.cz> <1236107096.7793.1.camel@paradox.pz.local>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 18:43 +0900, Tejun Heo wrote:
-> Tejun Heo wrote:
-> > I've used the config file you attached and the commit ID I used is
-> > d0c4f570276cb4d2dc4215b90eb7cb6e2bdd4a15.
+On Tue, 3 Mar 2009, Jason Noble wrote:
 
-My tip tree is at v2.6.29-rc6-2441-g4239438.
+> Attached is the output.
+
+Thanks. Does the driver below make your device work properly?
+
+
+From: Jiri Kosina <jkosina@suse.cz>
+
+HID: support for Kensington silblade trackball
+
+Establish proper button mappings for 0x47d/0x2041 device.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 9cc662c..c16fc4f 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -150,6 +150,13 @@ config HID_GYRATION
+ 	---help---
+ 	Support for Gyration remote control.
  
-> > I wonder what is going on.  I'll try again with
-> > 89c9215165ca609096e845926d9a18f1306176a4.  Argh... weird.
-> 
-> One thing.  The config file you attached earlier doesn't have all the
-> config vars for the above commits.  Is it the correct config file?
-
-Yes, verified.
-
-	-Mike
-
-
-
++config HID_KENSINGTON
++	tristate "Kensington" if EMBEDDED
++	depends on USB_HID
++	default !EMBEDDED
++	---help---
++	Support for Kensington Slimblade Trackball.
++
+ config HID_LOGITECH
+ 	tristate "Logitech" if EMBEDDED
+ 	depends on USB_HID
+diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
+index 0fdbda6..53e1331 100644
+--- a/drivers/hid/Makefile
++++ b/drivers/hid/Makefile
+@@ -29,6 +29,7 @@ obj-$(CONFIG_HID_CYPRESS)	+= hid-cypress.o
+ obj-$(CONFIG_DRAGONRISE_FF)	+= hid-drff.o
+ obj-$(CONFIG_HID_EZKEY)		+= hid-ezkey.o
+ obj-$(CONFIG_HID_GYRATION)	+= hid-gyration.o
++obj-$(CONFIG_HID_KENSINGTON)	+= hid-kensington.o
+ obj-$(CONFIG_HID_LOGITECH)	+= hid-logitech.o
+ obj-$(CONFIG_HID_MICROSOFT)	+= hid-microsoft.o
+ obj-$(CONFIG_HID_MONTEREY)	+= hid-monterey.o
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 941e7d6..320442c 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1270,6 +1270,7 @@ static const struct hid_device_id hid_blacklist[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_GREENASIA, 0x0012) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_GYRATION, USB_DEVICE_ID_GYRATION_REMOTE) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_GYRATION, USB_DEVICE_ID_GYRATION_REMOTE_2) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_KENSINGTON, USB_DEVICE_ID_KS_SLIMBLADE) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_LABTEC, USB_DEVICE_ID_LABTEC_WIRELESS_KEYBOARD) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER) },
+diff --git a/drivers/hid/hid-dummy.c b/drivers/hid/hid-dummy.c
+index 536aa15..28815fd 100644
+--- a/drivers/hid/hid-dummy.c
++++ b/drivers/hid/hid-dummy.c
+@@ -37,6 +37,9 @@ static int __init hid_dummy_init(void)
+ #ifdef CONFIG_HID_GYRATION_MODULE
+ 	HID_COMPAT_CALL_DRIVER(gyration);
+ #endif
++#ifdef CONFIG_HID_KENSINGTON_MODULE
++	HID_COMPAT_CALL_DRIVER(kensington);
++#endif
+ #ifdef CONFIG_HID_LOGITECH_MODULE
+ 	HID_COMPAT_CALL_DRIVER(logitech);
+ #endif
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index 6c730de..c3c9e63 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -274,6 +274,9 @@
+ #define USB_DEVICE_ID_LD_POWERCONTROL	0x2030
+ #define USB_DEVICE_ID_LD_MACHINETEST	0x2040
+ 
++#define USB_VENDOR_ID_KENSINGTON	0x047d
++#define USB_DEVICE_ID_KS_SLIMBLADE	0x2041
++
+ #define USB_VENDOR_ID_LOGITECH		0x046d
+ #define USB_DEVICE_ID_LOGITECH_RECEIVER	0xc101
+ #define USB_DEVICE_ID_LOGITECH_HARMONY_FIRST  0xc110
+diff --git a/drivers/hid/hid-kensington.c b/drivers/hid/hid-kensington.c
+new file mode 100644
+index 0000000..aff0e24
+--- /dev/null
++++ b/drivers/hid/hid-kensington.c
+@@ -0,0 +1,65 @@
++/*
++ *  HID driver for Kensigton special device
++ *
++ *  Copyright (c) 2009 Jiri Kosina
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ */
++
++#include <linux/device.h>
++#include <linux/input.h>
++#include <linux/hid.h>
++#include <linux/module.h>
++
++#include "hid-ids.h"
++
++#define ks_map_key(c)	hid_map_usage(hi, usage, bit, max, EV_KEY, (c))
++
++static int ks_input_mapping(struct hid_device *hdev, struct hid_input *hi,
++		struct hid_field *field, struct hid_usage *usage,
++		unsigned long **bit, int *max)
++{
++	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_MSVENDOR)
++		return 0;
++
++	switch (usage->hid & HID_USAGE) {
++	case 0x01: ks_map_key(BTN_2);	break;
++	case 0x02: ks_map_key(BTN_3);	break;
++	default:
++		return 0;
++	}
++	return 1;
++}
++
++static const struct hid_device_id ks_devices[] = {
++	{ HID_USB_DEVICE(USB_VENDOR_ID_KENSINGTON, USB_DEVICE_ID_KS_SLIMBLADE) },
++	{ }
++};
++MODULE_DEVICE_TABLE(hid, ks_devices);
++
++static struct hid_driver ks_driver = {
++	.name = "kensington",
++	.id_table = ks_devices,
++	.input_mapping = ks_input_mapping,
++};
++
++static int ks_init(void)
++{
++	return hid_register_driver(&ks_driver);
++}
++
++static void ks_exit(void)
++{
++	hid_unregister_driver(&ks_driver);
++}
++
++module_init(ks_init);
++module_exit(ks_exit);
++MODULE_LICENSE("GPL");
++
++HID_COMPAT_LOAD_DRIVER(kensington);
