@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZCDPL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZCDPN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZCDPL5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 10:11:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZCDPLs
+	id S1756211AbZCDPN3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 10:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZCDPNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 10:11:48 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:50395 "EHLO e7.ny.us.ibm.com"
+	Wed, 4 Mar 2009 10:13:21 -0500
+Received: from mail.suse.de ([195.135.220.2]:39346 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbZCDPLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 10:11:48 -0500
-Date: Wed, 4 Mar 2009 09:05:19 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Dan Smith <danms@us.ibm.com>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] c/r: Add CR_COPY() macro (v3)
-Message-ID: <20090304150519.GB10186@us.ibm.com>
-References: <1236095764-19325-1-git-send-email-danms@us.ibm.com> <1236095764-19325-3-git-send-email-danms@us.ibm.com> <1236097332.22399.8.camel@nimitz> <878wnmrtp9.fsf@caffeine.danplanet.com> <1236128437.22399.31.camel@nimitz>
+	id S1752026AbZCDPNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 10:13:20 -0500
+Date: Wed, 4 Mar 2009 16:13:17 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jason Noble <nobleja@polezero.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: New HID device support
+In-Reply-To: <1236178031.9121.6.camel@paradox.pz.local>
+Message-ID: <alpine.LNX.2.00.0903041612210.4971@jikos.suse.cz>
+References: <1236096277.26321.29.camel@paradox.pz.local>  <alpine.LNX.2.00.0903031720380.5295@jikos.suse.cz>  <1236107096.7793.1.camel@paradox.pz.local>  <alpine.LNX.2.00.0903041144310.4971@jikos.suse.cz>  <1236172544.21288.3.camel@paradox.pz.local> 
+ <alpine.LNX.2.00.0903041419250.4971@jikos.suse.cz>  <1236173654.21288.8.camel@paradox.pz.local>  <alpine.LNX.2.00.0903041436210.4971@jikos.suse.cz> <1236178031.9121.6.camel@paradox.pz.local>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236128437.22399.31.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Tue, 2009-03-03 at 16:57 -0800, Dan Smith wrote:
-> > DH> Did you convince Nathan that this ends up being a good idea?
-> > 
-> > Technically he hasn't seen this version, but my hopes are not high
-> > that he will change his mind.  If the feedback is that they're not
-> > liked, I'll happily remove them.
+On Wed, 4 Mar 2009, Jason Noble wrote:
+
+> I made a minor tweak. Please include in the official patch.
+> (BTN_2 and BTN_3, are not very useful xev doesn't even see them)
 > 
-> I just figure if Nathan feels that strongly that we'll encounter more
-> people who feel even more so.  So, I was curious if he changed his mind
-> somehow.
+> -       case 0x01: ks_map_key(BTN_2);   break;
+> -       case 0x02: ks_map_key(BTN_3);   break;
+> +       case 0x01: ks_map_key(BTN_MIDDLE);   break;
+> +       case 0x02: ks_map_key(BTN_SIDE);   break;
+> 
+> Other than that, it works great!
+> 
+> You are awesome, thank you very very much!!
 
-I maintain however that two strong advantages of moving the checkpoint
-and restart of simple registers etc into a single function are:
+Thanks for testing. I will put you in Reported-by:, if you don't mind, and 
+queue the patch patch in my tree.
 
-	1. we won't forget to add (or accidentally lose) one or the
-		other
-	2. any actual special handling at checkpoint or restart, like
-		the loading of access registers at restart on s390x,
-		stand out
-
--serge
+-- 
+Jiri Kosina
+SUSE Labs
