@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbZCDTMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbZCDTOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757053AbZCDTMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 14:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZCDTMD
+	id S1757072AbZCDTOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 14:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZCDTO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 14:12:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41809 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752606AbZCDTMA (ORCPT
+	Wed, 4 Mar 2009 14:14:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:58402 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbZCDTOZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 14:12:00 -0500
-Date: Wed, 4 Mar 2009 11:11:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: stefanr@s5r6.in-berlin.de, efault@gmx.de,
-       James.Bottomley@HansenPartnership.com, jengelh@medozas.de,
-       bharrosh@panasas.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: Large amount of scsi-sgpool objects
-Message-Id: <20090304111114.aed7b225.akpm@linux-foundation.org>
-In-Reply-To: <20090304112455.GB14593@elte.hu>
-References: <20090303192212.GA20705@elte.hu>
-	<1236115544.15993.22.camel@localhost.localdomain>
-	<20090303214454.GA8288@elte.hu>
-	<1236119990.24019.35.camel@localhost.localdomain>
-	<20090303230323.GA21644@elte.hu>
-	<49ADBE29.4040706@s5r6.in-berlin.de>
-	<20090303234834.GA13389@elte.hu>
-	<49AE221D.9010909@s5r6.in-berlin.de>
-	<1236150752.6049.19.camel@marge.simson.net>
-	<49AE32B5.9040603@s5r6.in-berlin.de>
-	<20090304112455.GB14593@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 14:14:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=wsDgD5AsAeMZAGjRIu6M063/2L7FRMBR7xWFcUNlFCTtD1e/YcihG9shEu1Wkn8o6I
+         Q5Qgia3ysDXde1QIK7uutnvHwJLMa2jxCyUqlEXZBo+IQKhGspGFUsmshImWsbPad2xS
+         a0Bc3gNoDjLyBzboCxofF7OhNZ4XSjQYZiI3c=
+MIME-Version: 1.0
+In-Reply-To: <KiHv0irKPzE.A.l3.hUarJB@chimera>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
+Date: Wed, 4 Mar 2009 20:14:21 +0100
+Message-ID: <8db1092f0903041114o767d0079s4c1626dae5335d70@mail.gmail.com>
+Subject: Re: 2.6.29-rc6-git7: Reported regressions from 2.6.28
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Mar 2009 12:24:55 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+2009/3/3 Rafael J. Wysocki <rjw@sisk.pl>:
 
-> FYI, we still have not tracked down the SCSI bug. Latest 
-> tip:master is able to boot and work on the affected systems, 
-> while the upstream kernel does not even boot because the fix (or 
-> the revert, should the fix be deemed unwanted) is stuck in the 
-> SCSI tree.
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12764
+> Subject         : Can not ioremap virtual address for G33 hw status page
+> Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
+> Date            : 2009-02-23 14:46 (9 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6fb88588555a18792a27f483887fe1f2af5f9c9b
+> References      : http://marc.info/?l=linux-kernel&m=123540053219505&w=4
 
-<wakes up>
+Problem seems by solved in 2.6.29-rc7
 
-There are fixes in the scsi tree?
-
-Does the scsi tree fix all the regressions which you guys are seeing?
-
-I must say that it seems to be awfully late in the cycle to have this
-amount of breakage remaining in mainline when we know exactly which
-patches need to be reverted to unbreak things.
-
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
