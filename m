@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZCDLAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbZCDLBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbZCDLAu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZCDLAl
+	id S1756291AbZCDLBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZCDLBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:00:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33450 "EHLO mx2.mail.elte.hu"
+	Wed, 4 Mar 2009 06:01:14 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:54720 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750768AbZCDLAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:00:41 -0500
-Date: Wed, 4 Mar 2009 12:00:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Brian Maly <bmaly@redhat.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
-       ying.huang@intel.com
-Subject: Re: [PATCH] fix DMI for EFI
-Message-ID: <20090304110022.GB18165@elte.hu>
-References: <49A9F597.4010601@redhat.com> <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com> <49ADEDA3.1030406@redhat.com>
-MIME-Version: 1.0
+	id S1753943AbZCDLBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:01:13 -0500
+To: jeremy.fitzhardinge@citrix.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [x86] warning: parameter has incomplete type
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Message-Id: <200903042001.FBI26540.QFHLFSMJVFOOtO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Wed, 4 Mar 2009 20:01:08 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49ADEDA3.1030406@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Brian Maly <bmaly@redhat.com> wrote:
+Is there a patch to suppress below warning messages (which are printed for every
+file when compiling kernel using gcc 3.3.5)?
 
-> New patch. Its easier I think to just move efi_init() earlier. Seems  
-> less risky and less drawbacks.
->
-> Signed-off-by: Brian Maly <bmaly@redhat>
->
->
-> setup.c |    5 +++--
-> 1 file changed, 3 insertions(+), 2 deletions(-)
->
->
+Regards.
+--------------------
+# cat ~/warn.sh
+#! /bin/sh
+make -s oldconfig
+touch init/main.c
+make init/main.o > /tmp/log 2>&1
+grep -qF "warning: parameter has incomplete type" /tmp/log && exit 1
+exit 0
+# git bisect start next-20090227 v2.6.29-rc6 --
+Bisecting: 4206 revisions left to test after this
+[617e8ed824f58c467b97d3c08ad3fc46efc9041c] Merge commit 'kvm/master'
+# git bisect run ~/warn.sh
+running /root/warn.sh
+#
+# configuration written to .config
+#
+In file included from /usr/src/all/linux-next/arch/x86/include/asm/page.h:8,
+                 from /usr/src/all/linux-next/arch/x86/include/asm/processor.h:18,
+                 from /usr/src/all/linux-next/arch/x86/include/asm/atomic_32.h:6,
+                 from /usr/src/all/linux-next/arch/x86/include/asm/atomic.h:2,
+                 from include/linux/crypto.h:20,
+                 from arch/x86/kernel/asm-offsets_32.c:7,
+                 from arch/x86/kernel/asm-offsets.c:2:
+/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:54: warning: parameter has incomplete type
+/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:56: warning: parameter has incomplete type
+In file included from /usr/src/all/linux-next/arch/x86/include/asm/page.h:8,
+                 from /usr/src/all/linux-next/arch/x86/include/asm/processor.h:18,
+                 from include/linux/prefetch.h:14,
+                 from include/linux/list.h:6,
+                 from include/linux/module.h:9,
+                 from init/main.c:13:
+/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:54: warning: parameter has incomplete type
+/usr/src/all/linux-next/arch/x86/include/asm/page_types.h:56: warning: parameter has incomplete type
+(... snipped ...)
+Bisecting: 0 revisions left to test after this
+[e2f5bda94152fa567f6b48126741014123f982b8] x86: define pud_flags and pud_large properly to allow non-PAE builds
+running /root/warn.sh
+#
+# configuration written to .config
+#
+54321d947ae9d6a051b81e3eccaf2d8658aeecc6 is first bad commit
+commit 54321d947ae9d6a051b81e3eccaf2d8658aeecc6
+Author: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Date:   Wed Feb 11 10:20:05 2009 -0800
 
-> --- a/arch/x86/kernel/setup.c	2009-03-03 21:24:53.000000000 -0500
-> +++ b/arch/x86/kernel/setup.c	2009-03-03 21:26:00.000000000 -0500
-> @@ -770,6 +770,9 @@ void __init setup_arch(char **cmdline_p)
->  
->  	finish_e820_parsing();
->  
-> +	if (efi_enabled)
-> +		efi_init();
-> +
->  	dmi_scan_machine();
+    x86: move pte types into pgtable*.h
 
-Hm, could we ever find ourselves in the positition of having to 
-access the DMI strings table in the EFI init code, to implement 
-a quirk? I think that's quite plausible.
+    pgtable*.h is intended for definitions relating to actual pagetables
+    and their entries, so move all the definitions for
+    (pte|pmd|pud|pgd)(val)?_t to the appropriate pgtable*.h headers.
 
-OTOH, with some DMI quirks in EFI tables it's a bit of a chicken 
-and egg problem. Can DMI strings ever be outside of EFI tables 
-on EFI systems?
+    Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-	Ingo
+:040000 040000 b7eda528704700c2e053ba659b4b6823d044d741 f169afe254054f023240ccc371def6774385e742 M      arch
+bisect run success
