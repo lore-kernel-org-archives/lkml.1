@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbZCDT0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbZCDTeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757053AbZCDT0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 14:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZCDTZ4
+	id S1756578AbZCDTeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 14:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbZCDTeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 14:25:56 -0500
-Received: from gmp-eb-inf-2.sun.com ([192.18.6.24]:64293 "EHLO
-	gmp-eb-inf-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755591AbZCDTZ4 (ORCPT
+	Wed, 4 Mar 2009 14:34:09 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:60563 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755522AbZCDTeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 14:25:56 -0500
-MIME-version: 1.0
-Date: Wed, 04 Mar 2009 20:25:46 +0100
-From: Frank Mehnert <Frank.Mehnert@Sun.COM>
-Subject: remap_pfn_range() not suitable for physical RAM?
-To: linux-kernel@vger.kernel.org
-Message-id: <200903042025.46861.frank.mehnert@sun.com>
-Organization: Sun Microsystems
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart3240386.e0Uf7VCB5u
-Content-transfer-encoding: 7BIT
-User-Agent: KMail/1.9.9
+	Wed, 4 Mar 2009 14:34:08 -0500
+Message-ID: <49AED7A7.9030304@codemonkey.ws>
+Date: Wed, 04 Mar 2009 13:33:59 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xen: core dom0 support
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org>	<20090227212812.26d02f34.akpm@linux-foundation.org>	<49A8DF28.4050301@goop.org>	<200902282309.07576.nickpiggin@yahoo.com.au> <49AB19E1.4050604@goop.org> <49AED092.5080902@codemonkey.ws> <49AED391.1030500@zytor.com>
+In-Reply-To: <49AED391.1030500@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> In particular, Xen is a microkernel-type operating system.  The dom0 
+> model is a classic single-server, in the style of Mach.  A lot of the 
+> "Xen could use a distributed dom0" arguments were also done with Mach 
+> ("the real goal is a multi-server") but such a system never 
+> materialized (Hurd was supposed to be one.)  Building multiservers is 
+> *hard*, and building multiservers which don't suck is even harder.
 
---nextPart3240386.e0Uf7VCB5u
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+A lot of the core Xen concepts (domains, event channels, etc.) were 
+present in the Nemesis[1] exo-kernel project.
 
-Hi,
+Two other interest papers on the subject "Are virtual machine monitors 
+microkernels done right?"[2] from the Xen folks and a rebuttal from the 
+l4ka group[3].
 
-since 2.6.29-rcX it seems to be not allowed anymore to use
-remap_pfn_range() to remap physical RAM to userland. This restriction
-applies only if CONFIG_X86_PAT is enabled. It seems that vm_insert_page()
-does not have this restriction. Am I correct? And what is the reason
-for this restriction?
+[1] http://www.cl.cam.ac.uk/research/srg/netos/old-projects/nemesis/
+[2] http://portal.acm.org/citation.cfm?id=1251124
+[3] http://l4ka.org/publications/paper.php?docid=2189
 
-Kind regards,
+Regards,
 
-=46rank
-=2D-=20
-Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+Anthony Liguori
+>     -hpa
 
---nextPart3240386.e0Uf7VCB5u
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmu1boACgkQ6z8pigLf3EdATwCgkfFu8dJIu52dxIxrK5jKVVvV
-xzsAoIsIiwUT9XLgWOcLaZH5aZ8vysUT
-=AufI
------END PGP SIGNATURE-----
-
---nextPart3240386.e0Uf7VCB5u--
