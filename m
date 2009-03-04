@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZCDRwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZCDRys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473AbZCDRwK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZCDRv5
+	id S1755810AbZCDRys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZCDRyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:51:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44160 "EHLO mx3.mail.elte.hu"
+	Wed, 4 Mar 2009 12:54:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58488 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753514AbZCDRv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:51:56 -0500
-Date: Wed, 4 Mar 2009 18:51:22 +0100
+	id S1753323AbZCDRyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 12:54:40 -0500
+Date: Wed, 4 Mar 2009 18:54:18 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Daniel =?iso-8859-1?Q?Gl=F6ckner?= <dg@emlix.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, x86@kernel.org,
-       Bill Metzenthen <billm@melbpc.org.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86, math-emu: fix init_fpu for task != current
-Message-ID: <20090304175122.GA29823@elte.hu>
-References: <E1Le9vp-00020J-AA@mailer.emlix.com> <20090302195230.GA12252@elte.hu> <E1LetWv-0002Kq-Sq@mailer.emlix.com>
+To: Brian Maly <bmaly@redhat.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
+       ying.huang@intel.com
+Subject: Re: [PATCH] fix DMI for EFI
+Message-ID: <20090304175418.GB29823@elte.hu>
+References: <49A9F597.4010601@redhat.com> <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com> <49ADEDA3.1030406@redhat.com> <20090304110022.GB18165@elte.hu> <49AE9850.9020103@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1LetWv-0002Kq-Sq@mailer.emlix.com>
+In-Reply-To: <49AE9850.9020103@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,40 +35,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Daniel Glöckner <dg@emlix.com> wrote:
+* Brian Maly <bmaly@redhat.com> wrote:
 
-> On 03/02/2009 08:52 PM, Ingo Molnar wrote:
-> > * Daniel Glöckner <dg@emlix.com> wrote:
-> [..]
-> >> This patch creates a new function finit_task that takes a task_struct
-> >> parameter. finit becomes a wrapper that simply calls finit_task with
-> >> current. On the plus side this avoids many calls to get_current which
-> >> would each resolve to an inline assembler mov instruction.
-> [..]
-> >> --- a/arch/x86/kernel/i387.c
-> >> +++ b/arch/x86/kernel/i387.c
-> >> @@ -136,7 +136,7 @@ int init_fpu(struct task_struct *tsk)
-> >>  #ifdef CONFIG_X86_32
-> >>  	if (!HAVE_HWFP) {
-> >>  		memset(tsk->thread.xstate, 0, xstate_size);
-> >> -		finit();
-> >> +		finit_task(tsk);
-> >>  		set_stopped_child_used_math(tsk);
-> >>  		return 0;
-> >>  	}
-> [..]
-> > 
-> > ok, the fix looks good - but we sure want to define this 
-> > function in the "# CONFIG_MATH_EMU is not set" case too, agreed?
-> 
-> To avoid linker errors if the compiler emits the call although 
-> !HAVE_HWFP is always false? Sounds plausible. I also removed 
-> finit from i387.h as the only other external call site, 
-> reg_ld_str.c, gets its prototype from fpu_proto.h.
+>
+>
+>> Hm, could we ever find ourselves in the positition of having to access 
+>> the DMI strings table in the EFI init code, to implement a quirk? I 
+>> think that's quite plausible.
+>
+>> OTOH, with some DMI quirks in EFI tables it's a bit of a chicken and 
+>> egg problem. Can DMI strings ever be outside of EFI tables on EFI 
+>> systems?
+>
+>> 	Ingo
+>
+> Right now it is EFI that loads the dmi tables (and all other 
+> tables such as ACPI), so it is a chicken and the egg. I think 
+> that if dmi is ever needed by EFI, the dmi scan will have to 
+> be moved inside efi_init. We could move the dmi scan into 
+> efi_init and do the dmi scan the moment we have the dmi table. 
+> Thats really the soonest point we could scan on EFI systems. 
+> Im OK with moving dmi to efi_init if you prefer.
 
-Could you please send a single combo patch with a full 
-changelog, etc.
-
-Thanks,
+Your patch looks fine, but i'd like to hear the opinion of Ying 
+Huang as well.
 
 	Ingo
