@@ -1,51 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZCDBoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZCDBp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZCDBoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 20:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCDBn7
+	id S1756134AbZCDBp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 20:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbZCDBpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 20:43:59 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:53547 "EHLO
+	Tue, 3 Mar 2009 20:45:19 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:53566 "EHLO
 	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbZCDBn6 (ORCPT
+	with ESMTP id S1751719AbZCDBpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 20:43:58 -0500
-Date: Wed, 4 Mar 2009 02:43:50 +0100
+	Tue, 3 Mar 2009 20:45:18 -0500
 From: Daniel Mack <daniel@caiaq.de>
-To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 4/5] lis3: solve dependency between core and ACPI
-Message-ID: <20090304014350.GC5165@buzzloop.caiaq.de>
-References: <49ABB22F.7040508@tremplin-utc.net> <1236004310-29196-1-git-send-email-daniel@caiaq.de> <1236004310-29196-2-git-send-email-daniel@caiaq.de> <1236004310-29196-3-git-send-email-daniel@caiaq.de> <1236004310-29196-4-git-send-email-daniel@caiaq.de> <49AD8B0A.90901@tremplin-utc.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Pavel Machek <pavel@ucw.cz>,
+       Eric Piel <eric.piel@tremplin-utc.net>
+Subject: [PATCH 3/5] lis3: reorder functions to make forward decl obsolete
+Date: Wed,  4 Mar 2009 02:44:57 +0100
+Message-Id: <1236131099-8082-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <49AD8B0A.90901@tremplin-utc.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <49AD8B0A.90901@tremplin-utc.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+moved lis3lv02d_init_device() down so that the forward declaration of
+lis3lv02d_add_fs() becomes unnecessary.
 
-On Tue, Mar 03, 2009 at 08:54:50PM +0100, Éric Piel wrote:
-> Daniel Mack schreef:
-> > This solves the dependency between lis3lv02d.[ch] and ACPI specific
-> > methods. It introduces a ->bus_priv pointer to the device struct which
-> > is casted to 'struct acpi_device' in the ACIP layer. Changed hp_accel.c
-> > accordingly.
-> > 
-> > This also moves the read_8() and read_16() routines from hp_accel.c to
-> > lis3lv02d.c as they are not specific to ACPI.
-> Hello,
-> I've tried the patch series on my laptop. This particular patch burst
-> the driver... need some work :-) The values are not read correctly and
-> the IRQ is not detected. See down in the code...
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Eric Piel <eric.piel@tremplin-utc.net>
+---
+ drivers/hwmon/lis3lv02d.c |   64 +++++++++++++++++++++-----------------------
+ 1 files changed, 31 insertions(+), 33 deletions(-)
 
-Ok, obvious fixes. I'll post a new set of the three topmost patches -
-could you test them again, please?
-
-Thanks and best regards,
-Daniel
+diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
+index 4888ac5..eeae7c9 100644
+--- a/drivers/hwmon/lis3lv02d.c
++++ b/drivers/hwmon/lis3lv02d.c
+@@ -59,8 +59,6 @@ struct acpi_lis3lv02d lis3_dev = {
+ 
+ EXPORT_SYMBOL_GPL(lis3_dev);
+ 
+-static int lis3lv02d_add_fs(struct acpi_device *device);
+-
+ static s16 lis3lv02d_read_16(acpi_handle handle, int reg)
+ {
+ 	u8 lo, hi;
+@@ -377,37 +375,6 @@ void lis3lv02d_joystick_disable(void)
+ }
+ EXPORT_SYMBOL_GPL(lis3lv02d_joystick_disable);
+ 
+-/*
+- * Initialise the accelerometer and the various subsystems.
+- * Should be rather independant of the bus system.
+- */
+-int lis3lv02d_init_device(struct acpi_lis3lv02d *dev)
+-{
+-	mutex_init(&dev->lock);
+-	lis3lv02d_add_fs(dev->device);
+-	lis3lv02d_increase_use(dev);
+-
+-	if (lis3lv02d_joystick_enable())
+-		printk(KERN_ERR DRIVER_NAME ": joystick initialization failed\n");
+-
+-	printk("lis3_init_device: irq %d\n", dev->irq);
+-
+-	/* if we did not get an IRQ from ACPI - we have nothing more to do */
+-	if (!dev->irq) {
+-		printk(KERN_ERR DRIVER_NAME
+-			": No IRQ in ACPI. Disabling /dev/freefall\n");
+-		goto out;
+-	}
+-
+-	printk("lis3: registering device\n");
+-	if (misc_register(&lis3lv02d_misc_device))
+-		printk(KERN_ERR DRIVER_NAME ": misc_register failed\n");
+-out:
+-	lis3lv02d_decrease_use(dev);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(lis3lv02d_init_device);
+-
+ /* Sysfs stuff */
+ static ssize_t lis3lv02d_position_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+@@ -485,6 +452,37 @@ int lis3lv02d_remove_fs(void)
+ }
+ EXPORT_SYMBOL_GPL(lis3lv02d_remove_fs);
+ 
++/*
++ * Initialise the accelerometer and the various subsystems.
++ * Should be rather independant of the bus system.
++ */
++int lis3lv02d_init_device(struct acpi_lis3lv02d *dev)
++{
++	mutex_init(&dev->lock);
++	lis3lv02d_add_fs(dev->device);
++	lis3lv02d_increase_use(dev);
++
++	if (lis3lv02d_joystick_enable())
++		printk(KERN_ERR DRIVER_NAME ": joystick initialization failed\n");
++
++	printk("lis3_init_device: irq %d\n", dev->irq);
++
++	/* if we did not get an IRQ from ACPI - we have nothing more to do */
++	if (!dev->irq) {
++		printk(KERN_ERR DRIVER_NAME
++			": No IRQ in ACPI. Disabling /dev/freefall\n");
++		goto out;
++	}
++
++	printk("lis3: registering device\n");
++	if (misc_register(&lis3lv02d_misc_device))
++		printk(KERN_ERR DRIVER_NAME ": misc_register failed\n");
++out:
++	lis3lv02d_decrease_use(dev);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(lis3lv02d_init_device);
++
+ MODULE_DESCRIPTION("ST LIS3LV02Dx three-axis digital accelerometer driver");
+ MODULE_AUTHOR("Yan Burman, Eric Piel, Pavel Machek");
+ MODULE_LICENSE("GPL");
+-- 
+1.6.1.3
 
