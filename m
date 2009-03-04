@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZCDQtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZCDQvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbZCDQtn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 11:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZCDQtf
+	id S1755240AbZCDQvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 11:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZCDQv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 11:49:35 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51688 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882AbZCDQte (ORCPT
+	Wed, 4 Mar 2009 11:51:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53160 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753042AbZCDQv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 11:49:34 -0500
-Subject: Re: percpu allocator vs reclaim
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <49AEAEF2.7040908@kernel.org>
-References: <1236184563.5330.8074.camel@laptop>
-	 <49AEAEF2.7040908@kernel.org>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 17:49:23 +0100
-Message-Id: <1236185363.5330.8121.camel@laptop>
+	Wed, 4 Mar 2009 11:51:28 -0500
+Date: Wed, 4 Mar 2009 08:50:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: Rohit Hagargundgi <h.rohit@samsung.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] [MTD] Flex-OneNAND support
+Message-Id: <20090304085055.c9de6cbb.akpm@linux-foundation.org>
+In-Reply-To: <49AE6907.1080702@nokia.com>
+References: <20090303063605.GA30258@july>
+	<20090303124948.dda294e5.akpm@linux-foundation.org>
+	<49AE6907.1080702@nokia.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 01:40 +0900, Tejun Heo wrote:
-> Peter Zijlstra wrote:
-> > Hi Tejun,
+On Wed, 04 Mar 2009 13:41:59 +0200 Adrian Hunter <adrian.hunter@nokia.com> wrote:
+
+> Andrew Morton wrote:
+> >> ...
+> >>
+> >> +static loff_t flexonenand_get_addr(struct onenand_chip *this, int block)
+> >> +{
+> >> +	loff_t ofs = 0;
+> >> +	int die = 0, boundary;
+> >> +
+> >> +	if (ONENAND_IS_DDP(this) && block >= this->density_mask) {
+> >> +		block -= this->density_mask;
+> >> +		die = 1;
+> >> +		ofs = this->diesize[0];
+> >> +	}
+> >> +
+> >> +	boundary = this->boundary[die];
+> >> +	ofs += block << (this->erase_shift - 1);
+> >> +	if (block > (boundary + 1))
+> >> +		ofs += (block - boundary - 1) << (this->erase_shift - 1);
 > > 
-> > Thomas hit the below on recent -tip kernels.
-> > 
-> > Which basically states that we could deadlock due to reclaim lock
-> > recursion.
-> > 
-> > Looking at the code I don't see a quick solution, other than using
-> > GFP_NOFS, which is a bit of a bother (as I suspect it might easily grow
-> > __GFP_IO inversion too, if it doesn't already have it).
+> > Both `block' and `boundary' have 32-bit types.  Are you sure that the
+> > left-shift cannot overflow?
 > 
-> Ah... maybe percpu allocator should just swallow @gfp.  Any better
-> ideas? :-(
+> Only very recently has MTD supported sizes greater than 32 bits internally
+> for any type of flash.  The external APIs (ioctls) are still 32-bit based.
+> 
+> For this driver, supporting sizes over 32-bits is a separate issue - and
+> may never be needed.
 
-Could you somehow break that lock so that you get something like:
+So it doesn't support files >4G?  What's the max device size (now and
+projected)?
 
-  alloc_lock
-    kmalloc(GFP_KERNEL)
-    free_lock
+> >> +	return mtd->ecc_stats.corrected - stats.corrected ? -EUCLEAN : 0;
+> >> +}
+> > 
+> > I wonder what the heck EUCLEAN was invented for and whether MTD's
+> > extensive use of it is appropriate.
+> 
+> UBI uses it to detect bit-flips so that data can be moved before it
+> can no longer be read.  So it is pretty much essential for flash
+> memories.
 
-Where
+That's not the point.
 
- percpu_free()
-   lock(free_lock)
-     put area on free list
-
- percpu_alloc()
-   lock(free_list)
-     collect free list
-   kmalloc()
-
-Then the free code can be used from reclaim, because there's never an
-allocation done while holding it, and the alloc path can first
-check/cleanup whatever mess the last free left behind before trying an
-allocation.
-
-
+My point is: for what purpose was EUNCLEAN created by whoever created
+it and, given that, is its use by MTD appropriate?  Because it does
+appear that this gets returned all the way to userspace sometimes.
 
