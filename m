@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZCDSDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbZCDSER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZCDSDS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 13:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbZCDSDH
+	id S1757315AbZCDSER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 13:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbZCDSEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 13:03:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38638 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753335AbZCDSDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 13:03:06 -0500
-Date: Wed, 4 Mar 2009 19:02:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Brian Maly <bmaly@redhat.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
-       ying.huang@intel.com
-Subject: Re: [PATCH] fix DMI for EFI
-Message-ID: <20090304180255.GC1537@elte.hu>
-References: <49A9F597.4010601@redhat.com> <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com> <49ADEDA3.1030406@redhat.com> <20090304110022.GB18165@elte.hu> <49AE9850.9020103@redhat.com> <20090304175418.GB29823@elte.hu> <49AEC1CA.50405@redhat.com>
+	Wed, 4 Mar 2009 13:04:05 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:40109 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbZCDSEC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 13:04:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nmaB1HHHZOX3cYrMjTmY1Ym3CaSxFXsqhxszFtuKpGpBVrSMVsxFWO98zD8/VJDn/g
+         u+MURR+CxynoskWbbWbslWx54CrRVbQNBLmzLSITkP3ZKYV2+DpE6I8gYqE6oM0aBBxN
+         7QnofJC2XRcVrewz9ZLDxfW50ektzQ09B2wT4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AEC1CA.50405@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <E1LerUo-0000NE-Q3@mailer.emlix.com>
+References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
+Date: Wed, 4 Mar 2009 13:04:00 -0500
+Message-ID: <8bd0f97a0903041004g467cbe47jc7c66261da01348c@mail.gmail.com>
+Subject: Re: [patch -v2] flat: fix data sections alignment
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Johannes Weiner <jw@emlix.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Brian Maly <bmaly@redhat.com> wrote:
-
->> Your patch looks fine, but i'd like to hear the opinion of 
->> Ying Huang as well.
+On Wed, Mar 4, 2009 at 08:51, Johannes Weiner wrote:
+> The flat loader uses an architecture's flat_stack_align() to align the
+> stack but assumes word-alignment is enough for the data sections.
 >
-> 	
-> I had asked him to look at this before I posted and he had no 
-> objections. He may have an opinion on moving dmi scan into 
-> efi_init, though this can certainly be done later if and when 
-> needed.
+> However, on the Xtensa S6000 we have registers up to 128bit width
+> which can be used from userspace and therefor need userspace stack and
+> data-section alignment of at least this size.
 
-No, i think your patch is fine as-is - moving the dmi scan to 
-EFI init just makes EFI bootstrap a bit less standard - hence a 
-bit more fragile - and that's never good.
-
-Since your patch fixes real issues on Apple hardware i also 
-queued it up in tip:x86/urgent for .29-rc8.
-
-	Ingo
+could this perhaps be a gcc problem ?  x86 has a similar problem with
+sse and they addressed it with a function attribute.  after all, just
+because your stack started out 128bit aligned doesnt mean gcc will
+keep it that way when calling other functions.  so having the stack
+start out aligned would only "fix" the stack for the application's
+entry point right (which would in practice bubble up to main()) ?  so
+you'd be right back where you started ...
+-mike
