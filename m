@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbZCDW5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZCDXD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbZCDW5r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 17:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZCDW5i
+	id S1755367AbZCDXD6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 18:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZCDXDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 17:57:38 -0500
-Received: from gw.goop.org ([64.81.55.164]:49371 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752980AbZCDW5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 17:57:38 -0500
-Message-ID: <49AF075D.9070607@goop.org>
-Date: Wed, 04 Mar 2009 14:57:33 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 4 Mar 2009 18:03:50 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:8830 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbZCDXDu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 18:03:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=BAJffIrzTblzCPWo90yuOAhMGh7GcDAo4LspAxAAxCUB8MVDmt7ARnyFY7Y7zZa/pk
+         Il9D+Btq9oor4ycb3oKbjhAp3hB6dsxXFid8bdjtEV+JRMFBRA4JHSxD5DNxHY77HpFz
+         GPpIKBdHvu48rowx+9BLAJv4yGLoKtXk+BvpI=
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: __virt_addr_valid vs virtual percpu areas
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <e9c3a7c20902121612q724d0931ifb70d559081f206d@mail.gmail.com>
+References: <20090212.204840.124087545.nemoto@toshiba-tops.co.jp>
+	 <1234441811-9628-1-git-send-email-thierry.reding@avionic-design.de>
+	 <e9c3a7c20902121612q724d0931ifb70d559081f206d@mail.gmail.com>
+Date: Wed, 4 Mar 2009 16:03:47 -0700
+X-Google-Sender-Auth: 5b8bd875d9fd60cf
+Message-ID: <e9c3a7c20903041503lb2f55fct3ec39f268e609317@mail.gmail.com>
+Subject: Re: [PATCH v2] dmaengine: Fix oops on dmatest module unload.
+From: Dan Williams <dan.j.williams@intel.com>
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, haavard.skinnemoen@atmel.com,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On i386, __virt_addr_valid() has the test:
+On Thu, Feb 12, 2009 at 5:12 PM, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Thu, Feb 12, 2009 at 5:30 AM, Thierry Reding
+> <thierry.reding@avionic-design.de> wrote:
+>> This patch fixes an oops that happens when the dmatest module is unloaded. The
+>> dma_release_channel() function is called on channels that have already been
+>> cleaned up (and therefore freed) with dmatest_cleanup_channel().
+>>
+>> Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+>
+> Thanks, applied with Atsushi's ack.
+>
 
-	if (system_state != SYSTEM_BOOTING && is_vmalloc_addr((void *) x))
-		return false;
+...and now it is unapplied :-).  The problem with this patch is that
+it releases the channel before dmatest is done with it.  'Cleanup'
+followed by 'release' is the right order, just need to save ->chan
+before it gets freed.
 
-
-Why is the vmalloc area a valid virtual address while the system is 
-booting?  This is biting me because I need to translate percpu addresses 
-to pfns, but I only bother doing the full pagetable walk if 
-virt_addr_valid() is false (otherwise I just use __pa()).
-
-Removing this test doesn't seem to harm anything at first glance.  Is 
-this OK to do in general (and can we quietly set fire to system_state 
-while we're about it)?
-
-Thanks,
-    J
-
+--
+Dan
