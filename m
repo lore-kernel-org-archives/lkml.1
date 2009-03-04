@@ -1,133 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZCDWVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZCDW03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbZCDWVR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 17:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZCDWVF
+	id S1755906AbZCDW03 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 17:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZCDW0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 17:21:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54724 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751791AbZCDWVC (ORCPT
+	Wed, 4 Mar 2009 17:26:20 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:38275 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbZCDW0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 17:21:02 -0500
-Date: Wed, 4 Mar 2009 14:20:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Samuel.CUELLA@supinfo.com, adaplas@gmail.com, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2.6.28 ] i810: kernel crash fix when  struct
- fb_var_screeninfo is supplied
-Message-Id: <20090304142006.20ad72fe.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LNX.2.00.0903041108470.4971@jikos.suse.cz>
-References: <02E43B9E8855E74E886358B5184B4CC9104620C0@mail2-aub1fr.esi-supinfo.com>
-	<alpine.LNX.2.00.0903041108470.4971@jikos.suse.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 17:26:19 -0500
+Date: Wed, 4 Mar 2009 15:26:17 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Support for multiple MSI
+Message-ID: <20090304222617.GA21720@parisc-linux.org>
+References: <1235410082-5016-1-git-send-email-matthew@wil.cx> <m17i35z6fc.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m17i35z6fc.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Mar 2009 11:09:21 +0100 (CET)
-Jiri Kosina <jkosina@suse.cz> wrote:
+On Wed, Mar 04, 2009 at 06:52:39AM -0800, Eric W. Biederman wrote:
+> Do we have any benchmarks anywhere that show that multiple msi support
+> gains us something?
 
-> On Thu, 26 Feb 2009, CUELLA Samuel wrote:
-> 
-> > from: Samuel CUELLA <samuel.cuella@supinfo.com>
-> > 
-> > This patch prevents the kernel from being crashed by a divide-by-zero operation when supplied an incorrectly filled 'struct fb_var_screeninfo' from userland.
-> > 
-> > Previously i810_main.c:1005 (i810_check_params) was using the global 'yres' symbol previously defined at i810_main.c:145
-> > as a module parameter value holder (i810_main.c:2174). If i810fb is compiled-in or if this param doesn't get a default value, 
-> > this direct usage leads to a divide-by-zero at i810_main.c:1005 (i810_check_params). The patch simply replace the 'yres' global,
-> > perhaps undefined symbol usage by a given parameter structure lookup.
-> > 
-> > This problem occurs with directfb, mplayer -vo fbdev, SDL library.
-> > It was also reported ( but non solved ) at : http://mail.directfb.org/pipermail/directfb-dev/2008-March/004050.html
-> > Sample code to reproduce :
-> > /*Comile with gcc crashfb.c -o crashfb*/
-> > #include <fcntl.h>
-> > #include <linux/fb.h>
-> > #include <stdio.h>
-> > #include <sys/ioctl.h>
-> > #include <sys/mman.h>
-> > #include <sys/stat.h>
-> > #include <string.h>
-> > #include <stdlib.h>
-> > 
-> > 
-> > #define FB "/dev/fb0"
-> > 
-> > int main(){
-> >         int fd;
-> >         int rv;
-> >         struct fb_var_screeninfo vinfo;
-> > 
-> >         fd = open(FB,O_RDWR);
-> >         if( fd ){
-> >                 vinfo.xres = 800;
-> >                 vinfo.yres = 600;
-> >                 rv =ioctl(fd, FBIOPUT_VSCREENINFO, &vinfo);
-> >         }
-> >         return(rv);
-> > }
-> > Leads to this crash dump:
-> > divide error: 0000 [#1]
-> > last sysfs file: /sys/kernel/uevent_seqnum
-> > Modules linked in:
-> > 
-> > Pid: 4058, comm: crashfb Not tainted (2.6.28 #4)
-> > EIP: 0060:[<c02558c8>] EFLAGS: 00010202 CPU: 0
-> > EIP is at i810fb_check_var+0x428/0x520
-> > EAX: 00400000 EBX: ce9d5e44 ECX: 001209a0 EDX: 00000000
-> > ESI: 00000020 EDI: 00000004 EBP: 00000000 ESP: ce9d5d0c
-> >  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-> > Process crashfb (pid: 4058, ti=ce9d4000 task=cf8af0e0 task.ti=ce9d4000)
-> > Stack:
-> >  c014f993 00000000 00000001 00000000 00000000 00400000 0000001a cf811000
-> >  08048268 cf81123c 00000258 00000320 ffffffed cf811015 ce9d5e45 cf811000
-> >  c0224821 ce9d5e44 ce9b09a0 00000000 00012000 00000000 c0111a89 00000001
-> > Call Trace:
-> >  [<c014f993>] handle_mm_fault+0x5c3/0x650
-> >  [<c0224821>] fb_set_var+0x61/0x2d0
-> >  [<c0111a89>] do_page_fault+0x3a9/0x8b0
-> >  [<c016c935>] do_lookup+0x65/0x1a0
-> >  [<c02257aa>] fb_ioctl+0x21a/0x3c0
-> >  [<c014f577>] handle_mm_fault+0x1a7/0x650
-> >  [<c0225590>] fb_ioctl+0x0/0x3c0
-> >  [<c017077f>] vfs_ioctl+0x1f/0x70
-> >  [<c017096c>] do_vfs_ioctl+0x5c/0x430
-> >  [<c0111a89>] do_page_fault+0x3a9/0x8b0
-> >  [<c0170d7d>] sys_ioctl+0x3d/0x70
-> >  [<c0103af9>] sysenter_do_call+0x12/0x25
-> > Code: c0 0f 44 d0 89 54 24 04 e8 b6 5a ec ff b8 ea ff ff ff 83 c4 30 5b 5e 5f 5d c3 8b 2d ac 0e 4a c0 31 d2 89 f7 8b 44 24 14 c1 ef 03 <f7> f5 31 d2 f7 f7 3b 03 89 c7 0f 83 3c fd ff ff 89 c2 89 f1 89
-> > EIP: [<c02558c8>] i810fb_check_var+0x428/0x520 SS:ESP 0068:ce9d5d0c
-> > ---[ end trace 1840767f449d222e ]---
-> > 
-> > Despite this dump says that EIP was in 'i810fb_check_var' the divide by zero truly occurs in 'i810_check_params' called by 'i810fb_check_var' (i810_main.c:1466).
-> > 
-> > Signed-off-by: Samuel CUELLA <samuel.cuella@supinfo.com>
-> > ---
-> > --- linux-2.6.28/drivers/video/i810/i810_main.c.orig    2009-02-26 15:23:03.000000000 +0100
-> > +++ linux-2.6.28/drivers/video/i810/i810_main.c 2009-02-26 14:50:06.000000000 +0100
-> > @@ -993,6 +993,8 @@ static int i810_check_params(struct fb_v
-> >         struct i810fb_par *par = info->par;
-> >         int line_length, vidmem, mode_valid = 0, retval = 0;
-> >         u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
-> > +       u32 yres = info->var.yres;
-> > +
-> >         /*
-> >          *  Memory limit
-> >          */
-> > 
-> 
-> This is not appropriate for trivial tree. CCing akpm and lkml.
-> 
+Yep.  I get a 1% performance gain when doing
 
-I don't have a copy of the original patch.
+dd if=/dev/sdb of=/dev/null bs=512 count=10000000 iflag=direct
 
-Please resend everything, with full changelog and a Signed-off-by: as
-per Documentation/SubmittingPatches.  Please also cc
-linux-fbdev-devel@lists.sourceforge.net.
+This is less improvement than I had expected, and I'm trying to find out
+why before I publish the rest of the code.
 
+> The requirement to allocate a contiguous block of vector numbers worries
+> me for the x86 implementation.  I don't like the idea of having to deal
+> with allocations that can fail because of fragmentation.
+
+Multiple MSI support can fail for any number of reasons, fragmentation
+is only one of them.  Drivers just have to deal with it.
+
+> The fact that we also can not honor the irq affinity properly for multiple
+> msi also disturbs me.
+
+That's an x86 limitation; powerpc can independently steer MSI.
+
+> At a quick skim your patchset is only the generic code without a single
+> architecture specific implementation so it appears you have not done the
+> hard work on figuring out how to deal with multiple msi in the real
+> world.
+
+I think that's terribly unfair.  How dare you insinuate I have done no
+testing of my code?  I've published code before that implements multiple
+MSI for x86-64, and I've adapted that code to the current tree.  When I
+have enough time to do so, I'm going to adapt it to Ingo's -tip and
+publish it.  There will be many things to criticise in it which I'm sure
+will make you happy.
+
+> Given that msi-x does not have any of these issues without data to say
+> that there is a true gain in supporting multi-msi I don't see the point
+> of supporting it.
+
+There are people who have implemented it in silicon, and there is evidence of
+performance improvement with Linux and with other operating systems.
+Just because you don't like its limitations on x86 is not a valid reason
+to keep it out.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
