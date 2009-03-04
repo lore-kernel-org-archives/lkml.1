@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZCDCuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbZCDCxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZCDCuu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 21:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCDCuh
+	id S1755838AbZCDCxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 21:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZCDCwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 21:50:37 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:28983 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbZCDCug (ORCPT
+	Tue, 3 Mar 2009 21:52:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39964 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbZCDCwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 21:50:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZS5hkiWdlH2xjrC/pLWxWD6uTXh+0ygsfTvFt5KSjklXpDQWDHVMQTNSRQytHaueiL
-         O/1zUWA4V8EOp69MRoYGH7VFYnSWfvwn7arlvyu2UbmQH1WQraF+EOhWN4E0DDuFmGb7
-         Tzrd2KVCGkaVME/LVPd2xRA0yDwWNB++ZTu3c=
-Subject: Re: some tc commands fail on 2.6.29-rc6-git5, works on 2.6.28.7
-From: John Dykstra <john.dykstra1@gmail.com>
-To: Joao Correia <joaomiguelcorreia@gmail.com>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <a5d9929e0903031510r7f173f5cib7bd1a2426e92473@mail.gmail.com>
-References: <a5d9929e0903011636w6bff1032y28ab58c0ff8c8052@mail.gmail.com>
-	 <20090301165729.8e08e1d7.akpm@linux-foundation.org>
-	 <49AC28FF.1040102@gmail.com>
-	 <a5d9929e0903031510r7f173f5cib7bd1a2426e92473@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 20:50:28 -0600
-Message-Id: <1236135028.7883.44.camel@Maple>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 21:52:53 -0500
+Message-Id: <20090304025250.164970857@goodmis.org>
+References: <20090304024921.153061228@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 03 Mar 2009 21:49:22 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Martin Bligh <mbligh@google.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/5] ring-buffer: reset write field for ring_buffer_read_page
+Content-Disposition: inline; filename=0001-ring-buffer-reset-write-field-for-ring_buffer_read_.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 23:10 +0000, Joao Correia wrote:
-> I have confirmed again that the exact same commands (as on the
-> original message), work flawlessly on 2.6.28.7 without a hitch, and,
-> AFAIK, work as intended. I have also tried the latest 2.6.29-rc6-git7
-> and it still fails like on git6.
+From: Steven Rostedt <srostedt@redhat.com>
 
-I have also reproduced this on Linus' latest 2.6.29-rc6 tree, using tc
-version iproute2-ss071016 and a kernel config with all traffic control
-features enabled.
+Impact: fix ring_buffer_read_page
 
-The error reported by tc comes from the kernel-level check added by:
+After a page is swapped into the ring buffer, the write field must
+also be reset.
 
-	commit c1b56878fb68e9c14070939ea4537ad4db79ffae
-	Author: Stephen Hemminger <shemminger@vyatta.com>
-	Date:   Tue Nov 25 21:14:06 2008 -0800
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/ring_buffer.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-    	tc: policing requires a rate estimator
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index a8c275c..9baad7e 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2492,6 +2492,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 		rb_init_page(bpage);
+ 		bpage = cpu_buffer->reader_page->page;
+ 		cpu_buffer->reader_page->page = *data_page;
++		local_set(&cpu_buffer->reader_page->write, 0);
+ 		cpu_buffer->reader_page->read = 0;
+ 		*data_page = bpage;
+ 	}
+-- 
+1.5.6.5
 
-    Found that while trying average rate policing, it was possible to
-    request average rate policing without a rate estimator. This results
-    in no policing which is harmless but incorrect.
-
-    Since policing could be setup in two steps, need to check
-    in the kernel.
-
-    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-I got the same error when using the tc version iproute2-ss090115 built
-this evening from the public git repository.
-
-  -- John
-
+-- 
