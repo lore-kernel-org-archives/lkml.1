@@ -1,94 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbZCDHy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZCDIBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbZCDHy6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 02:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZCDHyr
+	id S1755451AbZCDIBD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 03:01:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZCDIAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 02:54:47 -0500
-Received: from mail-gx0-f174.google.com ([209.85.217.174]:45061 "EHLO
-	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753036AbZCDHyp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 02:54:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=EqwtN4jShLLVsyKX/drpjfE4cykhLaZvYI95MEW99tgH3Z2Aj+/TjXuTOJuvZEMjlG
-         OlDHGmzYqgDC2Xb5IgWSaFeSAiVl4texA4Iy/xwbIxZvigZCuKViyHVQcNhG0FfiUWPu
-         5Mq/pMMhbQeRSS9Z9OMHeGhXgpqhmyBX0MZ1U=
-MIME-Version: 1.0
-In-Reply-To: <20090304153245.109eada4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <49A65455.4030204@cn.fujitsu.com>
-	 <20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1236005770.5330.583.camel@laptop>
-	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1236066689.18955.27.camel@twins>
-	 <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
-	 <1236073236.18955.46.camel@twins>
-	 <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
-	 <1236081288.5330.4105.camel@laptop>
-	 <20090304153245.109eada4.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 4 Mar 2009 13:24:43 +0530
-Message-ID: <344eb09a0903032354r38d74c48p217d338cba7159e8@mail.gmail.com>
-Subject: Re: [PATCH] remove rq->lock from cpuacct cgroup v2
-From: Bharata B Rao <bharata.rao@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
-       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, kenchen@google.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Mar 2009 03:00:49 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49573 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753079AbZCDIAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 03:00:48 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+4kIh2+w+4pKa5lkacBUSC4lrc+YuCvQayPUVp8B
+	VwTy9qnG80eZb5
+Subject: Re: Large amount of scsi-sgpool objects
+From: Mike Galbraith <efault@gmx.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       Boaz Harrosh <bharrosh@panasas.com>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <49AE32B5.9040603@s5r6.in-berlin.de>
+References: <49ACF8FE.2020904@panasas.com>
+	 <1236093718.3263.3.camel@localhost.localdomain>
+	 <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
+	 <1236097526.3263.17.camel@localhost.localdomain>
+	 <20090303192212.GA20705@elte.hu>
+	 <1236115544.15993.22.camel@localhost.localdomain>
+	 <20090303214454.GA8288@elte.hu>
+	 <1236119990.24019.35.camel@localhost.localdomain>
+	 <20090303230323.GA21644@elte.hu> <49ADBE29.4040706@s5r6.in-berlin.de>
+	 <20090303234834.GA13389@elte.hu>  <49AE221D.9010909@s5r6.in-berlin.de>
+	 <1236150752.6049.19.camel@marge.simson.net>
+	 <49AE32B5.9040603@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 04 Mar 2009 09:00:40 +0100
+Message-Id: <1236153640.6729.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 12:02 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> cgroup/cpuacct subsystem counts cpu usage by 64bit coutnter in
-> per-cpu object. In read-side (via cpuacct.usage file), for reading 64bit
-> value in safe manner, it takes rq->lock of (other) cpus.
->
-> In general, taking rq->lock of other cpus from codes not for scheduler
-> is not good. This patch tries to remove rq->lock in read-side.
->
-> To read 64bit value in atomic, this patch uses seqcounter.
->
-> Pros.
->  - rq->lock is not necessary.
-> Cons.
->  - When updating counter, sequence number must be updated.
->    (I hope this per-cpu sequence number is on cache...)
->
-> Changelog: v1->v2
->  - checking calling context of all calls and avoid unnecessary
->   preempt_disable calls.
->  - use on_each_cpu() instead of workqueue, at reset
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Wed, 2009-03-04 at 08:50 +0100, Stefan Richter wrote:
+> Mike Galbraith wrote:
+> > On Wed, 2009-03-04 at 07:39 +0100, Stefan Richter wrote:
+> >> Ingo Molnar wrote:
+> >>> Yeah, these commits are in none of the topic branches that are 
+> >>> the git base of development, they are all already in a separate 
+> >>> branch named "tip:out-of-tree".
+> >> So people should remember to retry without out-of-tree before reporting
+> >> problems == remember to report against the development base.
+> > 
+> > I'll bite, how does a gut-fu white belt accomplish that?
+> 
+> How to do it is currently not quite obvious
+>   - for linux-2.6-x86.git users because the master branch contains
+>     out-of-tree.Â¹  Or maybe nobody should use the master branch,
+>     I don't know.
 
-So cpuacct->cpuusage is a 64 bit percpu counter and I see that cpuacct
-subsystem itself handles the following special cases:
-- 32 vs 64 bit update issues
-- resetting percpu counters on online and offline cpus
+Ah, ok.  I thought there might be an un-merge incantation or whatnot.
 
-Tomorrow if I add other counters to cpuacct subsystem (like stime and
-utime), I need to do what you have done in this patch all over again
-for the additional counters.
+(seems to have just been an oopsie anyway)
 
-Instead of subsystems handling all these percpu counter problems
-themselves, shouldn't we be using percpu_counter subsytem and let it
-handle all the issues transparently for us ? I am not sure if all
-these problems have been addressed in percpu_counter, but would like
-to know why we are not using percpu_counter for these kinds of things
-and enhance percpu_counter if it can't handle some of the issues which
-we are solving here specifically for cpuacct subsystem ?
+	-Mike
 
-Regards,
-Bharata.
--- 
-http://bharata.sulekha.com/blog/posts.htm
