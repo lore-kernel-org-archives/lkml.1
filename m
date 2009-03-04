@@ -1,72 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZCDCCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZCDCFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbZCDCCb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 21:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZCDCCT
+	id S1756195AbZCDCFo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 21:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZCDCFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 21:02:19 -0500
-Received: from www.tglx.de ([62.245.132.106]:49480 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750725AbZCDCCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 21:02:18 -0500
-Date: Wed, 4 Mar 2009 03:01:56 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       linux-scsi@vger.kernel.org,
+	Tue, 3 Mar 2009 21:05:35 -0500
+Received: from mga05.intel.com ([192.55.52.89]:32551 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752966AbZCDCFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 21:05:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,297,1233561600"; 
+   d="scan'208";a="670126986"
+Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Lin Ming <ming.m.lin@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
- scsi-sgpool)objects
-In-Reply-To: <1236119195.24019.24.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0903040249460.29264@localhost.localdomain>
-References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>  <49ACF8FE.2020904@panasas.com>  <1236093718.3263.3.camel@localhost.localdomain>  <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>  <1236097526.3263.17.camel@localhost.localdomain>
-  <alpine.LFD.2.00.0903031818230.29264@localhost.localdomain>  <alpine.LFD.2.00.0903032247170.29264@localhost.localdomain> <1236119195.24019.24.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090302112122.GC21145@csn.ul.ie>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
+	 <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie>
+	 <1235647139.16552.34.camel@penberg-laptop>
+	 <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr>
+	 <20090302112122.GC21145@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 04 Mar 2009 10:05:07 +0800
+Message-Id: <1236132307.2567.25.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Mar 2009, James Bottomley wrote:
-
-> On Tue, 2009-03-03 at 23:07 +0100, Thomas Gleixner wrote:
-> > On Tue, 3 Mar 2009, Thomas Gleixner wrote:
-> > > My bad. I was playing with that to get rid of the aic7xxx wreckage on
-> > > one of my test boxen and forgot to remove it.
-> > 
-> > While the one below is definitey not my fault. It's on Linus latest:
-> > 
-> >  commit 2450cf51a1bdba7037e91b1bcc494b01c58aaf66
-> > 
-> > While compiling a kernel I triggerred the BUG below. Not so nice as it
-> > took a whole filesystem with it. fsck took more than 20 min to recover
-> > the leftovers :(
-> > 
-> > Thanks,
-> > 
-> > 	tglx
-> > 
-> > 
-> > ------------[ cut here ]------------
-> > kernel BUG at /home/tglx/work/kernel/git/linux-2.6/drivers/scsi/scsi_lib.c:1141!
+On Mon, 2009-03-02 at 11:21 +0000, Mel Gorman wrote:
+> (Added Ingo as a second scheduler guy as there are queries on tg_shares_up)
 > 
-> This is BUG_ON(count > sdb->table.nents);
+> On Fri, Feb 27, 2009 at 04:44:43PM +0800, Lin Ming wrote:
+> > On Thu, 2009-02-26 at 19:22 +0800, Mel Gorman wrote: 
+> > > In that case, Lin, could I also get the profiles for UDP-U-4K please so I
+> > > can see how time is being spent and why it might have gotten worse?
+> > 
+> > I have done the profiling (oltp and UDP-U-4K) with and without your v2
+> > patches applied to 2.6.29-rc6.
+> > I also enabled CONFIG_DEBUG_INFO so you can translate address to source
+> > line with addr2line.
+> > 
+> > You can download the oprofile data and vmlinux from below link,
+> > http://www.filefactory.com/file/af2330b/
+> > 
 > 
-> It looks like the sg list got split and grew in size ... I suspect this
-> might be libata related, so cc'ing the ide list.  I suspect either the
-> block layer initially parametrised this wrongly (tomo bug) or a sg list
-> got split then requeued (something in libata?).
+> Perfect, thanks a lot for profiling this. It is a big help in figuring out
+> how the allocator is actually being used for your workloads.
+> 
+> The OLTP results had the following things to say about the page allocator.
+In case we might mislead you guys, I want to clarify that here OLTP is
+sysbench (oltp)+mysql, not the famous OLTP which needs lots of disks and big
+memory.
 
-FYI, after I've lost a full day of work including the results of four
-"iozone -a -g 4G" runs I tried to reproduce the problem on that
-machine - the leftovers of the filesystem are pretty useless anyway.
+Ma Chinang, another Intel guy, does work on the famous OLTP running.
 
-It took about 2hrs to trigger the bug again. Same back trace.
+> 
+> Samples in the free path
+> 	vanilla:	6207
+> 	mg-v2:		4911
+> Samples in the allocation path
+> 	vanilla		19948
+> 	mg-v2:		14238
+> 
+> This is based on glancing at the following graphs and not counting the VM
+> counters as it can't be determined which samples are due to the allocator
+> and which are due to the rest of the VM accounting.
+> 
+> http://www.csn.ul.ie/~mel/postings/lin-20090228/free_pages-vanilla-oltp.png
+> http://www.csn.ul.ie/~mel/postings/lin-20090228/free_pages-mgv2-oltp.png
+> 
+> So the path costs are reduced in both cases. Whatever caused the regression
+> there doesn't appear to be in time spent in the allocator but due to
+> something else I haven't imagined yet. Other oddness
+> 
+> o According to the profile, something like 45% of time is spent entering
+>   the __alloc_pages_nodemask() function. Function entry costs but not
+>   that much. Another significant part appears to be in checking a simple
+>   mask. That doesn't make much sense to me so I don't know what to do with
+>   that information yet.
+> 
+> o In get_page_from_freelist(), 9% of the time is spent deleting a page
+>   from the freelist.
+> 
+> Neither of these make sense, we're not spending time where I would expect
+> to at all. One of two things are happening. Something like cache misses or
+> bounces are dominating for some reason that is specific to this machine. Cache
+> misses are one possibility that I'll check out. The other is that the sample
+> rate is too low and the profile counts are hence misleading.
+> 
+> Question 1: Would it be possible to increase the sample rate and track cache
+> misses as well please?
+I will try to capture cache miss with oprofile.
 
-Anything I can do what might help to decode the problem ?
+> 
+> Another interesting fact is that we are spending about 15% of the overall
+> time is spent in tg_shares_up() for both kernels but the vanilla kernel
+> recorded 977348 samples and the patched kernel recorded 514576 samples. We
+> are spending less time in the kernel and it's not obvious why or if that is
+> a good thing or not. You'd think less time in kernel is good but it might
+> mean we are doing less work overall.
+> 
+> Total aside from the page allocator, I checked what we were doing
+> in tg_shares_up where the vast amount of time is being spent. This has
+> something to do with CONFIG_FAIR_GROUP_SCHED. 
+> 
+> Question 2: Scheduler guys, can you think of what it means to be spending
+> less time in tg_shares_up please?
+> 
+> I don't know enough of how it works to guess why we are in there. FWIW,
+> we are appear to be spending the most time in the following lines
+> 
+>                 weight = tg->cfs_rq[i]->load.weight;
+>                 if (!weight)
+>                         weight = NICE_0_LOAD;
+> 
+>                 tg->cfs_rq[i]->rq_weight = weight;
+>                 rq_weight += weight;
+>                 shares += tg->cfs_rq[i]->shares;
+> 
+> So.... cfs_rq is SMP aligned, but we iterate though it with for_each_cpu()
+> and we're writing to it. How often is this function run by multiple CPUs? If
+> the answer is "lots", does that not mean we are cache line bouncing in
+> here like mad? Another crazy amount of time is spent accessing tg->se when
+> validating. Basically, any access of the task_group appears to incur huge
+> costs and cache line bounces would be the obvious explanation.
+﻿FAIR_GROUP_SCHED is a feature to support configurable cpu weight for different users.
+We did find it takes lots of time to check/update the share weight which might create
+lots of cache ping-pang. With sysbench(oltp)+mysql, that becomes more severe because
+mysql runs as user mysql and sysbench runs as another regular user. When starting
+the testing with 1 thread in command line, there are 2 mysql threads and 1 sysbench
+thread are proactive.
 
-Thanks,
+> 
+> More stupid poking around. We appear to update these share things on each
+> fork().
+> 
+> Question 3: Scheduler guys, If the database or clients being used for OLTP is
+> fork-based instead of thread-based, then we are going to be balancing a lot,
+> right? What does that mean, how can it be avoided?
+> 
+> Question 4: Lin, this is unrelated to the page allocator but do you know
+> what the performance difference between vanilla-with-group-sched and
+> vanilla-without-group-sched is?
+When ﻿FAIR_GROUP_SCHED appeared in kernel at the first time, we did many such testing.
+There is another thread to discuss it at http://lkml.org/lkml/2008/9/10/214.
 
-	tglx
+set s﻿ched_shares_ratelimit to a large value could reduce the regression.
+
+Scheduler guys keep improving it. 
+
+> 
+> The UDP results are screwy as the profiles are not matching up to the
+> images. For example
+Mostly, it's caused by not cleaning up old oprofile data when starting
+new sampling.
+
+I will retry.
+
+> 
+> oltp.oprofile.2.6.29-rc6:           ffffffff802808a0 11022     0.1727  get_page_from_freelist
+> oltp.oprofile.2.6.29-rc6-mg-v2:     ffffffff80280610 7958      0.2403  get_page_from_freelist
+> UDP-U-4K.oprofile.2.6.29-rc6:       ffffffff802808a0 29914     1.2866  get_page_from_freelist
+> UDP-U-4K.oprofile.2.6.29-rc6-mg-v2: ffffffff802808a0 28153     1.1708  get_page_from_freelist
+> 
+> Look at the addresses. UDP-U-4K.oprofile.2.6.29-rc6-mg-v2 has the address
+> for UDP-U-4K.oprofile.2.6.29-rc6 so I have no idea what I'm looking at here
+> for the patched kernel :(.
+> 
+> Question 5: Lin, would it be possible to get whatever script you use for
+> running netperf so I can try reproducing it?
+Below is a simple script. As for formal testing, we add parameter "-i 50,3 -I" 99,5"
+to get a more stable result.
+
+PROG_DIR=/home/ymzhang/test/netperf/src
+taskset -c 0 ${PROG_DIR}/netserver
+sleep 2
+taskset -c 7 ${PROG_DIR}/netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -- -P 15895 12391 -s 32768 -S 32768 -m 4096
+killall netserver
+
+
+Basically, we start 1 client and bind client/server to different physical cpu.
+
+> 
+> Going by the vanilla kernel, a *large* amount of time is spent doing
+> high-order allocations. Over 25% of the cost of buffered_rmqueue() is in
+> the branch dealing with high-order allocations. Does UDP-U-4K mean that 8K
+> pages are required for the packets? That means high-order allocations and
+> high contention on the zone-list. That is bad obviously and has implications
+> for the SLUB-passthru patch because whether 8K allocations are handled by
+> SL*B or the page allocator has a big impact on locking.
+> 
+> Next, a little over 50% of the cost get_page_from_freelist() is being spent
+> acquiring the zone spinlock. The implication is that the SL*B allocators
+> passing in order-1 allocations to the page allocator are currently going to
+> hit scalability problems in a big way. The solution may be to extend the
+> per-cpu allocator to handle magazines up to PAGE_ALLOC_COSTLY_ORDER. I'll
+> check it out.
+> 
+
