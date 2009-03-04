@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbZCDV7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbZCDWC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757756AbZCDV7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 16:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZCDV7e
+	id S1757745AbZCDWC5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 17:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZCDWCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 16:59:34 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:56877 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752902AbZCDV7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 16:59:33 -0500
-Date: Wed, 4 Mar 2009 16:59:28 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Yinghai Lu <yinghai@kernel.org>,
-       Sarah Sharp <sarah.a.sharp@intel.com>, <linux-usb@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: EHCI debug documentation
-In-Reply-To: <m1bpshx912.fsf@fess.ebiederm.org>
-Message-ID: <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org>
+	Wed, 4 Mar 2009 17:02:49 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:54719 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754669AbZCDWCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 17:02:48 -0500
+Date: Wed, 4 Mar 2009 16:02:46 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/3 v7] SGI RTC: fix uv_time for UP
+Message-ID: <20090304220246.GC6288@sgi.com>
+References: <20090304185413.GA24385@sgi.com> <20090304194658.GA18096@elte.hu> <20090304204522.GA25430@sgi.com> <20090304205833.GB3527@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090304205833.GB3527@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Mar 2009, Eric W. Biederman wrote:
+Fix non-smp build of uv_time.c.
 
-> Greg KH <gregkh@suse.de> writes:
-> 
-> > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> >> Yinghai Lu wrote:
-> >> > b. netchip USB debug cable
-> >> 
-> >> http://www.plxtech.com/products/NET2000/NET20DC/default.asp
-> >
-> > I have reports that the newer version of this device does not work on
-> > Linux as it isn't enumeratable as a "real" usb device on one end.
-> >
-> > I don't have one of these new devices yet to test it out, has anyone
-> > else heard of this problem?
-> 
-> With the first generation of devices I remember they were peculiar and
-> finicky.  I don't recall the exact details but I remember the devices
-> able to get into weird states that may resemble what you describe.
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-Those devices were a little peculiar in that they were powered only on
-one side.  That is, they would take bus power only from the right-hand
-connector (looking at the face with the PLX logo).  So if you plugged
-in only the left side, the device would not show up or enumerate.  But 
-if you plugged in both sides, then both of them would enumerate okay.
+---
 
-Alan Stern
+This time against tip/x86/uv
 
+ arch/x86/kernel/uv_time.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.tip-uv/arch/x86/kernel/uv_time.c
+===================================================================
+--- linux-2.6.tip-uv.orig/arch/x86/kernel/uv_time.c	2009-03-04 15:52:10.000000000 -0600
++++ linux-2.6.tip-uv/arch/x86/kernel/uv_time.c	2009-03-04 15:58:48.000000000 -0600
+@@ -20,6 +20,9 @@
+  */
+ #include <linux/clockchips.h>
+ 
++#include <asm/apic.h>
++#include <asm/cpu.h>
++
+ #include <asm/uv/uv_mmrs.h>
+ #include <asm/uv/uv_hub.h>
+ #include <asm/uv/bios.h>
+@@ -84,7 +87,7 @@ static void uv_rtc_send_IPI(int cpu)
+ 	unsigned long apicid, val;
+ 	int pnode;
+ 
+-	apicid = per_cpu(x86_cpu_to_apicid, cpu);
++	apicid = cpu_physical_id(cpu);
+ 	pnode = uv_apicid_to_pnode(apicid);
+ 	val = (1UL << UVH_IPI_INT_SEND_SHFT) |
+ 	      (apicid << UVH_IPI_INT_APIC_ID_SHFT) |
