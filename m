@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZCDDBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZCDDIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZCDDBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 22:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZCDDBE
+	id S1754350AbZCDDIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 22:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZCDDIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 22:01:04 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57080 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682AbZCDDBE (ORCPT
+	Tue, 3 Mar 2009 22:08:32 -0500
+Received: from bowden.ucwb.org.au ([203.122.237.119]:47825 "EHLO
+	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbZCDDIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 22:01:04 -0500
-Date: Tue, 3 Mar 2009 22:01:00 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: linux-kernel@vger.kernel.org
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Martin Bligh <mbligh@google.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mrubin@google.com, md@google.com
-Subject: Re: [PATCH 0/5] [RFC] binary reading of ftrace ring buffers
-In-Reply-To: <20090304024921.153061228@goodmis.org>
-Message-ID: <alpine.DEB.2.00.0903032200260.5939@gandalf.stny.rr.com>
-References: <20090304024921.153061228@goodmis.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Mar 2009 22:08:31 -0500
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+From: Kevin Shanahan <kmshanah@ucwb.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <pRIaSZpQ1ON.A.vrC.udarJB@chimera>
+References: <r4SCKuuJK0F.A.UrB.QdarJB@chimera>
+	 <pRIaSZpQ1ON.A.vrC.udarJB@chimera>
+Content-Type: text/plain
+Organization: UnitingCare Wesley Bowden
+Date: Wed, 04 Mar 2009 13:38:19 +1030
+Message-Id: <1236136099.7726.12.camel@kulgan.wumi.org.au>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 3 Mar 2009, Steven Rostedt wrote:
-
-> Yes you can run multiple instances of this on different buffers.
+On Tue, 2009-03-03 at 20:41 +0100, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> be listed and let me know (either way).
 > 
->  # ./rb-read.pl /tmp/buf-0
-> 
-> produces:
-> 
->         0  [000]  7071.936459: (irq_handler_entry) irq 48
->         0  [000]  7071.936462: (irq_handler_exit) irq 48 ret 1
->         0  [000]  7071.988801: (sched_signal_send) sig: 14  task 0
->         0  [000]  7071.988813: (sched_wakeup) task 0 success=1
->         0  [000]  7071.988823: (sched_switch) prev 0:140 ==> next ntpd:6582272:0
->      3303  [000]  7071.988916: (sched_switch) prev 0:120 ==> next swap:7497072:0
->         0  [000]  7072.020370: (sched_wakeup) task 0 success=1
->         0  [000]  7072.020407: (sched_switch) prev 0:140 ==> next even:808416116:0
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
+> Subject		: KVM guests stalling on 2.6.28 (bisected)
+> Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
+> Date		: 2009-01-17 03:37 (46 days old)
+> Handled-By	: Avi Kivity <avi@redhat.com>
 
-My perl script is still a bit buggy, but you get the idea ;-)
+Yes this should still be listed.
 
--- Steve
+The traces are there waiting to be looked at. If there's anything else I
+can do to help things along, please let me know.
 
->        16  [000]  7071.936157: (sched_switch) prev 0:115 ==> next swap:7497072:0
-> 
+Regards,
+Kevin.
+
+
