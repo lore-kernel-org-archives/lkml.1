@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZCDKBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbZCDKEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbZCDKBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 05:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZCDKB0
+	id S1755738AbZCDKEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 05:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZCDKEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 05:01:26 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33346 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751084AbZCDKBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 05:01:25 -0500
-Date: Wed, 4 Mar 2009 09:57:27 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <tj@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, pgnet.trash@gmail.com
-Subject: Re: [PATCH 2.6.29-rc7 2/2] x86: disallow DAC for MCP51 PCI bridge
-Message-ID: <20090304095727.707ac18c@lxorguk.ukuu.org.uk>
-In-Reply-To: <49ADE9D3.6080000@kernel.org>
-References: <49ADE82D.40103@kernel.org>
-	<49ADE9D3.6080000@kernel.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Organization: None.. I'm free I'm free bwhahahahaha!
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 05:04:40 -0500
+Received: from mga14.intel.com ([143.182.124.37]:32752 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075AbZCDKEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 05:04:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,299,1233561600"; 
+   d="scan'208";a="116586447"
+Date: Wed, 4 Mar 2009 18:04:20 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Markus <M4rkusXXL@web.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: drop_caches ...
+Message-ID: <20090304100420.GA16859@localhost>
+References: <200903041057.34072.M4rkusXXL@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903041057.34072.M4rkusXXL@web.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Mar 2009 11:39:15 +0900
-Tejun Heo <tj@kernel.org> wrote:
+Hi Markus,
 
-> MCP51 corrupts DAC transfers.  Disallow it.  Reported by pgnet on
-> bnc#463829.
+On Wed, Mar 04, 2009 at 10:57:33AM +0100, Markus wrote:
+> Hello!
+> 
+> I have a small problem. Maybe its just a misunderstanding but I cant 
+> solve it.
+> 
+> I think that writing "3" to drop_caches should drop all buffers and 
+> caches which are already written. So its recommended to put a "sync" 
+> infront of it.
+> So I did "free -m ; sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m"
+> And it gave me:
+>              total       used       free     shared    buffers     
+> cached
+> Mem:          3950       3922         28          0          1        
+> 879
+> -/+ buffers/cache:       3041        909
+> Swap:         5342        205       5136
+>              total       used       free     shared    buffers     
+> cached
+> Mem:          3950       3907         43          0          0        
+> 864
+> -/+ buffers/cache:       3041        908
+> Swap:         5341        206       5135
+> 
+> So the buffer was 1 and is 0 afterthat. But cached is at 879 MB before 
+> and is still 864 MB (!!!) after that!
+> 
+> I am at swappiness=0 and when I remove and readd one swap-partition 
+> after another (so there is always swap). It will keep the cached and 
+> put the swapped memory on other swaps?!
+> 
+> I _think_ thats not the way it should go?
+> 
+> It would be really kind if someone could explain that issue and 
+> what "cached" is at all!
 
-So you have a single piece of evidence as I read it - from a single
-board that represents system with a very common chipset and no supporting
-errata information from the vendor.
+The memory mapped pages won't be dropped in this way.
+"cat /proc/meminfo" will show you the number of mapped pages.
 
-That bug could easily be a faulty motherboard or dodgy connector or a
-specific hardware compatibility issue between two specific components. I
-don't think that can be considered sufficient evidence for adding
-sledgehammer sized workarounds that harm everyone elses performance and
-cripples such systems for certain kinds of work (eg video)
-
-Insufficient evidence and google searches and other bug searches don't
-seem to be turning up any parallel cases so for the moment At the very
-least someone needs to reproduce the hardware configuration and see the
-same problem, and then repeat with a different DAC enabled card.
-
-I don't believe this patch should go in ... yet. More information/testing
-is needed.
-
-Alan
+Thanks,
+Fengguang
