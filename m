@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZCDATS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZCDA0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755069AbZCDATS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZCDATE
+	id S1754027AbZCDA0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZCDA0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:19:04 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44106 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751084AbZCDATD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:19:03 -0500
-Message-ID: <49ADC80F.6010200@zytor.com>
-Date: Tue, 03 Mar 2009 16:15:11 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 3 Mar 2009 19:26:06 -0500
+Received: from ozlabs.org ([203.10.76.45]:39427 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750786AbZCDA0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 19:26:05 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: David Miller <davem@davemloft.net>
+Subject: [PULL] cpumask updates for sparc
+Date: Wed, 4 Mar 2009 10:55:58 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       x86@kernel.org, linux-kernel@vger.kernel.org, jeremy@goop.org,
-       cpw@sgi.com, nickpiggin@yahoo.com.au, ink@jurassic.park.msu.ru
-Subject: Re: [PATCHSET x86/core/percpu] improve the first percpu  chunk allocation
-References: <1235445101-7882-1-git-send-email-tj@kernel.org> <20090224141217.GA17287@elte.hu> <49A40624.4000100@kernel.org> <200903041033.09502.rusty@rustcorp.com.au>
-In-Reply-To: <200903041033.09502.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903041055.58464.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wednesday 25 February 2009 01:07:24 Tejun Heo wrote:
->> it always
->> saves a 2MB TLB entry for all the non-NUMA machines out there.
-> 
-> Note that everyone keeps talking about "a" TLB entry; I wanted to make
-> sure (esp. for those of us reading from the sidelines), it's not: it's
-> up to num_possible_cpus() TLB entries.  Of course, many paths won't access
-> other CPU's data, but it'd be interesting (and pretty easy) to actually
-> instrument how rare this is...
-> 
+The following changes since commit 2450cf51a1bdba7037e91b1bcc494b01c58aaf66:
+  Linus Torvalds (1):                                                       
+        Revert "menu: fix embedded menu snafu"                              
 
-Actually it's up to the number of actual CPUs in the system... obviously 
-there isn't any data allocated for non-present CPUs.
+are available in the git repository at:
 
-	-hpa
+  ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-sparc.git/ master                                                       
+
+Rusty Russell (8):
+      cpumask: Use smp_call_function_many(): sparc64
+      cpumask: arch_send_call_function_ipi_mask: sparc
+      cpumask: Use accessors code: sparc              
+      cpumask: Use accessors code.: sparc64           
+      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: sparc64
+      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.:sparc
+      cpumask: remove cpu_coregroup_map: sparc
+      cpumask: remove the now-obsoleted pcibus_to_cpumask(): sparc
+
+ arch/sparc/include/asm/smp_64.h      |    3 ++-
+ arch/sparc/include/asm/topology_64.h |    5 -----
+ arch/sparc/kernel/ds.c               |    2 +-
+ arch/sparc/kernel/irq_64.c           |    4 ++--
+ arch/sparc/kernel/mdesc.c            |    2 +-
+ arch/sparc/kernel/prom_64.c          |    4 ++--
+ arch/sparc/kernel/smp_32.c           |   19 +++++++++----------
+ arch/sparc/kernel/smp_64.c           |    6 +++---
+ arch/sparc/kernel/sun4d_smp.c        |   11 +++++------
+ arch/sparc/kernel/sun4m_smp.c        |   10 ++++------
+ arch/sparc/mm/init_64.c              |    2 +-
+ arch/sparc/mm/srmmu.c                |    2 +-
+ 12 files changed, 31 insertions(+), 39 deletions(-)
