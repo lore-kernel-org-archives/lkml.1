@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZCDOcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZCDOfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbZCDOcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 09:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbZCDOc1
+	id S1755834AbZCDOfl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 09:35:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbZCDOfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 09:32:27 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:34639 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755678AbZCDOcZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 09:32:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=QASGl8i8BlbVFZ3e+dNl0hcBpP0YZbFa7KQVRQXvMnUo2XMekBxO/1+07kInSR8jCB
-         fjKI0UxKti4WeI8/fJ8UNGcO6VA2oA+Y2eC5FJDVakulCU/cN3F9BCXrbVHiZ6uWEFtV
-         iugo86bQmOuxQQR8HLN18P3JjzhAullsyVpl8=
-MIME-Version: 1.0
-In-Reply-To: <E1LerZg-0000Rp-AX@mailer.emlix.com>
-References: <E1LerZg-0000Rp-AX@mailer.emlix.com>
-Date: Wed, 4 Mar 2009 16:32:22 +0200
-X-Google-Sender-Auth: 4e82230140a9eb41
-Message-ID: <84144f020903040632q6c589cb2q6c976ea999c65956@mail.gmail.com>
-Subject: Re: [patch] xtensa: enforce slab alignment to maximum register width
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Johannes Weiner <jw@emlix.com>
-Cc: Chris Zankel <chris@zankel.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Mar 2009 09:35:32 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50960 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751448AbZCDOfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 09:35:32 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19e5XVdT2leFaZdntF/oCJs7gGN/yc4K8nCRwaoOC
+	H+JzHSiADHT7iH
+Subject: Re: x86-tip: cpufreq breakage
+	-	bisection	fingers	89c9215165ca609096e845926d9a18f1306176a4
+From: Mike Galbraith <efault@gmx.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <49AE88F9.8060100@kernel.org>
+References: <1236085632.5958.8.camel@marge.simson.net>
+	 <20090303143106.GA12248@elte.hu> <1236098338.5926.0.camel@marge.simson.net>
+	 <49ADE077.1060606@kernel.org> <1236138205.6119.12.camel@marge.simson.net>
+	 <1236147277.6049.3.camel@marge.simson.net> <49AE2028.8040402@kernel.org>
+	 <49AE4C26.4040104@kernel.org>  <49AE4D40.3050705@kernel.org>
+	 <1236163460.6101.7.camel@marge.simson.net>  <49AE88F9.8060100@kernel.org>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 15:35:27 +0100
+Message-Id: <1236177327.6001.2.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.65
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 3:56 PM, Johannes Weiner <jw@emlix.com> wrote:
-> From: Oskar Schirmer <os@emlix.com>
->
-> XCHAL_DATA_WIDTH is the maximum register width, slab caches should be
-> aligned to this.
->
-> Theoretical fix as all variants have had an XCHAL_DATA_WIDTH of 4
-> (wordsize) for now.  But the S6000 variant will raise this to 16.
->
-> Signed-off-by: Oskar Schirmer <os@emlix.com>
-> Signed-off-by: Johannes Weiner <jw@emlix.com>
-> ---
->  arch/xtensa/include/asm/processor.h |    2 ++
->  1 file changed, 2 insertions(+)
->
-> --- a/arch/xtensa/include/asm/processor.h
-> +++ b/arch/xtensa/include/asm/processor.h
-> @@ -25,6 +25,8 @@
->  # error Linux requires the Xtensa Windowed Registers Option.
->  #endif
->
-> +#define ARCH_SLAB_MINALIGN     XCHAL_DATA_WIDTH
-> +
+On Wed, 2009-03-04 at 22:58 +0900, Tejun Heo wrote:
+> Mike Galbraith wrote:
+> > On Wed, 2009-03-04 at 18:43 +0900, Tejun Heo wrote:
+> >> Tejun Heo wrote:
+> >>> I've used the config file you attached and the commit ID I used is
+> >>> d0c4f570276cb4d2dc4215b90eb7cb6e2bdd4a15.
+> > 
+> > My tip tree is at v2.6.29-rc6-2441-g4239438.
+> 
+> Eh... how do I map that to git commit?
 
-Looks good to me!
+The last 6, short form of 4239438b08fe8ec149ddc530238ca131bf88d290.
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+	-Mike
+
