@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZCDOah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbZCDOcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZCDOah (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 09:30:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbZCDOa2
+	id S1755608AbZCDOcY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 09:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbZCDOcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 09:30:28 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33228 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbZCDOa2 (ORCPT
+	Wed, 4 Mar 2009 09:32:16 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34337 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751227AbZCDOcP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 09:30:28 -0500
-Date: Wed, 4 Mar 2009 09:30:21 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Tony Breeds <tony@bakeyournoodle.com>, Kyle McMartin <kyle@infradead.org>,
-       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ppc: detect sbc610 boards and only fixup nec usb on
-	them
-Message-ID: <20090304143021.GO28503@bombadil.infradead.org>
-References: <20090304012229.GN28503@bombadil.infradead.org> <20090304035930.GD24834@bilbo.ozlabs.org> <1236148940.6696.39.camel@pasglop>
+	Wed, 4 Mar 2009 09:32:15 -0500
+Date: Wed, 4 Mar 2009 14:32:12 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Subject: Re: [PATCH 0/5] WM97xx updates
+Message-ID: <20090304143212.GA1308@rakim.wolfsonmicro.main>
+References: <20090303182402.GA29542@rakim.wolfsonmicro.main> <20090304091538.GD7394@dtor-d630.eng.vmware.com> <49AE492F.6020006@atmel.com> <20090304105358.GA32107@rakim.wolfsonmicro.main> <49AE65FF.2060309@atmel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236148940.6696.39.camel@pasglop>
+In-Reply-To: <49AE65FF.2060309@atmel.com>
+X-Cookie: Hope is a waking dream.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 05:42:20PM +1100, Benjamin Herrenschmidt wrote:
-> Thanks, I applied Tony's patch and sent a pull request to Linus.
-> 
+On Wed, Mar 04, 2009 at 12:29:03PM +0100, Hans-Christian Egtvedt wrote:
 
-Works for me. Thanks for being so quick, Ben!
+> What is this patch based against? Linus tree, master branch?
 
-cheers, Kyle
+This branch:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git next
+
+(though the noticable differences should be Makefile and Kconfig ones).
