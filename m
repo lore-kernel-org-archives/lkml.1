@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZCDR67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZCDSAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757249AbZCDR67 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbZCDR6j
+	id S1757272AbZCDSAR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 13:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZCDSAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:58:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46094 "EHLO mx3.mail.elte.hu"
+	Wed, 4 Mar 2009 13:00:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46307 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757014AbZCDR6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:58:38 -0500
-Date: Wed, 4 Mar 2009 18:58:28 +0100
+	id S1754391AbZCDR77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 12:59:59 -0500
+Date: Wed, 4 Mar 2009 18:59:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Robert Richter <robert.richter@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>, Tim Blechmann <tim@klingt.org>
-Subject: Re: [Bug #12395] 2.6.28-rc9: oprofile regression
-Message-ID: <20090304175828.GA1172@elte.hu>
-References: <HFSEX4uppGO.A.JSG.2yzoJB@chimera> <LLno3yT_fnC.A.Lh.4zzoJB@chimera> <20090303113218.GE10085@erda.amd.com> <200903032055.23969.rjw@sisk.pl> <20090303204504.GA20038@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] x86: set_highmem_pages_init() cleanup
+Message-ID: <20090304175944.GA1537@elte.hu>
+References: <1236082212.2675.24.camel@penberg-laptop> <20090303121532.GC5740@elte.hu> <1236154567.29024.23.camel@penberg-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090303204504.GA20038@elte.hu>
+In-Reply-To: <1236154567.29024.23.camel@penberg-laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,20 +34,112 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > On Tuesday 03 March 2009, Robert Richter wrote:
-> > > Fix upstream in tip/x86/urgent:
-> > > 
-> > > 780eef9492b16a1543a3b2ae9f9526a735fc9856
+> On Tue, 2009-03-03 at 13:15 +0100, Ingo Molnar wrote:
+> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 > > 
-> > URL, please?
+> > > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> > > 
+> > > Impact: cleanup
+> > > 
+> > > This patch moves set_highmem_pages_init() to arch/x86/mm/highmem_32.c. The
+> > > declaration of the function is kept in asm/numa_32.h because asm/highmem.h is
+> > > included only CONFIG_HIGHMEM is enabled so we can't put the empty static inline
+> > > function there.
+> > > 
+> > > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > > ---
+> > >  arch/x86/include/asm/numa_32.h |    6 +++++-
+> > >  arch/x86/mm/highmem_32.c       |   34 ++++++++++++++++++++++++++++++++++
+> > >  arch/x86/mm/init_32.c          |   12 ------------
+> > >  arch/x86/mm/numa_32.c          |   26 --------------------------
+> > >  4 files changed, 39 insertions(+), 39 deletions(-)
+> > 
+> > Applied, thanks!
+> > 
+> > One question:
+> > 
+> > > diff --git a/arch/x86/include/asm/numa_32.h b/arch/x86/include/asm/numa_32.h
+> > > index e9f5db7..a372290 100644
+> > > --- a/arch/x86/include/asm/numa_32.h
+> > > +++ b/arch/x86/include/asm/numa_32.h
+> > > @@ -4,8 +4,12 @@
+> > >  extern int pxm_to_nid(int pxm);
+> > >  extern void numa_remove_cpu(int cpu);
+> > >  
+> > > -#ifdef CONFIG_NUMA
+> > > +#ifdef CONFIG_HIGHMEM
+> > >  extern void set_highmem_pages_init(void);
+> > > +#else
+> > > +static inline void set_highmem_pages_init(void)
+> > > +{
+> > > +}
+> > >  #endif
+> > >  
+> > >  #endif /* _ASM_X86_NUMA_32_H */
+> > > diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+> > > index bcc079c..13a823c 100644
+> > > --- a/arch/x86/mm/highmem_32.c
+> > > +++ b/arch/x86/mm/highmem_32.c
+> > > @@ -1,5 +1,6 @@
+> > >  #include <linux/highmem.h>
+> > >  #include <linux/module.h>
+> > > +#include <linux/swap.h> /* for totalram_pages */
+> > >  
+> > >  void *kmap(struct page *page)
+> > >  {
+> > > @@ -156,3 +157,36 @@ EXPORT_SYMBOL(kmap);
+> > >  EXPORT_SYMBOL(kunmap);
+> > >  EXPORT_SYMBOL(kmap_atomic);
+> > >  EXPORT_SYMBOL(kunmap_atomic);
+> > > +
+> > > +#ifdef CONFIG_NUMA
+> > > +void __init set_highmem_pages_init(void)
+> > > +{
+> > > +	struct zone *zone;
+> > > +	int nid;
+> > > +
+> > > +	for_each_zone(zone) {
+> > > +		unsigned long zone_start_pfn, zone_end_pfn;
+> > > +
+> > > +		if (!is_highmem(zone))
+> > > +			continue;
+> > > +
+> > > +		zone_start_pfn = zone->zone_start_pfn;
+> > > +		zone_end_pfn = zone_start_pfn + zone->spanned_pages;
+> > > +
+> > > +		nid = zone_to_nid(zone);
+> > > +		printk(KERN_INFO "Initializing %s for node %d (%08lx:%08lx)\n",
+> > > +				zone->name, nid, zone_start_pfn, zone_end_pfn);
+> > > +
+> > > +		add_highpages_with_active_regions(nid, zone_start_pfn,
+> > > +				 zone_end_pfn);
+> > > +	}
+> > > +	totalram_pages += totalhigh_pages;
+> > > +}
+> > > +#else
+> > > +static void __init set_highmem_pages_init(void)
+> > > +{
+> > > +	add_highpages_with_active_regions(0, highstart_pfn, highend_pfn);
+> > > +
+> > > +	totalram_pages += totalhigh_pages;
+> > > +}
+> > > +#endif /* CONFIG_NUMA */
+> > 
+> > Couldnt we just wrap the !NUMA case into the NUMA case and just 
+> > have the NUMA function present, by making for_each_zone() a 
+> > two-entries matter and making the second entry contain:
+> > 
+> >    zone->zone_start_pfn := highstart_pfn
+> >    zone->spanned_pages := highend_pfn-highstart_pfn 
 > 
-> The fix is not yet in Linus's tree - the commit is below.
+> OK, I don't quite understand your suggestion here. The zones 
+> are set up completely at this stage so AFAICT, even for the 
+> UMA case, there should be a highmem zone there. So unless I am 
+> missing something here, I think we can get away with something 
+> as simple as the following.
 
-The fix is upstream now, included in .29-rc7.
+ok, good - it is an easier cleanup than i hoped it would be :-)
 
 	Ingo
