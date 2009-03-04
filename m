@@ -1,185 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZCDSGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbZCDSHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbZCDSGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 13:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZCDSG2
+	id S1757591AbZCDSHc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 13:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZCDSHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 13:06:28 -0500
-Received: from frost.carfax.org.uk ([212.13.194.111]:2946 "EHLO
-	frost.carfax.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755010AbZCDSGZ (ORCPT
+	Wed, 4 Mar 2009 13:07:24 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:13063 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbZCDSHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 13:06:25 -0500
-Date: Wed, 4 Mar 2009 18:06:19 +0000
-From: Hugo Mills <hugo-lkml@carfax.org.uk>
-To: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Entirely unexpected ENOSPC?
-Message-ID: <20090304180619.GA3282@selene>
-Mail-Followup-To: Hugo Mills <hugo-lkml@carfax.org.uk>,
-	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Chris Mason <chris.mason@oracle.com>
+	Wed, 4 Mar 2009 13:07:23 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=og2ZhDppqobSPJSe8hKcTjsD0VDSH/4I4OMXH8pAJc4lZ/Uo7u2c5REf2sOfP+V2g
+	sqHJf+3X06wwNSJ/vg0ug==
+Date: Wed, 4 Mar 2009 10:06:49 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Paul Menage <menage@google.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] slub: enforce cpuset restrictions for cpu slabs
+In-Reply-To: <alpine.DEB.1.10.0903041011520.3850@qirst.com>
+Message-ID: <alpine.DEB.2.00.0903040959530.17033@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903022009490.17284@chino.kir.corp.google.com>  <alpine.DEB.2.00.0903022011430.17284@chino.kir.corp.google.com>  <alpine.DEB.1.10.0903031136380.26454@qirst.com>  <alpine.DEB.2.00.0903030900580.6643@chino.kir.corp.google.com> 
+ <alpine.DEB.1.10.0903031345150.9466@qirst.com>  <alpine.DEB.2.00.0903031057110.15900@chino.kir.corp.google.com>  <alpine.DEB.1.10.0903031509380.25612@qirst.com>  <alpine.DEB.2.00.0903031330090.23523@chino.kir.corp.google.com> 
+ <6599ad830903031355y3e12dec6n4b7b675d354f8e72@mail.gmail.com>  <alpine.DEB.2.00.0903031401260.29042@chino.kir.corp.google.com> <6599ad830903031653t231eb921md60a1aa21effa87b@mail.gmail.com> <alpine.DEB.2.00.0903031713200.4767@chino.kir.corp.google.com>
+ <alpine.DEB.1.10.0903041011520.3850@qirst.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="6c2NcOVqGQ03X4Wi"
-Content-Disposition: inline
-X-GPG-Fingerprint: 8C59 86C7 81F3 93FE BB02  DDB1 20AC B3BE 515C 238D
-X-GPG-Key: 515C238D
-X-Parrot: It is no more. It has joined the choir invisible.
-X-IRC-Nicks: darksatanic darkersatanic darkling darkthing
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-frost.carfax.org.uk-Spam-Score: 0.0 (/)
-X-frost.carfax.org.uk-Spam-Report: Spam detection software, running on the system "admin.kwak.bitfolk.com", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  Last night, this event jammed up a good chunk of my server:
-	Mar 4 01:51:36 vlad kernel: btrfs searching for 1716224 bytes, num_bytes
-	1716224, loop 2, allowed_alloc 1 Mar 4 01:51:36 vlad kernel: btrfs searching
-	for 860160 bytes, num_bytes 860160, loop 2, allowed_alloc 1 [lots of this...]
-	Mar 4 01:55:52 vlad kernel: btrfs searching for 4096 bytes, num_bytes 4096,
-	loop 2, allowed_alloc 1 Mar 4 01:55:52 vlad kernel: btrfs allocation failed
-	flags 1, wanted 4096 Mar 4 01:55:52 vlad kernel: space_info has 0 free, is
-	full Mar 4 01:55:52 vlad kernel: block group 12582912 has 8388608 bytes,
-	8388608 used 0 pinned 0 reserved Mar 4 01:55:52 vlad kernel: 0 blocks of free
-	space at or bigger than bytes is Mar 4 01:55:52 vlad kernel: block group
-	1103101952 has 1073741824 bytes, 1073741824 used 0 pinned 0 reserved Mar 4
-	01:55:52 vlad kernel: 0 blocks of free space at or bigger than bytes is [30
-	more lines of this] Mar 4 01:55:52 vlad kernel: [ cut here ] Mar 4 01:55:52
-	vlad kernel: kernel BUG at fs/btrfs/extent-tree.c:3190! Mar 4 01:55:52 vlad
-	kernel: invalid opcode: 0000 [#1] Mar 4 01:55:52 vlad kernel: last sysfs
-	file: /sys/devices/virtual/block/dm-1/removable Mar 4 01:55:52 vlad kernel:
-	CPU 0 Mar 4 01:55:52 vlad kernel: Modules linked in: tcp_diag inet_diag kqemu
-	tun cpufreq_userspace ipv6 nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge
-	stp llc btrfs zlib_deflate xfs exportfs it87 hwmon_vid powernow_k8 sbp2 ieee1394
-	ide_generic ide_gd_mod ide_cd_mod pcspkr evdev k8temp hwmon i2c_viapro i2c_core
-	button usbhid usb_storage libusual dm_mirror dm_region_hash dm_log dm_snapshot
-	dm_mod raid1 md_mod sg sr_mod cdrom via82cxxx floppy via_rhine mii ehci_hcd
-	uhci_hcd usbcore pata_via ide_pci_generic ide_core sd_mod thermal processor
-	fan unix Mar 4 01:55:52 vlad kernel: Pid: 218, comm: pdflush Tainted: G B
-	2.6.29-rc6 #1 System Product Name Mar 4 01:55:52 vlad kernel: RIP: 0010:[<ffffffffa0256b6b>]
-	[<ffffffffa0256b6b>] __btrfs_reserve_extent+0x296/0x2ab [btrfs] Mar 4 01:55:52
-	vlad kernel: RSP: 0018:ffff88003ea618d0 EFLAGS: 00010282 Mar 4 01:55:52 vlad
-	kernel: RAX: [...] 
-	Content analysis details:   (0.0 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Mar 2009, Christoph Lameter wrote:
 
---6c2NcOVqGQ03X4Wi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> That would make the per object memory policies in SLUB configurable? If
+> you can do that without regression and its clean then it would be
+> acceptable.
+> 
 
-   Last night, this event jammed up a good chunk of my server:
+Yes, if `slab_hardwall' is enabled for a cpuset it will attempt to replace 
+the cpu slab with a partial slab on an allowed node.
 
-Mar  4 01:51:36 vlad kernel: btrfs searching for 1716224 bytes, num_bytes 1716224, loop 2, allowed_alloc 1
-Mar  4 01:51:36 vlad kernel: btrfs searching for 860160 bytes, num_bytes 860160, loop 2, allowed_alloc 1
-[lots of this...]
-Mar  4 01:55:52 vlad kernel: btrfs searching for 4096 bytes, num_bytes 4096, loop 2, allowed_alloc 1
-Mar  4 01:55:52 vlad kernel: btrfs allocation failed flags 1, wanted 4096
-Mar  4 01:55:52 vlad kernel: space_info has 0 free, is full
-Mar  4 01:55:52 vlad kernel: block group 12582912 has 8388608 bytes, 8388608 used 0 pinned 0 reserved
-Mar  4 01:55:52 vlad kernel: 0 blocks of free space at or bigger than bytes is
-Mar  4 01:55:52 vlad kernel: block group 1103101952 has 1073741824 bytes, 1073741824 used 0 pinned 0 reserved
-Mar  4 01:55:52 vlad kernel: 0 blocks of free space at or bigger than bytes is
-[30 more lines of this]
-Mar  4 01:55:52 vlad kernel: ------------[ cut here ]------------
-Mar  4 01:55:52 vlad kernel: kernel BUG at fs/btrfs/extent-tree.c:3190!
-Mar  4 01:55:52 vlad kernel: invalid opcode: 0000 [#1]
-Mar  4 01:55:52 vlad kernel: last sysfs file: /sys/devices/virtual/block/dm-1/removable
-Mar  4 01:55:52 vlad kernel: CPU 0
-Mar  4 01:55:52 vlad kernel: Modules linked in: tcp_diag inet_diag kqemu tun cpufreq_userspace ipv6 nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc btrfs zlib_deflate xfs exportfs it87 hwmon_vid powernow_k8 sbp2 ieee1394 ide_generic ide_gd_mod ide_cd_mod pcspkr evdev k8temp hwmon i2c_viapro i2c_core button usbhid usb_storage libusual dm_mirror dm_region_hash dm_log dm_snapshot dm_mod raid1 md_mod sg sr_mod cdrom via82cxxx floppy via_rhine mii ehci_hcd uhci_hcd usbcore pata_via ide_pci_generic ide_core sd_mod thermal processor fan unix
-Mar  4 01:55:52 vlad kernel: Pid: 218, comm: pdflush Tainted: G    B      2.6.29-rc6 #1 System Product Name
-Mar  4 01:55:52 vlad kernel: RIP: 0010:[<ffffffffa0256b6b>]  [<ffffffffa0256b6b>] __btrfs_reserve_extent+0x296/0x2ab [btrfs]
-Mar  4 01:55:52 vlad kernel: RSP: 0018:ffff88003ea618d0  EFLAGS: 00010282
-Mar  4 01:55:52 vlad kernel: RAX: ffff880039924aa0 RBX: ffff8800399249d0 RCX: 0000000000001000
-Mar  4 01:55:52 vlad kernel: RDX: 00000000ffffffff RSI: 0000000000023b8a RDI: ffff880039924a98
-Mar  4 01:55:52 vlad kernel: RBP: ffff880039924a88 R08: 0000000000000000 R09: 000000000000000a
-Mar  4 01:55:52 vlad kernel: R10: 000000000000000a R11: ffff88000100f980 R12: ffff880039924a98
-Mar  4 01:55:52 vlad kernel: R13: 0000000000001000 R14: ffff88003cb74488 R15: 0000000000001000
-Mar  4 01:55:52 vlad kernel: FS:  00007ff4154246e0(0000) GS:ffffffff80577010(0000) knlGS:0000000000000000
-Mar  4 01:55:52 vlad kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-Mar  4 01:55:52 vlad kernel: CR2: 00007f45ee1f54f8 CR3: 000000003bdea000 CR4: 00000000000006e0
-Mar  4 01:55:52 vlad kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-Mar  4 01:55:52 vlad kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Mar  4 01:55:52 vlad kernel: Process pdflush (pid: 218, threadinfo ffff88003ea60000, task ffff88003f93b1b0)
-Mar  4 01:55:52 vlad kernel: Stack:
-Mar  4 01:55:52 vlad kernel: 0000000381c00000 ffff88003ea619f0 0000000000000000 0000000000000000
-Mar  4 01:55:52 vlad kernel: ffff880000000001 0000000381c00000 0000000000000000 ffff88003ea619f0
-Mar  4 01:55:52 vlad kernel: 000000001da5d000 0000000000001000 ffff88003ef22800 ffff88003a8214f0
-Mar  4 01:55:52 vlad kernel: Call Trace:
-Mar  4 01:55:52 vlad kernel: [<ffffffffa0256bae>] ? btrfs_reserve_extent+0x2e/0x52 [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa026903d>] ? cow_file_range+0x1ae/0x307 [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa026983f>] ? run_delalloc_range+0x9e/0x2f1 [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa027c814>] ? find_lock_delalloc_range+0x124/0x17d [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa027d066>] ? __extent_writepage+0x1e3/0x791 [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffff802890ff>] ? sync_buffer+0x0/0x3d
-Mar  4 01:55:52 vlad kernel: [<ffffffff80312f86>] ? radix_tree_gang_lookup_tag_slot+0x7d/0xa2
-Mar  4 01:55:52 vlad kernel: [<ffffffff8024d343>] ? find_get_pages_tag+0x46/0xb6
-Mar  4 01:55:52 vlad kernel: [<ffffffff802387b1>] ? wake_bit_function+0x0/0x23
-Mar  4 01:55:52 vlad kernel: [<ffffffffa027a95a>] ? extent_write_cache_pages+0x13c/0x242 [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa027967a>] ? flush_write_bio+0x0/0x23 [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa027ce83>] ? __extent_writepage+0x0/0x791 [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa027aa9b>] ? extent_writepages+0x3b/0x5c [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffffa02677c9>] ? btrfs_get_extent+0x0/0x73c [btrfs]
-Mar  4 01:55:52 vlad kernel: [<ffffffff80252cf5>] ? do_writepages+0x20/0x2d
-Mar  4 01:55:52 vlad kernel: [<ffffffff80284549>] ? __writeback_single_inode+0x15a/0x33b
-Mar  4 01:55:52 vlad kernel: [<ffffffffa01048b2>] ? dm_any_congested+0x2f/0x39 [dm_mod]
-Mar  4 01:55:52 vlad kernel: [<ffffffff80284afa>] ? generic_sync_sb_inodes+0x287/0x3e4
-Mar  4 01:55:52 vlad kernel: [<ffffffff80284dbe>] ? writeback_inodes+0x68/0xa1
-Mar  4 01:55:52 vlad kernel: [<ffffffff80252e10>] ? wb_kupdate+0x8b/0xfd
-Mar  4 01:55:52 vlad kernel: [<ffffffff8025374b>] ? pdflush+0x0/0x1b5
-Mar  4 01:55:52 vlad kernel: [<ffffffff8025374b>] ? pdflush+0x0/0x1b5
-Mar  4 01:55:52 vlad kernel: [<ffffffff80253869>] ? pdflush+0x11e/0x1b5
-Mar  4 01:55:52 vlad kernel: [<ffffffff80252d85>] ? wb_kupdate+0x0/0xfd
-Mar  4 01:55:52 vlad kernel: [<ffffffff802383f1>] ? kthread+0x47/0x73
-Mar  4 01:55:52 vlad kernel: [<ffffffff8020c07a>] ? child_rip+0xa/0x20
-Mar  4 01:55:52 vlad kernel: [<ffffffff802383aa>] ? kthread+0x0/0x73
-Mar  4 01:55:52 vlad kernel: [<ffffffff8020c070>] ? child_rip+0x0/0x20
-Mar  4 01:55:52 vlad kernel: Code: 8b 83 b8 00 00 00 48 8d 98 48 ff ff ff 48 8b 83 b8 00 00 00 0f 18 08 48 8d 83 b8 00 00 00 48 39 c5 75 b0 4c 89 e7 e8 63 42 fe df <0f> 0b eb fe 48 83 c4 38 31 c0 5b 5d 41 5c 41 5d 41 5e 41 5f c3
-Mar  4 01:55:52 vlad kernel: RIP  [<ffffffffa0256b6b>] __btrfs_reserve_extent+0x296/0x2ab [btrfs]
-Mar  4 01:55:52 vlad kernel: RSP <ffff88003ea618d0>
-Mar  4 01:55:52 vlad kernel: ---[ end trace eb8a7132a207a474 ]---
+> Again if you want per object memory policies in SLUB then it needs to be
+> added consistently. You would also f.e. have to check for an MPOL_BIND
+> condition where you check for cpuset nodes and make sure that __slab_alloc
+> goes round robin on MPOL_INTERLEAVE etc etc. You end up with a similar
+> nightmare implementation of that stuff as in SLAB.
 
-   Now, to my untrained eye, this looks like it might be an ENOSPC
-problem, and thus wouldn't be entirely unexpected, except for one
-thing:
-
-hrm@vlad:~ $ df -h
-Filesystem            Size  Used Avail Use% Mounted on
-[...]
-/dev/mapper/media-scratch
-                       41G   17G   25G  42% /media/vlad/video/video
-
-   The filesystem was nowhere near full, and I wasn't expecting it to
-become anywhere near full. The only thing that writes to the
-filesystem is deliberately coded to leave several gigabytes of space
-free.
-
-   Hugo.
-
--- 
-=== Hugo Mills: hugo@... carfax.org.uk | darksatanic.net | lug.org.uk ===
-  PGP key: 515C238D from wwwkeys.eu.pgp.net or http://www.carfax.org.uk
-   --- Nothing wrong with being written in Perl... Some of my best ---   
-                      friends are written in Perl.                       
-
---6c2NcOVqGQ03X4Wi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQFJrsMaIKyzvlFcI40RAsZpAJ0Q6pW217dRssE9SII00289AluZEwCeKAJn
-WuNXdJLjZ6+PKzKkLjJkBSI=
-=kmjq
------END PGP SIGNATURE-----
-
---6c2NcOVqGQ03X4Wi--
+I agree that we should avoid adding mempolicy support, especially 
+MPOL_INTERLEAVE at the object level since that would totally avoid the 
+fastpath for any task using it.
