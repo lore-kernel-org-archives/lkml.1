@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZCDT6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZCDUAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbZCDT6m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 14:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbZCDT6d
+	id S1757362AbZCDUAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 15:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZCDUA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 14:58:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47629 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756133AbZCDT6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 14:58:32 -0500
-Date: Wed, 4 Mar 2009 20:58:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix bootmem cross node for 32bit numa -v2
-Message-ID: <20090304195814.GC21488@elte.hu>
-References: <49AE485B.8000902@kernel.org> <49AEC395.8070808@kernel.org>
+	Wed, 4 Mar 2009 15:00:28 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:61125 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754396AbZCDUA2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 15:00:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RnVKGglfGCDyvGMVUTSURKHp/kQlgtD98aNGwIiEtQjf5f2SfbNfYt55iKFFp+RIoW
+         OeHrM8g4Q3/2l0mMYmN2K5kmTqjYMhhhW3flvD2Y2dY73wC9NLLPzB1QJNggdTTzfvBN
+         BGHNClCHdxyOaUwuy6RoKXbK2Fwzq/hQLRxtU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AEC395.8070808@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <E1LewqM-0005Tp-R1@mailer.emlix.com>
+References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
+	 <8bd0f97a0903041004g467cbe47jc7c66261da01348c@mail.gmail.com>
+	 <E1LewqM-0005Tp-R1@mailer.emlix.com>
+Date: Wed, 4 Mar 2009 15:00:25 -0500
+Message-ID: <8bd0f97a0903041200y4dfa9556r8709c4331a12002b@mail.gmail.com>
+Subject: Re: [patch -v2] flat: fix data sections alignment
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Johannes Weiner <jw@emlix.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 4, 2009 at 14:33, Johannes Weiner wrote:
+> On Wed, Mar 04, 2009 at 01:04:00PM -0500, Mike Frysinger wrote:
+>> On Wed, Mar 4, 2009 at 08:51, Johannes Weiner wrote:
+>> > The flat loader uses an architecture's flat_stack_align() to align the
+>> > stack but assumes word-alignment is enough for the data sections.
+>> >
+>> > However, on the Xtensa S6000 we have registers up to 128bit width
+>> > which can be used from userspace and therefor need userspace stack and
+>> > data-section alignment of at least this size.
+>>
+>> could this perhaps be a gcc problem ?  x86 has a similar problem with
+>> sse and they addressed it with a function attribute.  after all, just
+>> because your stack started out 128bit aligned doesnt mean gcc will
+>> keep it that way when calling other functions.  so having the stack
+>> start out aligned would only "fix" the stack for the application's
+>> entry point right (which would in practice bubble up to main()) ?  so
+>> you'd be right back where you started ...
+>
+> gcc generates sp changes only ever in multiples of 16 deltas, I just
+> checked it again with various amounts of stack variables.
+>
+> The stack frames allocate themselves with an ENTRY instruction and the
+> generated code I read here allocates stack frames of n * 16 bytes.
+>
+> So we are good to go as long as the initial stack frame is properly
+> aligned.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+throwing a few random cases at gcc isnt really a good way to validate.
+ this would have worked for x86 too with older versions.  only when
+common code in later gcc versions got more aggressive with stack
+packing did people notice the issue.
 
-> 
-> Imapct: fix panic on system 2g x4 sockets
-> 
-> Found one system with 4 sockets and every sockets has 2g can boot with numa32
-> because boot mem is crossing nodes.
-> 
-> so try to have numa version setup_bootmem_allocator
-> v2: simplify the code
+so, lets look at the authoritative place: the gcc source code for xtensa
 
-i've already applied v1 - mind sending the simplification as a 
-delta patch? Thanks.
+$ grep define.*STACK_BOUNDARY -B 2 gcc/config/xtensa/*.h
+xtensa.h-/* Align stack frames on 128 bits for Xtensa.  This is necessary for
+xtensa.h-   128-bit datatypes defined in TIE (e.g., for Vectra).  */
+xtensa.h:#define STACK_BOUNDARY 128
 
-	Ingo
+ok, now i believe that forcing a stack alignment of 128bits in the
+kernel is correct ;)
+-mike
