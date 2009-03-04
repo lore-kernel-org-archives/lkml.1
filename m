@@ -1,139 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbZCDSJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbZCDSRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbZCDSJw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 13:09:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZCDSJn
+	id S1756079AbZCDSRm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 13:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZCDSRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 13:09:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54960 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751438AbZCDSJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 13:09:43 -0500
-Message-ID: <49AEC395.8070808@kernel.org>
-Date: Wed, 04 Mar 2009 10:08:21 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 4 Mar 2009 13:17:33 -0500
+Received: from [213.79.90.228] ([213.79.90.228]:43917 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753581AbZCDSRc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 13:17:32 -0500
+Date: Wed, 4 Mar 2009 20:47:44 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Pierre Ossman <drzeus-sdhci@drzeus.cx>, Ben Dooks <ben-linux@fluff.org>,
+       Arnd Bergmann <arnd@arndb.de>, Kumar Gala <galak@kernel.crashing.org>,
+       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 12/13] sdhci: Add quirk for controllers with max. block
+	size up to 4096 bytes
+Message-ID: <20090304174744.GB7477@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090213144630.GA13436@oksana.dev.rtsoft.ru> <20090213144739.GL23889@oksana.dev.rtsoft.ru> <20090221165844.4f494043@mjolnir.ossman.eu>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix bootmem cross node for 32bit numa -v2
-References: <49AE485B.8000902@kernel.org>
-In-Reply-To: <49AE485B.8000902@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20090221165844.4f494043@mjolnir.ossman.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Feb 21, 2009 at 04:58:44PM +0100, Pierre Ossman wrote:
+> On Fri, 13 Feb 2009 17:47:39 +0300
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > @@ -831,7 +832,12 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+> >  	sdhci_set_transfer_irqs(host);
+> >  
+> >  	/* We do not handle DMA boundaries, so set it to max (512 KiB) */
+> > -	sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, data->blksz), SDHCI_BLOCK_SIZE);
+> > +	if (host->quirks & SDHCI_QUIRK_MAX_BLK_SZ_4096)
+> > +		blksz = data->blksz;
+> > +	else
+> > +		blksz = SDHCI_MAKE_BLKSZ(7, data->blksz);
+> > +
+> > +	sdhci_writew(host, blksz, SDHCI_BLOCK_SIZE);
+> >  	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
+> >  }
+> >  
+> 
+> Hmm.. I seem to have overlooked this part previously. I guess they've
+> basically stripped out the DMA boundary stuff and used the bits for
+> other things?
 
-Imapct: fix panic on system 2g x4 sockets
+Yes, the last two "DMA boundary" bits are reserved, and the first
+one is re-used for blksz of 4096 bytes.
 
-Found one system with 4 sockets and every sockets has 2g can boot with numa32
-because boot mem is crossing nodes.
+> At this point I'm leaning more towards simply not supporting their
+> extended block size.
 
-so try to have numa version setup_bootmem_allocator
-v2: simplify the code
+Eh. But well, OK. We can always persuade you later. :-)
 
+I'll get rid of this particular patch, and put some BLOCK_SIZE
+magic into the writew accessor (to clean the DMA bits) instead.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Though, I'll prepare another patch to force blksz to 2048, since
+eSDHC specifies "3" in the blksz capability bitfield, and that
+causes SDHCI core to fall back to the 512 byte blocks.
 
----
- arch/x86/mm/init_32.c |   50 +++++++++++++++++++++++++++++++++++++-------------
- arch/x86/mm/numa_32.c |    5 +++--
- 2 files changed, 40 insertions(+), 15 deletions(-)
+> After all, is it ever used?
 
-Index: linux-2.6/arch/x86/mm/init_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -793,33 +793,57 @@ static void __init zone_sizes_init(void)
- 	free_area_init_nodes(max_zone_pfns);
- }
- 
-+static unsigned long __init setup_node_bootmem(int nodeid,
-+				 unsigned long start_pfn,
-+				 unsigned long end_pfn,
-+				 unsigned long bootmap)
-+{
-+	unsigned long bootmap_size;
-+
-+	if (start_pfn > max_low_pfn)
-+		return bootmap;
-+	if (end_pfn > max_low_pfn)
-+		end_pfn = max_low_pfn;
-+
-+	/* don't touch min_low_pfn */
-+	bootmap_size = init_bootmem_node(NODE_DATA(nodeid),
-+					 bootmap >> PAGE_SHIFT,
-+					 start_pfn, end_pfn);
-+	printk(KERN_INFO "  node %d low ram: %08lx - %08lx\n",
-+		nodeid, start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
-+	printk(KERN_INFO "  node %d bootmap %08lx - %08lx\n",
-+		 nodeid, bootmap, bootmap + bootmap_size);
-+	free_bootmem_with_active_regions(nodeid, end_pfn);
-+	early_res_to_bootmem(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
-+
-+	return bootmap + bootmap_size;
-+}
-+
- void __init setup_bootmem_allocator(void)
- {
--	int i;
-+	int nodeid;
- 	unsigned long bootmap_size, bootmap;
- 	/*
- 	 * Initialize the boot-time allocator (with low memory only):
- 	 */
- 	bootmap_size = bootmem_bootmap_pages(max_low_pfn)<<PAGE_SHIFT;
--	bootmap = find_e820_area(min_low_pfn<<PAGE_SHIFT,
--				 max_pfn_mapped<<PAGE_SHIFT, bootmap_size,
-+	bootmap = find_e820_area(0, max_pfn_mapped<<PAGE_SHIFT, bootmap_size,
- 				 PAGE_SIZE);
- 	if (bootmap == -1L)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
- 	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
- 
--	/* don't touch min_low_pfn */
--	bootmap_size = init_bootmem_node(NODE_DATA(0), bootmap >> PAGE_SHIFT,
--					 min_low_pfn, max_low_pfn);
- 	printk(KERN_INFO "  mapped low ram: 0 - %08lx\n",
- 		 max_pfn_mapped<<PAGE_SHIFT);
--	printk(KERN_INFO "  low ram: %08lx - %08lx\n",
--		 min_low_pfn<<PAGE_SHIFT, max_low_pfn<<PAGE_SHIFT);
--	printk(KERN_INFO "  bootmap %08lx - %08lx\n",
--		 bootmap, bootmap + bootmap_size);
--	for_each_online_node(i)
--		free_bootmem_with_active_regions(i, max_low_pfn);
--	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
-+	printk(KERN_INFO "  low ram: 0 - %08lx\n", max_low_pfn<<PAGE_SHIFT);
-+
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
-+	for_each_online_node(nodeid)
-+		bootmap = setup_node_bootmem(nodeid, node_start_pfn[nodeid],
-+					node_end_pfn[nodeid], bootmap);
-+#else
-+	bootmap = setup_node_bootmem(0, 0, max_low_pfn, bootmap);
-+#endif
- 
- 	after_init_bootmem = 1;
- }
-Index: linux-2.6/arch/x86/mm/numa_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/numa_32.c
-+++ linux-2.6/arch/x86/mm/numa_32.c
-@@ -416,10 +416,11 @@ void __init initmem_init(unsigned long s
- 	for_each_online_node(nid)
- 		propagate_e820_map_node(nid);
- 
--	for_each_online_node(nid)
-+	for_each_online_node(nid) {
- 		memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
-+		NODE_DATA(nid)->bdata = &bootmem_node_data[nid];
-+	}
- 
--	NODE_DATA(0)->bdata = &bootmem_node_data[0];
- 	setup_bootmem_allocator();
- }
- 
+Not sure, maybe `dd bs=' can use it? A bit lazy to check this
+right now, but from the quick tests, enabling/disabling "blksz
+of 4096 bytes" doesn't cause any performance change. At least
+with the ordinary SD cards.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
