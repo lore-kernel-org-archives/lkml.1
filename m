@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbZCDCcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbZCDChb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbZCDCcW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 21:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbZCDCcN
+	id S1754964AbZCDChb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 21:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbZCDChR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 21:32:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46012 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750734AbZCDCcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 21:32:12 -0500
-Message-ID: <49ADE82D.40103@kernel.org>
-Date: Wed, 04 Mar 2009 11:32:13 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 3 Mar 2009 21:37:17 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:30923 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbZCDChQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 21:37:16 -0500
+Message-ID: <49ADE956.1020702@hp.com>
+Date: Tue, 03 Mar 2009 21:37:10 -0500
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, pgnet.trash@gmail.com
-Subject: [PATCH 2.6.29-rc7 1/2] x86: fix iommu=nodac parameter handling
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: David Miller <davem@davemloft.net>
+CC: Andrey Borzenkov <arvidjaar@mail.ru>,
+       Vladislav Yasevich <vladislav.yasevich@hp.com>,
+       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Valdis.Kletnieks@vt.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       bonding-devel@lists.sourceforge.net,
+       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?= =?ISO-8859-1?Q?=F3n=22?= 
+	<jamagallon@ono.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Vosburgh <fubar@us.ibm.com>
+Subject: [PATCH 0/2] Bonding: fix IPv6 module requirement regression
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 02:31:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nodac should forbid dac not instead of enabling it.  Fix it.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- arch/x86/kernel/pci-dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+These patches fix the Bonding module's requirement to have the IPv6
+module loaded and configured by creating a new "disable" module parameter
+value for ipv6.ko.  This allows users who do not want any IPv6 addresses
+or sockets to be created to disable IPv6 support, while still loading
+the module and making it's symbols available.  This can be specified in
+/etc/modprobe.conf (or similar) with "options ipv6 disable=1".
 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index b254285..69c7a8d 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -197,7 +197,7 @@ static __init int iommu_setup(char *p)
- 		if (!strncmp(p, "allowdac", 8))
- 			forbid_dac = 0;
- 		if (!strncmp(p, "nodac", 5))
--			forbid_dac = -1;
-+			forbid_dac = 1;
- 		if (!strncmp(p, "usedac", 6)) {
- 			forbid_dac = -1;
- 			return 1;
+I've verified that Bonding, SCTP, Sunrpc and DCCP will still load, however
+dccp_ipv6 will not load when disable=1 - I believe this is ok as
+IPv6 won't work anyways.
+
+
+  Documentation/networking/ipv6.txt |   35 +++++++++++++++++++++++++++++++++++
+  net/ipv6/af_inet6.c               |   22 ++++++++++++++++------
+  net/sctp/protocol.c               |   11 ++++++++---
+  3 files changed, 59 insertions(+), 9 deletions(-)
