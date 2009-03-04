@@ -1,101 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZCDLiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbZCDLko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZCDLiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZCDLii
+	id S1756179AbZCDLko (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZCDLkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:38:38 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:42771 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbZCDLih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:38:37 -0500
-Date: Wed, 4 Mar 2009 17:08:22 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, efault@gmx.de,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 0/3] sched: Extend sched_mc/smt_power_savings
-	framework
-Message-ID: <20090304113822.GA31307@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20090303114648.605.86920.stgit@sofia.in.ibm.com> <1236082917.5330.4195.camel@laptop> <20090303152504.GH4708@dirshya.in.ibm.com> <1236094110.5330.4733.camel@laptop> <20090304110643.GM4708@dirshya.in.ibm.com>
+	Wed, 4 Mar 2009 06:40:35 -0500
+Received: from mx1.emlix.com ([193.175.82.87]:43384 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750901AbZCDLkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:40:35 -0500
+From: "Oskar Schirmer" <os@emlix.com>
+Date: Wed, 4 Mar 2009 12:39:38 +0100
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Johannes Weiner <jw@emlix.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Oskar Schirmer <os@emlix.com>, David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] binfmt_flat: fix data sections alignment
+References: <E1LeXY0-0007Fb-KQ@mailer.emlix.com> <20090303182801.GA6907@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090304110643.GM4708@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090303182801.GA6907@linux-sh.org>
+Organization: emlix GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <E1LepRq-0006nu-VT@mailer.emlix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 04:36:43PM +0530, Vaidyanathan Srinivasan wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-03-03 16:28:30]:
-> 
-> > On Tue, 2009-03-03 at 20:55 +0530, Vaidyanathan Srinivasan wrote:
-> > >  
-> > > > It would be good to mention something about how power usage is measured.
-> > > 
-> > > Power usage is measured by computing the energy consumed over the
-> > > benchmark duration and then finding average power by dividing
-> > > energy/time.  The relative power consumption is for the entire system.
+On Wed, Mar 04, 2009 at 03:28:02 +0900, Paul Mundt wrote:
+> On Tue, Mar 03, 2009 at 05:33:13PM +0100, Johannes Weiner wrote:
+> > The flat loader uses an architecture's flat_stack_align() to align the
+> > stack but assumes word-alignment is enough for the data sections.
 > > 
-> > Is this measured using an external (indepedent) power monitor, or
-> > looking at system internal power usage stats?
+> > However, on the Xtensa S6000 we need an alignment of more than
+> > wordsize for data that is loaded to 128bit wide registers.
 > > 
-> > Have you compared these two methods, if so, do they give comparable
-> > results?
-> 
-> Since we are doing relative power comparison, the absolute power value
-> and the method would not affect the results.
-> 
-> Your question is more relevant for SPECPower type of benchmarks where
-> the score depends on the average power consumed and accuracy or method
-> of measurement can affect the score.
-> 
-> > > > Furthermore, do we really need those separate mc/smt power savings
-> > > > settings? -- It appears to me we ought to consolidate some of that and
-> > > > provide a single knob to save power.
-> > > 
-> > > Yes, having one sched_power_savings will definitely help.  However,
-> > > mapping the various combination of settings to a single knob that will
-> > > provide consistent behavior across workloads and system configuration
-> > > is a challenge.
+> > This patch replaces the specific flat_stack_align() with a more
+> > generic flat_data_align() that is then used for both stack, the data
+> > and bss section.
 > > 
-> > Would it be an option to provide a single knob for users and have some
-> > fine grained feature set for developing/debugging, much like we have
-> > sched_features?
-> 
-> Yes, that will be very good.  Let me explore if sched_features can
-> include the power saving attributes while the sched_power_savings can
-> be a simple and coarse control for end-users.
+> > It also fixes m32r which was obviously kaput, aligning an
+> > uninitialized stack entry instead of the stack pointer.
+> > 
+> Can you provide a bit more information about this for your platform? I
+> note that while this patch is aimed to generalize things for your
+> platform, there is no Xtensa patch included here, making it difficult to
+> Ack without having more context to go on.
 
-Currently each of sched_smt_power_savings and sched_mc_power_savings
-tunables can take the values (0, 1, 2).
+You are right, currently there is no variant which
+really needs these fixes. But the Xtensa noMMU port
+(will follow as soon as possible) wont work without
+these.
 
-However, based on the combinations of
-(sched_smt_power_savings, sched_mc_power_savings) values,
-the system can be in one of the 5 (and not 9) states mentioned below:
-[in the increasing order of aggressiveness of the task consolidation]
+> Based on your description, it looks like you need register size alignment
+> in the case where your registers are greater than BYTES_PER_WORD, or the
 
-0. { (0, 0) }
-1. { (0, 1) }
-2. { (0, 2) }
-3. { (1, 0), (1, 1) }
-4. { (1, 2), (2, 0), (2, 1), (2, 2)}
+This is right. Xtensa S6000 provides an additional set of
+wide registers (128 bit), and load/store instructions to
+fill them. These load/store cycles need to be 16 byte aligned.
 
-4 and 5 are because sched_smt_power_savings implies sched_mc_power_savings.
+> pointer size. If this is the case, then you are going to have the same
+> issues with the slab caches and need to set ARCH_SLAB_MINALIGN
+> accordingly. This is presently a situation that exists for certain ARM
+> and SH platforms already today, but none that are actively used in nommu
+> configurations. It would be preferable to generalize this, rather than
+> duplicating the special-cased alignment.
 
-So, on a system that has multiple cores and multiple threads, the single
-knob can take values (0, 1, 2, 3, 4).
+This sounds like a good proposal.
+We will rewrite the patch to use the more generic
+ARCH_SLAB_MINALIGN and send it soon.
 
-On systems that have only multiple cores, the knob can take values
-(0, 1, 2).
-
-> --Vaidy
-
+  Oskar
 -- 
-Thanks and Regards
-gautham
+oskar schirmer, emlix gmbh, http://www.emlix.com
+fon +49 551 30664-0, fax -11, bahnhofsallee 1b, 37081 göttingen, germany
+geschäftsführung: dr. uwe kracke, dr. cord seele, ust-idnr.: de 205 198 055
+sitz der gesellschaft: göttingen, amtsgericht göttingen hr b 3160
+
+emlix - your embedded linux partner
