@@ -1,38 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbZCDAcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZCDAkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbZCDAcw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZCDAcc
+	id S1754751AbZCDAkW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZCDAkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:32:32 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:47164 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754445AbZCDAcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:32:31 -0500
-Subject: Re: [PATCH 2/3] c/r: Add CR_COPY() macro (v3)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Dan Smith <danms@us.ibm.com>
-Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1236095764-19325-3-git-send-email-danms@us.ibm.com>
-References: <1236095764-19325-1-git-send-email-danms@us.ibm.com>
-	 <1236095764-19325-3-git-send-email-danms@us.ibm.com>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 08:22:12 -0800
-Message-Id: <1236097332.22399.8.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Mar 2009 19:40:08 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:62931 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbZCDAkH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 19:40:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=sHGOBUTAZfu2P2mStwYFX2TrppsyHyQzT+r0YJyHExICwIc2Nf/RQ0gtubPlIoRMze
+         rmIiJte6fK7RIYiyC+5FnoYslDPGEiNq+8yRQKUoyhIH20dv1e4e96268/2hDMYLDVjD
+         mcG7phpo0/wDdCCr7CyE0NRNag8M1kmPhLQLQ=
+MIME-Version: 1.0
+In-Reply-To: <dd18b0c30903031436v34f9fe1bh82d0e18580293066@mail.gmail.com>
+References: <dd18b0c30903031236t6ed1adaen64507b0ab4be34a4@mail.gmail.com>
+	 <49AD97BF.3050909@oracle.com>
+	 <dd18b0c30903031300w2144e9e7i64ab912542f3e42f@mail.gmail.com>
+	 <49AD9C11.60504@oracle.com> <20090303212013.GA22332@cmpxchg.org>
+	 <dd18b0c30903031436v34f9fe1bh82d0e18580293066@mail.gmail.com>
+Date: Tue, 3 Mar 2009 16:40:04 -0800
+Message-ID: <dd18b0c30903031640r6644e878pb1eb943fb34f9c59@mail.gmail.com>
+Subject: Re: scripts/unifdef.c:209: error: conflicting types for 'getline'
+From: Justin Mattock <justinmattock@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 10:56 -0500, Dan Smith wrote:
-> As suggested by Dave[1], this provides us a way to make the copy-in and
-> copy-out processes symmetric.  CR_COPY_ARRAY() provides us a way to do
-> the same thing but for arrays.  It's not critical, but it helps us unify
-> the checkpoint and restart paths for some things.
+On Tue, Mar 3, 2009 at 2:36 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+> On Tue, Mar 3, 2009 at 1:20 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+>> On Tue, Mar 03, 2009 at 01:07:29PM -0800, Randy Dunlap wrote:
+>>> Justin Mattock wrote:
+>>> > On Tue, Mar 3, 2009 at 12:49 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>>> >> Justin Mattock wrote:
+>>> >>> Hello;
+>>> >>> I am unable to compile the kernel
+>>> >>> (just did a git pull a few minuets ago);
+>>> >>> here is what I see:
+>>> >>>
+>>> >>> WARNING: modpost: Found 1 section mismatch(es).
+>>> >>> To see full details build your kernel with:
+>>> >>> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>>> >>>   GEN     .version
+>>> >>>   CHK     include/linux/compile.h
+>>> >>>   UPD     include/linux/compile.h
+>>> >>>   CC      init/version.o
+>>> >>>   LD      init/built-in.o
+>>> >>>   LD      .tmp_vmlinux1
+>>> >>>   KSYM    .tmp_kallsyms1.S
+>>> >>>    AS      .tmp_kallsyms1.o
+>>> >>>   LD      .tmp_vmlinux2
+>>> >>>   KSYM    .tmp_kallsyms2.S
+>>> >>>   AS      .tmp_kallsyms2.o
+>>> >>>   CHK     include/linux/version.h
+>>> >>>   HOSTCC  scripts/unifdef
+>>> >>> scripts/unifdef.c:209: error: conflicting types for 'getline'
+>>> >>> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
+>>> >>> make[2]: *** [scripts/unifdef] Error 1
+>>> >>> make[1]: *** [__headers] Error 2
+>>> >>> make: *** [vmlinux] Error 2
+>>> >>>
+>>> >>> The only change to .config was:
+>>> >>>
+>>> >>> SYSFS_DEPRECATED_V2 [=y]
+>>> >>> to
+>>> >>> SYSFS_DEPRECATED_V2 [=n]
+>>> >>> to see if I can make udev from:
+>>> >>>
+>>> >>> udev: starting version 137
+>>> >>> [    7.557317] udev: deprecated sysfs layout; update the kernel or disable
+>>> >>> CONFIG_SYSFS_DEPRECATED; some udev features will not work correctly
+>>> >>>
+>>> >>> giving me this message.
+>>> >>>
+>>> >>> also I did use a CFLAGS when compiling,
+>>> >>> but never received this when doing so for:
+>>> >>> 2.6.29-rc5-00289-g460c133
+>>> >>>
+>>> >>> any info would be appreciated.
+>>> >> What CFLAGS?  I can't reproduce the problem.
+>>> >>
+>>> >>
+>>> >> --
+>>> >> ~Randy
+>>> >>
+>>> >
+>>> > make CC=/usr/bin/i686-pc-linux-gnu-gcc-4.4.0 CFLAGS="-march=core2
+>>> > -mtune=core2 -O2 -pipe -fomit-frame-pointer"
+>>> > CXXFLAGS="${CFLAGS}" MAKEOPTS="-j3"
+>>>
+>>> I still can't reproduce the problem by using those CFLAGS/CXXFLAGS.
+>>
+>> chigurh:~/linux/linux-2.6/scripts$ make unifdef CFLAGS="-D_GNU_SOURCE"
+>> cc -D_GNU_SOURCE    unifdef.c   -o unifdef
+>> unifdef.c:209: error: conflicting types for `getline'
+>> /usr/include/stdio.h:649: error: previous declaration of `getline' was here
+>> make: *** [unifdef] Error 1
+>> chigurh:~/linux/linux-2.6/scripts$ make unifdef
+>> cc     unifdef.c   -o unifdef
+>> chigurh:~/linux/linux-2.6/scripts$
+>>
+>>> > I also just loaded the latest libc
+>>> > (not sure if this has anything to do);
+>>>
+>>> That probably updated /usr/include/stdio.h (?; I'm just guessing here).
+>>
+>> Perhaps getline() is now defined even without _GNU_SOURCE?  But I
+>> doubt that...
+>>
+>>        Hannes
+>>
+>
+> Well, maybe I need to just do a
+> make clean
+> before compiling.
+>
+>
+> --
+> Justin P. Mattock
+>
 
-Did you convince Nathan that this ends up being a good idea?
+Well, that didn't seem to be a simple solution.
+I guess I'm stuck with what I have.
 
--- Dave
-
+-- 
+Justin P. Mattock
