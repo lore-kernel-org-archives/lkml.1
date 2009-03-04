@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbZCDLsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZCDLxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbZCDLsf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZCDLsY
+	id S1756663AbZCDLxx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZCDLxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:48:24 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42199 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755607AbZCDLsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:48:23 -0500
-Subject: [PATCH] lockdep: require framepointers for x86
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 12:48:15 +0100
-Message-Id: <1236167295.5330.7240.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 06:53:45 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:53395 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750867AbZCDLxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:53:44 -0500
+Date: Wed, 4 Mar 2009 11:53:42 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org
+Subject: [git pull] drm stupidity fixes
+Message-ID: <alpine.DEB.2.00.0903041152150.27334@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: lockdep: require framepointers for x86
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Wed Mar 04 12:27:27 CET 2009
 
-Require framepointers for x86, because otherwise we'll be having empty stack
-traces, which is useless.
+Hi Linus,
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- lib/Kconfig.debug |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Please pull the 'drm-fixes' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
 
-Index: linux-2.6/lib/Kconfig.debug
-===================================================================
---- linux-2.6.orig/lib/Kconfig.debug
-+++ linux-2.6/lib/Kconfig.debug
-@@ -452,7 +452,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS && !PPC
-+	select FRAME_POINTER if !MIPS && !PPC
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 
+^lock^unlock, the API isn't in much use yet outside of Fedora so wasn't 
+spotted.
 
+Dave.
+
+ drivers/gpu/drm/drm_stub.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+commit 5ad8b7d12605e88d1e532061699102797fdefe08
+Author: Helge Bahmann <helge.bahmann@secunet.com>
+Date:   Wed Mar 4 21:49:14 2009 +1000
+
+    drm: fix double lock typo
+    
+    [airlied: you shall not retype patches from other trees half asleep]
+    
+    Signed-of-by: Dave Airlie <airlied@redhat.com>
 
