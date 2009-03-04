@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZCDR3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZCDRcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbZCDR3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZCDR3B
+	id S1755576AbZCDRcP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:32:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZCDRb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:29:01 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47419 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753481AbZCDR3A (ORCPT
+	Wed, 4 Mar 2009 12:31:59 -0500
+Received: from rv-out-0506.google.com ([209.85.198.230]:54153 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbZCDRb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:29:00 -0500
-Date: Wed, 4 Mar 2009 18:28:58 +0100
-From: Jan Kara <jack@suse.cz>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, Alasdair G Kergon <agk@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.27.14: BUG: lock held when returning to user space!
-Message-ID: <20090304172858.GD8748@atrey.karlin.mff.cuni.cz>
-References: <20090225142136.GA29505@janus> <1235579389.4645.3621.camel@laptop> <20090304165830.GC8748@atrey.karlin.mff.cuni.cz> <1236186484.5330.8185.camel@laptop>
+	Wed, 4 Mar 2009 12:31:58 -0500
+Message-ID: <49AEBB05.2030704@codemonkey.ws>
+Date: Wed, 04 Mar 2009 11:31:49 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236186484.5330.8185.camel@laptop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] xen: core dom0 support
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org>	<200902282309.07576.nickpiggin@yahoo.com.au>	<49AB19E1.4050604@goop.org> <200903021737.24903.nickpiggin@yahoo.com.au>
+In-Reply-To: <200903021737.24903.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2009-03-04 at 17:58 +0100, Jan Kara wrote:
-> > > On Wed, 2009-02-25 at 15:21 +0100, Frank van Maarseveen wrote:
-> > > > An lvextend -L+16G command for a logical volume while being mounted rw
-> > > > as ext3 triggered the following on 2.6.27.14:
-> > > > 
-> > > > ================================================
-> > > > [ BUG: lock held when returning to user space! ]
-> > > > ------------------------------------------------
-> > > > lvextend/29191 is leaving the kernel with locks still held!
-> > > > 2 locks held by lvextend/29191:
-> > > >  #0: (&type->s_umount_key #15){....}, at: [<c019edfb>] get_super+0x6b/0xb0
-> > > >  #1: (&journal->j_barrier){....}, at: [<c01f9af3>] journal_lock_updates+0xc3/0xd0
-> > > 
-> > > Do recent kernels still say this?
-> >
-> >   I'd say so. We really hold j_barrier mutex when leaving the kernel
-> > after FIFREEZE ioctl (the call path goes as freeze_bdev -> ext3_freeze
-> > -> journal_lock_updates) until FITHAW is called. As far as I know it was
-> > designed this way...
-> >   It would be a pity to completely exclude j_barrier mutex from lockdep
-> > control so would it be possible to mark the mutex (or even that
-> > particular acquisition of the mutex) so that lockdep does not warn when
-> > we return with it to userspace?
-> 
-> Linus specificly stated that we are not to keep locks held when
-> returning to userspace:
-> 
->   http://lkml.org/lkml/2007/10/27/135
-> 
-> So sure, we could annotate this, but no I won't until you can convince
-> both me and Linus that its a sane thing to do.
-  I didn't write the code ;). I was just informing how the things are. I agree
-it's not a nice thing to do. Hmm, looking at the code, it uses a special
-semaphore bd_mount_sem while mutex seems to be enough. Digging in git...
-ah, exactly so that lockdep does not complain about it. Ugh. Also
-the comment before freeze_bdev() says something about taking s_umount while
-it does not take it. That code really seems to need some cleaning...
+Nick Piggin wrote:
+> On Monday 02 March 2009 10:27:29 Jeremy Fitzhardinge wrote:
 
-> The problems include: how can you be sure its the same task calling the
-> completing ioctl?
-  Yeah, I understand the problems.
+>> Once important area of paravirtualization is that Xen guests directly
+>> use the processor's pagetables; there is no shadow pagetable or use of
+>> hardware pagetable nesting.  This means that a tlb miss is just a tlb
+>> miss, and happens at full processor performance.  This is possible
+>> because 1) pagetables are always read-only to the guest, and 2) the
+>> guest is responsible for looking up in a table to map guest-local pfns
+>> into machine-wide mfns before installing them in a pte.  Xen will check
+>> that any new mapping or pagetable satisfies all the rules, by checking
+>> that the writable reference count is 0, and that the domain owns (or has
+>> been allowed access to) any mfn it tries to install in a pagetable.
+> 
+> Xen's memory virtualization is pretty neat, I'll give it that. Is it
+> faster than KVM on a modern CPU?
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+There is nothing architecturally that prevents KVM from making use of 
+Direct Paging.  KVM doesn't use Direct Paging because we don't expect it 
+will not be worth it.  Modern CPUs (Barcelona and Nehalem class) include 
+hardware support for MMU virtualization (via NPT and EPT respectively).
+
+I think that for the most part (especially with large page backed 
+guests), there's wide agreement that even within the context of Xen, 
+NPT/EPT often beats PV performance.  TLB miss overhead increases due to 
+additional memory accesses but this is largely mitigated by large pages 
+(see Ben Serebin's SOSP paper from a couple years ago).
+
+> Would it be possible I wonder to make
+> a MMU virtualization layer for CPUs without support, using Xen's page
+> table protection methods, and have KVM use that? Or does that amount
+> to putting a significant amount of Xen hypervisor into the kernel..?
+
+There are various benchmarks out there (check KVM Forum and Xen Summit 
+presentations) showing NPT/EPT beating Direct Paging but FWIW the direct 
+paging could be implemented in KVM.
+
+A really unfortunate aspect of direct paging is that it requires the 
+guest to know the host physical addresses.  This requires the guest to 
+cooperate when doing any fancy memory tricks (live migration, 
+save/restore, swapping, page sharing, etc.).  This introduces guest code 
+paths to ensure that things like live migration works which is extremely 
+undesirable.
+
+FWIW, I'm not advocating not taking the Xen dom0 patches.  Just pointing 
+out that direct paging is orthogonal to the architectural differences 
+between Xen and KVM.
+
+Regards,
+
+Anthony Liguori
