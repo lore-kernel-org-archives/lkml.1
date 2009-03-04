@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZCDR6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZCDR67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbZCDR6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZCDR6F
+	id S1757249AbZCDR67 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbZCDR6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:58:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59986 "EHLO hera.kernel.org"
+	Wed, 4 Mar 2009 12:58:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46094 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755682AbZCDR6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:58:03 -0500
-Date: Wed, 4 Mar 2009 17:57:33 GMT
-From: Brian Maly <bmaly@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, bmaly@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, bmaly@redhat.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49ADEDA3.1030406@redhat.com>
-References: <49ADEDA3.1030406@redhat.com>
-Subject: [tip:x86/urgent] x86: fix DMI on EFI
-Message-ID: <tip-ff0c0874905fb312ca1491bbdac2653b0b48c20b@git.kernel.org>
-Git-Commit-ID: ff0c0874905fb312ca1491bbdac2653b0b48c20b
-X-Mailer: tip-git-log-daemon
+	id S1757014AbZCDR6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 12:58:38 -0500
+Date: Wed, 4 Mar 2009 18:58:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Robert Richter <robert.richter@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>, Tim Blechmann <tim@klingt.org>
+Subject: Re: [Bug #12395] 2.6.28-rc9: oprofile regression
+Message-ID: <20090304175828.GA1172@elte.hu>
+References: <HFSEX4uppGO.A.JSG.2yzoJB@chimera> <LLno3yT_fnC.A.Lh.4zzoJB@chimera> <20090303113218.GE10085@erda.amd.com> <200903032055.23969.rjw@sisk.pl> <20090303204504.GA20038@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 17:57:35 +0000 (UTC)
+In-Reply-To: <20090303204504.GA20038@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ff0c0874905fb312ca1491bbdac2653b0b48c20b
-Gitweb:     http://git.kernel.org/tip/ff0c0874905fb312ca1491bbdac2653b0b48c20b
-Author:     "Brian Maly" <bmaly@redhat.com>
-AuthorDate: Tue, 3 Mar 2009 21:55:31 -0500
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Mar 2009 18:55:56 +0100
 
-x86: fix DMI on EFI
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Impact: reactivate DMI quirks on EFI hardware
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > On Tuesday 03 March 2009, Robert Richter wrote:
+> > > Fix upstream in tip/x86/urgent:
+> > > 
+> > > 780eef9492b16a1543a3b2ae9f9526a735fc9856
+> > 
+> > URL, please?
+> 
+> The fix is not yet in Linus's tree - the commit is below.
 
-DMI tables are loaded by EFI, so the dmi calls must happen after
-efi_init() and not before.
+The fix is upstream now, included in .29-rc7.
 
-Currently Apple hardware uses DMI to determine the framebuffer mappings
-for efifb. Without DMI working you also have no video on MacBook Pro.
-
-This patch resolves the DMI issue for EFI hardware (DMI is now properly
-detected at boot), and additionally efifb now loads on Apple hardware
-(i.e. video works).
-
-Signed-off-by: Brian Maly <bmaly@redhat>
-Acked-by: Yinghai Lu <yinghai@kernel.org>
-Cc: ying.huang@intel.com
-LKML-Reference: <49ADEDA3.1030406@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
- arch/x86/kernel/setup.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-
----
- arch/x86/kernel/setup.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index c461f6d..6a8811a 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -770,6 +770,9 @@ void __init setup_arch(char **cmdline_p)
- 
- 	finish_e820_parsing();
- 
-+	if (efi_enabled)
-+		efi_init();
-+
- 	dmi_scan_machine();
- 
- 	dmi_check_system(bad_bios_dmi_table);
-@@ -789,8 +792,6 @@ void __init setup_arch(char **cmdline_p)
- 	insert_resource(&iomem_resource, &data_resource);
- 	insert_resource(&iomem_resource, &bss_resource);
- 
--	if (efi_enabled)
--		efi_init();
- 
- #ifdef CONFIG_X86_32
- 	if (ppro_with_ram_bug()) {
+	Ingo
