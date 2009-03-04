@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZCDW03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZCDWk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbZCDW03 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 17:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZCDW0U
+	id S1754503AbZCDWk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 17:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZCDWkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 17:26:20 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:38275 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbZCDW0T (ORCPT
+	Wed, 4 Mar 2009 17:40:13 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:54264 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750868AbZCDWkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 17:26:19 -0500
-Date: Wed, 4 Mar 2009 15:26:17 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Support for multiple MSI
-Message-ID: <20090304222617.GA21720@parisc-linux.org>
-References: <1235410082-5016-1-git-send-email-matthew@wil.cx> <m17i35z6fc.fsf@fess.ebiederm.org>
+	Wed, 4 Mar 2009 17:40:12 -0500
+Date: Wed, 4 Mar 2009 23:43:10 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Michael =?unknown-8bit?B?QsO8a2Vy?= <m.bueker@berlin.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+Message-ID: <20090304224310.GA29043@electric-eye.fr.zoreil.com>
+References: <200903041828.49972.m.bueker@berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=unknown-8bit
 Content-Disposition: inline
-In-Reply-To: <m17i35z6fc.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200903041828.49972.m.bueker@berlin.de>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 06:52:39AM -0800, Eric W. Biederman wrote:
-> Do we have any benchmarks anywhere that show that multiple msi support
-> gains us something?
+Michael Büker <m.bueker@berlin.de> :
+[...]
+> With both 2.6.27.19 and 2.6.28.7, I am experiencing "transmit timed out" 
+> errors as reported by the netdev watchdog, for both my PCMCIA Ethernet 
+> adapters, using the r8169 and 8139too drivers respectively.
 
-Yep.  I get a 1% performance gain when doing
+Can you describe the symptoms a bit more specifically ?
 
-dd if=/dev/sdb of=/dev/null bs=512 count=10000000 iflag=direct
+The kernel displays a scary warning, I can guess that it is almost surely
+associated with some loss of network connectivity for a few seconds at the
+very least but it is a bit hard to figure the real scale of your problem.
 
-This is less improvement than I had expected, and I'm trying to find out
-why before I publish the rest of the code.
+Please scare me. :o)
 
-> The requirement to allocate a contiguous block of vector numbers worries
-> me for the x86 implementation.  I don't like the idea of having to deal
-> with allocations that can fail because of fragmentation.
+[...]
+> as both kernel config files. I'll gladly provide more information as it is 
+> requested.
 
-Multiple MSI support can fail for any number of reasons, fragmentation
-is only one of them.  Drivers just have to deal with it.
+lspci -vx and a complete dmesg.
 
-> The fact that we also can not honor the irq affinity properly for multiple
-> msi also disturbs me.
-
-That's an x86 limitation; powerpc can independently steer MSI.
-
-> At a quick skim your patchset is only the generic code without a single
-> architecture specific implementation so it appears you have not done the
-> hard work on figuring out how to deal with multiple msi in the real
-> world.
-
-I think that's terribly unfair.  How dare you insinuate I have done no
-testing of my code?  I've published code before that implements multiple
-MSI for x86-64, and I've adapted that code to the current tree.  When I
-have enough time to do so, I'm going to adapt it to Ingo's -tip and
-publish it.  There will be many things to criticise in it which I'm sure
-will make you happy.
-
-> Given that msi-x does not have any of these issues without data to say
-> that there is a true gain in supporting multi-msi I don't see the point
-> of supporting it.
-
-There are people who have implemented it in silicon, and there is evidence of
-performance improvement with Linux and with other operating systems.
-Just because you don't like its limitations on x86 is not a valid reason
-to keep it out.
+Can you identify a kernel which worked flawlessly ?
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Ueimor
