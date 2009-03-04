@@ -1,94 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbZCDVsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbZCDVs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206AbZCDVsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 16:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZCDVsK
+	id S1757824AbZCDVs4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 16:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbZCDVsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 16:48:10 -0500
-Received: from rv-out-0506.google.com ([209.85.198.225]:6361 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbZCDVsI convert rfc822-to-8bit (ORCPT
+	Wed, 4 Mar 2009 16:48:46 -0500
+Received: from tlrextaddr2.trane.com ([65.248.77.5]:42077 "EHLO
+	tlrextaddr2.trane.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754603AbZCDVsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 16:48:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nRR/Dm2eBs/EHmNqAKGdvrwwXDHlXAbh5EkFb019TrJ5PEKUCJcz+6KMPePMNwWVV2
-         2Eck5UskaSH7HqjE+NreAOwHoj9YTID0iKgosSzwkKPwQ9IzmEgZzDs7ucauraz8aAXY
-         hC94lLKe0VHYJPwYC5ZBQlfzLYSzgGXWYLyH8=
+	Wed, 4 Mar 2009 16:48:45 -0500
+X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Mar 2009 16:48:44 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <E1LerUo-0000NE-Q3@mailer.emlix.com>
-References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
-Date: Wed, 4 Mar 2009 16:48:04 -0500
-Message-ID: <8bd0f97a0903041348i2c88343fvbc7a1b6d428c7e7a@mail.gmail.com>
-Subject: Re: [patch -v2] flat: fix data sections alignment
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Johannes Weiner <jw@emlix.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C99D10.DD7175B1"
+Subject: [PATCH] nand_bbt.c, kernel 2.6.28.7
+Date: Wed, 4 Mar 2009 15:33:32 -0600
+Message-ID: <530D814CA877134987D5272AB845371402AC7FD9@TWCUSMS1249.am.corp.priv>
+In-Reply-To: <E1LerZg-0000Rp-AX@mailer.emlix.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] nand_bbt.c, kernel 2.6.28.7
+Thread-Index: Acmc0RO4whS52MwURAacyU82QxCYNAAPgoOA
+References: <E1LerZg-0000Rp-AX@mailer.emlix.com>
+From: "Basterash, Tom" <TBasterash@trane.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 04 Mar 2009 21:33:33.0065 (UTC) FILETIME=[DE419F90:01C99D10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 08:51, Johannes Weiner wrote:
-> --- a/fs/binfmt_flat.c
-> +++ b/fs/binfmt_flat.c
-> +#ifdef ARCH_SLAB_MINALIGN
-> +#define FLAT_DATA_ALIGN        (ARCH_SLAB_MINALIGN)
-> +#else
-> +#define FLAT_DATA_ALIGN        (sizeof(void *))
-> +#endif
-> ...
-> +       sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
-> ...
-> -               datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
-> +               datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
-> +                               FLAT_DATA_ALIGN);
-> ...
-> -               datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
-> +               datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
-> +                               FLAT_DATA_ALIGN);
+This is a multi-part message in MIME format.
 
-why not make FLAT_DATA_ALIGN into a macro ?  then it'd naturally
-follow the existing ALIGN() behavior.
+------_=_NextPart_001_01C99D10.DD7175B1
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> -       sp = (unsigned long *) ((-(unsigned long)sizeof(char *))&(unsigned long) p);
-> -
-> -       sp -= envc+1;
-> -       envp = sp;
-> -       sp -= argc+1;
-> -       argv = sp;
-> +       sp = (unsigned long *)p;
-> +       sp -= (envc + argc + 2) + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
-> +       sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
-> +       argv = sp + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
-> +       envp = argv + (argc + 1);
+New to the Linux kernel development community here...
 
-can this be cleaned up a bit so that the argv/envp assignment happens
-by using sp before aligning sp ?  that would be defensive coding wrt
-preventing sp adjustment falling out of line with argv initialization,
-and cut down on duplicated code.
+This is a patch for a bug I found in an older version of the kernel I'm
+using on a project (2.6.10).  (The defect still exists in the latest
+version of the kernel 2.6.28.7, hence the reason for the post.)  For
+NAND chips with large block sizes (128K in our case) I was getting an
+out of memory error when I attempted to store the bad block table in
+flash.  This patch fixes that error by allocating memory in the same way
+it's done in another function in the file.  Feedback desired: Does the
+fix seem reasonable?  If so, what else must be done to have it
+incorporated into the source tree?  Thx.
+The information contained in this message is privileged and intended only=
+ for the recipients named. If the reader is not a representative of the i=
+ntended recipient, any review, dissemination or copying of this message o=
+r the information it contains is prohibited. If you have received this me=
+ssage in error, please immediately notify the sender, and delete the orig=
+inal message and attachments.
 
-> -       put_user(argc,--sp);
-> +       put_user(argc,sp);
+------_=_NextPart_001_01C99D10.DD7175B1
+Content-Type: application/octet-stream;
+	name="nand_bbt.patch"
+Content-Transfer-Encoding: base64
+Content-Description: nand_bbt.patch
+Content-Disposition: attachment;
+	filename="nand_bbt.patch"
 
-might as well fix the style issues here while you're changing code ...
-stick a space after the comma
+LS0tIGxpbnV4LTIuNi4yOC43L29yaWcvZHJpdmVycy9tdGQvbmFuZC9uYW5kX2JidC5jCisrKyBs
+aW51eC0yLjYuMjguNy9tb2QvZHJpdmVycy9tdGQvbmFuZC9uYW5kX2JidC5jCkBAIC0xMDI3LDEx
+ICsxMDI3LDEwIEBACiAJaWYgKCF0aGlzLT5iYnQgfHwgIXRkKQogCQlyZXR1cm4gLUVJTlZBTDsK
+IAotCWxlbiA9IG10ZC0+c2l6ZSA+PiAodGhpcy0+YmJ0X2VyYXNlX3NoaWZ0ICsgMik7CiAJLyog
+QWxsb2NhdGUgYSB0ZW1wb3JhcnkgYnVmZmVyIGZvciBvbmUgZXJhc2VibG9jayBpbmNsLiBvb2Ig
+Ki8KIAlsZW4gPSAoMSA8PCB0aGlzLT5iYnRfZXJhc2Vfc2hpZnQpOwogCWxlbiArPSAobGVuID4+
+IHRoaXMtPnBhZ2Vfc2hpZnQpICogbXRkLT5vb2JzaXplOwotCWJ1ZiA9IGttYWxsb2MobGVuLCBH
+RlBfS0VSTkVMKTsKKwlidWYgPSB2bWFsbG9jKGxlbik7CiAJaWYgKCFidWYpIHsKIAkJcHJpbnRr
+KEtFUk5fRVJSICJuYW5kX3VwZGF0ZV9iYnQ6IE91dCBvZiBtZW1vcnlcbiIpOwogCQlyZXR1cm4g
+LUVOT01FTTsKQEAgLTEwNjQsNyArMTA2Myw3IEBACiAJfQogCiAgb3V0OgotCWtmcmVlKGJ1Zik7
+CisJdmZyZWUoYnVmKTsKIAlyZXR1cm4gcmVzOwogfQogCg==
 
-> @@ -854,7 +861,7 @@ static int load_flat_binary(struct linux
->        stack_len = TOP_OF_ARGS - bprm->p;             /* the strings */
->        stack_len += (bprm->argc + 1) * sizeof(char *); /* the argv array */
->        stack_len += (bprm->envc + 1) * sizeof(char *); /* the envp array */
-> -
-> +       stack_len += FLAT_DATA_ALIGN;
+------_=_NextPart_001_01C99D10.DD7175B1
+Content-Type: application/octet-stream;
+	name="README"
+Content-Transfer-Encoding: base64
+Content-Description: README
+Content-Disposition: attachment;
+	filename="README"
 
-this seems weird.  alignment is for aligning data, not padding it out
-some value ...
--mike
+Rml4ZXMgYW4gb3V0IG9mIG1lbW9yeSBlcnJvciBmb3VuZCB3aGVuIGF0dGVtcHRpbmcgdG8gc3Rv
+cmUgdGhlIGJhZCBibG9jayB0YWJsZSBpbiBuYW5kIGZsYXNoIGZvciBjaGlwcyB0aGF0IGhhdmUg
+bGFyZ2UgKDEyOEspIGJsb2NrIHNpemVzLiAgR2VuZXJhdGVkIGJ5IFRvbSBCYXN0ZXJhc2ggPHRi
+YXN0ZXJhc2hAdHJhbmUuY29tPg==
+
+------_=_NextPart_001_01C99D10.DD7175B1--
