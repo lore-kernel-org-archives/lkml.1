@@ -1,89 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZCDXwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbZCDXwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZCDXwi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 18:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZCDXw0
+	id S1756927AbZCDXwx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 18:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbZCDXwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 18:52:26 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:3815 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752694AbZCDXwZ (ORCPT
+	Wed, 4 Mar 2009 18:52:30 -0500
+Received: from mx1-aub1fr.supinfo.com ([194.140.247.102]:1170 "EHLO
+	mx1-aub1fr.supinfo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753202AbZCDXw2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 18:52:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HTQbliLcT7mp5jMsnfm5laxEUNG26FpSFOYUU6Ufl3U4D4KU4w+YodaqRcVXX7DRI3
-         Y2vmztfYpF4PwshhFclpc5yjsOufUpksjOAxqQAZaZcKwaxtrGmfYF1ycgV2kgUQcmtr
-         3B9vPnHer4sL/4Bo0Wk4PTUC/mkNXvKWpPyhs=
-Message-ID: <49AF1429.9080009@gmail.com>
-Date: Wed, 04 Mar 2009 23:52:09 +0000
-From: Dave <kilroyd@googlemail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090104)
+	Wed, 4 Mar 2009 18:52:28 -0500
+X-Greylist: delayed 326 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Mar 2009 18:52:28 EST
+From: CUELLA Samuel <Samuel.CUELLA@supinfo.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>
+CC: "adaplas@gmail.com" <adaplas@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "trivial@kernel.org" <trivial@kernel.org>,
+       "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>
+Date: Thu, 5 Mar 2009 00:45:22 +0100
+Subject: RE : [PATCH 2.6.28 ] i810: kernel crash fix when  struct
+ fb_var_screeninfo is supplied
+Thread-Topic: [PATCH 2.6.28 ] i810: kernel crash fix when  struct
+ fb_var_screeninfo is supplied
+Thread-Index: AcmdH2h5mCVFEbNUSdGqn+OvwCQDQQAA+AqR
+Message-ID: <02E43B9E8855E74E886358B5184B4CC9104620DA@mail2-aub1fr.esi-supinfo.com>
+References: <02E43B9E8855E74E886358B5184B4CC9104620C0@mail2-aub1fr.esi-supinfo.com>
+	<alpine.LNX.2.00.0903041108470.4971@jikos.suse.cz>
+	<20090304142006.20ad72fe.akpm@linux-foundation.org>
+	<alpine.LNX.2.00.0903042353350.4971@jikos.suse.cz>,<20090304151707.804b5e84.akpm@linux-foundation.org>
+In-Reply-To: <20090304151707.804b5e84.akpm@linux-foundation.org>
+Accept-Language: fr-FR
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: fr-FR
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Jakub Narebski <jnareb@gmail.com>
-CC: Pavel Roskin <proski@gnu.org>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org, orinoco-users@lists.sourceforge.net,
-       dwmw2@infradead.org
-Subject: Re: [Orinoco-users] linux-firmware binary corruption with gitweb
-References: <49A98F6A.50702@gmail.com> <1235886467.3195.15.camel@mj>	<49AD7E2B.3010101@gmail.com> <m3iqmqt9ox.fsf@localhost.localdomain>
-In-Reply-To: <m3iqmqt9ox.fsf@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jakub Narebski wrote:
-> Dave <kilroyd@googlemail.com> writes:
->>> My strong impression is that the recoding takes place on the server.  I
->>> think the bug should be reported to the gitweb maintainers unless it a
->>> local breakage on the kernel.org site.
->> Thanks Pavel.
+On  jeudi 5 mars 2009 00:17,  Andrew Morton[akpm@linux-foundation.org] wrote :
+
+>On Wed, 4 Mar 2009 23:54:49 +0100 (CET)
+>Jiri Kosina <jkosina@suse.cz> wrote:
+
+>> On Wed, 4 Mar 2009, Andrew Morton wrote:
 >>
->> I just did a quick scan of the gitweb README - is this an issue with the
->> $mimetypes_file or $fallback_encoding configurations variables?
-> 
-> First, what version of gitweb do you use? It should be in 'Generator'
-> meta header, or (in older gitweb) in comments in HTML source at the
-> top of the page.
+>> > > This is not appropriate for trivial tree. CCing akpm and lkml.
+>> > I don't have a copy of the original patch.
+>>
+>> This is what I got from Samuel (and rejected it for trivial tree, not
+>> being trivial enough :) )
+>>
 
-Not sure where I'd find the meta header, but at the top of the HTML:
+>ok, thanks.
 
-<!-- git web interface version 1.4.5-rc0.GIT-dirty, (C) 2005-2006, Kay
-Sievers <kay.sievers@vrfy.org>, Christian Gierke -->
-<!-- git core binaries version 1.6.1.1 -->
+I was away, thanks for taking care of my patch :)
 
-> Second, the file is actually sent to browser 'as is', using binmode :raw
-> (or at least should be according to my understanding of Perl). And *.bin
-> binary file gets application/octet-stream mimetype, and doesn't send any
-> charset info. git.kernel.org should have modern enough gitweb to use this.
-> Strange...
+>> --- linux-2.6.28/drivers/video/i810/i810_main.c.orig    2009-02-26 15:23:03.000000000 +0100
+>> +++ linux-2.6.28/drivers/video/i810/i810_main.c 2009-02-26 14:50:06.000000000 +0100
+>> @@ -993,6 +993,8 @@ static int i810_check_params(struct fb_v
+>>         struct i810fb_par *par = info->par;
+>>         int line_length, vidmem, mode_valid = 0, retval = 0;
+>>         u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
+>> +       u32 yres = info->var.yres;
+>> +
+>>         /*
+>>          *  Memory limit
+>>          */
 
-Dug around gitweb.perl in the main git repo. Then looked at the
-git/warthog9/gitweb.git repo (after noting the Git Wiki says kernel.org
-is running John Hawley's branch).
+>So we have a file-wide static called `yres' - seems a bit dangerous.
 
-One notable change to git_blob_plain:
+Yes, for sure, but there is the same kind of symbol for xres, so I leave it.
+As this variable is used to hold the 'yres' module parameter value, I think  it's named upon this one.
 
-        undef $/;
-        binmode STDOUT, ':raw';
--        print <$fd>;
-+        #print <$fd>;
-+        $output .= <$fd>;
-        binmode STDOUT, ':utf8'; # as set at the beginning of gitweb.cgi
-        $/ = "\n";
+>Rather than defining a local which shadows the global, it would be
+>clearer to do it in this equivalent way, yes?
 
-        close $fd;
+Yes, you're totaly right.
+
+
+--- a/drivers/video/i810/i810_main.c~i810-fix-kernel-crash-fix-when-struct-fb_var_screeninfo-is-supplied
++++ a/drivers/video/i810/i810_main.c
+@@ -993,6 +993,7 @@ static int i810_check_params(struct fb_v
+        struct i810fb_par *par = info->par;
+        int line_length, vidmem, mode_valid = 0, retval = 0;
+        u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
 +
-+        return $output;
+        /*
+         *  Memory limit
+         */
+@@ -1002,12 +1003,12 @@ static int i810_check_params(struct fb_v
+        if (vidmem > par->fb.size) {
+                vyres = par->fb.size/line_length;
+                if (vyres < var->yres) {
+-                       vyres = yres;
++                       vyres = info->var.yres;
+                        vxres = par->fb.size/vyres;
+                        vxres /= var->bits_per_pixel >> 3;
+                        line_length = get_line_length(par, vxres,
+                                                      var->bits_per_pixel);
+-                       vidmem = line_length * yres;
++                       vidmem = line_length * info->var.yres;
+                        if (vxres < var->xres) {
+                                printk("i810fb: required video memory, "
+                                       "%d bytes, for %dx%d-%d (virtual) "
+_
 
-If that's the code that's running, doesn't that mean the output mode
-change doesn't impact the concatenation to $output? So the blob gets utf
-encoding when actually printed.
+>This assumes that the original change was actually correct.  Should
+>both sites whcih use the global `yres' have been converted to use
+>info->var.yres, or just one of them?
+Yes, the two sites have to be changed. The orginal 'yres' global var is intended to be used as a module paramter value holder ( i810_main.c:2174), so it's not intended to be used to do other things than
+module initialization.
 
-
-Regards,
-
-Dave.
+P.S: Sorry for my bad english.
