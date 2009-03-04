@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZCDIc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZCDIek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbZCDIc1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 03:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZCDIcS
+	id S1755967AbZCDIek (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 03:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZCDIeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 03:32:18 -0500
-Received: from mga10.intel.com ([192.55.52.92]:40233 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751286AbZCDIcS (ORCPT
+	Wed, 4 Mar 2009 03:34:31 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51209 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752674AbZCDIeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 03:32:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,299,1233561600"; 
-   d="scan'208";a="436015506"
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Lin Ming <ming.m.lin@intel.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+	Wed, 4 Mar 2009 03:34:31 -0500
+Subject: Re: 32bit panic on 4 sockets
+From: Peter Zijlstra <peterz@infradead.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1236151414.5330.6692.camel@laptop>
-References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
-	 <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie>
-	 <1235647139.16552.34.camel@penberg-laptop>
-	 <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr>
-	 <20090302112122.GC21145@csn.ul.ie>  <1236132307.2567.25.camel@ymzhang>
-	 <1236151414.5330.6692.camel@laptop>
+       Johannes Weiner <hannes@cmpxchg.org>
+In-Reply-To: <86802c440903032257l6607972dqe2390958b18454bd@mail.gmail.com>
+References: <86802c440903031458p4a72f8c8x6f91e9f58ac6bc26@mail.gmail.com>
+	 <86802c440903031751y136b506uc163dd2c9023de9b@mail.gmail.com>
+	 <49ADE201.7010506@kernel.org>
+	 <86802c440903032257l6607972dqe2390958b18454bd@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 04 Mar 2009 16:31:51 +0800
-Message-Id: <1236155511.2567.41.camel@ymzhang>
+Date: Wed, 04 Mar 2009 09:34:19 +0100
+Message-Id: <1236155659.5330.6837.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.25.91 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 08:23 +0100, Peter Zijlstra wrote:
-> On Wed, 2009-03-04 at 10:05 +0800, Zhang, Yanmin wrote:
-> > FAIR_GROUP_SCHED is a feature to support configurable cpu weight for different users.
-> > We did find it takes lots of time to check/update the share weight which might create
-> > lots of cache ping-pang. With sysbench(oltp)+mysql, that becomes more severe because
-> > mysql runs as user mysql and sysbench runs as another regular user. When starting
-> > the testing with 1 thread in command line, there are 2 mysql threads and 1 sysbench
-> > thread are proactive.
+On Tue, 2009-03-03 at 22:57 -0800, Yinghai Lu wrote:
+> On Tue, Mar 3, 2009 at 6:05 PM, Tejun Heo <tj@kernel.org> wrote:
+> > Looks like a genuine bootmem bug.  Cc'ing Johannes and
+> > quoting whole body.
 > 
-> cgroup based group scheduling doesn't bother with users. So unless you
-> create sched-cgroups your should all be in the same (root) group.
+> it is x86 32bit numa code problem. it assume bootmem will sit on first
+> node only.
 
-I disable CGROUP, but enable GROUP_SCHED and USER_SCHED. My config inherits from old config
-files.
-
-CONFIG_GROUP_SCHED=y
-CONFIG_FAIR_GROUP_SCHED=y
-# CONFIG_RT_GROUP_SCHED is not set
-CONFIG_USER_SCHED=y
-# CONFIG_CGROUP_SCHED is not set
-
-I check defconfig on x86-64 of 2.6.28 and it does enable CGROUP and disable USER_SCHED.
-
-Perhaps I need change my latest config file to the default on sched options.
-
+Seems a bit daft to run a 32bit kernel on such a machine.. at some point
+we should just give up and not push this 32 bit madness any further.
 
