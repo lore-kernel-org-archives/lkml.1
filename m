@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZCDRnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZCDRuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZCDRnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZCDRnH
+	id S1755947AbZCDRuq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZCDRug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:43:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35723 "EHLO hera.kernel.org"
+	Wed, 4 Mar 2009 12:50:36 -0500
+Received: from ns1.suse.de ([195.135.220.2]:43985 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752977AbZCDRnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:43:05 -0500
-Date: Wed, 4 Mar 2009 17:42:22 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1236167295.5330.7240.camel@laptop>
-References: <1236167295.5330.7240.camel@laptop>
-Subject: [tip:core/locking] lockdep: require framepointers for x86
-Message-ID: <tip-1075414b06109a99b0e87601e84c74a95bd45681@git.kernel.org>
-Git-Commit-ID: 1075414b06109a99b0e87601e84c74a95bd45681
-X-Mailer: tip-git-log-daemon
+	id S1754141AbZCDRuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 12:50:35 -0500
+Date: Wed, 4 Mar 2009 18:50:31 +0100
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-ext4@vger.kernel.org
+Subject: Re: fsx-linux loosing mmap() writes under memory pressure
+Message-ID: <20090304175031.GA24730@duck.suse.cz>
+References: <20090304145109.GA7140@duck.suse.cz> <20090304155535.GA23108@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 17:42:25 +0000 (UTC)
+In-Reply-To: <20090304155535.GA23108@duck.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1075414b06109a99b0e87601e84c74a95bd45681
-Gitweb:     http://git.kernel.org/tip/1075414b06109a99b0e87601e84c74a95bd45681
-Author:     "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 4 Mar 2009 12:27:27 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Mar 2009 18:39:23 +0100
+On Wed 04-03-09 16:55:35, Jan Kara wrote:
+> On Wed 04-03-09 15:51:09, Jan Kara wrote:
+> >   first, I'd like to point out that this has happened under UML so it can
+> > be just some obscure bug in that architecture but I belive it's worth
+> > debugging anyway. Now to the problem:
+> >   This has happened with today Linus's git snapshot. The filesystem is ext3
+> > with *1KB* blocksize. I booted UML with 64MB of memory and run (these are
+> > test's from Andrew Morton's torture tests):
+> >   fsx-linux -l 8000000 /mnt/testfile
+> >   bash-shared-mapping -t 8 /mnt/bashfile 50000000
+> > (the second test just makes the UML under memory pressure and stresses the
+> > filesystem, otherwise it does not interact with fsx-linux in any way).
+> >   After some time (like an hour) fsx-linux reported the file is corrupted. I
+> > tried again and it happened again so probably some debugging should be
+> > possible.
+> >   Both times it seems we've simply completely lost a write which happened
+> > through mmap (2 pages in the first case, 3 pages in the second case). Also
+> > I've checked and in the first case no blocks are allocated for the offsets
+> > where the data should be so most probably we've lost the write before
+> > block_write_full_page() called get_block().
+> >   I'll debug this further but I wanted let people know there's some problem
+> > and maybe somebody has some bright idea :).  I'm attaching the log from fsx
+> > if someone is interested. 
+>   Testing a bit more, I managed to reproduce the problem on ext2 and what's
+> more strange, now the lost page was written via ordinary write() (fsxlog
+> attached). So I believe this is more likely to be UML specific...
+  And to add even more information, this also happens on ext2 with 4KB
+blocksize (although much more rarely it seems). Again the data was written
+by an extending write() but the block for it was not even allocated...
 
-lockdep: require framepointers for x86
-
-Require framepointers for x86, because otherwise we'll be having
-empty stack traces, which is useless.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1236167295.5330.7240.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- lib/Kconfig.debug |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 29044f5..9b4efb1 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -402,7 +402,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS && !PPC
-+	select FRAME_POINTER if !MIPS && !PPC
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 
+									Honza
