@@ -1,64 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZCDWzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZCDW4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755976AbZCDWzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 17:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZCDWz3
+	id S1755926AbZCDW4s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 17:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZCDW4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 17:55:29 -0500
-Received: from mga03.intel.com ([143.182.124.21]:49726 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZCDWz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 17:55:28 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,303,1233561600"; 
-   d="scan'208";a="116840818"
-Date: Wed, 4 Mar 2009 14:55:00 -0800
-From: Sarah Sharp <sarah.a.sharp@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+	Wed, 4 Mar 2009 17:56:36 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56285 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751137AbZCDW4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 17:56:35 -0500
+Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
+	scsi-sgpool)objects
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: EHCI debug documentation
-Message-ID: <20090304225500.GB13509@gamba.jf.intel.com>
-References: <m1bpshx912.fsf@fess.ebiederm.org> <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0903042232270.29264@localhost.localdomain>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>
+	 <49ACF8FE.2020904@panasas.com>
+	 <1236093718.3263.3.camel@localhost.localdomain>
+	 <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
+	 <1236097526.3263.17.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0903031818230.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903032247170.29264@localhost.localdomain>
+	 <1236119195.24019.24.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0903040249460.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903042232270.29264@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 22:56:29 +0000
+Message-Id: <1236207389.21486.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 04:59:28PM -0500, Alan Stern wrote:
-> On Wed, 4 Mar 2009, Eric W. Biederman wrote:
+On Wed, 2009-03-04 at 22:45 +0100, Thomas Gleixner wrote:
+> On Wed, 4 Mar 2009, Thomas Gleixner wrote:
 > 
-> > Greg KH <gregkh@suse.de> writes:
-> > 
-> > > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > >> Yinghai Lu wrote:
-> > >> > b. netchip USB debug cable
-> > >> 
-> > >> http://www.plxtech.com/products/NET2000/NET20DC/default.asp
-> > >
-> > > I have reports that the newer version of this device does not work on
-> > > Linux as it isn't enumeratable as a "real" usb device on one end.
-> > >
-> > > I don't have one of these new devices yet to test it out, has anyone
-> > > else heard of this problem?
-> > 
-> > With the first generation of devices I remember they were peculiar and
-> > finicky.  I don't recall the exact details but I remember the devices
-> > able to get into weird states that may resemble what you describe.
+> Instrumented the code and the result of the failing request is
+> below. Looks like the function which sets up the request gets
+> nr_phys_segments wrong by one. 
 > 
-> Those devices were a little peculiar in that they were powered only on
-> one side.  That is, they would take bus power only from the right-hand
-> connector (looking at the face with the PLX logo).  So if you plugged
-> in only the left side, the device would not show up or enumerate.  But 
-> if you plugged in both sides, then both of them would enumerate okay.
+> If you need further trace data feel free to ask.
 
-That comment should be in the documentation for ehci early printks too.
+OK, the mapping all checks out correctly ... there must be something
+wrong with the way we count before mapping.
 
-Sarah Sharp
+If you're tracing everything, could you add these static prints to the
+trace ... they'll trigger a lot, but capturing how they applied to the
+failing request might tell us why the count is wrong.
+
+Thanks,
+
+James
+
+---
+
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index a104593..a529cba 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -127,21 +127,29 @@ static int blk_phys_contig_segment(struct request_queue *q, struct bio *bio,
+ 		return 0;
+ 
+ 	if (bio->bi_seg_back_size + nxt->bi_seg_front_size >
+-	    q->max_segment_size)
++	    q->max_segment_size) {
++		printk("Refusing contig merge, over segment size\n");
+ 		return 0;
++	}
+ 
+-	if (!bio_has_data(bio))
++	if (!bio_has_data(bio)) {
++		printk("Allowing contig merge, bio has no data\n");
+ 		return 1;
++	}
+ 
+-	if (!BIOVEC_PHYS_MERGEABLE(__BVEC_END(bio), __BVEC_START(nxt)))
++	if (!BIOVEC_PHYS_MERGEABLE(__BVEC_END(bio), __BVEC_START(nxt))) {
++		printk("Refusing contig merge, bio not phys mergeable\n");
+ 		return 0;
++	}
+ 
+ 	/*
+ 	 * bio and nxt are contiguous in memory; check if the queue allows
+ 	 * these two to be merged into one
+ 	 */
+-	if (BIO_SEG_BOUNDARY(q, bio, nxt))
++	if (BIO_SEG_BOUNDARY(q, bio, nxt)) {
++		printk("Allowing contig merge, not across segment boundary\n");
+ 		return 1;
++	}
+ 
+ 	return 0;
+ }
+@@ -325,6 +333,12 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
+ 	if ((req->nr_sectors + next->nr_sectors) > q->max_sectors)
+ 		return 0;
+ 
++	printk("Merging end %lx (segs %d) with beginning %lx (segs %d)\n",
++	       bvec_to_phys(__BVEC_END(req->biotail)), req->nr_phys_segments,
++	       bvec_to_phys(__BVEC_START(next->bio)), next->nr_phys_segments);
++	printk("Front size is %d, back size is %d\n",
++	       next->bio->bi_seg_front_size, req->biotail->bi_seg_back_size);
++
+ 	total_phys_segments = req->nr_phys_segments + next->nr_phys_segments;
+ 	if (blk_phys_contig_segment(q, req->biotail, next->bio)) {
+ 		if (req->nr_phys_segments == 1)
+
+
