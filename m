@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbZCDGA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZCDGFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753754AbZCDGA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 01:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZCDGAr
+	id S1753926AbZCDGFp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 01:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbZCDGFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 01:00:47 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:10733 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbZCDGAr (ORCPT
+	Wed, 4 Mar 2009 01:05:37 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:58224 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbZCDGFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 01:00:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=b+fC7XFk4gwGezs9D26DRZpu6kYAkiG35F8VZW3PT/zOsffMLNCLUmF6gqQ2UtPPg8
-         6rzgBhDDPuMamhfnqsZkulwV7qDBuSA+uZ4FoVQz+scRbPYcpGpmNf7djaHZ3uc1usRO
-         rD1A3kXwkT75PjTiggnBuo+y85/9+xJ0faUzg=
+	Wed, 4 Mar 2009 01:05:36 -0500
+Date: Wed, 4 Mar 2009 07:05:33 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: =?UTF-8?Q?J=2EA=2E_Magall=C3=B3n?= <jamagallon@ono.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mdv Cooker <cooker@mandrivalinux.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Bonding tied to IPV6 in 29-rc5
+In-Reply-To: <20090217095232.5da06b9f@werewolf.home>
+Message-ID: <alpine.LSU.2.00.0903040702001.9232@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Wed, 4 Mar 2009 15:00:45 +0900
-Message-ID: <79a3cd740903032200g5c0af4cbr12e03355c9c614b0@mail.gmail.com>
-Subject: Question regarding direntry read error in fat filesystem when a 
-	device is removed
-From: YS Kim <historic59@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I have a question about too many error messages from FAT when
-unexpected device removal occurs.
-I got the following error messages when I unplugged a USB
-drive(formatted as FAT) during direntry reading.
+On Tuesday 2009-02-17 09:52, J.A. Magallón wrote:
 
-sd 0:0:0:0: rejecting I/O to device being removed
-FAT: Directory bread(block 1478192) failed
-sd 0:0:0:0: rejecting I/O to device being removed
-FAT: Directory bread(block 1478193) failed
-sd 0:0:0:0: rejecting I/O to device being removed
-FAT: Directory bread(block 1478194) failed
-sd 0:0:0:0: rejecting I/O to device being removed
-FAT: Directory bread(block 1478195) failed
-...
+>Hi all...
+>
+>Don't know if this is specific for -rc5, I have jumped from 28.4 to 29-rc5.
+>In this latest kernel, I can not install 'bonding' module if 'ipv6' is
+>disabled to load via modprobe.conf:
+>
+>install ipv6 /bin/true
+>
+>Trying bonding gives this dmesg:
+>
+>bonding: Unknown symbol ndisc_build_skb
+>bonding: Unknown symbol in6_dev_finish_destroy
+>bonding: Unknown symbol ndisc_send_skb
+>bonding: Unknown symbol unregister_inet6addr_notifier
+>bonding: Unknown symbol register_inet6addr_notifier
+>
+>Commenting the line in modprobe.conf makes things smooth again.
+>We can not disable ipv6 anymore ?
 
->From the code of fat__get_entry in dir.c, I found that it continues to
-read the next device block
-even if the block reading has been failed. Because of this continuous
-read, a lot of error messages
-come up if the device itself is removed during reading fairly many
-files, and it causes the malfunction
-of my embedded system.
+Well, given ipv6 is now a runtime dependency when compiled
+with CONFIG_IPV6={m,y}, it seems about right what you see.
+I would not call this a regression.
 
-I think this code is to make the filesystem available to read the next
-block when a storage contains
-bad blocks, so that a user can backup remainings in case that some
-portion of a storage are dead.
-
-However, if the storage is a NAND flash memory, the flash driver is
-supposed to perform bad block
-management (because of the NAND charateristics) before the filesystem
-encounters the bad block.
-
-Thus, if I modify the code to just return error when fat__get_entry
-fails to read blocks, could it be
-cause any side effects? Except the purpose of backup/recovery, is
-there any other reason for
-the continuous block read?
+$ modinfo bonding
+filename:       /lib/modules/2.6.29-rc6-jen77-rt/kernel/bonding.ko.gz
+author:         Thomas Davis, tadavis@lbl.gov and many others
+description:    Ethernet Channel Bonding Driver, v3.5.0
+version:        3.5.0
+license:        GPL
+srcversion:     752CFD14F79DC79CF4BFB2E
+depends:        ipv6
+                ^^^^
