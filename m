@@ -1,52 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbZCDMIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbZCDMLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbZCDMIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 07:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZCDMIM
+	id S1755610AbZCDMLZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 07:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZCDMLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 07:08:12 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:4144 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbZCDMIL (ORCPT
+	Wed, 4 Mar 2009 07:11:16 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:63025 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZCDMLP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 07:08:11 -0500
-Date: Wed, 4 Mar 2009 07:07:59 -0500
-From: Bob Copeland <me@bobcopeland.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090304120759.GA6519@hash.localnet>
-References: <49A321BA.2040500@gmail.com> <49A326A4.8090103@gmail.com> <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org> <20090226135938.GA12182@hash.localnet> <20090226170338.GA1745@silver.sucs.org> <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org>
+	Wed, 4 Mar 2009 07:11:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=aqdtSXyiiMYA3dqsf1W86eMFaS6dTv/CLqZ9ZoUeAVXhWqfbyUe6CJladYqsqyw2qU
+         CSzNzVl3wkynGa9TREf/6QzdylFroTnvSObT0HuFThNht8wldiTI1hmIYurpjzYBDrCs
+         KnEP+AuKDcC9o29SLCDEH0FtieLAfWyDYCdTE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090303200352.GA8343@silver.sucs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090304172005.99f5b0a2.kamezawa.hiroyu@jp.fujitsu.com>
+References: <49A65455.4030204@cn.fujitsu.com>
+	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1236066689.18955.27.camel@twins>
+	 <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
+	 <1236073236.18955.46.camel@twins>
+	 <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
+	 <1236081288.5330.4105.camel@laptop>
+	 <20090304153245.109eada4.kamezawa.hiroyu@jp.fujitsu.com>
+	 <344eb09a0903032354r38d74c48p217d338cba7159e8@mail.gmail.com>
+	 <20090304172005.99f5b0a2.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 4 Mar 2009 17:41:13 +0530
+Message-ID: <344eb09a0903040411n12379babjb62d31d28b77d1e6@mail.gmail.com>
+Subject: Re: [PATCH] remove rq->lock from cpuacct cgroup v2
+From: Bharata B Rao <bharata.rao@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, kenchen@google.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 08:03:52PM +0000, Sitsofe Wheeler wrote:
-> The machine where this fault happened is a single core non-symmetric
-> multithreading EeePC 900 with a Celeron M 900 using a voluntary preempt
-> kernel (so I doubt this is due to tasklets being run on another CPU)...
+On Wed, Mar 4, 2009 at 1:50 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Wed, 4 Mar 2009 13:24:43 +0530
+> Bharata B Rao <bharata.rao@gmail.com> wrote:
+>
+>> Instead of subsystems handling all these percpu counter problems
+>> themselves, shouldn't we be using percpu_counter subsytem and let it
+>> handle all the issues transparently for us ? I am not sure if all
+>> these problems have been addressed in percpu_counter, but would like
+>> to know why we are not using percpu_counter for these kinds of things
+>> and enhance percpu_counter if it can't handle some of the issues which
+>> we are solving here specifically for cpuacct subsystem ?
+>>
+> At first, generic per-cpu counter sounds interesting but to be honest,
+> some special handling is used for cpuacct based on its characteristic.
+>
 
-This particular one could still happen on UP, provided interrupts were
-enabled in ath5k_rx_start (I don't think that's very likely, though.  
-I tried warning on that case and didn't hit it).
+Just trying to understand this clearly ...
 
-> I am a bit unsure which patches you want me to be testing though...
+>  - Writer works under non-preemptable context.
 
-None.  Perhaps it's wishful thinking but a function trace for the few
-minutes prior to the poison would be useful.  A good replicator might
-be to run a sequence of automatic suspend/resume with pm_test, in 
-parallel with iwlist wlan0 scan (as root, so scans are actually 
-performed), in parallel with iperf or ping.  I didn't personally have
-luck with that workload, though.
+Which means the writer is running with preemption disabled.
+percpu_counter writes (via percpu_counter_add) don't assume anything
+and disable preemption themselves. Is this the problem or is there a
+bigger issue here why percpu_counter can't be used ?
 
+>  - There is only one writer.
+
+Not sure how you have optimized for this case in cpuacct.
+percpu_counters use spinlocks to serialize writers. Are you saying
+using spinlocks for this 1 writer case is too much ? Also note that
+they update 32 bit percpu counters without any lock and take spinlocks
+only when they do a batch update to the 64bit counter.
+
+Regards,
+Bharata.
 -- 
-Bob Copeland %% www.bobcopeland.com
-
+http://bharata.sulekha.com/blog/posts.htm
