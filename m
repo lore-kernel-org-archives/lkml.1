@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZCDAIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbZCDAIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbZCDAIM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:08:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZCDAH4
+	id S1755647AbZCDAIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbZCDAId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:07:56 -0500
-Received: from mail.gmx.net ([213.165.64.20]:51753 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754742AbZCDAHz convert rfc822-to-8bit (ORCPT
+	Tue, 3 Mar 2009 19:08:33 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:40390 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755069AbZCDAIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:07:55 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+CjcQXFwSCNVVBsvwiQG9kBLuPy9E+lnzRVMrO8c
-	CDsaNBN4S22F8k
-Date: Wed, 4 Mar 2009 01:07:55 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: Linux 2.6.29-rc6 bombs while compiling a kernel for a
- linkstation/kurobox
-In-Reply-To: <20090302094303.GA29819@ime.usp.br>
-Message-ID: <Pine.LNX.4.64.0903040103440.5059@axis700.grange>
-References: <20090302094303.GA29819@ime.usp.br>
+	Tue, 3 Mar 2009 19:08:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Kz6d6kDqIlfl80yFBD1cYLlTf+QlKZ7AhXepiBM5uzWtMw9LPk9l1AHqqUN2oNgBcN
+         O+QREDvX0C+UkwjGmdI50dAVsKjXtYhe1vgRWHMsDWgzLaK/1klQSUazHU9yXbjmfTuK
+         +/WXEvP+ERhJiuVG4DEMTRcBCO0INJJiPeBZo=
+Date: Wed, 4 Mar 2009 01:06:59 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Joao Correia <joaomiguelcorreia@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: some tc commands fail on 2.6.29-rc6-git5, works on 2.6.28.7
+Message-ID: <20090304000659.GA4555@ami.dom.local>
+References: <a5d9929e0903011636w6bff1032y28ab58c0ff8c8052@mail.gmail.com> <20090301165729.8e08e1d7.akpm@linux-foundation.org> <49AC28FF.1040102@gmail.com> <a5d9929e0903031510r7f173f5cib7bd1a2426e92473@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a5d9929e0903031510r7f173f5cib7bd1a2426e92473@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Mar 2009, Rogério Brito wrote:
-
-> Hi there.
+On Tue, Mar 03, 2009 at 11:10:36PM +0000, Joao Correia wrote:
+> Hello again
 > 
-> I tried to compile a new kernel for my (powerpc) Kurobox HD (an embedded
-> system that has a Freescale processor), but it seems that the
-> compilation fails, with both my usual config file and with the shipped
-> linkstation_defconfig file.
+> Sorry for taking so long, been busy with some unexpected work.
 > 
-> I get the following error during compilation (actually a
-> cross-compilation):
-> 
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> arch/powerpc/platforms/built-in.o: In function `linkstation_setup_arch':
-> linkstation.c:(.init.text+0x218): undefined reference to `physmap_set_partitions'
-> drivers/built-in.o:(__ksymtab+0x9f8): undefined reference to `physmap_set_partitions'
-> make: *** [.tmp_vmlinux1] Error 1
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> I have checked the .config and can not (to the extent of my not-guru
+> knowledge) find anything out of place. Excuse me if its obvious and it
+> didnt strike me yet.
+...
+> [root@duron ~]# tc -V
+> tc utility, iproute2-ss090115
+...
 
-Yes, linkstation and storcenter have to migrate to the "physmap-flash" 
-platform driver. For now you can define in your .config
+Joao, you don't need to be sorry at all - on the contrary I'm
+extremely sorry! I was so focused on the kernel version but ignored
+updating iproute, and it looks like this matters here.
 
-CONFIG_MTD_PHYSMAP=y
-CONFIG_MTD_PHYSMAP_COMPAT=y
-CONFIG_MTD_PHYSMAP_START=0xffc00000
-CONFIG_MTD_PHYSMAP_LEN=0x400000
-CONFIG_MTD_PHYSMAP_BANKWIDTH=1
+So you're right. Alas I'll not be able to look at it until "tomorrow"
+in the evening.
 
-(I hope the numbers are correct, just found them in my local tree, don't 
-remember any more what exactly they configure, please, double-check.) And 
-yes, it must be fixed in the mainline. I'll see if I find time for this, 
-maybe tomorrow (actually, already today.)
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Thanks for the report,
+Jarek P.
