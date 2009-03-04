@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZCDPES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZCDPL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbZCDPES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 10:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbZCDPEG
+	id S1755341AbZCDPL5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 10:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZCDPLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 10:04:06 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39097 "EHLO mx2.redhat.com"
+	Wed, 4 Mar 2009 10:11:48 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:50395 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694AbZCDPEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 10:04:05 -0500
-Message-ID: <49AE9850.9020103@redhat.com>
-Date: Wed, 04 Mar 2009 10:03:44 -0500
-From: Brian Maly <bmaly@redhat.com>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
+	id S1751996AbZCDPLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 10:11:48 -0500
+Date: Wed, 4 Mar 2009 09:05:19 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Dan Smith <danms@us.ibm.com>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] c/r: Add CR_COPY() macro (v3)
+Message-ID: <20090304150519.GB10186@us.ibm.com>
+References: <1236095764-19325-1-git-send-email-danms@us.ibm.com> <1236095764-19325-3-git-send-email-danms@us.ibm.com> <1236097332.22399.8.camel@nimitz> <878wnmrtp9.fsf@caffeine.danplanet.com> <1236128437.22399.31.camel@nimitz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
-       ying.huang@intel.com
-Subject: Re: [PATCH] fix DMI for EFI
-References: <49A9F597.4010601@redhat.com> <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com> <49ADEDA3.1030406@redhat.com> <20090304110022.GB18165@elte.hu>
-In-Reply-To: <20090304110022.GB18165@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236128437.22399.31.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Tue, 2009-03-03 at 16:57 -0800, Dan Smith wrote:
+> > DH> Did you convince Nathan that this ends up being a good idea?
+> > 
+> > Technically he hasn't seen this version, but my hopes are not high
+> > that he will change his mind.  If the feedback is that they're not
+> > liked, I'll happily remove them.
+> 
+> I just figure if Nathan feels that strongly that we'll encounter more
+> people who feel even more so.  So, I was curious if he changed his mind
+> somehow.
 
+I maintain however that two strong advantages of moving the checkpoint
+and restart of simple registers etc into a single function are:
 
->Hm, could we ever find ourselves in the positition of having to 
->access the DMI strings table in the EFI init code, to implement 
->a quirk? I think that's quite plausible.
+	1. we won't forget to add (or accidentally lose) one or the
+		other
+	2. any actual special handling at checkpoint or restart, like
+		the loading of access registers at restart on s390x,
+		stand out
 
->OTOH, with some DMI quirks in EFI tables it's a bit of a chicken 
->and egg problem. Can DMI strings ever be outside of EFI tables 
->on EFI systems?
-
->	Ingo
-
-Right now it is EFI that loads the dmi tables (and all other tables such 
-as ACPI), so it is a chicken and the egg. I think that if dmi is ever 
-needed by EFI, the dmi scan will have to be moved inside efi_init. We 
-could move the dmi scan into efi_init and do the dmi scan the moment we 
-have the dmi table. Thats really the soonest point we could scan on EFI 
-systems. Im OK with moving dmi to efi_init if you prefer.
-
-Brian
-
-
-
-
-
-
+-serge
