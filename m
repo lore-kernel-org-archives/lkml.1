@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZCDUAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZCDUBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbZCDUAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 15:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZCDUA2
+	id S1757567AbZCDUBp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 15:01:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZCDUBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 15:00:28 -0500
-Received: from mail-gx0-f174.google.com ([209.85.217.174]:61125 "EHLO
-	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754396AbZCDUA2 convert rfc822-to-8bit (ORCPT
+	Wed, 4 Mar 2009 15:01:36 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:56538 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756261AbZCDUBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 15:00:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RnVKGglfGCDyvGMVUTSURKHp/kQlgtD98aNGwIiEtQjf5f2SfbNfYt55iKFFp+RIoW
-         OeHrM8g4Q3/2l0mMYmN2K5kmTqjYMhhhW3flvD2Y2dY73wC9NLLPzB1QJNggdTTzfvBN
-         BGHNClCHdxyOaUwuy6RoKXbK2Fwzq/hQLRxtU=
-MIME-Version: 1.0
-In-Reply-To: <E1LewqM-0005Tp-R1@mailer.emlix.com>
-References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
-	 <8bd0f97a0903041004g467cbe47jc7c66261da01348c@mail.gmail.com>
-	 <E1LewqM-0005Tp-R1@mailer.emlix.com>
-Date: Wed, 4 Mar 2009 15:00:25 -0500
-Message-ID: <8bd0f97a0903041200y4dfa9556r8709c4331a12002b@mail.gmail.com>
-Subject: Re: [patch -v2] flat: fix data sections alignment
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Johannes Weiner <jw@emlix.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Mar 2009 15:01:36 -0500
+Date: Wed, 4 Mar 2009 14:01:29 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Dan Smith <danms@us.ibm.com>
+Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] c/r: Add CR_COPY() macro (v3)
+Message-ID: <20090304140129.35e1ad97@thinkcentre.lan>
+In-Reply-To: <1236095764-19325-3-git-send-email-danms@us.ibm.com>
+References: <1236095764-19325-1-git-send-email-danms@us.ibm.com>
+ <1236095764-19325-3-git-send-email-danms@us.ibm.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Pobox-Relay-ID: 429E266E-08F7-11DE-A638-CFA5EBB1AA3C-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 14:33, Johannes Weiner wrote:
-> On Wed, Mar 04, 2009 at 01:04:00PM -0500, Mike Frysinger wrote:
->> On Wed, Mar 4, 2009 at 08:51, Johannes Weiner wrote:
->> > The flat loader uses an architecture's flat_stack_align() to align the
->> > stack but assumes word-alignment is enough for the data sections.
->> >
->> > However, on the Xtensa S6000 we have registers up to 128bit width
->> > which can be used from userspace and therefor need userspace stack and
->> > data-section alignment of at least this size.
->>
->> could this perhaps be a gcc problem ?  x86 has a similar problem with
->> sse and they addressed it with a function attribute.  after all, just
->> because your stack started out 128bit aligned doesnt mean gcc will
->> keep it that way when calling other functions.  so having the stack
->> start out aligned would only "fix" the stack for the application's
->> entry point right (which would in practice bubble up to main()) ?  so
->> you'd be right back where you started ...
->
-> gcc generates sp changes only ever in multiples of 16 deltas, I just
-> checked it again with various amounts of stack variables.
->
-> The stack frames allocate themselves with an ENTRY instruction and the
-> generated code I read here allocates stack frames of n * 16 bytes.
->
-> So we are good to go as long as the initial stack frame is properly
-> aligned.
+Hi Dan.
 
-throwing a few random cases at gcc isnt really a good way to validate.
- this would have worked for x86 too with older versions.  only when
-common code in later gcc versions got more aggressive with stack
-packing did people notice the issue.
+Dan Smith <danms@us.ibm.com> wrote:
+> +#define CR_CPT 1
+> +#define CR_RST 2
+> +
+> +#define CR_COPY(op, a, b)				        \
+> +	do {							\
+> +		if (op == CR_CPT)				\
+> +			a = b;					\
+> +		else						\
+> +			b = a;					\
+> +	} while (0);
 
-so, lets look at the authoritative place: the gcc source code for xtensa
+Drop the semicolon ^
 
-$ grep define.*STACK_BOUNDARY -B 2 gcc/config/xtensa/*.h
-xtensa.h-/* Align stack frames on 128 bits for Xtensa.  This is necessary for
-xtensa.h-   128-bit datatypes defined in TIE (e.g., for Vectra).  */
-xtensa.h:#define STACK_BOUNDARY 128
 
-ok, now i believe that forcing a stack alignment of 128bits in the
-kernel is correct ;)
--mike
+> +
+> +#define CR_COPY_ARRAY(op, a, b, count)				\
+> +	do {							\
+> +		BUILD_BUG_ON(sizeof(*a) != sizeof(*b));		\
+> +		if (op == CR_CPT)				\
+> +			memcpy(a, b, count * sizeof(*a));	\
+> +		else						\
+> +			memcpy(b, a, count * sizeof(*a));	\
+> +	} while (0);
+> +
+
+You might want to employ __must_be_array() or similar to catch misuse.
+
+Misuse might also be prevented by providing some documentation :)
