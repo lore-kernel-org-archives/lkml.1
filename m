@@ -1,70 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbZCDVjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbZCDVqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbZCDVjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 16:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZCDVjc
+	id S1756256AbZCDVqA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 16:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZCDVpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 16:39:32 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:42644 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbZCDVjb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 16:39:31 -0500
-To: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Yinghai Lu <yinghai@kernel.org>, Sarah Sharp <sarah.a.sharp@intel.com>,
-       linux-usb@vger.kernel.org,
+	Wed, 4 Mar 2009 16:45:47 -0500
+Received: from www.tglx.de ([62.245.132.106]:54112 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbZCDVpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 16:45:45 -0500
+Date: Wed, 4 Mar 2009 22:45:28 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20090303235354.GA7145@gamba.jf.intel.com>
-	<86802c440903031731x36c1180dk72a3631bb4397319@mail.gmail.com>
-	<49ADDB0B.1050002@oracle.com> <20090304175727.GC29823@elte.hu>
-	<20090304212503.GA9611@suse.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 04 Mar 2009 13:39:21 -0800
-In-Reply-To: <20090304212503.GA9611@suse.de> (Greg KH's message of "Wed\, 4 Mar 2009 13\:25\:03 -0800")
-Message-ID: <m1bpshx912.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
+ scsi-sgpool)objects
+In-Reply-To: <alpine.LFD.2.00.0903040249460.29264@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0903042232270.29264@localhost.localdomain>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>  <49ACF8FE.2020904@panasas.com>  <1236093718.3263.3.camel@localhost.localdomain>  <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>  <1236097526.3263.17.camel@localhost.localdomain>
+  <alpine.LFD.2.00.0903031818230.29264@localhost.localdomain>  <alpine.LFD.2.00.0903032247170.29264@localhost.localdomain> <1236119195.24019.24.camel@localhost.localdomain> <alpine.LFD.2.00.0903040249460.29264@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: gregkh@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, sarah.a.sharp@intel.com, yinghai@kernel.org, randy.dunlap@oracle.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Greg KH <gregkh@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: EHCI debug documentation
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+On Wed, 4 Mar 2009, Thomas Gleixner wrote:
 
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> Yinghai Lu wrote:
->> > b. netchip USB debug cable
->> 
->> http://www.plxtech.com/products/NET2000/NET20DC/default.asp
->
-> I have reports that the newer version of this device does not work on
-> Linux as it isn't enumeratable as a "real" usb device on one end.
->
-> I don't have one of these new devices yet to test it out, has anyone
-> else heard of this problem?
+Instrumented the code and the result of the failing request is
+below. Looks like the function which sets up the request gets
+nr_phys_segments wrong by one. 
 
-With the first generation of devices I remember they were peculiar and
-finicky.  I don't recall the exact details but I remember the devices
-able to get into weird states that may resemble what you describe.
+If you need further trace data feel free to ask.
 
-Eric
+Thanks,
+
+	tglx
+
+bvprv: bvec_to_phys(bvprv)
+bvec:  bvec_to_phys(bvec)
+max_segment_size is 65536
+
+scsi_init_sgtable: ISG: nr_seg 9 nents 9
+
+blk_rq_map_sg: MSG: nbytes 4096
+
+blk_rq_map_sg: MSG: new segment 1: bvec 0x6a8cd000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8cd000 bvec 0x6a8ce000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8ce000 bvec 0x6a8cf000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8cf000 bvec 0x6a8d0000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d0000 bvec 0x6a8d1000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d1000 bvec 0x6a8d2000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d2000 bvec 0x6a8d3000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d3000 bvec 0x6a8d4000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d4000 bvec 0x6a8d5000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d5000 bvec 0x6a8d6000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d6000 bvec 0x6a8d7000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d7000 bvec 0x6a8d8000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d8000 bvec 0x6a8d9000 sg->length 49152 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8d9000 bvec 0x6a8da000 sg->length 53248 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8da000 bvec 0x6a8db000 sg->length 57344 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8db000 bvec 0x6a8dc000 sg->length 61440 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8dc000 bvec 0x6a8dd000 sg->length 65536 
+
+blk_rq_map_sg: MSG: new segment 2: bvec 0x6a8dd000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8dd000 bvec 0x6a8de000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8de000 bvec 0x6a8df000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8df000 bvec 0x6a8e0000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e0000 bvec 0x6a8e1000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e1000 bvec 0x6a8e2000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e2000 bvec 0x6a8e3000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e3000 bvec 0x6a8e4000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e4000 bvec 0x6a8e5000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e5000 bvec 0x6a8e6000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e6000 bvec 0x6a8e7000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e7000 bvec 0x6a8e8000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e8000 bvec 0x6a8e9000 sg->length 49152 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8e9000 bvec 0x6a8ea000 sg->length 53248 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8ea000 bvec 0x6a8eb000 sg->length 57344 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8eb000 bvec 0x6a8ec000 sg->length 61440 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8ec000 bvec 0x6a8ed000 sg->length 65536 
+
+blk_rq_map_sg: MSG: new segment 3: bvec 0x6a8ed000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8ed000 bvec 0x6a8ee000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8ee000 bvec 0x6a8ef000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8ef000 bvec 0x6a8f0000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f0000 bvec 0x6a8f1000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f1000 bvec 0x6a8f2000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f2000 bvec 0x6a8f3000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f3000 bvec 0x6a8f4000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f4000 bvec 0x6a8f5000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f5000 bvec 0x6a8f6000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f6000 bvec 0x6a8f7000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f7000 bvec 0x6a8f8000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f8000 bvec 0x6a8f9000 sg->length 49152 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8f9000 bvec 0x6a8fa000 sg->length 53248 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8fa000 bvec 0x6a8fb000 sg->length 57344 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8fb000 bvec 0x6a8fc000 sg->length 61440 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8fc000 bvec 0x6a8fd000 sg->length 65536 
+
+blk_rq_map_sg: MSG: new segment 4: bvec 0x6a8fd000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8fd000 bvec 0x6a8fe000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8fe000 bvec 0x6a8ff000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6a8ff000 bvec 0x6ac80000 sg->length 12288 
+
+blk_rq_map_sg: MSG: new segment 5: bvec 0x6ac80000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac80000 bvec 0x6ac81000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac81000 bvec 0x6ac82000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac82000 bvec 0x6ac83000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac83000 bvec 0x6ac84000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac84000 bvec 0x6ac85000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac85000 bvec 0x6ac86000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac86000 bvec 0x6ac87000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac87000 bvec 0x6ac88000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac88000 bvec 0x6ac89000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac89000 bvec 0x6ac8a000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac8a000 bvec 0x6ac8b000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac8b000 bvec 0x6ac8c000 sg->length 49152 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ac8c000 bvec 0x6accd000 sg->length 53248 
+
+blk_rq_map_sg: MSG: new segment 6: bvec 0x6accd000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6accd000 bvec 0x6acce000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acce000 bvec 0x6accf000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6accf000 bvec 0x6acd0000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd0000 bvec 0x6acd1000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd1000 bvec 0x6acd2000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd2000 bvec 0x6acd3000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd3000 bvec 0x6acd4000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd4000 bvec 0x6acd5000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd5000 bvec 0x6acd6000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd6000 bvec 0x6acd7000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd7000 bvec 0x6acd8000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd8000 bvec 0x6acd9000 sg->length 49152 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acd9000 bvec 0x6acda000 sg->length 53248 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acda000 bvec 0x6acdb000 sg->length 57344 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acdb000 bvec 0x6acdc000 sg->length 61440 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acdc000 bvec 0x6acdd000 sg->length 65536 
+
+blk_rq_map_sg: MSG: new segment 7: bvec 0x6acdd000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acdd000 bvec 0x6acde000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acde000 bvec 0x6acdf000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acdf000 bvec 0x6ace0000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace0000 bvec 0x6ace1000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace1000 bvec 0x6ace2000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace2000 bvec 0x6ace3000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace3000 bvec 0x6ace4000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace4000 bvec 0x6ace5000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace5000 bvec 0x6ace6000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace6000 bvec 0x6ace7000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace7000 bvec 0x6ace8000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace8000 bvec 0x6ace9000 sg->length 49152 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6ace9000 bvec 0x6acea000 sg->length 53248 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acea000 bvec 0x6aceb000 sg->length 57344 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6aceb000 bvec 0x6acec000 sg->length 61440 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acec000 bvec 0x6aced000 sg->length 65536 
+
+blk_rq_map_sg: MSG: new segment 8: bvec 0x6aced000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6aced000 bvec 0x6acee000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acee000 bvec 0x6acef000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acef000 bvec 0x6acf0000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf0000 bvec 0x6acf1000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf1000 bvec 0x6acf2000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf2000 bvec 0x6acf3000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf3000 bvec 0x6acf4000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf4000 bvec 0x6acf5000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf5000 bvec 0x6acf6000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf6000 bvec 0x6acf7000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf7000 bvec 0x6acf8000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf8000 bvec 0x6acf9000 sg->length 49152 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acf9000 bvec 0x6acfa000 sg->length 53248 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acfa000 bvec 0x6acfb000 sg->length 57344 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acfb000 bvec 0x6acfc000 sg->length 61440 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acfc000 bvec 0x6acfd000 sg->length 65536 
+
+blk_rq_map_sg: MSG: new segment 9: bvec 0x6acfd000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acfd000 bvec 0x6acfe000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acfe000 bvec 0x6acff000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6acff000 bvec 0x6b080000 sg->length 12288 
+
+blk_rq_map_sg: MSG: new segment 10: bvec 0x6b080000
+
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b080000 bvec 0x6b081000 sg->length 4096 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b081000 bvec 0x6b082000 sg->length 8192 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b082000 bvec 0x6b083000 sg->length 12288 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b083000 bvec 0x6b084000 sg->length 16384 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b084000 bvec 0x6b085000 sg->length 20480 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b085000 bvec 0x6b086000 sg->length 24576 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b086000 bvec 0x6b087000 sg->length 28672 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b087000 bvec 0x6b088000 sg->length 32768 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b088000 bvec 0x6b089000 sg->length 36864 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b089000 bvec 0x6b08a000 sg->length 40960 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b08a000 bvec 0x6b08b000 sg->length 45056 
+blk_rq_map_sg: MSG: nbytes 4096
+blk_rq_map_sg: MSG: bvprv 0x6b08b000 bvec 0x6b08c000 sg->length 49152 
+
+scsi_init_sgtable: ISG: count 10
