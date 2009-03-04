@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZCDRIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZCDRIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbZCDRIf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbZCDRI0
+	id S1755963AbZCDRIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZCDRI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:08:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58589 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753153AbZCDRI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:08:26 -0500
-Date: Wed, 4 Mar 2009 18:08:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Tejun Heo <tj@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: x86-tip: cpufreq breakage - bisection fingers
-	89c9215165ca609096e845926d9a18f1306176a4
-Message-ID: <20090304170820.GA7095@elte.hu>
-References: <1236098338.5926.0.camel@marge.simson.net> <49ADE077.1060606@kernel.org> <1236138205.6119.12.camel@marge.simson.net> <1236147277.6049.3.camel@marge.simson.net> <49AE2028.8040402@kernel.org> <49AE4C26.4040104@kernel.org> <49AE4D40.3050705@kernel.org> <1236163460.6101.7.camel@marge.simson.net> <49AE88F9.8060100@kernel.org> <1236177327.6001.2.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236177327.6001.2.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 4 Mar 2009 12:08:28 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33703 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753564AbZCDRI2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 12:08:28 -0500
+Subject: Re: 2.6.27.14: BUG: lock held when returning to user space!
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, Alasdair G Kergon <agk@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090304165830.GC8748@atrey.karlin.mff.cuni.cz>
+References: <20090225142136.GA29505@janus>
+	 <1235579389.4645.3621.camel@laptop>
+	 <20090304165830.GC8748@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 18:08:04 +0100
+Message-Id: <1236186484.5330.8185.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> On Wed, 2009-03-04 at 22:58 +0900, Tejun Heo wrote:
-> > Mike Galbraith wrote:
-> > > On Wed, 2009-03-04 at 18:43 +0900, Tejun Heo wrote:
-> > >> Tejun Heo wrote:
-> > >>> I've used the config file you attached and the commit ID I used is
-> > >>> d0c4f570276cb4d2dc4215b90eb7cb6e2bdd4a15.
+On Wed, 2009-03-04 at 17:58 +0100, Jan Kara wrote:
+> > On Wed, 2009-02-25 at 15:21 +0100, Frank van Maarseveen wrote:
+> > > An lvextend -L+16G command for a logical volume while being mounted rw
+> > > as ext3 triggered the following on 2.6.27.14:
 > > > 
-> > > My tip tree is at v2.6.29-rc6-2441-g4239438.
+> > > ================================================
+> > > [ BUG: lock held when returning to user space! ]
+> > > ------------------------------------------------
+> > > lvextend/29191 is leaving the kernel with locks still held!
+> > > 2 locks held by lvextend/29191:
+> > >  #0: (&type->s_umount_key #15){....}, at: [<c019edfb>] get_super+0x6b/0xb0
+> > >  #1: (&journal->j_barrier){....}, at: [<c01f9af3>] journal_lock_updates+0xc3/0xd0
 > > 
-> > Eh... how do I map that to git commit?
-> 
-> The last 6, short form of 4239438b08fe8ec149ddc530238ca131bf88d290.
+> > Do recent kernels still say this?
+>
+>   I'd say so. We really hold j_barrier mutex when leaving the kernel
+> after FIFREEZE ioctl (the call path goes as freeze_bdev -> ext3_freeze
+> -> journal_lock_updates) until FITHAW is called. As far as I know it was
+> designed this way...
+>   It would be a pity to completely exclude j_barrier mutex from lockdep
+> control so would it be possible to mark the mutex (or even that
+> particular acquisition of the mutex) so that lockdep does not warn when
+> we return with it to userspace?
 
-yes - but recent enough Git will do this for you automatically 
-as well.
+Linus specificly stated that we are not to keep locks held when
+returning to userspace:
 
-	Ingo
+  http://lkml.org/lkml/2007/10/27/135
+
+So sure, we could annotate this, but no I won't until you can convince
+both me and Linus that its a sane thing to do.
+
+The problems include: how can you be sure its the same task calling the
+completing ioctl?
+
