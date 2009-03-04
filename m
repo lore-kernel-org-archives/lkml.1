@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZCDK7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZCDLAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbZCDK7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 05:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbZCDK7a
+	id S1756031AbZCDLAu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:00:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZCDLAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 05:59:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52132
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752624AbZCDK73 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 05:59:29 -0500
-Date: Wed, 04 Mar 2009 02:59:14 -0800 (PST)
-Message-Id: <20090304.025914.149394356.davem@davemloft.net>
-To: kaber@trash.net
-Cc: bart@jukie.net, greearb@candelatech.com, shemminger@vyatta.com,
-       dada1@cosmosbay.com, frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49AE509B.3000305@trash.net>
-References: <20090228180541.GA729@jukie.net>
-	<20090303.234327.81716668.davem@davemloft.net>
-	<49AE509B.3000305@trash.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 06:00:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33450 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750768AbZCDLAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:00:41 -0500
+Date: Wed, 4 Mar 2009 12:00:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Brian Maly <bmaly@redhat.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
+       ying.huang@intel.com
+Subject: Re: [PATCH] fix DMI for EFI
+Message-ID: <20090304110022.GB18165@elte.hu>
+References: <49A9F597.4010601@redhat.com> <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com> <49ADEDA3.1030406@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49ADEDA3.1030406@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick McHardy <kaber@trash.net>
-Date: Wed, 04 Mar 2009 10:57:47 +0100
 
-> David Miller wrote:
-> > From: Bart Trojanowski <bart@jukie.net>
-> > Date: Sat, 28 Feb 2009 13:05:41 -0500
-> > 
-> >> 2.6.29-rc* introduces a bug that causes a crash when a vlan is put into
-> >> another vlan, so called vlan trunking or QinQ.
-> >>
-> >> I can reproduce it reliably with:
-> >>
-> >>   $ modprobe 8021q
-> >>   $ vconfig add eth1 5
-> >>   $ ifconfig eth1.5 up
-> >>   $ vconfig add eth1.5 4
-> > Stephen please fix this.
-> 
-> I'm maintaining vlan :) I haven't been able to look into this yet,
-> but I should be later today.
+* Brian Maly <bmaly@redhat.com> wrote:
 
-Ok, I don't actually care who fixes it :-)
+> New patch. Its easier I think to just move efi_init() earlier. Seems  
+> less risky and less drawbacks.
+>
+> Signed-off-by: Brian Maly <bmaly@redhat>
+>
+>
+> setup.c |    5 +++--
+> 1 file changed, 3 insertions(+), 2 deletions(-)
+>
+>
 
-I asked Stephen because this appears like it might be netdev_ops
-fallout.
+> --- a/arch/x86/kernel/setup.c	2009-03-03 21:24:53.000000000 -0500
+> +++ b/arch/x86/kernel/setup.c	2009-03-03 21:26:00.000000000 -0500
+> @@ -770,6 +770,9 @@ void __init setup_arch(char **cmdline_p)
+>  
+>  	finish_e820_parsing();
+>  
+> +	if (efi_enabled)
+> +		efi_init();
+> +
+>  	dmi_scan_machine();
+
+Hm, could we ever find ourselves in the positition of having to 
+access the DMI strings table in the EFI init code, to implement 
+a quirk? I think that's quite plausible.
+
+OTOH, with some DMI quirks in EFI tables it's a bit of a chicken 
+and egg problem. Can DMI strings ever be outside of EFI tables 
+on EFI systems?
+
+	Ingo
