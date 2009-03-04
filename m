@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZCDEtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbZCDFH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbZCDEtk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 23:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZCDEtb
+	id S1753291AbZCDFH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 00:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbZCDFHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 23:49:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47868 "EHLO
+	Wed, 4 Mar 2009 00:07:12 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53169 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751929AbZCDEtb (ORCPT
+	with ESMTP id S1750717AbZCDFHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 23:49:31 -0500
-Date: Tue, 3 Mar 2009 23:49:27 -0500 (EST)
+	Wed, 4 Mar 2009 00:07:10 -0500
+Date: Wed, 4 Mar 2009 00:07:07 -0500 (EST)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Theodore Tso <tytso@mit.edu>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
@@ -29,10 +29,9 @@ cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Jiaying Zhang <jiayingz@google.com>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 5/5] tracing: add binary buffer files for use with
- splice
+Subject: [PATCH] fs: make simple_read_from_buffer conventional
 In-Reply-To: <20090304044614.GL32284@mit.edu>
-Message-ID: <alpine.DEB.2.00.0903032348120.7995@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.2.00.0903040002180.7995@gandalf.stny.rr.com>
 References: <20090304024921.153061228@goodmis.org> <20090304025251.015368537@goodmis.org> <20090303193501.0055e329.akpm@linux-foundation.org> <alpine.DEB.2.00.0903032242180.6862@gandalf.stny.rr.com> <20090304044614.GL32284@mit.edu>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
@@ -42,38 +41,42 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 3 Mar 2009, Theodore Tso wrote:
+Impact: have simple_read_from_buffer conform to standards
 
-> On Tue, Mar 03, 2009 at 10:43:16PM -0500, Steven Rostedt wrote:
-> > > Conventionally a read() system call will return the number of bytes
-> > > copied, and will only return -EFOO if the number of bytes copied was
-> > > zero.
-> > > 
-> > > Lots of parts of the kernel break this, but it's usually device drivers
-> > > and scruffy pseudo files, in which case a partial file read doesn't
-> > > make much sense.  This doesn't make the broken behaviour right, but at
-> > > least we have a bit of a weaselly excuse in that case.
-> > > 
-> > 
-> > I just went by the read man page:
-> > 
-> >        EFAULT buf is outside your accessible address space.
-> > 
-> 
-> What is normally done in this case if buf is within the addressable
-> space, but buf+x is not, where x < len, then read(fd, buf, len) will
-> fill copy as many characters it can into buf until it runs out of
-> valid addres space, and then return that count as a partial read.
+It was brought to my attention by Andrew Morton, Theodore Tso,
+and H. Peter Anvin that a read from userspace should only return
+-EFAULT if nothing was actually read.
 
-I guess I need to change that code to be:
+Looking at the simple_read_from_buffer I noticed that this function
+does not conform to that rule. This patch fixes that function.
 
-	if (ret) {
-		if (ret == size)
-			return -EFAULT;
-		size -= ret;
-	}
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-??
-
--- Steve
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 49b4409..6a72298 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -525,14 +525,20 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
+ 				const void *from, size_t available)
+ {
+ 	loff_t pos = *ppos;
++	size_t ret;
++
+ 	if (pos < 0)
+ 		return -EINVAL;
+ 	if (pos >= available)
+ 		return 0;
+ 	if (count > available - pos)
+ 		count = available - pos;
+-	if (copy_to_user(to, from + pos, count))
+-		return -EFAULT;
++	ret = copy_to_user(to, from + pos, count);
++	if (ret) {
++		if (ret == count)
++			return -EFAULT;
++		count -= ret;
++	}
+ 	*ppos = pos + count;
+ 	return count;
+ }
 
