@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbZCDJ0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZCDJ1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756618AbZCDJ0m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 04:26:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZCDJ0Z
+	id S1754018AbZCDJ1I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 04:27:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbZCDJ0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 04:26:25 -0500
-Received: from relay.atmel.no ([80.232.32.139]:54892 "EHLO relay.atmel.no"
+	Wed, 4 Mar 2009 04:26:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41739 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756484AbZCDJ0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 04:26:24 -0500
-Message-ID: <49AE492F.6020006@atmel.com>
-Date: Wed, 04 Mar 2009 10:26:07 +0100
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	id S1754266AbZCDJ0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 04:26:37 -0500
+Message-ID: <49AE4922.605@kernel.org>
+Date: Wed, 04 Mar 2009 01:25:54 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Subject: Re: [PATCH 0/5] WM97xx updates
-References: <20090303182402.GA29542@rakim.wolfsonmicro.main> <20090304091538.GD7394@dtor-d630.eng.vmware.com>
-In-Reply-To: <20090304091538.GD7394@dtor-d630.eng.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: reserve exact size of mptable
+References: <49AE485B.8000902@kernel.org> <49AE4901.3090801@kernel.org>
+In-Reply-To: <49AE4901.3090801@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Tue, Mar 03, 2009 at 06:24:03PM +0000, Mark Brown wrote:
->> This patch series updates the review feedback from the first round and
->> rolls in the additional patches from Mike Rapoport.  I've not addressed
->> any of the comments for the at32 driver since I have no ability to test
->> any changes to that driver but repost it for completeness.
->>
-> 
-> I applied first 4 patches to 'next' and will wait for Hans-Christian
-> comments on the at32 driver.
-> 
 
-The only thing catched by review was a leaking irq line, do you plan to 
-fixup that Mark?
+Impact: cleanup
 
-I also think the header file could go into the source code, to make it 
-one file less.
+get the exact size for reserve_bootmem
 
-Also, please note that I've gotten a new email address. The old one is 
-quite annoying since it sends email back about my new address...
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-I'll not be able to test the driver immediately, my hardware is out at 
-customers and the eight new prototypes needs some resoldering before I 
-can work with them. Nothing has changed in hardware though, so it should 
-fly out of the box.
+---
+ arch/x86/kernel/mpparse.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
--- 
-Best regards,
-Hans-Christian Egtvedt
+Index: linux-2.6/arch/x86/kernel/mpparse.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -716,10 +716,10 @@ static int __init smp_scan_config(unsign
+ 
+ 			if (!reserve)
+ 				return 1;
+-			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
++			reserve_bootmem_generic(virt_to_phys(mpf), sizeof(*mpf),
+ 					BOOTMEM_DEFAULT);
+ 			if (mpf->physptr) {
+-				unsigned long size = PAGE_SIZE;
++				unsigned long size = get_mpc_size(mpf->physptr);
+ #ifdef CONFIG_X86_32
+ 				/*
+ 				 * We cannot access to MPC table to compute
