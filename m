@@ -1,120 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZCDVqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbZCDVsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492AbZCDVqb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 16:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZCDVp4
+	id S1757206AbZCDVsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 16:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZCDVsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 16:45:56 -0500
-Received: from smtp.flash.net.br ([201.46.240.48]:60409 "EHLO
-	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755129AbZCDVpz (ORCPT
+	Wed, 4 Mar 2009 16:48:10 -0500
+Received: from rv-out-0506.google.com ([209.85.198.225]:6361 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbZCDVsI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 16:45:55 -0500
-Date: Wed, 4 Mar 2009 18:45:42 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Tony Breeds <tony@bakeyournoodle.com>,
-       Kumar Gala <galak@kernel.crashing.org>, torvalds@linux-foundation.org,
-       rbrito@ime.usp.br
-Subject: Re: [PATCH] powerpc: fix the defaults for the linkstation MTD
-	device
-Message-ID: <20090304214541.GA2917@ime.usp.br>
-References: <20090302094303.GA29819@ime.usp.br> <20090303024837.GC24834@bilbo.ozlabs.org> <20090303083455.GA22397@ime.usp.br> <Pine.LNX.4.64.0903040828150.4864@axis700.grange>
+	Wed, 4 Mar 2009 16:48:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nRR/Dm2eBs/EHmNqAKGdvrwwXDHlXAbh5EkFb019TrJ5PEKUCJcz+6KMPePMNwWVV2
+         2Eck5UskaSH7HqjE+NreAOwHoj9YTID0iKgosSzwkKPwQ9IzmEgZzDs7ucauraz8aAXY
+         hC94lLKe0VHYJPwYC5ZBQlfzLYSzgGXWYLyH8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0903040828150.4864@axis700.grange>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <E1LerUo-0000NE-Q3@mailer.emlix.com>
+References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
+Date: Wed, 4 Mar 2009 16:48:04 -0500
+Message-ID: <8bd0f97a0903041348i2c88343fvbc7a1b6d428c7e7a@mail.gmail.com>
+Subject: Re: [patch -v2] flat: fix data sections alignment
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Johannes Weiner <jw@emlix.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 04 2009, Guennadi Liakhovetski wrote:
-> On Tue, 3 Mar 2009, Rog√©rio Brito wrote:
-> > Please, note that it wasn't sufficient to only to define
-> > CONFIG_MTD_PHYSMAP_COMPAT. 
-> > 
-> > The default values for CONFIG_MTD_PHYSMAP_{START,LEN,BANKWIDTH} weren't
-> > correct (and, as a result, no MTD was detected on my kurobox and this
-> > was a regression regarding 2.6.28).
-> > 
-> > This patch makes the compilation succeed and the MTD device work again.
-> > Already tested and in production.
-> 
-> No, I don't think this is a proper fix.
+On Wed, Mar 4, 2009 at 08:51, Johannes Weiner wrote:
+> --- a/fs/binfmt_flat.c
+> +++ b/fs/binfmt_flat.c
+> +#ifdef ARCH_SLAB_MINALIGN
+> +#define FLAT_DATA_ALIGN † † † †(ARCH_SLAB_MINALIGN)
+> +#else
+> +#define FLAT_DATA_ALIGN † † † †(sizeof(void *))
+> +#endif
+> ...
+> +       sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
+> ...
+> -               datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
+> +               datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
+> +                               FLAT_DATA_ALIGN);
+> ...
+> -               datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
+> +               datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
+> +                               FLAT_DATA_ALIGN);
 
-Indeed. I agree completely. I just don't know if the changes to 2.6.29
-would be a good thing at this point in time. I guess that a proper fix
-can be made by the next merge window.
+why not make FLAT_DATA_ALIGN into a macro ?  then it'd naturally
+follow the existing ALIGN() behavior.
 
-> Remember, the kernel has to at least compile not only with defconfigs,
-> but with all valid configurations.
+> - † † † sp = (unsigned long *) ((-(unsigned long)sizeof(char *))&(unsigned long) p);
+> -
+> - † † † sp -= envc+1;
+> - † † † envp = sp;
+> - † † † sp -= argc+1;
+> - † † † argv = sp;
+> + † † † sp = (unsigned long *)p;
+> + † † † sp -= (envc + argc + 2) + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
+> + † † † sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
+> + † † † argv = sp + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
+> + † † † envp = argv + (argc + 1);
 
-That is, of course, the right thing to do.  Unfortunately, the programs
-are not exactly in that good shape. :-(
+can this be cleaned up a bit so that the argv/envp assignment happens
+by using sp before aligning sp ?  that would be defensive coding wrt
+preventing sp adjustment falling out of line with argv initialization,
+and cut down on duplicated code.
 
-We all know that the kernel is a critical part of the operating system,
-but it probably fails with "valid configurations" (how do we tell one?)
-if we issue a randconfig or something like that.
+> - † † † put_user(argc,--sp);
+> + † † † put_user(argc,sp);
 
-Proving correctness is something that we should do, but it gets quite
-hard with very big projects like the kernel (no, this isn't an excuse
-for not doing it), and, as a consequence, We have to draw the line
-somewhere and do quite a good amount of regression testing.
+might as well fix the style issues here while you're changing code ...
+stick a space after the comma
 
-That's the easiest path to achieve something slightly closer to being
-correct (emphasis on the "easiest" part) and I humbly think that it is a
-good thing that lusers (me! me! me!) are testing less widely used kernel
-settings.
+> @@ -854,7 +861,7 @@ static int load_flat_binary(struct linux
+> † † † †stack_len = TOP_OF_ARGS - bprm->p; † † † † † † /* the strings */
+> † † † †stack_len += (bprm->argc + 1) * sizeof(char *); /* the argv array */
+> † † † †stack_len += (bprm->envc + 1) * sizeof(char *); /* the envp array */
+> -
+> + † † † stack_len += FLAT_DATA_ALIGN;
 
-> So, at the very least you would also have to
-> 
->  static void __init linkstation_setup_arch(void)
->  {
->  	struct device_node *np;
-> -#ifdef CONFIG_MTD_PHYSMAP
-> +#ifdef CONFIG_MTD_PHYSMAP_COMPAT
->  	physmap_set_partitions(linkstation_physmap_partitions,
->  			       ARRAY_SIZE(linkstation_physmap_partitions));
->  #endif
-> 
-> in linkstation.c. In fact, this is a fix, not changing defconfig, which 
-> actually strictly speaking is not necessary. If only it fixes a 
-> regression, that defconfig used to provide mtd devices, now it no longer 
-> does.
-
-Right.
-
-> But even this I don't think is a proper fix.
-
-Agreed.
-
-> A proper fix would be to remove flash definitions from linkstation.c
-> completely.  Maybe we should add them to kuroboxH?.dts, similar to
-> mgcoge.dts and define CONFIG_MTD_PHYSMAP_OF, or we can define
-> CONFIG_MTD_CMDLINE_PARTS and rely on the user providing a map on the
-> command line. I don't know what is the currently preferred way, Kumar?
-> Notice, while fixing linkstation, one should also fix storcenter.
-
-I know nothing about the storcenter, owning just a Kurobox HD.
-
-But, yes, I'm not exactly sure where to hardcode the settings. If on the
-C code (is linkstation.c used by any other hardware?), if in the config
-file or in the device tree file. It sounds to me like the most
-reasonable choice would be to:
-
-* have it in the device tree file, if the data is fixed for each type of
-  machine.
-
-* have it in the .config file, if those data change among the same
-  type of hardware, so that the user doesn't have to mess with the
-  device tree sources (which can break parsing them etc).
-
-
-Regards, Rog√©rio Brito.
-
--- 
-Rog√©rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+this seems weird.  alignment is for aligning data, not padding it out
+some value ...
+-mike
