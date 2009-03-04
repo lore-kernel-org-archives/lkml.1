@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZCDORm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZCDO0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753730AbZCDORm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 09:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZCDORc
+	id S1755059AbZCDO0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 09:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbZCDO0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 09:17:32 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:44596 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbZCDORb (ORCPT
+	Wed, 4 Mar 2009 09:26:42 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:29288 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbZCDO0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 09:17:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fs9B3wJrT1pFn/hLwprVRKITHmNAm5fEYcBCRYYv3ymaS5HtR50u8xtep8e7zteHS/
-         EJJAEGCv5JGjHPBHxtP8YG1cUL4uMuecn/RhpeovoJHYpTByXm4kjYN3wl5R2FxCKNYy
-         Hpdf/Xw9T7cathFoZvehTnh1BF2CDNJ/uDFUU=
-Date: Wed, 4 Mar 2009 23:17:23 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] generic debug pagealloc
-Message-ID: <20090304141721.GC7168@localhost.localdomain>
-References: <20090303160103.GB5812@localhost.localdomain> <20090303133610.cb771fef.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-In-Reply-To: <20090303133610.cb771fef.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Mar 2009 09:26:42 -0500
+Date: Wed, 4 Mar 2009 15:26:27 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Zhenwen Xu <helight.xu@gmail.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]some cleanup on drivers/i2c/i2c-core.c
+Message-ID: <20090304152627.72cfb798@hyperion.delvare>
+In-Reply-To: <20090304133157.GA7629@helight>
+References: <20090304133157.GA7629@helight>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 01:36:10PM -0800, Andrew Morton wrote:
-> Alternatively, we could just not do the kmap_atomic() at all.  i386
-> won't be using this code and IIRC the only other highmem architecture
-> is powerpc32, and ppc32 appears to also have its own DEBUG_PAGEALLOC
-> implementation.  So you could remove the kmap_atomic() stuff and put
-> 
-> #ifdef CONFIG_HIGHMEM
-> #error i goofed
-> #endif
-> 
-> in there.
+On Wed, 4 Mar 2009 21:31:57 +0800, Zhenwen Xu wrote:
+>  Some lines over 80. 
+>  The printk(KERN_ERR ... ) should be dev_err.
+>  And some blankspace should be deleted.
 
-I'll take the variant of this. Then poison_page() will be
+Applied, thanks!
 
-static void poison_page(struct page *page)
-{
-        void *addr;
+Next time please send the patch to the linux-i2c list instead of
+linux-kernel.
 
-        if (PageHighmem(page))
-                return; // i goofed
-
-       page->poison = true;
-       addr = page_address(page);
-       memset(addr, PAGE_POISON, PAGE_SIZE);
-}
+-- 
+Jean Delvare
