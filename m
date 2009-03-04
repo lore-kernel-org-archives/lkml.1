@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbZCDMBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbZCDMCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbZCDMBY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 07:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZCDMBG
+	id S1756759AbZCDMCZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 07:02:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZCDMCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 07:01:06 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:48884 "EHLO
+	Wed, 4 Mar 2009 07:02:11 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:33272 "EHLO
 	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbZCDMA6 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751719AbZCDMCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 07:00:58 -0500
+	Wed, 4 Mar 2009 07:02:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=pavwZxCu3Ak7YDAavcGJ1yW0BcP/3C7WEYWhD4U2YKqxw0mQCbyXKO6wwWRDuupWuF
-         vqnvmlwbpl/w4eV5h1BdvU7SY/HwmlPrVRkOQlH5nX3mR4rrPihzXf6sTBhtM/kfYSxt
-         FqAQLRP3dG4aIKtNrZ8/BrI+J5haJluA5fBn0=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=T4mFlz3isGuexmPX+itnvylHmZSDbJ5EFGDfRBD49tYEc1SDPtDA6QLgPWAwv4aGDS
+         yZKkmv4XWTP4MqE6BlyZeTEVBko9MEYqYD5wTRI7CkrpvSLnHjEML8O8AAvQmmNiaMX8
+         pO/JJKr0G2VVCj/PXFA3aXI3z3DuQG9cODOI4=
+Message-ID: <49AE6DBC.4060401@gmail.com>
+Date: Wed, 04 Mar 2009 14:02:04 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-In-Reply-To: <20090304114504.GB4916@elte.hu>
-References: <49AD342D.6030609@cn.fujitsu.com> <20090303140955.GD23822@elte.hu>
-	 <49AE484C.8020801@cn.fujitsu.com> <20090304114504.GB4916@elte.hu>
-Date: Wed, 4 Mar 2009 14:00:54 +0200
-X-Google-Sender-Auth: a362c7f6b0ed5c8b
-Message-ID: <84144f020903040400m5a77fc4p2b09796e1111c3b9@mail.gmail.com>
-Subject: Re: [PATCH -mm 0/6] rcu: introduce kfree_rcu V2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -v2] tracing: lockdep tracepoints
+References: <1236164586.5330.7142.camel@laptop>	 <20090304112345.GB6032@nowhere> <1236166375.5330.7209.camel@laptop>
+In-Reply-To: <1236166375.5330.7209.camel@laptop>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 1:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> This is one of patches I test kfree_rcu().
->> And it could be an example conversions of this facility.
->>
->> ---
->>  arch/ia64/sn/kernel/irq.c           |   14 +-----------
->>  block/genhd.c                       |   10 --------
->>  ipc/sem.c                           |   10 +-------
->>  kernel/audit_tree.c                 |    8 ------
->>  kernel/cgroup.c                     |    9 -------
->>  kernel/smp.c                        |   11 ---------
->>  mm/vmalloc.c                        |   18 +--------------
->>  net/can/af_can.c                    |   14 +-----------
->>  net/core/gen_estimator.c            |    9 -------
->>  net/core/net_namespace.c            |   10 --------
->>  net/ipv4/fib_trie.c                 |    7 ------
->>  net/ipv6/addrconf.c                 |   10 --------
->>  net/netfilter/nf_conntrack_extend.c |    8 ------
->>  net/netlabel/netlabel_unlabeled.c   |   42 +-----------------------------------
->>  security/device_cgroup.c            |   10 --------
->>  security/keys/keyring.c             |   15 ------------
->>  security/keys/user_defined.c        |   18 +--------------
->>  security/selinux/netif.c            |   18 ---------------
->>  security/selinux/netnode.c          |   20 +----------------
->>  security/selinux/netport.c          |   20 +----------------
->>  20 files changed, 28 insertions(+), 253 deletions(-)
+On 2009-03-04 13:32, Peter Zijlstra wrote:
+> On Wed, 2009-03-04 at 12:23 +0100, Frederic Weisbecker wrote:
+>   
+>>> ---
+>>> Subject: tracing: lockdep tracepoints
+>>> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>> Date: Tue Mar 03 22:03:08 CET 2009
+>>>
+>>> Augment the traces with lock names when lockdep is available:
+>>>
+>>>  1)               |  down_read_trylock() {
+>>>  1)               |    _spin_lock_irqsave() {
+>>>  1)               |      /* lock_acquire: name: &sem->wait_lock */
+>>>  1)   4.201 us    |    }
+>>>  1)               |    _spin_unlock_irqrestore() {
+>>>  1)               |      /* lock_release: name: &sem->wait_lock */
+>>>       
+>> Nice idea.
+>> I would just suggest to drop the "name:" since the comment is intuitive enough
+>> to figure out what we have after lock_{release,acquire}: 
+>>     
 >
-> Looks convincing to me but Nick does not like the extra SLAB
-> field it uses :-/
+> Makes sense I guess..
+>
+> Here goes.. one s/name: //g later
 
-FWIW, I'm fine with the patch series. One option for SLQB is to just
-remove slab coloring as I've suggested in the past (the performance
-benefit with current cpu caches is questionable).
+Thanks for working on this.
+I just booted a kernel with your patch, and it worked.
 
-                                     Pekka
+When I find some time, I will try to write a locklatency tracer that
+uses these tracepoints.
+
+Best regards,
+--Edwin
