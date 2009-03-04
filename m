@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZCDAGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbZCDAGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbZCDAGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZCDAGD
+	id S1756618AbZCDAGe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:06:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZCDAGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:06:03 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:47127 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750985AbZCDAGB (ORCPT
+	Tue, 3 Mar 2009 19:06:10 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:9027 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754626AbZCDAGI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:06:01 -0500
-Date: Wed, 4 Mar 2009 08:05:49 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Fixes for 2.6.29
-Message-ID: <20090304000549.GA3387@gondor.apana.org.au>
-References: <20080501102812.GA7151@gondor.apana.org.au> <20080727063659.GA936@gondor.apana.org.au> <20090115044020.GA29891@gondor.apana.org.au> <20090127061546.GA27962@gondor.apana.org.au> <20090209033924.GA31250@gondor.apana.org.au> <20090217121252.GA22812@gondor.apana.org.au> <20090223095428.GA11076@gondor.apana.org.au> <20090227043035.GA21665@gondor.apana.org.au>
+	Tue, 3 Mar 2009 19:06:08 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090227043035.GA21665@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090303135143.GA5060@elf.ucw.cz>
+References: <200902192215.18365.rjw@sisk.pl> <200902282353.39763.rjw@sisk.pl>
+	 <d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
+	 <200903011020.53130.rjw@sisk.pl>
+	 <d6200be20903021722y7f085482o66f6dee8c4004acd@mail.gmail.com>
+	 <20090303135143.GA5060@elf.ucw.cz>
+Date: Tue, 3 Mar 2009 16:06:02 -0800
+Message-ID: <d6200be20903031606k338168d2g2f012965a197fe5c@mail.gmail.com>
+Subject: Re: [RFD] Automatic suspend
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On Tue, Mar 3, 2009 at 5:51 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> >> > Not ignoring, but considering them as insufficient.  And since they've already
+>> >> > been considered as insufficient, there's no point repeating them over and over
+>> >> > again.  That doesn't make them any better.
+>> >>
+>> >> The problem is that what you consider insufficient is what allows us
+>> >> to ship a product.
+>> >
+>> > This doesn't matter a whit, because the mainline kernel is not just your
+>> > product.
+>>
+>> Unless you are saying that changes in the mainline kernel does not
+>> need be usable in practice, then it does matter. If we remove the
+>> feature that allows us to interact with existing code, it will take
+>> much longer before it is usable by anyone.
+>
+> Well, taking longer before "being usable" is good tradeoff if it means
+> "we get cleaner/actually correct system in mainline sooner".
 
-This push fixes two bugs:
+I think this could go either way. If the system is usable, it may get
+more use from developers that know how to improve a specific subsystem
+to not use timeouts. Or, it may be considered good enough, and nobody
+bothers coming up with a correct solution. I think the latter is what
+you are worried will happen.
 
-* A 2.6.27 regression where the new test mechanism can cause the
-optimised AES implementation on s390 to hang on initial module
-load.  The same thing can affect the VIA PadLock, although modprobe
-alias ordering may have prevented it from occurring.
+>
+>> >> I don't think I am the only one who want this code in the mainline
+>> >> kernel. Many people want to use the android platform, and support in
+>> >> the mainline kernel would be beneficial to some of them. I made many
+>> >> requested changes to my code that provides no benefit to us, but I
+>> >> have not made any changes that breaks our own use.
+>> >
+>> > OK, please resubmit the patches, then.
+>>
+>> I submitted them three weeks ago. I'll submit a new set after I rename
+>> the api (presumably to suspend_block(er)) but I would like more
+>> agreement on the timeout issue first.
+>
+> I do believe that everyone (including you :-) agrees that timeouts are
+> ugly hack. So just reorder the series so they come at the end.
 
-* A build error in the ixp4xx driver.
+No, I think many uses of timeouts are a ugly hack, not all, but OK I
+will try to move timeout support to a separate patch.
 
-Please pull from
-
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Herbert Xu (1):
-      crypto: api - Fix module load deadlock with fallback algorithms
-
-Krzysztof HaÅ‚asa (1):
-      crypto: ixp4xx - Fix qmgr_request_queue build failure
-
- arch/s390/crypto/aes_s390.c    |    2 +-
- crypto/api.c                   |   15 +++++++++++++--
- drivers/crypto/ixp4xx_crypto.c |    6 ++++--
- drivers/crypto/padlock-aes.c   |    2 +-
- drivers/crypto/padlock-sha.c   |    4 ++--
- 5 files changed, 21 insertions(+), 8 deletions(-)
-
-Thanks,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Arve Hjønnevåg
