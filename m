@@ -1,106 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZCDTVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbZCDTWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbZCDTVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 14:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbZCDTVH
+	id S1757375AbZCDTWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 14:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZCDTWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 14:21:07 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:50597 "EHLO mail.sf-mail.de"
+	Wed, 4 Mar 2009 14:22:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54525 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756901AbZCDTVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 14:21:06 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.29-rc breaks STD using Intel 945
-Date: Wed, 4 Mar 2009 20:20:56 +0100
-User-Agent: KMail/1.9.10
-Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net
+	id S1755412AbZCDTWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 14:22:06 -0500
+Date: Wed, 4 Mar 2009 19:21:28 GMT
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, mel@csn.ul.ie, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, mel@csn.ul.ie, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1236154567.29024.23.camel@penberg-laptop>
+References: <1236154567.29024.23.camel@penberg-laptop>
+Subject: [tip:x86/mm] x86: set_highmem_pages_init() cleanup, #2
+Message-ID: <tip-6298e719cf388f43b674f43799af467d3e4e5aa7@git.kernel.org>
+Git-Commit-ID: 6298e719cf388f43b674f43799af467d3e4e5aa7
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart10137046.hDL7lMaNFQ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200903042020.57671.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Mar 2009 19:21:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart10137046.hDL7lMaNFQ
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Commit-ID:  6298e719cf388f43b674f43799af467d3e4e5aa7
+Gitweb:     http://git.kernel.org/tip/6298e719cf388f43b674f43799af467d3e4e5aa7
+Author:     "Pekka Enberg" <penberg@cs.helsinki.fi>
+AuthorDate: Wed, 4 Mar 2009 10:16:07 +0200
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 4 Mar 2009 19:00:51 +0100
 
-Hi,
+x86: set_highmem_pages_init() cleanup, #2
 
-I tested several snapshots post 2.6.28 and all of them show one severe=20
-problem: resume from disk is not always successful. Only about 50% of the=20
-resume attempts work, in the other cases I just get a completely black=20
-screen, can't switch to text console or anything. What I often get is a lin=
-e=20
-like this in the logs directly before suspend:
+Impact: cleanup
 
-[drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for disabl=
-ed=20
-pipe 0
+The zones are set up at this stage so there's a highmem zone
+available even for the UMA case.
 
-Afterwards I find nothing in the logs. Switching back to 2.6.28 and everyth=
-ing=20
-works fine again. I have a Toshiba A110-178 running openSuSE 11.1 32 bit wi=
-th=20
-KDE 4.2.0. I upgraded my Xserver from 1.5 to 1.6 yesterday but that did not=
-=20
-change anything. The only external module I use is the omnibook module=20
-(http://sf.net/projects/omnibook) which I've been using for years without a=
-ny=20
-problems.
+The only difference there is that for machines that have
+CONFIG_HIGHMEM enabled but don't have any highmem available,
+->zone_start_pfn is zero whereas highstart_pfn is non-zero).
 
-VGA device is this:
+The field is left zeroed because of the !size test in
+free_area_init_core() but shouldn't be a problem because
+add_highpages_with_active_regions() handles empty ranges just
+fine.
 
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS,=20
-943/940GML Express Integrated Graphics Controller (rev 03) (prog-if 00 [VGA=
-=20
-controller])
-        Subsystem: Toshiba America Info Systems Device ff01
-        Flags: bus master, fast devsel, latency 0, IRQ 16
-        Memory at dc100000 (32-bit, non-prefetchable) [size=3D512K]
-        I/O ports at 1800 [size=3D8]
-        Memory at c0000000 (32-bit, prefetchable) [size=3D256M]
-        Memory at dc200000 (32-bit, non-prefetchable) [size=3D256K]
-        Capabilities: [90] Message Signalled Interrupts: Mask- 64bit-=20
-Count=3D1/1 Enable-
-        Capabilities: [d0] Power Management version 2
-        Kernel modules: intelfb
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Mel Gorman <mel@csn.ul.ie>
+LKML-Reference: <1236154567.29024.23.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME, 943/940=
-GML=20
-Express Integrated Graphics Controller (rev 03)
-        Subsystem: Toshiba America Info Systems Device ff01
-        Flags: bus master, fast devsel, latency 0
-        Memory at dc180000 (32-bit, non-prefetchable) [size=3D512K]
-        Capabilities: [d0] Power Management version 2
 
-If you have any patches you want to try me or have any further questions ju=
-st=20
-mail me. If you're hanging around at CeBIT I can come over and we can discu=
-ss=20
-this in person as I'm there for the next days anyway.
+---
+ arch/x86/mm/highmem_32.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-Greetings,
-
-Eike
-
---nextPart10137046.hDL7lMaNFQ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkmu1JkACgkQXKSJPmm5/E6ldQCggJMahi7wEOFTjTuLTEetTp77
-fP4AnAwXl4qROJIEZhW+Kw76WyO3NbZH
-=+Dln
------END PGP SIGNATURE-----
-
---nextPart10137046.hDL7lMaNFQ--
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index 00f127c..d117453 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -158,7 +158,6 @@ EXPORT_SYMBOL(kunmap);
+ EXPORT_SYMBOL(kmap_atomic);
+ EXPORT_SYMBOL(kunmap_atomic);
+ 
+-#ifdef CONFIG_NUMA
+ void __init set_highmem_pages_init(void)
+ {
+ 	struct zone *zone;
+@@ -182,11 +181,3 @@ void __init set_highmem_pages_init(void)
+ 	}
+ 	totalram_pages += totalhigh_pages;
+ }
+-#else
+-void __init set_highmem_pages_init(void)
+-{
+-	add_highpages_with_active_regions(0, highstart_pfn, highend_pfn);
+-
+-	totalram_pages += totalhigh_pages;
+-}
+-#endif /* CONFIG_NUMA */
