@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZCDB5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbZCDB7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbZCDB5a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 20:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZCDB5U
+	id S1756429AbZCDB7T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 20:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbZCDB7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 20:57:20 -0500
-Received: from THUNK.ORG ([69.25.196.29]:41772 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbZCDB5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 20:57:18 -0500
-Date: Tue, 3 Mar 2009 20:57:13 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-Cc: Mike Snitzer <snitzer@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: ext3 duplicate entries with readdir
-Message-ID: <20090304015713.GJ32284@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
-	Mike Snitzer <snitzer@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org
-References: <20090303200526.GA20236@ub> <170fa0d20903031254l7070294cwfa45ffdcc63b24d9@mail.gmail.com> <20090303215122.GB20640@ub>
+	Tue, 3 Mar 2009 20:59:00 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52883 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750725AbZCDB67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 20:58:59 -0500
+Message-ID: <49ADE099.1090009@cn.fujitsu.com>
+Date: Wed, 04 Mar 2009 09:59:53 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090303215122.GB20640@ub>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       balbir@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com, serue@us.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH] cgroups: show correct file mode, fix
+References: <49ACC037.2090507@cn.fujitsu.com>	<20090303122733.af5ceea9.akpm@linux-foundation.org>	<49ADDEF9.7020308@cn.fujitsu.com> <20090304105403.23352011.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090304105403.23352011.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 10:51:26PM +0100, Andries E. Brouwer wrote:
-> > Yes, it has been fixed, please see the following git commits:
-> >
-> > 6a897cf447a83c9c3fd1b85a1e525c02d6eada7d
-> > 8c9fa93d51123c5540762b1a9e1919d6f9c4af7c
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 04 Mar 2009 09:52:57 +0800
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
 > 
-> [On another machine, Ubuntu with 2.6.27-7-server still fails:
-> % ../readdirtest
-> expected 61005 files, but readdir reports 61006
-> % rm *
-> rm: cannot remove `59992': No such file or directory
-> (where the same name occurs twice in the expansion of *).]
+>> - 'mode' should have type mode_t
+>> - use S_IRUGO/S_IWUSR instead of 0444/0200
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> Thank you for quick work. I'll write memcg part on this.
+> 
 
-The patches were backported to 2.6.27 stable in 2.6.27.8.  So the
-problem would expected to be still present in an 2.6.27.7 kernel.
+Ah, you don't need to do so. All the files in memcg will show their
+correct file mode, which is what this patch does.
 
-	      	       	     	   	   - Ted
+
