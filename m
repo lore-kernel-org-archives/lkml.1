@@ -1,125 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZCDL56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZCDL60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbZCDL56 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 06:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCDL5t
+	id S1756822AbZCDL60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 06:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZCDL6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 06:57:49 -0500
-Received: from mga03.intel.com ([143.182.124.21]:26204 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbZCDL5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 06:57:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,300,1233561600"; 
-   d="scan'208";a="116612568"
-Date: Wed, 4 Mar 2009 19:57:02 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Markus <M4rkusXXL@web.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: drop_caches ...
-Message-ID: <20090304115702.GA17565@localhost>
-References: <200903041057.34072.M4rkusXXL@web.de> <200903041132.04451.M4rkusXXL@web.de> <20090304110558.GA17014@localhost> <200903041229.41482.M4rkusXXL@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903041229.41482.M4rkusXXL@web.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Mar 2009 06:58:16 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46790 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809AbZCDL6P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 06:58:15 -0500
+Subject: Re: [PATCH -v2] tracing: lockdep tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090304114319.GA4916@elte.hu>
+References: <1236164586.5330.7142.camel@laptop>
+	 <20090304112345.GB6032@nowhere> <1236166375.5330.7209.camel@laptop>
+	 <20090304114319.GA4916@elte.hu>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 12:58:03 +0100
+Message-Id: <1236167883.5330.7264.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 01:29:40PM +0200, Markus wrote:
-> > > > The memory mapped pages won't be dropped in this way.
-> > > > "cat /proc/meminfo" will show you the number of mapped pages.
-> > > 
-> > > # sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m ; 
-> cat /proc/meminfo
-> > >              total       used       free     shared    buffers     
-> > > cached
-> > > Mem:          3950       3262        688          0          0        
-> > > 359
-> > > -/+ buffers/cache:       2902       1047
-> > > Swap:         5890       1509       4381
-> > > MemTotal:        4045500 kB
-> > > MemFree:          705180 kB
-> > > Buffers:             508 kB
-> > > Cached:           367748 kB
-> > > SwapCached:       880744 kB
-> > > Active:          1555032 kB
-> > > Inactive:        1634868 kB
-> > > Active(anon):    1527100 kB
-> > > Inactive(anon):  1607328 kB
-> > > Active(file):      27932 kB
-> > > Inactive(file):    27540 kB
-> > > Unevictable:         816 kB
-> > > Mlocked:               0 kB
-> > > SwapTotal:       6032344 kB
-> > > SwapFree:        4486496 kB
-> > > Dirty:                 0 kB
-> > > Writeback:             0 kB
-> > > AnonPages:       2378112 kB
-> > > Mapped:            52196 kB
-> > > Slab:              65640 kB
-> > > SReclaimable:      46192 kB
-> > > SUnreclaim:        19448 kB
-> > > PageTables:        28200 kB
-> > > NFS_Unstable:          0 kB
-> > > Bounce:                0 kB
-> > > WritebackTmp:          0 kB
-> > > CommitLimit:     8055092 kB
-> > > Committed_AS:    4915636 kB
-> > > VmallocTotal:   34359738367 kB
-> > > VmallocUsed:       44580 kB
-> > > VmallocChunk:   34359677239 kB
-> > > DirectMap4k:     3182528 kB
-> > > DirectMap2M:     1011712 kB
-> > > 
-> > > The cached reduced to 359 MB (after the dropping).
-> > > I dont know where to read the "number of mapped pages".
-> > > "Mapped" is about 51 MB.
-> > 
-> > Does your tmpfs store lots of files?
+On Wed, 2009-03-04 at 12:43 +0100, Ingo Molnar wrote:
 > 
-> Dont think so:
+> > +TRACE_FORMAT(lock_contended,
+> > +     TPPROTO(struct lockdep_map *lock, unsigned long ip),
+> > +     TPARGS(lock, ip),
+> > +     TPFMT("%s", lock->name)
+> > +     );
 > 
-> # df -h
-> Filesystem            Size  Used Avail Use% Mounted on
-> /dev/md6               14G  8.2G  5.6G  60% /
-> udev                   10M  304K  9.8M   3% /dev
-> cachedir              4.0M  100K  4.0M   3% /lib64/splash/cache
-> /dev/md4               19G   15G  3.1G  83% /home
-> /dev/md3              8.3G  4.5G  3.9G  55% /usr/portage
-> shm                   2.0G     0  2.0G   0% /dev/shm
-> /dev/md1               99M   19M   76M  20% /boot
+> Would it be possible to use the C syntax tracepoints perhaps? 
+> They are bigger:
 > 
-> # mount
-> /dev/md6 on / type ext3 (rw,noatime,nodiratime,barrier=0)
-> /proc on /proc type proc (rw,noexec,nosuid,noatime,nodiratime)
-> sysfs on /sys type sysfs (rw,nosuid,nodev,noexec)
-> udev on /dev type tmpfs (rw,nosuid,size=10240k,mode=755)
-> devpts on /dev/pts type devpts (rw,nosuid,noexec,gid=5,mode=620)
-> cachedir on /lib64/splash/cache type tmpfs (rw,size=4096k,mode=644)
-> /dev/md4 on /home type ext3 (rw,noatime,nodiratime,barrier=0)
-> /dev/md3 on /usr/portage type ext4 (rw,noatime,nodiratime,barrier=0)
-> shm on /dev/shm type tmpfs (rw,noexec,nosuid,nodev)
-> usbfs on /proc/bus/usb type usbfs 
-> (rw,noexec,nosuid,devmode=0664,devgid=85)
-> automount(pid6507) on /mnt/.autofs/misc type autofs 
-> (rw,fd=4,pgrp=6507,minproto=2,maxproto=4)
-> automount(pid6521) on /mnt/.autofs/usb type autofs 
-> (rw,fd=4,pgrp=6521,minproto=2,maxproto=4)
-> /dev/md1 on /boot type ext2 (rw,noatime,nodiratime)
-> 
-> I dont know what exactly all that memory is used for. It varies from 
-> about 300 MB to up to one GB.
-> Tell me where to look and I will!
+>      TRACE_EVENT_FORMAT(sched_switch,
+>         TPPROTO(struct rq *rq, struct task_struct *prev,
+>                 struct task_struct *next),
+>         TPARGS(rq, prev, next),
+>         TPFMT("task %s:%d ==> %s:%d",
+>               prev->comm, prev->pid, next->comm, next->pid),
+>         TRACE_STRUCT(
+>                 TRACE_FIELD(pid_t, prev_pid, prev->pid)
+>                 TRACE_FIELD(int, prev_prio, prev->prio)
+>                 TRACE_FIELD_SPECIAL(char next_comm[TASK_COMM_LEN],
+>                                     next_comm,
+>                                     TPCMD(memcpy(TRACE_ENTRY->next_comm,
+>                                                  next->comm,
+>                                                  TASK_COMM_LEN)))
+>                 TRACE_FIELD(pid_t, next_pid, next->pid)
+>                 TRACE_FIELD(int, next_prio, next->prio)
+>         ),
+>         TPRAWFMT("prev %d:%d ==> next %s:%d:%d")
+>         );
 
-So you don't have lots of mapped pages(Mapped=51M) or tmpfs files.  It's
-strange to me that there are so many undroppable cached pages(Cached=359M),
-and most of them lie out of the LRU queue(Active+Inactive file=53M)...
+I'm not quite sure how to do strings with those. The IRQ tracepoints
+cheat and omit the string, and the sched tracepoints cheat and use this
+static sized comm array.
 
-Anyone have better clues on these 'hidden' pages?
-
-Thanks,
-Fengguang
