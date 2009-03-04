@@ -1,145 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZCDSR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbZCDSSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbZCDSR4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 13:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZCDSRd
+	id S1757504AbZCDSSf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 13:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZCDSRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 13:17:33 -0500
-Received: from [213.79.90.228] ([213.79.90.228]:43915 "EHLO
+	Wed, 4 Mar 2009 13:17:35 -0500
+Received: from [213.79.90.228] ([213.79.90.228]:43914 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753365AbZCDSRc (ORCPT
+	by vger.kernel.org with ESMTP id S1751438AbZCDSRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Mar 2009 13:17:32 -0500
-Date: Wed, 4 Mar 2009 20:48:45 +0300
+X-Greylist: delayed 1830 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Mar 2009 13:17:31 EST
+Date: Wed, 4 Mar 2009 20:46:58 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Pierre Ossman <drzeus-sdhci@drzeus.cx>, Ben Dooks <ben-linux@fluff.org>,
-       Arnd Bergmann <arnd@arndb.de>, Kumar Gala <galak@kernel.crashing.org>,
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+       Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 07/13] sdhci: Add support for hosts with strict 32 bit
-	addressing
-Message-ID: <20090304174845.GC7477@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 02/11] sdhci: Add support for bus-specific IO memory
+	accessors
+Message-ID: <20090304174658.GA7477@oksana.dev.rtsoft.ru>
 Reply-To: avorontsov@ru.mvista.com
-References: <20090213144630.GA13436@oksana.dev.rtsoft.ru> <20090213144722.GG23889@oksana.dev.rtsoft.ru> <20090221165833.6dec220a@mjolnir.ossman.eu>
+References: <20090206180520.GA16123@oksana.dev.rtsoft.ru> <20090206180645.GB11548@oksana.dev.rtsoft.ru> <20090208215020.46ca5724@mjolnir.drzeus.cx> <20090213144039.GA19572@oksana.dev.rtsoft.ru> <20090221165757.22747648@mjolnir.ossman.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20090221165833.6dec220a@mjolnir.ossman.eu>
+In-Reply-To: <20090221165757.22747648@mjolnir.ossman.eu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 21, 2009 at 04:58:33PM +0100, Pierre Ossman wrote:
-> On Fri, 13 Feb 2009 17:47:22 +0300
+On Sat, Feb 21, 2009 at 04:57:57PM +0100, Pierre Ossman wrote:
+> On Fri, 13 Feb 2009 17:40:39 +0300
 > Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> > SDHCI driver must take special care when working with "triggering"
-> > registers on hosts with strict 32 bit addressing.
 > > 
-> > In FSL eSDHC hosts all registers are 32 bit width, writing to the
-> > first half of any register will cause [undefined?] write the second
-> > half of the register. That is, 16 bit write to the TRANSFER_MODE
-> > register, makes hardware see a bogus write to the COMMAND register
-> > (these two registers are adjacent).
+> > No, on eSDHC the registers are big-endian, 32-bit width, with, for
+> > example, two 16-bit "logical" registers packed into it.
 > > 
-> > This patch adds SDHCI_QUIRK_32BIT_REGISTERS quirk. When specified,
-> > the sdhci driver will try to "pack" all dangerous writes into single
-> > 32 bit write transaction.
+> > That is,
 > > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
+> >  0x4  0x5 0x6  0x7
+> > |~~~~~~~~:~~~~~~~~|
+> > | BLKCNT : BLKSZ  |
+> > |________:________|
+> >  31              0
+> > 
+> > ( The register looks wrong, right? BLKSZ should be at 0x4. But imagine
+> >   that you swapped bytes in this 32 bit register... then the registers
+> >   and their byte addresses will look normal. )
+> > 
+> > So if we try to issue readw(SDHCI_BLOCK_SIZE), i.e. readw(0x4):
+> > 
+> > - We'll read BLKCNT, while we wanted BLKSZ. This is because the
+> >   address bits should be translated before we try word or byte
+> >   reads/writes.
+> > - On powerpc read{l,w}() convert the read value from little-endian
+> >   to big-endian byte order, which is wrong for our case (the
+> >   register is big-endian already).
+> > 
+> > That means that we have to convert address, but we don't want to
+> > convert the result of read/write ops.
+> > 
 > 
-> What about the other places where we have 16 and 8 bit registers?
+> *cries*
 
-These are handled by the accessors:
+:-)
 
-+static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
-+{
-+       int base = reg & ~0x3;
-+       int shift = (reg & 0x3) * 8;
-+
-+       clrsetbits_be32(host->ioaddr + base , 0xff << shift, val << shift);
+[...]
+> > > as far as I'm
+> > > concerned, so I'd prefer something like:
+> > > 
+> > > if (!host->ops->writel)
+> > > 	writel(host->ioaddr + reg, val);
+> > > else
+> > > 	host->ops->writel(host, val, reg);
+> > 
+> > Surely the overhead isn't measurable... but why we purposely make
+> > things worse?
+> > 
+> 
+> We can most likely do some micro-optimisation do make the compare part
+> cheaper, but the point was to avoid a function call for all the
+> properly implemented controllers out there. We could have a flag so
+> that it only has to check host->flags, which will most likely be in the
+> cache anyway.
+> 
+> Overhead for eSDHC is not a concern in my book, what is interesting is
+> how much this change slows things down for other controllers.
 
-^^ See, we're always issuing 32bit ops.
+OK, I see. Will the patch down below make you a little bit more happy
+wrt normal controllers? Two #ifdefs, but then there is absolutely
+zero overhead for the fully compliant SDHCI controllers.
 
-The point of this patch is to take care of "triggering" registers,
-i.e. those registers that are used trigger "send some data" command.
+(So far it's just on top of this series, but I can incorporate it
+into the "sdhci: Add support for bus-specific IO memory accessors"
+patch, if you like).
 
-There is just one (from the eSDHC point of view) such register:
-TRANSFER_MODE+COMMAND (which is a single 32 bit register in eSDHC,
-but two independant word-sized registers in standard SDHCI).
-
-That register must be accessed with 32bit ops just _once_ per
-data transfer, not two 32bit writes (half of a register one time,
-and half of a register next time -- this won't work).
-
-But I see the point of confusion... Instead of teaching
-"SDHCI core" to work with 32 bits hosts, we'd better handle this
-in the eSDHC part, in the accessors.
-
-This is relatively trivial and should not cause much overhead
-(at least when using DMA), just a small state machine with
-the xfer mode register shadowed in software (plus, notice that
-this also handles BLOCK_SIZE, as I promised in another email):
-
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 22bf006..5100d1d 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -30,6 +30,7 @@ struct sdhci_of_data {
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index 73b79e1..69bd124 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -37,6 +37,13 @@ config MMC_SDHCI
  
- struct sdhci_of_host {
- 	unsigned int clock;
-+	u16 xfer_mode_shadow;
+ 	  If unsure, say N.
+ 
++config MMC_SDHCI_IO_ACCESSORS
++	bool
++	depends on MMC_SDHCI
++	help
++	  This is silent Kconfig symbol that is selected by the drivers that
++	  need to overwrite SDHCI IO memory accessors.
++
+ config MMC_SDHCI_PCI
+ 	tristate "SDHCI support on PCI bus"
+ 	depends on MMC_SDHCI && PCI
+@@ -68,6 +75,7 @@ config MMC_RICOH_MMC
+ config MMC_SDHCI_OF
+ 	tristate "SDHCI support on OpenFirmware platforms"
+ 	depends on MMC_SDHCI && PPC_OF
++	select MMC_SDHCI_IO_ACCESSORS
+ 	help
+ 	  This selects the OF support for Secure Digital Host Controller
+ 	  Interfaces. So far, only the Freescale eSDHC controller is known
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 284bc5d..fb08d3b 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -88,60 +88,6 @@ static void sdhci_dumpregs(struct sdhci_host *host)
+  *                                                                           *
+ \*****************************************************************************/
+ 
+-void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
+-{
+-	if (unlikely(host->ops->writel))
+-		host->ops->writel(host, val, reg);
+-	else
+-		writel(val, host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_writel);
+-
+-void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
+-{
+-	if (unlikely(host->ops->writew))
+-		host->ops->writew(host, val, reg);
+-	else
+-		writew(val, host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_writew);
+-
+-void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
+-{
+-	if (unlikely(host->ops->writeb))
+-		host->ops->writeb(host, val, reg);
+-	else
+-		writeb(val, host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_writeb);
+-
+-u32 sdhci_readl(struct sdhci_host *host, int reg)
+-{
+-	if (unlikely(host->ops->readl))
+-		return host->ops->readl(host, reg);
+-	else
+-		return readl(host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_readl);
+-
+-u16 sdhci_readw(struct sdhci_host *host, int reg)
+-{
+-	if (unlikely(host->ops->readw))
+-		return host->ops->readw(host, reg);
+-	else
+-		return readw(host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_readw);
+-
+-u8 sdhci_readb(struct sdhci_host *host, int reg)
+-{
+-	if (unlikely(host->ops->readb))
+-		return host->ops->readb(host, reg);
+-	else
+-		return readb(host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_readb);
+-
+ static void sdhci_clear_set_irqs(struct sdhci_host *host, u32 clear, u32 set)
+ {
+ 	u32 ier;
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 1697e01..b6675df 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -281,12 +281,14 @@ struct sdhci_host {
+ 
+ 
+ struct sdhci_ops {
++#ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
+ 	u32		(*readl)(struct sdhci_host *host, int reg);
+ 	u16		(*readw)(struct sdhci_host *host, int reg);
+ 	u8		(*readb)(struct sdhci_host *host, int reg);
+ 	void		(*writel)(struct sdhci_host *host, u32 val, int reg);
+ 	void		(*writew)(struct sdhci_host *host, u16 val, int reg);
+ 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
++#endif
+ 
+ 	void	(*set_clock)(struct sdhci_host *host, unsigned int clock);
+ 
+@@ -295,12 +297,89 @@ struct sdhci_ops {
+ 	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
  };
  
- /*
-@@ -69,9 +70,31 @@ static void esdhc_writel(struct sdhci_host *host, u32 val, int reg)
+-extern void sdhci_writel(struct sdhci_host *host, u32 val, int reg);
+-extern void sdhci_writew(struct sdhci_host *host, u16 val, int reg);
+-extern void sdhci_writeb(struct sdhci_host *host, u8 val, int reg);
+-extern u32 sdhci_readl(struct sdhci_host *host, int reg);
+-extern u16 sdhci_readw(struct sdhci_host *host, int reg);
+-extern u8 sdhci_readb(struct sdhci_host *host, int reg);
++#ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
++
++static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
++{
++	if (unlikely(host->ops->writel))
++		host->ops->writel(host, val, reg);
++	else
++		writel(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
++{
++	if (unlikely(host->ops->writew))
++		host->ops->writew(host, val, reg);
++	else
++		writew(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
++{
++	if (unlikely(host->ops->writeb))
++		host->ops->writeb(host, val, reg);
++	else
++		writeb(val, host->ioaddr + reg);
++}
++
++static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
++{
++	if (unlikely(host->ops->readl))
++		return host->ops->readl(host, reg);
++	else
++		return readl(host->ioaddr + reg);
++}
++
++static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
++{
++	if (unlikely(host->ops->readw))
++		return host->ops->readw(host, reg);
++	else
++		return readw(host->ioaddr + reg);
++}
++
++static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
++{
++	if (unlikely(host->ops->readb))
++		return host->ops->readb(host, reg);
++	else
++		return readb(host->ioaddr + reg);
++}
++
++#else
++
++static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
++{
++	writel(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
++{
++	writew(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
++{
++	writeb(val, host->ioaddr + reg);
++}
++
++static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
++{
++	return readl(host->ioaddr + reg);
++}
++
++static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
++{
++	return readw(host->ioaddr + reg);
++}
++
++static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
++{
++	return readb(host->ioaddr + reg);
++}
++
++#endif /* CONFIG_MMC_SDHCI_IO_ACCESSORS */
  
- static void esdhc_writew(struct sdhci_host *host, u16 val, int reg)
- {
-+	struct sdhci_of_host *of_host = sdhci_priv(host);
- 	int base = reg & ~0x3;
- 	int shift = (reg & 0x2) * 8;
- 
-+	switch (reg) {
-+	case SDHCI_TRANSFER_MODE:
-+		/*
-+		 * Postpone this write, we must do it together with a
-+		 * command write that is down below.
-+		 */
-+		of_host->xfer_mode_shadow = val;
-+		return;
-+	case SDHCI_COMMAND:
-+		esdhc_writel(host, val << 16 | of_host->xfer_mode_shadow,
-+			     SDHCI_TRANSFER_MODE);
-+		return;
-+	case SDHCI_BLOCK_SIZE:
-+		/*
-+		 * Two last DMA bits are reserved, and first one is used for
-+		 * non-standard blksz of 4096 bytes that we don't support
-+		 * yet. So clear the DMA boundary bits.
-+		 */
-+		val &= ~SDHCI_MAKE_BLKSZ(0x7, 0);
-+		/* fall through */
-+	}
- 	clrsetbits_be32(host->ioaddr + base, 0xffff << shift, val << shift);
- }
- 
-@@ -137,13 +160,11 @@ static unsigned int esdhc_get_timeout_clock(struct sdhci_host *host)
- }
- 
- static struct sdhci_of_data sdhci_esdhc = {
--	.quirks = SDHCI_QUIRK_32BIT_REGISTERS |
--		  SDHCI_QUIRK_BROKEN_CARD_DETECTION |
-+	.quirks = SDHCI_QUIRK_BROKEN_CARD_DETECTION |
- 		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
- 		  SDHCI_QUIRK_NO_BUSY_IRQ |
- 		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
- 		  SDHCI_QUIRK_PIO_NEEDS_DELAY |
--		  SDHCI_QUIRK_MAX_BLK_SZ_4096 |
- 		  SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET |
- 		  SDHCI_QUIRK_NO_CARD_NO_RESET,
- 	.ops = {
+ extern struct sdhci_host *sdhci_alloc_host(struct device *dev,
+ 	size_t priv_size);
