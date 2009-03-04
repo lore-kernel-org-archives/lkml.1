@@ -1,153 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZCDOKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZCDOKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbZCDOKA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 09:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZCDOJu
+	id S1756150AbZCDOKh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 09:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbZCDOKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 09:09:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46392 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbZCDOJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 09:09:50 -0500
-Message-ID: <49AE8BA8.3080504@redhat.com>
-Date: Wed, 04 Mar 2009 15:09:44 +0100
-From: Zdenek Kabelac <zkabelac@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 4 Mar 2009 09:10:06 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:35256 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754282AbZCDOKB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 09:10:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OQCgMp8+mcrcoAv06RINwyYZXsv2JpgRAfM84Gaz5OrWkdogqCelLi65/7yLAAixhg
+         HEnFcpBnxj0iTPenX/GDtOruC8cE1SUvg2YSZTmlbMhkKl0lMX6y0+lgHiyn11SSSdH1
+         Tyxcl+uMrVdsYwlA3S0KaXzFA5DYNv8tzLlEw=
 MIME-Version: 1.0
-To: Markus <M4rkusXXL@web.de>
-CC: linux-kernel@vger.kernel.org, Wu Fengguang <fengguang.wu@intel.com>,
-       linux-mm@kvack.org
-Subject: Re: drop_caches ...
-References: <200903041057.34072.M4rkusXXL@web.de> <20090304115702.GA17565@localhost> <49AE74E6.1060008@redhat.com> <200903041447.49534.M4rkusXXL@web.de>
-In-Reply-To: <200903041447.49534.M4rkusXXL@web.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1236135028.7883.44.camel@Maple>
+References: <a5d9929e0903011636w6bff1032y28ab58c0ff8c8052@mail.gmail.com>
+	 <20090301165729.8e08e1d7.akpm@linux-foundation.org>
+	 <49AC28FF.1040102@gmail.com>
+	 <a5d9929e0903031510r7f173f5cib7bd1a2426e92473@mail.gmail.com>
+	 <1236135028.7883.44.camel@Maple>
+Date: Wed, 4 Mar 2009 14:09:57 +0000
+Message-ID: <a5d9929e0903040609x43dbeda9h26a882897a177400@mail.gmail.com>
+Subject: Re: some tc commands fail on 2.6.29-rc6-git5, works on 2.6.28.7
+From: Joao Correia <joaomiguelcorreia@gmail.com>
+To: John Dykstra <john.dykstra1@gmail.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus napsal(a):
->>>>>>> The memory mapped pages won't be dropped in this way.
->>>>>>> "cat /proc/meminfo" will show you the number of mapped pages.
->>>>>> # sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m ; 
->>>> cat /proc/meminfo
->>>>>>              total       used       free     shared    buffers     
->>>>>> cached
->>>>>> Mem:          3950       3262        688          0          0        
->>>>>> 359
->>>>>> -/+ buffers/cache:       2902       1047
->>>>>> Swap:         5890       1509       4381
->>>>>> MemTotal:        4045500 kB
->>>>>> MemFree:          705180 kB
->>>>>> Buffers:             508 kB
->>>>>> Cached:           367748 kB
->>>>>> SwapCached:       880744 kB
->>>>>> Active:          1555032 kB
->>>>>> Inactive:        1634868 kB
->>>>>> Active(anon):    1527100 kB
->>>>>> Inactive(anon):  1607328 kB
->>>>>> Active(file):      27932 kB
->>>>>> Inactive(file):    27540 kB
->>>>>> Unevictable:         816 kB
->>>>>> Mlocked:               0 kB
->>>>>> SwapTotal:       6032344 kB
->>>>>> SwapFree:        4486496 kB
->>>>>> Dirty:                 0 kB
->>>>>> Writeback:             0 kB
->>>>>> AnonPages:       2378112 kB
->>>>>> Mapped:            52196 kB
->>>>>> Slab:              65640 kB
->>>>>> SReclaimable:      46192 kB
->>>>>> SUnreclaim:        19448 kB
->>>>>> PageTables:        28200 kB
->>>>>> NFS_Unstable:          0 kB
->>>>>> Bounce:                0 kB
->>>>>> WritebackTmp:          0 kB
->>>>>> CommitLimit:     8055092 kB
->>>>>> Committed_AS:    4915636 kB
->>>>>> VmallocTotal:   34359738367 kB
->>>>>> VmallocUsed:       44580 kB
->>>>>> VmallocChunk:   34359677239 kB
->>>>>> DirectMap4k:     3182528 kB
->>>>>> DirectMap2M:     1011712 kB
->>>>>>
->>>>>> The cached reduced to 359 MB (after the dropping).
->>>>>> I dont know where to read the "number of mapped pages".
->>>>>> "Mapped" is about 51 MB.
->>>>> Does your tmpfs store lots of files?
->>>> Dont think so:
->>>>
->>>> # df -h
->>>> Filesystem            Size  Used Avail Use% Mounted on
->>>> /dev/md6               14G  8.2G  5.6G  60% /
->>>> udev                   10M  304K  9.8M   3% /dev
->>>> cachedir              4.0M  100K  4.0M   3% /lib64/splash/cache
->>>> /dev/md4               19G   15G  3.1G  83% /home
->>>> /dev/md3              8.3G  4.5G  3.9G  55% /usr/portage
->>>> shm                   2.0G     0  2.0G   0% /dev/shm
->>>> /dev/md1               99M   19M   76M  20% /boot
->>>>
->>>> # mount
->>>> /dev/md6 on / type ext3 (rw,noatime,nodiratime,barrier=0)
->>>> /proc on /proc type proc (rw,noexec,nosuid,noatime,nodiratime)
->>>> sysfs on /sys type sysfs (rw,nosuid,nodev,noexec)
->>>> udev on /dev type tmpfs (rw,nosuid,size=10240k,mode=755)
->>>> devpts on /dev/pts type devpts (rw,nosuid,noexec,gid=5,mode=620)
->>>> cachedir on /lib64/splash/cache type tmpfs (rw,size=4096k,mode=644)
->>>> /dev/md4 on /home type ext3 (rw,noatime,nodiratime,barrier=0)
->>>> /dev/md3 on /usr/portage type ext4 
-> (rw,noatime,nodiratime,barrier=0)
->>>> shm on /dev/shm type tmpfs (rw,noexec,nosuid,nodev)
->>>> usbfs on /proc/bus/usb type usbfs 
->>>> (rw,noexec,nosuid,devmode=0664,devgid=85)
->>>> automount(pid6507) on /mnt/.autofs/misc type autofs 
->>>> (rw,fd=4,pgrp=6507,minproto=2,maxproto=4)
->>>> automount(pid6521) on /mnt/.autofs/usb type autofs 
->>>> (rw,fd=4,pgrp=6521,minproto=2,maxproto=4)
->>>> /dev/md1 on /boot type ext2 (rw,noatime,nodiratime)
->>>>
->>>> I dont know what exactly all that memory is used for. It varies 
-> from 
->>>> about 300 MB to up to one GB.
->>>> Tell me where to look and I will!
->>> So you don't have lots of mapped pages(Mapped=51M) or tmpfs files.  
-> It's
->>> strange to me that there are so many undroppable cached 
-> pages(Cached=359M),
->>> and most of them lie out of the LRU queue(Active+Inactive 
-> file=53M)...
->>> Anyone have better clues on these 'hidden' pages?
->> Maybe try this:
->>
->> cat /proc/`pidof X`/smaps | grep drm | wc -l
->>
->> you will see some growing numbers.
->>
->> Also check  cat /proc/dri/0/gem_objects
->> there should be some number  # object bytes - which should be close to 
-> your 
->> missing cached pages.
->>
->>
->> If you are using Intel GEM driver - there is some unlimited caching 
-> issue
->> see: http://bugs.freedesktop.org/show_bug.cgi?id=20404
->>
-> # cat /proc/`pidof X`/smaps | grep drm | wc -l
-> 0
-> # cat /proc/dri/0/gem_objects
-> cat: /proc/dri/0/gem_objects: No such file or directory
-> 
-> I use Xorg 1.3 with an nvidia gpu. Dont know if I use a "Intel GEM 
-> driver".
-> 
+Hello
 
+Just to confirm that i also have all traffic control/shaping (QoS,
+connection limits, scheduling, etc) enabled on the config i use.
 
-Are you using binary  driver from NVidia ??
-Maybe you should ask authors of this binary blob ?
+Its not just the specific version of tc i posted, i tried one from
+last year (october, but i didnt note the exact build) with the same
+result.
 
-Could you try to use for a while Vesa driver to see, if you are able to get 
-same strange results ?
+Cheers,
+Joao Correia
+Centro de Informatica
+Universidade da Beira Interior
+Portugal
 
-Zdenek
+On Wed, Mar 4, 2009 at 2:50 AM, John Dykstra <john.dykstra1@gmail.com> wrote:
+> On Tue, 2009-03-03 at 23:10 +0000, Joao Correia wrote:
+>> I have confirmed again that the exact same commands (as on the
+>> original message), work flawlessly on 2.6.28.7 without a hitch, and,
+>> AFAIK, work as intended. I have also tried the latest 2.6.29-rc6-git7
+>> and it still fails like on git6.
+>
+> I have also reproduced this on Linus' latest 2.6.29-rc6 tree, using tc
+> version iproute2-ss071016 and a kernel config with all traffic control
+> features enabled.
+>
+> The error reported by tc comes from the kernel-level check added by:
+>
+>        commit c1b56878fb68e9c14070939ea4537ad4db79ffae
+>        Author: Stephen Hemminger <shemminger@vyatta.com>
+>        Date:   Tue Nov 25 21:14:06 2008 -0800
+>
+>        tc: policing requires a rate estimator
+>
+>    Found that while trying average rate policing, it was possible to
+>    request average rate policing without a rate estimator. This results
+>    in no policing which is harmless but incorrect.
+>
+>    Since policing could be setup in two steps, need to check
+>    in the kernel.
+>
+>    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+>    Signed-off-by: David S. Miller <davem@davemloft.net>
+>
+> I got the same error when using the tc version iproute2-ss090115 built
+> this evening from the public git repository.
+>
+>  -- John
+>
+>
