@@ -1,182 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZCDKpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZCDKuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbZCDKpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 05:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbZCDKpb
+	id S1755469AbZCDKuK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 05:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZCDKt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 05:45:31 -0500
-Received: from mx1.suse.de ([195.135.220.2]:59103 "EHLO mx1.suse.de"
+	Wed, 4 Mar 2009 05:49:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41217 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbZCDKpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 05:45:30 -0500
-Date: Wed, 4 Mar 2009 11:45:26 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jason Noble <nobleja@polezero.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: New HID device support
-In-Reply-To: <1236107096.7793.1.camel@paradox.pz.local>
-Message-ID: <alpine.LNX.2.00.0903041144310.4971@jikos.suse.cz>
-References: <1236096277.26321.29.camel@paradox.pz.local>  <alpine.LNX.2.00.0903031720380.5295@jikos.suse.cz> <1236107096.7793.1.camel@paradox.pz.local>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1751168AbZCDKt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 05:49:57 -0500
+Date: Wed, 4 Mar 2009 11:49:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH] perfcounters: provide expansion room in the ABI
+Message-ID: <20090304104945.GB4879@elte.hu>
+References: <18862.19599.929591.3109@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18862.19599.929591.3109@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Mar 2009, Jason Noble wrote:
 
-> Attached is the output.
+* Paul Mackerras <paulus@samba.org> wrote:
 
-Thanks. Does the driver below make your device work properly?
+> Impact: ABI change
+> 
+> This expands several fields in the perf_counter_hw_event 
+> struct and adds a "flags" argument to the perf_counter_open 
+> system call, in order that features can be added in future 
+> without ABI changes.
+> 
+> In particular the record_type field is expanded to 64 bits, 
+> and the space for flag bits has been expanded from 32 to 64 
+> bits.
+> 
+> This also adds some new fields:
+> 
+> * read_format (64 bits) is intended to provide a way to specify what
+>   userspace wants to get back when it does a read() on a simple
+>   (non-interrupting) counter;
+> 
+> * exclude_idle (1 bit) provides a way for userspace to ask that events
+>   that occur when the cpu is idle be excluded;
+> 
+> * extra_config_len will provide a way for userspace to supply an
+>   arbitrary amount of extra machine-specific PMU configuration data
+>   immediately following the perf_counter_hw_event struct, to allow
+>   sophisticated users to program things such as instruction matching
+>   CAMs and address range registers;
+> 
+> * __reserved_3 and __reserved_4 provide space for future expansion.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> This should provide plenty of room for future expansion, in fact maybe
+> it's a little over the top.
 
+Yeah - but i think it does not hurt to be defensive when it 
+comes to ABI extensibility.
 
-From: Jiri Kosina <jkosina@suse.cz>
+Your changes look very good to me.
 
-HID: support for Kensington silblade trackball
+> Ingo, if this looks OK, you can pull it from the rfc branch of my
+> perfcounters.git tree at:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git rfc
+> 
+>  include/linux/perf_counter.h |   12 +++++++++---
+>  include/linux/syscalls.h     |    2 +-
+>  kernel/perf_counter.c        |   10 +++++++---
+>  3 files changed, 17 insertions(+), 7 deletions(-)
 
-Establish proper button mappings for 0x47d/0x2041 device.
+Pulled into tip:perfcounters/core, thanks Paul!
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 9cc662c..c16fc4f 100644
---- a/drivers/hid/Kconfig
-+++ b/drivers/hid/Kconfig
-@@ -150,6 +150,13 @@ config HID_GYRATION
- 	---help---
- 	Support for Gyration remote control.
- 
-+config HID_KENSINGTON
-+	tristate "Kensington" if EMBEDDED
-+	depends on USB_HID
-+	default !EMBEDDED
-+	---help---
-+	Support for Kensington Slimblade Trackball.
-+
- config HID_LOGITECH
- 	tristate "Logitech" if EMBEDDED
- 	depends on USB_HID
-diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
-index 0fdbda6..53e1331 100644
---- a/drivers/hid/Makefile
-+++ b/drivers/hid/Makefile
-@@ -29,6 +29,7 @@ obj-$(CONFIG_HID_CYPRESS)	+= hid-cypress.o
- obj-$(CONFIG_DRAGONRISE_FF)	+= hid-drff.o
- obj-$(CONFIG_HID_EZKEY)		+= hid-ezkey.o
- obj-$(CONFIG_HID_GYRATION)	+= hid-gyration.o
-+obj-$(CONFIG_HID_KENSINGTON)	+= hid-kensington.o
- obj-$(CONFIG_HID_LOGITECH)	+= hid-logitech.o
- obj-$(CONFIG_HID_MICROSOFT)	+= hid-microsoft.o
- obj-$(CONFIG_HID_MONTEREY)	+= hid-monterey.o
-diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 941e7d6..320442c 100644
---- a/drivers/hid/hid-core.c
-+++ b/drivers/hid/hid-core.c
-@@ -1270,6 +1270,7 @@ static const struct hid_device_id hid_blacklist[] = {
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_GREENASIA, 0x0012) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_GYRATION, USB_DEVICE_ID_GYRATION_REMOTE) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_GYRATION, USB_DEVICE_ID_GYRATION_REMOTE_2) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_KENSINGTON, USB_DEVICE_ID_KS_SLIMBLADE) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_LABTEC, USB_DEVICE_ID_LABTEC_WIRELESS_KEYBOARD) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER) },
-diff --git a/drivers/hid/hid-dummy.c b/drivers/hid/hid-dummy.c
-index 536aa15..28815fd 100644
---- a/drivers/hid/hid-dummy.c
-+++ b/drivers/hid/hid-dummy.c
-@@ -37,6 +37,9 @@ static int __init hid_dummy_init(void)
- #ifdef CONFIG_HID_GYRATION_MODULE
- 	HID_COMPAT_CALL_DRIVER(gyration);
- #endif
-+#ifdef CONFIG_HID_KENSINGTON_MODULE
-+	HID_COMPAT_CALL_DRIVER(kensington);
-+#endif
- #ifdef CONFIG_HID_LOGITECH_MODULE
- 	HID_COMPAT_CALL_DRIVER(logitech);
- #endif
-diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
-index 6c730de..c3c9e63 100644
---- a/drivers/hid/hid-ids.h
-+++ b/drivers/hid/hid-ids.h
-@@ -274,6 +274,9 @@
- #define USB_DEVICE_ID_LD_POWERCONTROL	0x2030
- #define USB_DEVICE_ID_LD_MACHINETEST	0x2040
- 
-+#define USB_VENDOR_ID_KENSINGTON	0x047d
-+#define USB_DEVICE_ID_KS_SLIMBLADE	0x2041
-+
- #define USB_VENDOR_ID_LOGITECH		0x046d
- #define USB_DEVICE_ID_LOGITECH_RECEIVER	0xc101
- #define USB_DEVICE_ID_LOGITECH_HARMONY_FIRST  0xc110
-diff --git a/drivers/hid/hid-kensington.c b/drivers/hid/hid-kensington.c
-new file mode 100644
-index 0000000..aff0e24
---- /dev/null
-+++ b/drivers/hid/hid-kensington.c
-@@ -0,0 +1,65 @@
-+/*
-+ *  HID driver for Kensigton special device
-+ *
-+ *  Copyright (c) 2009 Jiri Kosina
-+ */
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/input.h>
-+#include <linux/hid.h>
-+#include <linux/module.h>
-+
-+#include "hid-ids.h"
-+
-+#define ks_map_key(c)	hid_map_usage(hi, usage, bit, max, EV_KEY, (c))
-+
-+static int ks_input_mapping(struct hid_device *hdev, struct hid_input *hi,
-+		struct hid_field *field, struct hid_usage *usage,
-+		unsigned long **bit, int *max)
-+{
-+	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_MSVENDOR)
-+		return 0;
-+
-+	switch (usage->hid & HID_USAGE) {
-+	case 0x01: ks_map_key(BTN_2);	break;
-+	case 0x02: ks_map_key(BTN_3);	break;
-+	default:
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static const struct hid_device_id ks_devices[] = {
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_KENSINGTON, USB_DEVICE_ID_KS_SLIMBLADE) },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(hid, ks_devices);
-+
-+static struct hid_driver ks_driver = {
-+	.name = "kensington",
-+	.id_table = ks_devices,
-+	.input_mapping = ks_input_mapping,
-+};
-+
-+static int ks_init(void)
-+{
-+	return hid_register_driver(&ks_driver);
-+}
-+
-+static void ks_exit(void)
-+{
-+	hid_unregister_driver(&ks_driver);
-+}
-+
-+module_init(ks_init);
-+module_exit(ks_exit);
-+MODULE_LICENSE("GPL");
-+
-+HID_COMPAT_LOAD_DRIVER(kensington);
+	Ingo
