@@ -1,65 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbZCDBPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZCDBQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbZCDBPE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 20:15:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZCDBOu
+	id S1756575AbZCDBQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 20:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZCDBQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 20:14:50 -0500
-Received: from mga11.intel.com ([192.55.52.93]:64670 "EHLO mga11.intel.com"
+	Tue, 3 Mar 2009 20:16:31 -0500
+Received: from ozlabs.org ([203.10.76.45]:49778 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752071AbZCDBOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 20:14:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,297,1233561600"; 
-   d="scan'208";a="670117386"
-Subject: Re: 2.6.29-rc6-git7: Reported regressions from 2.6.28
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>, eric@anholt.net,
-       airlied@linux.ie
-In-Reply-To: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 09:15:12 +0800
-Message-Id: <1236129312.32297.259.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	id S1752469AbZCDBQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Mar 2009 20:16:31 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PULL] Trivial macros to help cpumask conversion in linux-next: tsk_cpumask and mm_cpumask
+Date: Wed, 4 Mar 2009 11:46:22 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       linux-kernel@vger.kernel.org
+References: <200903031635.54296.rusty@rustcorp.com.au> <alpine.LFD.2.00.0903031411320.3111@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903031411320.3111@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903041146.22992.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 03:22 +0800, Rafael J. Wysocki wrote:
-
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12705
-> Subject         : X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-> Submitter       : Nico Schottelius <nico-linux-20090213@schottelius.org>
-> Date            : 2009-02-13 9:33 (19 days old)
-> References      : http://marc.info/?l=linux-kernel&m=123451768406825&w=4
-> Handled-By      : Len Brown <lenb@kernel.org>
+On Wednesday 04 March 2009 08:42:09 Linus Torvalds wrote:
 > 
+> On Tue, 3 Mar 2009, Rusty Russell wrote:
+> > 
+> > Rusty Russell (2):
+> >       cpumask: tsk_cpumask for accessing the struct task_struct's cpus_allowed.
+> >       cpumask: mm_cpumask for accessing the struct mm_struct's cpu_vm_mask.
+> 
+> I really want to know the _reason_ for things like this, not just a 
+> trivial patch that adds a stupid macro "for the future".
 
-e806b4957412bf472d826bd8cc571da041248799 is first bad commit
-commit e806b4957412bf472d826bd8cc571da041248799
-Author: Eric Anholt <eric@anholt.net>
-Date:   Thu Jan 22 09:56:58 2009 -0800
+Sorry, should have been more explicit.
 
-    drm/i915: Suppress GEM teardown on X Server exit in KMS mode.
-    
-    Fixes hangs when starting X for the second time.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
+cpumask_t -> cpumask_var_t breaks all the users (since it looks like a
+pointer).  So I decided wrappers were in order while I feed the conversion
+patches via all the arch maintainers & linux-next.
 
-http://marc.info/?l=linux-kernel&m=123479975503827&w=2
+(In fact, we probably want to use a dangling bitmap in these cases,
+rather than a double alloc for CONFIG_CPUMASK_OFFSTACK=y, tho various
+places use sizeof(struct task_struct) making this a little nasty).
 
-thanks,
-rui
+Not that we *really* care about the size of these structs; but it does
+allow us to make 'struct cpumask' undefined for CONFIG_CPUMASK_OFFSTACK=y
+so noone can accidentally create one on the stack, or use *mask1 = *mask2.
 
+FYI, here's the final conversion patch:
 
+cpumask: convert task_struct cpus_allowed to dangling bitmap.
+
+Rather than use the standard [] or [0] array, I truncate the struct
+when CONFIG_CPUMASK_OFFSTACK=y.  This avoids complications with
+INIT_TASK and sizeof(struct task_struct).
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ include/linux/init_task.h |    2 +-
+ include/linux/sched.h     |    7 +++++--
+ kernel/fork.c             |   18 +++++++++++++++++-
+ 3 files changed, 23 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -136,7 +136,7 @@ extern struct cred init_cred;
+ 	.static_prio	= MAX_PRIO-20,					\
+ 	.normal_prio	= MAX_PRIO-20,					\
+ 	.policy		= SCHED_NORMAL,					\
+-	.cpus_allowed	= CPU_MASK_ALL,					\
++	.cpus_allowed	= CPU_BITS_ALL,					\
+ 	.mm		= NULL,						\
+ 	.active_mm	= &init_mm,					\
+ 	.se		= {						\
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1135,7 +1135,6 @@ struct task_struct {
+ #endif
+ 
+ 	unsigned int policy;
+-	cpumask_t cpus_allowed;
+ 
+ #ifdef CONFIG_PREEMPT_RCU
+ 	int rcu_read_lock_nesting;
+@@ -1400,10 +1399,14 @@ struct task_struct {
+ 	/* state flags for use by tracers */
+ 	unsigned long trace;
+ #endif
++
++	/* This has to go at the end: if CONFIG_CPUMASK_OFFSTACK=y, only
++	 * nr_cpu_ids bits will actually be allocated. */
++	DECLARE_BITMAP(cpus_allowed, CONFIG_NR_CPUS);
+ };
+ 
+ /* Future-safe accessor for struct task_struct's cpus_allowed. */
+-#define tsk_cpumask(tsk) (&(tsk)->cpus_allowed)
++#define tsk_cpumask(tsk) (to_cpumask((tsk)->cpus_allowed))
+ 
+ /*
+  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
+diff --git a/kernel/fork.c b/kernel/fork.c
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -173,9 +173,25 @@ void __init fork_init(unsigned long memp
+ #ifndef ARCH_MIN_TASKALIGN
+ #define ARCH_MIN_TASKALIGN	L1_CACHE_BYTES
+ #endif
++	unsigned int task_size;
++
++#ifdef CONFIG_CPUMASK_OFFSTACK
++	/*
++	 * Restrict task_struct allocations so cpus_allowed is only
++	 * nr_cpu_ids long.  cpus_allowed must be a NR_CPUS bitmap at
++	 * end for this to work.
++	 */
++	BUILD_BUG_ON(offsetof(struct task_struct, cpus_allowed)
++		     + BITS_TO_LONGS(CONFIG_NR_CPUS)*sizeof(long)
++		     != sizeof(struct task_struct));
++	task_size = offsetof(struct task_struct, cpus_allowed) +
++		BITS_TO_LONGS(nr_cpu_ids) * sizeof(long);
++#else
++	task_size = sizeof(struct task_struct);
++#endif
+ 	/* create a slab on which task_structs can be allocated */
+ 	task_struct_cachep =
+-		kmem_cache_create("task_struct", sizeof(struct task_struct),
++		kmem_cache_create("task_struct", task_size,
+ 			ARCH_MIN_TASKALIGN, SLAB_PANIC, NULL);
+ #endif
+ 
