@@ -1,34 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZCDXJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCDXSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbZCDXJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 18:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZCDXJK
+	id S1755287AbZCDXSM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 18:18:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZCDXR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 18:09:10 -0500
-Received: from ti-out-0910.google.com ([209.85.142.186]:26931 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbZCDXJJ (ORCPT
+	Wed, 4 Mar 2009 18:17:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59568 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750860AbZCDXRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 18:09:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=qrITvaSPSPE6ZYToraNoLBlMinKBxeoYncMV0cCW9aPZGsbocnBr+263RLWR8q271U
-         7vH0RxzZVcN2CAq3AXHmA7T6HjeRF/BtrgYU4CcOaGtCPLU9AbL8S7kL+3WkdYA98Ez6
-         M0qJYqVeowhJftH3LUIafaeoEXCyrJz/SdCOE=
-Date: Thu, 5 Mar 2009 08:07:17 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Minchan Kim <minchan.kim@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC] atomic highmem kmap page pinning
-Message-Id: <20090305080717.f7832c63.minchan.kim@barrios-desktop>
-In-Reply-To: <alpine.LFD.2.00.0903041101170.5511@xanadu.home>
-References: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
-	<20090304171429.c013013c.minchan.kim@barrios-desktop>
-	<alpine.LFD.2.00.0903041101170.5511@xanadu.home>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Wed, 4 Mar 2009 18:17:55 -0500
+Date: Wed, 4 Mar 2009 15:17:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Samuel.CUELLA@supinfo.com, adaplas@gmail.com, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2.6.28 ] i810: kernel crash fix when  struct
+ fb_var_screeninfo is supplied
+Message-Id: <20090304151707.804b5e84.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LNX.2.00.0903042353350.4971@jikos.suse.cz>
+References: <02E43B9E8855E74E886358B5184B4CC9104620C0@mail2-aub1fr.esi-supinfo.com>
+	<alpine.LNX.2.00.0903041108470.4971@jikos.suse.cz>
+	<20090304142006.20ad72fe.akpm@linux-foundation.org>
+	<alpine.LNX.2.00.0903042353350.4971@jikos.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,137 +31,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Nicolas.
+On Wed, 4 Mar 2009 23:54:49 +0100 (CET)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
-On Wed, 04 Mar 2009 12:26:00 -0500 (EST)
-Nicolas Pitre <nico@cam.org> wrote:
+> On Wed, 4 Mar 2009, Andrew Morton wrote:
+> 
+> > > This is not appropriate for trivial tree. CCing akpm and lkml.
+> > I don't have a copy of the original patch.
+> 
+> This is what I got from Samuel (and rejected it for trivial tree, not 
+> being trivial enough :) )
+> 
 
-> On Wed, 4 Mar 2009, Minchan Kim wrote:
-> 
-> > On Wed, 04 Mar 2009 00:58:13 -0500 (EST)
-> > Nicolas Pitre <nico@cam.org> wrote:
-> > 
-> > > I've implemented highmem for ARM.  Yes, some ARM machines do have lots 
-> > > of memory...
-> > > 
-> > > The problem is that most ARM machines have a non IO coherent cache, 
-> > > meaning that the dma_map_* set of functions must clean and/or invalidate 
-> > > the affected memory manually.  And because the majority of those 
-> > > machines have a VIVT cache, the cache maintenance operations must be 
-> > > performed using virtual addresses.
-> > > 
-> > > In dma_map_page(), an highmem pages could still be mapped and cached 
-> > > even after kunmap() was called on it.  As long as highmem pages are 
-> > > mapped, page_address(page) is non null and we can use that to 
-> > > synchronize the cache.
-> > > It is unlikely but still possible for kmap() to race and recycle the 
-> > > obtained virtual address above, and use it for another page though.  In 
-> > > that case, the new mapping could end up with dirty cache lines for 
-> > > another page, and the unsuspecting cache invalidation loop in 
-> > > dma_map_page() won't notice resulting in data loss.  Hence the need for 
-> > > some kind of kmap page pinning which can be used in any context, 
-> > > including IRQ context.
-> > > 
-> > > This is a RFC patch implementing the necessary part in the core code, as 
-> > > suggested by RMK. Please comment.
-> > 
-> > I am not sure if i understand your concern totally.
-> > I can understand it can be recycled. but Why is it racing ?
-> 
-> Suppose this sequence of events:
-> 
-> 	- dma_map_page(..., DMA_FROM_DEVICE) is called on a highmem page.
-> 
-> 	-->	- vaddr = page_address(page) is non null. In this case
-> 		  it is likely that the page has valid cache lines
-> 		  associated with vaddr. Remember that the cache is VIVT.
-> 
-> 		-->	- for (i = vaddr; i < vaddr + PAGE_SIZE; i += 32)
-> 				invalidate_cache_line(i);
-> 
-> 	*** preemption occurs in the middle of the loop above ***
-> 
-> 	- kmap_high() is called for a different page.
-> 
-> 	-->	- last_pkmap_nr wraps to zero and flush_all_zero_pkmaps()
-> 		  is called.  The pkmap_count value for the page passed
-> 		  to dma_map_page() above happens to be 1, so it is 
-> 		  unmapped.  But prior to that, flush_cache_kmaps() 
-> 		  cleared the cache for it.  So far so good.
+ok, thanks.
 
-Thanks for kind explanation.:)
+> --- linux-2.6.28/drivers/video/i810/i810_main.c.orig    2009-02-26 15:23:03.000000000 +0100
+> +++ linux-2.6.28/drivers/video/i810/i810_main.c 2009-02-26 14:50:06.000000000 +0100
+> @@ -993,6 +993,8 @@ static int i810_check_params(struct fb_v
+>         struct i810fb_par *par = info->par;
+>         int line_length, vidmem, mode_valid = 0, retval = 0;
+>         u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
+> +       u32 yres = info->var.yres;
+> +
+>         /*
+>          *  Memory limit
+>          */
 
-I thought kmap and dma_map_page usage was following.
+So we have a file-wide static called `yres' - seems a bit dangerous.
 
-kmap(page);
-...
-dma_map_page(...)
-  invalidate_cache_line
+Rather than defining a local which shadows the global, it would be
+clearer to do it in this equivalent way, yes?
 
-kunmap(page);
+--- a/drivers/video/i810/i810_main.c~i810-fix-kernel-crash-fix-when-struct-fb_var_screeninfo-is-supplied
++++ a/drivers/video/i810/i810_main.c
+@@ -993,6 +993,7 @@ static int i810_check_params(struct fb_v
+ 	struct i810fb_par *par = info->par;
+ 	int line_length, vidmem, mode_valid = 0, retval = 0;
+ 	u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
++
+ 	/*
+ 	 *  Memory limit
+ 	 */
+@@ -1002,12 +1003,12 @@ static int i810_check_params(struct fb_v
+ 	if (vidmem > par->fb.size) {
+ 		vyres = par->fb.size/line_length;
+ 		if (vyres < var->yres) {
+-			vyres = yres;
++			vyres = info->var.yres;
+ 			vxres = par->fb.size/vyres;
+ 			vxres /= var->bits_per_pixel >> 3;
+ 			line_length = get_line_length(par, vxres, 
+ 						      var->bits_per_pixel);
+-			vidmem = line_length * yres;
++			vidmem = line_length * info->var.yres;
+ 			if (vxres < var->xres) {
+ 				printk("i810fb: required video memory, "
+ 				       "%d bytes, for %dx%d-%d (virtual) "
+_
 
-In this case, how do pkmap_count value for the page passed to dma_map_page become 1 ?
-The caller have to make sure to complete dma_map_page before kunmap.
-      
-Do I miss something ?
-
-> 
-> 		- A fresh pkmap entry is assigned for this kmap request.
-> 		  The Murphy law says it will eventually happen to use 
-> 		  the same vaddr as the one which used to belong to the
-> 		  other page being processed by dma_map_page() in the
-> 		  preempted thread above.
-> 
-> 	- The caller of kmap_high() start dirtying the cache using the 
-> 	  new virtual mapping for its page.
-> 
-> 	*** the first thread is rescheduled ***
-> 
-> 			- The for loop is resumed, but now cached data 
-> 			  belonging to a different physical page is 
-> 			  being discarded!
-> And this is not only a preemption issue.  ARM can be SMP as well where 
-> this scenario is just as likely, and disabling preemption in 
-> dma_map_page() won't prevent it.
-> 
-> > Now, kmap semantic is that it can't be called in interrupt context.
-> 
-> I know.  And in this case I don't need the full kmap_high() semantics.  
-> What I need is a guarantee that, if I start invalidating cache lines 
-> from an highmem page, its virtual mapping won't go away.  Meaning that I 
-> need to increase pkmap_count whenever it is not zero.  And if it is zero 
-> then there is simply no cache invalidation to worry about.  And that 
-> pkmap_count increment must be possible from any context as its primary 
-> user would be dma_map_page().
-> 
-> > As far as I understand, To make irq_disable to prevent this problem is 
-> > rather big cost.
-> 
-> How big?  Could you please elaborate on the significance of this cost?
-
-I don't have a number. It depends on you for submitting this patch. 
-The kernel have been used kmap in many fs and driver, even mm. 
-So, For merging this path, you should provide benchmark result. 
-Sometime, other server guy can help you for getting the data. 
- 
-> > I think it would be better to make page_address can return null in that case
-> > where pkmap_count is less than one
-> 
-> This is already the case, and when it happens then there is no cache 
-> invalidation to perform like I say above.  The race is possible when 
-> pkmap_count is 1 or becomes 1.
-> 
-> > or it's not previous page mapping.
-> 
-> Even if the cache invalidation loop checks on every iteration if the 
-> page mapping changed which would be terribly inefficient, there is still 
-> a race window for the mapping to change between the mapping test 
-> and the actual cache line invalidation instruction.
-> 
-> 
-> Nicolas
-
-
--- 
-Kinds Regards
-Minchan Kim
+This assumes that the original change was actually correct.  Should
+both sites whcih use the global `yres' have been converted to use
+info->var.yres, or just one of them?
