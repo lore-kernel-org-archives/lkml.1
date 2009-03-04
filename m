@@ -1,218 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbZCDPjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZCDPn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbZCDPjw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 10:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbZCDPjo
+	id S1753792AbZCDPn0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 10:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZCDPnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 10:39:44 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:40366 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751692AbZCDPjn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 10:39:43 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsQEAHMurklMQW1W/2dsb2JhbACBTtZfhAgG
-Date: Wed, 4 Mar 2009 10:39:35 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mrubin@google.com, md@google.com
-Subject: Re: [PATCH 0/5] [RFC] binary reading of ftrace ring buffers
-Message-ID: <20090304153934.GA31573@Krystal>
-References: <20090304024921.153061228@goodmis.org> <20090304102640.GB31239@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Mar 2009 10:43:17 -0500
+Received: from ns2.mvista.com ([63.81.120.155]:31279 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751448AbZCDPnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 10:43:16 -0500
+Message-ID: <49AEA1B1.3050008@ru.mvista.com>
+Date: Wed, 04 Mar 2009 18:43:45 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/18] ide: use ->tf_load in SELECT_DRIVE()
+References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <200902162251.49271.bzolnier@gmail.com> <499A0D0B.7070007@ru.mvista.com> <200902171543.21892.bzolnier@gmail.com> <499AD872.2060605@ru.mvista.com>
+In-Reply-To: <499AD872.2060605@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090304102640.GB31239@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:36:59 up 4 days, 12:03,  2 users,  load average: 0.12, 0.21,
-	0.25
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > RFC only, not for pulling, unless everyone is fine with these 
-> > :-)
-> > 
-> > After telling the folks from Google that I had splice code 
-> > that I needed to get working, I finally got around to doing 
-> > it.
-> > 
-> > Not only did I get the splice code working, but I also made a 
-> > perl script (might want to cover you eyes if you look at that 
-> > code) that can automagically create the output from the binary 
-> > files reading the format arguments in the 
-> > /debugfs/tracing/events/<subsys>/<event>/format file.
-> 
-> Very cool stuff!
-> 
-> The ftrace splice path allows the following tracing path: after 
-> we create a trace ringbuffer page in the kernel, we dont touch 
-> it _ever again_. We can shuffle it to disk via DMA or over the 
-> network via DMA without bringing it again into the CPU's caches.
-> 
-> This feature allows low-overhead high-throughput tracing on 
-> unprecedented levels. There's no format string overhead, no 
-> instruction patching/trapping overhead - straight raw binary 
-> tracing with C syntax tracepoints and a zero-copy path to 
-> storage.
-> 
-> Have you had any chance to measure tracing overhead and the 
-> maximum throghput we can reach with the ftrace splice code? I'd 
-> expect to see some really nice numbers.
-> 
+Hello, I wrote:
 
-"unprecented levels" -> LTTng has been using splice for about 5 months.
-The only reason why I did not post the patchset which performs this is
-because I am currently adapting a LTTng module to optionally format the
-binary buffers to a text output. And yes, it provides very, very good
-performance results.
+>>>>>>>> There should be no functional changes caused by this patch.
+>>>>>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>>>>>> Index: b/drivers/ide/ide-iops.c
+>>>>>>>> ===================================================================
+>>>>>>>> --- a/drivers/ide/ide-iops.c
+>>>>>>>> +++ b/drivers/ide/ide-iops.c
+>>>>>>>> @@ -88,11 +88,15 @@ void SELECT_DRIVE (ide_drive_t *drive)
+>>>>>>>> {
+>>>>>>>>     ide_hwif_t *hwif = drive->hwif;
+>>>>>>>>     const struct ide_port_ops *port_ops = hwif->port_ops;
+>>>>>>>> +    ide_task_t task;
 
-Mathieu
+>>>>>>>>     if (port_ops && port_ops->selectproc)
+>>>>>>>>         port_ops->selectproc(drive);
+>>>>>>>>
+>>>>>>>> -    hwif->OUTB(drive->select.all, hwif->io_ports.device_addr);
+>>>>>>>> +    memset(&task, 0, sizeof(task));
+>>>>>>>> +    task.tf_flags = IDE_TFLAG_OUT_DEVICE;
+>>>>>>>> +
+>>>>>>>> +    drive->hwif->tf_load(drive, &task);
 
+>>>>>>>   This actually doesn't seem like a bright idea to me, 
+>>>>>>> considering that this gets called when starting every request. 
+>>>>>>> How will you look at me adding the transport method for writing 
+>>>>>>> this register? :-)
 
-> > >From previous patches, we have in include/trace/sched_event_types.h:
-> > 
-> > #undef TRACE_SYSTEM
-> > #define TRACE_SYSTEM sched
-> > 
-> > TRACE_EVENT_FORMAT(sched_switch,
-> > 	TPPROTO(struct rq *rq, struct task_struct *prev,
-> > 		struct task_struct *next),
-> > 	TPARGS(rq, prev, next),
-> > 	TPFMT("task %s:%d ==> %s:%d",
-> > 	      prev->comm, prev->pid, next->comm, next->pid),
-> > 	TRACE_STRUCT(
-> > 		TRACE_FIELD(pid_t, prev_pid, prev->pid)
-> > 		TRACE_FIELD(int, prev_prio, prev->prio)
-> > 		TRACE_FIELD_SPECIAL(char next_comm[TASK_COMM_LEN],
-> > 				    next_comm,
-> > 				    TPCMD(memcpy(TRACE_ENTRY->next_comm,
-> > 						 next->comm,
-> > 						 TASK_COMM_LEN)))
-> > 		TRACE_FIELD(pid_t, next_pid, next->pid)
-> > 		TRACE_FIELD(int, next_prio, next->prio)
-> > 	),
-> > 	TPRAWFMT("prev %d:%d ==> next %s:%d:%d")
-> > 	);
-> > 
-> > By making that, we automagically get this file:
-> > 
-> >  # cat /debug/tracing/events/sched/sched_switch/format 
-> > name: sched_switch
-> > ID: 29
-> > format:
-> > 	field:unsigned char type;	offset:0;	size:1;
-> > 	field:unsigned char flags;	offset:1;	size:1;
-> > 	field:unsigned char preempt_count;	offset:2;	size:1;
-> > 	field:int pid;	offset:4;	size:4;
-> > 	field:int tgid;	offset:8;	size:4;
-> > 
-> > 	field:pid_t prev_pid;	offset:12;	size:4;
-> > 	field:int prev_prio;	offset:16;	size:4;
-> > 	field special:char next_comm[TASK_COMM_LEN];	offset:20;	size:16;
-> > 	field:pid_t next_pid;	offset:36;	size:4;
-> > 	field:int next_prio;	offset:40;	size:4;
-> > 
-> > print fmt: "prev %d:%d ==> next %s:%d:%d"
-> > 
-> > 
-> > Now with this patch set, we create a way to read the ftrace 
-> > ring buffers directly, as a binary page. Splice has been used 
-> > such that the user could splice the ring buffers without need 
-> > to copy the pages. The pages are taken from the ring buffers 
-> > and can be placed directly into files, without extra copies.
-> > 
-> >  # ls /debug/tracing/binary_buffers/
-> > 0  1  2  3  4  5  6  7
-> > 
-> > One can either just use the read/write to grab live data from 
-> > these buffers, or they could use splice. I have a simple file 
-> > that reads this buffers using splice. Note, it only runs on 
-> > one file, you can make multiple copies to run more. The ring 
-> > buffers in ftrace are per cpu and they are not dependent on 
-> > each other.
-> > 
-> > Also, if there is no data in the buffer, it returns -EAGAIN.
-> > 
-> >  # find /debug/tracing/events -name 'type' | while read f; do
-> > >    echo raw > $f; done
-> > 
-> >  # find /debug/tracing/events -name 'enable' | while read f; do
-> > >   echo 1 > $f; done
-> > 
-> >  # ./splice /debug/tracing/binary_buffers/0 /tmp/buf-0
-> > 
-> > Yes you can run multiple instances of this on different buffers.
-> > 
-> >  # ./rb-read.pl /tmp/buf-0
-> > 
-> > produces:
-> > 
-> >         0  [000]  7071.936459: (irq_handler_entry) irq 48
-> >         0  [000]  7071.936462: (irq_handler_exit) irq 48 ret 1
-> >         0  [000]  7071.988801: (sched_signal_send) sig: 14  task 0
-> >         0  [000]  7071.988813: (sched_wakeup) task 0 success=1
-> >         0  [000]  7071.988823: (sched_switch) prev 0:140 ==> next ntpd:6582272:0
-> >      3303  [000]  7071.988916: (sched_switch) prev 0:120 ==> next swap:7497072:0
-> >         0  [000]  7072.020370: (sched_wakeup) task 0 success=1
-> >         0  [000]  7072.020407: (sched_switch) prev 0:140 ==> next even:808416116:0
-> >        16  [000]  7071.936157: (sched_switch) prev 0:115 ==> next swap:7497072:0
-> > 
-> > Notice the "(sched_switch)" lines.
-> > 
-> >  The splice C code:
-> >    http://www.kernel.org/pub/linux/kernel/people/rostedt/splice.c
-> > 
-> >  The perl script to parse:
-> >    http://www.kernel.org/pub/linux/kernel/people/rostedt/rb-read.pl
-> > 
-> >  And yes I know, they are both ugly :-p
-> 
-> Any chance of merging them into a single perl script? I.e. the 
-> perl script would embedd the .c code and build it on every 
-> invocation (into /tmp), so that one can do single-tool tracing 
-> with no immediate binary components. Such self-sufficiency is 
-> very handy when probing systems in a minimally invasive way.
-> 
-> And we could also have twice the ugliness for the same price.
-> 
-> > The following patches are in:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > 
-> >     branch: rfc/splice/tip/tracing/ftrace
-> 
-> Looks like the only problem with the code is the -EFAULT 
-> handling bug it exposed in simple_read_from_buffer() - but that 
-> fix should go on a separate track IMO.
-> 
-> So i've pulled it into tip:tracing - thanks Steve! We definitely 
-> want this in v2.6.30.
-> 
-> 	Ingo
-> 
+>>>> Please check profiles first -- it might not be worth it. [1]
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>>>>>> Convert SELECT_DRIVE() to use ->tf_load instead of ->OUTB.
+
+>>>>>>  OTOH, adding such a "backdoor" to the taskfile doesn't seem very 
+>>>>>> consistent... well, I'm not excited about the whole idea 
+>>>>>> conversion to tf_{load|read}() -- it's not clear what exactly this 
+>>>>>> bought us.
+
+>>>> This was explained some months ago already, so just to recall -- it was
+>>>> a part of a bigger work removing duplicated code and allowing 
+>>>> abstraction
+>>>> of the ATA logic.
+
+>>>> Anyway this is not set in a stone so if you have proposal of a better
+>>>> approach please come forward with it.
+
+>>>   Er... I think that the previous IN()/OUT() methods were better. 
+>>> Note that we ended up using the local version of them in the dafault 
+>>> ide_tf_{load}read}() anyway -- as Alan has pointed out it might be worth 
+
+>> During ide_tf_{load,read}() addition I was a bit too optimistic about
+>> the possibility of the quick io{read,write}* conversion later...
+
+>>> splitting those into I/O and memory space versions... although given 
+>>> general slowness of the I/O accesses, this is probably not going to 
+>>> win much speed-wise.
+
+>> Maybe it would be worth to add ->tf_{inb,outb} to struct ide_tp_ops
+>> and convert default tp_ops to use them...  OTOH we should reinvestigate
+>> the io{read,write}*() way first (maybe things have improved there)...
+
+>    Yes, let's not be hasty here...
+
+    What I certainly don't like is how tf_load/read() handle LBA48: there's 
+much of the code duplication going on. I'll think what can be done about it 
+but it may not be easy to tackle... it looks like 'struct ide_taskfile' needs 
+to be reorganized to include 2 6-byte sub-structures.
+
+>> Thanks,
+>> Bart
+
+MBR, Sergei
+
