@@ -1,102 +1,321 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZCDPn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZCDPqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbZCDPn0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 10:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZCDPnR
+	id S1754207AbZCDPqA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 10:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZCDPpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 10:43:17 -0500
-Received: from ns2.mvista.com ([63.81.120.155]:31279 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751448AbZCDPnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 10:43:16 -0500
-Message-ID: <49AEA1B1.3050008@ru.mvista.com>
-Date: Wed, 04 Mar 2009 18:43:45 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/18] ide: use ->tf_load in SELECT_DRIVE()
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <200902162251.49271.bzolnier@gmail.com> <499A0D0B.7070007@ru.mvista.com> <200902171543.21892.bzolnier@gmail.com> <499AD872.2060605@ru.mvista.com>
-In-Reply-To: <499AD872.2060605@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 4 Mar 2009 10:45:52 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50102 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbZCDPpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 10:45:51 -0500
+Subject: [RFC][PATCH] tracing: block events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "jens.axboe" <jens.axboe@oracle.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 16:45:29 +0100
+Message-Id: <1236181529.5330.7912.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+Subject: tracing: block events
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Wed Mar 04 15:09:43 CET 2009
 
->>>>>>>> There should be no functional changes caused by this patch.
->>>>>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>>>>>> Index: b/drivers/ide/ide-iops.c
->>>>>>>> ===================================================================
->>>>>>>> --- a/drivers/ide/ide-iops.c
->>>>>>>> +++ b/drivers/ide/ide-iops.c
->>>>>>>> @@ -88,11 +88,15 @@ void SELECT_DRIVE (ide_drive_t *drive)
->>>>>>>> {
->>>>>>>>     ide_hwif_t *hwif = drive->hwif;
->>>>>>>>     const struct ide_port_ops *port_ops = hwif->port_ops;
->>>>>>>> +    ide_task_t task;
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/trace/block.h             |   69 --------------
+ include/trace/block_event_types.h |  177 ++++++++++++++++++++++++++++++++++++++
+ include/trace/trace_event_types.h |    1 
+ include/trace/trace_events.h      |    1 
+ 4 files changed, 180 insertions(+), 68 deletions(-)
 
->>>>>>>>     if (port_ops && port_ops->selectproc)
->>>>>>>>         port_ops->selectproc(drive);
->>>>>>>>
->>>>>>>> -    hwif->OUTB(drive->select.all, hwif->io_ports.device_addr);
->>>>>>>> +    memset(&task, 0, sizeof(task));
->>>>>>>> +    task.tf_flags = IDE_TFLAG_OUT_DEVICE;
->>>>>>>> +
->>>>>>>> +    drive->hwif->tf_load(drive, &task);
+Index: linux-2.6/include/trace/block.h
+===================================================================
+--- linux-2.6.orig/include/trace/block.h
++++ linux-2.6/include/trace/block.h
+@@ -4,73 +4,6 @@
+ #include <linux/blkdev.h>
+ #include <linux/tracepoint.h>
+ 
+-DECLARE_TRACE(block_rq_abort,
+-	TPPROTO(struct request_queue *q, struct request *rq),
+-		TPARGS(q, rq));
+-
+-DECLARE_TRACE(block_rq_insert,
+-	TPPROTO(struct request_queue *q, struct request *rq),
+-		TPARGS(q, rq));
+-
+-DECLARE_TRACE(block_rq_issue,
+-	TPPROTO(struct request_queue *q, struct request *rq),
+-		TPARGS(q, rq));
+-
+-DECLARE_TRACE(block_rq_requeue,
+-	TPPROTO(struct request_queue *q, struct request *rq),
+-		TPARGS(q, rq));
+-
+-DECLARE_TRACE(block_rq_complete,
+-	TPPROTO(struct request_queue *q, struct request *rq),
+-		TPARGS(q, rq));
+-
+-DECLARE_TRACE(block_bio_bounce,
+-	TPPROTO(struct request_queue *q, struct bio *bio),
+-		TPARGS(q, bio));
+-
+-DECLARE_TRACE(block_bio_complete,
+-	TPPROTO(struct request_queue *q, struct bio *bio),
+-		TPARGS(q, bio));
+-
+-DECLARE_TRACE(block_bio_backmerge,
+-	TPPROTO(struct request_queue *q, struct bio *bio),
+-		TPARGS(q, bio));
+-
+-DECLARE_TRACE(block_bio_frontmerge,
+-	TPPROTO(struct request_queue *q, struct bio *bio),
+-		TPARGS(q, bio));
+-
+-DECLARE_TRACE(block_bio_queue,
+-	TPPROTO(struct request_queue *q, struct bio *bio),
+-		TPARGS(q, bio));
+-
+-DECLARE_TRACE(block_getrq,
+-	TPPROTO(struct request_queue *q, struct bio *bio, int rw),
+-		TPARGS(q, bio, rw));
+-
+-DECLARE_TRACE(block_sleeprq,
+-	TPPROTO(struct request_queue *q, struct bio *bio, int rw),
+-		TPARGS(q, bio, rw));
+-
+-DECLARE_TRACE(block_plug,
+-	TPPROTO(struct request_queue *q),
+-		TPARGS(q));
+-
+-DECLARE_TRACE(block_unplug_timer,
+-	TPPROTO(struct request_queue *q),
+-		TPARGS(q));
+-
+-DECLARE_TRACE(block_unplug_io,
+-	TPPROTO(struct request_queue *q),
+-		TPARGS(q));
+-
+-DECLARE_TRACE(block_split,
+-	TPPROTO(struct request_queue *q, struct bio *bio, unsigned int pdu),
+-		TPARGS(q, bio, pdu));
+-
+-DECLARE_TRACE(block_remap,
+-	TPPROTO(struct request_queue *q, struct bio *bio, dev_t dev,
+-		sector_t from, sector_t to),
+-		TPARGS(q, bio, dev, from, to));
++#include <trace/block_event_types.h>
+ 
+ #endif
+Index: linux-2.6/include/trace/block_event_types.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/trace/block_event_types.h
+@@ -0,0 +1,177 @@
++
++#ifndef TRACE_EVENT_FORMAT
++# error Do not include this file directly.
++# error Unless you know what you are doing.
++#endif
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM block
++
++#ifdef CONFIG_BLK_DEV_IO_TRACE
++#define Q_DEV(q) (q->bt ? q->bt->dev : 0)
++#else
++#define Q_DEV(q) 0
++#endif
++
++TRACE_FORMAT(block_rq_abort,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		rq->cmd_flags & __REQ_RW ? 'W' : 'R',
++		blk_pc_request(rq) ? 0 : rq->hard_sector,
++		blk_pc_request(rq) ? rq->data_len : rq->hard_nr_sectors << 9)
++	);
++
++TRACE_FORMAT(block_rq_insert,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		rq->cmd_flags & __REQ_RW ? 'W' : 'R',
++		blk_pc_request(rq) ? 0 : rq->hard_sector,
++		blk_pc_request(rq) ? rq->data_len : rq->hard_nr_sectors << 9)
++	);
++
++TRACE_FORMAT(block_rq_issue,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		rq->cmd_flags & __REQ_RW ? 'W' : 'R',
++		blk_pc_request(rq) ? 0 : rq->hard_sector,
++		blk_pc_request(rq) ? rq->data_len : rq->hard_nr_sectors << 9)
++	);
++
++TRACE_FORMAT(block_rq_requeue,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq),
++	TPFMT("%d:%d %c %llu + %u [%d]",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		rq->cmd_flags & __REQ_RW ? 'W' : 'R',
++		blk_pc_request(rq) ? 0 : rq->hard_sector,
++		blk_pc_request(rq) ? rq->data_len : rq->hard_nr_sectors << 9,
++		rq->errors)
++	);
++
++TRACE_FORMAT(block_rq_complete,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq),
++	TPFMT("%d:%d %c %llu + %u [%d]",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		rq->cmd_flags & __REQ_RW ? 'W' : 'R',
++		blk_pc_request(rq) ? 0 : rq->hard_sector,
++		blk_pc_request(rq) ? rq->data_len : rq->hard_nr_sectors << 9,
++		rq->errors)
++	);
++
++TRACE_FORMAT(block_bio_bounce,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		bio->bi_rw & WRITE ? 'W' : 'R',
++		bio->bi_sector, bio->bi_size)
++	);
++
++TRACE_FORMAT(block_bio_complete,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio),
++	TPFMT("%d:%d %c %llu + %u [%d]",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		bio->bi_rw & WRITE ? 'W' : 'R',
++		bio->bi_sector, bio->bi_size,
++		!bio_flagged(bio, BIO_UPTODATE))
++	);
++
++TRACE_FORMAT(block_bio_backmerge,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		bio->bi_rw & WRITE ? 'W' : 'R',
++		bio->bi_sector, bio->bi_size)
++	);
++
++TRACE_FORMAT(block_bio_frontmerge,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		bio->bi_rw & WRITE ? 'W' : 'R',
++		bio->bi_sector, bio->bi_size)
++	);
++
++TRACE_FORMAT(block_bio_queue,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		bio->bi_rw & WRITE ? 'W' : 'R',
++		bio->bi_sector, bio->bi_size)
++	);
++
++TRACE_FORMAT(block_getrq,
++	TPPROTO(struct request_queue *q, struct bio *bio, int rw),
++	TPARGS(q, bio, rw),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		(bio ? (bio->bi_rw & WRITE) : rw) ? 'W' : 'R',
++		bio ? bio->bi_sector : 0,
++		bio ? bio->bi_size : 0)
++	);
++
++TRACE_FORMAT(block_sleeprq,
++	TPPROTO(struct request_queue *q, struct bio *bio, int rw),
++	TPARGS(q, bio, rw),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		(bio ? (bio->bi_rw & WRITE) : rw) ? 'W' : 'R',
++		bio ? bio->bi_sector : 0,
++		bio ? bio->bi_size : 0)
++	);
++
++TRACE_FORMAT(block_plug,
++	TPPROTO(struct request_queue *q),
++	TPARGS(q),
++	TPFMT("%d:%d",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)))
++	);
++
++TRACE_FORMAT(block_unplug_timer,
++	TPPROTO(struct request_queue *q),
++	TPARGS(q),
++	TPFMT("%d:%d",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)))
++	);
++
++TRACE_FORMAT(block_unplug_io,
++	TPPROTO(struct request_queue *q),
++	TPARGS(q),
++	TPFMT("%d:%d",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)))
++	);
++
++TRACE_FORMAT(block_split,
++	TPPROTO(struct request_queue *q, struct bio *bio, unsigned int pdu),
++	TPARGS(q, bio, pdu),
++	TPFMT("%d:%d %c %llu + %u",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		bio->bi_rw & WRITE ? 'W' : 'R',
++		bio->bi_sector, bio->bi_size)
++	); /* FIXME add pdu info */
++
++TRACE_FORMAT(block_remap,
++	TPPROTO(struct request_queue *q, struct bio *bio, dev_t dev,
++		sector_t from, sector_t to),
++	TPARGS(q, bio, dev, from, to),
++	TPFMT("%d:%d %c %llu + %u -> (%d:%d) %llu",
++		MAJOR(Q_DEV(q)), MINOR(Q_DEV(q)),
++		bio->bi_rw & WRITE ? 'W' : 'R',
++		from, bio->bi_size,
++		MAJOR(dev), MINOR(dev), to)
++	);
++
++#undef Q_DEV
++
++#undef TRACE_SYSTEM
+Index: linux-2.6/include/trace/trace_event_types.h
+===================================================================
+--- linux-2.6.orig/include/trace/trace_event_types.h
++++ linux-2.6/include/trace/trace_event_types.h
+@@ -3,3 +3,4 @@
+ #include <trace/sched_event_types.h>
+ #include <trace/irq_event_types.h>
+ #include <trace/lockdep_event_types.h>
++#include <trace/block_event_types.h>
+Index: linux-2.6/include/trace/trace_events.h
+===================================================================
+--- linux-2.6.orig/include/trace/trace_events.h
++++ linux-2.6/include/trace/trace_events.h
+@@ -3,3 +3,4 @@
+ #include <trace/sched.h>
+ #include <trace/irq.h>
+ #include <trace/lockdep.h>
++#include <trace/block.h>
 
->>>>>>>   This actually doesn't seem like a bright idea to me, 
->>>>>>> considering that this gets called when starting every request. 
->>>>>>> How will you look at me adding the transport method for writing 
->>>>>>> this register? :-)
-
->>>> Please check profiles first -- it might not be worth it. [1]
-
->>>>>> Convert SELECT_DRIVE() to use ->tf_load instead of ->OUTB.
-
->>>>>>  OTOH, adding such a "backdoor" to the taskfile doesn't seem very 
->>>>>> consistent... well, I'm not excited about the whole idea 
->>>>>> conversion to tf_{load|read}() -- it's not clear what exactly this 
->>>>>> bought us.
-
->>>> This was explained some months ago already, so just to recall -- it was
->>>> a part of a bigger work removing duplicated code and allowing 
->>>> abstraction
->>>> of the ATA logic.
-
->>>> Anyway this is not set in a stone so if you have proposal of a better
->>>> approach please come forward with it.
-
->>>   Er... I think that the previous IN()/OUT() methods were better. 
->>> Note that we ended up using the local version of them in the dafault 
->>> ide_tf_{load}read}() anyway -- as Alan has pointed out it might be worth 
-
->> During ide_tf_{load,read}() addition I was a bit too optimistic about
->> the possibility of the quick io{read,write}* conversion later...
-
->>> splitting those into I/O and memory space versions... although given 
->>> general slowness of the I/O accesses, this is probably not going to 
->>> win much speed-wise.
-
->> Maybe it would be worth to add ->tf_{inb,outb} to struct ide_tp_ops
->> and convert default tp_ops to use them...  OTOH we should reinvestigate
->> the io{read,write}*() way first (maybe things have improved there)...
-
->    Yes, let's not be hasty here...
-
-    What I certainly don't like is how tf_load/read() handle LBA48: there's 
-much of the code duplication going on. I'll think what can be done about it 
-but it may not be easy to tackle... it looks like 'struct ide_taskfile' needs 
-to be reorganized to include 2 6-byte sub-structures.
-
->> Thanks,
->> Bart
-
-MBR, Sergei
 
