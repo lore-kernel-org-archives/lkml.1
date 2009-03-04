@@ -1,125 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZCDHx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbZCDHy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbZCDHx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 02:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZCDHxs
+	id S1755778AbZCDHy6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 02:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZCDHyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 02:53:48 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:56035 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751513AbZCDHxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 02:53:47 -0500
-Message-ID: <49AE3386.1070604@us.ibm.com>
-Date: Tue, 03 Mar 2009 23:53:42 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 4 Mar 2009 02:54:47 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:45061 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036AbZCDHyp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 02:54:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=EqwtN4jShLLVsyKX/drpjfE4cykhLaZvYI95MEW99tgH3Z2Aj+/TjXuTOJuvZEMjlG
+         OlDHGmzYqgDC2Xb5IgWSaFeSAiVl4texA4Iy/xwbIxZvigZCuKViyHVQcNhG0FfiUWPu
+         5Mq/pMMhbQeRSS9Z9OMHeGhXgpqhmyBX0MZ1U=
 MIME-Version: 1.0
-To: "lkml, " <linux-kernel@vger.kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <srostedt@redhat.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [TIP][RFC 6/7] futex: add requeue_pi calls
-References: <49AC73A9.4040804@us.ibm.com> <49AC77D1.6090106@us.ibm.com>
-In-Reply-To: <49AC77D1.6090106@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090304153245.109eada4.kamezawa.hiroyu@jp.fujitsu.com>
+References: <49A65455.4030204@cn.fujitsu.com>
+	 <20090227122239.875a3f56.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1236005770.5330.583.camel@laptop>
+	 <20090303084218.28010267.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1236066689.18955.27.camel@twins>
+	 <d4132000000381ebc2ba5c2ffe9bb1bd.squirrel@webmail-b.css.fujitsu.com>
+	 <1236073236.18955.46.camel@twins>
+	 <2d4a44772433903887651c0bfe74c9cc.squirrel@webmail-b.css.fujitsu.com>
+	 <1236081288.5330.4105.camel@laptop>
+	 <20090304153245.109eada4.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 4 Mar 2009 13:24:43 +0530
+Message-ID: <344eb09a0903032354r38d74c48p217d338cba7159e8@mail.gmail.com>
+Subject: Re: [PATCH] remove rq->lock from cpuacct cgroup v2
+From: Bharata B Rao <bharata.rao@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, kenchen@google.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart wrote:
-> From: Darren Hart <dvhltc@us.ibm.com>
-> 
-> PI Futexes must have an owner at all times, so the standard requeue 
-> commands
-> aren't sufficient.  The new commands properly manage pi futex ownership by
-> ensuring a futex with waiters has an owner at all times.  Once complete 
-> these
-> patches will allow glibc to properly handle pi mutexes with 
-> pthread_condvars.
-> 
-> The approach taken here is to create two new futex op codes:
-> 
-> FUTEX_WAIT_REQUEUE_PI:
-> Threads will use this op code to wait on a futex (such as a non-pi 
-> waitqueue)
-> and wake after they have been requeued to a pi futex.  Prior to 
-> returning to
-> userspace, they will take this pi futex (and the underlying rt_mutex).
-> 
-> futex_wait_requeue_pi() is currently the result of a high speed collision
-> between futex_wait and futex_lock_pi (with the first part of futex_lock_pi
-> being done by futex_requeue_pi_init() on behalf of the waiter).
-> 
-> FUTEX_REQUEUE_PI:
-> This call must be used to wake threads waiting with FUTEX_WAIT_REQUEUE_PI,
-> regardless of how many threads the caller intends to wake or requeue.
-> pthread_cond_broadcast should call this with nr_wake=1 and nr_requeue=-1 
-> (all).
-> pthread_cond_signal should call this with nr_wake=1 and nr_requeue=0.  The
-> reason being we need both callers to get the benefit of the
-> futex_requeue_pi_init() routine which will prepare the top_waiter (the 
-> thread
-> to be woken) to take possesion of the pi futex by setting FUTEX_WAITERS and
-> preparing the futex_q.pi_state.  futex_requeue() also enqueues the 
-> top_waiter
-> on the rt_mutex via rt_mutex_start_proxy_lock(). If pthread_cond_signal 
-> used
-> FUTEX_WAKE, we would have a similar race window where the caller can 
-> return and
-> release the mutex before the waiters can fully wake, potentially leaving 
-> the
-> rt_mutex with waiters but no owner.
-> 
-> We hit a failed paging request running the testcase (7/7) in a loop
-> (only takes a few minutes at most to hit on my 8way x86_64 test
-> machine).  It appears to be the result of splitting rt_mutex_slowlock()
-> across two execution contexts by means of rt_mutex_start_proxy_lock()
-> and rt_mutex_finish_proxy_lock().  The former calls
-> task_blocks_on_rt_mutex() on behalf of the waiting task prior to
-> requeuing and waking it by the requeueing thread.  The latter is
-> executed upon wakeup by the waiting thread which somehow manages to call
-> the new __rt_mutex_slowlock() with waiter->task != NULL and still
-> succeed with try_to_take_lock(), this leads to corruption of the plists
-> and an eventual failed paging request.  See 7/7 for the rather crude
-> testcase that causes this.  Any tips on where this race might be
-> occuring are welcome.
+On Wed, Mar 4, 2009 at 12:02 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> cgroup/cpuacct subsystem counts cpu usage by 64bit coutnter in
+> per-cpu object. In read-side (via cpuacct.usage file), for reading 64bit
+> value in safe manner, it takes rq->lock of (other) cpus.
+>
+> In general, taking rq->lock of other cpus from codes not for scheduler
+> is not good. This patch tries to remove rq->lock in read-side.
+>
+> To read 64bit value in atomic, this patch uses seqcounter.
+>
+> Pros.
+>  - rq->lock is not necessary.
+> Cons.
+>  - When updating counter, sequence number must be updated.
+>    (I hope this per-cpu sequence number is on cache...)
+>
+> Changelog: v1->v2
+>  - checking calling context of all calls and avoid unnecessary
+>   preempt_disable calls.
+>  - use on_each_cpu() instead of workqueue, at reset
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-After some judicious use of printk (ftrace from tip wouldn't let me set 
-the current_tracer, permission denied) I managed to catch a failing 
-scenario where the signaling thread returns to userspace and unlocks the 
-mutex before the waiting thread calls __rt_mutex_slowunlock() (which is 
-fine) but the signaler calls rt_mutex_fastunlock() instead of 
-rt_mutex_slowunlock() which is what the rt_mutex_start_proxy_lock() was 
-supposed to prevent, so I am apparently not fully preparing the waiter 
-and enqueueing it on the rt_mutex.  Annotated printk output:
+So cpuacct->cpuusage is a 64 bit percpu counter and I see that cpuacct
+subsystem itself handles the following special cases:
+- 32 vs 64 bit update issues
+- resetting percpu counters on online and offline cpus
 
-Signaler thread in futex_requeue()
-	lookup_pi_state: allocating a new pi state
-	futex_requeue_pi_init: futex_lock_pi_atomic returned: 0
-	futex_requeue: futex_requeue_pi_init returned: 0
+Tomorrow if I add other counters to cpuacct subsystem (like stime and
+utime), I need to do what you have done in this patch all over again
+for the additional counters.
 
-Signaler thread returned to userspace and did pthread_mutex_unlock()
-	rt_mutex_fastunlock: unlocked ffff88013d1749d0
+Instead of subsystems handling all these percpu counter problems
+themselves, shouldn't we be using percpu_counter subsytem and let it
+handle all the issues transparently for us ? I am not sure if all
+these problems have been addressed in percpu_counter, but would like
+to know why we are not using percpu_counter for these kinds of things
+and enhance percpu_counter if it can't handle some of the issues which
+we are solving here specifically for cpuacct subsystem ?
 
-Waiting thread woke up in futex_wait_requeue_pi() and tries to finish 
-taking the lock:
-	__rt_mutex_slowlock: waiter->task is ffff8802bdd350c0
-	try_to_take_rt_mutex: assigned rt_mutex (ffff88013d1749d0) owner
-		to current ffff8802bdd350c0
-
-Waiting thread get's the lock while waiter->task is not NULL (b/c the 
-signaler didn't go through the slow path)
-	__rt_mutex_slowlock: got the lock
-
-I'll continue looking into this tomorrow, but Steven if you have any 
-ideas on what I may have missed in rt_mutex_start_proxy_lock() I'd 
-appreciate any insight you might have to share.  Thomas, I know you gave 
-this function some thought as well, did I take a radically different 
-approach to what you had in mind?
-
+Regards,
+Bharata.
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+http://bharata.sulekha.com/blog/posts.htm
