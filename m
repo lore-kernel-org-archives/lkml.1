@@ -1,52 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZCDRWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZCDR0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbZCDRWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 12:22:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZCDRWm
+	id S1755546AbZCDR0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZCDR0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 12:22:42 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36512 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbZCDRWl (ORCPT
+	Wed, 4 Mar 2009 12:26:11 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:61426 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbZCDR0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 12:22:41 -0500
-Date: Wed, 4 Mar 2009 12:22:40 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: XFS status update for February 2009
-Message-ID: <20090304172240.GA645@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 4 Mar 2009 12:26:10 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 04 Mar 2009 12:26:00 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC] atomic highmem kmap page pinning
+In-reply-to: <20090304171429.c013013c.minchan.kim@barrios-desktop>
+Message-id: <alpine.LFD.2.00.0903041101170.5511@xanadu.home>
+References: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
+ <20090304171429.c013013c.minchan.kim@barrios-desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Mar 2009, Minchan Kim wrote:
 
-In February various smaller fixes have been sent to Linus for 2.6.29,
-including a revert of the faster vmap APIs which don't seem to be quite
-ready yet on the VM side.  At the same time various patches have been
-queued up for 2.6.30, with another big batch pending.  There also has
-been a repost of the CRC patch series, including support for a new,
-larger inode core.
+> On Wed, 04 Mar 2009 00:58:13 -0500 (EST)
+> Nicolas Pitre <nico@cam.org> wrote:
+> 
+> > I've implemented highmem for ARM.  Yes, some ARM machines do have lots 
+> > of memory...
+> > 
+> > The problem is that most ARM machines have a non IO coherent cache, 
+> > meaning that the dma_map_* set of functions must clean and/or invalidate 
+> > the affected memory manually.  And because the majority of those 
+> > machines have a VIVT cache, the cache maintenance operations must be 
+> > performed using virtual addresses.
+> > 
+> > In dma_map_page(), an highmem pages could still be mapped and cached 
+> > even after kunmap() was called on it.  As long as highmem pages are 
+> > mapped, page_address(page) is non null and we can use that to 
+> > synchronize the cache.
+> > It is unlikely but still possible for kmap() to race and recycle the 
+> > obtained virtual address above, and use it for another page though.  In 
+> > that case, the new mapping could end up with dirty cache lines for 
+> > another page, and the unsuspecting cache invalidation loop in 
+> > dma_map_page() won't notice resulting in data loss.  Hence the need for 
+> > some kind of kmap page pinning which can be used in any context, 
+> > including IRQ context.
+> > 
+> > This is a RFC patch implementing the necessary part in the core code, as 
+> > suggested by RMK. Please comment.
+> 
+> I am not sure if i understand your concern totally.
+> I can understand it can be recycled. but Why is it racing ?
 
-SGI released various bits of work in progress from former employees
-that will be extremely helpful for the future development of XFS,
-thanks a lot to Mark Goodwin for making this happen.
+Suppose this sequence of events:
 
-On the userspace side the long awaited 3.0.0 releases of xfsprogs and
-xfsdump finally happened early in the month, accompanies by a 2.2.9
-release of the dmapi userspace.  There have been some issues with packaging
-so a new minor release might follow soon.
+	- dma_map_page(..., DMA_FROM_DEVICE) is called on a highmem page.
 
-The xfs_irecover tool has been relicensed so that it can be merged into
-the GPLv2 codebase of xfsprogs, but the actual integration work hasn't
-happened yet.
+	-->	- vaddr = page_address(page) is non null. In this case
+		  it is likely that the page has valid cache lines
+		  associated with vaddr. Remember that the cache is VIVT.
 
-Important bits of XFS documentation that have been available on the XFS
-website in PDF form have been released in the document source form under
-the Creative Commons license so that they can be updates as a community
-effort, and checked into a public git tree.
+		-->	- for (i = vaddr; i < vaddr + PAGE_SIZE; i += 32)
+				invalidate_cache_line(i);
+
+	*** preemption occurs in the middle of the loop above ***
+
+	- kmap_high() is called for a different page.
+
+	-->	- last_pkmap_nr wraps to zero and flush_all_zero_pkmaps()
+		  is called.  The pkmap_count value for the page passed
+		  to dma_map_page() above happens to be 1, so it is 
+		  unmapped.  But prior to that, flush_cache_kmaps() 
+		  cleared the cache for it.  So far so good.
+
+		- A fresh pkmap entry is assigned for this kmap request.
+		  The Murphy law says it will eventually happen to use 
+		  the same vaddr as the one which used to belong to the
+		  other page being processed by dma_map_page() in the
+		  preempted thread above.
+
+	- The caller of kmap_high() start dirtying the cache using the 
+	  new virtual mapping for its page.
+
+	*** the first thread is rescheduled ***
+
+			- The for loop is resumed, but now cached data 
+			  belonging to a different physical page is 
+			  being discarded!
+
+And this is not only a preemption issue.  ARM can be SMP as well where 
+this scenario is just as likely, and disabling preemption in 
+dma_map_page() won't prevent it.
+
+> Now, kmap semantic is that it can't be called in interrupt context.
+
+I know.  And in this case I don't need the full kmap_high() semantics.  
+What I need is a guarantee that, if I start invalidating cache lines 
+from an highmem page, its virtual mapping won't go away.  Meaning that I 
+need to increase pkmap_count whenever it is not zero.  And if it is zero 
+then there is simply no cache invalidation to worry about.  And that 
+pkmap_count increment must be possible from any context as its primary 
+user would be dma_map_page().
+
+> As far as I understand, To make irq_disable to prevent this problem is 
+> rather big cost.
+
+How big?  Could you please elaborate on the significance of this cost?
+
+> I think it would be better to make page_address can return null in that case
+> where pkmap_count is less than one
+
+This is already the case, and when it happens then there is no cache 
+invalidation to perform like I say above.  The race is possible when 
+pkmap_count is 1 or becomes 1.
+
+> or it's not previous page mapping.
+
+Even if the cache invalidation loop checks on every iteration if the 
+page mapping changed which would be terribly inefficient, there is still 
+a race window for the mapping to change between the mapping test 
+and the actual cache line invalidation instruction.
+
+
+Nicolas
