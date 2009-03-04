@@ -1,55 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZCDQ6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZCDRFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbZCDQ6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 11:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZCDQ6d
+	id S1754782AbZCDRFh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 12:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZCDRF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 11:58:33 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36283 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbZCDQ6d (ORCPT
+	Wed, 4 Mar 2009 12:05:28 -0500
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:62876 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753153AbZCDRF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 11:58:33 -0500
-Date: Wed, 4 Mar 2009 17:58:30 +0100
-From: Jan Kara <jack@suse.cz>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, Alasdair G Kergon <agk@redhat.com>
-Subject: Re: 2.6.27.14: BUG: lock held when returning to user space!
-Message-ID: <20090304165830.GC8748@atrey.karlin.mff.cuni.cz>
-References: <20090225142136.GA29505@janus> <1235579389.4645.3621.camel@laptop>
-MIME-Version: 1.0
+	Wed, 4 Mar 2009 12:05:28 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsQEAE9DrklMQW1W/2dsb2JhbACBTtcrhAgG
+Date: Wed, 4 Mar 2009 12:00:15 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com
+Subject: Re: [PATCH 0/5] [RFC] binary reading of ftrace ring buffers
+Message-ID: <20090304170015.GB1150@Krystal>
+References: <20090304024921.153061228@goodmis.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1235579389.4645.3621.camel@laptop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090304024921.153061228@goodmis.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:55:59 up 4 days, 13:22,  2 users,  load average: 0.62, 0.54,
+	0.37
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2009-02-25 at 15:21 +0100, Frank van Maarseveen wrote:
-> > An lvextend -L+16G command for a logical volume while being mounted rw
-> > as ext3 triggered the following on 2.6.27.14:
-> > 
-> > ================================================
-> > [ BUG: lock held when returning to user space! ]
-> > ------------------------------------------------
-> > lvextend/29191 is leaving the kernel with locks still held!
-> > 2 locks held by lvextend/29191:
-> >  #0: (&type->s_umount_key #15){....}, at: [<c019edfb>] get_super+0x6b/0xb0
-> >  #1: (&journal->j_barrier){....}, at: [<c01f9af3>] journal_lock_updates+0xc3/0xd0
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> Do recent kernels still say this?
-  I'd say so. We really hold j_barrier mutex when leaving the kernel
-after FIFREEZE ioctl (the call path goes as freeze_bdev -> ext3_freeze
--> journal_lock_updates) until FITHAW is called. As far as I know it was
-designed this way...
-  It would be a pity to completely exclude j_barrier mutex from lockdep
-control so would it be possible to mark the mutex (or even that
-particular acquisition of the mutex) so that lockdep does not warn when
-we return with it to userspace?
+> RFC only, not for pulling, unless everyone is fine with these :-)
+> 
+> After telling the folks from Google that I had splice code that I needed
+> to get working, I finally got around to doing it.
+> 
+> Not only did I get the splice code working, but I also made a perl
+> script (might want to cover you eyes if you look at that code) that
+> can automagically create the output from the binary files reading
+> the format arguments in the /debugfs/tracing/events/<subsys>/<event>/format
+> file.
+> 
+> From previous patches, we have in include/trace/sched_event_types.h:
+> 
+> #undef TRACE_SYSTEM
+> #define TRACE_SYSTEM sched
+> 
+> TRACE_EVENT_FORMAT(sched_switch,
+> 	TPPROTO(struct rq *rq, struct task_struct *prev,
+> 		struct task_struct *next),
+> 	TPARGS(rq, prev, next),
+> 	TPFMT("task %s:%d ==> %s:%d",
+> 	      prev->comm, prev->pid, next->comm, next->pid),
+> 	TRACE_STRUCT(
+> 		TRACE_FIELD(pid_t, prev_pid, prev->pid)
+> 		TRACE_FIELD(int, prev_prio, prev->prio)
+> 		TRACE_FIELD_SPECIAL(char next_comm[TASK_COMM_LEN],
+> 				    next_comm,
+> 				    TPCMD(memcpy(TRACE_ENTRY->next_comm,
+> 						 next->comm,
+> 						 TASK_COMM_LEN)))
+> 		TRACE_FIELD(pid_t, next_pid, next->pid)
+> 		TRACE_FIELD(int, next_prio, next->prio)
+> 	),
+> 	TPRAWFMT("prev %d:%d ==> next %s:%d:%d")
+> 	);
+> 
 
-									Honza
+I fear that putting these user-visible format strings in tracepoint
+header files will create a big maintainability issue.
+
+I'll post the LTTng patchset in a jiffy, where the format string
+awareness is done in a tracer-specific module. I don't understand why
+Peter Z. is not yelling against your tracepoints modifications : they
+are actually presenting to userspace an interface that is meant to
+eventually change.
+
+I used a separate layer for format string presentation for this very
+purpose : I don't want to tie the kernel code instrumentation
+(tracepoints) to any kind of user-visible API.
+
+Mathieu
+
+> By making that, we automagically get this file:
+> 
+>  # cat /debug/tracing/events/sched/sched_switch/format 
+> name: sched_switch
+> ID: 29
+> format:
+> 	field:unsigned char type;	offset:0;	size:1;
+> 	field:unsigned char flags;	offset:1;	size:1;
+> 	field:unsigned char preempt_count;	offset:2;	size:1;
+> 	field:int pid;	offset:4;	size:4;
+> 	field:int tgid;	offset:8;	size:4;
+> 
+> 	field:pid_t prev_pid;	offset:12;	size:4;
+> 	field:int prev_prio;	offset:16;	size:4;
+> 	field special:char next_comm[TASK_COMM_LEN];	offset:20;	size:16;
+> 	field:pid_t next_pid;	offset:36;	size:4;
+> 	field:int next_prio;	offset:40;	size:4;
+> 
+> print fmt: "prev %d:%d ==> next %s:%d:%d"
+> 
+> 
+> Now with this patch set, we create a way to read the ftrace ring buffers
+> directly, as a binary page. Splice has been used such that the user
+> could splice the ring buffers without need to copy the pages.
+> The pages are taken from the ring buffers and can be placed directly
+> into files, without extra copies.
+> 
+>  # ls /debug/tracing/binary_buffers/
+> 0  1  2  3  4  5  6  7
+> 
+> One can either just use the read/write to grab live data from these
+> buffers, or they could use splice. I have a simple file that reads
+> this buffers using splice. Note, it only runs on one file, you
+> can make multiple copies to run more. The ring buffers in ftrace
+> are per cpu and they are not dependent on each other.
+> 
+> Also, if there is no data in the buffer, it returns -EAGAIN.
+> 
+>  # find /debug/tracing/events -name 'type' | while read f; do
+> >    echo raw > $f; done
+> 
+>  # find /debug/tracing/events -name 'enable' | while read f; do
+> >   echo 1 > $f; done
+> 
+>  # ./splice /debug/tracing/binary_buffers/0 /tmp/buf-0
+> 
+> Yes you can run multiple instances of this on different buffers.
+> 
+>  # ./rb-read.pl /tmp/buf-0
+> 
+> produces:
+> 
+>         0  [000]  7071.936459: (irq_handler_entry) irq 48
+>         0  [000]  7071.936462: (irq_handler_exit) irq 48 ret 1
+>         0  [000]  7071.988801: (sched_signal_send) sig: 14  task 0
+>         0  [000]  7071.988813: (sched_wakeup) task 0 success=1
+>         0  [000]  7071.988823: (sched_switch) prev 0:140 ==> next ntpd:6582272:0
+>      3303  [000]  7071.988916: (sched_switch) prev 0:120 ==> next swap:7497072:0
+>         0  [000]  7072.020370: (sched_wakeup) task 0 success=1
+>         0  [000]  7072.020407: (sched_switch) prev 0:140 ==> next even:808416116:0
+>        16  [000]  7071.936157: (sched_switch) prev 0:115 ==> next swap:7497072:0
+> 
+> Notice the "(sched_switch)" lines.
+> 
+>  The splice C code:
+>    http://www.kernel.org/pub/linux/kernel/people/rostedt/splice.c
+> 
+>  The perl script to parse:
+>    http://www.kernel.org/pub/linux/kernel/people/rostedt/rb-read.pl
+> 
+>  And yes I know, they are both ugly :-p
+> 
+> The following patches are in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: rfc/splice/tip/tracing/ftrace
+> 
+> 
+> Steven Rostedt (5):
+>       ring-buffer: reset write field for ring_buffer_read_page
+>       ring-buffer: fix ring_buffer_read_page
+>       ring-buffer: replace sizeof of event header with offsetof
+>       ring-buffer: make ring_buffer_read_page read from start on partial page
+>       tracing: add binary buffer files for use with splice
+> 
+> ----
+>  include/linux/ring_buffer.h |    7 +-
+>  kernel/trace/ring_buffer.c  |  118 +++++++++++++------
+>  kernel/trace/trace.c        |  274 +++++++++++++++++++++++++++++++++++++++++-
+>  kernel/trace/trace.h        |    1 +
+>  4 files changed, 357 insertions(+), 43 deletions(-)
+> -- 
+> 
+
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
