@@ -1,60 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZCDTU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZCDTVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbZCDTU5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 14:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbZCDTUt
+	id S1757325AbZCDTVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 14:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbZCDTVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 14:20:49 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43015 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755353AbZCDTUs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 14:20:48 -0500
-Message-ID: <49AED391.1030500@zytor.com>
-Date: Wed, 04 Mar 2009 11:16:33 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 4 Mar 2009 14:21:07 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:50597 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756901AbZCDTVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 14:21:06 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.29-rc breaks STD using Intel 945
+Date: Wed, 4 Mar 2009 20:20:56 +0100
+User-Agent: KMail/1.9.10
+Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xen: core dom0 support
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org>	<20090227212812.26d02f34.akpm@linux-foundation.org>	<49A8DF28.4050301@goop.org>	<200902282309.07576.nickpiggin@yahoo.com.au> <49AB19E1.4050604@goop.org> <49AED092.5080902@codemonkey.ws>
-In-Reply-To: <49AED092.5080902@codemonkey.ws>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart10137046.hDL7lMaNFQ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200903042020.57671.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> 
-> I think this is a bit misleading.  I think you can understand the true 
-> differences between Xen and KVM by s/hypervisor/Operating System/. 
-> Fundamentally, a hypervisor is just an operating system that provides a 
-> hardware-like interface to it's processes.
-> 
-[...]
+--nextPart10137046.hDL7lMaNFQ
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> 
-> The real difference between KVM and Xen is that Xen is a separate 
-> Operating System dedicated to virtualization.  In many ways, it's a fork 
-> of Linux since it uses quite a lot of Linux code.
-> 
-> The argument for Xen as a separate OS is no different than the argument 
-> for a dedicated Real Time Operating System, a dedicated OS for embedded 
-> systems, or a dedicated OS for a very large system.
-> 
+Hi,
 
-In particular, Xen is a microkernel-type operating system.  The dom0 
-model is a classic single-server, in the style of Mach.  A lot of the 
-"Xen could use a distributed dom0" arguments were also done with Mach 
-("the real goal is a multi-server") but such a system never materialized 
-(Hurd was supposed to be one.)  Building multiservers is *hard*, and 
-building multiservers which don't suck is even harder.
+I tested several snapshots post 2.6.28 and all of them show one severe=20
+problem: resume from disk is not always successful. Only about 50% of the=20
+resume attempts work, in the other cases I just get a completely black=20
+screen, can't switch to text console or anything. What I often get is a lin=
+e=20
+like this in the logs directly before suspend:
 
-	-hpa
+[drm:i915_get_vblank_counter] *ERROR* trying to get vblank count for disabl=
+ed=20
+pipe 0
+
+Afterwards I find nothing in the logs. Switching back to 2.6.28 and everyth=
+ing=20
+works fine again. I have a Toshiba A110-178 running openSuSE 11.1 32 bit wi=
+th=20
+KDE 4.2.0. I upgraded my Xserver from 1.5 to 1.6 yesterday but that did not=
+=20
+change anything. The only external module I use is the omnibook module=20
+(http://sf.net/projects/omnibook) which I've been using for years without a=
+ny=20
+problems.
+
+VGA device is this:
+
+00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS,=20
+943/940GML Express Integrated Graphics Controller (rev 03) (prog-if 00 [VGA=
+=20
+controller])
+        Subsystem: Toshiba America Info Systems Device ff01
+        Flags: bus master, fast devsel, latency 0, IRQ 16
+        Memory at dc100000 (32-bit, non-prefetchable) [size=3D512K]
+        I/O ports at 1800 [size=3D8]
+        Memory at c0000000 (32-bit, prefetchable) [size=3D256M]
+        Memory at dc200000 (32-bit, non-prefetchable) [size=3D256K]
+        Capabilities: [90] Message Signalled Interrupts: Mask- 64bit-=20
+Count=3D1/1 Enable-
+        Capabilities: [d0] Power Management version 2
+        Kernel modules: intelfb
+
+00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME, 943/940=
+GML=20
+Express Integrated Graphics Controller (rev 03)
+        Subsystem: Toshiba America Info Systems Device ff01
+        Flags: bus master, fast devsel, latency 0
+        Memory at dc180000 (32-bit, non-prefetchable) [size=3D512K]
+        Capabilities: [d0] Power Management version 2
+
+If you have any patches you want to try me or have any further questions ju=
+st=20
+mail me. If you're hanging around at CeBIT I can come over and we can discu=
+ss=20
+this in person as I'm there for the next days anyway.
+
+Greetings,
+
+Eike
+
+--nextPart10137046.hDL7lMaNFQ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkmu1JkACgkQXKSJPmm5/E6ldQCggJMahi7wEOFTjTuLTEetTp77
+fP4AnAwXl4qROJIEZhW+Kw76WyO3NbZH
+=+Dln
+-----END PGP SIGNATURE-----
+
+--nextPart10137046.hDL7lMaNFQ--
