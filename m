@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZCDQdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZCDQd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbZCDQdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 11:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZCDQdM
+	id S1754927AbZCDQd7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 11:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZCDQdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 11:33:12 -0500
-Received: from fifo99.com ([67.223.236.141]:47438 "EHLO fifo99.com"
+	Wed, 4 Mar 2009 11:33:50 -0500
+Received: from mx40.mail.ru ([94.100.176.54]:57990 "EHLO mx40.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbZCDQdM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 11:33:12 -0500
-Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer migration.
-From: Daniel Walker <dwalker@fifo99.com>
-To: arun@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-In-Reply-To: <20090304121937.GE9855@linux.vnet.ibm.com>
-References: <20090304121249.GA9855@linux.vnet.ibm.com>
-	 <20090304121937.GE9855@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 08:33:09 -0800
-Message-Id: <1236184389.5937.40.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1752345AbZCDQdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 11:33:49 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.29-rc: PM notifiers are not called during hibernation
+Date: Wed, 4 Mar 2009 19:33:26 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-1avb; KDE/4.2.1; i686; ; )
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200901292254.09562.arvidjaar@mail.ru> <20090304074733.GA1405@ucw.cz>
+In-Reply-To: <20090304074733.GA1405@ucw.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1287186.uxLbmaekjt";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200903041933.40837.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 17:49 +0530, Arun R Bharadwaj wrote:
-> @@ -649,6 +650,16 @@ __mod_timer(struct timer_list *timer, un
->  
->         new_base = __get_cpu_var(tvec_bases);
->  
-> +       current_cpu = smp_processor_id();
-> +       preferred_cpu = get_nohz_load_balancer();
-> +       if (enable_timer_migration && !tbase_get_pinned(timer->base)
-> &&
-> +                       idle_cpu(current_cpu) && preferred_cpu != -1)
-> {
-> +               new_base = per_cpu(tvec_bases, preferred_cpu);
-> +               timer_set_base(timer, new_base);
-> +               timer->expires = expires;
-> +               internal_add_timer(new_base, timer);
-> +               goto out_unlock;
-> +       }
+--nextPart1287186.uxLbmaekjt
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Are you sure this compiles w/ CONFIG_SMP=n ? It looks like
-enable_timer_migration wouldn't exist in that case, but the chunks your
-adding in the timer code are still using it.
+On 4 =D0=BC=D0=B0=D1=80=D1=82=D0=B0 2009 10:47:33 Pavel Machek wrote:
+> On Thu 2009-01-29 22:53:57, Andrey Borzenkov wrote:
+> > rc2 and now rc3
+> >
+> > Orinoco driver uses notifications to request firmware before
+> > suspend/hibernation. This is OK for suspend, but does not seem to
+> > work for hibernation. I get what suspiciously looks like 60 seconds
+> > timeout for request_firmware, but I do not see either usual
+> > request_firmware output, nor debug output.
+> >
+> > Suspend is OK.
+> >
+> > orinoco notification handlers is:
+>
+> Is it fixed in newer -rc?
 
-Daniel
+yes
 
+> If not, does rafael know?
+
+under different subject :)
+
+--nextPart1287186.uxLbmaekjt
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmurVoACgkQR6LMutpd94yA+QCfUUxTQjFmPuEedxyjp3IznFSq
+MYEAoM8EZW4ihhRiwFLXOuWsfDlR/2Hu
+=uWNP
+-----END PGP SIGNATURE-----
+
+--nextPart1287186.uxLbmaekjt--
