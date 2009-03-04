@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZCDI3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZCDIc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbZCDI3z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 03:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZCDI3r
+	id S1755834AbZCDIc1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 03:32:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZCDIcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 03:29:47 -0500
-Received: from mail.netone.net.tr ([193.192.98.182]:25586 "EHLO
-	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbZCDI3q (ORCPT
+	Wed, 4 Mar 2009 03:32:18 -0500
+Received: from mga10.intel.com ([192.55.52.92]:40233 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751286AbZCDIcS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 03:29:46 -0500
-Message-ID: <49AE3BF6.2010600@turknet.net.tr>
-Date: Wed, 04 Mar 2009 10:29:42 +0200
-From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090303 Lightning/1.0pre Shredder/3.0b3pre
-MIME-Version: 1.0
-To: David Newall <davidn@davidnewall.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Failover Kernel
-References: <49A659D0.2040903@turknet.net.tr>	 <200902261802.56612.diegocg@gmail.com>  <49A80796.2070208@turknet.net.tr> <1235749850.4718.1.camel@localhost.localdomain> <49AC0799.5060306@turknet.net.tr> <49ACA433.5050400@davidnewall.com>
-In-Reply-To: <49ACA433.5050400@davidnewall.com>
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+	Wed, 4 Mar 2009 03:32:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,299,1233561600"; 
+   d="scan'208";a="436015506"
+Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, Lin Ming <ming.m.lin@intel.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1236151414.5330.6692.camel@laptop>
+References: <1235477835-14500-1-git-send-email-mel@csn.ul.ie>
+	 <1235639427.11390.11.camel@minggr> <20090226110336.GC32756@csn.ul.ie>
+	 <1235647139.16552.34.camel@penberg-laptop>
+	 <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr>
+	 <20090302112122.GC21145@csn.ul.ie>  <1236132307.2567.25.camel@ymzhang>
+	 <1236151414.5330.6692.camel@laptop>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 16:31:51 +0800
+Message-Id: <1236155511.2567.41.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Mar 2009 08:29:42.0821 (UTC) FILETIME=[5E0BE550:01C99CA3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/2009 05:29 AM, David Newall wrote:
-> It sounds like you want everything to just continue running.  I don't
->    
-Yes, exactly. Backup kernel will take control when a crush occured 
-without need a reboot or halt.
-> see how that can be done.  All of those in-kernel tables and structures
-> would need to be migrated, and it follows, because there was a crash,
-> that any of them might have been corrupted.  Worse, you want this to
-> save you when you try running a new kernel which crashes, and being a
-> new kernel, it follows that any of those structures could be different;
-> it might not be possible to create equivalent structures for different
-> kernel versions.
->
->    
-Yes, that's right and it's the first thing needed to overcome. Maybe, it 
-could be implemented like this :
+On Wed, 2009-03-04 at 08:23 +0100, Peter Zijlstra wrote:
+> On Wed, 2009-03-04 at 10:05 +0800, Zhang, Yanmin wrote:
+> > FAIR_GROUP_SCHED is a feature to support configurable cpu weight for different users.
+> > We did find it takes lots of time to check/update the share weight which might create
+> > lots of cache ping-pang. With sysbench(oltp)+mysql, that becomes more severe because
+> > mysql runs as user mysql and sysbench runs as another regular user. When starting
+> > the testing with 1 thread in command line, there are 2 mysql threads and 1 sysbench
+> > thread are proactive.
+> 
+> cgroup based group scheduling doesn't bother with users. So unless you
+> create sched-cgroups your should all be in the same (root) group.
 
-- Primary kernel could be 2.6.x or 2.6.x.y (2.6.28 or 2.6.28.1)
-- Backup kernel could be one of these .y fix releases only: Like 2.6.28.5
+I disable CGROUP, but enable GROUP_SCHED and USER_SCHED. My config inherits from old config
+files.
 
-So; when they're from the same version, it will prevent kernel API and 
-structure changes.
-For resuming by backup kernel: The primary kernel could write a journal 
-about the needed things for backup to resume. Like process IDs, memory 
-and process situations etc. The same manner as the Journalled File 
-Systems did (they write a journal what they did to recover/resume at 
-crash/disaster time).
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+# CONFIG_RT_GROUP_SCHED is not set
+CONFIG_USER_SCHED=y
+# CONFIG_CGROUP_SCHED is not set
+
+I check defconfig on x86-64 of 2.6.28 and it does enable CGROUP and disable USER_SCHED.
+
+Perhaps I need change my latest config file to the default on sched options.
+
 
