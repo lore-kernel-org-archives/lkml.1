@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZCDFUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZCDFgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbZCDFUS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 00:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZCDFUD
+	id S1753297AbZCDFgc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 00:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZCDFgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 00:20:03 -0500
-Received: from kroah.org ([198.145.64.141]:42631 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750739AbZCDFUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 00:20:03 -0500
-Date: Tue, 3 Mar 2009 20:35:14 -0800
-From: Greg KH <greg@kroah.com>
-To: Zhenwen Xu <helight.xu@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]some cleanup on drivers/base/sys.c
-Message-ID: <20090304043514.GA31892@kroah.com>
-References: <20090303103602.GA9658@helight>
+	Wed, 4 Mar 2009 00:36:23 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:41934 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750811AbZCDFgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 00:36:22 -0500
+Message-ID: <49AE1350.7080607@krogh.cc>
+Date: Wed, 04 Mar 2009 06:36:16 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090303103602.GA9658@helight>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: john stultz <johnstul@us.ibm.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>	 <49A6F39F.9040801@krogh.cc>	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>	 <49A6FEE2.90700@krogh.cc>	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>	 <49A70B24.6090706@krogh.cc>	 <1235685269.6811.11.camel@localhost.localdomain>	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>	 <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>	 <1235766936.7402.5.camel@localhost.localdomain> <49ABACA0.3090300@krogh.cc>	 <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc>	 <1236110026.6068.18.camel@localhost> <49AD9598.3030308@krogh.cc> <1236118575.6068.79.camel@localhost>
+In-Reply-To: <1236118575.6068.79.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 06:36:02PM +0800, Zhenwen Xu wrote:
+john stultz wrote:
+> On Tue, 2009-03-03 at 21:39 +0100, Jesper Krogh wrote:
+>> john stultz wrote:
+>>> Do you see the same behavior if you drop all but one server (including
+>>> the local clock: 127.127.1.0)? 
+>> Yes.
+>> Mar  3 21:20:59 quad12 ntpd[2435]: ntpd 4.2.4p4@1.1520-o Tue Jan  6 
+>> 15:50:55 UTC 2009 (1)
+>> Mar  3 21:20:59 quad12 ntpd[2436]: precision = 1.000 usec
+>> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #0 wildcard, 
+>> 0.0.0.0#123 Disabled
+>> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #1 wildcard, 
+>> ::#123 Disabled
+>> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #2 lo, ::1#123 
+>> Enabled
+>> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #3 bond0, 
+>> fe80::21e:68ff:fe57:8169#123 Enabled
+>> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #4 lo, 
+>> 127.0.0.1#123 Enabled
+>> Mar  3 21:20:59 quad12 ntpd[2436]: Listening on interface #5 bond0, 
+>> 10.194.132.91#123 Enabled
+>> Mar  3 21:20:59 quad12 ntpd[2436]: kernel time sync status 0040
+>> Mar  3 21:20:59 quad12 ntpd[2436]: frequency initialized -29.286 PPM 
+>> from /var/lib/ntp/ntp.drift
+>> Mar  3 21:21:58 quad12 ntpd[2436]: synchronized to 10.194.133.12, stratum 4
+>> Mar  3 21:21:58 quad12 ntpd[2436]: time reset -6.148275 s
+>> Mar  3 21:21:58 quad12 ntpd[2436]: kernel time sync status change 0001
+>> Mar  3 21:25:01 quad12 ntpd[2436]: synchronized to 10.194.133.12, stratum 4
+>> Mar  3 21:37:03 quad12 ntpd[2436]: time reset -0.664351 s
+>>
+>> Only one server and the minpoll 4 maxpoll 4 options to the server line.
 > 
-> do some cleanup on drivers/base/sys.c
-> 
-> >From ca17f201964ccd9f305808617560fd1945bf4046 Mon Sep 17 00:00:00 2001
-> From: Zhenwen Xu <helight.xu@gmail.com>
-> Date: Tue, 3 Mar 2009 18:23:29 +0800
-> Subject: [PATCH] some cleanup on drivers/base/sys.c
+> Well, it may still need a few hours to settle. :)  Again, those time
+> resets are seen when NTPd doesn't have a good drift ppm at startup, and
+> it has to find it.
 
-I have no objection to this, and I'll queue it up, but I'm curious, what
-made you want to do this patch?
+With one server and the maxpoll minpoll stuff, this on "settled" after a 
+bit more than 3 hours:
+Mar  4 01:14:05 quad12 ntpd[2436]: time reset -0.381826 s
+Mar  4 01:15:39 quad12 ntpd[2436]: synchronized to 10.194.133.12, stratum 4
+jk@quad12:~$ uptime
+  06:35:40 up 15:55,  1 user,  load average: 0.00, 0.00, 0.00
+jk@quad12:~$ ntpq -c peers
+      remote           refid      st t when poll reach   delay   offset 
+  jitter
+==============================================================================
+*bioinf.nzcorp.n 10.192.96.19     4 u    8   16  377    0.098  -80.184 
+  0.673
+jk@quad12:~$ ntpdc -c kerinfo
+***Command `kerinfo' unknown
+jk@quad12:~$ ntpdc -c kerninfo
+pll offset:           -0.06619 s
+pll frequency:        -500.000 ppm
+maximum error:        0.130081 s
+estimated error:      0.001201 s
+status:               0001  pll
+pll time constant:    4
+precision:            1e-06 s
+frequency tolerance:  500 ppm
 
-Care to do other work in the driver core?  :)
-
-thanks,
-
-greg k-h
+-- 
+Jesper
