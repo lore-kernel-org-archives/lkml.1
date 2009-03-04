@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZCDAHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZCDAIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbZCDAHn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Mar 2009 19:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZCDAHb
+	id S1756335AbZCDAIM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Mar 2009 19:08:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZCDAH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 19:07:31 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51777 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756723AbZCDAH3 (ORCPT
+	Tue, 3 Mar 2009 19:07:56 -0500
+Received: from mail.gmx.net ([213.165.64.20]:51753 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754742AbZCDAHz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 19:07:29 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 4/4] Memory controller soft limit reclaim on contention (v3)
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090303111713.GQ11421@balbir.in.ibm.com>
-References: <20090303095833.D9FC.A69D9226@jp.fujitsu.com> <20090303111713.GQ11421@balbir.in.ibm.com>
-Message-Id: <20090304084928.FD57.A69D9226@jp.fujitsu.com>
+	Tue, 3 Mar 2009 19:07:55 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+CjcQXFwSCNVVBsvwiQG9kBLuPy9E+lnzRVMrO8c
+	CDsaNBN4S22F8k
+Date: Wed, 4 Mar 2009 01:07:55 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: Linux 2.6.29-rc6 bombs while compiling a kernel for a
+ linkstation/kurobox
+In-Reply-To: <20090302094303.GA29819@ime.usp.br>
+Message-ID: <Pine.LNX.4.64.0903040103440.5059@axis700.grange>
+References: <20090302094303.GA29819@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed,  4 Mar 2009 09:07:21 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir
+On Mon, 2 Mar 2009, Rogério Brito wrote:
 
-> > > > kswapd's roll is increasing free pages until zone->pages_high in "own node".
-> > > > mem_cgroup_soft_limit_reclaim() free one (or more) exceed page in any node.
-> > > > 
-> > > > Oh, well.
-> > > > I think it is not consistency.
-> > > > 
-> > > > if mem_cgroup_soft_limit_reclaim() is aware to target node and its pages_high,
-> > > > I'm glad.
-> > > 
-> > > Yes, correct the role of kswapd is to keep increasing free pages until
-> > > zone->pages_high and the first set of pages to consider is the memory
-> > > controller over their soft limits. We pass the zonelist to ensure that
-> > > while doing soft reclaim, we focus on the zonelist associated with the
-> > > node. Kamezawa had concernes over calling the soft limit reclaim from
-> > > __alloc_pages_internal(), did you prefer that call path? 
-> > 
-> > I read your patch again.
-> > So, mem_cgroup_soft_limit_reclaim() caller place seems in balance_pgdat() is better.
-> > 
-> > Please imazine most bad scenario.
-> > CPU0 (kswapd) take to continue shrinking.
-> > CPU1 take another activity and charge memcg conteniously.
-> > At that time, balance_pgdat() don't exit very long time. then 
-> > mem_cgroup_soft_limit_reclaim() is never called.
-> > 
+> Hi there.
 > 
-> Yes, true... that is why I added the hooks in __alloc_pages_internal()
-> in the first two revisions, but Kamezawa objected to them. In the
-> scenario that you mention that balance_pgdat() is busy, if we are
-> under global system memory pressure, even after freeing memory from
-> soft limited cgroups, we don't have sufficient free memory. We need to
-> go reclaim from the whole system. An administrator can easily avoid
-> the above scenario by using hard limits on the cgroup running on CPU1.
+> I tried to compile a new kernel for my (powerpc) Kurobox HD (an embedded
+> system that has a Freescale processor), but it seems that the
+> compilation fails, with both my usual config file and with the shipped
+> linkstation_defconfig file.
+> 
+> I get the following error during compilation (actually a
+> cross-compilation):
+> 
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> arch/powerpc/platforms/built-in.o: In function `linkstation_setup_arch':
+> linkstation.c:(.init.text+0x218): undefined reference to `physmap_set_partitions'
+> drivers/built-in.o:(__ksymtab+0x9f8): undefined reference to `physmap_set_partitions'
+> make: *** [.tmp_vmlinux1] Error 1
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-I agree with soft limit implementation is difficult.
+Yes, linkstation and storcenter have to migrate to the "physmap-flash" 
+platform driver. For now you can define in your .config
 
-but I still don't like soft limit in __alloc_pages_internal().
-if it does, kswapd reclaim the pages from global LRU *before*
-shrinking soft limit.
+CONFIG_MTD_PHYSMAP=y
+CONFIG_MTD_PHYSMAP_COMPAT=y
+CONFIG_MTD_PHYSMAP_START=0xffc00000
+CONFIG_MTD_PHYSMAP_LEN=0x400000
+CONFIG_MTD_PHYSMAP_BANKWIDTH=1
 
-again, linux reclaim policy is
+(I hope the numbers are correct, just found them in my local tree, don't 
+remember any more what exactly they configure, please, double-check.) And 
+yes, it must be fixed in the mainline. I'll see if I find time for this, 
+maybe tomorrow (actually, already today.)
 
-	free < pages_low:  run kswapd
-	free < pages_min:  foreground reclaim via __alloc_pages_internal()
-
-then, if soft limit reclaim put into __alloc_pages_internal(),
-
-	free < pages_low:  run kswapd
-	free < pages_min:  soft limit reclaim and 
-                           foreground reclaim via __alloc_pages_internal()
-
-it seems unintetional behavior.
-
-In addition, I still strongly oppose againt global lock although 
-soft limit shrinking don't put into __alloc_pages_internal().
-I think it doesn't depend on caller place.
-
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
