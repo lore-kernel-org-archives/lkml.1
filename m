@@ -1,70 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbZCEDnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbZCEDx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754800AbZCEDnV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 22:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZCEDnK
+	id S1754885AbZCEDx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 22:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZCEDxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 22:43:10 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:34891 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbZCEDnI (ORCPT
+	Wed, 4 Mar 2009 22:53:44 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42580
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752678AbZCEDxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 22:43:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=bwQd4O1foCrV9AyPigokqk8z57nSdVX/BPNqYeTBJpx2kxUmfwSRdPUB9ZHyafufkn
-         Gz7a+c/rUoIMFwTPy6gtVcqfMetGCfOsiM5EDJ3ELhbyaJCF3z6hB7krKSRjyEq1ar+3
-         e2X0qgq4AqQ0fcEMpoZCl+jFH5j6TxfsMrSz4=
-MIME-Version: 1.0
-In-Reply-To: <20090304155544.3bc3f337.akpm@linux-foundation.org>
-References: <20090303063605.GA30258@july>
-	 <20090303124948.dda294e5.akpm@linux-foundation.org>
-	 <49AE6907.1080702@nokia.com>
-	 <20090304085055.c9de6cbb.akpm@linux-foundation.org>
-	 <9c9fda240903041547x540899f9hd94cbf49baac660b@mail.gmail.com>
-	 <20090304155544.3bc3f337.akpm@linux-foundation.org>
-Date: Thu, 5 Mar 2009 12:43:06 +0900
-X-Google-Sender-Auth: 4a5e35e7cc6b0abd
-Message-ID: <9c9fda240903041943m483db3f4i3c40c6970ef16fce@mail.gmail.com>
-Subject: Re: [PATCH 1/3] [MTD] Flex-OneNAND support
-From: Kyungmin Park <kmpark@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       AMIT KUMARSHARMA <amitsharma.9@samsung.com>
-Cc: adrian.hunter@nokia.com, h.rohit@samsung.com,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Mar 2009 22:53:43 -0500
+Date: Wed, 04 Mar 2009 19:53:28 -0800 (PST)
+Message-Id: <20090304.195328.106253933.davem@davemloft.net>
+To: kaber@trash.net
+Cc: bart@jukie.net, greearb@candelatech.com, shemminger@vyatta.com,
+       dada1@cosmosbay.com, frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49AE69DD.80802@trash.net>
+References: <49AE509B.3000305@trash.net>
+	<20090304.025914.149394356.davem@davemloft.net>
+	<49AE69DD.80802@trash.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Patrick McHardy <kaber@trash.net>
+Date: Wed, 04 Mar 2009 12:45:33 +0100
 
-On Thu, Mar 5, 2009 at 8:55 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 5 Mar 2009 08:47:03 +0900
-> Kyungmin Park <kmpark@infradead.org> wrote:
->
->> I think we know the issues currently and then if the device is opened,
->> handle this one if required.
->> How do you think?
->
-> I think it would be prudent to fix the known problems now, rather
-> than having to go through and re-debug them later on.
->
-> Bear in mind that people frequently copy old code when writing
-> new code, so these things tend to propagate, creating more work
-> later on.
->
+> This is a bit tricky to fix since we actually need some valid
+> ops before invoking ->init(). One way would be to move the compat
+> ops initialization to a seperate function and have VLAN use it to
+> switch its ops.
 
-Agree,
+Mind if I push this into net-2.6?
 
-To Amit,
+vlan: Fix vlan-in-vlan crashes.
 
-Could you fix it and send a patch please.
-Also can you reduce the left shift operation to resolve it permanently
+As analyzed by Patrick McHardy, vlan needs to reset it's
+netdev_ops pointer in it's ->init() function but this
+leaves the compat method pointers stale.
 
-Thank you,
-Kyungmin Park
+Add a netdev_resync_ops() and call it from the vlan code.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ include/linux/netdevice.h |    1 +
+ net/8021q/vlan_dev.c      |    1 +
+ net/core/dev.c            |   54 +++++++++++++++++++++++++++-----------------
+ 3 files changed, 35 insertions(+), 21 deletions(-)
+
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index ec54785..6593667 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1079,6 +1079,7 @@ extern void		synchronize_net(void);
+ extern int 		register_netdevice_notifier(struct notifier_block *nb);
+ extern int		unregister_netdevice_notifier(struct notifier_block *nb);
+ extern int		init_dummy_netdev(struct net_device *dev);
++extern void		netdev_resync_ops(struct net_device *dev);
+ 
+ extern int call_netdevice_notifiers(unsigned long val, struct net_device *dev);
+ extern struct net_device	*dev_get_by_index(struct net *net, int ifindex);
+diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
+index 4a19acd..b6e1f9e 100644
+--- a/net/8021q/vlan_dev.c
++++ b/net/8021q/vlan_dev.c
+@@ -639,6 +639,7 @@ static int vlan_dev_init(struct net_device *dev)
+ 		dev->hard_header_len = real_dev->hard_header_len + VLAN_HLEN;
+ 		dev->netdev_ops         = &vlan_netdev_ops;
+ 	}
++	netdev_resync_ops(dev);
+ 
+ 	if (is_vlan_dev(real_dev))
+ 		subclass = 1;
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 9e4afe6..a06c6fa 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -4282,6 +4282,38 @@ unsigned long netdev_fix_features(unsigned long features, const char *name)
+ }
+ EXPORT_SYMBOL(netdev_fix_features);
+ 
++/* Some devices need to (re-)set their netdev_ops inside
++ * ->init() or similar.  If that happens, we have to setup
++ * the compat pointers again.
++ */
++void netdev_resync_ops(struct net_device *dev)
++{
++#ifdef CONFIG_COMPAT_NET_DEV_OPS
++	const struct net_device_ops *ops = dev->netdev_ops;
++
++	dev->init = ops->ndo_init;
++	dev->uninit = ops->ndo_uninit;
++	dev->open = ops->ndo_open;
++	dev->change_rx_flags = ops->ndo_change_rx_flags;
++	dev->set_rx_mode = ops->ndo_set_rx_mode;
++	dev->set_multicast_list = ops->ndo_set_multicast_list;
++	dev->set_mac_address = ops->ndo_set_mac_address;
++	dev->validate_addr = ops->ndo_validate_addr;
++	dev->do_ioctl = ops->ndo_do_ioctl;
++	dev->set_config = ops->ndo_set_config;
++	dev->change_mtu = ops->ndo_change_mtu;
++	dev->tx_timeout = ops->ndo_tx_timeout;
++	dev->get_stats = ops->ndo_get_stats;
++	dev->vlan_rx_register = ops->ndo_vlan_rx_register;
++	dev->vlan_rx_add_vid = ops->ndo_vlan_rx_add_vid;
++	dev->vlan_rx_kill_vid = ops->ndo_vlan_rx_kill_vid;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	dev->poll_controller = ops->ndo_poll_controller;
++#endif
++#endif
++}
++EXPORT_SYMBOL(netdev_resync_ops);
++
+ /**
+  *	register_netdevice	- register a network device
+  *	@dev: device to register
+@@ -4326,27 +4358,7 @@ int register_netdevice(struct net_device *dev)
+ 	 * This is temporary until all network devices are converted.
+ 	 */
+ 	if (dev->netdev_ops) {
+-		const struct net_device_ops *ops = dev->netdev_ops;
+-
+-		dev->init = ops->ndo_init;
+-		dev->uninit = ops->ndo_uninit;
+-		dev->open = ops->ndo_open;
+-		dev->change_rx_flags = ops->ndo_change_rx_flags;
+-		dev->set_rx_mode = ops->ndo_set_rx_mode;
+-		dev->set_multicast_list = ops->ndo_set_multicast_list;
+-		dev->set_mac_address = ops->ndo_set_mac_address;
+-		dev->validate_addr = ops->ndo_validate_addr;
+-		dev->do_ioctl = ops->ndo_do_ioctl;
+-		dev->set_config = ops->ndo_set_config;
+-		dev->change_mtu = ops->ndo_change_mtu;
+-		dev->tx_timeout = ops->ndo_tx_timeout;
+-		dev->get_stats = ops->ndo_get_stats;
+-		dev->vlan_rx_register = ops->ndo_vlan_rx_register;
+-		dev->vlan_rx_add_vid = ops->ndo_vlan_rx_add_vid;
+-		dev->vlan_rx_kill_vid = ops->ndo_vlan_rx_kill_vid;
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-		dev->poll_controller = ops->ndo_poll_controller;
+-#endif
++		netdev_resync_ops(dev);
+ 	} else {
+ 		char drivername[64];
+ 		pr_info("%s (%s): not using net_device_ops yet\n",
+-- 
+1.6.2
+
