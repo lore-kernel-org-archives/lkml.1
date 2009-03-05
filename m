@@ -1,130 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZCENNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZCENNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbZCENNP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZCENIt
+	id S1756561AbZCENNf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZCENLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:08:49 -0500
-Received: from smtp-68.nebula.fi ([83.145.220.68]:39716 "EHLO
-	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754560AbZCENIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:08:39 -0500
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 16/17] x86: unify kernel_physical_mapping_init() function signatures
-Date: Thu,  5 Mar 2009 14:55:07 +0200
-Message-Id: <1236257708-27269-16-git-send-email-penberg@cs.helsinki.fi>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Thu, 5 Mar 2009 08:11:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55570 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755813AbZCENLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 08:11:13 -0500
+Subject: Re: [git-pull -tip V2] x86: msr architecture debug code
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090305122157.GA7347@alberich.amd.com>
+References: <1236008575.3332.2.camel@localhost.localdomain>
+	 <20090302205437.GB14471@elte.hu>
+	 <1236194183.4994.9.camel@localhost.localdomain>
+	 <1236199796.3130.3.camel@localhost.localdomain>
+	 <20090305122157.GA7347@alberich.amd.com>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 18:40:34 +0530
+Message-Id: <1236258634.3720.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+Hello Andreas,
 
-In preparation for moving the function declaration to a header file, unify
-32-bit and 64-bit signatures.
+Thanks for your review.
 
-Cc: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- arch/x86/mm/init.c    |   13 +++----------
- arch/x86/mm/init_32.c |   13 ++++++++++---
- arch/x86/mm/init_64.c |    2 +-
- 3 files changed, 14 insertions(+), 14 deletions(-)
+On Thu, 2009-03-05 at 13:21 +0100, Andreas Herrmann wrote:
+> On Thu, Mar 05, 2009 at 02:19:56AM +0530, Jaswinder Singh Rajput wrote:
+> Hi,
+> 
+> Why do we need this in-kernel?
+> We have already access to MSRs via /dev/cpu/*/msr
+> 
+> Did you have a look at x86info.  (see
+> http://www.codemonkey.org.uk/projects/x86info/)
+> Recent versions contain a tool called lsmsr -- which shows you MSRs
+> and also decodes some bits, e.g.
+> 
 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 5bbdfe7..6475693 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -11,17 +11,12 @@
- 
- #ifdef CONFIG_X86_32
- extern void __init early_ioremap_page_table_range_init(void);
--extern void __init kernel_physical_mapping_init(unsigned long start_pfn,
--						unsigned long end_pfn,
--						int use_pse);
- #endif
- 
--#ifdef CONFIG_X86_64
--extern unsigned long __meminit
-+extern unsigned long __init
- kernel_physical_mapping_init(unsigned long start,
- 			     unsigned long end,
- 			     unsigned long page_size_mask);
--#endif
- 
- unsigned long __initdata e820_table_start;
- unsigned long __meminitdata e820_table_end;
-@@ -301,10 +296,8 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 
- #ifdef CONFIG_X86_32
- 	for (i = 0; i < nr_range; i++)
--		kernel_physical_mapping_init(
--				mr[i].start >> PAGE_SHIFT,
--				mr[i].end >> PAGE_SHIFT,
--				mr[i].page_size_mask == (1<<PG_LEVEL_2M));
-+		kernel_physical_mapping_init(mr[i].start, mr[i].end,
-+					     mr[i].page_size_mask);
- 	ret = end;
- #else /* CONFIG_X86_64 */
- 	for (i = 0; i < nr_range; i++)
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index e9df0d9..5ca9c6c 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -223,10 +223,13 @@ static inline int is_kernel_text(unsigned long addr)
-  * of max_low_pfn pages, by creating page tables starting from address
-  * PAGE_OFFSET:
-  */
--void __init kernel_physical_mapping_init(unsigned long start_pfn,
--					 unsigned long end_pfn,
--					 int use_pse)
-+unsigned long __init
-+kernel_physical_mapping_init(unsigned long start,
-+			     unsigned long end,
-+			     unsigned long page_size_mask)
- {
-+	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
-+	unsigned long start_pfn, end_pfn;
- 	pgd_t *pgd_base = swapper_pg_dir;
- 	int pgd_idx, pmd_idx, pte_ofs;
- 	unsigned long pfn;
-@@ -236,6 +239,9 @@ void __init kernel_physical_mapping_init(unsigned long start_pfn,
- 	unsigned pages_2m, pages_4k;
- 	int mapping_iter;
- 
-+	start_pfn = start >> PAGE_SHIFT;
-+	end_pfn = end >> PAGE_SHIFT;
-+
- 	/*
- 	 * First iteration will setup identity mapping using large/small pages
- 	 * based on use_pse, with other attributes same as set by
-@@ -350,6 +356,7 @@ repeat:
- 		mapping_iter = 2;
- 		goto repeat;
- 	}
-+	return 0;
- }
- 
- pte_t *kmap_pte;
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index a1d33c5..f441ae3 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -539,7 +539,7 @@ phys_pud_update(pgd_t *pgd, unsigned long addr, unsigned long end,
- 	return phys_pud_init(pud, addr, end, page_size_mask);
- }
- 
--unsigned long __meminit
-+unsigned long __init
- kernel_physical_mapping_init(unsigned long start,
- 			     unsigned long end,
- 			     unsigned long page_size_mask)
--- 
-1.5.4.3
+Its looks good but I have planning to add much more features in
+msr_debug and also Ingo suggested to add more features (please check his
+email in this thread)
+
+I am planning to use msr_debug for my development and also want to do
+System development by using it.
+
+This is just a beginning. I am just making basic setup I will add
+features from this point ;-)
+
+
+
+> The tool just lacks some detailed MSR definitions for non-AMD CPUs.
+> Feel free to add them ... (and to fix bugs if encountered ;-)
+> 
+
+Sure I will also check it.
+Can you please forward some links or Manuals of AMD to this email
+address so that I can also do some magic with AMD or another Intel based
+CPUs.
+
+> Of course I've applied your patch to do a sniff test and found the
+> following:
+> 
+> - I've just one directory in debugfs
+>   x86/cpu/msr/cpu0
+>   The system has a quad-core CPU. So I guess there should be 4
+>   directories -- one for each core.
+> 
+
+In this Version I just made for cpu0, in V1 I was doing it for each
+cpu_core_id, I mean for each package.
+
+I think, there is no point of showing MSR/cores It will show the same
+information. Please correct me If I am wrong.
+
+But if you guys want I can make for each core.
+
+> - The file showing MTRRs is misspelled (mttr instead of mtrr).
+> 
+
+Ok, I will fix it in next version.
+
+Thanks,
+--
+JSR
 
