@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbZCEQzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZCEQ55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602AbZCEQzR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbZCEQyr
+	id S1756584AbZCEQ55 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:57:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZCEQ5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 11:54:47 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44857 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbZCEQyq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:54:46 -0500
-Date: Thu, 5 Mar 2009 17:54:30 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 1/2] PM: Split up sysdev_[suspend|resume] from
-	device_power_[down|up]
-Message-ID: <20090305165430.GC1379@ucw.cz>
-References: <200902221837.49396.rjw@sisk.pl> <200902221838.51548.rjw@sisk.pl>
+	Thu, 5 Mar 2009 11:57:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37360 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754230AbZCEQ5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 11:57:48 -0500
+Date: Thu, 5 Mar 2009 17:53:40 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com
+Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned timers.
+Message-ID: <20090305165340.GA6984@redhat.com>
+References: <20090304121249.GA9855@linux.vnet.ibm.com> <20090304121456.GB9855@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902221838.51548.rjw@sisk.pl>
+In-Reply-To: <20090304121456.GB9855@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 03/04, Arun R Bharadwaj wrote:
+>
+> +static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
+> +{
+> +	return tbase_get_deferrable(timer->base) |
+> +				tbase_get_pinned(timer->base);
+> +}
 
-> Move the sysdev_suspend/resume from the callee to the callers, with
-> no real change in semantics, so that we can rework the disabling of
-> interrupts during suspend/hibernation.
-> 
-> This is based on an earlier patch from Linus.
+I'd say this looks a bit strange. Hopefully compiler can optimize this code
+to return (unsigned long)base & (TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG).
 
-> Index: linux-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/main.c
-> +++ linux-2.6/drivers/base/power/main.c
-> @@ -333,7 +333,6 @@ static void dpm_power_up(pm_message_t st
->   */
->  void device_power_up(pm_message_t state)
->  {
-> -	sysdev_resume();
->  	dpm_power_up(state);
->  }
+> @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
+>  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+>  	unsigned long flags;
+>
+> +	timer_set_pinned(timer);
 
-And at this point we can rename dpm_power_up -> device_power_up. Good.
+But we never clear TBASE_PINNED_FLAG?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If we use mod_timer() next time, the timer remains "pinned". I do not say
+this is really wrong, but a bit strange imho.
+
+Oleg.
+
