@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZCEVyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZCEV4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbZCEVyO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 16:54:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZCEVx6
+	id S1753484AbZCEV4Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 16:56:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCEV4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 16:53:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:59064 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZCEVx5 (ORCPT
+	Thu, 5 Mar 2009 16:56:14 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:59816 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbZCEV4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 16:53:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=B2tcGKTssSKCQJcJAxC46Xw9dI8TghytDLtMDI95Abvs5xAgi1QNjfdwaxCFwWjqhH
-         ywBk7sMkTnIebHhJ75+C/SaC3tQ0N+uSIWiPbjl25eLPOZZesH1gS5tYNxkIKqBcxYee
-         k9DXLu6Z6cQtqqlKcMZnz//as6MWE3R5p1f50=
-Date: Fri, 6 Mar 2009 01:00:44 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090305220044.GA2819@x200.localdomain>
-References: <20090305163857.0C18F3FD@kernel> <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz> <20090305210840.GA2499@x200.localdomain> <1236288427.22399.122.camel@nimitz>
+	Thu, 5 Mar 2009 16:56:13 -0500
+From: Hannes Eder <hannes@hanneseder.net>
+Date: Thu, 05 Mar 2009 22:55:04 +0100
+Message-ID: <20090305215455.23866.57598.stgit@f10box.hanneseder.net>
+User-Agent: StGit/0.14.3.348.gcb02.dirty
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236288427.22399.122.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH v3 09/15] NULL noise: drivers/scsi/FlashPoint.c
+To: trivial@kernel.org
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <154e089b0903051215q1216aa53icd41556e2af8b234@mail.gmail.com>
+References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
+	     <20090305191602.30062.71301.stgit@f10box.hanneseder.net>
+	      <1236283546.5626.45.camel@localhost.localdomain>
+	       <154e089b0903051215q1216aa53icd41556e2af8b234@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 01:27:07PM -0800, Dave Hansen wrote:
-> > Imagine, unsupported file is opened between userspace checks
-> > for /proc/*/checkpointable and /proc/*/fdinfo/*/checkpointable
-> > and whatever, you stil have to do all the checks inside checkpoint(2).
-> 
-> Alexey, we have two problems here.  I completely agree that we have to
-> do complete and thorough checks of each file descriptor at
-> sys_checkpoint().  Any checks made at other times should not be trusted.
-> 
-> The other side is what Ingo has been asking for.  How do we *know* when
-> we are checkpointable *before* we call (and without calling)
+Fix this sparse warnings:
+  drivers/scsi/FlashPoint.c:906:9: warning: Using plain integer as NULL pointer
+  drivers/scsi/FlashPoint.c:907:53: warning: Using plain integer as NULL pointer
+  drivers/scsi/FlashPoint.c:922:1: warning: Using plain integer as NULL pointer
 
-This "without calling checkpoint(2)" results in much complications
-as demonstrated.
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+v2: fix checkpatch.pl issue.
+v2.1: other subject, as suggested by Al Viro
+v3: no need to explicitly initialize the variables, as they are in the
+    .bss section anyway (pointed out by James Bottomley)
 
-task_struct and file are not like other structures because they are exposed
-in /proc. For PROC_FS=n kernels, one can't even check.
+ drivers/scsi/FlashPoint.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-You can do checkpoint(2) without actual dump. You pass, you're most
-certainly checkpointable (with inevitable race condition in mind).
+diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
+index b898d38..ac67307 100644
+--- a/drivers/scsi/FlashPoint.c
++++ b/drivers/scsi/FlashPoint.c
+@@ -902,13 +902,12 @@ static unsigned char FPT_scmachid(unsigned char p_card,
+ static void FPT_autoCmdCmplt(unsigned long p_port, unsigned char p_card);
+ static void FPT_autoLoadDefaultMap(unsigned long p_port);
+ 
+-static struct sccb_mgr_tar_info FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR] =
+-    { {{0}} };
+-static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {0} };
+-static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR] = { {{0}} };
+-static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS] = { {0} };
++static struct sccb_mgr_tar_info FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR];
++static struct sccb_card FPT_BL_Card[MAX_CARDS];
++static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR];
++static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS];
+ 
+-static unsigned char FPT_mbCards = 0;
++static unsigned char FPT_mbCards;
+ static unsigned char FPT_scamHAString[] =
+     { 0x63, 0x07, 'B', 'U', 'S', 'L', 'O', 'G', 'I', 'C',
+ 	' ', 'B', 'T', '-', '9', '3', '0',
+@@ -916,10 +915,9 @@ static unsigned char FPT_scamHAString[] =
+ 	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
+ };
+ 
+-static unsigned short FPT_default_intena = 0;
++static unsigned short FPT_default_intena;
+ 
+-static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {
+-0};
++static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char);
+ 
+ /*---------------------------------------------------------------------
+  *
 
-With time the amount of stuff C/R won't support will approach zero,
-but the infrastructure for "checkpointable" will stay constant.
-If it's too much right now, it will be way too much in future.
-
-> sys_checkpoint()?  You are yet to acknowledge that this is a valid use
-> case, but it is exactly what Ingo is asking for, I believe.
-
-It's a valid requirement.
-
-> If nice printk()s are sufficient to cover what Ingo wants, I'm quite
-> happy to remove the /proc files.  
