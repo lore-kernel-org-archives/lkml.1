@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbZCEXXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbZCEXXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756947AbZCEXXB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:23:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZCEXWr
+	id S1757105AbZCEXXZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbZCEXXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:22:47 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:32987 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:23:11 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:33021 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755869AbZCEXWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:22:46 -0500
-Message-Id: <20090305225520.443427388@polymtl.ca>
+	id S1757024AbZCEXXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:23:09 -0500
+Message-Id: <20090305225517.487625792@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:48:07 -0500
+Date: Thu, 05 Mar 2009 17:47:54 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,35 +31,36 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 39/41] SPUFS markers API update
-Content-Disposition: inline; filename=spufs-markers-api-update.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:16 +0000
+Subject: [RFC patch 26/41] Marers remove old comment
+Content-Disposition: inline; filename=markers-remove-old-comment.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:13 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > + * Note : the empty asm volatile with read constraint is used here instead of a
+> > + * "used" attribute to fix a gcc 4.1.x bug.
+> 
+> There seems no empty asm...
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- arch/powerpc/platforms/cell/spufs/spufs.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/linux/marker.h |    2 --
+ 1 file changed, 2 deletions(-)
 
-Index: linux-2.6-lttng/arch/powerpc/platforms/cell/spufs/spufs.h
+Index: linux-2.6-lttng/include/linux/marker.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2009-02-06 14:45:12.000000000 -0500
-+++ linux-2.6-lttng/arch/powerpc/platforms/cell/spufs/spufs.h	2009-02-06 15:40:25.000000000 -0500
-@@ -373,9 +373,9 @@ extern void spu_free_lscsa(struct spu_st
- extern void spuctx_switch_state(struct spu_context *ctx,
- 		enum spu_utilization_state new_state);
+--- linux-2.6-lttng.orig/include/linux/marker.h	2009-02-06 15:21:25.000000000 -0500
++++ linux-2.6-lttng/include/linux/marker.h	2009-02-06 15:21:30.000000000 -0500
+@@ -73,8 +73,6 @@ struct marker {
+ 		_DEFINE_MARKER(name, #tp_name, tp_cb, format)
  
--#define spu_context_trace(name, ctx, spu) \
--	trace_mark(name, "ctx %p spu %p", ctx, spu);
-+#define spu_context_trace(name, ctx, _spu) \
-+	trace_mark(spu, name, "ctx %p spu %p", ctx, _spu);
- #define spu_context_nospu_trace(name, ctx) \
--	trace_mark(name, "ctx %p", ctx);
-+	trace_mark(spu, name, "ctx %p", ctx);
- 
- #endif
+ /*
+- * Note : the empty asm volatile with read constraint is used here instead of a
+- * "used" attribute to fix a gcc 4.1.x bug.
+  * Make sure the alignment of the structure in the __markers section will
+  * not add unwanted padding between the beginning of the section and the
+  * structure. Force alignment to the same alignment as the section start.
 
 -- 
 Mathieu Desnoyers
