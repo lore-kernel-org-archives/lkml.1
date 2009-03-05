@@ -1,138 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZCEHvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbZCEHx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670AbZCEHvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 02:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZCEHvl
+	id S1755724AbZCEHx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 02:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbZCEHxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 02:51:41 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:1388 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbZCEHvk convert rfc822-to-8bit (ORCPT
+	Thu, 5 Mar 2009 02:53:18 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:45367 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbZCEHxR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 02:51:40 -0500
+	Thu, 5 Mar 2009 02:53:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=RHk2rnCCIxhsSjHiWBALnJRAJh6m9l5OuEWLaV8h9es9ur4DvK3BsOOR72DNhYnQkM
-         vCZ4EAApkI2lnGIJ3KWw8hPwDhmA4Q9keezQSugajIHZ9LijuAisqflH+cG/W3zMnlN7
-         j3wBITVUz6DTF8ds0UWoESukhDjuuEZBlB0SU=
+        b=kxl9IP8R3nt5O61UofS7k6Omgb52sx3xHY3EE2gVsKtuP3wWqVXUvmbdH19y4L8qGh
+         OOrwcoMYk8FLyKNDQricIpuw30YwN4kK5EjmzgBQpdN+0xFWVkJNhflc0iOSciQ0uHgs
+         78ATe8jC97fpiO7OzAWl0BPumcGVDX9eo+Jdo=
 MIME-Version: 1.0
-In-Reply-To: <20090305060436.GA5359@nowhere>
-References: <dd18b0c30903042141k1adc0f6cj4bc286cfa29f475c@mail.gmail.com>
-	 <20090305060436.GA5359@nowhere>
-Date: Wed, 4 Mar 2009 23:51:38 -0800
-Message-ID: <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>
-Subject: Re: [PATCH 1/1] unifdef.c change "getline" to "get_line" to avoid C 
-	library confusion.
-From: Justin Mattock <justinmattock@gmail.com>
+In-Reply-To: <49af5f1b.1818d00a.209c.ffff9783@mx.google.com>
+References: <49af5f1b.1818d00a.209c.ffff9783@mx.google.com>
+Date: Thu, 5 Mar 2009 08:53:14 +0100
+Message-ID: <19f34abd0903042353i58c8e72eh33be515bf09a36f@mail.gmail.com>
+Subject: Re: [PATCH 5/5 v3] vsprintf: unify the format decoding layer for its 
+	3 users
+From: Vegard Nossum <vegard.nossum@gmail.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 10:04 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> On Wed, Mar 04, 2009 at 09:41:09PM -0800, Justin Mattock wrote:
->> From: Justin P. Mattock <justinmattock@gmail.com>
->>
->> This fixes an error when compiling the kernel.
->>
->>   CHK     include/linux/version.h
->>   HOSTCC  scripts/unifdef
->> scripts/unifdef.c:209: error: conflicting types for 'getline'
->> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
->> make[1]: *** [scripts/unifdef] Error 1
->> make: *** [__headers] Error 2
->>
->> --
->> scripts/unifdef.c  |  3 +++
->> 1 files changed, 3 insertions(+),0 deletions(-)
->>
->> diff --git a/scripts/unifdef.c b/scripts/unifdef.c
->> ---a/scripts/unifdef.c
->> +++b/scripts/unifdef.c
->> @@ -203,1 +203,0 @@ static void             addsym(bool, bool, char *);
->>
->>
->> static void             done(void);
->> static void             error(const char *);
->> static int              findsym(const char *);
->> static void             flushline(bool);
->> -static Linetype         getline(void);
->> +static Linetype         get_line(void);
->> static Linetype         ifeval(const char **);
->> static void             ignoreoff(void);
->> static void             ignoreon(void);
->> static void             keywordedit(const char *);
->>
->>
->>
->>
->> @@ -509,1 +509,0 @@ process(void)
->>
->>
->> {
->>       Linetype lineval;
->>
->>       for (;;) {
->>               linenum++;
->> -               lineval = getline();
->> +             lineval = get_line();
->>               trans_table[ifstate[depth]][lineval]();
->>               debug("process %s -> %s depth %d",
->>                   linetype_name[lineval],
->>                   ifstate_name[ifstate[depth]], depth);
->>       }
->> }
->>
->>
->> @@ -528,1 +528,0 @@ static Linetype
->> -getline(void)
->> +get_line(void)
->> {
->>       const char *cp;
->>
->> --
->>
->>
->> keep in mind I've never created a patch before,
->> (so go easy on me);
+2009/3/5 Frederic Weisbecker <fweisbec@gmail.com>:
+> An new optimization is making its way to ftrace. Its purpose is to
+> make ftrace_printk() consuming less memory and be faster.
 >
+> Written by Lai Jiangshan, the approach is to delay the formatting
+> job from tracing time to output time.
+> Currently, a call to ftrace_printk will format the whole string and
+> insert it into the ring buffer. Then you can read it on /debug/tracing/trace
+> file.
 >
-> Hi,
+> The new implementation stores the address of the format string and
+> the binary parameters into the ring buffer, making the packet more compact
+> and faster to insert.
+> Later, when the user exports the traces, the format string is retrieved
+> with the binary parameters and the formatting job is eventually done.
 >
-> You forgot to put your Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
-> :)
+> The new implementation rewrites a lot of format decoding bits from
+> vsnprintf() function, making now 3 differents functions to maintain
+> in their duplicated parts of printf format decoding bits.
 >
-> See Documentation/SubmittingPatches
->
-> I don't know who is the maintainer of this file.
-> Adding Andrew in Cc.
->
->
->> regards;
->>
->> --
->> Justin P. Mattock
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Suggested by Ingo Molnar, this patch tries to factorize the most
+> possible common bits from these functions.
+> The real common part between them is the format decoding. Although
+> they do somewhat similar jobs, their way to export or import the parameters
+> is very different. Thus, only the decoding layer is extracted, unless you see
+> other parts that could be worth factorized.
 >
 
-Cool,
-thanks for the help.
-I'll look at the doc's and google
-as much as possible, so I get this
-correct.
+Just one small nit from me :-)
 
-regards;
+> @@ -726,18 +961,9 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
+> Â int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+> Â {
+> Â  Â  Â  Â unsigned long long num;
+> - Â  Â  Â  int base;
+> Â  Â  Â  Â char *str, *end, c;
+> -
+> - Â  Â  Â  int flags; Â  Â  Â  Â  Â  Â  Â /* flags to number() */
+> -
+> - Â  Â  Â  int field_width; Â  Â  Â  Â /* width of output field */
+> - Â  Â  Â  int precision; Â  Â  Â  Â  Â /* min. # of digits for integers; max
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â number of chars for from string */
+> - Â  Â  Â  int qualifier; Â  Â  Â  Â  Â /* 'h', 'l', or 'L' for integer fields */
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  /* 'z' support added 23/7/1999 S.H. Â  Â */
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  /* 'z' changed to 'Z' --davidm 1/25/99 */
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  /* 't' added for ptrdiff_t */
+> + Â  Â  Â  int read;
+> + Â  Â  Â  struct printf_spec spec = {0};
+>
+> Â  Â  Â  Â /* Reject out-of-range values early. Â Large positive sizes are
+> Â  Â  Â  Â  Â  used for unknown buffer sizes. */
+> @@ -758,184 +984,144 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+> Â  Â  Â  Â  Â  Â  Â  Â size = end - buf;
+> Â  Â  Â  Â }
+>
+> - Â  Â  Â  for (; *fmt ; ++fmt) {
+> - Â  Â  Â  Â  Â  Â  Â  if (*fmt != '%') {
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (str < end)
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  *str = *fmt;
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  ++str;
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  continue;
+> - Â  Â  Â  Â  Â  Â  Â  }
+> + Â  Â  Â  while (*fmt) {
+> + Â  Â  Â  Â  Â  Â  Â  char *old_fmt = (char *)fmt;
+
+This looks a bit strange. We can't ever change the format string, so
+it doesn't make sense to try to use it as a non-const pointer anyway.
+Why not make the variable "const char *" and drop the cast?
+
+The same for another case.
+
+
+Vegard
 
 -- 
-Justin P. Mattock
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
