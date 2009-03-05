@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZCEIQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZCEIUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZCEIQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCEIQg
+	id S1754817AbZCEIUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCEIUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:16:36 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35647 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbZCEIQg (ORCPT
+	Thu, 5 Mar 2009 03:20:47 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:53702 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750860AbZCEIUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:16:36 -0500
-Date: Thu, 5 Mar 2009 09:19:08 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
-	standard config registers of all devices early)
-Message-ID: <20090305081908.GA30418@elf.ucw.cz>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902032253.42709.rjw@sisk.pl> <1233700390.16867.97.camel@pasglop> <200902032344.22348.rjw@sisk.pl> <1233702327.16867.109.camel@pasglop> <alpine.LFD.2.00.0902031514510.3247@localhost.localdomain> <20090304080212.GA1489@ucw.cz> <1236209104.6696.73.camel@pasglop>
+	Thu, 5 Mar 2009 03:20:46 -0500
+Message-ID: <49AF8B5A.4080505@free.fr>
+Date: Thu, 05 Mar 2009 09:20:42 +0100
+From: Cedric Le Goater <legoater@free.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236209104.6696.73.camel@pasglop>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       hch@infradead.org, Nathan Lynch <ntl@pobox.com>,
+       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [RFC][PATCH 8/8] check files for checkpointability
+References: <20090227203425.F3B51176@kernel>	<20090227203435.98735E54@kernel> <20090302133754.GA8033@us.ibm.com>	<20090302095917.6cfeda55@thinkcentre.lan>	<1236011251.26788.450.camel@nimitz>	<20090302112247.76bb3662@thinkcentre.lan>	<1236015052.26788.471.camel@nimitz> <20090302174433.GA12708@us.ibm.com> <1236017600.26788.488.camel@nimitz>
+In-Reply-To: <1236017600.26788.488.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-03-05 10:25:04, Benjamin Herrenschmidt wrote:
+Dave Hansen wrote:
+> On Mon, 2009-03-02 at 11:44 -0600, Serge E. Hallyn wrote:
+>> Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+>>> On Mon, 2009-03-02 at 11:22 -0600, Nathan Lynch wrote:
+>>>> No.. I mean what if a process 1234 does
+>>>>
+>>>> f = fopen("/proc/1234/stat", "r");
+>>>>
+>>>> and is then checkpointed.  Can that path be resolved during restart,
+>>>> before pid 1234 is alive?
+>>> Heh, that's a good one.
+>>>
+>>> It does mean that we can't do restore like this:
+>>>
+>>> 	for_each_cr_task()
+>>> 		restore_task_struct()
+>>> 		restore_files()
+>>> 		...
+>>>
+>>> We have to do:
+>>>
+>>> 	for_each_cr_task()
+>>> 		restore_task_struct()
+>>> 	for_each_cr_task()
+>>> 		restore_files()
+>>>
+>> Which is what we actually do, right?
 > 
-> > As long as we claim to support cpu hotplug, suspending the cpus early
-> > should work. User might have unplugged the cpu manually...
-> > 
-> > If something is broken in acpi, we may need to disable  cpu*/onlone on
-> >  affected systems.
+> OK, I have a really evil one.
 > 
-> You seem to miss some context here... it seems that ACPI mandates that
-> CPUs are suspended after devices and you know that we can't just start
-> blacklisting half of the machines out there just because we happen not
-> to do the same as what Windows does...
+> What if task 1234 does:
+> 
+> 	open(O_RDONLY, "/proc/5678/fdinfo/44");
+> 
+> and task 5678 does:
+> 
+> 	open(O_RDONLY, "/proc/5678/fdinfo/55");
+> 
+> There is no right order.
+> 
+> The only right way I can think to do it is that we have to loop on the
+> restore and defer files that we can't seem to find right now, hoping
+> that they'll show up as the restore progresses.
 
-I did not see that ACPI mandate... where is it?
+or the restore algorithm should support recursion. for example, epoll, 
+attached 'struct files' to af_unix socket, pipes (2 ends), fifos (idem),
+connected socket (you need the listening end), etc. 
 
- That would interfere with user's ability to online/offline cpus,
-badly.
+C.
 
-Are you saying that we should online all the CPUs before starting
-suspend to stay on the "safe side"?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Basically:
+> 
+> 	for_each_cr_task()
+> 		deferred_files = restore_files()
+> retry:
+> 	making_progress = 0
+> 	for_each(deferred_file)
+> 		restore(deferred_file)
+> 	if (making_progress)
+> 		goto retry;
+
+
+
+
+ 
