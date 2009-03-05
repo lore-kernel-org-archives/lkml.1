@@ -1,188 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZCEKAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZCEKBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbZCEKAV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZCEKAH
+	id S1755356AbZCEKBw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZCEKBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:00:07 -0500
-Received: from ns2.suse.de ([195.135.220.15]:59412 "EHLO mx2.suse.de"
+	Thu, 5 Mar 2009 05:01:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58669 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753369AbZCEKAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:00:05 -0500
-Date: Thu, 5 Mar 2009 11:00:01 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-fsdevel@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>, Jan Kara <jack@suse.cz>,
-       stable@kernel.org
-Subject: Re: [patch] fs: new inode i_state corruption fix
-Message-ID: <20090305100000.GA29177@duck.suse.cz>
-References: <20090305064554.GA11916@wotan.suse.de>
+	id S1752993AbZCEKBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:01:42 -0500
+Date: Thu, 5 Mar 2009 10:00:31 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       stern@rowland.harvard.edu, yinghai@kernel.org, randy.dunlap@oracle.com,
+       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
+       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, stern@rowland.harvard.edu, randy.dunlap@oracle.com,
+       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
+       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu
+In-Reply-To: <49AF18B7.4050305@kernel.org>
+References: <49AF18B7.4050305@kernel.org>
+Subject: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
+Message-ID: <tip-a1aade478862fca8710904532cbc6efed97fd05a@git.kernel.org>
+Git-Commit-ID: a1aade478862fca8710904532cbc6efed97fd05a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090305064554.GA11916@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Mar 2009 10:00:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 05-03-09 07:45:54, Nick Piggin wrote:
-> 
-> There was a report of a data corruption http://lkml.org/lkml/2008/11/14/121.
-> There is a script included to reproduce the problem.
-> 
-> During testing, I encountered a number of strange things with ext3, so I
-> tried ext2 to attempt to reduce complexity of the problem. I found that
-> fsstress would quickly hang in wait_on_inode, waiting for I_LOCK to be
-> cleared, even though instrumentation showed that unlock_new_inode had
-> already been called for that inode. This points to memory scribble, or
-> synchronisation problme.
-> 
-> i_state of I_NEW inodes is not protected by inode_lock because other
-> processes are not supposed to touch them until I_LOCK (and I_NEW) is
-> cleared. Adding WARN_ON(inode->i_state & I_NEW) to sites where we modify
-> i_state revealed that generic_sync_sb_inodes is picking up new inodes
-> from the inode lists and passing them to __writeback_single_inode without
-> waiting for I_NEW. Subsequently modifying i_state causes corruption. In
-> my case it would look like this:
-  Good catch.
+Commit-ID:  a1aade478862fca8710904532cbc6efed97fd05a
+Gitweb:     http://git.kernel.org/tip/a1aade478862fca8710904532cbc6efed97fd05a
+Author:     "Yinghai Lu" <yinghai@kernel.org>
+AuthorDate: Wed, 4 Mar 2009 16:11:35 -0800
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 5 Mar 2009 10:57:52 +0100
 
-> CPU0                            CPU1
-> unlock_new_inode()              __sync_single_inode()
->  reg <- inode->i_state
->  reg -> reg & ~(I_LOCK|I_NEW)   reg <- inode->i_state
->  reg -> inode->i_state          reg -> reg | I_SYNC
->                                 reg -> inode->i_state
-> 
-> Non-atomic RMW on CPU1 overwrites CPU0 store and sets I_LOCK|I_NEW again.
-> 
-> Fix for this is rather than wait for I_NEW inodes, just skip over them:
-> inodes concurrently being created are not subject to data integrity
-> operations, and should not significantly contribute to dirty memory either.
-> 
-> After this change, I'm unable to reproduce any of the added warnings or hangs
-> after ~1hour of running. Previously, the new warnings would start immediately
-> and hang would happen in under 5 minutes.
-  A quick grep seems to indicate that you've still missed a few cases,
-haven't you? I still see the same problem in
-drop_caches.c:drop_pagecache_sb() scanning, inode.c:invalidate_inodes()
-scanning, and dquot.c:add_dquot_ref() scanning.
-  Otherwise the patch looks fine.
+x86/doc: mini-howto for using earlyprintk=dbgp
 
-> I'm also testing on ext3 now, and so far no problems there either. I don't
-> know whether this fixes the problem reported above, but it fixes a real
-> problem for me.
-> 
-> Cc: "Jorge Boncompte [DTI2]" <jorge@dti2.net>
-> Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
-> Cc: Jan Kara <jack@suse.cz>
-> Cc: stable@kernel.org
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
+[ mingo: small edits and extensions. ]
 
-									Honza
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Sarah Sharp <sarah.a.sharp@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <49AF18B7.4050305@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> 
-> Index: linux-2.6/fs/inode.c
-> ===================================================================
-> --- linux-2.6.orig/fs/inode.c	2009-03-05 14:08:11.000000000 +1100
-> +++ linux-2.6/fs/inode.c	2009-03-05 17:20:35.000000000 +1100
-> @@ -359,6 +359,7 @@ static int invalidate_list(struct list_h
->  		invalidate_inode_buffers(inode);
->  		if (!atomic_read(&inode->i_count)) {
->  			list_move(&inode->i_list, dispose);
-> +			WARN_ON(inode->i_state & I_NEW);
->  			inode->i_state |= I_FREEING;
->  			count++;
->  			continue;
-> @@ -460,6 +461,7 @@ static void prune_icache(int nr_to_scan)
->  				continue;
->  		}
->  		list_move(&inode->i_list, &freeable);
-> +		WARN_ON(inode->i_state & I_NEW);
->  		inode->i_state |= I_FREEING;
->  		nr_pruned++;
->  	}
-> @@ -656,6 +658,7 @@ void unlock_new_inode(struct inode *inod
->  	 * just created it (so there can be no old holders
->  	 * that haven't tested I_LOCK).
->  	 */
-> +	WARN_ON((inode->i_state & (I_LOCK|I_NEW)) != (I_LOCK|I_NEW));
->  	inode->i_state &= ~(I_LOCK|I_NEW);
->  	wake_up_inode(inode);
->  }
-> @@ -1145,6 +1148,7 @@ void generic_delete_inode(struct inode *
->  
->  	list_del_init(&inode->i_list);
->  	list_del_init(&inode->i_sb_list);
-> +	WARN_ON(inode->i_state & I_NEW);
->  	inode->i_state |= I_FREEING;
->  	inodes_stat.nr_inodes--;
->  	spin_unlock(&inode_lock);
-> @@ -1186,16 +1190,19 @@ static void generic_forget_inode(struct 
->  			spin_unlock(&inode_lock);
->  			return;
->  		}
-> +		WARN_ON(inode->i_state & I_NEW);
->  		inode->i_state |= I_WILL_FREE;
->  		spin_unlock(&inode_lock);
->  		write_inode_now(inode, 1);
->  		spin_lock(&inode_lock);
-> +		WARN_ON(inode->i_state & I_NEW);
->  		inode->i_state &= ~I_WILL_FREE;
->  		inodes_stat.nr_unused--;
->  		hlist_del_init(&inode->i_hash);
->  	}
->  	list_del_init(&inode->i_list);
->  	list_del_init(&inode->i_sb_list);
-> +	WARN_ON(inode->i_state & I_NEW);
->  	inode->i_state |= I_FREEING;
->  	inodes_stat.nr_inodes--;
->  	spin_unlock(&inode_lock);
-> Index: linux-2.6/fs/fs-writeback.c
-> ===================================================================
-> --- linux-2.6.orig/fs/fs-writeback.c	2009-03-05 16:33:22.000000000 +1100
-> +++ linux-2.6/fs/fs-writeback.c	2009-03-05 17:17:59.000000000 +1100
-> @@ -274,6 +274,7 @@ __sync_single_inode(struct inode *inode,
->  	int ret;
->  
->  	BUG_ON(inode->i_state & I_SYNC);
-> +	WARN_ON(inode->i_state & I_NEW);
->  
->  	/* Set I_SYNC, reset I_DIRTY */
->  	dirty = inode->i_state & I_DIRTY;
-> @@ -298,6 +299,7 @@ __sync_single_inode(struct inode *inode,
->  	}
->  
->  	spin_lock(&inode_lock);
-> +	WARN_ON(inode->i_state & I_NEW);
->  	inode->i_state &= ~I_SYNC;
->  	if (!(inode->i_state & I_FREEING)) {
->  		if (!(inode->i_state & I_DIRTY) &&
-> @@ -470,6 +472,11 @@ void generic_sync_sb_inodes(struct super
->  			break;
->  		}
->  
-> +		if (inode->i_state & I_NEW) {
-> +			requeue_io(inode);
-> +			continue;
-> +		}
-> +
->  		if (wbc->nonblocking && bdi_write_congested(bdi)) {
->  			wbc->encountered_congestion = 1;
->  			if (!sb_is_blkdev_sb(sb))
-> @@ -531,7 +538,7 @@ void generic_sync_sb_inodes(struct super
->  		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
->  			struct address_space *mapping;
->  
-> -			if (inode->i_state & (I_FREEING|I_WILL_FREE))
-> +			if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
->  				continue;
->  			mapping = inode->i_mapping;
->  			if (mapping->nrpages == 0)
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+
+---
+ Documentation/x86/earlyprintk.txt |  101 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 101 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
+new file mode 100644
+index 0000000..607b1a0
+--- /dev/null
++++ b/Documentation/x86/earlyprintk.txt
+@@ -0,0 +1,101 @@
++
++Mini-HOWTO for using the earlyprintk=dbgp boot option with a
++USB2 Debug port key and a debug cable, on x86 systems.
++
++You need two computers, the 'USB debug key' special gadget and
++and two USB cables, connected like this:
++
++  [host/target] <-------> [USB debug key] <-------> [client/console]
++
++1. There are three specific hardware requirements:
++
++ a.) Host/target system needs to have USB debug port capability.
++
++ You can check this capability by looking at a 'Debug port' bit in
++ the lspci -vvv output:
++
++ # lspci -vvv
++ ...
++ 00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 03) (prog-if 20 [EHCI])
++         Subsystem: Lenovo ThinkPad T61
++         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
++         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
++         Latency: 0
++         Interrupt: pin D routed to IRQ 19
++         Region 0: Memory at fe227000 (32-bit, non-prefetchable) [size=1K]
++         Capabilities: [50] Power Management version 2
++                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
++                 Status: D0 PME-Enable- DSel=0 DScale=0 PME+
++         Capabilities: [58] Debug port: BAR=1 offset=00a0
++                            ^^^^^^^^^^^ <==================== [ HERE ]
++	 Kernel driver in use: ehci_hcd
++         Kernel modules: ehci-hcd
++ ...
++
++( If your system does not list a debug port capability then you probably
++  wont be able to use the USB debug key. )
++
++ b.) You also need a Netchip USB debug cable/key:
++
++        http://www.plxtech.com/products/NET2000/NET20DC/default.asp
++
++     This is a small blue plastic connector with two USB connections,
++     it draws power from its USB connections.
++
++ c.) Thirdly, you need a second client/console system with a regular USB port.
++
++2. Software requirements:
++
++ a.) On the host/target system:
++
++    You need to enable the following kernel config option:
++
++      CONFIG_EARLY_PRINTK_DBGP=y
++
++    And you need to add the boot command line: "earlyprintk=dbgp".
++    (If you are using Grub, append it to the 'kernel' line in
++     /etc/grub.conf)
++
++    NOTE: normally earlyprintk console gets turned off once the
++    regular console is alive - use "earlyprintk=dbgp,keep" to keep
++    this channel open beyond early bootup. This can be useful for
++    debugging crashes under Xorg, etc.
++
++ b.) On the client/console system:
++
++    You should enable the following kernel config option:
++
++      CONFIG_USB_SERIAL_DEBUG=y
++
++    On the next bootup with the modified kernel you should
++    get a /dev/ttyUSBx device(s).
++
++    Now this channel of kernel messages is ready to be used: start
++    your favorite terminal emulator (minicom, etc.) and set
++    it up to use /dev/ttyUSB0 - or use a raw 'cat /dev/ttyUSBx' to
++    see the raw output.
++
++ c.) On Nvidia Southbridge based systems: the kernel will try to probe
++     and find out which port has debug device connected.
++
++3. Testing that it works fine:
++
++   You can test the output by using earlyprintk=dbgp,keep and provoking
++   kernel messages on the host/target system. You can provoke a harmless
++   kernel message by for example doing:
++
++     echo h > /proc/sysrq-trigger
++
++   On the host/target system you should see this help line in "dmesg" output:
++
++     SysRq : HELP : loglevel(0-9) reBoot Crashdump terminate-all-tasks(E) memory-full-oom-kill(F) kill-all-tasks(I) saK show-backtrace-all-active-cpus(L) show-memory-usage(M) nice-all-RT-tasks(N) powerOff show-registers(P) show-all-timers(Q) unRaw Sync show-task-states(T) Unmount show-blocked-tasks(W) dump-ftrace-buffer(Z)
++
++   On the client/console system do:
++
++       cat /dev/ttyUSB0
++
++   And you should see the help line above displayed shortly after you've
++   provoked it on the host system.
++
++If it does not work then please ask about it on the linux-kernel@vger.kernel.org
++mailing list or contact the x86 maintainers.
