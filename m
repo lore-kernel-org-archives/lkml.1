@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZCENoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbZCENoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbZCENoi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbZCENk3
+	id S1757847AbZCENoy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602AbZCENnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:40:29 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:53054 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756135AbZCENk1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:40:27 -0500
-Message-ID: <49AFD5EA.5010502@nokia.com>
-Date: Thu, 05 Mar 2009 15:38:50 +0200
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Mar 2009 08:43:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48998 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756610AbZCENnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 08:43:12 -0500
+Date: Thu, 5 Mar 2009 13:42:29 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1236257708-27269-14-git-send-email-penberg@cs.helsinki.fi>
+References: <1236257708-27269-14-git-send-email-penberg@cs.helsinki.fi>
+Subject: [tip:x86/mm] x86: move init_memory_mapping() to common mm/init.c, build fix on 32-bit PAE
+Message-ID: <tip-62436fe9ee10f5e0dd087b106d69d93c9549935a@git.kernel.org>
+Git-Commit-ID: 62436fe9ee10f5e0dd087b106d69d93c9549935a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Rohit Hagargundgi <h.rohit@samsung.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>
-Subject: Re: [PATCH 1/3] [MTD] Flex-OneNAND support
-References: <20090303063605.GA30258@july>	<20090303124948.dda294e5.akpm@linux-foundation.org>	<49AE6907.1080702@nokia.com> <20090304085055.c9de6cbb.akpm@linux-foundation.org>
-In-Reply-To: <20090304085055.c9de6cbb.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Mar 2009 13:38:35.0395 (UTC) FILETIME=[AEBC0530:01C99D97]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Mar 2009 13:42:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>>> +	return mtd->ecc_stats.corrected - stats.corrected ? -EUCLEAN : 0;
->>>> +}
->>> I wonder what the heck EUCLEAN was invented for and whether MTD's
->>> extensive use of it is appropriate.
->> UBI uses it to detect bit-flips so that data can be moved before it
->> can no longer be read.  So it is pretty much essential for flash
->> memories.
-> 
-> That's not the point.
-> 
-> My point is: for what purpose was EUNCLEAN created by whoever created
-> it and, given that, is its use by MTD appropriate?  Because it does
-> appear that this gets returned all the way to userspace sometimes.
+Commit-ID:  62436fe9ee10f5e0dd087b106d69d93c9549935a
+Gitweb:     http://git.kernel.org/tip/62436fe9ee10f5e0dd087b106d69d93c9549935a
+Author:     "Ingo Molnar" <mingo@elte.hu>
+AuthorDate: Thu, 5 Mar 2009 14:39:03 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 5 Mar 2009 14:39:03 +0100
 
-I have had a look at the use of EUCLEAN and found the following:
-	1. It does not seem to be defined in POSIX
-	2. It may have been used by unix variants to indicate an
-attempt to mount a file system whose superblock was not marked
-as clean.
-	3. In Linux, it is used almost exclusively by MTD, with
-one exception in smbfs, from which it is tempting to conclude that
-smbfs (at least) is using it incorrectly.  There is one web page
-http://www.wlug.org.nz/EUCLEAN where the author suggests ENOMEDIUM
-might be a better choice.
+x86: move init_memory_mapping() to common mm/init.c, build fix on 32-bit PAE
 
-Can you point me to where EUCLEAN is returned to userspace?  I took
-a quick look and couldn't see it.
+Impact: build fix
 
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <1236257708-27269-14-git-send-email-penberg@cs.helsinki.fi>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/include/asm/pgtable_types.h |    1 +
+ arch/x86/mm/init_32.c                |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index 4d258ad..b8238dc 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -273,6 +273,7 @@ typedef struct page *pgtable_t;
+ 
+ extern pteval_t __supported_pte_mask;
+ extern int nx_enabled;
++extern void set_nx(void);
+ 
+ #define pgprot_writecombine	pgprot_writecombine
+ extern pgprot_t pgprot_writecombine(pgprot_t prot);
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 1669693..5e5126e 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -605,7 +605,7 @@ static int __init noexec_setup(char *str)
+ }
+ early_param("noexec", noexec_setup);
+ 
+-static void __init set_nx(void)
++void __init set_nx(void)
+ {
+ 	unsigned int v[4], l, h;
+ 
