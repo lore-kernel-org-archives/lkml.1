@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbZCEH7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZCEIF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbZCEH7w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 02:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZCEH7o
+	id S1754733AbZCEIF7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZCEIFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 02:59:44 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:38962 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750711AbZCEH7o (ORCPT
+	Thu, 5 Mar 2009 03:05:50 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:52482 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751280AbZCEIFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 02:59:44 -0500
-Date: Thu, 5 Mar 2009 08:59:40 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Olaf Hering <olaf@aepfle.de>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-mtd@lists.infradead.org,
-       Vivien Chappelier <vivien.chappelier@free.fr>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
- RAM as block device
-In-Reply-To: <AA44F8E7-5FBC-4378-A86D-C094ECABD625@aepfle.de>
-Message-ID: <alpine.LRH.2.00.0903050856490.26681@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <AA44F8E7-5FBC-4378-A86D-C094ECABD625@aepfle.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 5 Mar 2009 03:05:49 -0500
+Message-ID: <49AF87D6.5040104@linux.vnet.ibm.com>
+Date: Thu, 05 Mar 2009 09:05:42 +0100
+From: Frank Blaschka <blaschka@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+To: Patrick McHardy <kaber@trash.net>
+CC: David Miller <davem@davemloft.net>, bart@jukie.net,
+       greearb@candelatech.com, shemminger@vyatta.com, dada1@cosmosbay.com,
+       frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
+References: <49AF79A6.6030002@trash.net>	<20090304.231120.86999183.davem@davemloft.net>	<49AF7B72.2020905@trash.net> <20090304.231911.213286076.davem@davemloft.net> <49AF7E93.2010800@trash.net> <49AF7FD3.5010709@trash.net>
+In-Reply-To: <49AF7FD3.5010709@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009, Olaf Hering wrote:
-> Am 04.03.2009 um 14:57 schrieb Geert Uytterhoeven:
-> >Ideally, we think it would be best if the existing MTD-based ps3vram driver
-> >would be replaced by the new block-based ps3vram driver before 2.6.29 is
-> >released. This would relieve the burden of supporting two different swap
-> >space
-> >schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the distro
-> >maintainer's shoulders, as in that case there would never have been a stable
-> >kernel version containing the MTD-based ps3vram driver.
+Hi Dave, Patrick,
+
+sorry I could not follow the complete discussion of the fixes done for this problem
+but does
+
+ 	if (netif_device_present(real_dev) && ops->ndo_neigh_setup)
+-		err = ops->ndo_neigh_setup(dev, pa);
++		err = ops->ndo_neigh_setup(real_dev, pa);
+
+not change the idea of the neigh_setup? Remind we want the neigh_setup of the
+real device as the neigh setup function for the vlan device.
+
+Frank
+
+Patrick McHardy schrieb:
+> Patrick McHardy wrote:
+>> David Miller wrote:
+>>> From: Patrick McHardy <kaber@trash.net>
+>>> Date: Thu, 05 Mar 2009 08:12:50 +0100
+>>>
+>>>>> We probably need both fixes to cover everything.
+>>>>>
+>>>> Yes, just the second one still crashes. I'm about to retry using both.
+>>>
+>>> Here is the updated version just for the record:
+>>>
+>>> vlan: Fix vlan-in-vlan crashes.
+>>
+>> This still crashes. I'll have another look at the code.
 > 
-> openSuSE already ships with the ps3vram driver since a two releases.
-> A simple name based udev rule could symlink ps3vram to mtdblock0, so an
-> upgrade
-> will not break existing setups.
-
-OK.
-
-> >+obj-$(CONFIG_PS3_VRAM)		+= ps3vram_ng.o
+> This one combined with your patch fixes the crash. The code was calling
+> vlan_dev_neigh_setup recursively.
 > 
-> Please give the driver the obvious name "ps3vram", that way upgrading will be
-> smooth.
+> Signed-off-by: Patrick McHardy <kaber@trash.net>
+> 
+> (or Tested-by: in case you want to roll it into your patch).
+> 
 
-Sure, as I said:
 
-| I'll submit a patch to remove the MTD
-| ps3vram and add the new driver as ps3vram (instead of ps3vram-ng).
-
-> I see our old mtddriver does not have modalias support for autoloading.
-
-You forgot to backport commit 0a2d15b928e0b1673d4ed5f48d95af211b6fcc06
-("mtd/ps3vram: Add modalias support to the ps3vram driver") to the openSuSE
-tree?
-
-> Hopefully the new driver has this feature.
-
-Yes, it has.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
