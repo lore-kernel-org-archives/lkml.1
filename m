@@ -1,273 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZCELz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZCEL5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbZCELz7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 06:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZCELzp
+	id S1754864AbZCEL5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 06:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbZCEL5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 06:55:45 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:46629 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755232AbZCELzn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 06:55:43 -0500
-From: Markus <M4rkusXXL@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: drop_caches ...
-Date: Thu, 5 Mar 2009 12:55:35 +0100
-User-Agent: KMail/1.9.10
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Zdenek Kabelac <zkabelac@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>
-References: <200903041057.34072.M4rkusXXL@web.de> <200903041947.41542.M4rkusXXL@web.de> <20090305004850.GA6045@localhost>
-In-Reply-To: <20090305004850.GA6045@localhost>
+	Thu, 5 Mar 2009 06:57:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44415 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751638AbZCEL5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 06:57:06 -0500
+Date: Thu, 5 Mar 2009 12:56:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] tracing/function-graph-tracer: use the more
+	lightweight local clock
+Message-ID: <20090305115652.GA18745@elte.hu>
+References: <49af243d.06e9300a.53ad.ffff840c@mx.google.com> <20090305011941.GA9821@nowhere> <1236238213.5330.10111.camel@laptop> <20090305084639.GC5359@nowhere> <20090305105652.GG32407@elte.hu> <20090305111646.GG5359@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903051255.35407.M4rkusXXL@web.de>
-X-Provags-ID: V01U2FsdGVkX1/10i4ZaD4sDyjJLOFr3X2LDpzKrBsBkGBTvDUl
-	yLo5QoqFjA+Bjuey/QoZ4eXwigOc4AVyrqAkk5W+IILLG5dNXg
-	Zev6Nkefw=
+In-Reply-To: <20090305111646.GG5359@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 5. März 2009 schrieb Wu Fengguang:
-> On Wed, Mar 04, 2009 at 08:47:41PM +0200, Markus wrote:
-> > Am Mittwoch, 4. März 2009 schrieb Zdenek Kabelac:
-> > > Markus napsal(a):
-> > > >>>>>>> The memory mapped pages won't be dropped in this way.
-> > > >>>>>>> "cat /proc/meminfo" will show you the number of mapped 
-pages.
-> > > >>>>>> # sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m ; 
-> > > >>>> cat /proc/meminfo
-> > > >>>>>>              total       used       free     shared    
-buffers     
-> > > >>>>>> cached
-> > > >>>>>> Mem:          3950       3262        688          0          
-0        
-> > > >>>>>> 359
-> > > >>>>>> -/+ buffers/cache:       2902       1047
-> > > >>>>>> Swap:         5890       1509       4381
-> > > >>>>>> MemTotal:        4045500 kB
-> > > >>>>>> MemFree:          705180 kB
-> > > >>>>>> Buffers:             508 kB
-> > > >>>>>> Cached:           367748 kB
-> > > >>>>>> SwapCached:       880744 kB
-> > > >>>>>> Active:          1555032 kB
-> > > >>>>>> Inactive:        1634868 kB
-> > > >>>>>> Active(anon):    1527100 kB
-> > > >>>>>> Inactive(anon):  1607328 kB
-> > > >>>>>> Active(file):      27932 kB
-> > > >>>>>> Inactive(file):    27540 kB
-> > > >>>>>> Unevictable:         816 kB
-> > > >>>>>> Mlocked:               0 kB
-> > > >>>>>> SwapTotal:       6032344 kB
-> > > >>>>>> SwapFree:        4486496 kB
-> > > >>>>>> Dirty:                 0 kB
-> > > >>>>>> Writeback:             0 kB
-> > > >>>>>> AnonPages:       2378112 kB
-> > > >>>>>> Mapped:            52196 kB
-> > > >>>>>> Slab:              65640 kB
-> > > >>>>>> SReclaimable:      46192 kB
-> > > >>>>>> SUnreclaim:        19448 kB
-> > > >>>>>> PageTables:        28200 kB
-> > > >>>>>> NFS_Unstable:          0 kB
-> > > >>>>>> Bounce:                0 kB
-> > > >>>>>> WritebackTmp:          0 kB
-> > > >>>>>> CommitLimit:     8055092 kB
-> > > >>>>>> Committed_AS:    4915636 kB
-> > > >>>>>> VmallocTotal:   34359738367 kB
-> > > >>>>>> VmallocUsed:       44580 kB
-> > > >>>>>> VmallocChunk:   34359677239 kB
-> > > >>>>>> DirectMap4k:     3182528 kB
-> > > >>>>>> DirectMap2M:     1011712 kB
-> > > >>>>>>
-> > > >>>>>> The cached reduced to 359 MB (after the dropping).
-> > > >>>>>> I dont know where to read the "number of mapped pages".
-> > > >>>>>> "Mapped" is about 51 MB.
-> > > >>>>> Does your tmpfs store lots of files?
-> > > >>>> Dont think so:
-> > > >>>>
-> > > >>>> # df -h
-> > > >>>> Filesystem            Size  Used Avail Use% Mounted on
-> > > >>>> /dev/md6               14G  8.2G  5.6G  60% /
-> > > >>>> udev                   10M  304K  9.8M   3% /dev
-> > > >>>> cachedir              4.0M  100K  4.0M   
-3% /lib64/splash/cache
-> > > >>>> /dev/md4               19G   15G  3.1G  83% /home
-> > > >>>> /dev/md3              8.3G  4.5G  3.9G  55% /usr/portage
-> > > >>>> shm                   2.0G     0  2.0G   0% /dev/shm
-> > > >>>> /dev/md1               99M   19M   76M  20% /boot
-> > > >>>>
-> > > >>>> I dont know what exactly all that memory is used for. It 
-varies 
-> > > >>>> from about 300 MB to up to one GB.
-> > > >>>> Tell me where to look and I will!
-> > > >>> So you don't have lots of mapped pages(Mapped=51M) or tmpfs 
-files.  
-> > > > It's strange to me that there are so many undroppable cached 
-pages(Cached=359M),
-> > > > and most of them lie out of the LRU queue(Active+Inactive 
-file=53M)...
-> > > >>> Anyone have better clues on these 'hidden' pages?
-> > > >> Maybe try this:
-> > > >>
-> > > >> cat /proc/`pidof X`/smaps | grep drm | wc -l
-> > > >>
-> > > >> you will see some growing numbers.
-> > > >>
-> > > >> Also check  cat /proc/dri/0/gem_objects
-> > > >> there should be some number  # object bytes - which should be 
-close 
-> > to 
-> > > > your 
-> > > >> missing cached pages.
-> > > >>
-> > > >>
-> > > >> If you are using Intel GEM driver - there is some unlimited 
-caching 
-> > > > issue
-> > > >> see: http://bugs.freedesktop.org/show_bug.cgi?id=20404
-> > > >>
-> > > > # cat /proc/`pidof X`/smaps | grep drm | wc -l
-> > > > 0
-> > > > # cat /proc/dri/0/gem_objects
-> > > > cat: /proc/dri/0/gem_objects: No such file or directory
-> > > > 
-> > > > I use Xorg 1.3 with an nvidia gpu. Dont know if I use a "Intel 
-GEM 
-> > > > driver".
-> > > > 
-> > > 
-> > > 
-> > > Are you using binary  driver from NVidia ??
-> > > Maybe you should ask authors of this binary blob ?
-> > > 
-> > > Could you try to use for a while Vesa driver to see, if you are 
-able 
-> > to get 
-> > > same strange results ?
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Thu, Mar 05, 2009 at 11:56:52AM +0100, Ingo Molnar wrote:
 > > 
-> > I rebooted in console without the nvidia-module loaded and have the 
-same 
-> > results (updated to 2.6.28.7 btw):
-> > # sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m ; 
-cat /proc/meminfo
-> >              total       used       free     shared    buffers     
-> > cached
-> > Mem:          3950       1647       2303          0          0        
-> > 924
-> > -/+ buffers/cache:        722       3228
-> > Swap:         5890          0       5890
-> > MemTotal:        4045444 kB
-> > MemFree:         2358944 kB
-> > Buffers:             544 kB
-> > Cached:           946624 kB
-> > SwapCached:            0 kB
-> > Active:          1614756 kB
-> > Inactive:           7632 kB
-> > Active(anon):    1602476 kB
-> > Inactive(anon):        0 kB
-> > Active(file):      12280 kB
-> > Inactive(file):     7632 kB
-> > Unevictable:           0 kB
-> > Mlocked:               0 kB
-> > SwapTotal:       6032344 kB
-> > SwapFree:        6032344 kB
-> > Dirty:                72 kB
-> > Writeback:            32 kB
-> > AnonPages:        675224 kB
-> > Mapped:            17756 kB
-> > Slab:              19936 kB
-> > SReclaimable:       9652 kB
-> > SUnreclaim:        10284 kB
-> > PageTables:         8296 kB
-> > NFS_Unstable:          0 kB
-> > Bounce:                0 kB
-> > WritebackTmp:          0 kB
-> > CommitLimit:     8055064 kB
-> > Committed_AS:    3648088 kB
-> > VmallocTotal:   34359738367 kB
-> > VmallocUsed:       10616 kB
-> > VmallocChunk:   34359716459 kB
-> > DirectMap4k:        6080 kB
-> > DirectMap2M:     4188160 kB
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > On Thu, Mar 05, 2009 at 08:30:13AM +0100, Peter Zijlstra wrote:
+> > > > On Thu, 2009-03-05 at 02:19 +0100, Frederic Weisbecker wrote:
+> > > > 
+> > > > > It takes 1 ms to execute while tracing.
+> > > > > Considering my frequency is 250 Hz, it means 1/4 of the system is used
+> > > > > on timer interrupt while tracing.
+> > > > > 
+> > > > > For now the hang is fixed, but not the awful latency. And I'm just too frightened
+> > > > > to test it on 1000 Hz.
+> > > > > 
+> > > > > But I plan to add a kind of watchdog to check how many time we spent inside an
+> > > > > interrupt while graph tracing.
+> > > > > By checking this time against the current Hz value, I could decide to abort the tracing
+> > > > > for all irq.
+> > > > 
+> > > > That would basically render the thing useless :-(
+> > > 
+> > > 
+> > > It would be only for slow machines :-)
+> > > I'm talking about something that happened on a Pentium II.
+> > > 
+> > >  
+> > > > Is it specifically function_graph that is so expensive? If so, is that
+> > > > because of the function exit hook?
+> > > 
+> > > 
+> > > Yes, specifically the function_graph, the function tracer is 
+> > > not concerned. The function graph tracer takes more than 
+> > > double overhead compared to the function tracer.
+> > > 
+> > > Usually the function tracer hooks directly the the function 
+> > > that insert the event, it's pretty straightforward.
+> > > 
+> > > The function graph does much more work: 
+> > > 
+> > > entry: basic checks, take the time, push the infos on the stack, insert an event
+> > >        on the ring-buffer, hook the return value.
+> > > return: pop the infos from stack, insert an event on the ring-buffer, jump
+> > >         to the original caller.
+> > > 
+> > > It has a high cost... which makes me sad because I plan to 
+> > > port it in on Arm and I fear the little Arm boad I recently 
+> > > purshased will not let me trace the interrupts without 
+> > > hanging...
+> > > :-(
+> > > 
+> > > I guess I should start thinking on some optimizations, perhaps 
+> > > using perfcounter?
+> > 
+> > yeah. perfcounters and KernelTop might not work on a PII CPU out 
+> > of box though.
+> > 
+> > But hacking perfcounters and looking at perfstat/kerneltop 
+> > output is serious amount of fun so if you are interested you 
+> > could try to implement support for it. Do you have any box where 
+> > perfcounters work? (that would be Core2 Intel boxes or pretty 
+> > much any AMD box)
+> > 
+> > You could have a look at how oprofile works on your box - the 
+> > code for PII CPUs should be in 
+> > arch/x86/oprofile/op_model_ppro.c.
+> > 
+> > There's also hardcoded support for a single perfcounter in the 
+> > nmi_watchdog=2 code, in arch/x86/kernel/cpu/perfctr-watchdog.c, 
+> > for pretty much any x86 CPU that has a PMU.
+> > 
+> > Plus there's also the CPU documentation on Intel's site. It's 
+> > quite well written and pretty well structured. The URL for the 
+> > CPU's PMU ("Performance Monitoring") should be:
+> > 
+> >   http://download.intel.com/design/processor/manuals/253669.pdf
+> > 
+> > As a last resort ;-)
+> > 
+> > 	Ingo
 > 
-> Markus, you may want to try this patch, it will have better chance to 
-figure out
-> the hidden file pages.
-> 
-> 1) apply the patch and recompile kernel with CONFIG_PROC_FILECACHE=m
-> 2) after booting:
->         modprobe filecache
->         cp /proc/filecache filecache-`date +'%F'`
-> 3) send us the copied file, it will list all cached files, including
->    the normally hidden ones.
+> Ah yes, That could be fun!
+> So, by reading your description, it should work on my labtop I guess?
+>
+> -> Intel(R) Pentium(R) Dual  CPU  T2310  @ 1.46GHz
 
-The file consists of 674 lines. If I interpret it right, "size" is the 
-filesize and "cached" the amount of the file being in cache (why can 
-this be bigger than the file?!).
+Yeah, should work fine there - so that should be a good 
+reference point to start off. Let me know if you see any 
+bugs/problems.
 
-# sync ; echo 3 > /proc/sys/vm/drop_caches ; free -m ; 
-cat /proc/meminfo ; cp /proc/filecache filecache-$(date +"%F")
-             total       used       free     shared    buffers     
-cached
-Mem:          3950       1935       2015          0          0       
-1009
--/+ buffers/cache:        925       3025
-Swap:         5890          0       5890
-MemTotal:        4045436 kB
-MemFree:         2063976 kB
-Buffers:             480 kB
-Cached:          1033724 kB
-SwapCached:            0 kB
-Active:          1846000 kB
-Inactive:          48552 kB
-Active(anon):    1790892 kB
-Inactive(anon):        8 kB
-Active(file):      55108 kB
-Inactive(file):    48544 kB
-Unevictable:           0 kB
-Mlocked:               0 kB
-SwapTotal:       6032344 kB
-SwapFree:        6032344 kB
-Dirty:                 0 kB
-Writeback:             0 kB
-AnonPages:        860380 kB
-Mapped:           101908 kB
-Slab:              25772 kB
-SReclaimable:      12560 kB
-SUnreclaim:        13212 kB
-PageTables:        16476 kB
-NFS_Unstable:          0 kB
-Bounce:                0 kB
-WritebackTmp:          0 kB
-CommitLimit:     8055060 kB
-Committed_AS:    4132748 kB
-VmallocTotal:   34359738367 kB
-VmallocUsed:       42256 kB
-VmallocChunk:   34359683067 kB
-DirectMap4k:       14272 kB
-DirectMap2M:     4179968 kB
+> Anyway, I will give it a try and see what I can do.
+> Thanks for the pointers.
 
-# sort -n -k 3 filecache-2009-03-05 | tail -n 5
-     15886       7112     7112     100      1    d- 00:08
-(tmpfs)        /dev/zero\040(deleted)
-     16209      35708    35708     100      1    d- 00:08
-(tmpfs)        /dev/zero\040(deleted)
-     16212      82128    82128     100      1    d- 00:08
-(tmpfs)        /dev/zero\040(deleted)
-     15887     340024   340024     100      1    d- 00:08
-(tmpfs)        /dev/zero\040(deleted)
-     15884     455008   455008     100      1    d- 00:08
-(tmpfs)        /dev/zero\040(deleted)
+You are welcome.
 
-The sum of the third column is 1013 MB.
-To note the biggest ones (or do you want the whole file?)... and thats 
-after a sync and a drop_caches! (Can be seen in the commands given.)
-
-Thanks!
-Markus
+	Ingo
