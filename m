@@ -1,110 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZCEWkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZCEWme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbZCEWkh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 17:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZCEWk2
+	id S1755391AbZCEWme (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 17:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZCEWmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 17:40:28 -0500
-Received: from fifo99.com ([67.223.236.141]:60051 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753162AbZCEWk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 17:40:28 -0500
-Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
-From: Daniel Walker <dwalker@fifo99.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       stern@rowland.harvard.edu, randy.dunlap@oracle.com,
-       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
-       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <49B02692.3000500@kernel.org>
-References: <49AF18B7.4050305@kernel.org>
-	 <tip-a1aade478862fca8710904532cbc6efed97fd05a@git.kernel.org>
-	 <1236267366.5937.56.camel@desktop>  <49B02692.3000500@kernel.org>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 14:40:23 -0800
-Message-Id: <1236292823.5937.84.camel@desktop>
+	Thu, 5 Mar 2009 17:42:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39659 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753272AbZCEWmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 17:42:24 -0500
+Date: Thu, 5 Mar 2009 14:42:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: trivial@kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH v2 15/15] NULL noise: mm/memcontrol.c
+Message-Id: <20090305144210.e40ef501.akpm@linux-foundation.org>
+In-Reply-To: <20090305191839.30062.91081.stgit@f10box.hanneseder.net>
+References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
+	<20090305191839.30062.91081.stgit@f10box.hanneseder.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 11:22 -0800, Yinghai Lu wrote:
+On Thu, 05 Mar 2009 20:18:44 +0100
+Hannes Eder <hannes@hanneseder.net> wrote:
 
+> Fix this sparse warning:
+>   mm/memcontrol.c:1637:32: warning: Using plain integer as NULL pointer
 > 
-> thanks for checking it.
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+> v2: other subject, as suggested by Al Viro
 > 
-> can you submit patch to Ingo according to tip/master?
+>  mm/memcontrol.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 8e4be9c..09d6650 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -1634,7 +1634,7 @@ static int mem_cgroup_force_empty_list(struct mem_cgroup *mem,
+>  		pc = list_entry(list->prev, struct page_cgroup, lru);
+>  		if (busy == pc) {
+>  			list_move(&pc->lru, list);
+> -			busy = 0;
+> +			busy = NULL;
+>  			spin_unlock_irqrestore(&zone->lru_lock, flags);
+>  			continue;
+>  		}
 
-
-Hows this?
-
---
-
-Fix up some typos, and make the requirements section slightly cleaner.
-
-Signed-Off-By: Daniel Walker dwalker@fifo99.com
-
-diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
-index 607b1a0..5b51aef 100644
---- a/Documentation/x86/earlyprintk.txt
-+++ b/Documentation/x86/earlyprintk.txt
-@@ -9,7 +9,9 @@ and two USB cables, connected like this:
- 
- 1. There are three specific hardware requirements:
- 
-- a.) Host/target system needs to have USB debug port capability.
-+ a.) You will need two USB ports. One on the client/console system and one one the target system.
-+ 
-+ b.) The client/console and target USB ports must have the debug port capability.
- 
-  You can check this capability by looking at a 'Debug port' bit in
-  the lspci -vvv output:
-@@ -35,15 +37,13 @@ and two USB cables, connected like this:
- ( If your system does not list a debug port capability then you probably
-   wont be able to use the USB debug key. )
- 
-- b.) You also need a Netchip USB debug cable/key:
-+ c.) You also need a Netchip USB debug cable/key:
- 
-         http://www.plxtech.com/products/NET2000/NET20DC/default.asp
- 
-      This is a small blue plastic connector with two USB connections,
-      it draws power from its USB connections.
- 
-- c.) Thirdly, you need a second client/console system with a regular USB port.
--
- 2. Software requirements:
- 
-  a.) On the host/target system:
-@@ -54,7 +54,7 @@ and two USB cables, connected like this:
- 
-     And you need to add the boot command line: "earlyprintk=dbgp".
-     (If you are using Grub, append it to the 'kernel' line in
--     /etc/grub.conf)
-+     grub.conf (i.e. /boot/grub/grub.conf) )
- 
-     NOTE: normally earlyprintk console gets turned off once the
-     regular console is alive - use "earlyprintk=dbgp,keep" to keep
-@@ -72,7 +72,7 @@ and two USB cables, connected like this:
- 
-     Now this channel of kernel messages is ready to be used: start
-     your favorite terminal emulator (minicom, etc.) and set
--    it up to use /dev/ttyUSB0 - or use a raw 'cat /dev/ttyUSBx' to
-+    it up to use /dev/ttyUSBx - or use a raw 'cat /dev/ttyUSBx' to
-     see the raw output.
- 
-  c.) On Nvidia Southbridge based systems: the kernel will try to probe
-@@ -92,7 +92,7 @@ and two USB cables, connected like this:
- 
-    On the client/console system do:
- 
--       cat /dev/ttyUSB0
-+       cat /dev/ttyUSBx
- 
-    And you should see the help line above displayed shortly after you've
-    provoked it on the host system.
-
+I have to say that I wish sparse didn't do this.  Initialising a
+pointer with literal zero is perfectly clear and is idiomatic C.
 
