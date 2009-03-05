@@ -1,194 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZCECw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZCEC4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbZCECw0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 21:52:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZCECwR
+	id S1755074AbZCEC4F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 21:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZCECzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 21:52:17 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:42947 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751127AbZCECwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 21:52:16 -0500
-Subject: Re: Linux 2.6.29-rc6
-From: john stultz <johnstul@us.ibm.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-In-Reply-To: <1236220759.6863.7.camel@localhost.localdomain>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
-	 <49A6F39F.9040801@krogh.cc>
-	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
-	 <49A6FEE2.90700@krogh.cc>
-	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
-	 <49A70B24.6090706@krogh.cc>
-	 <1235685269.6811.11.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
-	 <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>
-	 <1235766936.7402.5.camel@localhost.localdomain> <49ABACA0.3090300@krogh.cc>
-	 <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc>
-	 <1236110026.6068.18.camel@localhost> <49AD90E2.7050209@krogh.cc>
-	 <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>
-	 <49AECA3B.5030503@krogh.cc>  <1236193075.3793.63.camel@jstultz-laptop>
-	 <1236220759.6863.7.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 18:52:10 -0800
-Message-Id: <1236221530.6863.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Wed, 4 Mar 2009 21:55:54 -0500
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:48231 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752254AbZCECzy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 21:55:54 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VfldiinwgvO2/XALGtU2Z2MMa21Ln1WGI/MgCRqUUu9wUKO+Z/TO9QivEYGvaVKc3HVdhX0qcnsCLtqAOOwg/Xb0RUm/AOQsjVh7qq/k2QCW98C7+Px81zUihzjt2vO7GkkXIGp5QyXNWy5Y2FwMidl29gRehnXFZXBwGIdXKQg=  ;
+X-YMail-OSG: lRKMl38VM1lB4r2PVGt0x88kL8OqTmNTlT0iGtAt9xxnK2_pzLBgorqnbUpCQUFO_ytP9xVvwVcq4XU8FHvfiFIotO4JJfz2Y0.lL7OJ8LTGT4gW0WjrqIpRSL.FdRoDEwkH45gsF9TEorWiRlFAp7TG14oqdBZrEFeZzKrCHYYvxGwxvSGlCAGq0ZCfhw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: fsx-linux loosing mmap() writes under memory pressure
+Date: Thu, 5 Mar 2009 13:55:43 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+       linux-ext4@vger.kernel.org
+References: <20090304145109.GA7140@duck.suse.cz> <20090304155535.GA23108@duck.suse.cz> <20090304175031.GA24730@duck.suse.cz>
+In-Reply-To: <20090304175031.GA24730@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903051355.43909.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 18:39 -0800, john stultz wrote:
-> On Wed, 2009-03-04 at 10:57 -0800, John Stultz wrote:
-> > On Wed, 2009-03-04 at 19:36 +0100, Jesper Krogh wrote:
-> > > jk@quad12:~$ python drift-test.py 10.192.96.19
-> > > 04 Mar 19:27:10         offset: -0.157696       drift: -693.0 ppm
-> > > 04 Mar 19:28:10         offset: -0.195134       drift: -625.098360656 ppm
-> > > 04 Mar 19:29:10         offset: -0.232579       drift: -624.595041322 ppm
-> > > 04 Mar 19:30:10         offset: -0.270021       drift: -624.408839779 ppm
-> > > 04 Mar 19:31:11         offset: -0.307461       drift: -621.727272727 ppm
-> > > 04 Mar 19:32:11         offset: -0.344903       drift: -622.185430464 ppm
-> > > 04 Mar 19:33:11         offset: -0.382345       drift: -622.491712707 ppm
-> > > 04 Mar 19:34:11         offset: -0.419794       drift: -622.727488152 ppm
-> > > 04 Mar 19:35:11         offset: -0.457239       drift: -622.89626556 ppm
-> > 
-> > 
-> > Yea, so from this and the settled ntpdc -c kerninfo data before, we can
-> > see that the drift is further out then the 500ppm NTP can handle.
-> > 
-> > So with that at least confirmed, we can focus back on to the fast-pit
-> > tsc calibration code.
-> > 
-> > Ingo, Thomas: I'm missing a bit of the context to that patch, other then
-> > just speeding up boot times, was there other rational for moving away
-> > from the ACPI PM timer based calibration?
-> > 
-> > Could we maybe add a quick test that the pit reads actually take the
-> > assumed 2us max? Doing this maybe via the HPET/ACPI PM?
-> 
-> Hey Jesper,
-> 
-> 	Here's a very-hackish patch to see if the approach I'm considering
-> might fix the issue you're hitting. Could you apply it, boot the kernel
-> a few times and send me the following segments of the dmesg for each of
-> those boots (the example below is from my test box)? 
-> 
-> tsc delta: 44418024
-> ref_freq: 3000100  pit_freq: 3000384
-> TSC: Fast PIT calibration matches PMTIMER.
-> TSC: PIT calibration matches PMTIMER. 1 loops
-> Detected 3000.045 MHz processor.
-> 
-> I'm trying to see how regular the mis-calculation is, as well as see how
-> well the alternate calibration method does to handle this on your
-> hardware.
-> 
-> Its likely the fat pit calibration can be better integrated with the
-> other calibration methods, so this probably isn't anything close to what
-> the actual fix will look like.
-> 
-> Ingo, Thomas: On the hardware I'm testing the fast-pit calibration only
-> triggers probably 80-90% of the time. About 10-20% of the time, the
-> initial check to pit_expect_msb(0xff) fails (count=0), so we may need to
-> look more at this approach.
+On Thursday 05 March 2009 04:50:31 Jan Kara wrote:
+> On Wed 04-03-09 16:55:35, Jan Kara wrote:
+> > On Wed 04-03-09 15:51:09, Jan Kara wrote:
+> > >   first, I'd like to point out that this has happened under UML so it
+> > > can be just some obscure bug in that architecture but I belive it's
+> > > worth debugging anyway. Now to the problem:
+> > >   This has happened with today Linus's git snapshot. The filesystem is
+> > > ext3 with *1KB* blocksize. I booted UML with 64MB of memory and run
+> > > (these are test's from Andrew Morton's torture tests):
+> > >   fsx-linux -l 8000000 /mnt/testfile
+> > >   bash-shared-mapping -t 8 /mnt/bashfile 50000000
+> > > (the second test just makes the UML under memory pressure and stresses
+> > > the filesystem, otherwise it does not interact with fsx-linux in any
+> > > way). After some time (like an hour) fsx-linux reported the file is
+> > > corrupted. I tried again and it happened again so probably some
+> > > debugging should be possible.
+> > >   Both times it seems we've simply completely lost a write which
+> > > happened through mmap (2 pages in the first case, 3 pages in the second
+> > > case). Also I've checked and in the first case no blocks are allocated
+> > > for the offsets where the data should be so most probably we've lost
+> > > the write before block_write_full_page() called get_block().
+> > >   I'll debug this further but I wanted let people know there's some
+> > > problem and maybe somebody has some bright idea :).  I'm attaching the
+> > > log from fsx if someone is interested.
+> >
+> >   Testing a bit more, I managed to reproduce the problem on ext2 and
+> > what's more strange, now the lost page was written via ordinary write()
+> > (fsxlog attached). So I believe this is more likely to be UML specific...
+>
+>   And to add even more information, this also happens on ext2 with 4KB
+> blocksize (although much more rarely it seems). Again the data was written
+> by an extending write() but the block for it was not even allocated...
 
-Err. Sorry, hit send before I included the patch.
+What block device driver are you using?
 
--john
-
-
-
-Not for inclusion.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 599e581..2e16d30 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -317,15 +317,17 @@ static unsigned long quick_pit_calibrate(void)
- 
- 	if (pit_expect_msb(0xff)) {
- 		int i;
--		u64 t1, t2, delta;
-+		u64 t1, t2, delta, ref1, ref2;
-+		u64 ref_freq = 0, pit_freq = 0;
-+		int hpet = is_hpet_enabled();
- 		unsigned char expect = 0xfe;
- 
--		t1 = get_cycles();
-+		t1 = tsc_read_refs(&ref1, hpet);
- 		for (i = 0; i < QUICK_PIT_ITERATIONS; i++, expect--) {
- 			if (!pit_expect_msb(expect))
- 				goto failed;
- 		}
--		t2 = get_cycles();
-+		t2 = tsc_read_refs(&ref2, hpet);
- 
- 		/*
- 		 * Make sure we can rely on the second TSC timestamp:
-@@ -333,6 +335,13 @@ static unsigned long quick_pit_calibrate(void)
- 		if (!pit_expect_msb(expect))
- 			goto failed;
- 
-+
-+		delta = (t2 - t1);
-+		if (hpet)
-+			ref_freq = calc_hpet_ref(delta*1000000LL, ref1, ref2);
-+		else
-+			ref_freq = calc_pmtimer_ref(delta*1000000LL, ref1, ref2);
-+
- 		/*
- 		 * Ok, if we get here, then we've seen the
- 		 * MSB of the PIT decrement QUICK_PIT_ITERATIONS
-@@ -347,10 +356,32 @@ static unsigned long quick_pit_calibrate(void)
- 		 * kHz = (t2 - t1) / (QPI * 256 / PIT_TICK_RATE) / 1000
- 		 * kHz = ((t2 - t1) * PIT_TICK_RATE) / (QPI * 256 * 1000)
- 		 */
--		delta = (t2 - t1)*PIT_TICK_RATE;
--		do_div(delta, QUICK_PIT_ITERATIONS*256*1000);
-+		printk("tsc delta: %lld\n", t2-t1);
-+
-+		pit_freq = delta *  PIT_TICK_RATE;
-+		do_div(pit_freq, QUICK_PIT_ITERATIONS*256*1000);
-+
-+		printk("ref_freq: %lld  pit_freq: %lld\n", ref_freq, pit_freq);
-+
-+		/* Check the reference deviation */
-+		delta = ((u64) pit_freq) * 100;
-+		do_div(delta, ref_freq);
-+
-+		/*
-+		 * If both calibration results are inside a 10% window
-+		 * then we can be sure, that the calibration
-+		 * succeeded. We break out of the loop right away. We
-+		 * use the reference value, as it is more precise.
-+		 */
-+		if (delta >= 90 && delta <= 110) {
-+			printk(KERN_INFO
-+			       "TSC: Fast PIT calibration matches %s.\n",
-+			       hpet ? "HPET" : "PMTIMER");
-+			return ref_freq;
-+		}
-+
- 		printk("Fast TSC calibration using PIT\n");
--		return delta;
-+		return pit_freq;
- 	}
- failed:
- 	return 0;
-@@ -375,7 +406,7 @@ unsigned long native_calibrate_tsc(void)
- 	local_irq_save(flags);
- 	fast_calibrate = quick_pit_calibrate();
- 	local_irq_restore(flags);
--	if (fast_calibrate)
-+	if (0 && fast_calibrate)
- 		return fast_calibrate;
- 
- 	/*
+Can it be reproduced without mapped reads and writes completely? (-W -R)
 
 
