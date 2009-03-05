@@ -1,87 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbZCENwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbZCENxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbZCENwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbZCENwk
+	id S1756431AbZCENxl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZCENxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:52:40 -0500
-Received: from mailout.artfiles.de ([80.252.97.80]:55098 "EHLO
-	mailout.artfiles.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753746AbZCENwj convert rfc822-to-8bit (ORCPT
+	Thu, 5 Mar 2009 08:53:32 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:16524 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753488AbZCENxb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:52:39 -0500
+	Thu, 5 Mar 2009 08:53:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=Efok0l5KpzsmBHLjUV+vgDJ/VGY6SaaEPEqz2CG9gpPtW3Fz0S5ybjZn0pTb9Qv0E0
+         UNvAaCbZgJY6z0bZhFdIw1PjS06aXyt2l60VqJUHPkkzerIOXa6wQEFRNypZLRsT/AsZ
+         kRdzWBTDxs4/PjQP1Ct8B3iZQxIzADKbHwLCE=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Reply-To: petkovbb@gmail.com
+In-Reply-To: <200903051312.29784.bzolnier@gmail.com>
+References: <1236158216-23052-1-git-send-email-petkovbb@gmail.com>
+	 <1236158216-23052-4-git-send-email-petkovbb@gmail.com>
+	 <200903051312.29784.bzolnier@gmail.com>
+Date: Thu, 5 Mar 2009 14:53:28 +0100
+Message-ID: <9ea470500903050553m6ab9dfa5hab340213388a4c67@mail.gmail.com>
+Subject: Re: [PATCH 3/3] ide-{cd,floppy}: do not map all cmds to an sg
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] xen: core dom0 support
-Content-class: urn:content-classes:message
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Thu, 5 Mar 2009 14:52:31 +0100
-Message-ID: <B4ED8DE8E195E84A872496A085BC07822F42@exchange01.corp.win-professional.com>
-In-Reply-To: <20090227212812.26d02f34.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] xen: core dom0 support
-Thread-Index: AcmZZXi9HvbqfuJ0SUGr3l1qMzSWpgEMdhDA
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org>
-From: "Morten P.D. Stevens" <mstevens@win-professional.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, <George.Dunlap@eu.citrix.com>
-X-OriginalArrivalTime: 05 Mar 2009 13:52:33.0753 (UTC) FILETIME=[A26F4C90:01C99D99]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-i think xen is a great virtualization technology.
+On Thu, Mar 5, 2009 at 1:12 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+>
+> Hi,
+>
+> On Wednesday 04 March 2009, Borislav Petkov wrote:
+>> ... since some do not transfer any data from the drive and
+>> rq->buffer is unset leading to an OOPS when checking VM translations
+>> (CONFIG_DEBUG_VIRTUAL).
+>>
+>> Tested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+>> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+>
+> Thanks for fixing it but I worry that the patch is not entirely correct
+> (why o why did you have to throw in unrelated changes...?)
 
-Many company´s work with xen and the performance is better than KVM.
+What unrelated changes? This is the ide-cd fix for when mapping a NULL
+rq->buffer pointer to an sg. If you mean the [2/3] patch, I had to
+remove the partial completions for ide-floppy because it was OOPSing on NULL
+rq-pointer in the interrupt handler. I sent you a pretty detailed OOPS along
+with backtracking to the offending code line, remember? Also, for reasons of
+bisectability.
 
-Here some benchmarks with Citrix XenServer 5.0 vs KVM with linux and windows guests on an IBM x3400 server:
+> also ideally there should have been two patches:
+> - minimal bugfix for the buggy patch
+> - unification/cleanup of PIO sg setup
+>
+>> ---
+>>  drivers/ide/ide-atapi.c  |    9 ++++++++-
+>>  drivers/ide/ide-cd.c     |    4 ----
+>>  drivers/ide/ide-floppy.c |    4 ----
+>>  3 files changed, 8 insertions(+), 9 deletions(-)
+>>
 
-HDD: XEN | KVM
+..
 
-Write: 110 MB/s | 60 MB/s
-Read: 130 MB/s  | 80 MB/s
+>> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+>> index 091d414..106cacb 100644
+>> --- a/drivers/ide/ide-cd.c
+>> +++ b/drivers/ide/ide-cd.c
+>> @@ -916,10 +916,6 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+>>
+>>       cmd.rq = rq;
+>>
+>> -     ide_init_sg_cmd(&cmd,
+>> -             blk_fs_request(rq) ? (rq->nr_sectors << 9) : rq->data_len);
+>> -     ide_map_sg(drive, &cmd);
+>> -
+>>       return ide_issue_pc(drive, &cmd);
+>>  out_end:
+>>       nsectors = rq->hard_nr_sectors;
+>> diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
+>> index 2f8f453..b91deef 100644
+>> --- a/drivers/ide/ide-floppy.c
+>> +++ b/drivers/ide/ide-floppy.c
+>> @@ -281,10 +281,6 @@ static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
+>>               cmd.tf_flags |= IDE_TFLAG_WRITE;
+>>
+>>       cmd.rq = rq;
+>> -
+>> -     ide_init_sg_cmd(&cmd, pc->req_xfer);
+>
+> There was a reason for using ->req_xfer.
 
-Network Performance: (download an 4 GB iso image from apache webserver)
+Yeah, this is also one of those painful places where I cringe everytime I have
+to look at. We finally have to sit down and decide which is which; sometimes
+pc->req_xfer _is_ rq->data_len (idefloppy_blockpc_cmd()) and sometimes obviously
+not. I'll take a look at that whole mess next and try to come up with something
+more clean.
 
-XEN | KVM
+> I don't see where rq->data_len is set for REQ_TYPE_SPECIAL requests
+> (ide_queue_pc_tail() and friends)?
 
-download Speed: 105 MB/s | 50 MB/s
+me neither :(.
 
-xen is using the full 1000 mbit network.. great performance!
+>> -     ide_map_sg(drive, &cmd);
+>> -
+>>       pc->rq = rq;
+>>
+>>       return ide_floppy_issue_pc(drive, &cmd, pc);
 
-On our IBM servers Xen is still faster than KVM.
+Man, this sucks!
 
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Andrew Morton
-Sent: Saturday, February 28, 2009 6:28 AM
-To: Jeremy Fitzhardinge
-Cc: H. Peter Anvin; the arch/x86 maintainers; Linux Kernel Mailing List; Xen-devel
-Subject: Re: [PATCH] xen: core dom0 support
-
-On Fri, 27 Feb 2009 17:59:06 -0800 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> This series implements the core parts of Xen dom0 support; that is, just
-> enough to get the kernel started when booted by Xen as a dom0 kernel.
-
-And what other patches can we expect to see to complete the xen dom0
-support?
-
-
-and..
-
-I hate to be the one to say it, but we should sit down and work out
-whether it is justifiable to merge any of this into Linux.  I think
-it's still the case that the Xen technology is the "old" way and that
-the world is moving off in the "new" direction, KVM?
-
-In three years time, will we regret having merged this?
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Regards/Gruss,
+Boris
