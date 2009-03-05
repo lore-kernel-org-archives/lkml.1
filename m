@@ -1,113 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZCED3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbZCEDnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbZCED3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 22:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZCED1W
+	id S1754800AbZCEDnV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 22:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZCEDnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 22:27:22 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40213 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbZCED1Q (ORCPT
+	Wed, 4 Mar 2009 22:43:10 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:34891 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbZCEDnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 22:27:16 -0500
-Message-Id: <20090305032713.851501507@goodmis.org>
-References: <20090305032532.802709985@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 04 Mar 2009 22:25:39 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Theodore Tso <tytso@mit.edu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 7/7] tracing: have latency tracers set the latency format
-Content-Disposition: inline; filename=0007-tracing-have-latency-tracers-set-the-latency-format.patch
+	Wed, 4 Mar 2009 22:43:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=bwQd4O1foCrV9AyPigokqk8z57nSdVX/BPNqYeTBJpx2kxUmfwSRdPUB9ZHyafufkn
+         Gz7a+c/rUoIMFwTPy6gtVcqfMetGCfOsiM5EDJ3ELhbyaJCF3z6hB7krKSRjyEq1ar+3
+         e2X0qgq4AqQ0fcEMpoZCl+jFH5j6TxfsMrSz4=
+MIME-Version: 1.0
+In-Reply-To: <20090304155544.3bc3f337.akpm@linux-foundation.org>
+References: <20090303063605.GA30258@july>
+	 <20090303124948.dda294e5.akpm@linux-foundation.org>
+	 <49AE6907.1080702@nokia.com>
+	 <20090304085055.c9de6cbb.akpm@linux-foundation.org>
+	 <9c9fda240903041547x540899f9hd94cbf49baac660b@mail.gmail.com>
+	 <20090304155544.3bc3f337.akpm@linux-foundation.org>
+Date: Thu, 5 Mar 2009 12:43:06 +0900
+X-Google-Sender-Auth: 4a5e35e7cc6b0abd
+Message-ID: <9c9fda240903041943m483db3f4i3c40c6970ef16fce@mail.gmail.com>
+Subject: Re: [PATCH 1/3] [MTD] Flex-OneNAND support
+From: Kyungmin Park <kmpark@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       AMIT KUMARSHARMA <amitsharma.9@samsung.com>
+Cc: adrian.hunter@nokia.com, h.rohit@samsung.com,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+Hi,
 
-The latency tracers (irqsoff, preemptoff, preemptirqsoff, and wakeup)
-are pretty useless with the default output format. This patch makes them
-automatically enable the latency format when they are selected. They
-also record the state of the latency option, and if it was not enabled
-when selected, they disable it on reset.
+On Thu, Mar 5, 2009 at 8:55 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 5 Mar 2009 08:47:03 +0900
+> Kyungmin Park <kmpark@infradead.org> wrote:
+>
+>> I think we know the issues currently and then if the device is opened,
+>> handle this one if required.
+>> How do you think?
+>
+> I think it would be prudent to fix the known problems now, rather
+> than having to go through and re-debug them later on.
+>
+> Bear in mind that people frequently copy old code when writing
+> new code, so these things tend to propagate, creating more work
+> later on.
+>
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace_irqsoff.c      |    8 ++++++++
- kernel/trace/trace_sched_wakeup.c |    8 ++++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
+Agree,
 
-diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
-index 9e5ebd8..b923d13 100644
---- a/kernel/trace/trace_irqsoff.c
-+++ b/kernel/trace/trace_irqsoff.c
-@@ -32,6 +32,8 @@ enum {
- 
- static int trace_type __read_mostly;
- 
-+static int save_lat_flag;
-+
- #ifdef CONFIG_PREEMPT_TRACER
- static inline int
- preempt_trace(void)
-@@ -370,6 +372,9 @@ static void stop_irqsoff_tracer(struct trace_array *tr)
- 
- static void __irqsoff_tracer_init(struct trace_array *tr)
- {
-+	save_lat_flag = trace_flags & TRACE_ITER_LATENCY_FMT;
-+	trace_flags |= TRACE_ITER_LATENCY_FMT;
-+
- 	tracing_max_latency = 0;
- 	irqsoff_trace = tr;
- 	/* make sure that the tracer is visible */
-@@ -380,6 +385,9 @@ static void __irqsoff_tracer_init(struct trace_array *tr)
- static void irqsoff_tracer_reset(struct trace_array *tr)
- {
- 	stop_irqsoff_tracer(tr);
-+
-+	if (!save_lat_flag)
-+		trace_flags &= ~TRACE_ITER_LATENCY_FMT;
- }
- 
- static void irqsoff_tracer_start(struct trace_array *tr)
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index db55f7a..3c5ad6b 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -32,6 +32,8 @@ static raw_spinlock_t wakeup_lock =
- 
- static void __wakeup_reset(struct trace_array *tr);
- 
-+static int save_lat_flag;
-+
- #ifdef CONFIG_FUNCTION_TRACER
- /*
-  * irqsoff uses its own tracer function to keep the overhead down:
-@@ -324,6 +326,9 @@ static void stop_wakeup_tracer(struct trace_array *tr)
- 
- static int __wakeup_tracer_init(struct trace_array *tr)
- {
-+	save_lat_flag = trace_flags & TRACE_ITER_LATENCY_FMT;
-+	trace_flags |= TRACE_ITER_LATENCY_FMT;
-+
- 	tracing_max_latency = 0;
- 	wakeup_trace = tr;
- 	start_wakeup_tracer(tr);
-@@ -347,6 +352,9 @@ static void wakeup_tracer_reset(struct trace_array *tr)
- 	stop_wakeup_tracer(tr);
- 	/* make sure we put back any tasks we are tracing */
- 	wakeup_reset(tr);
-+
-+	if (!save_lat_flag)
-+		trace_flags &= ~TRACE_ITER_LATENCY_FMT;
- }
- 
- static void wakeup_tracer_start(struct trace_array *tr)
--- 
-1.6.1.3
+To Amit,
 
--- 
+Could you fix it and send a patch please.
+Also can you reduce the left shift operation to resolve it permanently
+
+Thank you,
+Kyungmin Park
