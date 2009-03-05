@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZCEK1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZCEK1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbZCEK1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZCEK1D
+	id S1755614AbZCEK1b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbZCEK1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:27:03 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58651 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754037AbZCEK1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:27:01 -0500
-Date: Thu, 5 Mar 2009 11:26:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 4/3 v7] SGI RTC: fix uv_time for UP
-Message-ID: <20090305102651.GA32407@elte.hu>
-References: <20090304185413.GA24385@sgi.com> <20090304194658.GA18096@elte.hu> <20090304204522.GA25430@sgi.com> <20090304205833.GB3527@elte.hu> <20090304220246.GC6288@sgi.com>
+	Thu, 5 Mar 2009 05:27:09 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:52341 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754145AbZCEK1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:27:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=e64ZAtEGj9FCI8S1cAGzGkCZKVKe/j7hr8iBrpqC1m96nUjteIeAORtKAiNUhERVZ+
+         2XlbP6KgZRGBGJnuXKWJBzyGM4GabxnyjkaYKa/LqSaUE6W+XL4/Z4YlwWmTf1nOhspt
+         NBECxmvtltdRVFGeiG+Fmgc0D/rWhzy39QXik=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090304220246.GC6288@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090305201145.aea87965.sfr@canb.auug.org.au>
+References: <20090304180630.047dac29.sfr@canb.auug.org.au>
+	 <10f740e80903041357w7314dc0ar1781f13fbe8afc5c@mail.gmail.com>
+	 <20090305094452.0e544eee.sfr@canb.auug.org.au>
+	 <20090305201145.aea87965.sfr@canb.auug.org.au>
+Date: Thu, 5 Mar 2009 11:27:04 +0100
+X-Google-Sender-Auth: a18db772b5a8377d
+Message-ID: <10f740e80903050227h120d4275s770e12f4c36090eb@mail.gmail.com>
+Subject: Re: linux-next: Tree for March 4
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Stephen,
 
-* Dimitri Sivanich <sivanich@sgi.com> wrote:
+On Thu, Mar 5, 2009 at 10:11, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Geert,
+>
+> On Thu, 5 Mar 2009 09:44:52 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>
+>> On Wed, 4 Mar 2009 22:57:32 +0100 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> >
+>> > It seems http://kisskb.ellerman.id.au/linux-next and
+>> > http://kisskb.ellerman.id.au/kisskb/matrix/
+>> > are not being updated? The most recent results are dated March 1.
+>>
+>> Thanks for the heads up, I will check it out.
+>
+> Should be good now.
 
-> Fix non-smp build of uv_time.c.
-> 
-> Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-> 
-> ---
-> 
-> This time against tip/x86/uv
-> 
->  arch/x86/kernel/uv_time.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.tip-uv/arch/x86/kernel/uv_time.c
-> ===================================================================
-> --- linux-2.6.tip-uv.orig/arch/x86/kernel/uv_time.c	2009-03-04 15:52:10.000000000 -0600
-> +++ linux-2.6.tip-uv/arch/x86/kernel/uv_time.c	2009-03-04 15:58:48.000000000 -0600
-> @@ -20,6 +20,9 @@
->   */
->  #include <linux/clockchips.h>
->  
-> +#include <asm/apic.h>
-> +#include <asm/cpu.h>
-> +
->  #include <asm/uv/uv_mmrs.h>
->  #include <asm/uv/uv_hub.h>
->  #include <asm/uv/bios.h>
+Verified, thanks!
 
-Btw: trivia: have you ever thought about why the include files 
-sections looks like that and why i modified your original patch? 
-Have a look at arch/x86/mm/fault.c.
+Gr{oetje,eeting}s,
 
-Anyway, i fixed up your patch.
+						Geert
 
-	Ingo
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
