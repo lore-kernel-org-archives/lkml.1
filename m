@@ -1,130 +1,343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZCEO5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZCEO7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZCEO5H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 09:57:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZCEO4x
+	id S1755955AbZCEO7v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 09:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZCEO7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 09:56:53 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:36977 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbZCEO4w convert rfc822-to-8bit (ORCPT
+	Thu, 5 Mar 2009 09:59:42 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:58554 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbZCEO7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 09:56:52 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "scameron@beardog.cca.cpqcorp.net" <scameron@beardog.cca.cpqcorp.net>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "coldwell@redhat.com" <coldwell@redhat.com>,
-       "hare@novell.com" <hare@novell.com>,
-       ISS StorageDev <iss_storagedev@hp.com>
-Date: Thu, 5 Mar 2009 14:55:57 +0000
-Subject: RE: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-Thread-Topic: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-Thread-Index: AcmdVoxLf169VTROSWyyjIaug4XHqgAS7VPQ
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77885CA68EC7EC@GVW0547EXC.americas.hpqcorp.net>
-References: <20090302145650.GW15340@beardog.cca.cpqcorp.net>
-	<20090303153402A.fujita.tomonori@lab.ntt.co.jp>
-	<20090303162821.GB15340@beardog.cca.cpqcorp.net>
- <20090305144843N.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090305144843N.fujita.tomonori@lab.ntt.co.jp>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 5 Mar 2009 09:59:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=WjVhRghzCPv+1gG06b+68bJf3MC+vZ/LN5Lu9RRExNpV7MWjIZtZWWpvhFHyRv0LaI
+         0lw053HY1BWaCTJfXFW2bDwlRivj6X7icoZd4v6ZUCUG9RGcJFQldO2ge2XBbXn0Z55D
+         6ZNr3DdWbh/GplTJtRfQ15d2xca3lcHERjGD8=
+Date: Thu, 5 Mar 2009 23:59:27 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: [PATCH] generic debug pagealloc (-v2)
+Message-ID: <20090305145926.GA27015@localhost.localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> We have /sys/class/scsi_host/host*/sg_tablesize:
-> 
-> How about modifying this value on the fly?
-> 
-> fujita@clover:/sys/class/scsi_host/host3$ echo 1000 > sg_tablesize
-> 
-> 
-> Well, this needs more changes (to both the block layer and 
-> the scsi mid layer) but is it nice to change this value dynamically?
-> 
-> Anyway, I think that it's better to address this fancy 
-> feature later on (after the mainline inclusion). Let's put 
-> hpsa driver into mainline first.
-> 
-> 
-> > > > Hmm, this doesn't seem all that complicated to me, and 
-> this code 
-> > > > snippet has been pretty stable for about 10 years. it's nearly 
-> > > > identical to what's in cpqarray in the 2.2.13 kernel from 1999:
-> > > > 
-> > > >                 do {
-> > > >                         i = 
-> find_first_zero_bit(h->cmd_pool_bits, NR_CMDS);
-> > > >                         if (i == NR_CMDS)
-> > > >                                 return NULL;
-> > > >                 } while(test_and_set_bit(i%32, 
-> > > > h->cmd_pool_bits+(i/32)) != 0)
-> > > > 
-> > > > It's fast, works well, and has needed very little 
-> maintenance over 
-> > > > the years.  Without knowing what you have in mind 
-> specifically, I 
-> > > > don't see a big need to change this.
-> > > 
-> > > I see. Seems that some drivers want something similar. I 
-> might come 
-> > > back later on with a patch to replace this with library functions.
-> > 
-> > There was some other discussion about pushing this sort of thing to 
-> > upper layers, using a tag generated in the scsi layer as a means of 
-> > allocating driver command buffers, since, presumably 
-> there's a one to 
-> > one mapping.  (I didn't completely grok it all though.)
-> 
-> Oops, I meant that I might come back with a patch to convert 
-> hpsa to use the the block layer tagging, which you and Mike 
-> Christie are talking about (yeah, my first suggestion to use 
-> lists was wrong. using the block layer tagging looks much better).
-> 
-> 
-> By the way, have you guys started to work on the review 
-> comments for the next submission? The driver has some minor 
-> style issues that have not been mentioned yet. For example, 
-> the comment style in the driver is not preferred:
-> 
-> /* If this device a non-zero lun of a multi-lun device */
-> /* byte 4 of the 8-byte LUN addr will contain the logical */
-> /* unit no, zero otherise. */
-> 
-> The preferred style is:
-> 
-> /*
->  * If this device a non-zero lun of a multi-lun device
->  * byte 4 of the 8-byte LUN addr will contain the logical
->  * unit no, zero otherise.
->  */
-> 
-> Another example, I think that the SCSI-ml preferred style is 
-> (not documented in CodingStyle though):
-> 
-> 'if (!ptr)' rather than 'if (ptr == NULL)'
-> 'if (!value)' rather than 'if (value == 0)'
-> 'if (ptr)' rather than 'if (ptr != NULL)'
-> 'if (value)' rather than 'if (value != 0)'
-> 
-> 
-> If you are already addressing the review comments, I just 
-> wait for the next submission, then I'll send such minor 
-> patches. If you are not, I'll send patches to address the 
-> review comments (including such minor patches).
-> 
+CONFIG_DEBUG_PAGEALLOC is now supported by x86, powerpc, sparc (64bit),
+and s390. This patch implements it for the rest of the architectures
+by filling the pages with poison byte patterns after free_pages() and
+verifying the poison patterns before alloc_pages().
 
-We're working on the review comments. Right we're trying to get caught up with our "day jobs."
+This generic one cannot detect invalid read accesses and it can only
+detect invalid write accesses after a long delay. But it is a feasible way
+for nommu architectures.
 
--- mikem
+* v2
+- Skip poisoning for highmem pages
+- Romove duplidate poison pattern checking
+
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-arch@vger.kernel.org
+Cc: linux-mm@kvack.org
+---
+ arch/avr32/mm/fault.c      |   18 ----------
+ arch/powerpc/Kconfig       |    3 +
+ arch/powerpc/Kconfig.debug |    1 
+ arch/s390/Kconfig          |    3 +
+ arch/s390/Kconfig.debug    |    1 
+ arch/sparc/Kconfig         |    3 +
+ arch/sparc/Kconfig.debug   |    3 +
+ arch/x86/Kconfig           |    3 +
+ arch/x86/Kconfig.debug     |    1 
+ include/linux/mm_types.h   |    4 ++
+ include/linux/poison.h     |    3 +
+ lib/Kconfig.debug          |    1 
+ mm/Kconfig.debug           |    8 ++++
+ mm/Makefile                |    1 
+ mm/debug-pagealloc.c       |   74 +++++++++++++++++++++++++++++++++++++++++++++
+ 15 files changed, 108 insertions(+), 19 deletions(-)
+
+Index: 2.6-poison/include/linux/poison.h
+===================================================================
+--- 2.6-poison.orig/include/linux/poison.h
++++ 2.6-poison/include/linux/poison.h
+@@ -17,6 +17,9 @@
+  */
+ #define TIMER_ENTRY_STATIC	((void *) 0x74737461)
+ 
++/********** mm/debug-pagealloc.c **********/
++#define PAGE_POISON 0xaa
++
+ /********** mm/slab.c **********/
+ /*
+  * Magic nums for obj red zoning.
+Index: 2.6-poison/mm/debug-pagealloc.c
+===================================================================
+--- /dev/null
++++ 2.6-poison/mm/debug-pagealloc.c
+@@ -0,0 +1,74 @@
++#include <linux/kernel.h>
++#include <linux/mm.h>
++
++static void poison_page(struct page *page)
++{
++	void *addr;
++
++	if (PageHighMem(page))
++		return; /* i goofed */
++
++	page->poison = true;
++	addr = page_address(page);
++	memset(addr, PAGE_POISON, PAGE_SIZE);
++}
++
++static void poison_pages(struct page *page, int n)
++{
++	int i;
++
++	for (i = 0; i < n; i++)
++		poison_page(page + i);
++}
++
++static void check_poison_mem(unsigned char *mem, size_t bytes)
++{
++	unsigned char *start;
++	unsigned char *end;
++
++	for (start = mem; start < mem + bytes; start++) {
++		if (*start != PAGE_POISON)
++			break;
++	}
++	if (start == mem + bytes)
++		return;
++
++	for (end = mem + bytes - 1; end > start; end--) {
++		if (*end != PAGE_POISON)
++			break;
++	}
++	printk(KERN_ERR "Page corruption: %p-%p\n", start, end);
++	print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1, start,
++			end - start + 1, 1);
++}
++
++static void unpoison_page(struct page *page)
++{
++	void *addr;
++
++	if (!page->poison)
++		return;
++
++	addr = page_address(page);
++	check_poison_mem(addr, PAGE_SIZE);
++	page->poison = false;
++}
++
++static void unpoison_pages(struct page *page, int n)
++{
++	int i;
++
++	for (i = 0; i < n; i++)
++		unpoison_page(page + i);
++}
++
++void kernel_map_pages(struct page *page, int numpages, int enable)
++{
++	if (!debug_pagealloc_enabled)
++		return;
++
++	if (enable)
++		unpoison_pages(page, numpages);
++	else
++		poison_pages(page, numpages);
++}
+Index: 2.6-poison/mm/Kconfig.debug
+===================================================================
+--- /dev/null
++++ 2.6-poison/mm/Kconfig.debug
+@@ -0,0 +1,8 @@
++config PAGE_POISONING
++	bool "Debug page memory allocations"
++	depends on !ARCH_SUPPORTS_DEBUG_PAGEALLOC
++	select DEBUG_PAGEALLOC
++	help
++	   Fill the pages with poison patterns after free_pages() and verify
++	   the patterns before alloc_pages(). This results in a large slowdown,
++	   but helps to find certain types of memory corruptions.
+Index: 2.6-poison/mm/Makefile
+===================================================================
+--- 2.6-poison.orig/mm/Makefile
++++ 2.6-poison/mm/Makefile
+@@ -33,3 +33,4 @@ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_PAGE_POISONING) += debug-pagealloc.o
+Index: 2.6-poison/lib/Kconfig.debug
+===================================================================
+--- 2.6-poison.orig/lib/Kconfig.debug
++++ 2.6-poison/lib/Kconfig.debug
+@@ -796,6 +796,7 @@ config SYSCTL_SYSCALL_CHECK
+ 	  to properly maintain and use. This enables checks that help
+ 	  you to keep things correct.
+ 
++source mm/Kconfig.debug
+ source kernel/trace/Kconfig
+ 
+ config PROVIDE_OHCI1394_DMA_INIT
+Index: 2.6-poison/arch/powerpc/Kconfig.debug
+===================================================================
+--- 2.6-poison.orig/arch/powerpc/Kconfig.debug
++++ 2.6-poison/arch/powerpc/Kconfig.debug
+@@ -30,6 +30,7 @@ config DEBUG_STACK_USAGE
+ config DEBUG_PAGEALLOC
+         bool "Debug page memory allocations"
+         depends on DEBUG_KERNEL && !HIBERNATION
++	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
+         help
+           Unmap pages from the kernel linear mapping after free_pages().
+           This results in a large slowdown, but helps to find certain types
+Index: 2.6-poison/arch/s390/Kconfig.debug
+===================================================================
+--- 2.6-poison.orig/arch/s390/Kconfig.debug
++++ 2.6-poison/arch/s390/Kconfig.debug
+@@ -9,6 +9,7 @@ source "lib/Kconfig.debug"
+ config DEBUG_PAGEALLOC
+ 	bool "Debug page memory allocations"
+ 	depends on DEBUG_KERNEL
++	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	help
+ 	  Unmap pages from the kernel linear mapping after free_pages().
+ 	  This results in a slowdown, but helps to find certain types of
+Index: 2.6-poison/arch/sparc/Kconfig.debug
+===================================================================
+--- 2.6-poison.orig/arch/sparc/Kconfig.debug
++++ 2.6-poison/arch/sparc/Kconfig.debug
+@@ -24,7 +24,8 @@ config STACK_DEBUG
+ 
+ config DEBUG_PAGEALLOC
+ 	bool "Debug page memory allocations"
+-	depends on SPARC64 && DEBUG_KERNEL && !HIBERNATION
++	depends on DEBUG_KERNEL && !HIBERNATION
++	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	help
+ 	  Unmap pages from the kernel linear mapping after free_pages().
+ 	  This results in a large slowdown, but helps to find certain types
+Index: 2.6-poison/arch/x86/Kconfig
+===================================================================
+--- 2.6-poison.orig/arch/x86/Kconfig
++++ 2.6-poison/arch/x86/Kconfig
+@@ -160,6 +160,9 @@ config AUDIT_ARCH
+ config ARCH_SUPPORTS_OPTIMIZED_INLINING
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_DEBUG_PAGEALLOC
++	def_bool y
++
+ # Use the generic interrupt handling code in kernel/irq/:
+ config GENERIC_HARDIRQS
+ 	bool
+Index: 2.6-poison/arch/x86/Kconfig.debug
+===================================================================
+--- 2.6-poison.orig/arch/x86/Kconfig.debug
++++ 2.6-poison/arch/x86/Kconfig.debug
+@@ -75,6 +75,7 @@ config DEBUG_STACK_USAGE
+ config DEBUG_PAGEALLOC
+ 	bool "Debug page memory allocations"
+ 	depends on DEBUG_KERNEL
++	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	help
+ 	  Unmap pages from the kernel linear mapping after free_pages().
+ 	  This results in a large slowdown, but helps to find certain types
+Index: 2.6-poison/arch/powerpc/Kconfig
+===================================================================
+--- 2.6-poison.orig/arch/powerpc/Kconfig
++++ 2.6-poison/arch/powerpc/Kconfig
+@@ -227,6 +227,9 @@ config PPC_OF_PLATFORM_PCI
+ 	depends on PPC64 # not supported on 32 bits yet
+ 	default n
+ 
++config ARCH_SUPPORTS_DEBUG_PAGEALLOC
++	def_bool y
++
+ source "init/Kconfig"
+ 
+ source "kernel/Kconfig.freezer"
+Index: 2.6-poison/arch/sparc/Kconfig
+===================================================================
+--- 2.6-poison.orig/arch/sparc/Kconfig
++++ 2.6-poison/arch/sparc/Kconfig
+@@ -124,6 +124,9 @@ config ARCH_NO_VIRT_TO_BUS
+ config OF
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_DEBUG_PAGEALLOC
++	def_bool y if SPARC64
++
+ source "init/Kconfig"
+ 
+ source "kernel/Kconfig.freezer"
+Index: 2.6-poison/arch/avr32/mm/fault.c
+===================================================================
+--- 2.6-poison.orig/arch/avr32/mm/fault.c
++++ 2.6-poison/arch/avr32/mm/fault.c
+@@ -250,21 +250,3 @@ asmlinkage void do_bus_error(unsigned lo
+ 	dump_dtlb();
+ 	die("Bus Error", regs, SIGKILL);
+ }
+-
+-/*
+- * This functionality is currently not possible to implement because
+- * we're using segmentation to ensure a fixed mapping of the kernel
+- * virtual address space.
+- *
+- * It would be possible to implement this, but it would require us to
+- * disable segmentation at startup and load the kernel mappings into
+- * the TLB like any other pages. There will be lots of trickery to
+- * avoid recursive invocation of the TLB miss handler, though...
+- */
+-#ifdef CONFIG_DEBUG_PAGEALLOC
+-void kernel_map_pages(struct page *page, int numpages, int enable)
+-{
+-
+-}
+-EXPORT_SYMBOL(kernel_map_pages);
+-#endif
+Index: 2.6-poison/arch/s390/Kconfig
+===================================================================
+--- 2.6-poison.orig/arch/s390/Kconfig
++++ 2.6-poison/arch/s390/Kconfig
+@@ -72,6 +72,9 @@ config PGSTE
+ config VIRT_CPU_ACCOUNTING
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_DEBUG_PAGEALLOC
++	def_bool y
++
+ mainmenu "Linux Kernel Configuration"
+ 
+ config S390
+Index: 2.6-poison/include/linux/mm_types.h
+===================================================================
+--- 2.6-poison.orig/include/linux/mm_types.h
++++ 2.6-poison/include/linux/mm_types.h
+@@ -94,6 +94,10 @@ struct page {
+ 	void *virtual;			/* Kernel virtual address (NULL if
+ 					   not kmapped, ie. highmem) */
+ #endif /* WANT_PAGE_VIRTUAL */
++
++#ifdef CONFIG_PAGE_POISONING
++	bool poison;
++#endif /* CONFIG_PAGE_POISONING */
+ };
+ 
+ /*
