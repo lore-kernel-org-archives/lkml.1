@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZCEKFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZCEKIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbZCEKFp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbZCEKF2
+	id S1755192AbZCEKIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZCEKIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:05:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40460 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Mar 2009 05:08:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56258 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754141AbZCEKF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:05:27 -0500
-Date: Thu, 5 Mar 2009 11:05:15 +0100
+	id S1752826AbZCEKIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:08:05 -0500
+Date: Thu, 5 Mar 2009 11:07:48 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Brian Maly <bmaly@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix DMI for EFI
-Message-ID: <20090305100515.GA29499@elte.hu>
-References: <49A9F597.4010601@redhat.com> <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com> <49ADEDA3.1030406@redhat.com> <20090304110022.GB18165@elte.hu> <49AE9850.9020103@redhat.com> <20090304175418.GB29823@elte.hu> <1236216818.24215.24.camel@yhuang-dev.sh.intel.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH] perfcounters: provide expansion room in the ABI
+Message-ID: <20090305100748.GB29499@elte.hu>
+References: <18862.19599.929591.3109@cargo.ozlabs.ibm.com> <20090304104945.GB4879@elte.hu> <18863.1197.527693.75146@drongo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236216818.24215.24.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <18863.1197.527693.75146@drongo.ozlabs.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,39 +35,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Huang Ying <ying.huang@intel.com> wrote:
+* Paul Mackerras <paulus@samba.org> wrote:
 
-> On Thu, 2009-03-05 at 01:54 +0800, Ingo Molnar wrote:
-> > * Brian Maly <bmaly@redhat.com> wrote:
-> > 
-> > >
-> > >
-> > >> Hm, could we ever find ourselves in the positition of having to access 
-> > >> the DMI strings table in the EFI init code, to implement a quirk? I 
-> > >> think that's quite plausible.
-> > >
-> > >> OTOH, with some DMI quirks in EFI tables it's a bit of a chicken and 
-> > >> egg problem. Can DMI strings ever be outside of EFI tables on EFI 
-> > >> systems?
-> > >
-> > >> 	Ingo
-> > >
-> > > Right now it is EFI that loads the dmi tables (and all other 
-> > > tables such as ACPI), so it is a chicken and the egg. I think 
-> > > that if dmi is ever needed by EFI, the dmi scan will have to 
-> > > be moved inside efi_init. We could move the dmi scan into 
-> > > efi_init and do the dmi scan the moment we have the dmi table. 
-> > > Thats really the soonest point we could scan on EFI systems. 
-> > > Im OK with moving dmi to efi_init if you prefer.
-> > 
-> > Your patch looks fine, but i'd like to hear the opinion of Ying 
-> > Huang as well.
+> Ingo Molnar wrote:
 > 
-> This patch is OK for me.
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git rfc
+> > > 
+> > >  include/linux/perf_counter.h |   12 +++++++++---
+> > >  include/linux/syscalls.h     |    2 +-
+> > >  kernel/perf_counter.c        |   10 +++++++---
+> > >  3 files changed, 17 insertions(+), 7 deletions(-)
+> > 
+> > Pulled into tip:perfcounters/core, thanks Paul!
+> 
+> Actually, I goofed slightly.  In this bit of the patch:
+> 
+> @@ -80,10 +81,15 @@ struct perf_counter_hw_event {
+>  				exclude_user   :  1, /* don't count user      */
+>  				exclude_kernel :  1, /* ditto kernel          */
+>  				exclude_hv     :  1, /* ditto hypervisor      */
+> +				exclude_idle   :  1, /* don't count when idle */
+>  
+> -				__reserved_1 : 23;
+> +				__reserved_1 : 55;
+> +
+> 
+> the 55 should have been 54 if we want those bitfields to 
+> occupy 64 bits.  With 55 there, __reserved_1 will go in the 
+> next 64-bit quadword (x86-speak, or doubleword in 
+> powerpc-speak).
+> 
+> Do you think that's worth changing?  If so I'll do a commit 
+> changing the 55 to 54.
 
-thanks. There are two EFI patches queued up for .29:
-
-dd39ecf: x86: EFI: Back efi_ioremap with init_memory_mapping instead of FIX_MAP
-ff0c087: x86: fix DMI on EFI
+How about extending it to 118 instead? The creation of a counter 
+is a slow path in any case.
 
 	Ingo
