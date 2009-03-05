@@ -1,151 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZCEIq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZCEIq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbZCEIq1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:46:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZCEIqT
+	id S1755906AbZCEIq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZCEIqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:46:19 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:19254 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbZCEIqS convert rfc822-to-8bit (ORCPT
+	Thu, 5 Mar 2009 03:46:46 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:62987 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbZCEIqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:46:18 -0500
+	Thu, 5 Mar 2009 03:46:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=E87t4u6+FgNQ8xwLw91VsTRY8FckSYYoLi/a6zprQflGWvNnjGY0bxMyhONRIcCTR+
-         ubp2a0fyiylAUYpFkYeOq/lRx3s+M6osTO1VhPI0RHyJ9B2h8NEi+QCk8F40iDWIoR6k
-         aJ08zc2vce5GSA1EoO5nAdGrDTccjvgAGO288=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GeVqqYVl/dXVAb9mkPa6BqphNzK6LIS1ZXQKbK2+D2miejxp7R1gitOQaF+NhI4e7q
+         dJkiEo6JD9mn/1fqQnL17jtgjatkn7wJeMruZiEwRmD84Gq3rlH56NpbQqtJW1NSbtCZ
+         x41bt2xZeH/bcKIoWyEsjrYe1q0cKd7LG7hXE=
+Date: Thu, 5 Mar 2009 09:46:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] tracing/function-graph-tracer: use the more
+	lightweight local clock
+Message-ID: <20090305084639.GC5359@nowhere>
+References: <49af243d.06e9300a.53ad.ffff840c@mx.google.com> <20090305011941.GA9821@nowhere> <1236238213.5330.10111.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>
-References: <dd18b0c30903042141k1adc0f6cj4bc286cfa29f475c@mail.gmail.com>
-	 <20090305060436.GA5359@nowhere>
-	 <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>
-Date: Thu, 5 Mar 2009 00:46:16 -0800
-Message-ID: <dd18b0c30903050046v4fc9eff3h99734406112ec0f1@mail.gmail.com>
-Subject: Re: [PATCH 1/1] unifdef.c change "getline" to "get_line" to avoid C 
-	library confusion.
-From: Justin Mattock <justinmattock@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236238213.5330.10111.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 4, 2009 at 11:51 PM, Justin Mattock <justinmattock@gmail.com> wrote:
-> On Wed, Mar 4, 2009 at 10:04 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
->> On Wed, Mar 04, 2009 at 09:41:09PM -0800, Justin Mattock wrote:
->>> From: Justin P. Mattock <justinmattock@gmail.com>
->>>
->>> This fixes an error when compiling the kernel.
->>>
->>>   CHK     include/linux/version.h
->>>   HOSTCC  scripts/unifdef
->>> scripts/unifdef.c:209: error: conflicting types for 'getline'
->>> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
->>> make[1]: *** [scripts/unifdef] Error 1
->>> make: *** [__headers] Error 2
->>>
->>> --
->>> scripts/unifdef.c  |  3 +++
->>> 1 files changed, 3 insertions(+),0 deletions(-)
->>>
->>> diff --git a/scripts/unifdef.c b/scripts/unifdef.c
->>> ---a/scripts/unifdef.c
->>> +++b/scripts/unifdef.c
->>> @@ -203,1 +203,0 @@ static void             addsym(bool, bool, char *);
->>>
->>>
->>> static void             done(void);
->>> static void             error(const char *);
->>> static int              findsym(const char *);
->>> static void             flushline(bool);
->>> -static Linetype         getline(void);
->>> +static Linetype         get_line(void);
->>> static Linetype         ifeval(const char **);
->>> static void             ignoreoff(void);
->>> static void             ignoreon(void);
->>> static void             keywordedit(const char *);
->>>
->>>
->>>
->>>
->>> @@ -509,1 +509,0 @@ process(void)
->>>
->>>
->>> {
->>>       Linetype lineval;
->>>
->>>       for (;;) {
->>>               linenum++;
->>> -               lineval = getline();
->>> +             lineval = get_line();
->>>               trans_table[ifstate[depth]][lineval]();
->>>               debug("process %s -> %s depth %d",
->>>                   linetype_name[lineval],
->>>                   ifstate_name[ifstate[depth]], depth);
->>>       }
->>> }
->>>
->>>
->>> @@ -528,1 +528,0 @@ static Linetype
->>> -getline(void)
->>> +get_line(void)
->>> {
->>>       const char *cp;
->>>
->>> --
->>>
->>>
->>> keep in mind I've never created a patch before,
->>> (so go easy on me);
->>
->>
->> Hi,
->>
->> You forgot to put your Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
->> :)
->>
->> See Documentation/SubmittingPatches
->>
->> I don't know who is the maintainer of this file.
->> Adding Andrew in Cc.
->>
->>
->>> regards;
->>>
->>> --
->>> Justin P. Mattock
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>
->>
->
-> Cool,
-> thanks for the help.
-> I'll look at the doc's and google
-> as much as possible, so I get this
-> correct.
->
-> regards;
->
-> --
-> Justin P. Mattock
->
+On Thu, Mar 05, 2009 at 08:30:13AM +0100, Peter Zijlstra wrote:
+> On Thu, 2009-03-05 at 02:19 +0100, Frederic Weisbecker wrote:
+> 
+> > It takes 1 ms to execute while tracing.
+> > Considering my frequency is 250 Hz, it means 1/4 of the system is used
+> > on timer interrupt while tracing.
+> > 
+> > For now the hang is fixed, but not the awful latency. And I'm just too frightened
+> > to test it on 1000 Hz.
+> > 
+> > But I plan to add a kind of watchdog to check how many time we spent inside an
+> > interrupt while graph tracing.
+> > By checking this time against the current Hz value, I could decide to abort the tracing
+> > for all irq.
+> 
+> That would basically render the thing useless :-(
 
-O.K. after doing some reading,
-I have a better idea of how to make a
-patch. I used diff, used patch -Np1, and compiled.
-and added the signed off part.
-I'll post after this post.
-and take any suggestions on what to do next.
 
--- 
-Justin P. Mattock
+It would be only for slow machines :-)
+I'm talking about something that happened on a Pentium II.
+
+ 
+> Is it specifically function_graph that is so expensive? If so, is that
+> because of the function exit hook?
+
+
+Yes, specifically the function_graph, the function tracer is not concerned.
+The function graph tracer takes more than double overhead compared to the function
+tracer.
+
+Usually the function tracer hooks directly the the function that insert the event, it's
+pretty straightforward.
+
+The function graph does much more work: 
+
+entry: basic checks, take the time, push the infos on the stack, insert an event
+       on the ring-buffer, hook the return value.
+return: pop the infos from stack, insert an event on the ring-buffer, jump
+        to the original caller.
+
+It has a high cost... which makes me sad because I plan to port it in on Arm and I fear
+the little Arm boad I recently purshased will not let me trace the interrupts without hanging...
+:-(
+
+I guess I should start thinking on some optimizations, perhaps using perfcounter?
+
