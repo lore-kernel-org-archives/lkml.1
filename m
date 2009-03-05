@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZCEXiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZCEXit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbZCEXiY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758354AbZCEXiF
+	id S1758877AbZCEXit (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758463AbZCEXid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:38:05 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:45477 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:38:33 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:45541 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758351AbZCEXiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:38:04 -0500
-Message-Id: <20090305225517.240058002@polymtl.ca>
+	id S1758456AbZCEXia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:38:30 -0500
+Message-Id: <20090305225520.692384747@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:53 -0500
+Date: Thu, 05 Mar 2009 17:48:08 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,131 +31,623 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jon Masters <jcm@jonmasters.org>, Jon Masters <jcm@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [RFC patch 25/41] Markers Support for Proprierary Modules
-Content-Disposition: inline; filename=markers-support-for-proprietary-modules.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:13 +0000
+       Theodore Tso <tytso@mit.edu>, "Stephen C. Tweedie" <sct@redhat.com>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [RFC patch 40/41] EXT4: instrumentation with tracepoints
+Content-Disposition: inline; filename=ext4-move-from-markers-to-tracepoints.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:17 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There seems to be good arguments for markers to support proprierary modules. So
-I am throwing this one-liner in and let's see how people react. It only makes
-sure that a module that has been "forced" to be loaded won't have its markers
-used. It is important to leave this check to make sure the kernel does not crash
-by expecting the markers part of the struct module by mistake in the case there
-is an incorrect checksum.
-
-
-Discussion so far :
-http://lkml.org/lkml/2008/1/22/226
-
-Jon Masters <jcm@redhat.com> writes:
-I notice in module.c:
-
-#ifdef CONFIG_MARKERS
-      if (!mod->taints)
-              marker_update_probe_range(mod->markers,
-                      mod->markers + mod->num_markers, NULL, NULL);
-#endif
-
-Is this an attempt to not set a marker for proprietary modules? [...]
-
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-I can't seem to find any discussion about this aspect.  If this is the
-intent, it seems misguided to me.  There may instead be a relationship
-to TAINT_FORCED_{RMMOD,MODULE}.  Mathieu?
-
-- FChE
-
-On Tue, 2008-01-22 at 22:10 -0500, Mathieu Desnoyers wrote:
-On my part, its mostly a matter of not crashing the kernel when someone
-tries to force modprobe of a proprietary module (where the checksums
-doesn't match) on a kernel that supports the markers. Not doing so
-causes the markers to try to find the marker-specific information in
-struct module which doesn't exist and OOPSes.
-
-Christoph's point of view is rather more drastic than mine : it's not
-interesting for the kernel community to help proprietary modules writers,
-so it's a good idea not to give them marker support. (I CC'ed him so he
-can clarify his position).
-
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-[...]
-Another way of looking at this though is that by allowing/encouraging
-proprietary module writers to include markers, we and their users get
-new diagnostic capabilities.  It constitutes a little bit of opening
-up, which IMO we should reward rather than punish.
-
-
-* Vladis Ketnieks (Valdis.Kletnieks@vt.edu) wrote:
-On Wed, 23 Jan 2008 09:48:12 EST, Mathieu Desnoyers said:
-
-> This specific one is a kernel policy matter, and I personally don't
-> have a strong opinion about it. I agree that you raise a good counter
-> argument : it can be useful to proprietary modules users to be able to
-> extract tracing information from those modules to argue with their
-> vendors that their driver/hardware is broken (a tracer is _very_ useful
-> in that kind of situation).
-
-Amen, brother. Been there, done that, got the tshirt (not on Linux, but
-other operating systems).
-
->                             However, it is also useful to proprieraty
-> module writers who can benefit from the merged kernel/modules traces.
-> Do we want to give them this ability ?
-
-The proprietary module writer has the *source* for the kernel and their module.
-There's no way you can prevent the proprietary module writers from using this
-feature as long as you allow other module writers to use it.
-
->                                           It would surely help writing
-> better proprieraty kernel modules.
-
-The biggest complaint against proprietary modules is that they make it
-impossible for *us* to debug.  And you want to argue *against* a feature that
-would allow them to develop better code that causes less crashes, and therefor
-less people *asking* for us to debug it?
-
-Remember - when a user tries a Linux box with a proprietary module, and the
-experience sucks because the module sucks, they will walk away thinking
-"Linux sucks", not "That module sucks".
+Took the instrumentation from "ext4: Add markers for better debuggability" and
+moved it to tracepoints.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Jon Masters <jcm@jonmasters.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Jon Masters <jcm@redhat.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Theodore Ts'o <tytso@mit.edu>
+CC: Stephen C. Tweedie <sct@redhat.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Ext4 Developers List <linux-ext4@vger.kernel.org>
 ---
- kernel/module.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/ext4/fsync.c      |    8 +--
+ fs/ext4/ialloc.c     |   17 +++---
+ fs/ext4/inode.c      |   79 +++++++++----------------------
+ fs/ext4/mballoc.c    |   71 +++++++++-------------------
+ fs/ext4/mballoc.h    |    2 
+ fs/ext4/super.c      |    6 +-
+ include/trace/ext4.h |  129 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 194 insertions(+), 118 deletions(-)
 
-Index: linux-2.6-lttng/kernel/module.c
+Index: linux-2.6-lttng/fs/ext4/fsync.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2009-03-05 15:45:38.000000000 -0500
-+++ linux-2.6-lttng/kernel/module.c	2009-03-05 15:45:49.000000000 -0500
-@@ -2809,7 +2809,7 @@ void module_update_markers(void)
+--- linux-2.6-lttng.orig/fs/ext4/fsync.c	2009-03-05 15:21:54.000000000 -0500
++++ linux-2.6-lttng/fs/ext4/fsync.c	2009-03-05 15:49:28.000000000 -0500
+@@ -28,10 +28,12 @@
+ #include <linux/writeback.h>
+ #include <linux/jbd2.h>
+ #include <linux/blkdev.h>
+-#include <linux/marker.h>
++#include <trace/ext4.h>
+ #include "ext4.h"
+ #include "ext4_jbd2.h"
  
- 	mutex_lock(&module_mutex);
- 	list_for_each_entry(mod, &modules, list)
--		if (!mod->taints)
-+		if (!(mod->taints & TAINT_FORCED_MODULE))
- 			marker_update_probe_range(mod->markers,
- 				mod->markers + mod->num_markers);
- 	mutex_unlock(&module_mutex);
-@@ -2826,7 +2826,7 @@ int module_get_iter_markers(struct marke
++DEFINE_TRACE(ext4_sync_file);
++
+ /*
+  * akpm: A new design for ext4_sync_file().
+  *
+@@ -52,9 +54,7 @@ int ext4_sync_file(struct file *file, st
  
- 	mutex_lock(&module_mutex);
- 	list_for_each_entry(iter_mod, &modules, list) {
--		if (!iter_mod->taints) {
-+		if (!(iter_mod->taints & TAINT_FORCED_MODULE)) {
- 			/*
- 			 * Sorted module list
- 			 */
+ 	J_ASSERT(ext4_journal_current_handle() == NULL);
+ 
+-	trace_mark(ext4_sync_file, "dev %s datasync %d ino %ld parent %ld",
+-		   inode->i_sb->s_id, datasync, inode->i_ino,
+-		   dentry->d_parent->d_inode->i_ino);
++	trace_ext4_sync_file(file, dentry, datasync);
+ 
+ 	/*
+ 	 * data=writeback:
+Index: linux-2.6-lttng/fs/ext4/ialloc.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/ext4/ialloc.c	2009-03-05 15:21:54.000000000 -0500
++++ linux-2.6-lttng/fs/ext4/ialloc.c	2009-03-05 15:49:28.000000000 -0500
+@@ -22,6 +22,7 @@
+ #include <linux/random.h>
+ #include <linux/bitops.h>
+ #include <linux/blkdev.h>
++#include <trace/ext4.h>
+ #include <asm/byteorder.h>
+ #include "ext4.h"
+ #include "ext4_jbd2.h"
+@@ -29,6 +30,10 @@
+ #include "acl.h"
+ #include "group.h"
+ 
++DEFINE_TRACE(ext4_free_inode);
++DEFINE_TRACE(ext4_request_inode);
++DEFINE_TRACE(ext4_allocate_inode);
++
+ /*
+  * ialloc.c contains the inodes allocation and deallocation routines
+  */
+@@ -210,11 +215,7 @@ void ext4_free_inode(handle_t *handle, s
+ 
+ 	ino = inode->i_ino;
+ 	ext4_debug("freeing inode %lu\n", ino);
+-	trace_mark(ext4_free_inode,
+-		   "dev %s ino %lu mode %d uid %lu gid %lu bocks %llu",
+-		   sb->s_id, inode->i_ino, inode->i_mode,
+-		   (unsigned long) inode->i_uid, (unsigned long) inode->i_gid,
+-		   (unsigned long long) inode->i_blocks);
++	trace_ext4_free_inode(inode);
+ 
+ 	/*
+ 	 * Note: we must free any quota before locking the superblock,
+@@ -703,8 +704,7 @@ struct inode *ext4_new_inode(handle_t *h
+ 		return ERR_PTR(-EPERM);
+ 
+ 	sb = dir->i_sb;
+-	trace_mark(ext4_request_inode, "dev %s dir %lu mode %d", sb->s_id,
+-		   dir->i_ino, mode);
++	trace_ext4_request_inode(dir, mode);
+ 	inode = new_inode(sb);
+ 	if (!inode)
+ 		return ERR_PTR(-ENOMEM);
+@@ -939,8 +939,7 @@ got:
+ 	}
+ 
+ 	ext4_debug("allocating inode %lu\n", inode->i_ino);
+-	trace_mark(ext4_allocate_inode, "dev %s ino %lu dir %lu mode %d",
+-		   sb->s_id, inode->i_ino, dir->i_ino, mode);
++	trace_ext4_allocate_inode(inode, dir, mode);
+ 	goto really_out;
+ fail:
+ 	ext4_std_error(sb, err);
+Index: linux-2.6-lttng/fs/ext4/inode.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/ext4/inode.c	2009-03-05 15:21:54.000000000 -0500
++++ linux-2.6-lttng/fs/ext4/inode.c	2009-03-05 15:49:28.000000000 -0500
+@@ -37,11 +37,24 @@
+ #include <linux/namei.h>
+ #include <linux/uio.h>
+ #include <linux/bio.h>
++#include <trace/ext4.h>
+ #include "ext4_jbd2.h"
+ #include "xattr.h"
+ #include "acl.h"
+ #include "ext4_extents.h"
+ 
++DEFINE_TRACE(ext4_write_begin);
++DEFINE_TRACE(ext4_ordered_write_end);
++DEFINE_TRACE(ext4_writeback_write_end);
++DEFINE_TRACE(ext4_journalled_write_end);
++DEFINE_TRACE(ext4_da_writepage);
++DEFINE_TRACE(ext4_da_writepages);
++DEFINE_TRACE(ext4_da_writepages_result);
++DEFINE_TRACE(ext4_da_write_begin);
++DEFINE_TRACE(ext4_da_write_end);
++DEFINE_TRACE(ext4_normal_writepage);
++DEFINE_TRACE(ext4_journalled_writepage);
++
+ #define MPAGE_DA_EXTENT_TAIL 0x01
+ 
+ static inline int ext4_begin_ordered_truncate(struct inode *inode,
+@@ -1353,10 +1366,7 @@ static int ext4_write_begin(struct file 
+  	pgoff_t index;
+ 	unsigned from, to;
+ 
+-	trace_mark(ext4_write_begin,
+-		   "dev %s ino %lu pos %llu len %u flags %u",
+-		   inode->i_sb->s_id, inode->i_ino,
+-		   (unsigned long long) pos, len, flags);
++	trace_ext4_write_begin(inode, pos, len, flags);
+  	index = pos >> PAGE_CACHE_SHIFT;
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 	to = from + len;
+@@ -1432,10 +1442,7 @@ static int ext4_ordered_write_end(struct
+ 	struct inode *inode = mapping->host;
+ 	int ret = 0, ret2;
+ 
+-	trace_mark(ext4_ordered_write_end,
+-		   "dev %s ino %lu pos %llu len %u copied %u",
+-		   inode->i_sb->s_id, inode->i_ino,
+-		   (unsigned long long) pos, len, copied);
++	trace_ext4_ordered_write_end(inode, pos, len, copied);
+ 	ret = ext4_jbd2_file_inode(handle, inode);
+ 
+ 	if (ret == 0) {
+@@ -1474,10 +1481,7 @@ static int ext4_writeback_write_end(stru
+ 	int ret = 0, ret2;
+ 	loff_t new_i_size;
+ 
+-	trace_mark(ext4_writeback_write_end,
+-		   "dev %s ino %lu pos %llu len %u copied %u",
+-		   inode->i_sb->s_id, inode->i_ino,
+-		   (unsigned long long) pos, len, copied);
++	trace_ext4_writeback_write_end(inode, pos, len, copied);
+ 	new_i_size = pos + copied;
+ 	if (new_i_size > EXT4_I(inode)->i_disksize) {
+ 		ext4_update_i_disksize(inode, new_i_size);
+@@ -1513,10 +1517,7 @@ static int ext4_journalled_write_end(str
+ 	unsigned from, to;
+ 	loff_t new_i_size;
+ 
+-	trace_mark(ext4_journalled_write_end,
+-		   "dev %s ino %lu pos %llu len %u copied %u",
+-		   inode->i_sb->s_id, inode->i_ino,
+-		   (unsigned long long) pos, len, copied);
++	trace_ext4_journalled_write_end(inode, pos, len, copied);
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 	to = from + len;
+ 
+@@ -2333,9 +2334,7 @@ static int ext4_da_writepage(struct page
+ 	struct buffer_head *page_bufs;
+ 	struct inode *inode = page->mapping->host;
+ 
+-	trace_mark(ext4_da_writepage,
+-		   "dev %s ino %lu page_index %lu",
+-		   inode->i_sb->s_id, inode->i_ino, page->index);
++	trace_ext4_da_writepage(inode, page);
+ 	size = i_size_read(inode);
+ 	if (page->index == size >> PAGE_CACHE_SHIFT)
+ 		len = size & ~PAGE_CACHE_MASK;
+@@ -2447,19 +2446,7 @@ static int ext4_da_writepages(struct add
+ 	int needed_blocks, ret = 0, nr_to_writebump = 0;
+ 	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
+ 
+-	trace_mark(ext4_da_writepages,
+-		   "dev %s ino %lu nr_t_write %ld "
+-		   "pages_skipped %ld range_start %llu "
+-		   "range_end %llu nonblocking %d "
+-		   "for_kupdate %d for_reclaim %d "
+-		   "for_writepages %d range_cyclic %d",
+-		   inode->i_sb->s_id, inode->i_ino,
+-		   wbc->nr_to_write, wbc->pages_skipped,
+-		   (unsigned long long) wbc->range_start,
+-		   (unsigned long long) wbc->range_end,
+-		   wbc->nonblocking, wbc->for_kupdate,
+-		   wbc->for_reclaim, wbc->for_writepages,
+-		   wbc->range_cyclic);
++	trace_ext4_da_writepages(inode, wbc);
+ 
+ 	/*
+ 	 * No pages to write? This is mainly a kludge to avoid starting
+@@ -2595,14 +2582,7 @@ out_writepages:
+ 	if (!no_nrwrite_index_update)
+ 		wbc->no_nrwrite_index_update = 0;
+ 	wbc->nr_to_write -= nr_to_writebump;
+-	trace_mark(ext4_da_writepage_result,
+-		   "dev %s ino %lu ret %d pages_written %d "
+-		   "pages_skipped %ld congestion %d "
+-		   "more_io %d no_nrwrite_index_update %d",
+-		   inode->i_sb->s_id, inode->i_ino, ret,
+-		   pages_written, wbc->pages_skipped,
+-		   wbc->encountered_congestion, wbc->more_io,
+-		   wbc->no_nrwrite_index_update);
++	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
+ 	return ret;
+ }
+ 
+@@ -2654,11 +2634,7 @@ static int ext4_da_write_begin(struct fi
+ 					len, flags, pagep, fsdata);
+ 	}
+ 	*fsdata = (void *)0;
+-
+-	trace_mark(ext4_da_write_begin,
+-		   "dev %s ino %lu pos %llu len %u flags %u",
+-		   inode->i_sb->s_id, inode->i_ino,
+-		   (unsigned long long) pos, len, flags);
++	trace_ext4_da_write_begin(inode, pos, len, flags);
+ retry:
+ 	/*
+ 	 * With delayed allocation, we don't log the i_disksize update
+@@ -2751,10 +2727,7 @@ static int ext4_da_write_end(struct file
+ 		}
+ 	}
+ 
+-	trace_mark(ext4_da_write_end,
+-		   "dev %s ino %lu pos %llu len %u copied %u",
+-		   inode->i_sb->s_id, inode->i_ino,
+-		   (unsigned long long) pos, len, copied);
++	trace_ext4_da_write_end(inode, pos, len, copied);
+ 	start = pos & (PAGE_CACHE_SIZE - 1);
+ 	end = start + copied - 1;
+ 
+@@ -2965,9 +2938,7 @@ static int ext4_normal_writepage(struct 
+ 	loff_t size = i_size_read(inode);
+ 	loff_t len;
+ 
+-	trace_mark(ext4_normal_writepage,
+-		   "dev %s ino %lu page_index %lu",
+-		   inode->i_sb->s_id, inode->i_ino, page->index);
++	trace_ext4_normal_writepage(inode, page);
+ 	J_ASSERT(PageLocked(page));
+ 	if (page->index == size >> PAGE_CACHE_SHIFT)
+ 		len = size & ~PAGE_CACHE_MASK;
+@@ -3053,9 +3024,7 @@ static int ext4_journalled_writepage(str
+ 	loff_t size = i_size_read(inode);
+ 	loff_t len;
+ 
+-	trace_mark(ext4_journalled_writepage,
+-		   "dev %s ino %lu page_index %lu",
+-		   inode->i_sb->s_id, inode->i_ino, page->index);
++	trace_ext4_journalled_writepage(inode, page);
+ 	J_ASSERT(PageLocked(page));
+ 	if (page->index == size >> PAGE_CACHE_SHIFT)
+ 		len = size & ~PAGE_CACHE_MASK;
+Index: linux-2.6-lttng/fs/ext4/mballoc.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/ext4/mballoc.c	2009-03-05 15:21:54.000000000 -0500
++++ linux-2.6-lttng/fs/ext4/mballoc.c	2009-03-05 15:49:28.000000000 -0500
+@@ -343,6 +343,17 @@ static void release_blocks_on_commit(jou
+ 
+ 
+ 
++DEFINE_TRACE(ext4_discard_blocks);
++DEFINE_TRACE(ext4_mb_new_inode_pa);
++DEFINE_TRACE(ext4_mb_new_group_pa);
++DEFINE_TRACE(ext4_mb_release_inode_pa);
++DEFINE_TRACE(ext4_mb_release_group_pa);
++DEFINE_TRACE(ext4_discard_preallocations);
++DEFINE_TRACE(ext4_mb_discard_preallocations);
++DEFINE_TRACE(ext4_request_blocks);
++DEFINE_TRACE(ext4_allocate_blocks);
++DEFINE_TRACE(ext4_free_blocks);
++
+ static inline void *mb_correct_addr_and_bit(int *bit, void *addr)
+ {
+ #if BITS_PER_LONG == 64
+@@ -2878,9 +2889,8 @@ static void release_blocks_on_commit(jou
+ 		discard_block = (ext4_fsblk_t) entry->group * EXT4_BLOCKS_PER_GROUP(sb)
+ 			+ entry->start_blk
+ 			+ le32_to_cpu(EXT4_SB(sb)->s_es->s_first_data_block);
+-		trace_mark(ext4_discard_blocks, "dev %s blk %llu count %u",
+-			   sb->s_id, (unsigned long long) discard_block,
+-			   entry->count);
++		trace_ext4_discard_blocks(sb, (unsigned long long)discard_block,
++					  entry);
+ 		sb_issue_discard(sb, discard_block, entry->count);
+ 
+ 		kmem_cache_free(ext4_free_ext_cachep, entry);
+@@ -3700,10 +3710,7 @@ ext4_mb_new_inode_pa(struct ext4_allocat
+ 
+ 	mb_debug("new inode pa %p: %llu/%u for %u\n", pa,
+ 			pa->pa_pstart, pa->pa_len, pa->pa_lstart);
+-	trace_mark(ext4_mb_new_inode_pa,
+-		   "dev %s ino %lu pstart %llu len %u lstart %u",
+-		   sb->s_id, ac->ac_inode->i_ino,
+-		   pa->pa_pstart, pa->pa_len, pa->pa_lstart);
++	trace_ext4_mb_new_inode_pa(ac, pa);
+ 
+ 	ext4_mb_use_inode_pa(ac, pa);
+ 	atomic_add(pa->pa_free, &EXT4_SB(sb)->s_mb_preallocated);
+@@ -3762,9 +3769,8 @@ ext4_mb_new_group_pa(struct ext4_allocat
+ 	pa->pa_linear = 1;
+ 
+ 	mb_debug("new group pa %p: %llu/%u for %u\n", pa,
+-		 pa->pa_pstart, pa->pa_len, pa->pa_lstart);
+-	trace_mark(ext4_mb_new_group_pa, "dev %s pstart %llu len %u lstart %u",
+-		   sb->s_id, pa->pa_pstart, pa->pa_len, pa->pa_lstart);
++			pa->pa_pstart, pa->pa_len, pa->pa_lstart);
++	trace_ext4_mb_new_group_pa(ac, pa);
+ 
+ 	ext4_mb_use_group_pa(ac, pa);
+ 	atomic_add(pa->pa_free, &EXT4_SB(sb)->s_mb_preallocated);
+@@ -3854,10 +3860,8 @@ ext4_mb_release_inode_pa(struct ext4_bud
+ 			ext4_mb_store_history(ac);
+ 		}
+ 
+-		trace_mark(ext4_mb_release_inode_pa,
+-			   "dev %s ino %lu block %llu count %u",
+-			   sb->s_id, pa->pa_inode->i_ino, grp_blk_start + bit,
+-			   next - bit);
++		trace_ext4_mb_release_inode_pa(ac, pa, grp_blk_start + bit,
++					       next - bit);
+ 		mb_free_blocks(pa->pa_inode, e4b, bit, next - bit);
+ 		bit = next + 1;
+ 	}
+@@ -3891,8 +3895,7 @@ ext4_mb_release_group_pa(struct ext4_bud
+ 	if (ac)
+ 		ac->ac_op = EXT4_MB_HISTORY_DISCARD;
+ 
+-	trace_mark(ext4_mb_release_group_pa, "dev %s pstart %llu len %d",
+-		   sb->s_id, pa->pa_pstart, pa->pa_len);
++	trace_ext4_mb_release_group_pa(ac, pa);
+ 	BUG_ON(pa->pa_deleted == 0);
+ 	ext4_get_group_no_and_offset(sb, pa->pa_pstart, &group, &bit);
+ 	BUG_ON(group != e4b->bd_group && pa->pa_len != 0);
+@@ -4058,8 +4061,7 @@ void ext4_discard_preallocations(struct 
+ 	}
+ 
+ 	mb_debug("discard preallocation for inode %lu\n", inode->i_ino);
+-	trace_mark(ext4_discard_preallocations, "dev %s ino %lu", sb->s_id,
+-		   inode->i_ino);
++	trace_ext4_discard_preallocations(inode);
+ 
+ 	INIT_LIST_HEAD(&list);
+ 
+@@ -4515,8 +4517,7 @@ static int ext4_mb_discard_preallocation
+ 	int ret;
+ 	int freed = 0;
+ 
+-	trace_mark(ext4_mb_discard_preallocations, "dev %s needed %d",
+-		   sb->s_id, needed);
++	trace_ext4_mb_discard_preallocations(sb, needed);
+ 	for (i = 0; i < EXT4_SB(sb)->s_groups_count && needed > 0; i++) {
+ 		ret = ext4_mb_discard_group_preallocations(sb, i, needed);
+ 		freed += ret;
+@@ -4545,17 +4546,7 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t
+ 	sb = ar->inode->i_sb;
+ 	sbi = EXT4_SB(sb);
+ 
+-	trace_mark(ext4_request_blocks, "dev %s flags %u len %u ino %lu "
+-		   "lblk %llu goal %llu lleft %llu lright %llu "
+-		   "pleft %llu pright %llu ",
+-		   sb->s_id, ar->flags, ar->len,
+-		   ar->inode ? ar->inode->i_ino : 0,
+-		   (unsigned long long) ar->logical,
+-		   (unsigned long long) ar->goal,
+-		   (unsigned long long) ar->lleft,
+-		   (unsigned long long) ar->lright,
+-		   (unsigned long long) ar->pleft,
+-		   (unsigned long long) ar->pright);
++	trace_ext4_request_blocks(ar);
+ 
+ 	if (!EXT4_I(ar->inode)->i_delalloc_reserved_flag) {
+ 		/*
+@@ -4659,18 +4650,7 @@ out3:
+ 						reserv_blks);
+ 	}
+ 
+-	trace_mark(ext4_allocate_blocks,
+-		   "dev %s block %llu flags %u len %u ino %lu "
+-		   "logical %llu goal %llu lleft %llu lright %llu "
+-		   "pleft %llu pright %llu ",
+-		   sb->s_id, (unsigned long long) block,
+-		   ar->flags, ar->len, ar->inode ? ar->inode->i_ino : 0,
+-		   (unsigned long long) ar->logical,
+-		   (unsigned long long) ar->goal,
+-		   (unsigned long long) ar->lleft,
+-		   (unsigned long long) ar->lright,
+-		   (unsigned long long) ar->pleft,
+-		   (unsigned long long) ar->pright);
++	trace_ext4_allocate_blocks(ar, (unsigned long long)block);
+ 
+ 	return block;
+ }
+@@ -4805,10 +4785,7 @@ void ext4_mb_free_blocks(handle_t *handl
+ 	}
+ 
+ 	ext4_debug("freeing block %lu\n", block);
+-	trace_mark(ext4_free_blocks,
+-		   "dev %s block %llu count %lu metadata %d ino %lu",
+-		   sb->s_id, (unsigned long long) block, count, metadata,
+-		   inode ? inode->i_ino : 0);
++	trace_ext4_free_blocks(inode, block, count, metadata);
+ 
+ 	ac = kmem_cache_alloc(ext4_ac_cachep, GFP_NOFS);
+ 	if (ac) {
+Index: linux-2.6-lttng/fs/ext4/mballoc.h
+===================================================================
+--- linux-2.6-lttng.orig/fs/ext4/mballoc.h	2009-03-05 15:21:54.000000000 -0500
++++ linux-2.6-lttng/fs/ext4/mballoc.h	2009-03-05 15:49:28.000000000 -0500
+@@ -19,8 +19,8 @@
+ #include <linux/seq_file.h>
+ #include <linux/version.h>
+ #include <linux/blkdev.h>
+-#include <linux/marker.h>
+ #include <linux/mutex.h>
++#include <trace/ext4.h>
+ #include "ext4_jbd2.h"
+ #include "ext4.h"
+ #include "group.h"
+Index: linux-2.6-lttng/fs/ext4/super.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/ext4/super.c	2009-03-05 15:21:54.000000000 -0500
++++ linux-2.6-lttng/fs/ext4/super.c	2009-03-05 15:49:28.000000000 -0500
+@@ -35,9 +35,9 @@
+ #include <linux/quotaops.h>
+ #include <linux/seq_file.h>
+ #include <linux/proc_fs.h>
+-#include <linux/marker.h>
+ #include <linux/log2.h>
+ #include <linux/crc16.h>
++#include <trace/ext4.h>
+ #include <asm/uaccess.h>
+ 
+ #include "ext4.h"
+@@ -47,6 +47,8 @@
+ #include "namei.h"
+ #include "group.h"
+ 
++DEFINE_TRACE(ext4_sync_fs);
++
+ struct proc_dir_entry *ext4_proc_root;
+ 
+ static int ext4_load_journal(struct super_block *, struct ext4_super_block *,
+@@ -3048,7 +3050,7 @@ static int ext4_sync_fs(struct super_blo
+ 	int ret = 0;
+ 	tid_t target;
+ 
+-	trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
++	trace_ext4_sync_fs(sb, wait);
+ 	sb->s_dirt = 0;
+ 	if (EXT4_SB(sb)->s_journal) {
+ 		if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal,
+Index: linux-2.6-lttng/include/trace/ext4.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/trace/ext4.h	2009-03-05 15:49:28.000000000 -0500
+@@ -0,0 +1,129 @@
++#ifndef _TRACE_EXT4_H
++#define _TRACE_EXT4_H
++
++#include <linux/tracepoint.h>
++
++struct ext4_free_data;
++struct ext4_prealloc_space;
++struct ext4_allocation_context;
++struct ext4_allocation_request;
++
++DECLARE_TRACE(ext4_free_inode,
++	TPPROTO(struct inode *inode),
++		TPARGS(inode));
++
++DECLARE_TRACE(ext4_request_inode,
++	TPPROTO(struct inode *dir, int mode),
++		TPARGS(dir, mode));
++
++DECLARE_TRACE(ext4_allocate_inode,
++	TPPROTO(struct inode *inode, struct inode *dir, int mode),
++		TPARGS(inode, dir, mode));
++
++DECLARE_TRACE(ext4_write_begin,
++	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
++			unsigned int flags),
++		TPARGS(inode, pos, len, flags));
++
++DECLARE_TRACE(ext4_ordered_write_end,
++	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
++			unsigned int copied),
++		TPARGS(inode, pos, len, copied));
++
++DECLARE_TRACE(ext4_writeback_write_end,
++	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
++			unsigned int copied),
++		TPARGS(inode, pos, len, copied));
++
++DECLARE_TRACE(ext4_journalled_write_end,
++	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
++			unsigned int copied),
++		TPARGS(inode, pos, len, copied));
++
++DECLARE_TRACE(ext4_da_writepage,
++	TPPROTO(struct inode *inode, struct page *page),
++		TPARGS(inode, page));
++
++DECLARE_TRACE(ext4_da_writepages,
++	TPPROTO(struct inode *inode, struct writeback_control *wbc),
++		TPARGS(inode, wbc));
++
++DECLARE_TRACE(ext4_da_writepages_result,
++	TPPROTO(struct inode *inode, struct writeback_control *wbc,
++			int ret, int pages_written),
++		TPARGS(inode, wbc, ret, pages_written));
++
++DECLARE_TRACE(ext4_da_write_begin,
++	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
++			unsigned int flags),
++		TPARGS(inode, pos, len, flags));
++
++DECLARE_TRACE(ext4_da_write_end,
++	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
++			unsigned int copied),
++		TPARGS(inode, pos, len, copied));
++
++DECLARE_TRACE(ext4_normal_writepage,
++	TPPROTO(struct inode *inode, struct page *page),
++		TPARGS(inode, page));
++
++DECLARE_TRACE(ext4_journalled_writepage,
++	TPPROTO(struct inode *inode, struct page *page),
++		TPARGS(inode, page));
++
++DECLARE_TRACE(ext4_discard_blocks,
++	TPPROTO(struct super_block *sb, unsigned long long blk,
++			struct ext4_free_data *entry),
++		TPARGS(sb, blk, entry));
++
++DECLARE_TRACE(ext4_mb_new_inode_pa,
++	TPPROTO(struct ext4_allocation_context *ac,
++			struct ext4_prealloc_space *pa),
++		TPARGS(ac, pa));
++
++DECLARE_TRACE(ext4_mb_new_group_pa,
++	TPPROTO(struct ext4_allocation_context *ac,
++			struct ext4_prealloc_space *pa),
++		TPARGS(ac, pa));
++
++DECLARE_TRACE(ext4_mb_release_inode_pa,
++	TPPROTO(struct ext4_allocation_context *ac,
++			struct ext4_prealloc_space *pa,
++			unsigned long long block, unsigned int count),
++		TPARGS(ac, pa, block, count));
++
++DECLARE_TRACE(ext4_mb_release_group_pa,
++	TPPROTO(struct ext4_allocation_context *ac,
++			struct ext4_prealloc_space *pa),
++		TPARGS(ac, pa));
++
++DECLARE_TRACE(ext4_discard_preallocations,
++	TPPROTO(struct inode *inode),
++		TPARGS(inode));
++
++DECLARE_TRACE(ext4_mb_discard_preallocations,
++	TPPROTO(struct super_block *sb, int needed),
++		TPARGS(sb, needed));
++
++DECLARE_TRACE(ext4_request_blocks,
++	TPPROTO(struct ext4_allocation_request *ar),
++		TPARGS(ar));
++
++DECLARE_TRACE(ext4_allocate_blocks,
++	TPPROTO(struct ext4_allocation_request *ar, unsigned long long block),
++		TPARGS(ar, block));
++
++DECLARE_TRACE(ext4_free_blocks,
++	TPPROTO(struct inode *inode, unsigned long block, unsigned long count,
++			int metadata),
++		TPARGS(inode, block, count, metadata));
++
++DECLARE_TRACE(ext4_sync_file,
++	TPPROTO(struct file *file, struct dentry *dentry, int datasync),
++		TPARGS(file, dentry, datasync));
++
++DECLARE_TRACE(ext4_sync_fs,
++	TPPROTO(struct super_block *sb, int wait),
++		TPARGS(sb, wait));
++
++#endif
 
 -- 
 Mathieu Desnoyers
