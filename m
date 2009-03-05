@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbZCEXYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZCEXYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbZCEXYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbZCEXYG
+	id S1757355AbZCEXYm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbZCEXYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:24:06 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:33181 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:24:25 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:33238 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756887AbZCEXYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:24:04 -0500
-Message-Id: <20090305225511.579649827@polymtl.ca>
+	id S1756102AbZCEXYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:24:24 -0500
+Message-Id: <20090305225516.812374558@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:29 -0500
+Date: Thu, 05 Mar 2009 17:47:51 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,72 +31,119 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 01/41] LTTng - core header
-Content-Disposition: inline; filename=lttng-core-header.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:08 +0000
+Subject: [RFC patch 23/41] Immediate Values Stub header
+Content-Disposition: inline; filename=immediate-value-stub-header.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:13 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Contains the structures required by the builtin part of the LTTng tracer.
+For Markers tree integration.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/ltt-core.h |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+ include/linux/immediate.h |   94 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
 
-Index: linux-2.6-lttng/include/linux/ltt-core.h
+Index: linux-2.6-lttng/include/linux/immediate.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/linux/ltt-core.h	2009-03-04 13:37:26.000000000 -0500
-@@ -0,0 +1,47 @@
++++ linux-2.6-lttng/include/linux/immediate.h	2009-02-06 15:20:17.000000000 -0500
+@@ -0,0 +1,94 @@
++#ifndef _LINUX_IMMEDIATE_H
++#define _LINUX_IMMEDIATE_H
++
 +/*
-+ * Copyright (C) 2005,2006 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ * Immediate values, can be updated at runtime and save cache lines.
 + *
-+ * This contains the core definitions for the Linux Trace Toolkit.
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
 + */
 +
-+#ifndef LTT_CORE_H
-+#define LTT_CORE_H
++#ifdef CONFIG_IMMEDIATE
 +
-+#include <linux/list.h>
-+#include <linux/percpu.h>
++struct __imv {
++	unsigned long var;	/* Pointer to the identifier variable of the
++				 * immediate value
++				 */
++	unsigned long imv;	/*
++				 * Pointer to the memory location of the
++				 * immediate value within the instruction.
++				 */
++	unsigned char size;	/* Type size. */
++} __attribute__ ((packed));
 +
-+/* ltt's root dir in debugfs */
-+#define LTT_ROOT        "ltt"
++#include <asm/immediate.h>
++
++/**
++ * imv_set - set immediate variable (with locking)
++ * @name: immediate value name
++ * @i: required value
++ *
++ * Sets the value of @name, taking the module_mutex if required by
++ * the architecture.
++ */
++#define imv_set(name, i)						\
++	do {								\
++		name##__imv = (i);					\
++		core_imv_update();					\
++		module_imv_update();					\
++	} while (0)
 +
 +/*
-+ * All modifications of ltt_traces must be done by ltt-tracer.c, while holding
-+ * the semaphore. Only reading of this information can be done elsewhere, with
-+ * the RCU mechanism : the preemption must be disabled while reading the
-+ * list.
++ * Internal update functions.
 + */
-+struct ltt_traces {
-+	struct list_head setup_head;	/* Pre-allocated traces list */
-+	struct list_head head;		/* Allocated Traces list */
-+	unsigned int num_active_traces;	/* Number of active traces */
-+} ____cacheline_aligned;
++extern void core_imv_update(void);
++extern void imv_update_range(const struct __imv *begin,
++	const struct __imv *end);
 +
-+extern struct ltt_traces ltt_traces;
++#else
 +
 +/*
-+ * get dentry of ltt's root dir
++ * Generic immediate values: a simple, standard, memory load.
 + */
-+struct dentry *get_ltt_root(void);
 +
-+void put_ltt_root(void);
++/**
++ * imv_read - read immediate variable
++ * @name: immediate value name
++ *
++ * Reads the value of @name.
++ */
++#define imv_read(name)			_imv_read(name)
 +
-+/* Keep track of trap nesting inside LTT */
-+DECLARE_PER_CPU(unsigned int, ltt_nesting);
++/**
++ * imv_set - set immediate variable (with locking)
++ * @name: immediate value name
++ * @i: required value
++ *
++ * Sets the value of @name, taking the module_mutex if required by
++ * the architecture.
++ */
++#define imv_set(name, i)		(name##__imv = (i))
 +
-+typedef int (*ltt_run_filter_functor)(void *trace, uint16_t eID);
++static inline void core_imv_update(void) { }
++static inline void module_imv_update(void) { }
 +
-+extern ltt_run_filter_functor ltt_run_filter;
++#endif
 +
-+extern void ltt_filter_register(ltt_run_filter_functor func);
-+extern void ltt_filter_unregister(void);
++#define DECLARE_IMV(type, name) extern __typeof__(type) name##__imv
++#define DEFINE_IMV(type, name)  __typeof__(type) name##__imv
 +
-+#endif /* LTT_CORE_H */
++#define EXPORT_IMV_SYMBOL(name) EXPORT_SYMBOL(name##__imv)
++#define EXPORT_IMV_SYMBOL_GPL(name) EXPORT_SYMBOL_GPL(name##__imv)
++
++/**
++ * _imv_read - Read immediate value with standard memory load.
++ * @name: immediate value name
++ *
++ * Force a data read of the immediate value instead of the immediate value
++ * based mechanism. Useful for __init and __exit section data read.
++ */
++#define _imv_read(name)		(name##__imv)
++
++#endif
 
 -- 
 Mathieu Desnoyers
