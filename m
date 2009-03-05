@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZCESdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbZCESfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbZCESdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 13:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZCESdJ
+	id S1754611AbZCESfT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 13:35:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZCESfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 13:33:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46398 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbZCESdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 13:33:08 -0500
-Subject: Re: [PATCH] perfcounters: IRQ and NMI support on AMD CPUs
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236273633.5187.286.camel@laptop>
-References: <1236273633.5187.286.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 00:02:39 +0530
-Message-Id: <1236277959.3316.3.camel@localhost.localdomain>
+	Thu, 5 Mar 2009 13:35:05 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39826 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbZCESfE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 13:35:04 -0500
+Date: Thu, 5 Mar 2009 15:34:30 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [PATCH] firedtv: fix printk format mismatch
+Message-ID: <20090305153430.40e86905@pedra.chehab.org>
+In-Reply-To: <tkrat.89b6c7e0ebef51fe@s5r6.in-berlin.de>
+References: <tkrat.89b6c7e0ebef51fe@s5r6.in-berlin.de>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Peter,
+On Thu, 5 Mar 2009 19:13:43 +0100 (CET)
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-Ahh, so that day you was getting triple fault in this ?
+> Eliminate
+> drivers/media/dvb/firewire/firedtv-avc.c: In function 'debug_fcp':
+> drivers/media/dvb/firewire/firedtv-avc.c:156: warning: format '%d' expects type 'int', but argument 5 has type 'size_t'
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-On Thu, 2009-03-05 at 18:20 +0100, Peter Zijlstra wrote:
-> Subject: perfcounters: IRQ and NMI support on AMD CPUs
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Thu Mar 05 18:08:27 CET 2009
-> 
-> The below completes the K7+ performance counter support.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 > ---
->  arch/x86/kernel/cpu/perf_counter.c |  272 +++++++++++++++++++++++++++++++------
->  1 file changed, 228 insertions(+), 44 deletions(-)
+> 
+> Mauro, if you don't mind I queue it up in linux1394-2.6.git for after
+> 2.6.29, before 2.6.30-rc1.  There may be firewire subsystem related
+> changes of firedtv coming together until then.
+
+Seems fine for me.
+
+> 
+>  drivers/media/dvb/firewire/firedtv-avc.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux/drivers/media/dvb/firewire/firedtv-avc.c
+> ===================================================================
+> --- linux.orig/drivers/media/dvb/firewire/firedtv-avc.c
+> +++ linux/drivers/media/dvb/firewire/firedtv-avc.c
+> @@ -115,7 +115,7 @@ static const char *debug_fcp_ctype(unsig
+>  }
+>  
+>  static const char *debug_fcp_opcode(unsigned int opcode,
+> -				    const u8 *data, size_t length)
+> +				    const u8 *data, int length)
+>  {
+>  	switch (opcode) {
+>  	case AVC_OPCODE_VENDOR:			break;
+> @@ -141,7 +141,7 @@ static const char *debug_fcp_opcode(unsi
+>  	return "Vendor";
+>  }
+>  
+> -static void debug_fcp(const u8 *data, size_t length)
+> +static void debug_fcp(const u8 *data, int length)
+>  {
+>  	unsigned int subunit_type, subunit_id, op;
+>  	const char *prefix = data[0] > 7 ? "FCP <- " : "FCP -> ";
 > 
 
-It was in my TODO list, but I am glad that you finished it :-)
-
-Any how with this patch on my 64 bit AMD box I am getting:
-
-[jaswinder@hpdv5 perfcounters]$ ./perfstat -e 0,1,2,3 ls > /dev/null 
-
- Performance counter stats for 'ls':
-
-perfstat: perfstat.c:415: main: Assertion `res == sizeof(single_count)'
-failed.
-Aborted
-[jaswinder@hpdv5 perfcounters]$ 
-
-[root@hpdv5 perfcounters]# ./kerneltop 
-KernelTop refresh period: 2 seconds
-kerneltop: kerneltop.c:883: main: Assertion `res == sizeof(ip)' failed.
-Aborted
-[root@hpdv5 perfcounters]#
-
-Thanks,
---
-JSR
 
 
+
+Cheers,
+Mauro
