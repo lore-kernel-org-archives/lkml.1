@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZCEHRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZCEHS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755810AbZCEHRl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 02:17:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZCEHR3
+	id S1756144AbZCEHS1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 02:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZCEHST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 02:17:29 -0500
-Received: from mx1.suse.de ([195.135.220.2]:36179 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751335AbZCEHR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 02:17:28 -0500
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-mtd@lists.infradead.org,
-       Vivien Chappelier <vivien.chappelier@free.fr>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Message-Id: <AA44F8E7-5FBC-4378-A86D-C094ECABD625@aepfle.de>
-From: Olaf Hering <olaf@aepfle.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Thu, 5 Mar 2009 02:18:19 -0500
+Received: from smtp104.biz.mail.mud.yahoo.com ([68.142.200.252]:27234 "HELO
+	smtp104.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750711AbZCEHST (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 02:18:19 -0500
+X-YMail-OSG: tez7SMMVM1l3EpKzbNDxnuoio3_L1QBNozY43LNydCQ6QM0SE7jSXGxP7y6FjgLg1XQ758Dlf.exUiQEhopq7phwO.Cu_2U7V1F.eryLEjzA2bFUvGWgdBU0TRbOHgsQ9nvOAI1xucRorZFVSHQIKD7jj2hz6lZ4UYAiOhHH4iechii3R5lUJZ2AOe3EYUX8.SOaVYBBuhHoxYZ4gj8nIYxeszx5QLXW2GQ_gYwW3W04vdY-
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+Organization: fdwdc.com
+To: uclinux-dev@uclinux.org
+Subject: [PATCH] m68knommu: m532x build fix.
+Date: Wed, 4 Mar 2009 23:10:10 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video RAM as block device
-Date: Thu, 5 Mar 2009 08:17:24 +0100
-References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
-X-Mailer: Apple Mail (2.930.3)
+Content-Disposition: inline
+Message-Id: <200903042310.11063.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 04.03.2009 um 14:57 schrieb Geert Uytterhoeven:
 
-> Ideally, we think it would be best if the existing MTD-based ps3vram  
-> driver
-> would be replaced by the new block-based ps3vram driver before  
-> 2.6.29 is
-> released. This would relieve the burden of supporting two different  
-> swap space
-> schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the  
-> distro
-> maintainer's shoulders, as in that case there would never have been  
-> a stable
-> kernel version containing the MTD-based ps3vram driver.
+Signed-off-by: Steven King <sfking@fdwdc.com>
 
-openSuSE already ships with the ps3vram driver since a two releases.
-A simple name based udev rule could symlink ps3vram to mtdblock0, so  
-an upgrade
-will not break existing setups.
-
-> +obj-$(CONFIG_PS3_VRAM)		+= ps3vram_ng.o
-
-Please give the driver the obvious name "ps3vram", that way upgrading  
-will be smooth.
-
-I see our old mtddriver does not have modalias support for autoloading.
-Hopefully the new driver has this feature.
-
-Olaf
+diff --git a/arch/m68k/include/asm/m532xsim.h 
+b/arch/m68k/include/asm/m532xsim.h
+index 1835fd2..e13903a 100644
+--- a/arch/m68k/include/asm/m532xsim.h
++++ b/arch/m68k/include/asm/m532xsim.h
+@@ -16,6 +16,7 @@
+ #define MCFINT_VECBASE      64
+ #define MCFINT_UART0        26          /* Interrupt number for UART0 */
+ #define MCFINT_UART1        27          /* Interrupt number for UART1 */
++#define MCFINT_UART2        28          /* Interrupt number for UART2 */
+ 
+ #define MCF_WTM_WCR	MCF_REG16(0xFC098000)
+ 
