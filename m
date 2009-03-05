@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZCEHCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZCEHEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbZCEHCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 02:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbZCEHCH
+	id S1755324AbZCEHEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 02:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZCEHEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 02:02:07 -0500
-Received: from mx1.suse.de ([195.135.220.2]:35836 "EHLO mx1.suse.de"
+	Thu, 5 Mar 2009 02:04:12 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:47079 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbZCEHCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 02:02:04 -0500
-Date: Wed, 4 Mar 2009 18:06:17 -0800
-From: Greg KH <gregkh@suse.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Yinghai Lu <yinghai@kernel.org>,
-       Sarah Sharp <sarah.a.sharp@intel.com>, linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S1751933AbZCEHEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 02:04:11 -0500
+Date: Thu, 5 Mar 2009 08:04:09 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: EHCI debug documentation
-Message-ID: <20090305020617.GA2812@suse.de>
-References: <m1bpshx912.fsf@fess.ebiederm.org> <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH] loop: don't increment p->offset with (size_t) -EINVAL
+Message-ID: <20090305070409.GM11787@kernel.dk>
+References: <49AE8227.9050703@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <49AE8227.9050703@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 04:59:28PM -0500, Alan Stern wrote:
-> On Wed, 4 Mar 2009, Eric W. Biederman wrote:
+On Wed, Mar 04 2009, Roel Kluin wrote:
+> Upon a 'transfer error block' size is set to -EINVAL, but this becomes positive
+> since size is unsigned: p->offset still gets incremented.
 > 
-> > Greg KH <gregkh@suse.de> writes:
-> > 
-> > > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > >> Yinghai Lu wrote:
-> > >> > b. netchip USB debug cable
-> > >> 
-> > >> http://www.plxtech.com/products/NET2000/NET20DC/default.asp
-> > >
-> > > I have reports that the newer version of this device does not work on
-> > > Linux as it isn't enumeratable as a "real" usb device on one end.
-> > >
-> > > I don't have one of these new devices yet to test it out, has anyone
-> > > else heard of this problem?
-> > 
-> > With the first generation of devices I remember they were peculiar and
-> > finicky.  I don't recall the exact details but I remember the devices
-> > able to get into weird states that may resemble what you describe.
-> 
-> Those devices were a little peculiar in that they were powered only on
-> one side.  That is, they would take bus power only from the right-hand
-> connector (looking at the face with the PLX logo).  So if you plugged
-> in only the left side, the device would not show up or enumerate.  But 
-> if you plugged in both sides, then both of them would enumerate okay.
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+> index edbaac6..bf03455 100644
+> --- a/drivers/block/loop.c
+> +++ b/drivers/block/loop.c
+> @@ -392,8 +392,7 @@ lo_splice_actor(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+>  	struct loop_device *lo = p->lo;
+>  	struct page *page = buf->page;
+>  	sector_t IV;
+> -	size_t size;
+> -	int ret;
+> +	int size, ret;
+>  
+>  	ret = buf->ops->confirm(pipe, buf);
+>  	if (unlikely(ret))
 
-Thanks for the information, I'll try to get the person that reported
-this to retest and see if both sides plugged in at the same time works
-better.
+Good catch! Applied.
 
-greg k-h
+-- 
+Jens Axboe
+
