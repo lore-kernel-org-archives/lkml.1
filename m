@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbZCEBlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZCEBzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755258AbZCEBlJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 20:41:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZCEBk4
+	id S1754743AbZCEBzG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 20:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbZCEByy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 20:40:56 -0500
-Received: from smh01.opentransfer.com ([71.18.216.112]:36107 "EHLO
-	smh01.opentransfer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbZCEBkz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 20:40:55 -0500
-Message-ID: <20090304193928.umajskj58g4wgcg4@webmail.opentransfer.com>
-Date: Wed, 04 Mar 2009 19:39:28 -0600
-From: Webmaster Panel Board <info@help.org>
-Reply-to: webmasterpanel@cooperation.net
-To: undisclosed-recipients:;
-Subject: Dear  e-mail user
+	Wed, 4 Mar 2009 20:54:54 -0500
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:37644 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751491AbZCEByx (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 20:54:53 -0500
+Message-ID: <49AF30EC.8010205@lougher.demon.co.uk>
+Date: Thu, 05 Mar 2009 01:54:52 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
-X-Originating-IP: 212.100.250.217
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] Squashfs fixes for 2.6.29?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear  e-mail user,
+Hi Linus,
 
-This message was sent automatically by Webmaster panel program which
-periodically checks the size of inbox, where new messages are received.The
-program is run weekly to ensure no one's inbox grows too large.
+Please consider pulling the following Squashfs fixes.  They fix some 
+potential oopses when dealing with corrupted filesystems (plus a trivial 
+documentation typo fix).
 
-If your inbox becomes too large, you will be unable to receive new email. Just
-before this message was sent, you had 18 Megabytes (MB) or more of messages
-stored in your inbox on  mail. To help us re-set your SPACE on our database
-prior to maintain our INBOX, you must reply to this e-mail and enter your
-Current User name (         ) and Password (       )
+Please pull from
 
-You will continue to receive this warning message periodically if your inbox
-size continues to be between 18 and 20 MB. If your inbox size grows to 20 MB,
-then a program on mail will move your oldest email to a folder in your home
-directory to ensure that you will continue to be able to receive incoming
-email.
+git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git
 
-You will be notified by email that this has taken place. If your inbox  
-grows to
-25 MB, you will be unable to receive new email as it will be returned to the
-sender.
+Phillip Lougher (2):
+     Squashfs: Fix oops when reading fsfuzzer corrupted filesystems
+     Squashfs: fix documentation typo, Cramfs filesystem limit is 256 MiB
 
-After you read a message,it is best to REPLY and SAVE it to another folder.
-Thank you for your cooperation.
+Roel Kluin (1):
+     Squashfs: frag_size should be signed, as it can hold an error result
 
-Send your detail to the desk control panel : webmasterpanel@cooperation.net
+  Documentation/filesystems/squashfs.txt |    2 +-
+  fs/squashfs/block.c                    |   13 +++++++++++--
+  fs/squashfs/cache.c                    |    4 ++--
+  fs/squashfs/inode.c                    |    6 ++++--
+  fs/squashfs/squashfs.h                 |    2 +-
+  fs/squashfs/super.c                    |    2 +-
+  6 files changed, 20 insertions(+), 9 deletions(-)
+
+Thanks
+
+Phillip
