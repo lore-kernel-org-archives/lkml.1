@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbZCEIrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbZCEIri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbZCEIrV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZCEIrD
+	id S1756432AbZCEIri (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbZCEIrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:47:03 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33668 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbZCEIrB (ORCPT
+	Thu, 5 Mar 2009 03:47:17 -0500
+Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:61194 "EHLO
+	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756041AbZCEIrQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:47:01 -0500
-Date: Thu, 5 Mar 2009 17:43:07 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Johannes Weiner <jw@emlix.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@uclinux.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -v2] flat: fix data sections alignment
-Message-ID: <20090305084307.GB16451@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Johannes Weiner <jw@emlix.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Howells <dhowells@redhat.com>,
-	Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Greg Ungerer <gerg@uclinux.org>, linux-kernel@vger.kernel.org
-References: <E1LerUo-0000NE-Q3@mailer.emlix.com>
+	Thu, 5 Mar 2009 03:47:16 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEABcgr0lR9Sa6/2dsb2JhbADYAgeEAQY
+Date: Thu, 5 Mar 2009 09:47:13 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: wim@iguana.be, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] watchdog: fsl_get_sys_freq() failure not noticed
+Message-ID: <20090305084713.GB6026@infomag.iguana.be>
+References: <49AD3A3D.4040303@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1LerUo-0000NE-Q3@mailer.emlix.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <49AD3A3D.4040303@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 02:51:17PM +0100, Johannes Weiner wrote:
-> Paul, please note that on sh ARCH_SLAB_MINALIGN is defined to be 8
-> while the userspace stack was aligned to 4 before.  I suppose aligning
-> the stack (and data sections) to 8 as well is the right thing...?
-> 
-This is intentional. As I noted before, the ARCH_SLAB_MINALIGN on SH
-refers specifically to SH-5 (or anything implementing a 32-bit sh64 ABI),
-which presently does not support nommu, but could in theory. The SH parts
-that do nommu today generally need ARCH_KMALLOC_MINALIGN, but do not have
-the ARCH_SLAB_MINALIGN requirement that SH-5 does.
+Hi Roel,
 
-> --- a/fs/binfmt_flat.c
-> +++ b/fs/binfmt_flat.c
-> @@ -41,6 +41,7 @@
->  #include <asm/uaccess.h>
->  #include <asm/unaligned.h>
->  #include <asm/cacheflush.h>
-> +#include <asm/page.h>
+> Maybe it is nicer to do a test like:
+> 
+> 	if (freq < MAX_FREQ)
+> 
+> but I don't know what MAX_FREQ should be.
+> ------------------------------>8-------------8<---------------------------------
+> fsl_get_sys_freq() may return -1 when 'soc' isn't found, but in gef_wdt_probe()
+> 'freq' is unsigned, so the test doesn't catch that.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/watchdog/gef_wdt.c b/drivers/watchdog/gef_wdt.c
+> index f0c2b7a..734d980 100644
+> --- a/drivers/watchdog/gef_wdt.c
+> +++ b/drivers/watchdog/gef_wdt.c
+> @@ -269,7 +269,7 @@ static int __devinit gef_wdt_probe(struct of_device *dev,
+>  	bus_clk = 133; /* in MHz */
 >  
->  /****************************************************************************/
+>  	freq = fsl_get_sys_freq();
+> -	if (freq > 0)
+> +	if (freq != -1)
+>  		bus_clk = freq;
 >  
-> @@ -54,6 +55,12 @@
->  #define	DBG_FLT(a...)
->  #endif
->  
-> +#ifdef ARCH_SLAB_MINALIGN
-> +#define FLAT_DATA_ALIGN	(ARCH_SLAB_MINALIGN)
-> +#else
-> +#define FLAT_DATA_ALIGN	(sizeof(void *))
-> +#endif
-> +
-As it's not entirely obvious what this is used for outside of the slab
-context, you will want to have a comment here explaining the situation,
-and particularly what the implication for stack alignment is.
+>  	/* Map devices registers into memory */
+
+patch added into the linux-2.6-watchdog-next tree.
+Will sent it to linus for inclusion into main kernel tree tonight together with some other fixes.
+
+Kind regards,
+Wim.
+
