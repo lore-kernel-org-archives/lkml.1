@@ -1,141 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZCEK2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZCEKa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbZCEK2X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZCEK2K
+	id S1754809AbZCEKa3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZCEKaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:28:10 -0500
-Received: from sh.osrg.net ([192.16.179.4]:49846 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752385AbZCEK2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:28:08 -0500
-Date: Thu, 5 Mar 2009 19:27:36 +0900
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
-       James.Bottomley@HansenPartnership.com, jengelh@medozas.de,
-       bharrosh@panasas.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
-	scsi-sgpool)objects
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090305101436.GV11787@kernel.dk>
-References: <20090305182958Q.fujita.tomonori@lab.ntt.co.jp>
-	<20090305100901.GU11787@kernel.dk>
-	<20090305101436.GV11787@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090305192737I.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 05 Mar 2009 19:27:37 +0900 (JST)
+	Thu, 5 Mar 2009 05:30:19 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:18185 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbZCEKaS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:30:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=wd+yICVxxiNJ2//SgRUJUOt3K7CglNB6Gf06udJ1fyMXsXoZxHFxWuAlcWTPnNlzh
+	3riWGfCIKu2HF4jiWngQQ==
+Date: Thu, 5 Mar 2009 02:29:05 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [patch 1/2] lockdep: remove duplicate CONFIG_DEBUG_LOCKDEP
+ definitions
+Message-ID: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009 11:14:36 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+The atomic debug modifiers are already defined in
+kernel/lockdep_internals.h.
 
-> On Thu, Mar 05 2009, Jens Axboe wrote:
-> > On Thu, Mar 05 2009, FUJITA Tomonori wrote:
-> > > Oops, somehow I forgot to CC Jens...
-> > > 
-> > > On Thu, 5 Mar 2009 17:39:17 +0900
-> > > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > > 
-> > > > On Thu, 5 Mar 2009 17:36:13 +0900
-> > > > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > > > 
-> > > > > CC'ed Jens,
-> > > > > 
-> > > > > On Wed, 04 Mar 2009 22:56:29 +0000
-> > > > > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > > > > 
-> > > > > > On Wed, 2009-03-04 at 22:45 +0100, Thomas Gleixner wrote:
-> > > > > > > On Wed, 4 Mar 2009, Thomas Gleixner wrote:
-> > > > > > > 
-> > > > > > > Instrumented the code and the result of the failing request is
-> > > > > > > below. Looks like the function which sets up the request gets
-> > > > > > > nr_phys_segments wrong by one. 
-> > > > > > > 
-> > > > > > > If you need further trace data feel free to ask.
-> > > > > > 
-> > > > > > OK, the mapping all checks out correctly ... there must be something
-> > > > > > wrong with the way we count before mapping.
-> > > > > 
-> > > > > Yeah, looks we miscalculate nr_phys_segments in the merging path.
-> > > > > 
-> > > > > blk_recount_segments() needs to set bi_seg_front_size and
-> > > > > bi_seg_back_size for ll_merge_requests_fn()?
-> > > > > 
-> > > > > =
-> > > > > diff --git a/block/blk-merge.c b/block/blk-merge.c
-> > > > > index a104593..efb65b6 100644
-> > > > > --- a/block/blk-merge.c
-> > > > > +++ b/block/blk-merge.c
-> > > > > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
-> > > > >  
-> > > > >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
-> > > > >  {
-> > > > > +	unsigned int seg_size;
-> > > > >  	struct bio *nxt = bio->bi_next;
-> > > > >  
-> > > > >  	bio->bi_next = NULL;
-> > > > > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
-> > > > > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
-> > > > >  	bio->bi_next = nxt;
-> > > > >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
-> > > > > +
-> > > > > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
-> > > > > +		bio->bi_seg_front_size = seg_size;
-> > > > > +	if (bio->bi_phys_segments > bio->bi_seg_back_size)
-> > > > > +		bio->bi_seg_back_size = seg_size;
-> > > > > +
-> > > > >  }
-> > > > >  EXPORT_SYMBOL(blk_recount_segments);
-> > > > 
-> > > > Duh, here's the proper patch.
-> > > > 
-> > > > diff --git a/block/blk-merge.c b/block/blk-merge.c
-> > > > index a104593..06e0db4 100644
-> > > > --- a/block/blk-merge.c
-> > > > +++ b/block/blk-merge.c
-> > > > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
-> > > >  
-> > > >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
-> > > >  {
-> > > > +	unsigned int seg_size;
-> > > >  	struct bio *nxt = bio->bi_next;
-> > > >  
-> > > >  	bio->bi_next = NULL;
-> > > > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
-> > > > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
-> > > >  	bio->bi_next = nxt;
-> > > >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
-> > > > +
-> > > > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
-> > > > +		bio->bi_seg_front_size = seg_size;
-> > > > +	if (seg_size > bio->bi_seg_back_size)
-> > > > +		bio->bi_seg_back_size = seg_size;
-> > > > +
-> > > >  }
-> > > >  EXPORT_SYMBOL(blk_recount_segments);
-> > 
-> > Good catch, I merged it with a slight change of layout and clearing
-> > seg_size initially, to avoid gcc silly errors.
-> 
-> While merging that, I think we can do better than this. Essentially we
-> just need to have __blk_recalc_rq_segments() track the back bio as well,
-> then we don't have to pass in a pointer for segment sizes.
-> 
-> Totally untested, comments welcome...
+Cc: Ingo Molnar <mingo@redhat.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ kernel/lockdep.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-Yeah, I think that updating bi_seg_front_size and bi_seg_back_size at
-one place, __blk_recalc_rq_segments, is better. I thought about the
-same way. But we are already in -rc7 and this must go into mainline
-now. So I chose a less-intrusive way (similar to what we have done in
-the past).
-
-As you know, the merging code is really complicated and we could
-overlook stuff easily. ;) It might be better to simplify the merging
-code a bit.
-
-
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -430,13 +430,6 @@ atomic_t nr_find_usage_forwards_checks;
+ atomic_t nr_find_usage_forwards_recursions;
+ atomic_t nr_find_usage_backwards_checks;
+ atomic_t nr_find_usage_backwards_recursions;
+-# define debug_atomic_inc(ptr)		atomic_inc(ptr)
+-# define debug_atomic_dec(ptr)		atomic_dec(ptr)
+-# define debug_atomic_read(ptr)		atomic_read(ptr)
+-#else
+-# define debug_atomic_inc(ptr)		do { } while (0)
+-# define debug_atomic_dec(ptr)		do { } while (0)
+-# define debug_atomic_read(ptr)		0
+ #endif
+ 
+ /*
