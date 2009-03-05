@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZCEXit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZCEXjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbZCEXit (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758463AbZCEXid
+	id S1758906AbZCEXjW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZCEXjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:38:33 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:45541 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:39:05 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:45635 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758456AbZCEXia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:38:30 -0500
-Message-Id: <20090305225520.692384747@polymtl.ca>
+	id S1756742AbZCEXjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:39:03 -0500
+Message-Id: <20090305225513.388952352@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:48:08 -0500
+Date: Thu, 05 Mar 2009 17:47:36 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,623 +31,775 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Theodore Tso <tytso@mit.edu>, "Stephen C. Tweedie" <sct@redhat.com>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [RFC patch 40/41] EXT4: instrumentation with tracepoints
-Content-Disposition: inline; filename=ext4-move-from-markers-to-tracepoints.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:17 +0000
+       Zhao Lei <zhaolei@cn.fujitsu.com>,
+       "Dennis W. Tokarski" <dwt@PolTec.COM>,
+       Jan Kiszka <jan.kiszka@siemens.com>
+Subject: [RFC patch 08/41] LTTng - tracer header
+Content-Disposition: inline; filename=lttng-tracer-header.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Took the instrumentation from "ext4: Add markers for better debuggability" and
-moved it to tracepoints.
+Declaration of traces/channel structures. Tracer infrastructure API.
+
+Contains the structures that expresses the traces and "channels" (set of buffers
+conveying part of the trace data, typically splitted in high, medium and low
+data rate channels).
+
+Also contains the tracing API : tracing behavior can be controlled from within
+the kernel through calls to this API.
+
+Thanks to Jan Kiszka <jan.kiszka@siemens.com> for cleanup of some home brewed
+macros.
+
+Credits to Zhao Lei <zhaolei@cn.fujitsu.com> for a lot of fixes and extensions
+which have been folded in this patch.
+
+Credits to "Dennis W. Tokarski" <dwt@PolTec.COM> for compile fixes.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Theodore Ts'o <tytso@mit.edu>
-CC: Stephen C. Tweedie <sct@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Ext4 Developers List <linux-ext4@vger.kernel.org>
+CC: Zhao Lei <zhaolei@cn.fujitsu.com>
+CC: "Dennis W. Tokarski" <dwt@PolTec.COM>
+CC: Jan Kiszka <jan.kiszka@siemens.com>
 ---
- fs/ext4/fsync.c      |    8 +--
- fs/ext4/ialloc.c     |   17 +++---
- fs/ext4/inode.c      |   79 +++++++++----------------------
- fs/ext4/mballoc.c    |   71 +++++++++-------------------
- fs/ext4/mballoc.h    |    2 
- fs/ext4/super.c      |    6 +-
- include/trace/ext4.h |  129 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 194 insertions(+), 118 deletions(-)
+ include/linux/ltt-tracer.h |  729 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 729 insertions(+)
 
-Index: linux-2.6-lttng/fs/ext4/fsync.c
-===================================================================
---- linux-2.6-lttng.orig/fs/ext4/fsync.c	2009-03-05 15:21:54.000000000 -0500
-+++ linux-2.6-lttng/fs/ext4/fsync.c	2009-03-05 15:49:28.000000000 -0500
-@@ -28,10 +28,12 @@
- #include <linux/writeback.h>
- #include <linux/jbd2.h>
- #include <linux/blkdev.h>
--#include <linux/marker.h>
-+#include <trace/ext4.h>
- #include "ext4.h"
- #include "ext4_jbd2.h"
- 
-+DEFINE_TRACE(ext4_sync_file);
-+
- /*
-  * akpm: A new design for ext4_sync_file().
-  *
-@@ -52,9 +54,7 @@ int ext4_sync_file(struct file *file, st
- 
- 	J_ASSERT(ext4_journal_current_handle() == NULL);
- 
--	trace_mark(ext4_sync_file, "dev %s datasync %d ino %ld parent %ld",
--		   inode->i_sb->s_id, datasync, inode->i_ino,
--		   dentry->d_parent->d_inode->i_ino);
-+	trace_ext4_sync_file(file, dentry, datasync);
- 
- 	/*
- 	 * data=writeback:
-Index: linux-2.6-lttng/fs/ext4/ialloc.c
-===================================================================
---- linux-2.6-lttng.orig/fs/ext4/ialloc.c	2009-03-05 15:21:54.000000000 -0500
-+++ linux-2.6-lttng/fs/ext4/ialloc.c	2009-03-05 15:49:28.000000000 -0500
-@@ -22,6 +22,7 @@
- #include <linux/random.h>
- #include <linux/bitops.h>
- #include <linux/blkdev.h>
-+#include <trace/ext4.h>
- #include <asm/byteorder.h>
- #include "ext4.h"
- #include "ext4_jbd2.h"
-@@ -29,6 +30,10 @@
- #include "acl.h"
- #include "group.h"
- 
-+DEFINE_TRACE(ext4_free_inode);
-+DEFINE_TRACE(ext4_request_inode);
-+DEFINE_TRACE(ext4_allocate_inode);
-+
- /*
-  * ialloc.c contains the inodes allocation and deallocation routines
-  */
-@@ -210,11 +215,7 @@ void ext4_free_inode(handle_t *handle, s
- 
- 	ino = inode->i_ino;
- 	ext4_debug("freeing inode %lu\n", ino);
--	trace_mark(ext4_free_inode,
--		   "dev %s ino %lu mode %d uid %lu gid %lu bocks %llu",
--		   sb->s_id, inode->i_ino, inode->i_mode,
--		   (unsigned long) inode->i_uid, (unsigned long) inode->i_gid,
--		   (unsigned long long) inode->i_blocks);
-+	trace_ext4_free_inode(inode);
- 
- 	/*
- 	 * Note: we must free any quota before locking the superblock,
-@@ -703,8 +704,7 @@ struct inode *ext4_new_inode(handle_t *h
- 		return ERR_PTR(-EPERM);
- 
- 	sb = dir->i_sb;
--	trace_mark(ext4_request_inode, "dev %s dir %lu mode %d", sb->s_id,
--		   dir->i_ino, mode);
-+	trace_ext4_request_inode(dir, mode);
- 	inode = new_inode(sb);
- 	if (!inode)
- 		return ERR_PTR(-ENOMEM);
-@@ -939,8 +939,7 @@ got:
- 	}
- 
- 	ext4_debug("allocating inode %lu\n", inode->i_ino);
--	trace_mark(ext4_allocate_inode, "dev %s ino %lu dir %lu mode %d",
--		   sb->s_id, inode->i_ino, dir->i_ino, mode);
-+	trace_ext4_allocate_inode(inode, dir, mode);
- 	goto really_out;
- fail:
- 	ext4_std_error(sb, err);
-Index: linux-2.6-lttng/fs/ext4/inode.c
-===================================================================
---- linux-2.6-lttng.orig/fs/ext4/inode.c	2009-03-05 15:21:54.000000000 -0500
-+++ linux-2.6-lttng/fs/ext4/inode.c	2009-03-05 15:49:28.000000000 -0500
-@@ -37,11 +37,24 @@
- #include <linux/namei.h>
- #include <linux/uio.h>
- #include <linux/bio.h>
-+#include <trace/ext4.h>
- #include "ext4_jbd2.h"
- #include "xattr.h"
- #include "acl.h"
- #include "ext4_extents.h"
- 
-+DEFINE_TRACE(ext4_write_begin);
-+DEFINE_TRACE(ext4_ordered_write_end);
-+DEFINE_TRACE(ext4_writeback_write_end);
-+DEFINE_TRACE(ext4_journalled_write_end);
-+DEFINE_TRACE(ext4_da_writepage);
-+DEFINE_TRACE(ext4_da_writepages);
-+DEFINE_TRACE(ext4_da_writepages_result);
-+DEFINE_TRACE(ext4_da_write_begin);
-+DEFINE_TRACE(ext4_da_write_end);
-+DEFINE_TRACE(ext4_normal_writepage);
-+DEFINE_TRACE(ext4_journalled_writepage);
-+
- #define MPAGE_DA_EXTENT_TAIL 0x01
- 
- static inline int ext4_begin_ordered_truncate(struct inode *inode,
-@@ -1353,10 +1366,7 @@ static int ext4_write_begin(struct file 
-  	pgoff_t index;
- 	unsigned from, to;
- 
--	trace_mark(ext4_write_begin,
--		   "dev %s ino %lu pos %llu len %u flags %u",
--		   inode->i_sb->s_id, inode->i_ino,
--		   (unsigned long long) pos, len, flags);
-+	trace_ext4_write_begin(inode, pos, len, flags);
-  	index = pos >> PAGE_CACHE_SHIFT;
- 	from = pos & (PAGE_CACHE_SIZE - 1);
- 	to = from + len;
-@@ -1432,10 +1442,7 @@ static int ext4_ordered_write_end(struct
- 	struct inode *inode = mapping->host;
- 	int ret = 0, ret2;
- 
--	trace_mark(ext4_ordered_write_end,
--		   "dev %s ino %lu pos %llu len %u copied %u",
--		   inode->i_sb->s_id, inode->i_ino,
--		   (unsigned long long) pos, len, copied);
-+	trace_ext4_ordered_write_end(inode, pos, len, copied);
- 	ret = ext4_jbd2_file_inode(handle, inode);
- 
- 	if (ret == 0) {
-@@ -1474,10 +1481,7 @@ static int ext4_writeback_write_end(stru
- 	int ret = 0, ret2;
- 	loff_t new_i_size;
- 
--	trace_mark(ext4_writeback_write_end,
--		   "dev %s ino %lu pos %llu len %u copied %u",
--		   inode->i_sb->s_id, inode->i_ino,
--		   (unsigned long long) pos, len, copied);
-+	trace_ext4_writeback_write_end(inode, pos, len, copied);
- 	new_i_size = pos + copied;
- 	if (new_i_size > EXT4_I(inode)->i_disksize) {
- 		ext4_update_i_disksize(inode, new_i_size);
-@@ -1513,10 +1517,7 @@ static int ext4_journalled_write_end(str
- 	unsigned from, to;
- 	loff_t new_i_size;
- 
--	trace_mark(ext4_journalled_write_end,
--		   "dev %s ino %lu pos %llu len %u copied %u",
--		   inode->i_sb->s_id, inode->i_ino,
--		   (unsigned long long) pos, len, copied);
-+	trace_ext4_journalled_write_end(inode, pos, len, copied);
- 	from = pos & (PAGE_CACHE_SIZE - 1);
- 	to = from + len;
- 
-@@ -2333,9 +2334,7 @@ static int ext4_da_writepage(struct page
- 	struct buffer_head *page_bufs;
- 	struct inode *inode = page->mapping->host;
- 
--	trace_mark(ext4_da_writepage,
--		   "dev %s ino %lu page_index %lu",
--		   inode->i_sb->s_id, inode->i_ino, page->index);
-+	trace_ext4_da_writepage(inode, page);
- 	size = i_size_read(inode);
- 	if (page->index == size >> PAGE_CACHE_SHIFT)
- 		len = size & ~PAGE_CACHE_MASK;
-@@ -2447,19 +2446,7 @@ static int ext4_da_writepages(struct add
- 	int needed_blocks, ret = 0, nr_to_writebump = 0;
- 	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
- 
--	trace_mark(ext4_da_writepages,
--		   "dev %s ino %lu nr_t_write %ld "
--		   "pages_skipped %ld range_start %llu "
--		   "range_end %llu nonblocking %d "
--		   "for_kupdate %d for_reclaim %d "
--		   "for_writepages %d range_cyclic %d",
--		   inode->i_sb->s_id, inode->i_ino,
--		   wbc->nr_to_write, wbc->pages_skipped,
--		   (unsigned long long) wbc->range_start,
--		   (unsigned long long) wbc->range_end,
--		   wbc->nonblocking, wbc->for_kupdate,
--		   wbc->for_reclaim, wbc->for_writepages,
--		   wbc->range_cyclic);
-+	trace_ext4_da_writepages(inode, wbc);
- 
- 	/*
- 	 * No pages to write? This is mainly a kludge to avoid starting
-@@ -2595,14 +2582,7 @@ out_writepages:
- 	if (!no_nrwrite_index_update)
- 		wbc->no_nrwrite_index_update = 0;
- 	wbc->nr_to_write -= nr_to_writebump;
--	trace_mark(ext4_da_writepage_result,
--		   "dev %s ino %lu ret %d pages_written %d "
--		   "pages_skipped %ld congestion %d "
--		   "more_io %d no_nrwrite_index_update %d",
--		   inode->i_sb->s_id, inode->i_ino, ret,
--		   pages_written, wbc->pages_skipped,
--		   wbc->encountered_congestion, wbc->more_io,
--		   wbc->no_nrwrite_index_update);
-+	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
- 	return ret;
- }
- 
-@@ -2654,11 +2634,7 @@ static int ext4_da_write_begin(struct fi
- 					len, flags, pagep, fsdata);
- 	}
- 	*fsdata = (void *)0;
--
--	trace_mark(ext4_da_write_begin,
--		   "dev %s ino %lu pos %llu len %u flags %u",
--		   inode->i_sb->s_id, inode->i_ino,
--		   (unsigned long long) pos, len, flags);
-+	trace_ext4_da_write_begin(inode, pos, len, flags);
- retry:
- 	/*
- 	 * With delayed allocation, we don't log the i_disksize update
-@@ -2751,10 +2727,7 @@ static int ext4_da_write_end(struct file
- 		}
- 	}
- 
--	trace_mark(ext4_da_write_end,
--		   "dev %s ino %lu pos %llu len %u copied %u",
--		   inode->i_sb->s_id, inode->i_ino,
--		   (unsigned long long) pos, len, copied);
-+	trace_ext4_da_write_end(inode, pos, len, copied);
- 	start = pos & (PAGE_CACHE_SIZE - 1);
- 	end = start + copied - 1;
- 
-@@ -2965,9 +2938,7 @@ static int ext4_normal_writepage(struct 
- 	loff_t size = i_size_read(inode);
- 	loff_t len;
- 
--	trace_mark(ext4_normal_writepage,
--		   "dev %s ino %lu page_index %lu",
--		   inode->i_sb->s_id, inode->i_ino, page->index);
-+	trace_ext4_normal_writepage(inode, page);
- 	J_ASSERT(PageLocked(page));
- 	if (page->index == size >> PAGE_CACHE_SHIFT)
- 		len = size & ~PAGE_CACHE_MASK;
-@@ -3053,9 +3024,7 @@ static int ext4_journalled_writepage(str
- 	loff_t size = i_size_read(inode);
- 	loff_t len;
- 
--	trace_mark(ext4_journalled_writepage,
--		   "dev %s ino %lu page_index %lu",
--		   inode->i_sb->s_id, inode->i_ino, page->index);
-+	trace_ext4_journalled_writepage(inode, page);
- 	J_ASSERT(PageLocked(page));
- 	if (page->index == size >> PAGE_CACHE_SHIFT)
- 		len = size & ~PAGE_CACHE_MASK;
-Index: linux-2.6-lttng/fs/ext4/mballoc.c
-===================================================================
---- linux-2.6-lttng.orig/fs/ext4/mballoc.c	2009-03-05 15:21:54.000000000 -0500
-+++ linux-2.6-lttng/fs/ext4/mballoc.c	2009-03-05 15:49:28.000000000 -0500
-@@ -343,6 +343,17 @@ static void release_blocks_on_commit(jou
- 
- 
- 
-+DEFINE_TRACE(ext4_discard_blocks);
-+DEFINE_TRACE(ext4_mb_new_inode_pa);
-+DEFINE_TRACE(ext4_mb_new_group_pa);
-+DEFINE_TRACE(ext4_mb_release_inode_pa);
-+DEFINE_TRACE(ext4_mb_release_group_pa);
-+DEFINE_TRACE(ext4_discard_preallocations);
-+DEFINE_TRACE(ext4_mb_discard_preallocations);
-+DEFINE_TRACE(ext4_request_blocks);
-+DEFINE_TRACE(ext4_allocate_blocks);
-+DEFINE_TRACE(ext4_free_blocks);
-+
- static inline void *mb_correct_addr_and_bit(int *bit, void *addr)
- {
- #if BITS_PER_LONG == 64
-@@ -2878,9 +2889,8 @@ static void release_blocks_on_commit(jou
- 		discard_block = (ext4_fsblk_t) entry->group * EXT4_BLOCKS_PER_GROUP(sb)
- 			+ entry->start_blk
- 			+ le32_to_cpu(EXT4_SB(sb)->s_es->s_first_data_block);
--		trace_mark(ext4_discard_blocks, "dev %s blk %llu count %u",
--			   sb->s_id, (unsigned long long) discard_block,
--			   entry->count);
-+		trace_ext4_discard_blocks(sb, (unsigned long long)discard_block,
-+					  entry);
- 		sb_issue_discard(sb, discard_block, entry->count);
- 
- 		kmem_cache_free(ext4_free_ext_cachep, entry);
-@@ -3700,10 +3710,7 @@ ext4_mb_new_inode_pa(struct ext4_allocat
- 
- 	mb_debug("new inode pa %p: %llu/%u for %u\n", pa,
- 			pa->pa_pstart, pa->pa_len, pa->pa_lstart);
--	trace_mark(ext4_mb_new_inode_pa,
--		   "dev %s ino %lu pstart %llu len %u lstart %u",
--		   sb->s_id, ac->ac_inode->i_ino,
--		   pa->pa_pstart, pa->pa_len, pa->pa_lstart);
-+	trace_ext4_mb_new_inode_pa(ac, pa);
- 
- 	ext4_mb_use_inode_pa(ac, pa);
- 	atomic_add(pa->pa_free, &EXT4_SB(sb)->s_mb_preallocated);
-@@ -3762,9 +3769,8 @@ ext4_mb_new_group_pa(struct ext4_allocat
- 	pa->pa_linear = 1;
- 
- 	mb_debug("new group pa %p: %llu/%u for %u\n", pa,
--		 pa->pa_pstart, pa->pa_len, pa->pa_lstart);
--	trace_mark(ext4_mb_new_group_pa, "dev %s pstart %llu len %u lstart %u",
--		   sb->s_id, pa->pa_pstart, pa->pa_len, pa->pa_lstart);
-+			pa->pa_pstart, pa->pa_len, pa->pa_lstart);
-+	trace_ext4_mb_new_group_pa(ac, pa);
- 
- 	ext4_mb_use_group_pa(ac, pa);
- 	atomic_add(pa->pa_free, &EXT4_SB(sb)->s_mb_preallocated);
-@@ -3854,10 +3860,8 @@ ext4_mb_release_inode_pa(struct ext4_bud
- 			ext4_mb_store_history(ac);
- 		}
- 
--		trace_mark(ext4_mb_release_inode_pa,
--			   "dev %s ino %lu block %llu count %u",
--			   sb->s_id, pa->pa_inode->i_ino, grp_blk_start + bit,
--			   next - bit);
-+		trace_ext4_mb_release_inode_pa(ac, pa, grp_blk_start + bit,
-+					       next - bit);
- 		mb_free_blocks(pa->pa_inode, e4b, bit, next - bit);
- 		bit = next + 1;
- 	}
-@@ -3891,8 +3895,7 @@ ext4_mb_release_group_pa(struct ext4_bud
- 	if (ac)
- 		ac->ac_op = EXT4_MB_HISTORY_DISCARD;
- 
--	trace_mark(ext4_mb_release_group_pa, "dev %s pstart %llu len %d",
--		   sb->s_id, pa->pa_pstart, pa->pa_len);
-+	trace_ext4_mb_release_group_pa(ac, pa);
- 	BUG_ON(pa->pa_deleted == 0);
- 	ext4_get_group_no_and_offset(sb, pa->pa_pstart, &group, &bit);
- 	BUG_ON(group != e4b->bd_group && pa->pa_len != 0);
-@@ -4058,8 +4061,7 @@ void ext4_discard_preallocations(struct 
- 	}
- 
- 	mb_debug("discard preallocation for inode %lu\n", inode->i_ino);
--	trace_mark(ext4_discard_preallocations, "dev %s ino %lu", sb->s_id,
--		   inode->i_ino);
-+	trace_ext4_discard_preallocations(inode);
- 
- 	INIT_LIST_HEAD(&list);
- 
-@@ -4515,8 +4517,7 @@ static int ext4_mb_discard_preallocation
- 	int ret;
- 	int freed = 0;
- 
--	trace_mark(ext4_mb_discard_preallocations, "dev %s needed %d",
--		   sb->s_id, needed);
-+	trace_ext4_mb_discard_preallocations(sb, needed);
- 	for (i = 0; i < EXT4_SB(sb)->s_groups_count && needed > 0; i++) {
- 		ret = ext4_mb_discard_group_preallocations(sb, i, needed);
- 		freed += ret;
-@@ -4545,17 +4546,7 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t
- 	sb = ar->inode->i_sb;
- 	sbi = EXT4_SB(sb);
- 
--	trace_mark(ext4_request_blocks, "dev %s flags %u len %u ino %lu "
--		   "lblk %llu goal %llu lleft %llu lright %llu "
--		   "pleft %llu pright %llu ",
--		   sb->s_id, ar->flags, ar->len,
--		   ar->inode ? ar->inode->i_ino : 0,
--		   (unsigned long long) ar->logical,
--		   (unsigned long long) ar->goal,
--		   (unsigned long long) ar->lleft,
--		   (unsigned long long) ar->lright,
--		   (unsigned long long) ar->pleft,
--		   (unsigned long long) ar->pright);
-+	trace_ext4_request_blocks(ar);
- 
- 	if (!EXT4_I(ar->inode)->i_delalloc_reserved_flag) {
- 		/*
-@@ -4659,18 +4650,7 @@ out3:
- 						reserv_blks);
- 	}
- 
--	trace_mark(ext4_allocate_blocks,
--		   "dev %s block %llu flags %u len %u ino %lu "
--		   "logical %llu goal %llu lleft %llu lright %llu "
--		   "pleft %llu pright %llu ",
--		   sb->s_id, (unsigned long long) block,
--		   ar->flags, ar->len, ar->inode ? ar->inode->i_ino : 0,
--		   (unsigned long long) ar->logical,
--		   (unsigned long long) ar->goal,
--		   (unsigned long long) ar->lleft,
--		   (unsigned long long) ar->lright,
--		   (unsigned long long) ar->pleft,
--		   (unsigned long long) ar->pright);
-+	trace_ext4_allocate_blocks(ar, (unsigned long long)block);
- 
- 	return block;
- }
-@@ -4805,10 +4785,7 @@ void ext4_mb_free_blocks(handle_t *handl
- 	}
- 
- 	ext4_debug("freeing block %lu\n", block);
--	trace_mark(ext4_free_blocks,
--		   "dev %s block %llu count %lu metadata %d ino %lu",
--		   sb->s_id, (unsigned long long) block, count, metadata,
--		   inode ? inode->i_ino : 0);
-+	trace_ext4_free_blocks(inode, block, count, metadata);
- 
- 	ac = kmem_cache_alloc(ext4_ac_cachep, GFP_NOFS);
- 	if (ac) {
-Index: linux-2.6-lttng/fs/ext4/mballoc.h
-===================================================================
---- linux-2.6-lttng.orig/fs/ext4/mballoc.h	2009-03-05 15:21:54.000000000 -0500
-+++ linux-2.6-lttng/fs/ext4/mballoc.h	2009-03-05 15:49:28.000000000 -0500
-@@ -19,8 +19,8 @@
- #include <linux/seq_file.h>
- #include <linux/version.h>
- #include <linux/blkdev.h>
--#include <linux/marker.h>
- #include <linux/mutex.h>
-+#include <trace/ext4.h>
- #include "ext4_jbd2.h"
- #include "ext4.h"
- #include "group.h"
-Index: linux-2.6-lttng/fs/ext4/super.c
-===================================================================
---- linux-2.6-lttng.orig/fs/ext4/super.c	2009-03-05 15:21:54.000000000 -0500
-+++ linux-2.6-lttng/fs/ext4/super.c	2009-03-05 15:49:28.000000000 -0500
-@@ -35,9 +35,9 @@
- #include <linux/quotaops.h>
- #include <linux/seq_file.h>
- #include <linux/proc_fs.h>
--#include <linux/marker.h>
- #include <linux/log2.h>
- #include <linux/crc16.h>
-+#include <trace/ext4.h>
- #include <asm/uaccess.h>
- 
- #include "ext4.h"
-@@ -47,6 +47,8 @@
- #include "namei.h"
- #include "group.h"
- 
-+DEFINE_TRACE(ext4_sync_fs);
-+
- struct proc_dir_entry *ext4_proc_root;
- 
- static int ext4_load_journal(struct super_block *, struct ext4_super_block *,
-@@ -3048,7 +3050,7 @@ static int ext4_sync_fs(struct super_blo
- 	int ret = 0;
- 	tid_t target;
- 
--	trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
-+	trace_ext4_sync_fs(sb, wait);
- 	sb->s_dirt = 0;
- 	if (EXT4_SB(sb)->s_journal) {
- 		if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal,
-Index: linux-2.6-lttng/include/trace/ext4.h
+Index: linux-2.6-lttng/include/linux/ltt-tracer.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/ext4.h	2009-03-05 15:49:28.000000000 -0500
-@@ -0,0 +1,129 @@
-+#ifndef _TRACE_EXT4_H
-+#define _TRACE_EXT4_H
++++ linux-2.6-lttng/include/linux/ltt-tracer.h	2009-03-05 16:40:10.000000000 -0500
+@@ -0,0 +1,729 @@
++/*
++ * Copyright (C) 2005,2006,2008 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ *
++ * This contains the definitions for the Linux Trace Toolkit tracer.
++ */
 +
-+#include <linux/tracepoint.h>
++#ifndef _LTT_TRACER_H
++#define _LTT_TRACER_H
 +
-+struct ext4_free_data;
-+struct ext4_prealloc_space;
-+struct ext4_allocation_context;
-+struct ext4_allocation_request;
++#include <stdarg.h>
++#include <linux/types.h>
++#include <linux/limits.h>
++#include <linux/list.h>
++#include <linux/cache.h>
++#include <linux/kernel.h>
++#include <linux/timex.h>
++#include <linux/wait.h>
++#include <linux/ltt-relay.h>
++#include <linux/ltt-channels.h>
++#include <linux/ltt-core.h>
++#include <linux/marker.h>
++#include <linux/trace-clock.h>
++#include <asm/atomic.h>
++#include <asm/local.h>
 +
-+DECLARE_TRACE(ext4_free_inode,
-+	TPPROTO(struct inode *inode),
-+		TPARGS(inode));
++/* Number of bytes to log with a read/write event */
++#define LTT_LOG_RW_SIZE			32L
 +
-+DECLARE_TRACE(ext4_request_inode,
-+	TPPROTO(struct inode *dir, int mode),
-+		TPARGS(dir, mode));
++/* Interval (in jiffies) at which the LTT per-CPU timer fires */
++#define LTT_PERCPU_TIMER_INTERVAL	1
 +
-+DECLARE_TRACE(ext4_allocate_inode,
-+	TPPROTO(struct inode *inode, struct inode *dir, int mode),
-+		TPARGS(inode, dir, mode));
-+
-+DECLARE_TRACE(ext4_write_begin,
-+	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
-+			unsigned int flags),
-+		TPARGS(inode, pos, len, flags));
-+
-+DECLARE_TRACE(ext4_ordered_write_end,
-+	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
-+			unsigned int copied),
-+		TPARGS(inode, pos, len, copied));
-+
-+DECLARE_TRACE(ext4_writeback_write_end,
-+	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
-+			unsigned int copied),
-+		TPARGS(inode, pos, len, copied));
-+
-+DECLARE_TRACE(ext4_journalled_write_end,
-+	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
-+			unsigned int copied),
-+		TPARGS(inode, pos, len, copied));
-+
-+DECLARE_TRACE(ext4_da_writepage,
-+	TPPROTO(struct inode *inode, struct page *page),
-+		TPARGS(inode, page));
-+
-+DECLARE_TRACE(ext4_da_writepages,
-+	TPPROTO(struct inode *inode, struct writeback_control *wbc),
-+		TPARGS(inode, wbc));
-+
-+DECLARE_TRACE(ext4_da_writepages_result,
-+	TPPROTO(struct inode *inode, struct writeback_control *wbc,
-+			int ret, int pages_written),
-+		TPARGS(inode, wbc, ret, pages_written));
-+
-+DECLARE_TRACE(ext4_da_write_begin,
-+	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
-+			unsigned int flags),
-+		TPARGS(inode, pos, len, flags));
-+
-+DECLARE_TRACE(ext4_da_write_end,
-+	TPPROTO(struct inode *inode, loff_t pos, unsigned int len,
-+			unsigned int copied),
-+		TPARGS(inode, pos, len, copied));
-+
-+DECLARE_TRACE(ext4_normal_writepage,
-+	TPPROTO(struct inode *inode, struct page *page),
-+		TPARGS(inode, page));
-+
-+DECLARE_TRACE(ext4_journalled_writepage,
-+	TPPROTO(struct inode *inode, struct page *page),
-+		TPARGS(inode, page));
-+
-+DECLARE_TRACE(ext4_discard_blocks,
-+	TPPROTO(struct super_block *sb, unsigned long long blk,
-+			struct ext4_free_data *entry),
-+		TPARGS(sb, blk, entry));
-+
-+DECLARE_TRACE(ext4_mb_new_inode_pa,
-+	TPPROTO(struct ext4_allocation_context *ac,
-+			struct ext4_prealloc_space *pa),
-+		TPARGS(ac, pa));
-+
-+DECLARE_TRACE(ext4_mb_new_group_pa,
-+	TPPROTO(struct ext4_allocation_context *ac,
-+			struct ext4_prealloc_space *pa),
-+		TPARGS(ac, pa));
-+
-+DECLARE_TRACE(ext4_mb_release_inode_pa,
-+	TPPROTO(struct ext4_allocation_context *ac,
-+			struct ext4_prealloc_space *pa,
-+			unsigned long long block, unsigned int count),
-+		TPARGS(ac, pa, block, count));
-+
-+DECLARE_TRACE(ext4_mb_release_group_pa,
-+	TPPROTO(struct ext4_allocation_context *ac,
-+			struct ext4_prealloc_space *pa),
-+		TPARGS(ac, pa));
-+
-+DECLARE_TRACE(ext4_discard_preallocations,
-+	TPPROTO(struct inode *inode),
-+		TPARGS(inode));
-+
-+DECLARE_TRACE(ext4_mb_discard_preallocations,
-+	TPPROTO(struct super_block *sb, int needed),
-+		TPARGS(sb, needed));
-+
-+DECLARE_TRACE(ext4_request_blocks,
-+	TPPROTO(struct ext4_allocation_request *ar),
-+		TPARGS(ar));
-+
-+DECLARE_TRACE(ext4_allocate_blocks,
-+	TPPROTO(struct ext4_allocation_request *ar, unsigned long long block),
-+		TPARGS(ar, block));
-+
-+DECLARE_TRACE(ext4_free_blocks,
-+	TPPROTO(struct inode *inode, unsigned long block, unsigned long count,
-+			int metadata),
-+		TPARGS(inode, block, count, metadata));
-+
-+DECLARE_TRACE(ext4_sync_file,
-+	TPPROTO(struct file *file, struct dentry *dentry, int datasync),
-+		TPARGS(file, dentry, datasync));
-+
-+DECLARE_TRACE(ext4_sync_fs,
-+	TPPROTO(struct super_block *sb, int wait),
-+		TPARGS(sb, wait));
-+
++#ifndef LTT_ARCH_TYPE
++#define LTT_ARCH_TYPE			LTT_ARCH_TYPE_UNDEFINED
 +#endif
++
++#ifndef LTT_ARCH_VARIANT
++#define LTT_ARCH_VARIANT		LTT_ARCH_VARIANT_NONE
++#endif
++
++struct ltt_active_marker;
++
++/* Maximum number of callbacks per marker */
++#define LTT_NR_CALLBACKS	10
++
++struct ltt_serialize_closure;
++struct ltt_probe_private_data;
++
++/* Serialization callback '%k' */
++typedef size_t (*ltt_serialize_cb)(struct rchan_buf *buf, size_t buf_offset,
++			struct ltt_serialize_closure *closure,
++			void *serialize_private, int *largest_align,
++			const char *fmt, va_list *args);
++
++struct ltt_serialize_closure {
++	ltt_serialize_cb *callbacks;
++	long cb_args[LTT_NR_CALLBACKS];
++	unsigned int cb_idx;
++};
++
++size_t ltt_serialize_data(struct rchan_buf *buf, size_t buf_offset,
++			struct ltt_serialize_closure *closure,
++			void *serialize_private,
++			int *largest_align, const char *fmt, va_list *args);
++
++struct ltt_available_probe {
++	const char *name;		/* probe name */
++	const char *format;
++	marker_probe_func *probe_func;
++	ltt_serialize_cb callbacks[LTT_NR_CALLBACKS];
++	struct list_head node;		/* registered probes list */
++};
++
++struct ltt_probe_private_data {
++	struct ltt_trace_struct *trace;	/*
++					 * Target trace, for metadata
++					 * or statedump.
++					 */
++	ltt_serialize_cb serializer;	/*
++					 * Serialization function override.
++					 */
++	void *serialize_private;	/*
++					 * Private data for serialization
++					 * functions.
++					 */
++};
++
++enum ltt_channels {
++	LTT_CHANNEL_METADATA,
++	LTT_CHANNEL_FD_STATE,
++	LTT_CHANNEL_GLOBAL_STATE,
++	LTT_CHANNEL_IRQ_STATE,
++	LTT_CHANNEL_MODULE_STATE,
++	LTT_CHANNEL_NETIF_STATE,
++	LTT_CHANNEL_SOFTIRQ_STATE,
++	LTT_CHANNEL_SWAP_STATE,
++	LTT_CHANNEL_SYSCALL_STATE,
++	LTT_CHANNEL_TASK_STATE,
++	LTT_CHANNEL_VM_STATE,
++	LTT_CHANNEL_FS,
++	LTT_CHANNEL_INPUT,
++	LTT_CHANNEL_IPC,
++	LTT_CHANNEL_KERNEL,
++	LTT_CHANNEL_MM,
++	LTT_CHANNEL_RCU,
++	LTT_CHANNEL_DEFAULT,
++};
++
++struct ltt_active_marker {
++	struct list_head node;		/* active markers list */
++	const char *channel;
++	const char *name;
++	const char *format;
++	struct ltt_available_probe *probe;
++};
++
++extern void ltt_vtrace(const struct marker *mdata, void *probe_data,
++	void *call_data, const char *fmt, va_list *args);
++extern void ltt_trace(const struct marker *mdata, void *probe_data,
++	void *call_data, const char *fmt, ...);
++
++/*
++ * Unique ID assigned to each registered probe.
++ */
++enum marker_id {
++	MARKER_ID_SET_MARKER_ID = 0,	/* Static IDs available (range 0-7) */
++	MARKER_ID_SET_MARKER_FORMAT,
++	MARKER_ID_COMPACT,		/* Compact IDs (range: 8-127)	    */
++	MARKER_ID_DYNAMIC,		/* Dynamic IDs (range: 128-65535)   */
++};
++
++/* static ids 0-1 reserved for internal use. */
++#define MARKER_CORE_IDS		2
++static inline enum marker_id marker_id_type(uint16_t id)
++{
++	if (id < MARKER_CORE_IDS)
++		return (enum marker_id)id;
++	else
++		return MARKER_ID_DYNAMIC;
++}
++
++#if defined(CONFIG_LTT) && defined(CONFIG_LTT_ALIGNMENT)
++
++/*
++ * Calculate the offset needed to align the type.
++ * size_of_type must be non-zero.
++ */
++static inline unsigned int ltt_align(size_t align_drift, size_t size_of_type)
++{
++	size_t alignment = min(sizeof(void *), size_of_type);
++	return (alignment - align_drift) & (alignment - 1);
++}
++/* Default arch alignment */
++#define LTT_ALIGN
++
++static inline int ltt_get_alignment(void)
++{
++	return sizeof(void *);
++}
++
++#else
++
++static inline unsigned int ltt_align(size_t align_drift,
++		 size_t size_of_type)
++{
++	return 0;
++}
++
++#define LTT_ALIGN __attribute__((packed))
++
++static inline int ltt_get_alignment(void)
++{
++	return 0;
++}
++#endif /* CONFIG_LTT_ALIGNMENT */
++
++#ifdef CONFIG_LTT
++
++struct user_dbg_data {
++	unsigned long avail_size;
++	unsigned long write;
++	unsigned long read;
++};
++
++struct ltt_trace_ops {
++	/* First 32 bytes cache-hot cacheline */
++	int (*reserve_slot) (struct ltt_trace_struct *trace,
++				struct ltt_channel_struct *channel,
++				void **transport_data, size_t data_size,
++				size_t *slot_size, long *buf_offset, u64 *tsc,
++				unsigned int *rflags,
++				int largest_align,
++				int cpu);
++	void (*commit_slot) (struct ltt_channel_struct *channel,
++				void **transport_data, long buf_offset,
++				size_t slot_size);
++	void (*wakeup_channel) (struct ltt_channel_struct *ltt_channel);
++	int (*user_blocking) (struct ltt_trace_struct *trace,
++				unsigned int index, size_t data_size,
++				struct user_dbg_data *dbg);
++	/* End of first 32 bytes cacheline */
++	int (*create_dirs) (struct ltt_trace_struct *new_trace);
++	void (*remove_dirs) (struct ltt_trace_struct *new_trace);
++	int (*create_channel) (const char *trace_name,
++				struct ltt_trace_struct *trace,
++				struct dentry *dir, const char *channel_name,
++				struct ltt_channel_struct *ltt_chan,
++				unsigned int subbuf_size,
++				unsigned int n_subbufs, int overwrite);
++	void (*finish_channel) (struct ltt_channel_struct *channel);
++	void (*remove_channel) (struct ltt_channel_struct *channel);
++	void (*user_errors) (struct ltt_trace_struct *trace,
++				unsigned int index, size_t data_size,
++				struct user_dbg_data *dbg, int cpu);
++#ifdef CONFIG_HOTPLUG_CPU
++	int (*handle_cpuhp) (struct notifier_block *nb,
++				unsigned long action, void *hcpu,
++				struct ltt_trace_struct *trace);
++#endif
++} ____cacheline_aligned;
++
++struct ltt_transport {
++	char *name;
++	struct module *owner;
++	struct list_head node;
++	struct ltt_trace_ops ops;
++};
++
++enum trace_mode { LTT_TRACE_NORMAL, LTT_TRACE_FLIGHT, LTT_TRACE_HYBRID };
++
++#define CHANNEL_FLAG_ENABLE	(1U<<0)
++#define CHANNEL_FLAG_OVERWRITE	(1U<<1)
++
++/* Per-trace information - each trace/flight recorder represented by one */
++struct ltt_trace_struct {
++	/* First 32 bytes cache-hot cacheline */
++	struct list_head list;
++	struct ltt_trace_ops *ops;
++	int active;
++	/* Second 32 bytes cache-hot cacheline */
++	struct ltt_channel_struct *channels;
++	unsigned int nr_channels;
++	u32 freq_scale;
++	u64 start_freq;
++	u64 start_tsc;
++	unsigned long long start_monotonic;
++	struct timeval		start_time;
++	struct ltt_channel_setting *settings;
++	struct {
++		struct dentry			*trace_root;
++	} dentry;
++	struct rchan_callbacks callbacks;
++	struct kref kref; /* Each channel has a kref of the trace struct */
++	struct ltt_transport *transport;
++	struct kref ltt_transport_kref;
++	wait_queue_head_t kref_wq; /* Place for ltt_trace_destroy to sleep */
++	char trace_name[NAME_MAX];
++} ____cacheline_aligned;
++
++/* Hardcoded event headers
++ *
++ * event header for a trace with active heartbeat : 27 bits timestamps
++ *
++ * headers are 32-bits aligned. In order to insure such alignment, a dynamic per
++ * trace alignment value must be done.
++ *
++ * Remember that the C compiler does align each member on the boundary
++ * equivalent to their own size.
++ *
++ * As relay subbuffers are aligned on pages, we are sure that they are 4 and 8
++ * bytes aligned, so the buffer header and trace header are aligned.
++ *
++ * Event headers are aligned depending on the trace alignment option.
++ *
++ * Note using C structure bitfields for cross-endianness and portability
++ * concerns.
++ */
++
++#define LTT_RESERVED_EVENTS	3
++#define LTT_EVENT_BITS		5
++#define LTT_FREE_EVENTS		((1 << LTT_EVENT_BITS) - LTT_RESERVED_EVENTS)
++#define LTT_TSC_BITS		27
++#define LTT_TSC_MASK		((1 << LTT_TSC_BITS) - 1)
++
++struct ltt_event_header {
++	u32 id_time;		/* 5 bits event id (MSB); 27 bits time (LSB) */
++};
++
++/* Reservation flags */
++#define	LTT_RFLAG_ID			(1 << 0)
++#define	LTT_RFLAG_ID_SIZE		(1 << 1)
++#define	LTT_RFLAG_ID_SIZE_TSC		(1 << 2)
++
++#define LTT_MAX_SMALL_SIZE		0xFFFFU
++
++/*
++ * We use asm/timex.h : cpu_khz/HZ variable in here : we might have to deal
++ * specifically with CPU frequency scaling someday, so using an interpolation
++ * between the start and end of buffer values is not flexible enough. Using an
++ * immediate frequency value permits to calculate directly the times for parts
++ * of a buffer that would be before a frequency change.
++ *
++ * Keep the natural field alignment for _each field_ within this structure if
++ * you ever add/remove a field from this header. Packed attribute is not used
++ * because gcc generates poor code on at least powerpc and mips. Don't ever
++ * let gcc add padding between the structure elements.
++ */
++struct ltt_subbuffer_header {
++	uint64_t cycle_count_begin;	/* Cycle count at subbuffer start */
++	uint64_t cycle_count_end;	/* Cycle count at subbuffer end */
++	uint32_t magic_number;		/*
++					 * Trace magic number.
++					 * contains endianness information.
++					 */
++	uint8_t major_version;
++	uint8_t minor_version;
++	uint8_t arch_size;		/* Architecture pointer size */
++	uint8_t alignment;		/* LTT data alignment */
++	uint64_t start_time_sec;	/* NTP-corrected start time */
++	uint64_t start_time_usec;
++	uint64_t start_freq;		/*
++					 * Frequency at trace start,
++					 * used all along the trace.
++					 */
++	uint32_t freq_scale;		/* Frequency scaling (divisor) */
++	uint32_t lost_size;		/* Size unused at end of subbuffer */
++	uint32_t buf_size;		/* Size of this subbuffer */
++	uint32_t events_lost;		/*
++					 * Events lost in this subbuffer since
++					 * the beginning of the trace.
++					 * (may overflow)
++					 */
++	uint32_t subbuf_corrupt;	/*
++					 * Corrupted (lost) subbuffers since
++					 * the begginig of the trace.
++					 * (may overflow)
++					 */
++	uint8_t header_end[0];		/* End of header */
++};
++
++/**
++ * ltt_subbuffer_header_size - called on buffer-switch to a new sub-buffer
++ *
++ * Return header size without padding after the structure. Don't use packed
++ * structure because gcc generates inefficient code on some architectures
++ * (powerpc, mips..)
++ */
++static inline size_t ltt_subbuffer_header_size(void)
++{
++	return offsetof(struct ltt_subbuffer_header, header_end);
++}
++
++/*
++ * ltt_get_header_size
++ *
++ * Calculate alignment offset to 32-bits. This is the alignment offset of the
++ * event header.
++ *
++ * Important note :
++ * The event header must be 32-bits. The total offset calculated here :
++ *
++ * Alignment of header struct on 32 bits (min arch size, header size)
++ * + sizeof(header struct)  (32-bits)
++ * + (opt) u16 (ext. event id)
++ * + (opt) u16 (event_size)
++ *             (if event_size == LTT_MAX_SMALL_SIZE, has ext. event size)
++ * + (opt) u32 (ext. event size)
++ * + (opt) u64 full TSC (aligned on min(64-bits, arch size))
++ *
++ * The payload must itself determine its own alignment from the biggest type it
++ * contains.
++ * */
++static inline unsigned char ltt_get_header_size(
++		struct ltt_channel_struct *channel,
++		size_t offset,
++		size_t data_size,
++		size_t *before_hdr_pad,
++		unsigned int rflags)
++{
++	size_t orig_offset = offset;
++	size_t padding;
++
++	BUILD_BUG_ON(sizeof(struct ltt_event_header) != sizeof(u32));
++
++	padding = ltt_align(offset, sizeof(struct ltt_event_header));
++	offset += padding;
++	offset += sizeof(struct ltt_event_header);
++
++	switch (rflags) {
++	case LTT_RFLAG_ID_SIZE_TSC:
++		offset += sizeof(u16) + sizeof(u16);
++		if (data_size >= LTT_MAX_SMALL_SIZE)
++			offset += sizeof(u32);
++		offset += ltt_align(offset, sizeof(u64));
++		offset += sizeof(u64);
++		break;
++	case LTT_RFLAG_ID_SIZE:
++		offset += sizeof(u16) + sizeof(u16);
++		if (data_size >= LTT_MAX_SMALL_SIZE)
++			offset += sizeof(u32);
++		break;
++	case LTT_RFLAG_ID:
++		offset += sizeof(u16);
++		break;
++	}
++
++	*before_hdr_pad = padding;
++	return offset - orig_offset;
++}
++
++/*
++ * ltt_write_event_header
++ *
++ * Writes the event header to the offset (already aligned on 32-bits).
++ *
++ * @trace : trace to write to.
++ * @channel : pointer to the channel structure..
++ * @buf : buffer to write to.
++ * @buf_offset : buffer offset to write to (aligned on 32 bits).
++ * @eID : event ID
++ * @event_size : size of the event, excluding the event header.
++ * @tsc : time stamp counter.
++ * @rflags : reservation flags.
++ *
++ * returns : offset where the event data must be written.
++ */
++static inline size_t ltt_write_event_header(struct ltt_trace_struct *trace,
++		struct ltt_channel_struct *channel,
++		struct rchan_buf *buf, long buf_offset,
++		u16 eID, size_t event_size,
++		u64 tsc, unsigned int rflags)
++{
++	struct ltt_event_header header;
++	size_t small_size;
++
++	switch (rflags) {
++	case LTT_RFLAG_ID_SIZE_TSC:
++		header.id_time = 29 << LTT_TSC_BITS;
++		break;
++	case LTT_RFLAG_ID_SIZE:
++		header.id_time = 30 << LTT_TSC_BITS;
++		break;
++	case LTT_RFLAG_ID:
++		header.id_time = 31 << LTT_TSC_BITS;
++		break;
++	default:
++		header.id_time = eID << LTT_TSC_BITS;
++		break;
++	}
++	header.id_time |= (u32)tsc & LTT_TSC_MASK;
++	ltt_relay_write(buf, buf_offset, &header, sizeof(header));
++	buf_offset += sizeof(header);
++
++	switch (rflags) {
++	case LTT_RFLAG_ID_SIZE_TSC:
++		small_size = min_t(size_t, event_size, LTT_MAX_SMALL_SIZE);
++		ltt_relay_write(buf, buf_offset,
++			(u16[]){ (u16)eID }, sizeof(u16));
++		buf_offset += sizeof(u16);
++		ltt_relay_write(buf, buf_offset,
++			(u16[]){ (u16)small_size }, sizeof(u16));
++		buf_offset += sizeof(u16);
++		if (small_size == LTT_MAX_SMALL_SIZE) {
++			ltt_relay_write(buf, buf_offset,
++				(u32[]){ (u32)event_size }, sizeof(u32));
++			buf_offset += sizeof(u32);
++		}
++		buf_offset += ltt_align(buf_offset, sizeof(u64));
++		ltt_relay_write(buf, buf_offset,
++			(u64[]){ (u64)tsc }, sizeof(u64));
++		buf_offset += sizeof(u64);
++		break;
++	case LTT_RFLAG_ID_SIZE:
++		small_size = min_t(size_t, event_size, LTT_MAX_SMALL_SIZE);
++		ltt_relay_write(buf, buf_offset,
++			(u16[]){ (u16)eID }, sizeof(u16));
++		buf_offset += sizeof(u16);
++		ltt_relay_write(buf, buf_offset,
++			(u16[]){ (u16)small_size }, sizeof(u16));
++		buf_offset += sizeof(u16);
++		if (small_size == LTT_MAX_SMALL_SIZE) {
++			ltt_relay_write(buf, buf_offset,
++				(u32[]){ (u32)event_size }, sizeof(u32));
++			buf_offset += sizeof(u32);
++		}
++		break;
++	case LTT_RFLAG_ID:
++		ltt_relay_write(buf, buf_offset,
++			(u16[]){ (u16)eID }, sizeof(u16));
++		buf_offset += sizeof(u16);
++		break;
++	default:
++		break;
++	}
++
++	return buf_offset;
++}
++
++/* Lockless LTTng */
++
++/* Buffer offset macros */
++
++/*
++ * BUFFER_TRUNC zeroes the subbuffer offset and the subbuffer number parts of
++ * the offset, which leaves only the buffer number.
++ */
++#define BUFFER_TRUNC(offset, chan) \
++	((offset) & (~((chan)->alloc_size-1)))
++#define BUFFER_OFFSET(offset, chan) ((offset) & ((chan)->alloc_size - 1))
++#define SUBBUF_OFFSET(offset, chan) ((offset) & ((chan)->subbuf_size - 1))
++#define SUBBUF_ALIGN(offset, chan) \
++	(((offset) + (chan)->subbuf_size) & (~((chan)->subbuf_size - 1)))
++#define SUBBUF_TRUNC(offset, chan) \
++	((offset) & (~((chan)->subbuf_size - 1)))
++#define SUBBUF_INDEX(offset, chan) \
++	(BUFFER_OFFSET((offset), chan) >> (chan)->subbuf_size_order)
++
++/*
++ * ltt_reserve_slot
++ *
++ * Atomic slot reservation in a LTTng buffer. It will take care of
++ * sub-buffer switching.
++ *
++ * Parameters:
++ *
++ * @trace : the trace structure to log to.
++ * @channel : the chanel to reserve space into.
++ * @transport_data : specific transport data.
++ * @data_size : size of the variable length data to log.
++ * @slot_size : pointer to total size of the slot (out)
++ * @buf_offset : pointer to reserve offset (out)
++ * @tsc : pointer to the tsc at the slot reservation (out)
++ * @rflags : reservation flags (header specificity)
++ * @cpu : cpu id
++ *
++ * Return : -ENOSPC if not enough space, else 0.
++ */
++static inline int ltt_reserve_slot(
++		struct ltt_trace_struct *trace,
++		struct ltt_channel_struct *channel,
++		void **transport_data,
++		size_t data_size,
++		size_t *slot_size,
++		long *buf_offset,
++		u64 *tsc,
++		unsigned int *rflags,
++		int largest_align,
++		int cpu)
++{
++	return trace->ops->reserve_slot(trace, channel, transport_data,
++			data_size, slot_size, buf_offset, tsc, rflags,
++			largest_align, cpu);
++}
++
++
++/*
++ * ltt_commit_slot
++ *
++ * Atomic unordered slot commit. Increments the commit count in the
++ * specified sub-buffer, and delivers it if necessary.
++ *
++ * Parameters:
++ *
++ * @channel : the chanel to reserve space into.
++ * @transport_data : specific transport data.
++ * @buf_offset : offset of beginning of reserved slot
++ * @slot_size : size of the reserved slot.
++ */
++static inline void ltt_commit_slot(
++		struct ltt_channel_struct *channel,
++		void **transport_data,
++		long buf_offset,
++		size_t slot_size)
++{
++	struct ltt_trace_struct *trace = channel->trace;
++
++	trace->ops->commit_slot(channel, transport_data, buf_offset, slot_size);
++}
++
++/*
++ * Control channels :
++ * control/metadata
++ * control/interrupts
++ * control/...
++ *
++ * cpu channel :
++ * cpu
++ */
++#define LTT_RELAY_ROOT		"ltt"
++#define LTT_RELAY_LOCKED_ROOT	"ltt-locked"
++
++#define LTT_METADATA_CHANNEL		"metadata_state"
++#define LTT_FD_STATE_CHANNEL		"fd_state"
++#define LTT_GLOBAL_STATE_CHANNEL	"global_state"
++#define LTT_IRQ_STATE_CHANNEL		"irq_state"
++#define LTT_MODULE_STATE_CHANNEL	"module_state"
++#define LTT_NETIF_STATE_CHANNEL		"netif_state"
++#define LTT_SOFTIRQ_STATE_CHANNEL	"softirq_state"
++#define LTT_SWAP_STATE_CHANNEL		"swap_state"
++#define LTT_SYSCALL_STATE_CHANNEL	"syscall_state"
++#define LTT_TASK_STATE_CHANNEL		"task_state"
++#define LTT_VM_STATE_CHANNEL		"vm_state"
++#define LTT_FS_CHANNEL			"fs"
++#define LTT_INPUT_CHANNEL		"input"
++#define LTT_IPC_CHANNEL			"ipc"
++#define LTT_KERNEL_CHANNEL		"kernel"
++#define LTT_MM_CHANNEL			"mm"
++#define LTT_RCU_CHANNEL			"rcu"
++
++#define LTT_FLIGHT_PREFIX	"flight-"
++
++/* Tracer properties */
++#define LTT_DEFAULT_SUBBUF_SIZE_LOW	65536
++#define LTT_DEFAULT_N_SUBBUFS_LOW	2
++#define LTT_DEFAULT_SUBBUF_SIZE_MED	262144
++#define LTT_DEFAULT_N_SUBBUFS_MED	2
++#define LTT_DEFAULT_SUBBUF_SIZE_HIGH	1048576
++#define LTT_DEFAULT_N_SUBBUFS_HIGH	2
++#define LTT_TRACER_MAGIC_NUMBER		0x00D6B7ED
++#define LTT_TRACER_VERSION_MAJOR	2
++#define LTT_TRACER_VERSION_MINOR	3
++
++/*
++ * Size reserved for high priority events (interrupts, NMI, BH) at the end of a
++ * nearly full buffer. User space won't use this last amount of space when in
++ * blocking mode. This space also includes the event header that would be
++ * written by this user space event.
++ */
++#define LTT_RESERVE_CRITICAL		4096
++
++/* Register and unregister function pointers */
++
++enum ltt_module_function {
++	LTT_FUNCTION_RUN_FILTER,
++	LTT_FUNCTION_FILTER_CONTROL,
++	LTT_FUNCTION_STATEDUMP
++};
++
++extern int ltt_module_register(enum ltt_module_function name, void *function,
++		struct module *owner);
++extern void ltt_module_unregister(enum ltt_module_function name);
++
++void ltt_transport_register(struct ltt_transport *transport);
++void ltt_transport_unregister(struct ltt_transport *transport);
++
++/* Exported control function */
++
++enum ltt_control_msg {
++	LTT_CONTROL_START,
++	LTT_CONTROL_STOP,
++	LTT_CONTROL_CREATE_TRACE,
++	LTT_CONTROL_DESTROY_TRACE
++};
++
++union ltt_control_args {
++	struct {
++		enum trace_mode mode;
++		unsigned int subbuf_size_low;
++		unsigned int n_subbufs_low;
++		unsigned int subbuf_size_med;
++		unsigned int n_subbufs_med;
++		unsigned int subbuf_size_high;
++		unsigned int n_subbufs_high;
++	} new_trace;
++};
++
++int _ltt_trace_setup(const char *trace_name);
++int ltt_trace_setup(const char *trace_name);
++struct ltt_trace_struct *_ltt_trace_find_setup(const char *trace_name);
++int ltt_trace_set_type(const char *trace_name, const char *trace_type);
++int ltt_trace_set_channel_subbufsize(const char *trace_name,
++		const char *channel_name, unsigned int size);
++int ltt_trace_set_channel_subbufcount(const char *trace_name,
++		const char *channel_name, unsigned int cnt);
++int ltt_trace_set_channel_enable(const char *trace_name,
++		const char *channel_name, unsigned int enable);
++int ltt_trace_set_channel_overwrite(const char *trace_name,
++		const char *channel_name, unsigned int overwrite);
++int ltt_trace_alloc(const char *trace_name);
++int ltt_trace_destroy(const char *trace_name);
++int ltt_trace_start(const char *trace_name);
++int ltt_trace_stop(const char *trace_name);
++
++extern int ltt_control(enum ltt_control_msg msg, const char *trace_name,
++		const char *trace_type, union ltt_control_args args);
++
++enum ltt_filter_control_msg {
++	LTT_FILTER_DEFAULT_ACCEPT,
++	LTT_FILTER_DEFAULT_REJECT
++};
++
++extern int ltt_filter_control(enum ltt_filter_control_msg msg,
++		const char *trace_name);
++
++void ltt_write_trace_header(struct ltt_trace_struct *trace,
++		struct ltt_subbuffer_header *header);
++extern void ltt_buffer_destroy(struct ltt_channel_struct *ltt_chan);
++
++void ltt_core_register(int (*function)(u8, void *));
++
++void ltt_core_unregister(void);
++
++void ltt_release_trace(struct kref *kref);
++void ltt_release_transport(struct kref *kref);
++
++extern int ltt_probe_register(struct ltt_available_probe *pdata);
++extern int ltt_probe_unregister(struct ltt_available_probe *pdata);
++extern int ltt_marker_connect(const char *channel, const char *mname,
++		const char *pname);
++extern int ltt_marker_disconnect(const char *channel, const char *mname,
++		const char *pname);
++extern void ltt_dump_marker_state(struct ltt_trace_struct *trace);
++
++void ltt_lock_traces(void);
++void ltt_unlock_traces(void);
++
++/* Relay IOCTL */
++
++/* Get the next sub buffer that can be read. */
++#define RELAY_GET_SUBBUF		_IOR(0xF5, 0x00, __u32)
++/* Release the oldest reserved (by "get") sub buffer. */
++#define RELAY_PUT_SUBBUF		_IOW(0xF5, 0x01, __u32)
++/* returns the number of sub buffers in the per cpu channel. */
++#define RELAY_GET_N_SUBBUFS		_IOR(0xF5, 0x02, __u32)
++/* returns the size of the sub buffers. */
++#define RELAY_GET_SUBBUF_SIZE		_IOR(0xF5, 0x03, __u32)
++
++#endif /* CONFIG_LTT */
++
++#endif /* _LTT_TRACER_H */
 
 -- 
 Mathieu Desnoyers
