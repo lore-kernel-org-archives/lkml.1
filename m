@@ -1,138 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZCEEXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbZCEEg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbZCEEXJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 23:23:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZCEEWz
+	id S1754742AbZCEEg7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 23:36:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZCEEgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 23:22:55 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:54334 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbZCEEWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 23:22:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=ItCIHiPpVNUwWqO/tkjCwRhMNOEvglb/up+ovnmAHq0tUZz1V4U7wQjQBbe/xZ3AQR
-         QXPxvyAXSBPn/AvjwmyaLq8BVfoiT/+JIrQtEKCWElXrz/FRQ1BqcrjOfnx7sNtFp+2A
-         4w4cw5yGWUCdsCw125Sh48GlEutYqdZu3AmVE=
-Date: Thu, 5 Mar 2009 13:20:54 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Minchan Kim <minchan.kim@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC] atomic highmem kmap page pinning
-Message-Id: <20090305132054.888396da.minchan.kim@barrios-desktop>
-In-Reply-To: <alpine.LFD.2.00.0903042129140.5511@xanadu.home>
-References: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
-	<20090304171429.c013013c.minchan.kim@barrios-desktop>
-	<alpine.LFD.2.00.0903041101170.5511@xanadu.home>
-	<20090305080717.f7832c63.minchan.kim@barrios-desktop>
-	<alpine.LFD.2.00.0903042129140.5511@xanadu.home>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Mar 2009 23:36:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40493 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753286AbZCEEgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 23:36:50 -0500
+Message-ID: <49AF56CC.6020307@kernel.org>
+Date: Thu, 05 Mar 2009 13:36:28 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Mike Galbraith <efault@gmx.de>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86-tip: cpufreq breakage	-	bisection	fingers	89c9215165ca609096e845926d9a18f1306176a4
+References: <1236085632.5958.8.camel@marge.simson.net>	 <20090303143106.GA12248@elte.hu> <1236098338.5926.0.camel@marge.simson.net>	 <49ADE077.1060606@kernel.org> <1236138205.6119.12.camel@marge.simson.net>	 <1236147277.6049.3.camel@marge.simson.net> <49AE2028.8040402@kernel.org>	 <49AE4C26.4040104@kernel.org>  <49AE4D40.3050705@kernel.org>	 <1236163460.6101.7.camel@marge.simson.net>  <49AE88F9.8060100@kernel.org> <1236177327.6001.2.camel@marge.simson.net>
+In-Reply-To: <1236177327.6001.2.camel@marge.simson.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Mar 2009 04:36:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Mar 2009 21:37:43 -0500 (EST)
-Nicolas Pitre <nico@cam.org> wrote:
-
-> On Thu, 5 Mar 2009, Minchan Kim wrote:
+Mike Galbraith wrote:
+> On Wed, 2009-03-04 at 22:58 +0900, Tejun Heo wrote:
+>> Mike Galbraith wrote:
+>>> On Wed, 2009-03-04 at 18:43 +0900, Tejun Heo wrote:
+>>>> Tejun Heo wrote:
+>>>>> I've used the config file you attached and the commit ID I used is
+>>>>> d0c4f570276cb4d2dc4215b90eb7cb6e2bdd4a15.
+>>> My tip tree is at v2.6.29-rc6-2441-g4239438.
+>> Eh... how do I map that to git commit?
 > 
-> > I thought kmap and dma_map_page usage was following.
-> > 
-> > kmap(page);
-> > ...
-> > dma_map_page(...)
-> >   invalidate_cache_line
-> > 
-> > kunmap(page);
-> > 
-> > In this case, how do pkmap_count value for the page passed to dma_map_page become 1 ?
-> > The caller have to make sure to complete dma_map_page before kunmap.
-> 
-> 
-> The caller doesn't have to call kmap() on pages it intends to use for 
-> DMA.
+> The last 6, short form of 4239438b08fe8ec149ddc530238ca131bf88d290.
 
-Thanks for pointing me. 
-Russel also explained that. 
-Sorry for my misunderstanding. 
+Okay, got it.  It's slightly convoluted and can possibly affect other
+allocation methods too.  I'll report back after trying a few things.
 
-I want to add your changelog in git log. 
---- 
-       - dma_map_page(..., DMA_FROM_DEVICE) is called on a highmem page.
-
-       -->     - vaddr = page_address(page) is non null. In this case
-                 it is likely that the page has valid cache lines
-                 associated with vaddr. Remember that the cache is VIVT.
-
-               -->     - for (i = vaddr; i < vaddr + PAGE_SIZE; i += 32)
-                               invalidate_cache_line(i);
-
-       *** preemption occurs in the middle of the loop above ***
-
-       - kmap_high() is called for a different page.
-
-       -->     - last_pkmap_nr wraps to zero and flush_all_zero_pkmaps()
-                 is called.  The pkmap_count value for the page passed
-                 to dma_map_page() above happens to be 1, so it is
-                 unmapped.  But prior to that, flush_cache_kmaps()
-                 cleared the cache for it.  So far so good.
-
-               - A fresh pkmap entry is assigned for this kmap request.
-                 The Murphy law says it will eventually happen to use
-                 the same vaddr as the one which used to belong to the
-                 other page being processed by dma_map_page() in the
-                 preempted thread above.
-
-       - The caller of kmap_high() start dirtying the cache using the
-         new virtual mapping for its page.
-
-       *** the first thread is rescheduled ***
-
-                       - The for loop is resumed, but now cached data
-                         belonging to a different physical page is
-                         being discarded!
----
-
-> > Do I miss something ?
-> 
-> See above.
-> 
-> > > > As far as I understand, To make irq_disable to prevent this problem is 
-> > > > rather big cost.
-> > > 
-> > > How big?  Could you please elaborate on the significance of this cost?
-> > 
-> > I don't have a number. It depends on you for submitting this patch. 
-> 
-> My assertion is that the cost is negligible.  This is why I'm asking you 
-> why you think this is a big cost.
-
-Of course, I am not sure whether it's big cost or not. 
-But I thought it already is used in many fs, driver.
-so, whether it's big cost depends on workload type .
-
-However, This patch is needed for VIVT and no coherent cache.
-Is right ?
-
-If it is right, it will add unnessary overhead in other architecture 
-which don't have this problem.
-
-I think it's not desirable although it is small cost.
-If we have a other method which avoids unnessary overhead, It would be better.
-Unfortunately, I don't have any way to solve this, now. 
-
-Let us wait for other server guys's opinion.  :)
-
-> Nicolas
-
+Thanks.
 
 -- 
-Kinds Regards
-Minchan Kim
+tejun
