@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbZCEXft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbZCEXge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbZCEXft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbZCEXfU
+	id S1758747AbZCEXge (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbZCEXgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:35:20 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:37223 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:36:11 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:37471 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758641AbZCEXfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:35:18 -0500
-Message-Id: <20090305225512.004585213@polymtl.ca>
+	id S1758602AbZCEXgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:36:09 -0500
+Message-Id: <20090305225514.845374986@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:31 -0500
+Date: Thu, 05 Mar 2009 17:47:42 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,47 +31,82 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: [RFC patch 03/41] LTTng core x86
-Content-Disposition: inline; filename=lttng-core-x86.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:08 +0000
+       Jens Axboe <axboe@kernel.dk>, Linus Torvalds <torvalds@osdl.org>
+Subject: [RFC patch 14/41] Splice and pipe : export pipe buf operations for GPL modules
+Content-Disposition: inline; filename=splice-support-modules.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:11 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds OOPS printing indication of nesting within tracer code.
+LTTng splice transport use the generic pipe and splice operations from a GPL
+module.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
+CC: Jens Axboe <axboe@kernel.dk>
+CC: Linus Torvalds <torvalds@osdl.org>
+CC: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/dumpstack.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ fs/pipe.c   |    5 +++++
+ fs/splice.c |    1 +
+ 2 files changed, 6 insertions(+)
 
-Index: linux-2.6-lttng/arch/x86/kernel/dumpstack.c
+Index: linux-2.6-lttng/fs/pipe.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/dumpstack.c	2009-01-30 10:06:43.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/dumpstack.c	2009-01-30 10:07:35.000000000 -0500
-@@ -14,6 +14,7 @@
- #include <linux/bug.h>
- #include <linux/nmi.h>
- #include <linux/sysfs.h>
-+#include <linux/ltt-core.h>
+--- linux-2.6-lttng.orig/fs/pipe.c	2009-02-06 14:45:33.000000000 -0500
++++ linux-2.6-lttng/fs/pipe.c	2009-02-06 14:57:50.000000000 -0500
+@@ -188,6 +188,7 @@ void *generic_pipe_buf_map(struct pipe_i
  
- #include <asm/stacktrace.h>
+ 	return kmap(buf->page);
+ }
++EXPORT_SYMBOL_GPL(generic_pipe_buf_map);
  
-@@ -254,6 +255,10 @@ int __kprobes __die(const char *str, str
- 	printk("DEBUG_PAGEALLOC");
- #endif
- 	printk("\n");
-+#ifdef CONFIG_LTT
-+	printk(KERN_EMERG "LTT NESTING LEVEL : %u", __get_cpu_var(ltt_nesting));
-+	printk("\n");
-+#endif
- 	sysfs_printk_last_file();
- 	if (notify_die(DIE_OOPS, str, regs, err,
- 			current->thread.trap_no, SIGSEGV) == NOTIFY_STOP)
+ /**
+  * generic_pipe_buf_unmap - unmap a previously mapped pipe buffer
+@@ -207,6 +208,7 @@ void generic_pipe_buf_unmap(struct pipe_
+ 	} else
+ 		kunmap(buf->page);
+ }
++EXPORT_SYMBOL_GPL(generic_pipe_buf_unmap);
+ 
+ /**
+  * generic_pipe_buf_steal - attempt to take ownership of a &pipe_buffer
+@@ -237,6 +239,7 @@ int generic_pipe_buf_steal(struct pipe_i
+ 
+ 	return 1;
+ }
++EXPORT_SYMBOL_GPL(generic_pipe_buf_steal);
+ 
+ /**
+  * generic_pipe_buf_get - get a reference to a &struct pipe_buffer
+@@ -252,6 +255,7 @@ void generic_pipe_buf_get(struct pipe_in
+ {
+ 	page_cache_get(buf->page);
+ }
++EXPORT_SYMBOL_GPL(generic_pipe_buf_get);
+ 
+ /**
+  * generic_pipe_buf_confirm - verify contents of the pipe buffer
+@@ -267,6 +271,7 @@ int generic_pipe_buf_confirm(struct pipe
+ {
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(generic_pipe_buf_confirm);
+ 
+ static const struct pipe_buf_operations anon_pipe_buf_ops = {
+ 	.can_merge = 1,
+Index: linux-2.6-lttng/fs/splice.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/splice.c	2009-02-06 14:45:33.000000000 -0500
++++ linux-2.6-lttng/fs/splice.c	2009-02-06 14:57:50.000000000 -0500
+@@ -260,6 +260,7 @@ ssize_t splice_to_pipe(struct pipe_inode
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(splice_to_pipe);
+ 
+ static void spd_release_page(struct splice_pipe_desc *spd, unsigned int i)
+ {
 
 -- 
 Mathieu Desnoyers
