@@ -1,69 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbZCEXla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbZCEXjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757306AbZCEXla (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbZCEXlU
+	id S1758933AbZCEXjv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757191AbZCEXjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:41:20 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:34614 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbZCEXlT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:41:19 -0500
-Message-ID: <49B06327.5020307@oracle.com>
-Date: Thu, 05 Mar 2009 15:41:27 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: Alan Stern <stern@rowland.harvard.edu>, Yinghai Lu <yinghai@kernel.org>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
-       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
-References: <Pine.LNX.4.44L0.0903051751330.2174-100000@iolanthe.rowland.org>	 <1236294142.5937.88.camel@desktop>  <49B05ACF.2010708@oracle.com>	 <1236294733.5937.92.camel@desktop>  <49B05DFC.1090807@oracle.com> <1236295961.5937.99.camel@desktop>
-In-Reply-To: <1236295961.5937.99.camel@desktop>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.49B062C7.0265:SCFSTAT928724,ss=1,fgs=0
+	Thu, 5 Mar 2009 18:39:40 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:45728 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755956AbZCEXjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:39:39 -0500
+Message-Id: <20090305225518.363979815@polymtl.ca>
+References: <20090305224728.947235917@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Thu, 05 Mar 2009 17:47:58 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, ltt-dev@lists.casi.polymtl.ca,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "William L. Irwin" <wli@holomorphy.com>
+Subject: [RFC patch 30/41] LTTng build
+Content-Disposition: inline; filename=lttng-build-instrumentation-menu.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:14 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> On Thu, 2009-03-05 at 15:19 -0800, Randy Dunlap wrote:
-> 
->> Do we have a document style guide?  The comments in Documentation/CodingStyle
->> apply to documentation text files also, AFAIK.  Maybe that needs to be
->> stated explicitly.
-> 
-> I guess you could assume it applies, but I don't think it's content can
-> really be applied to Documents.. Since it speaks specifically to code.
+Adds the basic LTTng config options.
 
-OK.  Historically we have applied the 80-column rule to text files,
-including documentation.  But we haven't documented that.
+sparc32 needs to have ltt/ added to core-y for some reason (seems broken).
 
->> As for other docs that don't conform:  we typically don't go around just
->> fixing 80-column rule infractions, but when a file is being modified anyway,
->> we prefer that other parts of it also be updated.
-> 
-> I don't have a problem fixing it, but it would be nice to have any other
-> rules layed out. Like the "No ascii art rule" (if it exists) or whatever
-> other style guidelines there are. For example the 80 line limit can't
-> apply to absolutely everything. I mean what about diagrams or /proc
-> output samples? Most of that is over 80 (way over).
+ltt/Kconfig is sourced from kernel/Kconfig.instrumentation.
 
-If you have time to make a proposal for all such rules, please go ahead.
-I don't have time for it just now.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Steven Rostedt <rostedt@goodmis.org>
+CC: William L. Irwin <wli@holomorphy.com>
+---
+ Makefile            |    2 +-
+ arch/sparc/Makefile |    2 +-
+ init/Kconfig        |    2 ++
+ 3 files changed, 4 insertions(+), 2 deletions(-)
 
-Yes, some examples, diagrams, samples, etc. are over 80 columns.
-It's not a diehard rule.
-
-And there is no rule against ASCII art AFAIK.
+Index: linux-2.6-lttng/arch/sparc/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/arch/sparc/Makefile	2009-03-05 15:57:40.000000000 -0500
++++ linux-2.6-lttng/arch/sparc/Makefile	2009-03-05 15:57:45.000000000 -0500
+@@ -81,7 +81,7 @@ drivers-$(CONFIG_OPROFILE)	+= arch/sparc
+ # Export what is needed by arch/sparc/boot/Makefile
+ export VMLINUX_INIT VMLINUX_MAIN
+ VMLINUX_INIT := $(head-y) $(init-y)
+-VMLINUX_MAIN := $(core-y) kernel/ mm/ fs/ ipc/ security/ crypto/ block/
++VMLINUX_MAIN := $(core-y) kernel/ mm/ fs/ ipc/ security/ crypto/ block/ ltt/
+ VMLINUX_MAIN += $(patsubst %/, %/lib.a, $(libs-y)) $(libs-y)
+ VMLINUX_MAIN += $(drivers-y) $(net-y)
+ 
+Index: linux-2.6-lttng/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/Makefile	2009-03-05 15:57:40.000000000 -0500
++++ linux-2.6-lttng/Makefile	2009-03-05 15:57:45.000000000 -0500
+@@ -630,7 +630,7 @@ export mod_strip_cmd
+ 
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+-core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
++core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ ltt/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+Index: linux-2.6-lttng/init/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/init/Kconfig	2009-03-05 15:57:40.000000000 -0500
++++ linux-2.6-lttng/init/Kconfig	2009-03-05 15:57:45.000000000 -0500
+@@ -987,6 +987,8 @@ config MARKERS
+ 
+ source "arch/Kconfig"
+ 
++source "ltt/Kconfig"
++
+ endmenu		# General setup
+ 
+ config HAVE_GENERIC_DMA_COHERENT
 
 -- 
-~Randy
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
