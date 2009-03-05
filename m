@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbZCEAMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbZCEAOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658AbZCEAMk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 19:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZCEAMa
+	id S1755605AbZCEAOR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 19:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCEAN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 19:12:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56445 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916AbZCEAM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 19:12:29 -0500
-Message-ID: <49AF18B7.4050305@kernel.org>
-Date: Wed, 04 Mar 2009 16:11:35 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Sarah Sharp <sarah.a.sharp@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-usb@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/doc: doc the using earlyprintk=dbgp
-References: <m1bpshx912.fsf@fess.ebiederm.org> <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org> <20090304225500.GB13509@gamba.jf.intel.com>
-In-Reply-To: <20090304225500.GB13509@gamba.jf.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Mar 2009 19:13:58 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:59057 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751445AbZCEAN5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 19:13:57 -0500
+Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
+	scsi-sgpool)objects
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <1236207389.21486.19.camel@localhost.localdomain>
+References: <alpine.LSU.2.00.0903030220050.2438@fbirervta.pbzchgretzou.qr>
+	 <49ACF8FE.2020904@panasas.com>
+	 <1236093718.3263.3.camel@localhost.localdomain>
+	 <alpine.LSU.2.00.0903031703270.855@fbirervta.pbzchgretzou.qr>
+	 <1236097526.3263.17.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0903031818230.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903032247170.29264@localhost.localdomain>
+	 <1236119195.24019.24.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0903040249460.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903042232270.29264@localhost.localdomain>
+	 <1236207389.21486.19.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 18:13:49 -0600
+Message-Id: <1236212029.32072.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-03-04 at 22:56 +0000, James Bottomley wrote:
+> On Wed, 2009-03-04 at 22:45 +0100, Thomas Gleixner wrote:
+> > On Wed, 4 Mar 2009, Thomas Gleixner wrote:
+> > 
+> > Instrumented the code and the result of the failing request is
+> > below. Looks like the function which sets up the request gets
+> > nr_phys_segments wrong by one. 
+> > 
+> > If you need further trace data feel free to ask.
+> 
+> OK, the mapping all checks out correctly ... there must be something
+> wrong with the way we count before mapping.
+> 
+> If you're tracing everything, could you add these static prints to the
+> trace ... they'll trigger a lot, but capturing how they applied to the
+> failing request might tell us why the count is wrong.
 
-Impact: doc
+Debugging this on IRC, this is the point we reached:
 
-simple using howto for earlyprintk=dbgp
+ftrace debugging patch:
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+http://tglx.de/~tglx/dbg.patch
 
----
- Documentation/x86/earlyprintk.txt |   41 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+We're tracing both blk_recalc_rq_segments() and
+blk_phys_contig_segment()
 
-Index: linux-2.6/Documentation/x86/earlyprintk.txt
-===================================================================
---- /dev/null
-+++ linux-2.6/Documentation/x86/earlyprintk.txt
-@@ -0,0 +1,41 @@
-+
-+Using earlyprintk with USB2 Debug port and debug cable
-+
-+1. HW:
-+a. target system need to have debug port
-+
-+# lspci -vvv
-+...
-+00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 03) (prog-if 20 [EHCI])
-+        Subsystem: Lenovo ThinkPad T61
-+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
-+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-+        Latency: 0
-+        Interrupt: pin D routed to IRQ 19
-+        Region 0: Memory at fe227000 (32-bit, non-prefetchable) [size=1K]
-+        Capabilities: [50] Power Management version 2
-+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-+                Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-+        Capabilities: [58] Debug port: BAR=1 offset=00a0
-+        Kernel driver in use: ehci_hcd
-+        Kernel modules: ehci-hcd
-+...
-+b. netchip USB debug cable
-+   http://www.plxtech.com/products/NET2000/NET20DC/default.asp
-+
-+c. console system: have USB2 port
-+
-+2. SW setting
-+a. console system: need to have kernel config
-+   CONFIG_USB_SERIAL_DEBUG
-+   you should get /dev/ttyUSBx
-+
-+   # cat /dev/ttyUSBx could get output
-+
-+b. target system: need to have kernel config
-+   CONFIG_EARLY_PRINTK_DBGP
-+
-+   boot command line: earlyprintk=dbgp
-+
-+c. for Nvidia Southbridge based system: kernel will try to probe and find out which port has debug device connneted.
-+
+The results are here:
+
+http://tglx.de/~tglx/t.txt.bz2
+
+Although what they show is that we're missing the point where the
+counting goes wrong (blk_recalc_rq_segments only goes up to 5 max).
+
+James
+
+
