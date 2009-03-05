@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZCEMwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZCEMzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbZCEMwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 07:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZCEMwE
+	id S1754603AbZCEMzl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 07:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZCEMzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 07:52:04 -0500
-Received: from mail.polezero.com ([216.68.55.34]:48966 "EHLO
-	firewall.polezero.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751593AbZCEMwD (ORCPT
+	Thu, 5 Mar 2009 07:55:32 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:46370 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbZCEMzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 07:52:03 -0500
-Subject: Re: New HID device support
-From: Jason Noble <nobleja@polezero.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.0903042355320.4971@jikos.suse.cz>
-References: <1236096277.26321.29.camel@paradox.pz.local>
-	 <alpine.LNX.2.00.0903031720380.5295@jikos.suse.cz>
-	 <1236107096.7793.1.camel@paradox.pz.local>
-	 <alpine.LNX.2.00.0903041144310.4971@jikos.suse.cz>
-	 <1236172544.21288.3.camel@paradox.pz.local>
-	 <alpine.LNX.2.00.0903041419250.4971@jikos.suse.cz>
-	 <1236173654.21288.8.camel@paradox.pz.local>
-	 <alpine.LNX.2.00.0903041436210.4971@jikos.suse.cz>
-	 <1236178031.9121.6.camel@paradox.pz.local>
-	 <alpine.LNX.2.00.0903041612210.4971@jikos.suse.cz>
-	 <1236179770.9121.12.camel@paradox.pz.local>
-	 <alpine.LNX.2.00.0903042355320.4971@jikos.suse.cz>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 07:51:52 -0500
-Message-Id: <1236257512.25955.0.camel@paradox.pz.local>
+	Thu, 5 Mar 2009 07:55:32 -0500
+Date: Thu, 5 Mar 2009 12:55:29 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: 2.6.29-rc breaks STD using Intel 945
+Message-ID: <20090305125529.GB16693@silver.sucs.org>
+References: <200903042020.57671.eike-kernel@sf-tec.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903042020.57671.eike-kernel@sf-tec.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sounds good, thanks again!
+On Wed, Mar 04, 2009 at 08:20:56PM +0100, Rolf Eike Beer wrote:
+> 
+> I tested several snapshots post 2.6.28 and all of them show one severe 
+> problem: resume from disk is not always successful. Only about 50% of the 
+> resume attempts work, in the other cases I just get a completely black 
+> screen, can't switch to text console or anything. What I often get is a line 
+> like this in the logs directly before suspend:
 
-On Wed, 2009-03-04 at 23:56 +0100, Jiri Kosina wrote:
-> On Wed, 4 Mar 2009, Jason Noble wrote:
-> 
-> > No problem, glad to help out.
-> > Very glad to get my buttons working. ;-)
-> > 
-> > Do you think this will make its way into 2.6.29?
-> 
-> If there is any urgent bugfix that needs to go to 2.6.29, I will push it 
-> altogether. Otherwise it will probably go through 2.6.30 queue.
-> 
+Does this happen when X hasn't been started and you suspend to disk then
+resume?
 
+-- 
+Sitsofe | http://sucs.org/~sits/
