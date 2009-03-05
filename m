@@ -1,156 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbZCEDx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZCEEXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbZCEDx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 22:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZCEDxo
+	id S1754313AbZCEEXJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 23:23:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZCEEWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 22:53:44 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42580
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752678AbZCEDxn (ORCPT
+	Wed, 4 Mar 2009 23:22:55 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:54334 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbZCEEWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 22:53:43 -0500
-Date: Wed, 04 Mar 2009 19:53:28 -0800 (PST)
-Message-Id: <20090304.195328.106253933.davem@davemloft.net>
-To: kaber@trash.net
-Cc: bart@jukie.net, greearb@candelatech.com, shemminger@vyatta.com,
-       dada1@cosmosbay.com, frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49AE69DD.80802@trash.net>
-References: <49AE509B.3000305@trash.net>
-	<20090304.025914.149394356.davem@davemloft.net>
-	<49AE69DD.80802@trash.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 4 Mar 2009 23:22:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=ItCIHiPpVNUwWqO/tkjCwRhMNOEvglb/up+ovnmAHq0tUZz1V4U7wQjQBbe/xZ3AQR
+         QXPxvyAXSBPn/AvjwmyaLq8BVfoiT/+JIrQtEKCWElXrz/FRQ1BqcrjOfnx7sNtFp+2A
+         4w4cw5yGWUCdsCw125Sh48GlEutYqdZu3AmVE=
+Date: Thu, 5 Mar 2009 13:20:54 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Minchan Kim <minchan.kim@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC] atomic highmem kmap page pinning
+Message-Id: <20090305132054.888396da.minchan.kim@barrios-desktop>
+In-Reply-To: <alpine.LFD.2.00.0903042129140.5511@xanadu.home>
+References: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
+	<20090304171429.c013013c.minchan.kim@barrios-desktop>
+	<alpine.LFD.2.00.0903041101170.5511@xanadu.home>
+	<20090305080717.f7832c63.minchan.kim@barrios-desktop>
+	<alpine.LFD.2.00.0903042129140.5511@xanadu.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick McHardy <kaber@trash.net>
-Date: Wed, 04 Mar 2009 12:45:33 +0100
+On Wed, 04 Mar 2009 21:37:43 -0500 (EST)
+Nicolas Pitre <nico@cam.org> wrote:
 
-> This is a bit tricky to fix since we actually need some valid
-> ops before invoking ->init(). One way would be to move the compat
-> ops initialization to a seperate function and have VLAN use it to
-> switch its ops.
+> On Thu, 5 Mar 2009, Minchan Kim wrote:
+> 
+> > I thought kmap and dma_map_page usage was following.
+> > 
+> > kmap(page);
+> > ...
+> > dma_map_page(...)
+> >   invalidate_cache_line
+> > 
+> > kunmap(page);
+> > 
+> > In this case, how do pkmap_count value for the page passed to dma_map_page become 1 ?
+> > The caller have to make sure to complete dma_map_page before kunmap.
+> 
+> 
+> The caller doesn't have to call kmap() on pages it intends to use for 
+> DMA.
 
-Mind if I push this into net-2.6?
+Thanks for pointing me. 
+Russel also explained that. 
+Sorry for my misunderstanding. 
 
-vlan: Fix vlan-in-vlan crashes.
+I want to add your changelog in git log. 
+--- 
+       - dma_map_page(..., DMA_FROM_DEVICE) is called on a highmem page.
 
-As analyzed by Patrick McHardy, vlan needs to reset it's
-netdev_ops pointer in it's ->init() function but this
-leaves the compat method pointers stale.
+       -->     - vaddr = page_address(page) is non null. In this case
+                 it is likely that the page has valid cache lines
+                 associated with vaddr. Remember that the cache is VIVT.
 
-Add a netdev_resync_ops() and call it from the vlan code.
+               -->     - for (i = vaddr; i < vaddr + PAGE_SIZE; i += 32)
+                               invalidate_cache_line(i);
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+       *** preemption occurs in the middle of the loop above ***
+
+       - kmap_high() is called for a different page.
+
+       -->     - last_pkmap_nr wraps to zero and flush_all_zero_pkmaps()
+                 is called.  The pkmap_count value for the page passed
+                 to dma_map_page() above happens to be 1, so it is
+                 unmapped.  But prior to that, flush_cache_kmaps()
+                 cleared the cache for it.  So far so good.
+
+               - A fresh pkmap entry is assigned for this kmap request.
+                 The Murphy law says it will eventually happen to use
+                 the same vaddr as the one which used to belong to the
+                 other page being processed by dma_map_page() in the
+                 preempted thread above.
+
+       - The caller of kmap_high() start dirtying the cache using the
+         new virtual mapping for its page.
+
+       *** the first thread is rescheduled ***
+
+                       - The for loop is resumed, but now cached data
+                         belonging to a different physical page is
+                         being discarded!
 ---
- include/linux/netdevice.h |    1 +
- net/8021q/vlan_dev.c      |    1 +
- net/core/dev.c            |   54 +++++++++++++++++++++++++++-----------------
- 3 files changed, 35 insertions(+), 21 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index ec54785..6593667 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1079,6 +1079,7 @@ extern void		synchronize_net(void);
- extern int 		register_netdevice_notifier(struct notifier_block *nb);
- extern int		unregister_netdevice_notifier(struct notifier_block *nb);
- extern int		init_dummy_netdev(struct net_device *dev);
-+extern void		netdev_resync_ops(struct net_device *dev);
- 
- extern int call_netdevice_notifiers(unsigned long val, struct net_device *dev);
- extern struct net_device	*dev_get_by_index(struct net *net, int ifindex);
-diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
-index 4a19acd..b6e1f9e 100644
---- a/net/8021q/vlan_dev.c
-+++ b/net/8021q/vlan_dev.c
-@@ -639,6 +639,7 @@ static int vlan_dev_init(struct net_device *dev)
- 		dev->hard_header_len = real_dev->hard_header_len + VLAN_HLEN;
- 		dev->netdev_ops         = &vlan_netdev_ops;
- 	}
-+	netdev_resync_ops(dev);
- 
- 	if (is_vlan_dev(real_dev))
- 		subclass = 1;
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 9e4afe6..a06c6fa 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4282,6 +4282,38 @@ unsigned long netdev_fix_features(unsigned long features, const char *name)
- }
- EXPORT_SYMBOL(netdev_fix_features);
- 
-+/* Some devices need to (re-)set their netdev_ops inside
-+ * ->init() or similar.  If that happens, we have to setup
-+ * the compat pointers again.
-+ */
-+void netdev_resync_ops(struct net_device *dev)
-+{
-+#ifdef CONFIG_COMPAT_NET_DEV_OPS
-+	const struct net_device_ops *ops = dev->netdev_ops;
-+
-+	dev->init = ops->ndo_init;
-+	dev->uninit = ops->ndo_uninit;
-+	dev->open = ops->ndo_open;
-+	dev->change_rx_flags = ops->ndo_change_rx_flags;
-+	dev->set_rx_mode = ops->ndo_set_rx_mode;
-+	dev->set_multicast_list = ops->ndo_set_multicast_list;
-+	dev->set_mac_address = ops->ndo_set_mac_address;
-+	dev->validate_addr = ops->ndo_validate_addr;
-+	dev->do_ioctl = ops->ndo_do_ioctl;
-+	dev->set_config = ops->ndo_set_config;
-+	dev->change_mtu = ops->ndo_change_mtu;
-+	dev->tx_timeout = ops->ndo_tx_timeout;
-+	dev->get_stats = ops->ndo_get_stats;
-+	dev->vlan_rx_register = ops->ndo_vlan_rx_register;
-+	dev->vlan_rx_add_vid = ops->ndo_vlan_rx_add_vid;
-+	dev->vlan_rx_kill_vid = ops->ndo_vlan_rx_kill_vid;
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	dev->poll_controller = ops->ndo_poll_controller;
-+#endif
-+#endif
-+}
-+EXPORT_SYMBOL(netdev_resync_ops);
-+
- /**
-  *	register_netdevice	- register a network device
-  *	@dev: device to register
-@@ -4326,27 +4358,7 @@ int register_netdevice(struct net_device *dev)
- 	 * This is temporary until all network devices are converted.
- 	 */
- 	if (dev->netdev_ops) {
--		const struct net_device_ops *ops = dev->netdev_ops;
--
--		dev->init = ops->ndo_init;
--		dev->uninit = ops->ndo_uninit;
--		dev->open = ops->ndo_open;
--		dev->change_rx_flags = ops->ndo_change_rx_flags;
--		dev->set_rx_mode = ops->ndo_set_rx_mode;
--		dev->set_multicast_list = ops->ndo_set_multicast_list;
--		dev->set_mac_address = ops->ndo_set_mac_address;
--		dev->validate_addr = ops->ndo_validate_addr;
--		dev->do_ioctl = ops->ndo_do_ioctl;
--		dev->set_config = ops->ndo_set_config;
--		dev->change_mtu = ops->ndo_change_mtu;
--		dev->tx_timeout = ops->ndo_tx_timeout;
--		dev->get_stats = ops->ndo_get_stats;
--		dev->vlan_rx_register = ops->ndo_vlan_rx_register;
--		dev->vlan_rx_add_vid = ops->ndo_vlan_rx_add_vid;
--		dev->vlan_rx_kill_vid = ops->ndo_vlan_rx_kill_vid;
--#ifdef CONFIG_NET_POLL_CONTROLLER
--		dev->poll_controller = ops->ndo_poll_controller;
--#endif
-+		netdev_resync_ops(dev);
- 	} else {
- 		char drivername[64];
- 		pr_info("%s (%s): not using net_device_ops yet\n",
+> > Do I miss something ?
+> 
+> See above.
+> 
+> > > > As far as I understand, To make irq_disable to prevent this problem is 
+> > > > rather big cost.
+> > > 
+> > > How big?  Could you please elaborate on the significance of this cost?
+> > 
+> > I don't have a number. It depends on you for submitting this patch. 
+> 
+> My assertion is that the cost is negligible.  This is why I'm asking you 
+> why you think this is a big cost.
+
+Of course, I am not sure whether it's big cost or not. 
+But I thought it already is used in many fs, driver.
+so, whether it's big cost depends on workload type .
+
+However, This patch is needed for VIVT and no coherent cache.
+Is right ?
+
+If it is right, it will add unnessary overhead in other architecture 
+which don't have this problem.
+
+I think it's not desirable although it is small cost.
+If we have a other method which avoids unnessary overhead, It would be better.
+Unfortunately, I don't have any way to solve this, now. 
+
+Let us wait for other server guys's opinion.  :)
+
+> Nicolas
+
+
 -- 
-1.6.2
-
+Kinds Regards
+Minchan Kim
