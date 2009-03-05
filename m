@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbZCEXX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbZCEXYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757286AbZCEXX5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbZCEXXo
+	id S1756744AbZCEXYY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbZCEXYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:23:44 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:33135 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:24:06 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:33181 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757207AbZCEXXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:23:43 -0500
-Message-Id: <20090305225519.304825297@polymtl.ca>
+	id S1756887AbZCEXYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:24:04 -0500
+Message-Id: <20090305225511.579649827@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:48:02 -0500
+Date: Thu, 05 Mar 2009 17:47:29 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,52 +31,72 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 34/41] Marker header API update
-Content-Disposition: inline; filename=marker.h-api-update.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:15 +0000
+Subject: [RFC patch 01/41] LTTng - core header
+Content-Disposition: inline; filename=lttng-core-header.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add channel id field to marker structure. Identifies the buffer group in which
-the event will be written.
+Contains the structures required by the builtin part of the LTTng tracer.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/marker.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ include/linux/ltt-core.h |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-Index: linux-2.6-lttng/include/linux/marker.h
+Index: linux-2.6-lttng/include/linux/ltt-core.h
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/marker.h	2009-02-06 15:46:14.000000000 -0500
-+++ linux-2.6-lttng/include/linux/marker.h	2009-02-06 15:46:28.000000000 -0500
-@@ -22,6 +22,7 @@ struct marker;
- 
- /**
-  * marker_probe_func - Type of a marker probe function
-+ * @mdata: marker data
-  * @probe_private: probe private data
-  * @call_private: call site private data
-  * @fmt: format string
-@@ -32,7 +33,8 @@ struct marker;
-  * Type of marker probe functions. They receive the mdata and need to parse the
-  * format string to recover the variable argument list.
-  */
--typedef void marker_probe_func(void *probe_private, void *call_private,
-+typedef void marker_probe_func(const struct marker *mdata,
-+		void *probe_private, void *call_private,
- 		const char *fmt, va_list *args);
- 
- struct marker_probe_closure {
-@@ -49,7 +51,7 @@ struct marker {
- 	DEFINE_IMV(char, state);/* Immediate value state. */
- 	char ptype;		/* probe type : 0 : single, 1 : multi */
- 				/* Probe wrapper */
--	u16 chan_id;		/* Numeric channel identifier, dynamic */
-+	u16 channel_id;		/* Numeric channel identifier, dynamic */
- 	u16 event_id;		/* Numeric event identifier, dynamic */
- 	void (*call)(const struct marker *mdata, void *call_private, ...);
- 	struct marker_probe_closure single;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/linux/ltt-core.h	2009-03-04 13:37:26.000000000 -0500
+@@ -0,0 +1,47 @@
++/*
++ * Copyright (C) 2005,2006 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ *
++ * This contains the core definitions for the Linux Trace Toolkit.
++ */
++
++#ifndef LTT_CORE_H
++#define LTT_CORE_H
++
++#include <linux/list.h>
++#include <linux/percpu.h>
++
++/* ltt's root dir in debugfs */
++#define LTT_ROOT        "ltt"
++
++/*
++ * All modifications of ltt_traces must be done by ltt-tracer.c, while holding
++ * the semaphore. Only reading of this information can be done elsewhere, with
++ * the RCU mechanism : the preemption must be disabled while reading the
++ * list.
++ */
++struct ltt_traces {
++	struct list_head setup_head;	/* Pre-allocated traces list */
++	struct list_head head;		/* Allocated Traces list */
++	unsigned int num_active_traces;	/* Number of active traces */
++} ____cacheline_aligned;
++
++extern struct ltt_traces ltt_traces;
++
++/*
++ * get dentry of ltt's root dir
++ */
++struct dentry *get_ltt_root(void);
++
++void put_ltt_root(void);
++
++/* Keep track of trap nesting inside LTT */
++DECLARE_PER_CPU(unsigned int, ltt_nesting);
++
++typedef int (*ltt_run_filter_functor)(void *trace, uint16_t eID);
++
++extern ltt_run_filter_functor ltt_run_filter;
++
++extern void ltt_filter_register(ltt_run_filter_functor func);
++extern void ltt_filter_unregister(void);
++
++#endif /* LTT_CORE_H */
 
 -- 
 Mathieu Desnoyers
