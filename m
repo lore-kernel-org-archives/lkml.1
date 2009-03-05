@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbZCED2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZCED2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756578AbZCED2X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 22:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZCED1S
+	id S1756736AbZCED2k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 22:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZCED1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 22:27:18 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43800 "EHLO
+	Wed, 4 Mar 2009 22:27:19 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38815 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753162AbZCED1P (ORCPT
+	with ESMTP id S1753174AbZCED1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Mar 2009 22:27:15 -0500
-Message-Id: <20090305032712.999790054@goodmis.org>
+Message-Id: <20090305032713.255418626@goodmis.org>
 References: <20090305032532.802709985@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Mar 2009 22:25:35 -0500
+Date: Wed, 04 Mar 2009 22:25:36 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,45 +21,97 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>, Theodore Tso <tytso@mit.edu>,
        Thomas Gleixner <tglx@linutronix.de>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/7] tracing: fix seq read from trace files
-Content-Disposition: inline; filename=0003-tracing-fix-seq-read-from-trace-files.patch
+Subject: [PATCH 4/7] tracing: add latency output format option
+Content-Disposition: inline; filename=0004-tracing-add-latency-output-format-option.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The buffer used by trace_seq was updated incorrectly. Instead
-of consuming what was actually read, it consumed the rest of the
-buffer on reads.
+With the removal of the latency_trace file, we lost the ability
+to see some of the finer details in a trace. Like the state of
+interrupts enabled, the preempt count, need resched, and if we
+are in an interrupt handler, softirq handler or not.
+
+This patch simply creates an option to bring back the old format.
+This also removes the warning about an unused variable that held
+the latency_trace file operations.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/trace/trace.c |   24 ++----------------------
+ kernel/trace/trace.h |    3 ++-
+ 2 files changed, 4 insertions(+), 23 deletions(-)
 
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 57155dc..2e53e6f 100644
+index 2e53e6f..55fcbb5 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -361,7 +361,7 @@ ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf, size_t cnt)
+@@ -299,6 +299,7 @@ static const char *trace_options[] = {
+ 	"sym-userobj",
+ 	"printk-msg-only",
+ 	"context-info",
++	"latency-format",
+ 	NULL
+ };
  
- 	cnt -= ret;
+@@ -1829,26 +1830,12 @@ static int tracing_open(struct inode *inode, struct file *file)
+ 	iter = __tracing_open(inode, file);
+ 	if (IS_ERR(iter))
+ 		ret = PTR_ERR(iter);
+-
+-	return ret;
+-}
+-
+-static int tracing_lt_open(struct inode *inode, struct file *file)
+-{
+-	struct trace_iterator *iter;
+-	int ret = 0;
+-
+-	iter = __tracing_open(inode, file);
+-
+-	if (IS_ERR(iter))
+-		ret = PTR_ERR(iter);
+-	else
++	else if (trace_flags & TRACE_ITER_LATENCY_FMT)
+ 		iter->iter_flags |= TRACE_FILE_LAT_FMT;
  
--	s->readpos += len;
-+	s->readpos += cnt;
- 	return cnt;
+ 	return ret;
  }
  
-@@ -380,7 +380,7 @@ ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
- 	if (!ret)
- 		return -EFAULT;
+-
+ static void *
+ t_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+@@ -1927,13 +1914,6 @@ static struct file_operations tracing_fops = {
+ 	.release	= tracing_release,
+ };
  
--	s->readpos += len;
-+	s->readpos += cnt;
- 	return cnt;
- }
+-static struct file_operations tracing_lt_fops = {
+-	.open		= tracing_lt_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= tracing_release,
+-};
+-
+ static struct file_operations show_traces_fops = {
+ 	.open		= show_traces_open,
+ 	.read		= seq_read,
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 561bb5c..12cd119 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -651,7 +651,8 @@ enum trace_iterator_flags {
+ 	TRACE_ITER_USERSTACKTRACE       = 0x4000,
+ 	TRACE_ITER_SYM_USEROBJ          = 0x8000,
+ 	TRACE_ITER_PRINTK_MSGONLY	= 0x10000,
+-	TRACE_ITER_CONTEXT_INFO		= 0x20000 /* Print pid/cpu/time */
++	TRACE_ITER_CONTEXT_INFO		= 0x20000, /* Print pid/cpu/time */
++	TRACE_ITER_LATENCY_FMT		= 0x40000,
+ };
  
+ /*
 -- 
 1.6.1.3
 
