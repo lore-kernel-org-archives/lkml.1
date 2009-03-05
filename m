@@ -1,58 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZCEI5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbZCEI5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbZCEI5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZCEI5E
+	id S1755529AbZCEI5n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:57:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZCEI5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:57:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60690
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751305AbZCEI5B (ORCPT
+	Thu, 5 Mar 2009 03:57:32 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:20100 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbZCEI5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:57:01 -0500
-Date: Thu, 05 Mar 2009 00:56:46 -0800 (PST)
-Message-Id: <20090305.005646.115456407.davem@davemloft.net>
-To: kaber@trash.net
-Cc: blaschka@linux.vnet.ibm.com, bart@jukie.net, greearb@candelatech.com,
-       shemminger@vyatta.com, dada1@cosmosbay.com, frank.blaschka@de.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49AF8CE0.6030301@trash.net>
-References: <49AF7FD3.5010709@trash.net>
-	<49AF87D6.5040104@linux.vnet.ibm.com>
-	<49AF8CE0.6030301@trash.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 03:57:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NDBg8loIULv/0WUtpeOMXghoN18P8gNCS5KZuKCkADMr/Akg2dRQfIpnXDWUxzf+XB
+         KBus/6rIJa06FFGjMOk9lT3uB5r4PVQvctyozoLWy2jYAUZEsebcON4zqlOdISQ/dRH5
+         f/4w9AG4Jxlv8o3jEoZTdA0jCL/WwDhPMc+f8=
+Date: Thu, 5 Mar 2009 16:57:41 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 1/1] unifdef.c change "getline" to "get_line" to avoid
+	C library confusion.
+Message-ID: <20090305085741.GG1606@hack.private>
+References: <dd18b0c30903042141k1adc0f6cj4bc286cfa29f475c@mail.gmail.com> <20090305060436.GA5359@nowhere> <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com> <dd18b0c30903050046v4fc9eff3h99734406112ec0f1@mail.gmail.com> <dd18b0c30903050049g68073bcamce13b9a2605372ba@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30903050049g68073bcamce13b9a2605372ba@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick McHardy <kaber@trash.net>
-Date: Thu, 05 Mar 2009 09:27:12 +0100
+On Thu, Mar 05, 2009 at 12:49:49AM -0800, Justin Mattock wrote:
+>From: Justin P. Mattock <justinmattock@gmail.com>
+>Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+>
+>This fixes an error when compiling the kernel.
+>
+> CHK     include/linux/version.h
+> HOSTCC  scripts/unifdef
+>scripts/unifdef.c:209: error: conflicting types for 'getline'
+>/usr/include/stdio.h:651: note: previous declaration of 'getline' was here
+>make[1]: *** [scripts/unifdef] Error 1
+>make: *** [__headers] Error 2
+>
 
-> Frank Blaschka wrote:
-> > Hi Dave, Patrick,
-> >
-> > sorry I could not follow the complete discussion of the fixes done for this problem
-> > but does
-> >
-> >  	if (netif_device_present(real_dev) && ops->ndo_neigh_setup)
-> > -		err = ops->ndo_neigh_setup(dev, pa);
-> > +		err = ops->ndo_neigh_setup(real_dev, pa);
-> >
-> > not change the idea of the neigh_setup? Remind we want the neigh_setup of the
-> > real device as the neigh setup function for the vlan device.
-> >   
-> 
-> An we still use it. The only difference is that we pass it the
-> correct device reference, which not only fixes the recursion,
-> but is also expected by the callbacks. Look at bonding or simply
-> vlan itself.
-> 
-> The setup itself is still done using the neigh_params passed to
-> VLAN, which appears to be what was originally intended.
 
-Then bond_neigh_setup() has the same bug, doesn't it?
+Looks good! Thanks. If you need, you can add my
+
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+And let's Cc Sam:
+
+Cc: Sam Ravnborg <sam@ravnborg.org>
+
+
+>--
+>scripts/unifdef.c  |  3 +++
+>1 files changed, 3 insertions(+),0 deletions(-)
+>
+>---a/scripts/unifdef.c	        2009-03-05 00:07:28.000000000 -0800
+>+++b/scripts/unifdef.c	2009-03-05 00:04:56.000000000 -0800
+>@@ -206,7 +206,7 @@ static void             done(void);
+> static void             error(const char *);
+> static int              findsym(const char *);
+> static void             flushline(bool);
+>-static Linetype         getline(void);
+>+static Linetype         get_line(void);
+> static Linetype         ifeval(const char **);
+> static void             ignoreoff(void);
+> static void             ignoreon(void);
+>@@ -512,7 +512,7 @@ process(void)
+>
+> 	for (;;) {
+> 		linenum++;
+>-		lineval = getline();
+>+		lineval = get_line();
+> 		trans_table[ifstate[depth]][lineval]();
+> 		debug("process %s -> %s depth %d",
+> 		    linetype_name[lineval],
+>@@ -526,7 +526,7 @@ process(void)
+>  * help from skipcomment().
+>  */
+> static Linetype
+>-getline(void)
+>+get_line(void)
+> {
+> 	const char *cp;
+> 	int cursym;
+>
+>
+>-- 
+>Justin P. Mattock
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Do what you love, f**k the rest! F**k the regulations!
+ 
