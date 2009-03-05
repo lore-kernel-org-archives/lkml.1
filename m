@@ -1,190 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbZCEX1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbZCEX2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757677AbZCEX1a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:27:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbZCEX0v
+	id S1757838AbZCEX2I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:28:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbZCEX1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:26:51 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:31017 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757572AbZCEX0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:26:49 -0500
-Date: Thu, 5 Mar 2009 17:26:47 -0600
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, coldwell@redhat.com
-Cc: LKML-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] cciss: kernel thread to detect changes on MSA2012
-Message-ID: <20090305232647.GA24830@roadking.ldev.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Thu, 5 Mar 2009 18:27:24 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:33675 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757632AbZCEX1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:27:23 -0500
+Message-Id: <20090305225516.181324063@polymtl.ca>
+References: <20090305224728.947235917@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Thu, 05 Mar 2009 17:47:48 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, ltt-dev@lists.casi.polymtl.ca,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC patch 20/41] Linux Kernel Markers - Iterator
+Content-Disposition: inline; filename=linux-kernel-markers-iterator.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH 1 of 2
+Add marker iterators. Useful for /proc interface (listing markers).
 
-The MSA2000 the firmware cannot tell the driver to rescan when logical
-drives are added or deleted. This patch adds a check for unit attentions and
-if a change in the topology is detected a kernel thread will fire off and
-call rebuild_lun_table to update the drivers view of the world.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/linux/marker.h |   12 ++++++++
+ include/linux/module.h |    6 ++++
+ kernel/marker.c        |   70 +++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/module.c        |   32 ++++++++++++++++++++++
+ 4 files changed, 120 insertions(+)
 
-The MSA2012 uses out of band management for configuration unlike any other
-storage box we support. This is the reason for this patch.
-
-Please consider this for inclusion.
-
-Signed-off-by: Mike Miller <mike.miller@hp.com>
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index d2cb67b..d745d8c 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -186,6 +186,7 @@ static int sendcmd_withirq(__u8 cmd, int ctlr, void *buff, size_t size,
- 			   __u8 page_code, int cmd_type);
+Index: linux-2.6-lttng/kernel/marker.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/marker.c	2009-03-05 15:21:58.000000000 -0500
++++ linux-2.6-lttng/kernel/marker.c	2009-03-05 15:45:38.000000000 -0500
+@@ -898,6 +898,76 @@ EXPORT_SYMBOL_GPL(marker_get_private_dat
  
- static void fail_all_cmds(unsigned long ctlr);
-+static int scan_thread(ctlr_info_t *h);
+ #ifdef CONFIG_MODULES
  
- #ifdef CONFIG_PROC_FS
- static void cciss_procinit(int i);
-@@ -3008,6 +3009,69 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
-+static int scan_thread(ctlr_info_t *h)
++/**
++ * marker_get_iter_range - Get a next marker iterator given a range.
++ * @marker: current markers (in), next marker (out)
++ * @begin: beginning of the range
++ * @end: end of the range
++ *
++ * Returns whether a next marker has been found (1) or not (0).
++ * Will return the first marker in the range if the input marker is NULL.
++ */
++int marker_get_iter_range(struct marker **marker, struct marker *begin,
++	struct marker *end)
 +{
-+	int rc;
-+
-+	DECLARE_COMPLETION(wait);
-+	INIT_COMPLETION(wait);
-+	h->rescan_wait = &wait;
-+
-+	for (;;) {
-+		rc = wait_for_completion_timeout(&wait);
-+		if (!rc)
-+			continue;
-+		else
-+			rebuild_lun_table(h, 0);
-+
-+		INIT_COMPLETION(wait);
++	if (!*marker && begin != end) {
++		*marker = begin;
++		return 1;
 +	}
-+
++	if (*marker >= begin && *marker < end)
++		return 1;
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(marker_get_iter_range);
 +
-+static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c)
++static void marker_get_iter(struct marker_iter *iter)
 +{
-+	if (CMD_TARGET_STATUS && (c->err_info->ScsiStatus ==
-+			SAM_STAT_CHECK_CONDITION) &&
-+			c->err_info->SenseInfo[2] == UNIT_ATTENTION) {
-+		switch (c->err_info->SenseInfo[12]) {
-+		case STATE_CHANGED:
-+			printk(KERN_WARNING "cciss%d: a state change "
-+				"detected, command retried\n", h->ctlr);
-+			return 1;
-+		break;
-+		case LUN_FAILED:
-+			printk(KERN_WARNING "cciss%d: LUN failure "
-+				"detected, action required\n", h->ctlr);
-+			return 1;
-+		break;
-+		case REPORT_LUNS_CHANGED:
-+			printk(KERN_WARNING "cciss%d: report LUN data "
-+				"changed\n", h->ctlr);
-+			if (h->rescan_wait)
-+				complete(h->rescan_wait);
-+			return 1;
-+		break;
-+		case POWER_OR_RESET:
-+			printk(KERN_WARNING "cciss%d: a power on "
-+				"or device reset detected\n", h->ctlr);
-+			return 1;
-+		break;
-+		case UNIT_ATTENTION_CLEARED:
-+			printk(KERN_WARNING "cciss%d: unit attention "
-+			    "cleared by another initiator\n", h->ctlr);
-+			return 1;
-+		break;
-+		default:
-+			printk(KERN_WARNING "cciss%d: unknown "
-+				"unit attention detected\n", h->ctlr);
-+				return 1;
++	int found = 0;
++
++	/* Core kernel markers */
++	if (!iter->module) {
++		found = marker_get_iter_range(&iter->marker,
++				__start___markers, __stop___markers);
++		if (found)
++			goto end;
++	}
++	/* Markers in modules. */
++	found = module_get_iter_markers(iter);
++end:
++	if (!found)
++		marker_iter_reset(iter);
++}
++
++void marker_iter_start(struct marker_iter *iter)
++{
++	marker_get_iter(iter);
++}
++EXPORT_SYMBOL_GPL(marker_iter_start);
++
++void marker_iter_next(struct marker_iter *iter)
++{
++	iter->marker++;
++	/*
++	 * iter->marker may be invalid because we blindly incremented it.
++	 * Make sure it is valid by marshalling on the markers, getting the
++	 * markers from following modules if necessary.
++	 */
++	marker_get_iter(iter);
++}
++EXPORT_SYMBOL_GPL(marker_iter_next);
++
++void marker_iter_stop(struct marker_iter *iter)
++{
++}
++EXPORT_SYMBOL_GPL(marker_iter_stop);
++
++void marker_iter_reset(struct marker_iter *iter)
++{
++	iter->module = NULL;
++	iter->marker = NULL;
++}
++EXPORT_SYMBOL_GPL(marker_iter_reset);
++
+ int marker_module_notify(struct notifier_block *self,
+ 			 unsigned long val, void *data)
+ {
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2009-03-05 15:45:37.000000000 -0500
++++ linux-2.6-lttng/kernel/module.c	2009-03-05 15:45:38.000000000 -0500
+@@ -2814,6 +2814,38 @@ void module_update_markers(void)
+ 				mod->markers + mod->num_markers);
+ 	mutex_unlock(&module_mutex);
+ }
++
++/*
++ * Returns 0 if current not found.
++ * Returns 1 if current found.
++ */
++int module_get_iter_markers(struct marker_iter *iter)
++{
++	struct module *iter_mod;
++	int found = 0;
++
++	mutex_lock(&module_mutex);
++	list_for_each_entry(iter_mod, &modules, list) {
++		if (!iter_mod->taints) {
++			/*
++			 * Sorted module list
++			 */
++			if (iter_mod < iter->module)
++				continue;
++			else if (iter_mod > iter->module)
++				iter->marker = NULL;
++			found = marker_get_iter_range(&iter->marker,
++				iter_mod->markers,
++				iter_mod->markers + iter_mod->num_markers);
++			if (found) {
++				iter->module = iter_mod;
++				break;
++			}
 +		}
 +	}
++	mutex_unlock(&module_mutex);
++	return found;
++}
+ #endif
+ 
+ #ifdef CONFIG_TRACEPOINTS
+Index: linux-2.6-lttng/include/linux/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/marker.h	2009-03-05 15:21:58.000000000 -0500
++++ linux-2.6-lttng/include/linux/marker.h	2009-03-05 15:45:38.000000000 -0500
+@@ -218,4 +218,16 @@ extern void *marker_get_private_data(con
+  */
+ #define marker_synchronize_unregister() synchronize_sched()
+ 
++struct marker_iter {
++	struct module *module;
++	struct marker *marker;
++};
++
++extern void marker_iter_start(struct marker_iter *iter);
++extern void marker_iter_next(struct marker_iter *iter);
++extern void marker_iter_stop(struct marker_iter *iter);
++extern void marker_iter_reset(struct marker_iter *iter);
++extern int marker_get_iter_range(struct marker **marker, struct marker *begin,
++	struct marker *end);
++
+ #endif
+Index: linux-2.6-lttng/include/linux/module.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/module.h	2009-03-05 15:21:58.000000000 -0500
++++ linux-2.6-lttng/include/linux/module.h	2009-03-05 15:45:38.000000000 -0500
+@@ -472,6 +472,7 @@ int unregister_module_notifier(struct no
+ extern void print_modules(void);
+ 
+ extern void module_update_markers(void);
++extern int module_get_iter_markers(struct marker_iter *iter);
+ 
+ extern void module_update_tracepoints(void);
+ extern int module_get_iter_tracepoints(struct tracepoint_iter *iter);
+@@ -589,6 +590,11 @@ static inline int module_get_iter_tracep
+ 	return 0;
+ }
+ 
++static inline int module_get_iter_markers(struct marker_iter *iter)
++{
 +	return 0;
 +}
 +
- /*
-  *  We cannot read the structure directly, for portability we must use
-  *   the io functions.
-@@ -3600,6 +3664,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	int rc;
- 	int dac, return_code;
- 	InquiryData_struct *inq_buff = NULL;
-+	struct task_struct *cciss_scan_thread;
+ #endif /* CONFIG_MODULES */
  
- 	if (reset_devices) {
- 		/* Reset the controller with a PCI power-cycle */
-@@ -3751,6 +3816,11 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	hba[i]->busy_initializing = 0;
- 
- 	rebuild_lun_table(hba[i], 1);
-+	cciss_scan_thread = kthread((void *)scan_thread, hba[i],
-+				"scan_thread");
-+	if (IS_ERR(cciss_scan_thread))
-+		return PTR_ERR(cciss_scan_thread);
-+
- 	return 1;
- 
- clean4:
-diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
-index 15e2b84..c85783f 100644
---- a/drivers/block/cciss.h
-+++ b/drivers/block/cciss.h
-@@ -121,6 +121,7 @@ struct ctlr_info
- 	struct sendcmd_reject_list scsi_rejects;
- #endif
- 	unsigned char alive;
-+	struct completion *rescan_wait;
- };
- 
- /*  Defining the diffent access_menthods */
-diff --git a/drivers/block/cciss_cmd.h b/drivers/block/cciss_cmd.h
-index 24e22de..40b1b92 100644
---- a/drivers/block/cciss_cmd.h
-+++ b/drivers/block/cciss_cmd.h
-@@ -25,6 +25,29 @@
- #define CMD_TIMEOUT             0x000B
- #define CMD_UNABORTABLE		0x000C
- 
-+/* Unit Attentions ASC's as defined for the MSA2012sa */
-+#define POWER_OR_RESET			0x29
-+#define STATE_CHANGED			0x2a
-+#define UNIT_ATTENTION_CLEARED		0x2f
-+#define LUN_FAILED			0x3e
-+#define REPORT_LUNS_CHANGED		0x3f
-+
-+/* Unit Attentions ASCQ's as defined for the MSA2012sa */
-+
-+	/* These ASCQ's defined for ASC = POWER_OR_RESET */
-+#define POWER_ON_RESET			0x00
-+#define POWER_ON_REBOOT			0x01
-+#define SCSI_BUS_RESET			0x02
-+#define MSA_TARGET_RESET		0x03
-+#define CONTROLLER_FAILOVER		0x04
-+#define TRANSCEIVER_SE			0x05
-+#define TRANSCEIVER_LVD			0x06
-+
-+	/* These ASCQ's defined for ASC = STATE_CHANGED */
-+#define RESERVATION_PREEMPTED		0x03
-+#define ASYM_ACCESS_CHANGED		0x06
-+#define LUN_CAPACITY_CHANGED		0x09
-+
- //transfer direction
- #define XFER_NONE               0x00
- #define XFER_WRITE              0x01
+ struct device_driver;
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
