@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZCEUGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbZCEUG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbZCEUGG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 15:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbZCEUFw
+	id S1756581AbZCEUG0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 15:06:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZCEUGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 15:05:52 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:45727 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753028AbZCEUFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 15:05:51 -0500
-Subject: Re: [PATCH v2 09/15] NULL noise: drivers/scsi/FlashPoint.c
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: trivial@kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20090305191602.30062.71301.stgit@f10box.hanneseder.net>
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
-	 <20090305191602.30062.71301.stgit@f10box.hanneseder.net>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 20:05:46 +0000
-Message-Id: <1236283546.5626.45.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 5 Mar 2009 15:06:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53280 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755099AbZCEUGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 15:06:12 -0500
+Message-ID: <49B03069.80001@kernel.org>
+Date: Thu, 05 Mar 2009 12:04:57 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix warning about nodeid
+References: <20090305141424.GA9294@elte.hu>
+In-Reply-To: <20090305141424.GA9294@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 20:16 +0100, Hannes Eder wrote:
-> Fix this sparse warnings:
->   drivers/scsi/FlashPoint.c:906:9: warning: Using plain integer as NULL pointer
->   drivers/scsi/FlashPoint.c:907:53: warning: Using plain integer as NULL pointer
->   drivers/scsi/FlashPoint.c:922:1: warning: Using plain integer as NULL pointer
-> 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> ---
-> v2: fix checkpatch.pl issue.
-> v2.1: other subject, as suggested by Al Viro
-> 
->  drivers/scsi/FlashPoint.c |    7 +++----
->  1 files changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
-> index b898d38..9eb2e86 100644
-> --- a/drivers/scsi/FlashPoint.c
-> +++ b/drivers/scsi/FlashPoint.c
-> @@ -903,8 +903,8 @@ static void FPT_autoCmdCmplt(unsigned long p_port, unsigned char p_card);
->  static void FPT_autoLoadDefaultMap(unsigned long p_port);
->  
->  static struct sccb_mgr_tar_info FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR] =
-> L-    { {{0}} };
-> -static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {0} };
-> +    { { {NULL} } };
-> +static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {NULL} };
->  static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR] = { {{0}} };
->  static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS] = { {0} };
 
-This doesn't look right:  {0} as a structure initialiser is a C
-convention for zero fill this structure; sparse should recognise this.
-Of course, since these structures are static, they should be in BSS
-anyway ...
+Impact: cleanup
 
-> @@ -918,8 +918,7 @@ static unsigned char FPT_scamHAString[] =
->  
->  static unsigned short FPT_default_intena = 0;
->  
-> -static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {
-> -0};
-> +static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {NULL};
->  
->  /*---------------------------------------------------------------------
->   *
+Ingo found there warning about nodeid with some configs.
+try to use for_each_online_node for non numa too. in that case nodeid will be 0.
+also move out boundary checking from setup_node_bootmem(), so non-numa config
+will not check it.
 
-James
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+---
+ arch/x86/mm/init_32.c |   23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
 
+Index: linux-2.6/arch/x86/mm/init_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_32.c
++++ linux-2.6/arch/x86/mm/init_32.c
+@@ -806,11 +806,6 @@ static unsigned long __init setup_node_b
+ {
+ 	unsigned long bootmap_size;
+ 
+-	if (start_pfn > max_low_pfn)
+-		return bootmap;
+-	if (end_pfn > max_low_pfn)
+-		end_pfn = max_low_pfn;
+-
+ 	/* don't touch min_low_pfn */
+ 	bootmap_size = init_bootmem_node(NODE_DATA(nodeid),
+ 					 bootmap >> PAGE_SHIFT,
+@@ -843,13 +838,23 @@ void __init setup_bootmem_allocator(void
+ 		 max_pfn_mapped<<PAGE_SHIFT);
+ 	printk(KERN_INFO "  low ram: 0 - %08lx\n", max_low_pfn<<PAGE_SHIFT);
+ 
++	for_each_online_node(nodeid) {
++		 unsigned long start_pfn, end_pfn;
++
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+-	for_each_online_node(nodeid)
+-		bootmap = setup_node_bootmem(nodeid, node_start_pfn[nodeid],
+-					node_end_pfn[nodeid], bootmap);
++		start_pfn = node_start_pfn[nodeid];
++		end_pfn = node_end_pfn[nodeid];
++		if (start_pfn > max_low_pfn)
++			continue;
++		if (end_pfn > max_low_pfn)
++			end_pfn = max_low_pfn;
+ #else
+-	bootmap = setup_node_bootmem(0, 0, max_low_pfn, bootmap);
++		start_pfn = 0;
++		end_pfn = max_low_pfn;
+ #endif
++		bootmap = setup_node_bootmem(nodeid, start_pfn, end_pfn,
++						 bootmap);
++	}
+ 
+ 	after_bootmem = 1;
+ }
