@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZCEPvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZCEQEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbZCEPvX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 10:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZCEPvP
+	id S1755094AbZCEQEq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZCEQEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 10:51:15 -0500
-Received: from 81-7-68-229.static.zebra.lt ([81.7.68.229]:50932 "EHLO
-	teltonika.lt" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751187AbZCEPvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 10:51:14 -0500
-Message-ID: <49AFF4EA.6000504@teltonika.lt>
-Date: Thu, 05 Mar 2009 17:51:06 +0200
-From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Mar 2009 11:04:35 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:3191 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbZCEQEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 11:04:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=Wi5Ko1omdQvSjTgKjhADKSofu9wJ+MoTcZFCq96JLIOQrA++HqwgotoxxyhMEKJXTz
+         N4iFAQcnu+ysVxXWl3zlXgLUtP5PZ+KzAnF5FYIzBuK6VX84IN2iyrcOTpnigqBFc+aQ
+         2DZOdI3UJnNrRH/owh2qFEH+7moU4Dp4a5RsU=
+Date: Fri, 6 Mar 2009 00:04:47 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: um: WARNING: vmlinux: 'memcpy' exported twice. Previous export
+	was in vmlinux
+Message-ID: <20090305160447.GB4265@hack.private>
+References: <49AFC206.9080004@panasas.com> <20090305130610.GA4265@hack.private> <49AFD780.8080500@panasas.com>
 MIME-Version: 1.0
-To: Darius <augulis.darius@gmail.com>
-CC: linux-arm-kernel@lists.arm.linux.org.uk,
-       Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MX1 fix include
-References: <gkfn87$uo4$1@ger.gmane.org>	<20090113100333.GC11228@pengutronix.de> <499ACF91.1070003@gmail.com>
-In-Reply-To: <499ACF91.1070003@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49AFD780.8080500@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darius wrote:
-> Sascha Hauer wrote:
->> On Mon, Jan 12, 2009 at 04:22:57PM +0200, Darius wrote:
->>> From: Darius Augulis <augulis.darius@gmail.com>
+On Thu, Mar 05, 2009 at 03:45:36PM +0200, Boaz Harrosh wrote:
+>Américo Wang wrote:
+>> On Thu, Mar 05, 2009 at 02:13:58PM +0200, Boaz Harrosh wrote:
+>>> On today's linus v2.6.29-rc7-3-g559595a
 >>>
->>> Includes missed irqs.h in devices.c and mx1ads.c.
->> Looks good, thanks.
-> 
-> Hi Sascha,
-> 
-> probably you forgot to merge this in next rc (2), please do this ASAP in next rc, if possible.
-
-Hi Sasha,
-
-Will you submit this patch upstream?
-It is definitely 2.6.29 material since it is not possible to compile MX1 without it!
-
-Paulius Zaleckas
-
-> BR,
-> Darius
-> 
->> BTW do you plan to integrate the missing pieces from arch-imx into
->> arch-mx1, like SDHC and framebuffer? I think we should add these before
->> removing arch-imx.
->>
->> Sascha
->>
->>> Signed-off-by: Darius Augulis <augulis.darius@gmail.com>
+>>> Doing make ARCH=um defconfig & make ARCH=um
+>>> give's me:
 >>>
->>> Index: linux-2.6.29-rc1/arch/arm/mach-mx1/devices.c
->>> ===================================================================
->>> --- linux-2.6.29-rc1.orig/arch/arm/mach-mx1/devices.c
->>> +++ linux-2.6.29-rc1/arch/arm/mach-mx1/devices.c
->>> @@ -23,6 +23,8 @@
->>>  #include <linux/init.h>
->>>  #include <linux/platform_device.h>
->>>  #include <linux/gpio.h>
->>> +
->>> +#include <mach/irqs.h>
->>>  #include <mach/hardware.h>
->>>  
->>>  static struct resource imx_csi_resources[] = {
->>> Index: linux-2.6.29-rc1/arch/arm/mach-mx1/mx1ads.c
->>> ===================================================================
->>> --- linux-2.6.29-rc1.orig/arch/arm/mach-mx1/mx1ads.c
->>> +++ linux-2.6.29-rc1/arch/arm/mach-mx1/mx1ads.c
->>> @@ -21,6 +21,7 @@
->>>  #include <asm/mach/arch.h>
->>>  #include <asm/mach/time.h>
->>>  
->>> +#include <mach/irqs.h>
->>>  #include <mach/hardware.h>
->>>  #include <mach/common.h>
->>>  #include <mach/imx-uart.h>
->>> -------------------------------------------------------------------
->>> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
->>> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
->>> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+>>> LD vmlinux.o
+>>> MODPOST vmlinux.o
+>>> WARNING: vmlinux: 'memcpy' exported twice. Previous export was in vmlinux
 >>>
-> 
-> 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
-> 
+>>>
+>>> Sorry if this is a duplicate report
+>>>
+>> 
+>> Weird...
+>> I tried to compile like what you said, I can't reproduce it.
+>> 
+>> Which gcc are you using?
+>> 
+>> Thanks.
+>> 
+>
+>$ gcc --version
+>gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
+>
+>I'm running on an x86_64 Fedora10 system (updated recently)
+>$ uname -o -s -r -m -p -i
+>Linux 2.6.27.15-170.2.24.fc10.x86_64 x86_64 x86_64 x86_64 GNU/Linux
+>
+
+I am using the same thing, but on i386. I still can't reproduce it. :(
+
+-- 
+Do what you love, f**k the rest! F**k the regulations!
+ 
