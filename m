@@ -1,30 +1,26 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZCCVa6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 3 Mar 2009 16:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZCCVat
+	id S1755422AbZCEMfl (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 5 Mar 2009 07:35:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbZCEMfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Mar 2009 16:30:49 -0500
-Received: from smh03.opentransfer.com ([98.130.1.171]:47122 "EHLO
-	smh03.opentransfer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754377AbZCCVas (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Mar 2009 16:30:48 -0500
-X-Greylist: delayed 2231 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Mar 2009 16:30:48 EST
-From: <income_now098917@unwired.com.au>
-To: <linux-kernel@vger.kernel.org>
-Subject: Lear How You Can Earn...
-Date: Tue, 3 Mar 2009 14:53:34 -0600
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1933
-Message-ID: <IIS17NNsk2Yl2RodUIX0001f020@iis17.opentransfer.com>
-X-OriginalArrivalTime: 03 Mar 2009 20:53:34.0699 (UTC) FILETIME=[1E4E43B0:01C99C42]
+	Thu, 5 Mar 2009 07:35:32 -0500
+Received: from static-71-180-248-59.tampfl.dsl-w.verizon.net ([71.180.248.59]:1328
+	"HELO static-71-180-248-59.tampfl.dsl-w.verizon.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753461AbZCEMfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 07:35:32 -0500
+Message-ID: <20090305072515.2010201@wal-mart.com>
+Date: Thu, 5 Mar 2009 07:25:15 -0500
+From: "Portia" <keith@wal-mart.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Cool! You can save your money
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello and thank you for your interest!
-Learn how you can earn like them
-
-For more info: http://xr.com/earn
-
-Jenefer P.
+Do you love shopping? It's for you http://dp.yourcountycoupon.com/coupons.php
 
