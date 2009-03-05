@@ -1,103 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZCESvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZCES5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZCESvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 13:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZCESvJ
+	id S1755344AbZCES5Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 13:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbZCES5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 13:51:09 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53243 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753620AbZCESvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 13:51:07 -0500
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Jesper Krogh <jesper@krogh.cc>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, aowi@novozymes.com
-Subject: Re: Regression in bonding between 2.6.26.8 and 2.6.27.6 - bisected - twice
-In-reply-to: <49AA8B4F.8090405@krogh.cc>
-References: <491FEAD5.4090205@krogh.cc> <49A7B17F.2020408@krogh.cc> <16084.1235752119@death.nxdomain.ibm.com> <49A84802.7030502@krogh.cc> <30478.1235766943@death.nxdomain.ibm.com> <49AA2973.7040209@krogh.cc> <49AA8B4F.8090405@krogh.cc>
-Comments: In-reply-to Jesper Krogh <jesper@krogh.cc>
-   message dated "Sun, 01 Mar 2009 14:19:11 +0100."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Thu, 05 Mar 2009 10:51:12 -0800
-Message-ID: <9712.1236279072@death.nxdomain.ibm.com>
+	Thu, 5 Mar 2009 13:57:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53954 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754308AbZCES5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 13:57:13 -0500
+Subject: Re: [PATCH] perfcounters: IRQ and NMI support on AMD CPUs
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1236278730.5187.378.camel@laptop>
+References: <1236273633.5187.286.camel@laptop>
+	 <1236277959.3316.3.camel@localhost.localdomain>
+	 <1236278730.5187.378.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 00:26:33 +0530
+Message-Id: <1236279393.3316.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh <jesper@krogh.cc> wrote:
+On Thu, 2009-03-05 at 19:45 +0100, Peter Zijlstra wrote:
+> On Fri, 2009-03-06 at 00:02 +0530, Jaswinder Singh Rajput wrote:
+> > 
+> > Any how with this patch on my 64 bit AMD box I am getting:
+> > 
+> > [jaswinder@hpdv5 perfcounters]$ ./perfstat -e 0,1,2,3 ls > /dev/null 
+> > 
+> >  Performance counter stats for 'ls':
+> > 
+> > perfstat: perfstat.c:415: main: Assertion `res == sizeof(single_count)'
+> > failed.
+> > Aborted
+> > [jaswinder@hpdv5 perfcounters]$ 
+> > 
+> > [root@hpdv5 perfcounters]# ./kerneltop 
+> > KernelTop refresh period: 2 seconds
+> > kerneltop: kerneltop.c:883: main: Assertion `res == sizeof(ip)' failed.
+> > Aborted
+> > [root@hpdv5 perfcounters]#
+> 
+> Ah, I think you will need a fresh copy of both utilities, Paul recently
+> changed the ABI.
+> 
+> http://people.redhat.com/mingo/perfcounters/
+> 
+> Contains the latest IIRC
+> 
 
->Jesper Krogh wrote:
->> I appreciate that you spend time on it, but my feeling is that it
->> definately isn't reproducible in all environments (otherwise we would
->> probably have seen a large cry by now).
->>
->> I'm trying to bisect the "fix" down and hope that'll tell us something
->> more.
->
->Ok, The fixing commit seems to be: cb52deba12f27af90a46d2f8667a64888118a888
->
->Applying it to 2.6.28.7 and 2.6.27.19 makes them both work.
->
->It also explains why my e1000 based bonds didnt break, allthough the
->commitmessage doesnt mention anything about how it should effect
->bonding. Wouldn't it make sense to propose this patch for 2.6.27 and
->2.6.28 stable kernels?
+With fresh copy, perfstat is working.
 
-	Perhaps.
+But kerneltop is still not working and I am not getting any NMI Interrupts.
 
-	I don't have a forcedeth to test with, and as you surmised, I
-was unable to reproduce the problem with other chipsets (tg3 or e1000).
+[root@hpdv5 new]# ./kerneltop -e 3 -c 100 -e 2
 
-	However, I did find another bug I introduced during the "mii
-refactor" patch that you mentioned as being the original source of the
-problem.  That bug will cause 802.3ad to not notice speed changes.
+------------------------------------------------------------------------------
+ KernelTop:       0 irqs/sec  kernel:nan% [NMI, cache-misses/cache-refs],  (all, 2 CPUs)
+------------------------------------------------------------------------------
 
-	Could you test the patch below on your 2.6.68.7 and/or 2.6.27.19
-and see if it resolves your problem (without the forcedeth patch)?
-
-	-J
-
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index 2c96b93..ad81474 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -3545,11 +3545,27 @@ static int bond_slave_netdev_event(unsigned long event, struct net_device *slave
- 		}
- 		break;
- 	case NETDEV_CHANGE:
--		/*
--		 * TODO: is this what we get if somebody
--		 * sets up a hierarchical bond, then rmmod's
--		 * one of the slave bonding devices?
--		 */
-+		if (bond->params.mode == BOND_MODE_8023AD ||
-+		    bond_is_lb(bond)) {
-+			struct slave *slave;
-+
-+			slave = bond_get_slave_by_dev(bond, slave_dev);
-+			if (slave) {
-+				u16 old_speed = slave->speed;
-+				u16 old_duplex = slave->duplex;
-+
-+				bond_update_speed_duplex(slave);
-+
-+				if (bond_is_lb(bond))
-+					break;
-+
-+				if (old_speed != slave->speed)
-+					bond_3ad_adapter_speed_changed(slave);
-+				if (old_duplex != slave->duplex)
-+					bond_3ad_adapter_duplex_changed(slave);
-+			}
-+		}
-+
- 		break;
- 	case NETDEV_DOWN:
- 		/*
+  weight     events         RIP          kernel function
+  ______     ______   ________________   _______________
 
 
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+--
+JSR
+
