@@ -1,74 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZCEKIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbZCEKJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbZCEKIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZCEKIH
+	id S1755723AbZCEKJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZCEKJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:08:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56258 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Mar 2009 05:09:05 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:39466 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbZCEKIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:08:05 -0500
-Date: Thu, 5 Mar 2009 11:07:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH] perfcounters: provide expansion room in the ABI
-Message-ID: <20090305100748.GB29499@elte.hu>
-References: <18862.19599.929591.3109@cargo.ozlabs.ibm.com> <20090304104945.GB4879@elte.hu> <18863.1197.527693.75146@drongo.ozlabs.ibm.com>
+	id S1752008AbZCEKJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:09:03 -0500
+Date: Thu, 5 Mar 2009 11:09:01 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: tglx@linutronix.de, James.Bottomley@HansenPartnership.com,
+       jengelh@medozas.de, bharrosh@panasas.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
+	scsi-sgpool)objects
+Message-ID: <20090305100901.GU11787@kernel.dk>
+References: <1236207389.21486.19.camel@localhost.localdomain> <20090305173649M.fujita.tomonori@lab.ntt.co.jp> <20090305173952U.fujita.tomonori@lab.ntt.co.jp> <20090305182958Q.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18863.1197.527693.75146@drongo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090305182958Q.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Ingo Molnar wrote:
+On Thu, Mar 05 2009, FUJITA Tomonori wrote:
+> Oops, somehow I forgot to CC Jens...
 > 
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git rfc
-> > > 
-> > >  include/linux/perf_counter.h |   12 +++++++++---
-> > >  include/linux/syscalls.h     |    2 +-
-> > >  kernel/perf_counter.c        |   10 +++++++---
-> > >  3 files changed, 17 insertions(+), 7 deletions(-)
+> On Thu, 5 Mar 2009 17:39:17 +0900
+> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > On Thu, 5 Mar 2009 17:36:13 +0900
+> > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > > 
-> > Pulled into tip:perfcounters/core, thanks Paul!
-> 
-> Actually, I goofed slightly.  In this bit of the patch:
-> 
-> @@ -80,10 +81,15 @@ struct perf_counter_hw_event {
->  				exclude_user   :  1, /* don't count user      */
->  				exclude_kernel :  1, /* ditto kernel          */
->  				exclude_hv     :  1, /* ditto hypervisor      */
-> +				exclude_idle   :  1, /* don't count when idle */
->  
-> -				__reserved_1 : 23;
-> +				__reserved_1 : 55;
-> +
-> 
-> the 55 should have been 54 if we want those bitfields to 
-> occupy 64 bits.  With 55 there, __reserved_1 will go in the 
-> next 64-bit quadword (x86-speak, or doubleword in 
-> powerpc-speak).
-> 
-> Do you think that's worth changing?  If so I'll do a commit 
-> changing the 55 to 54.
+> > > CC'ed Jens,
+> > > 
+> > > On Wed, 04 Mar 2009 22:56:29 +0000
+> > > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > 
+> > > > On Wed, 2009-03-04 at 22:45 +0100, Thomas Gleixner wrote:
+> > > > > On Wed, 4 Mar 2009, Thomas Gleixner wrote:
+> > > > > 
+> > > > > Instrumented the code and the result of the failing request is
+> > > > > below. Looks like the function which sets up the request gets
+> > > > > nr_phys_segments wrong by one. 
+> > > > > 
+> > > > > If you need further trace data feel free to ask.
+> > > > 
+> > > > OK, the mapping all checks out correctly ... there must be something
+> > > > wrong with the way we count before mapping.
+> > > 
+> > > Yeah, looks we miscalculate nr_phys_segments in the merging path.
+> > > 
+> > > blk_recount_segments() needs to set bi_seg_front_size and
+> > > bi_seg_back_size for ll_merge_requests_fn()?
+> > > 
+> > > =
+> > > diff --git a/block/blk-merge.c b/block/blk-merge.c
+> > > index a104593..efb65b6 100644
+> > > --- a/block/blk-merge.c
+> > > +++ b/block/blk-merge.c
+> > > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
+> > >  
+> > >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
+> > >  {
+> > > +	unsigned int seg_size;
+> > >  	struct bio *nxt = bio->bi_next;
+> > >  
+> > >  	bio->bi_next = NULL;
+> > > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
+> > > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
+> > >  	bio->bi_next = nxt;
+> > >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
+> > > +
+> > > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
+> > > +		bio->bi_seg_front_size = seg_size;
+> > > +	if (bio->bi_phys_segments > bio->bi_seg_back_size)
+> > > +		bio->bi_seg_back_size = seg_size;
+> > > +
+> > >  }
+> > >  EXPORT_SYMBOL(blk_recount_segments);
+> > 
+> > Duh, here's the proper patch.
+> > 
+> > diff --git a/block/blk-merge.c b/block/blk-merge.c
+> > index a104593..06e0db4 100644
+> > --- a/block/blk-merge.c
+> > +++ b/block/blk-merge.c
+> > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
+> >  
+> >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
+> >  {
+> > +	unsigned int seg_size;
+> >  	struct bio *nxt = bio->bi_next;
+> >  
+> >  	bio->bi_next = NULL;
+> > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
+> > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
+> >  	bio->bi_next = nxt;
+> >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
+> > +
+> > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
+> > +		bio->bi_seg_front_size = seg_size;
+> > +	if (seg_size > bio->bi_seg_back_size)
+> > +		bio->bi_seg_back_size = seg_size;
+> > +
+> >  }
+> >  EXPORT_SYMBOL(blk_recount_segments);
 
-How about extending it to 118 instead? The creation of a counter 
-is a slow path in any case.
+Good catch, I merged it with a slight change of layout and clearing
+seg_size initially, to avoid gcc silly errors.
 
-	Ingo
+-- 
+Jens Axboe
+
