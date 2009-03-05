@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZCEKmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756327AbZCEKm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbZCEKmn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:42:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZCEKmU
+	id S1756327AbZCEKm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZCEKmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:42:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53268 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Mar 2009 05:42:39 -0500
+Received: from mail.suse.de ([195.135.220.2]:42057 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754413AbZCEKmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:42:18 -0500
-Date: Thu, 5 Mar 2009 11:41:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tglx@linutronix.de,
-       James.Bottomley@HansenPartnership.com, jengelh@medozas.de,
-       bharrosh@panasas.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
-	scsi-sgpool)objects
-Message-ID: <20090305104159.GE32407@elte.hu>
-References: <20090305182958Q.fujita.tomonori@lab.ntt.co.jp> <20090305100901.GU11787@kernel.dk> <20090305101436.GV11787@kernel.dk> <20090305192737I.fujita.tomonori@lab.ntt.co.jp> <20090305103023.GW11787@kernel.dk>
+	id S1754600AbZCEKmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:42:37 -0500
+Date: Thu, 5 Mar 2009 11:42:33 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net, linux-ext4@vger.kernel.org
+Subject: Re: fsx-linux loosing mmap() writes under memory pressure
+Message-ID: <20090305104233.GA29531@duck.suse.cz>
+References: <20090304145109.GA7140@duck.suse.cz> <200903051355.43909.nickpiggin@yahoo.com.au> <20090305100516.GB29177@duck.suse.cz> <200903052118.55380.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090305103023.GW11787@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200903052118.55380.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> > > Totally untested, comments welcome...
-> > 
-> > Yeah, I think that updating bi_seg_front_size and 
-> > bi_seg_back_size at one place, __blk_recalc_rq_segments, is 
-> > better. I thought about the same way. But we are already in 
-> > -rc7 and this must go into mainline now. So I chose a 
-> > less-intrusive way (similar to what we have done in the 
-> > past).
-> > 
-> > As you know, the merging code is really complicated and we 
-> > could overlook stuff easily. ;) It might be better to 
-> > simplify the merging code a bit.
+On Thu 05-03-09 21:18:54, Nick Piggin wrote:
+> On Thursday 05 March 2009 21:05:16 Jan Kara wrote:
+> > On Thu 05-03-09 13:55:43, Nick Piggin wrote:
+> > > On Thursday 05 March 2009 04:50:31 Jan Kara wrote:
+> > > > On Wed 04-03-09 16:55:35, Jan Kara wrote:
+> > > > > On Wed 04-03-09 15:51:09, Jan Kara wrote:
+> > > > > >   first, I'd like to point out that this has happened under UML so
+> > > > > > it can be just some obscure bug in that architecture but I belive
+> > > > > > it's worth debugging anyway. Now to the problem:
+> > > > > >   This has happened with today Linus's git snapshot. The filesystem
+> > > > > > is ext3 with *1KB* blocksize. I booted UML with 64MB of memory and
+> > > > > > run (these are test's from Andrew Morton's torture tests):
+> > > > > >   fsx-linux -l 8000000 /mnt/testfile
+> > > > > >   bash-shared-mapping -t 8 /mnt/bashfile 50000000
+> > > > > > (the second test just makes the UML under memory pressure and
+> > > > > > stresses the filesystem, otherwise it does not interact with
+> > > > > > fsx-linux in any way). After some time (like an hour) fsx-linux
+> > > > > > reported the file is corrupted. I tried again and it happened again
+> > > > > > so probably some debugging should be possible.
+> > > > > >   Both times it seems we've simply completely lost a write which
+> > > > > > happened through mmap (2 pages in the first case, 3 pages in the
+> > > > > > second case). Also I've checked and in the first case no blocks are
+> > > > > > allocated for the offsets where the data should be so most probably
+> > > > > > we've lost the write before block_write_full_page() called
+> > > > > > get_block(). I'll debug this further but I wanted let people know
+> > > > > > there's some problem and maybe somebody has some bright idea :). 
+> > > > > > I'm attaching the log from fsx if someone is interested.
+> > > > >
+> > > > >   Testing a bit more, I managed to reproduce the problem on ext2 and
+> > > > > what's more strange, now the lost page was written via ordinary
+> > > > > write() (fsxlog attached). So I believe this is more likely to be UML
+> > > > > specific...
+> > > >
+> > > >   And to add even more information, this also happens on ext2 with 4KB
+> > > > blocksize (although much more rarely it seems). Again the data was
+> > > > written by an extending write() but the block for it was not even
+> > > > allocated...
+> > >
+> > > What block device driver are you using?
+> >
+> >   UML was just using image file to back the filesystem I was testing on.
+> > But I don't think that plays a big role because the blocks were not even
+> > allocated in the fs-image so we must have lost them quite early.
 > 
-> If someone (Ingo?) is willing to test the last variant, I'd 
-> much rather add that. It does simplify it (imho), and it kills 
-> 23 lines while only adding 9. But a quick response would be 
-> nice, then I can ask Linus to pull it later today.
+> So you're using ubd driver? OK, I just have a report of a problem
+> with brd driver...
+  Yes, I'm using UBD.
 
-sure, can give it a whirl.
-
-Note that your patch in this thread does no apply cleanly. Could 
-you please send a pull request of your latest fixes that i could 
-pull into tip:out-of-tree for testing purposes?
-
-	Ingo
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
