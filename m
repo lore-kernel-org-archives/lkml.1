@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZCEIF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZCEILs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbZCEIF7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZCEIFu
+	id S1754476AbZCEILs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCEILj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:05:50 -0500
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:52482 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751280AbZCEIFt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:05:49 -0500
-Message-ID: <49AF87D6.5040104@linux.vnet.ibm.com>
-Date: Thu, 05 Mar 2009 09:05:42 +0100
-From: Frank Blaschka <blaschka@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Thu, 5 Mar 2009 03:11:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46275 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750868AbZCEILi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 03:11:38 -0500
+Message-ID: <49AF891A.30200@kernel.org>
+Date: Thu, 05 Mar 2009 17:11:06 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: David Miller <davem@davemloft.net>, bart@jukie.net,
-       greearb@candelatech.com, shemminger@vyatta.com, dada1@cosmosbay.com,
-       frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
-References: <49AF79A6.6030002@trash.net>	<20090304.231120.86999183.davem@davemloft.net>	<49AF7B72.2020905@trash.net> <20090304.231911.213286076.davem@davemloft.net> <49AF7E93.2010800@trash.net> <49AF7FD3.5010709@trash.net>
-In-Reply-To: <49AF7FD3.5010709@trash.net>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: percpu allocator vs reclaim
+References: <1236184563.5330.8074.camel@laptop>	 <49AEAEF2.7040908@kernel.org> <1236185363.5330.8121.camel@laptop>
+In-Reply-To: <1236185363.5330.8121.camel@laptop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Mar 2009 08:11:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave, Patrick,
-
-sorry I could not follow the complete discussion of the fixes done for this problem
-but does
-
- 	if (netif_device_present(real_dev) && ops->ndo_neigh_setup)
--		err = ops->ndo_neigh_setup(dev, pa);
-+		err = ops->ndo_neigh_setup(real_dev, pa);
-
-not change the idea of the neigh_setup? Remind we want the neigh_setup of the
-real device as the neigh setup function for the vlan device.
-
-Frank
-
-Patrick McHardy schrieb:
-> Patrick McHardy wrote:
->> David Miller wrote:
->>> From: Patrick McHardy <kaber@trash.net>
->>> Date: Thu, 05 Mar 2009 08:12:50 +0100
+Peter Zijlstra wrote:
+> On Thu, 2009-03-05 at 01:40 +0900, Tejun Heo wrote:
+>> Peter Zijlstra wrote:
+>>> Hi Tejun,
 >>>
->>>>> We probably need both fixes to cover everything.
->>>>>
->>>> Yes, just the second one still crashes. I'm about to retry using both.
+>>> Thomas hit the below on recent -tip kernels.
 >>>
->>> Here is the updated version just for the record:
+>>> Which basically states that we could deadlock due to reclaim lock
+>>> recursion.
 >>>
->>> vlan: Fix vlan-in-vlan crashes.
->>
->> This still crashes. I'll have another look at the code.
+>>> Looking at the code I don't see a quick solution, other than using
+>>> GFP_NOFS, which is a bit of a bother (as I suspect it might easily grow
+>>> __GFP_IO inversion too, if it doesn't already have it).
+>> Ah... maybe percpu allocator should just swallow @gfp.  Any better
+>> ideas? :-(
 > 
-> This one combined with your patch fixes the crash. The code was calling
-> vlan_dev_neigh_setup recursively.
+> Could you somehow break that lock so that you get something like:
 > 
-> Signed-off-by: Patrick McHardy <kaber@trash.net>
+>   alloc_lock
+>     kmalloc(GFP_KERNEL)
+>     free_lock
 > 
-> (or Tested-by: in case you want to roll it into your patch).
+> Where
 > 
+>  percpu_free()
+>    lock(free_lock)
+>      put area on free list
+> 
+>  percpu_alloc()
+>    lock(free_list)
+>      collect free list
+>    kmalloc()
+> 
+> Then the free code can be used from reclaim, because there's never an
+> allocation done while holding it, and the alloc path can first
+> check/cleanup whatever mess the last free left behind before trying an
+> allocation.
 
+Yeap, I think I can do that.  Will work on it.
 
+Thanks.
+
+-- 
+tejun
