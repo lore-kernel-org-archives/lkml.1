@@ -1,137 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZCEKPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZCEKQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbZCEKPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZCEKPb
+	id S1756088AbZCEKQu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:16:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZCEKQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:15:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53167 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Mar 2009 05:16:41 -0500
+Received: from ns.suse.de ([195.135.220.2]:41290 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbZCEKPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:15:30 -0500
-Date: Thu, 5 Mar 2009 11:15:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tglx@linutronix.de,
-       James.Bottomley@HansenPartnership.com, jengelh@medozas.de,
-       bharrosh@panasas.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
-	scsi-sgpool)objects
-Message-ID: <20090305101507.GD29499@elte.hu>
-References: <1236207389.21486.19.camel@localhost.localdomain> <20090305173649M.fujita.tomonori@lab.ntt.co.jp> <20090305173952U.fujita.tomonori@lab.ntt.co.jp> <20090305182958Q.fujita.tomonori@lab.ntt.co.jp> <20090305100901.GU11787@kernel.dk>
-MIME-Version: 1.0
+	id S1751431AbZCEKQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:16:40 -0500
+Date: Thu, 5 Mar 2009 11:16:37 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>, stable@kernel.org
+Subject: Re: [patch] fs: new inode i_state corruption fix
+Message-ID: <20090305101637.GB17815@wotan.suse.de>
+References: <20090305064554.GA11916@wotan.suse.de> <20090305100000.GA29177@duck.suse.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090305100901.GU11787@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090305100000.GA29177@duck.suse.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 05, 2009 at 11:00:01AM +0100, Jan Kara wrote:
+> On Thu 05-03-09 07:45:54, Nick Piggin wrote:
+> > after ~1hour of running. Previously, the new warnings would start immediately
+> > and hang would happen in under 5 minutes.
+>   A quick grep seems to indicate that you've still missed a few cases,
+> haven't you? I still see the same problem in
+> drop_caches.c:drop_pagecache_sb() scanning, inode.c:invalidate_inodes()
+> scanning, and dquot.c:add_dquot_ref() scanning.
+>   Otherwise the patch looks fine.
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+I thought they should be OK; drop_pagecache_sb doesn't play with flags,
+invalidate_inodes won't if refcount is elevated, and I think add_dquot_ref
+won't if writecount is not elevated...
 
-> On Thu, Mar 05 2009, FUJITA Tomonori wrote:
-> > Oops, somehow I forgot to CC Jens...
-> > 
-> > On Thu, 5 Mar 2009 17:39:17 +0900
-> > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > 
-> > > On Thu, 5 Mar 2009 17:36:13 +0900
-> > > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > > 
-> > > > CC'ed Jens,
-> > > > 
-> > > > On Wed, 04 Mar 2009 22:56:29 +0000
-> > > > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > > > 
-> > > > > On Wed, 2009-03-04 at 22:45 +0100, Thomas Gleixner wrote:
-> > > > > > On Wed, 4 Mar 2009, Thomas Gleixner wrote:
-> > > > > > 
-> > > > > > Instrumented the code and the result of the failing request is
-> > > > > > below. Looks like the function which sets up the request gets
-> > > > > > nr_phys_segments wrong by one. 
-> > > > > > 
-> > > > > > If you need further trace data feel free to ask.
-> > > > > 
-> > > > > OK, the mapping all checks out correctly ... there must be something
-> > > > > wrong with the way we count before mapping.
-> > > > 
-> > > > Yeah, looks we miscalculate nr_phys_segments in the merging path.
-> > > > 
-> > > > blk_recount_segments() needs to set bi_seg_front_size and
-> > > > bi_seg_back_size for ll_merge_requests_fn()?
-> > > > 
-> > > > =
-> > > > diff --git a/block/blk-merge.c b/block/blk-merge.c
-> > > > index a104593..efb65b6 100644
-> > > > --- a/block/blk-merge.c
-> > > > +++ b/block/blk-merge.c
-> > > > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
-> > > >  
-> > > >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
-> > > >  {
-> > > > +	unsigned int seg_size;
-> > > >  	struct bio *nxt = bio->bi_next;
-> > > >  
-> > > >  	bio->bi_next = NULL;
-> > > > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
-> > > > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
-> > > >  	bio->bi_next = nxt;
-> > > >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
-> > > > +
-> > > > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
-> > > > +		bio->bi_seg_front_size = seg_size;
-> > > > +	if (bio->bi_phys_segments > bio->bi_seg_back_size)
-> > > > +		bio->bi_seg_back_size = seg_size;
-> > > > +
-> > > >  }
-> > > >  EXPORT_SYMBOL(blk_recount_segments);
-> > > 
-> > > Duh, here's the proper patch.
-> > > 
-> > > diff --git a/block/blk-merge.c b/block/blk-merge.c
-> > > index a104593..06e0db4 100644
-> > > --- a/block/blk-merge.c
-> > > +++ b/block/blk-merge.c
-> > > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
-> > >  
-> > >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
-> > >  {
-> > > +	unsigned int seg_size;
-> > >  	struct bio *nxt = bio->bi_next;
-> > >  
-> > >  	bio->bi_next = NULL;
-> > > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
-> > > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
-> > >  	bio->bi_next = nxt;
-> > >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
-> > > +
-> > > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
-> > > +		bio->bi_seg_front_size = seg_size;
-> > > +	if (seg_size > bio->bi_seg_back_size)
-> > > +		bio->bi_seg_back_size = seg_size;
-> > > +
-> > >  }
-> > >  EXPORT_SYMBOL(blk_recount_segments);
-> 
-> Good catch, I merged it with a slight change of layout and 
-> clearing seg_size initially, to avoid gcc silly errors.
+But maybe that's  abit fragile and it would be better policy to always
+skip I_NEW in these traverals?
 
-thanks Jens for the super-quick action! I have tried the v2 
-patch from Fujita and it's OK in -tip testing so far, on various 
-pieces of x86 hardware with different storage systems - ata, 
-sata, aic7xxx, etc.
-
-Tested-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
