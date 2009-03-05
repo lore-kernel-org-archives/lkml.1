@@ -1,84 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZCETPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbZCETOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbZCETPD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 14:15:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756751AbZCETOe
+	id S1756852AbZCETOn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 14:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZCETOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 14:14:34 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:42090 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756726AbZCETOd (ORCPT
+	Thu, 5 Mar 2009 14:14:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34125 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756640AbZCETOY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 14:14:33 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH v2 04/15] NULL noise: drivers/gpu/drm/radeon/radeon_*.c
-Date: Thu, 05 Mar 2009 20:14:18 +0100
-Message-ID: <20090305191413.30062.67683.stgit@f10box.hanneseder.net>
-In-Reply-To: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
-User-Agent: StGit/0.14.3.348.gcb02.dirty
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 5 Mar 2009 14:14:24 -0500
+Date: Thu, 5 Mar 2009 11:13:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: h.rohit@samsung.com, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       Artem.Bityutskiy@nokia.com
+Subject: Re: [PATCH 1/3] [MTD] Flex-OneNAND support
+Message-Id: <20090305111324.1344606e.akpm@linux-foundation.org>
+In-Reply-To: <49AFD5EA.5010502@nokia.com>
+References: <20090303063605.GA30258@july>
+	<20090303124948.dda294e5.akpm@linux-foundation.org>
+	<49AE6907.1080702@nokia.com>
+	<20090304085055.c9de6cbb.akpm@linux-foundation.org>
+	<49AFD5EA.5010502@nokia.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: trivial@kernel.org
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: dri-devel@lists.sourceforge.net
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warning:
-  drivers/gpu/drm/radeon/r600_cp.c:1811:52: warning: Using plain integer as NULL pointer
-  drivers/gpu/drm/radeon/radeon_cp.c:1363:52: warning: Using plain integer as NULL pointer
-  drivers/gpu/drm/radeon/radeon_state.c:1983:61: warning: Using plain integer as NULL pointer
+On Thu, 05 Mar 2009 15:38:50 +0200
+Adrian Hunter <adrian.hunter@nokia.com> wrote:
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
-v2: other subject, as suggested by Al Viro
+> Can you point me to where EUCLEAN is returned to userspace?
 
- drivers/gpu/drm/radeon/r600_cp.c      |    2 +-
- drivers/gpu/drm/radeon/radeon_cp.c    |    2 +-
- drivers/gpu/drm/radeon/radeon_state.c |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/gpu/drm/radeon/r600_cp.c b/drivers/gpu/drm/radeon/r600_cp.c
-index 37249b2..2d9147d 100644
---- a/drivers/gpu/drm/radeon/r600_cp.c
-+++ b/drivers/gpu/drm/radeon/r600_cp.c
-@@ -1808,7 +1808,7 @@ int r600_do_cleanup_cp(struct drm_device *dev)
- 
- 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB) {
- 			drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
--			dev_priv->gart_info.addr = 0;
-+			dev_priv->gart_info.addr = NULL;
- 		}
- 	}
- 	/* only clear to the start of flags */
-diff --git a/drivers/gpu/drm/radeon/radeon_cp.c b/drivers/gpu/drm/radeon/radeon_cp.c
-index 15cfe56..0c49230 100644
---- a/drivers/gpu/drm/radeon/radeon_cp.c
-+++ b/drivers/gpu/drm/radeon/radeon_cp.c
-@@ -1541,7 +1541,7 @@ static int radeon_do_cleanup_cp(struct drm_device * dev)
- 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB)
- 		{
- 			drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
--			dev_priv->gart_info.addr = 0;
-+			dev_priv->gart_info.addr = NULL;
- 		}
- 	}
- 	/* only clear to the start of flags */
-diff --git a/drivers/gpu/drm/radeon/radeon_state.c b/drivers/gpu/drm/radeon/radeon_state.c
-index ca00cef..fa728ec 100644
---- a/drivers/gpu/drm/radeon/radeon_state.c
-+++ b/drivers/gpu/drm/radeon/radeon_state.c
-@@ -1986,7 +1986,7 @@ static int alloc_surface(drm_radeon_surface_alloc_t *new,
- 
- 	/* find a virtual surface */
- 	for (i = 0; i < 2 * RADEON_MAX_SURFACES; i++)
--		if (dev_priv->virt_surfaces[i].file_priv == 0)
-+		if (dev_priv->virt_surfaces[i].file_priv == NULL)
- 			break;
- 	if (i == 2 * RADEON_MAX_SURFACES) {
- 		return -1;
-
+err, nope.  I was googling "euclean" and came across a report where
+someone was wondering why he got this errno.  I can't find it now.
