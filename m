@@ -1,71 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbZCEHuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZCEHvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbZCEHuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 02:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZCEHuH
+	id S1755670AbZCEHvs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 02:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZCEHvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 02:50:07 -0500
-Received: from mga09.intel.com ([134.134.136.24]:55321 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750910AbZCEHuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 02:50:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,305,1233561600"; 
-   d="scan'208";a="391824806"
-Date: Thu, 5 Mar 2009 08:49:54 +0100
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
-       ak@linux.jf.intel.com
-Subject: [patch, for 2.6.29] x86, bts: remove bad warning
-Message-ID: <20090305084954.A22000@sedona.ch.intel.com>
-Mime-Version: 1.0
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 02:51:41 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:1388 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbZCEHvk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 02:51:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RHk2rnCCIxhsSjHiWBALnJRAJh6m9l5OuEWLaV8h9es9ur4DvK3BsOOR72DNhYnQkM
+         vCZ4EAApkI2lnGIJ3KWw8hPwDhmA4Q9keezQSugajIHZ9LijuAisqflH+cG/W3zMnlN7
+         j3wBITVUz6DTF8ds0UWoESukhDjuuEZBlB0SU=
+MIME-Version: 1.0
+In-Reply-To: <20090305060436.GA5359@nowhere>
+References: <dd18b0c30903042141k1adc0f6cj4bc286cfa29f475c@mail.gmail.com>
+	 <20090305060436.GA5359@nowhere>
+Date: Wed, 4 Mar 2009 23:51:38 -0800
+Message-ID: <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>
+Subject: Re: [PATCH 1/1] unifdef.c change "getline" to "get_line" to avoid C 
+	library confusion.
+From: Justin Mattock <justinmattock@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case a ptraced task is reaped (while the tracer is still attached),
-ds_exit_thread() is called before ptrace_exit(). The latter will
-release the bts_tracer and remove the thread's ds_ctx.
-The former will WARN() if the context is not NULL.
+On Wed, Mar 4, 2009 at 10:04 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Wed, Mar 04, 2009 at 09:41:09PM -0800, Justin Mattock wrote:
+>> From: Justin P. Mattock <justinmattock@gmail.com>
+>>
+>> This fixes an error when compiling the kernel.
+>>
+>>   CHK     include/linux/version.h
+>>   HOSTCC  scripts/unifdef
+>> scripts/unifdef.c:209: error: conflicting types for 'getline'
+>> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
+>> make[1]: *** [scripts/unifdef] Error 1
+>> make: *** [__headers] Error 2
+>>
+>> --
+>> scripts/unifdef.c  |  3 +++
+>> 1 files changed, 3 insertions(+),0 deletions(-)
+>>
+>> diff --git a/scripts/unifdef.c b/scripts/unifdef.c
+>> ---a/scripts/unifdef.c
+>> +++b/scripts/unifdef.c
+>> @@ -203,1 +203,0 @@ static void             addsym(bool, bool, char *);
+>>
+>>
+>> static void             done(void);
+>> static void             error(const char *);
+>> static int              findsym(const char *);
+>> static void             flushline(bool);
+>> -static Linetype         getline(void);
+>> +static Linetype         get_line(void);
+>> static Linetype         ifeval(const char **);
+>> static void             ignoreoff(void);
+>> static void             ignoreon(void);
+>> static void             keywordedit(const char *);
+>>
+>>
+>>
+>>
+>> @@ -509,1 +509,0 @@ process(void)
+>>
+>>
+>> {
+>>       Linetype lineval;
+>>
+>>       for (;;) {
+>>               linenum++;
+>> -               lineval = getline();
+>> +             lineval = get_line();
+>>               trans_table[ifstate[depth]][lineval]();
+>>               debug("process %s -> %s depth %d",
+>>                   linetype_name[lineval],
+>>                   ifstate_name[ifstate[depth]], depth);
+>>       }
+>> }
+>>
+>>
+>> @@ -528,1 +528,0 @@ static Linetype
+>> -getline(void)
+>> +get_line(void)
+>> {
+>>       const char *cp;
+>>
+>> --
+>>
+>>
+>> keep in mind I've never created a patch before,
+>> (so go easy on me);
+>
+>
+> Hi,
+>
+> You forgot to put your Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+> :)
+>
+> See Documentation/SubmittingPatches
+>
+> I don't know who is the maintainer of this file.
+> Adding Andrew in Cc.
+>
+>
+>> regards;
+>>
+>> --
+>> Justin P. Mattock
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
 
-Oleg Nesterov submitted patches that move ptrace_exit() before
-exit_thread() and thus reverse the order of the above calls.
+Cool,
+thanks for the help.
+I'll look at the doc's and google
+as much as possible, so I get this
+correct.
 
-Remove the bad warning. I will add it again when Oleg's changes are in.
+regards;
 
-
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
-
-Index: gits/arch/x86/kernel/ds.c
-===================================================================
---- gits.orig/arch/x86/kernel/ds.c	2009-03-05 08:14:38.000000000 +0100
-+++ gits/arch/x86/kernel/ds.c	2009-03-05 08:15:21.000000000 +0100
-@@ -1029,5 +1029,4 @@ void ds_copy_thread(struct task_struct *
- 
- void ds_exit_thread(struct task_struct *tsk)
- {
--	WARN_ON(tsk->thread.ds_ctx);
- }
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+-- 
+Justin P. Mattock
