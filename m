@@ -1,289 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbZCELeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZCELiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbZCELeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 06:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZCELeK
+	id S1754128AbZCELiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 06:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZCELiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 06:34:10 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:46702 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbZCELeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 06:34:09 -0500
-Date: Thu, 5 Mar 2009 17:03:59 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: mingo@elte.hu, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 11/11] ftrace plugin for kernel symbol tracing using HW
-	Breakpoint interfaces
-Message-ID: <20090305113359.GA25213@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090305043440.189041194@linux.vnet.ibm.com> <20090305044333.GM17747@in.ibm.com> <20090305063703.GB5359@nowhere>
+	Thu, 5 Mar 2009 06:38:15 -0500
+Received: from mga14.intel.com ([143.182.124.37]:43586 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751903AbZCELiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 06:38:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,306,1233561600"; 
+   d="scan'208";a="117036481"
+Date: Thu, 5 Mar 2009 19:11:14 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, Markus <M4rkusXXL@web.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Zdenek Kabelac <zkabelac@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: drop_caches ...
+Message-ID: <20090305111114.GD29617@localhost>
+References: <20090305004850.GA6045@localhost> <20090305090618.GB23266@ics.muni.cz> <20090305181304.6758.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=gb2312
 Content-Disposition: inline
-In-Reply-To: <20090305063703.GB5359@nowhere>
+In-Reply-To: <20090305181304.6758.A69D9226@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 07:37:04AM +0100, Frederic Weisbecker wrote:
-> On Thu, Mar 05, 2009 at 10:13:33AM +0530, prasad@linux.vnet.ibm.com wrote:
-> > This patch adds an ftrace plugin to detect and profile memory access over
-> > kernel variables. It uses HW Breakpoint interfaces to 'watch memory
-> > addresses.
+On Thu, Mar 05, 2009 at 11:14:33AM +0200, KOSAKI Motohiro wrote:
+> > Hello,
 > > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
-> > ---
-> 
-> 
-> Hi,
-> 
-> Nice feature. And moreover the standardized hardware breakpoints could
-> be helpful for tracing.
-> 
-> Just some comments below.
-> 
->
-
-Hi,
-  Thanks for reviewing the code and pointing out the potential memory
-leaks. The next iteration of this code should contain fixes for them.
-I've explained the usage of 'entry' field inline.
+> > On Thu, Mar 05, 2009 at 08:48:50AM +0800, Wu Fengguang wrote:
+> > > Markus, you may want to try this patch, it will have better chance to figure
+> > > out the hidden file pages.
+> > 
+> > just for curiosity, would it be possible to print process name which caused
+> > the file to be loaded into caches?
  
-> > +struct trace_ksym {
-> > +	struct trace_entry	ent;
-> > +	struct hw_breakpoint	*ksym_hbkpt;
-> > +	unsigned long		ksym_addr;
-> > +	unsigned long		ip;
-> > +	pid_t			pid;
-> 
-> 
-> Just a doubt here.
-> The current pid is automatically recorded on trace_buffer_lock_reserve()
-> (or unlock_commit, don't remember), so if this pid is the current one, you
-> don't need to reserve a room for it, current pid is on struct trace_entry.
->
+Yes the code has been there but not included in the patch I sent to you.
 
-It's a carriage from an old version of the code which used the old
-ring-buffer APIs like ring_buffer_lock_reserve(). I will now use the
-"pid" field in "struct trace_entry".
- 
-> > +static int process_new_ksym_entry(struct trace_ksym *entry, char *ksymname,
-> > +			     int op, unsigned long addr)
-> > +{
-> > +	if (ksym_filter_entry_count >= KSYM_TRACER_MAX) {
-> > +		printk(KERN_ERR "ksym_tracer: Maximum limit:(%d) reached. No"
-> > +			" new requests for tracing can be accepted now.\n",
-> > +			KSYM_TRACER_MAX);
-> > +		return -ENOSPC;
-> > +	}
-> > +
-> > +	entry = kzalloc(sizeof(struct trace_ksym), GFP_KERNEL);
-> 
-> 
-> I'm not sure I understand, you passed an allocated entry to that function, no?
-> If your are using entry as a local variable, it doesn't make sense to pass it
-> as a parameter.
-> 
-> 
-> > +	if (!entry)
-> > +		return -ENOMEM;
-> >
-> > +	entry->ksym_hbkpt = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
-> > +	if (!entry->ksym_hbkpt)
-> > +		return -ENOMEM;
-> 
-> 
-> Ouch, what happens here to the memory pointed by entry?
-> 
->
+When enabled by the following option, the kernel will save the short name of
+current process into every _newly_ allocated inode structure, which will then
+be displayed in the filecache.
 
-A potential leak....will fix this and the others you've pointed below.
- 
-> > +
-> > +	entry->ksym_hbkpt->info.name = ksymname;
-> > +	entry->ksym_hbkpt->info.type = op;
-> > +	entry->ksym_addr = entry->ksym_hbkpt->info.address = addr;
-> > +	entry->ksym_hbkpt->info.len = HW_BREAKPOINT_LEN_4;
-> > +	entry->ksym_hbkpt->priority = HW_BREAKPOINT_PRIO_NORMAL;
-> > +
-> > +	entry->ksym_hbkpt->installed = (void *)ksym_hbkpt_installed;
-> > +	entry->ksym_hbkpt->uninstalled = (void *)ksym_hbkpt_uninstalled;
-> > +	entry->ksym_hbkpt->triggered = (void *)ksym_hbkpt_handler;
-> > +
-> > +	if ((register_kernel_hw_breakpoint(entry->ksym_hbkpt)) < 0) {
-> > +		printk(KERN_INFO "ksym_tracer request failed. Try again"
-> > +					" later!!\n");
-> > +		kfree(entry);
-> > +		return -EAGAIN;
-> 
-> 
-> You forgot to free entry->ksym_hbkpt
-> 
-> 
-> > +	}
-> > +	hlist_add_head(&(entry->ksym_hlist), &ksym_filter_head);
-> > +	printk(KERN_INFO "ksym_tracer changes are now effective\n");
-> > +
-> > +	ksym_filter_entry_count++;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
-> > +						size_t count, loff_t *ppos)
-> > +{
-> > +	struct trace_ksym *entry;
-> > +	struct hlist_node *node;
-> > +	char buf[KSYM_FILTER_ENTRY_LEN * KSYM_TRACER_MAX];
-> > +	ssize_t ret, cnt = 0;
-> > +
-> > +	mutex_lock(&ksym_tracer_mutex);
-> > +
-> > +	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
-> > +		cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt, "%s:",
-> > +				entry->ksym_hbkpt->info.name);
-> > +		if (entry->ksym_hbkpt->info.type == HW_BREAKPOINT_WRITE)
-> > +			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> > +								"-w-\n");
-> > +		else if (entry->ksym_hbkpt->info.type == HW_BREAKPOINT_RW)
-> > +			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> > +								"rw-\n");
-> > +	}
-> > +	ret = simple_read_from_buffer(ubuf, count, ppos, buf, strlen(buf));
-> > +	mutex_unlock(&ksym_tracer_mutex);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static ssize_t ksym_trace_filter_write(struct file *file,
-> > +					const char __user *buffer,
-> > +						size_t count, loff_t *ppos)
-> > +{
-> > +	struct trace_ksym *entry;
-> > +	struct hlist_node *node;
-> > +	char *input_string, *ksymname = NULL;
-> > +	unsigned long ksym_addr = 0;
-> > +	int ret, op, changed = 0;
-> > +
-> > +	input_string = kzalloc(count, GFP_KERNEL);
-> > +	if (!input_string)
-> > +		return -ENOMEM;
-> > +
-> > +	/* Ignore echo "" > ksym_trace_filter */
-> > +	if (count == 0)
-> > +		return 0;
-> 
-> 
-> You forgot to free input_string in !count case.
-> 
-> 
-> > +
-> > +	if (copy_from_user(input_string, buffer, count))
-> > +		return -EFAULT;
-> 
-> 
-> Ditto.
-> 
-> > +	ret = op = parse_ksym_trace_str(input_string, &ksymname, &ksym_addr);
-> > +
-> > +	if (ret < 0)
-> > +		goto err_ret;
-> 
-> 
-> Ah, here you didn't forget.
-> 
-> 
-> > +	mutex_lock(&ksym_tracer_mutex);
-> > +
-> > +	ret = -EINVAL;
-> > +	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
-> > +		if (entry->ksym_addr == ksym_addr) {
-> > +			/* Check for malformed request: (6) */
-> > +			if (entry->ksym_hbkpt->info.type != op)
-> > +				changed = 1;
-> > +			else
-> > +				goto err_ret;
-> > +			break;
-> > +		}
-> > +	}
-> > +	if (changed) {
-> > +		unregister_kernel_hw_breakpoint(entry->ksym_hbkpt);
-> > +		entry->ksym_hbkpt->info.type = op;
-> > +		if (op > 0) {
-> > +			ret = register_kernel_hw_breakpoint(entry->ksym_hbkpt);
-> > +			if (ret > 0) {
-> > +				ret = count;
-> > +				goto unlock_ret_path;
-> > +			}
-> > +			if (ret == 0) {
-> > +				ret = -ENOSPC;
-> > +				unregister_kernel_hw_breakpoint(entry->\
-> > +								ksym_hbkpt);
-> > +			}
-> > +		}
-> > +		ksym_filter_entry_count--;
-> > +		hlist_del(&(entry->ksym_hlist));
-> > +		kfree(entry->ksym_hbkpt);
-> > +		kfree(entry);
-> > +		ret = count;
-> > +		goto err_ret;
-> > +	} else {
-> > +		/* Check for malformed request: (4) */
-> > +		if (op == 0)
-> > +			goto err_ret;
-> > +
-> > +		ret = process_new_ksym_entry(entry, ksymname, op, ksym_addr);
-> 
-> 
-> You are passing an allocated entry as a parameter, but later on process_new_ksym_entry()
-> you allocate a new space for entry.
-> I'm confused.
-> 
->
++config PROC_FILECACHE_EXTRAS
++       bool "track extra states"
++       default y
++       depends on PROC_FILECACHE
++       help
++         Track extra states that costs a little more time/space.
 
-When changed = 1, entry points to the existing instance of 'struct
-trace_ksym' and will be used for changing the type of breakpoint. If the
-input is a new request to ksym_trace_filter file process_new_ksym_entry()
-takes a pointer to 'struct trace_ksym' i.e entry for
-allocation/initialisation rather than use it as a parameter in the true
-sense.
+However it adds runtime overhead, and the information is not reliably usable.
+So not everyone will like this idea and I'm not maintaining this feature now.
 
-This is similar to the usage of parameters 'ksymname and addr' in
-parse_ksym_trace_str() where they are used to return multiple values.
+But I do have an interesting old copy that shows the process names:
 
-I hope you find the usage acceptable.
- 
-> > +
-> > +__init static int init_ksym_trace(void)
-> > +{
-> > +	struct dentry *d_tracer;
-> > +	struct dentry *entry;
-> > +
-> > +	d_tracer = tracing_init_dentry();
-> > +	ksym_filter_entry_count = 0;
-> > +
-> > +	entry = debugfs_create_file("ksym_trace_filter", 0666, d_tracer,
-> > +				    NULL, &ksym_tracing_fops);
-> > +	if (!entry)
-> > +		pr_warning("Could not create debugfs "
-> > +			   "'ksym_trace_filter' file\n");
-> > +
-> > +	return register_tracer(&ksym_tracer);
-> > +
-> > +}
-> > +device_initcall(init_ksym_trace);
-> 
-> 
-> Well, the rest looks good.
-> 
->
+#      ino       size   cached cached% refcnt state accessed   uid process         dev          file
+   1221729          1        4     100      0    --       27     0 rc              08:01(sda1)	/etc/default/rcS
+   1058788         32       32     100      0    --       92     0 udevd           08:01(sda1)	/sbin/modprobe
+   1221859          2        4     100      0    --        2     0 rc              08:01(sda1)	/etc/init.d/module-init-tools
+   1400967          2        4     100      0    --       65     0 tput            08:01(sda1)	/lib/terminfo/l/linux
+    195578         90       92     100      0    --       10     0 S03udev         08:01(sda1)	/usr/bin/expr
+    196704         12       12     100      0    --       60     0 S03udev         08:01(sda1)	/usr/bin/tput
+   1221849          1        4     100      0    --        2     0 S18ifupdown-cle 08:01(sda1)	/etc/default/ifupdown
+   1221847          2        4     100      0    --        2     0 rc              08:01(sda1)	/etc/init.d/ifupdown-clean
+   1726534          1        4     100      0    --       56     0 alsa-utils      08:01(sda1)	/bin/which
+   1726549          7        8     100      0    --       25     0 sh              08:01(sda1)	/bin/mountpoint
+   1221998          3        4     100      0    --       30     0 sh              08:01(sda1)	/etc/fstab
+   1727533        100      100     100      0    --      306     0 sh              08:01(sda1)	/bin/grep
+   1221653          3        4     100      0    --        3     0 rc              08:01(sda1)	/etc/init.d/mountdevsubfs.sh
+   1400773          3        4     100      0    --        9     0 sh              08:01(sda1)	/lib/init/mount-functions.sh
+   1400851          8        8     100      0    --       48     0 rc              08:01(sda1)	/lib/lsb/init-functions
+   1727381         19       20     100      0    --       34     0 sh              08:01(sda1)	/bin/uname
+   1221672          1        4     100      0    --        3     0 sh              08:01(sda1)	/etc/default/tmpfs
+   1221669          1        4     100      0    --        3     0 sh              08:01(sda1)	/etc/default/devpts
+   1224261          2        4     100      1    --      975     0 rcS             08:01(sda1)	/etc/passwd
+   1221725          1        4     100      0    --      492     0 rcS             08:01(sda1)	/etc/nsswitch.conf
+   1221659          4        4     100      0    --        1     0 rc              08:01(sda1)	/etc/init.d/mtab.sh
+   1726557         50       52     100      0    --      186     0 rc              08:01(sda1)	/bin/sed
+   1222991          2        4     100      0    --       25     0 mount           08:01(sda1)	/etc/blkid.tab
+   1222681          1        4     100      0    --      207     0 init            08:01(sda1)	/etc/selinux/config
+   1727379         40       40     100      0    --      251     0 sh              08:01(sda1)	/bin/rm
+   1564027         35       36     100      9    --      142     0 touch           08:01(sda1)	/lib/librt-2.6.so
+   1727368         40       40     100      0    --       70     0 sh              08:01(sda1)	/bin/touch
+   1223550         97      100     100      0    --     4479     0 init            08:01(sda1)	/etc/ld.so.cache
+   1400771         10       12     100      0    --        2     0 sh              08:01(sda1)	/lib/init/readlink
+   1065053          8        8     100      0    --        2     0 sh              08:01(sda1)	/sbin/logsave
+   1221665         10       12     100      0    --        1     0 rc              08:01(sda1)	/etc/init.d/checkroot.sh
+     12661          1        4     100      1    d-       10     0 udevd           00:0e(tmpfs)	/.udev/db/block@sr0
+     12320          1        4     100      1    D-       11     0 udevd           00:0e(tmpfs)	/.udev/db/md0
+     12661          1        4     100      1    d-       10     0 udevd           00:0e(tmpfs)	/.udev/db/block@sr0
+     12320          1        4     100      1    D-       11     0 udevd           00:0e(tmpfs)	/.udev/db/md0
+     12316          1        4     100      1    D-       11     0 udevd           00:0e(tmpfs)	/.udev/db/md2
+     12289          1        4     100      1    d-       10     0 udevd           00:0e(tmpfs)	/.udev/db/class@input@input2@event2
+   1726532         19       20     100      0    --       42     0 net.agent       08:01(sda1)	/bin/sleep
+     11918          1        4     100      1    d-       10     0 udevd           00:0e(tmpfs)	/.udev/db/class@input@input0@event0
+     11912          1        4     100      1    d-       10     0 udevd           00:0e(tmpfs)	/.udev/db/class@input@input1@event1
+   1058730         60       60     100      1    --        1     0 S03udev         08:01(sda1)	/sbin/udevd
+   1564011        123      124     100     16    --      220     0 mount           08:01(sda1)	/lib/libpthread-2.6.so
+   1400830         70       72     100      0    --       27     0 mount           08:01(sda1)	/lib/libdevmapper.so.1.02
+   1400847         11       12     100      0    --       27     0 mount           08:01(sda1)	/lib/libuuid.so.1.2
+   1400881         39       40     100      0    --       27     0 mount           08:01(sda1)	/lib/libblkid.so.1.0
+   1726538         87       88     100      0    --       17     0 sh              08:01(sda1)	/bin/mount
+   1221817          8        8     100      0    --        4     0 rcS             08:01(sda1)	/etc/init.d/rc
+   1564018         43       44     100     50    --      492     0 rcS             08:01(sda1)	/lib/libnss_files-2.6.so
+   1564012         43       44     100     43    --      473     0 rcS             08:01(sda1)	/lib/libnss_nis-2.6.so
+   1564010         87       88     100     47    --      513     0 rcS             08:01(sda1)	/lib/libnsl-2.6.so
+   1564020         35       36     100     43    --      473     0 rcS             08:01(sda1)	/lib/libnss_compat-2.6.so
+   1661561        359      360     100     13    --      384     0 rcS             08:01(sda1)	/lib/libncurses.so.5.6
+   1727359        752      752     100      2    --      291     0 init            08:01(sda1)	/bin/bash
+   1564016         15       16     100     52    --      801     0 init            08:01(sda1)	/lib/libdl-2.6.so
+   1564015       1352     1352     100     82    --     3338     0 init            08:01(sda1)	/lib/libc-2.6.so
+   1402884         91       92     100      7    --      206     0 init            08:01(sda1)	/lib/libselinux.so.1
+   1401085        236      236     100      7    --      206     0 init            08:01(sda1)	/lib/libsepol.so.1
+   1564007        121      124     100     82    --     3338     0 run-init        08:01(sda1)	/lib/ld-2.6.so
+   1058733         40       40     100      1    --        1     0 busybox         08:01(sda1)	/sbin/init
+         0  160836480      308       0      0    --        0     0 mdadm           00:02(bdev)	(08:00)
+         0   32226390        4       0      0    --        0     0 mdadm           00:02(bdev)	(08:02)
+         0     128489        4       0      0    --        0     0 mdadm           00:02(bdev)	(08:07)
+         0  160836480      308       0      0    --        0     0 mdadm           00:02(bdev)	(08:10)
+         0   32226390        4       0      0    --        0     0 mdadm           00:02(bdev)	(08:12)
+         0     313236        4       0      0    --        0     0 mdadm           00:02(bdev)	(08:18)
+      7976          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda4
+      7970          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda8
+      7964          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb6
+      7957          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda7
+      7951          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda6
+      7944          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb8
+      7938          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb7
+      7931          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda5
+      7924          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb5
+      7918          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda3
+      7911          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb4
+      7905          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb3
+      7898          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda2
+      7892          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda@sda1
+      7885          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb2
+      7851          1        4     100      1    D-       12     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb@sdb1
+      7823          1        4     100      1    D-       32     0 udevd           00:0e(tmpfs)	/.udev/db/block@sda
+      7769          1        4     100      1    D-       28     0 udevd           00:0e(tmpfs)	/.udev/db/block@sdb
+      7472          1        4     100      1    D-        4     0 udevd           00:0e(tmpfs)	/.udev/db/class@input@input1@mouse0
+      7068          1        4     100      1    D-        4     0 udevd           00:0e(tmpfs)	/.udev/db/class@input@mice
+      2227          1        4     100      1    D-     1790     0 udevd           00:0e(tmpfs)	/.udev/uevent_seqnum
+      2127          1        4     100      1    D-       11     0 init            00:0e(tmpfs)	/.initramfs/progress_state
 
-Thanks again for your comments.
+Thanks,
+Fengguang
 
--- K.Prasad 
