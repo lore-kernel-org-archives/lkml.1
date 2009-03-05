@@ -1,159 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZCEKvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbZCEKzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbZCEKvO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbZCEKu6
+	id S1754208AbZCEKzF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:55:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCEKyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:50:58 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42609 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751190AbZCEKu5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:50:57 -0500
-Date: Thu, 5 Mar 2009 11:50:54 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
-       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
-  RAM as block device
-In-Reply-To: <20090305083701.GQ11787@kernel.dk>
-Message-ID: <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Thu, 5 Mar 2009 05:54:54 -0500
+Received: from cmpxchg.org ([85.214.51.133]:55638 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750928AbZCEKyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:54:54 -0500
+Date: Thu, 5 Mar 2009 11:53:46 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Johannes Weiner <jw@emlix.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch -v2] flat: fix data sections alignment
+Message-ID: <20090305105346.GA1779@cmpxchg.org>
+References: <E1LerUo-0000NE-Q3@mailer.emlix.com> <8bd0f97a0903041348i2c88343fvbc7a1b6d428c7e7a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0903041348i2c88343fvbc7a1b6d428c7e7a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Jens,
-
-On Thu, 5 Mar 2009, Jens Axboe wrote:
-> On Wed, Mar 04 2009, Geert Uytterhoeven wrote:
-> > Below is the rewrite of the PS3 Video RAM Storage Driver as a plain block
-> > device, as requested by Arnd Bergmann.
-> > 
-> > The MTD-based PS3 Video RAM Storage Driver was integrated into the mainline
-> > kernel in 2.6.29-rc1.
-> > 
-> > Ideally, we think it would be best if the existing MTD-based ps3vram driver
-> > would be replaced by the new block-based ps3vram driver before 2.6.29 is
-> > released. This would relieve the burden of supporting two different swap space
-> > schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the distro
-> > maintainer's shoulders, as in that case there would never have been a stable
-> > kernel version containing the MTD-based ps3vram driver.
-> > 
-> > What do you think? If this is accepted, I'll submit a patch to remove the MTD
-> > ps3vram and add the new driver as ps3vram (instead of ps3vram-ng).
-> > 
-> > Thanks for your (review and other) comments!
+On Wed, Mar 04, 2009 at 04:48:04PM -0500, Mike Frysinger wrote:
+> On Wed, Mar 4, 2009 at 08:51, Johannes Weiner wrote:
+> > --- a/fs/binfmt_flat.c
+> > +++ b/fs/binfmt_flat.c
+> > +#ifdef ARCH_SLAB_MINALIGN
+> > +#define FLAT_DATA_ALIGN        (ARCH_SLAB_MINALIGN)
+> > +#else
+> > +#define FLAT_DATA_ALIGN        (sizeof(void *))
+> > +#endif
+> > ...
+> > +       sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
+> > ...
+> > -               datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
+> > +               datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
+> > +                               FLAT_DATA_ALIGN);
+> > ...
+> > -               datapos = realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long);
+> > +               datapos = ALIGN(realdatastart + MAX_SHARED_LIBS * sizeof(unsigned long),
+> > +                               FLAT_DATA_ALIGN);
 > 
-> I'd rewrite this as a ->make_request_fn handler instead. Then you can
-> get rid of the kernel thread. IOW, change
-> 
-> queue = blk_init_queue(ps3vram_request, &priv->lock);
-> 
-> to
-> 
-> queue = blk_alloc_queue(GFP_KERNEL);
-> blk_queue_make_request(queue, ps3vram_make_request);
+> why not make FLAT_DATA_ALIGN into a macro ?  then it'd naturally
+> follow the existing ALIGN() behavior.
 
-Thanks, I didn't know that part...
+datapos is aligned to the next higher bound while the stack pointer
+grows down and is therefor aligned to the next lower bound.  A
+FLAT_DATA_ALIGN() doesn't make sense.
 
-> Add error handling of course, and call blk_queue_max_*() to set your
-> limits for this device.
+> > -       sp = (unsigned long *) ((-(unsigned long)sizeof(char *))&(unsigned long) p);
+> > -
+> > -       sp -= envc+1;
+> > -       envp = sp;
+> > -       sp -= argc+1;
+> > -       argv = sp;
+> > +       sp = (unsigned long *)p;
+> > +       sp -= (envc + argc + 2) + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
+> > +       sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
+> > +       argv = sp + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
+> > +       envp = argv + (argc + 1);
 
-I took out the blk_queue_max_*() calls (compared to ps3disk.c), as none of the
-limits apply, and the defaults are fine.
-
-Is that OK, or is it better to make it explicit?
-
-> Then add a ps3vram_make_request() ala:
-
-> static void ps3vram_do_request(struct request_queue *q, struct bio *bio)
-> {
-> 	struct ps3_system_bus_device *dev = q->queuedata;
-> 	struct ps3vram_priv *priv = dev->core.driver_data;
-> 	int write, res, err = -EIO;
->         struct bio_vec *bv;
-> 	sector_t sector;
-> 	loff_t offset;
-> 	size_t len, retlen;
->         int i;
-> 
-> 	write = bio_data_dir(bio) == WRITE;
-> 
-> 	sector = bio->bi_sector;
->         bio_for_each_segment(bv, bio, i) {
->                 char *ptr = page_address(bv->bv_page) + bv->bv_offset;
-> 
->                 len = bv->bv_len;
-> 	        offset = sector << 9;
-> 
->         	if (write)
-> 	        	res = ps3vram_write(dev, offset, len, &retlen, ptr);
->         	else
-> 	        	res = ps3vram_read(dev, offset, len, &retlen, ptr);
-> 
-> 	        if (res) {
->         		dev_err(&dev->core, "%s failed\n", op);
-> 	        	goto out;
->         	}
-> 
->         	if (retlen != len) {
-> 	        	dev_err(&dev->core, "Short %s\n", op);
-> 		        goto out;
->         	}
->                 sector += (len >> 9);
->         }
-> 
-> 	dev_dbg(&dev->core, "%s completed\n", op);
->         err = 0;
-> out:
->         bio_endio(bio, err);
-> }
-> 
-> I just typed it here, so if it doesn't compile you get to keep the
-> pieces :-)
-
-OK, I'll give it a try...
-
-BTW, does this mean the `simple' way, which I used based on LDD3, is
-deprecated?
-
-> Since ps3 is very RAM limited, I didn't bother with any highmem mapping
-> for the bio, since I gather that isn't an issue on that platform. You
-> may want to detail that in a comment above the page_addres() thing at
-> the top of the loop, though.
-
-PS3 is ppc64, so no highmem. But I guess I best add the code for that anyway,
-in case people will copy the driver in the future (I remember receiving a
-similar comment for ps3disk).
-
-Thanks for your comments!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+	Hannes
