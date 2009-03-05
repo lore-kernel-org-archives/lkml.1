@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZCESNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbZCESOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbZCESNw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 13:13:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbZCESNl
+	id S1756956AbZCESOa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 13:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZCESOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 13:13:41 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:50254 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754055AbZCESNk (ORCPT
+	Thu, 5 Mar 2009 13:14:20 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42311 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754161AbZCESOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 13:13:40 -0500
-Date: Thu, 5 Mar 2009 12:13:25 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090305181325.GA10666@us.ibm.com>
-References: <20090305163857.0C18F3FD@kernel>
+	Thu, 5 Mar 2009 13:14:19 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 5 Mar 2009 19:13:43 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firedtv: fix printk format mismatch
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Message-ID: <tkrat.89b6c7e0ebef51fe@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090305163857.0C18F3FD@kernel>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I need the following to get fdinfo checkpointability output:
+Eliminate
+drivers/media/dvb/firewire/firedtv-avc.c: In function 'debug_fcp':
+drivers/media/dvb/firewire/firedtv-avc.c:156: warning: format '%d' expects type 'int', but argument 5 has type 'size_t'
 
->From 4002821bf068c122867c3b1819817f0b1fdfc250 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Thu, 5 Mar 2009 10:12:30 -0800
-Subject: [PATCH 1/1] checkpointable: add missing trailing \n for fdinfo output
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- fs/proc/base.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index bde92c3..12543b6 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1657,7 +1657,7 @@ static void proc_fd_write_info(struct file *file, char *info)
- 
- 	if (file->f_op->checkpoint)
- 		checkpointable = 1;
--	p += scnprintf(info+p, max-p, "checkpointable:\t%d", checkpointable);
-+	p += scnprintf(info+p, max-p, "checkpointable:\t%d\n", checkpointable);
- 	if (!checkpointable)
- 		p += cr_explain_file(file, info+p, max-p);
+Mauro, if you don't mind I queue it up in linux1394-2.6.git for after
+2.6.29, before 2.6.30-rc1.  There may be firewire subsystem related
+changes of firedtv coming together until then.
+
+ drivers/media/dvb/firewire/firedtv-avc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux/drivers/media/dvb/firewire/firedtv-avc.c
+===================================================================
+--- linux.orig/drivers/media/dvb/firewire/firedtv-avc.c
++++ linux/drivers/media/dvb/firewire/firedtv-avc.c
+@@ -115,7 +115,7 @@ static const char *debug_fcp_ctype(unsig
  }
+ 
+ static const char *debug_fcp_opcode(unsigned int opcode,
+-				    const u8 *data, size_t length)
++				    const u8 *data, int length)
+ {
+ 	switch (opcode) {
+ 	case AVC_OPCODE_VENDOR:			break;
+@@ -141,7 +141,7 @@ static const char *debug_fcp_opcode(unsi
+ 	return "Vendor";
+ }
+ 
+-static void debug_fcp(const u8 *data, size_t length)
++static void debug_fcp(const u8 *data, int length)
+ {
+ 	unsigned int subunit_type, subunit_id, op;
+ 	const char *prefix = data[0] > 7 ? "FCP <- " : "FCP -> ";
+
 -- 
-1.5.4.3
+Stefan Richter
+-=====-==--= --== --=-=
+http://arcgraph.de/sr/
 
