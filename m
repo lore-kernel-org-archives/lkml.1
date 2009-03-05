@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZCEJGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCEJI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbZCEJGo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 04:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZCEJG2
+	id S1755287AbZCEJI0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 04:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZCEJIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 04:06:28 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:38943 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752802AbZCEJG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 04:06:26 -0500
-Date: Thu, 5 Mar 2009 10:06:18 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Markus <M4rkusXXL@web.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Zdenek Kabelac <zkabelac@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: drop_caches ...
-Message-ID: <20090305090618.GB23266@ics.muni.cz>
-References: <200903041057.34072.M4rkusXXL@web.de> <200903041447.49534.M4rkusXXL@web.de> <49AE8BA8.3080504@redhat.com> <200903041947.41542.M4rkusXXL@web.de> <20090305004850.GA6045@localhost>
+	Thu, 5 Mar 2009 04:08:10 -0500
+Received: from stinky.trash.net ([213.144.137.162]:62015 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751405AbZCEJII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 04:08:08 -0500
+Message-ID: <49AF9672.50200@trash.net>
+Date: Thu, 05 Mar 2009 10:08:02 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090305004850.GA6045@localhost>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 05 Mar 2009 10:06:02 +0100 (CET)
+To: David Miller <davem@davemloft.net>
+CC: blaschka@linux.vnet.ibm.com, bart@jukie.net, greearb@candelatech.com,
+       shemminger@vyatta.com, dada1@cosmosbay.com, frank.blaschka@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
+References: <49AF87D6.5040104@linux.vnet.ibm.com>	<49AF8CE0.6030301@trash.net>	<20090305.005646.115456407.davem@davemloft.net> <20090305.005934.130220849.davem@davemloft.net>
+In-Reply-To: <20090305.005934.130220849.davem@davemloft.net>
+Content-Type: multipart/mixed;
+ boundary="------------020003080003040006090208"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This is a multi-part message in MIME format.
+--------------020003080003040006090208
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 05, 2009 at 08:48:50AM +0800, Wu Fengguang wrote:
-> Markus, you may want to try this patch, it will have better chance to figure
-> out the hidden file pages.
+David Miller wrote:
+> From: David Miller <davem@davemloft.net>
+> Date: Thu, 05 Mar 2009 00:56:46 -0800 (PST)
+>
+>   
+>> Then bond_neigh_setup() has the same bug, doesn't it?
+>>     
 
-just for curiosity, would it be possible to print process name which caused
-the file to be loaded into caches?
+Indeed. But this seems to be the last one.
+>
+> Looking at the bond_main.c changes in:
+>
+> commit 008298231abbeb91bc7be9e8b078607b816d1a4a
+> Author: Stephen Hemminger <shemminger@vyatta.com>
+> Date:   Thu Nov 20 20:14:53 2008 -0800
+>
+>     netdev: add more functions to netdevice ops
+>
+> shows that it always behaved that way.
+>   
 
--- 
-Luká¹ Hejtmánek
+Yes, but that patch introduced the requirement to pass the correct
+device down since now the handlers need it to get to the ops of the
+underlying device. Previously they all relied on the handlers not
+using their private data.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+--------------020003080003040006090208
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 9fb3883..383ce48 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -4113,7 +4113,7 @@ static int bond_neigh_setup(struct net_device *dev, struct neigh_parms *parms)
+ 		const struct net_device_ops *slave_ops
+ 			= slave->dev->netdev_ops;
+ 		if (slave_ops->ndo_neigh_setup)
+-			return slave_ops->ndo_neigh_setup(dev, parms);
++			return slave_ops->ndo_neigh_setup(slave, parms);
+ 	}
+ 	return 0;
+ }
+
+--------------020003080003040006090208--
