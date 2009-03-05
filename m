@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbZCETO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZCETPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbZCETO1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 14:14:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZCETOO
+	id S1757016AbZCETPD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 14:15:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756751AbZCETOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 14:14:14 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:63802 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755880AbZCETOM (ORCPT
+	Thu, 5 Mar 2009 14:14:34 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:42090 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756726AbZCETOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 14:14:12 -0500
+	Thu, 5 Mar 2009 14:14:33 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH v2 03/15] NULL noise: arch/x86/xen/smp.c
-Date: Thu, 05 Mar 2009 20:13:57 +0100
-Message-ID: <20090305191350.30062.68789.stgit@f10box.hanneseder.net>
+Subject: [PATCH v2 04/15] NULL noise: drivers/gpu/drm/radeon/radeon_*.c
+Date: Thu, 05 Mar 2009 20:14:18 +0100
+Message-ID: <20090305191413.30062.67683.stgit@f10box.hanneseder.net>
 In-Reply-To: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
 References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
 User-Agent: StGit/0.14.3.348.gcb02.dirty
@@ -21,46 +21,64 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 To: trivial@kernel.org
-Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Chris Wright <chrisw@sous-sol.org>
-Cc: virtualization@lists.osdl.org
-Cc: xen-devel@lists.xensource.com
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: dri-devel@lists.sourceforge.net
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warnings:
-  arch/x86/xen/smp.c:316:52: warning: Using plain integer as NULL pointer
-  arch/x86/xen/smp.c:421:60: warning: Using plain integer as NULL pointer
+Fix this sparse warning:
+  drivers/gpu/drm/radeon/r600_cp.c:1811:52: warning: Using plain integer as NULL pointer
+  drivers/gpu/drm/radeon/radeon_cp.c:1363:52: warning: Using plain integer as NULL pointer
+  drivers/gpu/drm/radeon/radeon_state.c:1983:61: warning: Using plain integer as NULL pointer
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
 v2: other subject, as suggested by Al Viro
 
- arch/x86/xen/smp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/radeon/r600_cp.c      |    2 +-
+ drivers/gpu/drm/radeon/radeon_cp.c    |    2 +-
+ drivers/gpu/drm/radeon/radeon_state.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index 035582a..7a1f00f 100644
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -313,7 +313,7 @@ static int __cpuinit xen_cpu_up(unsigned int cpu)
- 	BUG_ON(rc);
+diff --git a/drivers/gpu/drm/radeon/r600_cp.c b/drivers/gpu/drm/radeon/r600_cp.c
+index 37249b2..2d9147d 100644
+--- a/drivers/gpu/drm/radeon/r600_cp.c
++++ b/drivers/gpu/drm/radeon/r600_cp.c
+@@ -1808,7 +1808,7 @@ int r600_do_cleanup_cp(struct drm_device *dev)
  
- 	while(per_cpu(cpu_state, cpu) != CPU_ONLINE) {
--		HYPERVISOR_sched_op(SCHEDOP_yield, 0);
-+		HYPERVISOR_sched_op(SCHEDOP_yield, NULL);
- 		barrier();
- 	}
- 
-@@ -418,7 +418,7 @@ static void xen_smp_send_call_function_ipi(const struct cpumask *mask)
- 	/* Make sure other vcpus get a chance to run if they need to. */
- 	for_each_cpu(cpu, mask) {
- 		if (xen_vcpu_stolen(cpu)) {
--			HYPERVISOR_sched_op(SCHEDOP_yield, 0);
-+			HYPERVISOR_sched_op(SCHEDOP_yield, NULL);
- 			break;
+ 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB) {
+ 			drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
+-			dev_priv->gart_info.addr = 0;
++			dev_priv->gart_info.addr = NULL;
  		}
  	}
+ 	/* only clear to the start of flags */
+diff --git a/drivers/gpu/drm/radeon/radeon_cp.c b/drivers/gpu/drm/radeon/radeon_cp.c
+index 15cfe56..0c49230 100644
+--- a/drivers/gpu/drm/radeon/radeon_cp.c
++++ b/drivers/gpu/drm/radeon/radeon_cp.c
+@@ -1541,7 +1541,7 @@ static int radeon_do_cleanup_cp(struct drm_device * dev)
+ 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB)
+ 		{
+ 			drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
+-			dev_priv->gart_info.addr = 0;
++			dev_priv->gart_info.addr = NULL;
+ 		}
+ 	}
+ 	/* only clear to the start of flags */
+diff --git a/drivers/gpu/drm/radeon/radeon_state.c b/drivers/gpu/drm/radeon/radeon_state.c
+index ca00cef..fa728ec 100644
+--- a/drivers/gpu/drm/radeon/radeon_state.c
++++ b/drivers/gpu/drm/radeon/radeon_state.c
+@@ -1986,7 +1986,7 @@ static int alloc_surface(drm_radeon_surface_alloc_t *new,
+ 
+ 	/* find a virtual surface */
+ 	for (i = 0; i < 2 * RADEON_MAX_SURFACES; i++)
+-		if (dev_priv->virt_surfaces[i].file_priv == 0)
++		if (dev_priv->virt_surfaces[i].file_priv == NULL)
+ 			break;
+ 	if (i == 2 * RADEON_MAX_SURFACES) {
+ 		return -1;
 
