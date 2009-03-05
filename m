@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbZCEHBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZCEHCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbZCEHBN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 02:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZCEHAw
+	id S1755538AbZCEHCU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 02:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbZCEHCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 02:00:52 -0500
-Received: from ns.suse.de ([195.135.220.2]:35801 "EHLO mx1.suse.de"
+	Thu, 5 Mar 2009 02:02:07 -0500
+Received: from mx1.suse.de ([195.135.220.2]:35836 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755240AbZCEHAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 02:00:51 -0500
-Date: Thu, 5 Mar 2009 08:00:45 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, balbir@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Eric Paris <eparis@redhat.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: lockdep warning with 2.6.29-rc6-mm1 (mmotm 24-feb-2009)
-Message-ID: <20090305070045.GC11916@wotan.suse.de>
-References: <20090304125709.GA6251@balbir.in.ibm.com> <1236173267.5330.7487.camel@laptop> <20090304174115.GE25962@elte.hu>
-Mime-Version: 1.0
+	id S1750786AbZCEHCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 02:02:04 -0500
+Date: Wed, 4 Mar 2009 18:06:17 -0800
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Yinghai Lu <yinghai@kernel.org>,
+       Sarah Sharp <sarah.a.sharp@intel.com>, linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: EHCI debug documentation
+Message-ID: <20090305020617.GA2812@suse.de>
+References: <m1bpshx912.fsf@fess.ebiederm.org> <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090304174115.GE25962@elte.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 04, 2009 at 06:41:15PM +0100, Ingo Molnar wrote:
+On Wed, Mar 04, 2009 at 04:59:28PM -0500, Alan Stern wrote:
+> On Wed, 4 Mar 2009, Eric W. Biederman wrote:
 > 
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Wed, 2009-03-04 at 18:27 +0530, Balbir Singh wrote:
-> > > I see the following on my machine. My understanding is that the
-> > > lockdep warning is complaining about a potential deadlock while
-> > > reclaiming, where we could end up waiting on holding inotify_mutex,
-> > > and we could end up calling reclaim with inotify_mutex held.
-> > > 
-> > > The race seems rare, since one path shows a new inode being created
-> > > and the other one being deleted. It seems like a false positive unless
-> > > the inode's in question turn out to be potentially the same.
+> > Greg KH <gregkh@suse.de> writes:
 > > 
-> > Its not a false positive until you can guarantee the inodes will _never_
-> > be the same.
+> > > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > >> Yinghai Lu wrote:
+> > >> > b. netchip USB debug cable
+> > >> 
+> > >> http://www.plxtech.com/products/NET2000/NET20DC/default.asp
+> > >
+> > > I have reports that the newer version of this device does not work on
+> > > Linux as it isn't enumeratable as a "real" usb device on one end.
+> > >
+> > > I don't have one of these new devices yet to test it out, has anyone
+> > > else heard of this problem?
 > > 
-> > This thing has been reported numerous times, Ingo even posted 
-> > a potential fix for it, Nick poked the inotify people to speak 
-> > up, but they have so far been silent on the issue :-(
+> > With the first generation of devices I remember they were peculiar and
+> > finicky.  I don't recall the exact details but I remember the devices
+> > able to get into weird states that may resemble what you describe.
 > 
-> that particular fix is upstream, via:
-> 
->   3023a3e: inotify: fix GFP_KERNEL related deadlock
-> 
-> so does this reproduce with latest .29-rc7-ish kernels too - or 
-> do we have some other problem in this area too?
+> Those devices were a little peculiar in that they were powered only on
+> one side.  That is, they would take bus power only from the right-hand
+> connector (looking at the face with the PLX logo).  So if you plugged
+> in only the left side, the device would not show up or enumerate.  But 
+> if you plugged in both sides, then both of them would enumerate okay.
 
-Well as I said, I think it is just a bandaid to shut up lockdep,
-because I think inotify always is guaranteed to have a ref on
-the inode at this point so it should not be subject to reclaim.
+Thanks for the information, I'll try to get the person that reported
+this to retest and see if both sides plugged in at the same time works
+better.
 
+greg k-h
