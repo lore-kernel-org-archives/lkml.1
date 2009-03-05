@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbZCEOcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZCEOgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbZCEOcS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 09:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZCEOcE
+	id S1754233AbZCEOgu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 09:36:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZCEOgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 09:32:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34986 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751206AbZCEOcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 09:32:02 -0500
-Subject: Re: [git-pull -tip V2] x86: msr architecture debug code
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090305141129.GB27962@elte.hu>
-References: <1236008575.3332.2.camel@localhost.localdomain>
-	 <20090302205437.GB14471@elte.hu>
-	 <1236194183.4994.9.camel@localhost.localdomain>
-	 <1236199796.3130.3.camel@localhost.localdomain>
-	 <20090305122157.GA7347@alberich.amd.com> <20090305133208.GC4322@elte.hu>
-	 <1236260891.4237.1.camel@localhost.localdomain>
-	 <20090305141129.GB27962@elte.hu>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 20:01:27 +0530
-Message-Id: <1236263487.2527.11.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 09:36:39 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:19363 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZCEOgi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 09:36:38 -0500
+X-BigFish: VPS-27(zz1432R98dR1805M936fKzzzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KG1F89-03-F82-01
+Date: Thu, 5 Mar 2009 15:36:08 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] kvm/x86/mmu: don't unnecessarily recalculate table_gfn in *fetch
+Message-ID: <20090305143608.GF8751@amd.com>
+References: <1236255153-4432-1-git-send-email-joerg.roedel@amd.com> <1236255153-4432-4-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+In-Reply-To: <1236255153-4432-4-git-send-email-joerg.roedel@amd.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Mar 2009 14:36:08.0897 (UTC) FILETIME=[B92E9B10:01C99D9F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 15:11 +0100, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+On Thu, Mar 05, 2009 at 01:12:30PM +0100, Joerg Roedel wrote:
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  arch/x86/kvm/paging_tmpl.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> > On Thu, 2009-03-05 at 14:32 +0100, Ingo Molnar wrote:
-> > > * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> > >  
-> > > > - I've just one directory in debugfs
-> > > >   x86/cpu/msr/cpu0
-> > > >   The system has a quad-core CPU. So I guess there should be 4
-> > > >   directories -- one for each core.
-> > > 
-> > > Correct, most MSRs are per core - that needs to be fixed.
-> > 
-> > Ok I will support all cores in next Version.
-> 
-> the VFS structure should be something like:
-> 
->  /debug/x86/cpu/cpu0/msr/...
-> 
-> I.e. first we have the CPU, then a specific CPU, and MSRs are 
-> attributes of that CPU (core).
-> 
+> diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+> index a0c11ea..79668ba 100644
+> --- a/arch/x86/kvm/paging_tmpl.h
+> +++ b/arch/x86/kvm/paging_tmpl.h
+> @@ -315,7 +315,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+>  			direct = 1;
+>  			if (!is_dirty_pte(gw->ptes[level - 1]))
+>  				access &= ~ACC_WRITE_MASK;
+> -			table_gfn = gpte_to_gfn(gw->ptes[level - 1]);
+> +			table_gfn = gw->table_gfn[level - delta];
+>  		} else {
+>  			direct = 0;
+>  			table_gfn = gw->table_gfn[level - 2];
 
-I am also planning to add other CPU registers beside MSRs so msr will
-differentiate that it is MSRs or normal register.
+Made a mistake here when rebasing these patches. Updated patch is below:
 
-And we can move architecture independent code in kernel/* so that
-another architectures will also take benefit from it.
+>From de38a141a0ba44b3d46e333620d518cd831326c0 Mon Sep 17 00:00:00 2001
+From: Joerg Roedel <joerg.roedel@amd.com>
+Date: Wed, 4 Mar 2009 20:49:15 +0100
+Subject: [PATCH 3/6] kvm/x86/mmu: don't unnecessarily recalculate table_gfn in *fetch
 
---
-JSR
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/paging_tmpl.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index a0c11ea..79668ba 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -315,7 +315,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 			direct = 1;
+ 			if (!is_dirty_pte(gw->ptes[level - 1]))
+ 				access &= ~ACC_WRITE_MASK;
+-			table_gfn = gpte_to_gfn(gw->ptes[level - 1]);
++			table_gfn = gw->table_gfn[level - 1];
+ 		} else {
+ 			direct = 0;
+ 			table_gfn = gw->table_gfn[level - 2];
+-- 
+1.5.6.4
+
+
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
