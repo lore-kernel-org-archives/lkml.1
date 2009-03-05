@@ -1,205 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZCEIuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZCEIug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZCEIuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZCEItw
+	id S1755686AbZCEIug (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:50:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZCEIu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:49:52 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:10242 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752711AbZCEItv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:49:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=PoeQdNJQjkU9aUNfee2I9Mir8xrZWkCAbgKWXTFS/fSNdBNh/TemaellOROXSwShi6
-         txI8R2pddGTZ+pljU1mDM+2ADaNdO4ZS7oV22iQTT+mwqG3Q+DhdZgr0KFqH+fJnoyK0
-         tE+X8ars9Rs5Ojs/HjXbAm3HwEcJAuC3G8crg=
-MIME-Version: 1.0
-In-Reply-To: <dd18b0c30903050046v4fc9eff3h99734406112ec0f1@mail.gmail.com>
-References: <dd18b0c30903042141k1adc0f6cj4bc286cfa29f475c@mail.gmail.com>
-	 <20090305060436.GA5359@nowhere>
-	 <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>
-	 <dd18b0c30903050046v4fc9eff3h99734406112ec0f1@mail.gmail.com>
-Date: Thu, 5 Mar 2009 00:49:49 -0800
-Message-ID: <dd18b0c30903050049g68073bcamce13b9a2605372ba@mail.gmail.com>
-Subject: Re: [PATCH 1/1] unifdef.c change "getline" to "get_line" to avoid C 
-	library confusion.
-From: Justin Mattock <justinmattock@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 5 Mar 2009 03:50:27 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:47469 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640AbZCEIuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 03:50:24 -0500
+Date: Thu, 5 Mar 2009 19:50:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 5
+Message-Id: <20090305195008.f4fd4ce0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__5_Mar_2009_19_50_08_+1100_FqItf_zN=NqVQdjY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 5, 2009 at 12:46 AM, Justin Mattock <justinmattock@gmail.com> wrote:
-> On Wed, Mar 4, 2009 at 11:51 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->> On Wed, Mar 4, 2009 at 10:04 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
->>> On Wed, Mar 04, 2009 at 09:41:09PM -0800, Justin Mattock wrote:
->>>> From: Justin P. Mattock <justinmattock@gmail.com>
->>>>
->>>> This fixes an error when compiling the kernel.
->>>>
->>>>   CHK     include/linux/version.h
->>>>   HOSTCC  scripts/unifdef
->>>> scripts/unifdef.c:209: error: conflicting types for 'getline'
->>>> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
->>>> make[1]: *** [scripts/unifdef] Error 1
->>>> make: *** [__headers] Error 2
->>>>
->>>> --
->>>> scripts/unifdef.c  |  3 +++
->>>> 1 files changed, 3 insertions(+),0 deletions(-)
->>>>
->>>> diff --git a/scripts/unifdef.c b/scripts/unifdef.c
->>>> ---a/scripts/unifdef.c
->>>> +++b/scripts/unifdef.c
->>>> @@ -203,1 +203,0 @@ static void             addsym(bool, bool, char *);
->>>>
->>>>
->>>> static void             done(void);
->>>> static void             error(const char *);
->>>> static int              findsym(const char *);
->>>> static void             flushline(bool);
->>>> -static Linetype         getline(void);
->>>> +static Linetype         get_line(void);
->>>> static Linetype         ifeval(const char **);
->>>> static void             ignoreoff(void);
->>>> static void             ignoreon(void);
->>>> static void             keywordedit(const char *);
->>>>
->>>>
->>>>
->>>>
->>>> @@ -509,1 +509,0 @@ process(void)
->>>>
->>>>
->>>> {
->>>>       Linetype lineval;
->>>>
->>>>       for (;;) {
->>>>               linenum++;
->>>> -               lineval = getline();
->>>> +             lineval = get_line();
->>>>               trans_table[ifstate[depth]][lineval]();
->>>>               debug("process %s -> %s depth %d",
->>>>                   linetype_name[lineval],
->>>>                   ifstate_name[ifstate[depth]], depth);
->>>>       }
->>>> }
->>>>
->>>>
->>>> @@ -528,1 +528,0 @@ static Linetype
->>>> -getline(void)
->>>> +get_line(void)
->>>> {
->>>>       const char *cp;
->>>>
->>>> --
->>>>
->>>>
->>>> keep in mind I've never created a patch before,
->>>> (so go easy on me);
->>>
->>>
->>> Hi,
->>>
->>> You forgot to put your Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
->>> :)
->>>
->>> See Documentation/SubmittingPatches
->>>
->>> I don't know who is the maintainer of this file.
->>> Adding Andrew in Cc.
->>>
->>>
->>>> regards;
->>>>
->>>> --
->>>> Justin P. Mattock
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->>>
->>
->> Cool,
->> thanks for the help.
->> I'll look at the doc's and google
->> as much as possible, so I get this
->> correct.
->>
->> regards;
->>
->> --
->> Justin P. Mattock
->>
->
-> O.K. after doing some reading,
-> I have a better idea of how to make a
-> patch. I used diff, used patch -Np1, and compiled.
-> and added the signed off part.
-> I'll post after this post.
-> and take any suggestions on what to do next.
->
-> --
-> Justin P. Mattock
->
+--Signature=_Thu__5_Mar_2009_19_50_08_+1100_FqItf_zN=NqVQdjY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-From: Justin P. Mattock <justinmattock@gmail.com>
-Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+Changes since 20090304:
 
-This fixes an error when compiling the kernel.
+Dropped trees (temporary):
+	v4l-dvb (build problem)
 
- CHK     include/linux/version.h
- HOSTCC  scripts/unifdef
-scripts/unifdef.c:209: error: conflicting types for 'getline'
-/usr/include/stdio.h:651: note: previous declaration of 'getline' was here
-make[1]: *** [scripts/unifdef] Error 1
-make: *** [__headers] Error 2
+The v4l-dvb tree gained a build failure and was dropped for today.
 
---
-scripts/unifdef.c  |  3 +++
-1 files changed, 3 insertions(+),0 deletions(-)
+The rr tree lost 4 conflicts but gained 6 more against the cpufreq, x86
+and cpus4096 trees and gained 2 build failures which required 3 commits
+to be reverted.
 
----a/scripts/unifdef.c	        2009-03-05 00:07:28.000000000 -0800
-+++b/scripts/unifdef.c	2009-03-05 00:04:56.000000000 -0800
-@@ -206,7 +206,7 @@ static void             done(void);
- static void             error(const char *);
- static int              findsym(const char *);
- static void             flushline(bool);
--static Linetype         getline(void);
-+static Linetype         get_line(void);
- static Linetype         ifeval(const char **);
- static void             ignoreoff(void);
- static void             ignoreon(void);
-@@ -512,7 +512,7 @@ process(void)
+The slab tree gained a conflict against Linus' tree.
 
- 	for (;;) {
- 		linenum++;
--		lineval = getline();
-+		lineval = get_line();
- 		trans_table[ifstate[depth]][lineval]();
- 		debug("process %s -> %s depth %d",
- 		    linetype_name[lineval],
-@@ -526,7 +526,7 @@ process(void)
-  * help from skipcomment().
-  */
- static Linetype
--getline(void)
-+get_line(void)
- {
- 	const char *cp;
- 	int cursym;
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
--- 
-Justin P. Mattock
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+HEAD is now at 2450cf5 Revert "menu: fix embedded menu snafu"
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/mach-at91/gpio.c
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+CONFLICT (rename/modify): Merge conflict in arch/arm/plat-pxa/dma.c
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/elf.h
+CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in x86/auto=
+-x86-next and modified in HEAD. Version HEAD of arch/x86/mach-default/setup=
+.c left in tree.
+$ git rm -f arch/x86/mach-default/setup.c
+Merging xtensa/master
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/sh/maple/maple.c
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+CONFLICT (content): Merge conflict in arch/x86/Kconfig
+Merging genirq/auto-genirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-mpc.c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
+$ git reset --hard HEAD^
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Applying: acpi: update thermal for bus_id removal
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+CONFLICT (content): Merge conflict in fs/ocfs2/ocfs2.h
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/inode.c
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wimax/i2400m/usb-notif.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt73usb.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
+Merging cpufreq/next
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/irq.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
+k8.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-ich.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-lib.c
+CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in HEAD and=
+ modified in quilt/rr. Version quilt/rr of arch/x86/mach-default/setup.c le=
+ft in tree.
+CONFLICT (content): Merge conflict in drivers/firmware/dcdbas.c
+CONFLICT (content): Merge conflict in drivers/hid/hid-core.c
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+CONFLICT (content): Merge conflict in kernel/module.c
+$ git rm -f arch/x86/mach-default/setup.c
+Applying: rr: x86 irqaction merge fixup
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in firmware/Makefile
+CONFLICT (content): Merge conflict in firmware/WHENCE
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_proc.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+[master]: created 83794fc: "Revert "cpumask:use-cpu_sibling_mask""
+[master]: created 422e7a3: "Revert "cpumask:remove-cpu_mask_all""
+[master]: created 99a67f6: "Revert "cpumask:remove-CPU_MASK_ALL_PTR""
+
+--Signature=_Thu__5_Mar_2009_19_50_08_+1100_FqItf_zN=NqVQdjY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmvkkAACgkQjjKRsyhoI8wbuACgj9HnEgpv1fEGqZ8rI6eEj/bd
+FwgAn07IRi0p8bt78gh/WpSBv5wWwn2A
+=vnZx
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__5_Mar_2009_19_50_08_+1100_FqItf_zN=NqVQdjY--
