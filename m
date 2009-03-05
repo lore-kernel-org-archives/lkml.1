@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbZCECjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZCEClL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbZCECjd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 21:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZCECjZ
+	id S1755683AbZCEClL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 21:41:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZCECky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 21:39:25 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:49878 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbZCECjY (ORCPT
+	Wed, 4 Mar 2009 21:40:54 -0500
+Received: from mga10.intel.com ([192.55.52.92]:15432 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752150AbZCECkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 21:39:24 -0500
-Subject: Re: Linux 2.6.29-rc6
-From: john stultz <johnstul@us.ibm.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-In-Reply-To: <1236193075.3793.63.camel@jstultz-laptop>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>
-	 <49A6F39F.9040801@krogh.cc>
-	 <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>
-	 <49A6FEE2.90700@krogh.cc>
-	 <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>
-	 <49A70B24.6090706@krogh.cc>
-	 <1235685269.6811.11.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>
-	 <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>
-	 <1235766936.7402.5.camel@localhost.localdomain> <49ABACA0.3090300@krogh.cc>
-	 <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc>
-	 <1236110026.6068.18.camel@localhost> <49AD90E2.7050209@krogh.cc>
-	 <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>
-	 <49AECA3B.5030503@krogh.cc>  <1236193075.3793.63.camel@jstultz-laptop>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 18:39:19 -0800
-Message-Id: <1236220759.6863.7.camel@localhost.localdomain>
+	Wed, 4 Mar 2009 21:40:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,304,1233561600"; 
+   d="scan'208";a="670450535"
+Subject: Re: [RFC v1] hand off skb list to other cpu to submit to upper
+	layer
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
+       shemminger@vyatta.com
+In-Reply-To: <1236215076.2567.105.camel@ymzhang>
+References: <1235546423.2604.556.camel@ymzhang>
+	 <20090224.233115.240823417.davem@davemloft.net>
+	 <1236158868.2567.93.camel@ymzhang>
+	 <20090304.013937.129768263.davem@davemloft.net>
+	 <1236215076.2567.105.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 05 Mar 2009 10:40:27 +0800
+Message-Id: <1236220827.2567.136.camel@ymzhang>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 10:57 -0800, John Stultz wrote:
-> On Wed, 2009-03-04 at 19:36 +0100, Jesper Krogh wrote:
-> > jk@quad12:~$ python drift-test.py 10.192.96.19
-> > 04 Mar 19:27:10         offset: -0.157696       drift: -693.0 ppm
-> > 04 Mar 19:28:10         offset: -0.195134       drift: -625.098360656 ppm
-> > 04 Mar 19:29:10         offset: -0.232579       drift: -624.595041322 ppm
-> > 04 Mar 19:30:10         offset: -0.270021       drift: -624.408839779 ppm
-> > 04 Mar 19:31:11         offset: -0.307461       drift: -621.727272727 ppm
-> > 04 Mar 19:32:11         offset: -0.344903       drift: -622.185430464 ppm
-> > 04 Mar 19:33:11         offset: -0.382345       drift: -622.491712707 ppm
-> > 04 Mar 19:34:11         offset: -0.419794       drift: -622.727488152 ppm
-> > 04 Mar 19:35:11         offset: -0.457239       drift: -622.89626556 ppm
+On Thu, 2009-03-05 at 09:04 +0800, Zhang, Yanmin wrote:
+> On Wed, 2009-03-04 at 01:39 -0800, David Miller wrote:
+> > From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+> > Date: Wed, 04 Mar 2009 17:27:48 +0800
+> > 
+> > > Both the new skb_record_rx_queue and current kernel have an
+> > > assumption on multi-queue. The assumption is it's best to send out
+> > > packets from the TX of the same number of queue like the one of RX
+> > > if the receved packets are related to the out packets. Or more
+> > > direct speaking is we need send packets on the same cpu on which we
+> > > receive them. The start point is that could reduce skb and data
+> > > cache miss.
+> > 
+> > We have to use the same TX queue for all packets for the same
+> > connection flow (same src/dst IP address and ports) otherwise
+> > we introduce reordering.
+> > Herbert brought this up, now I have explicitly brought this up,
+> > and you cannot ignore this issue.
+> Thanks. ﻿Stephen Hemminger brought it up and explained what reorder
+> is. I answered in a reply (sorry for not clear) that mostly we need spread
+> packets among RX/TX in a 1:1 mapping or N:1 mapping. For example, all packets
+> received from RX 8 will be spreaded to TX 0 always.
+To make it clearer, I used 1:1 mapping binding when running testing
+on bensley (4*2 cores) and Nehalem (2*4*2 logical cpu). So there is no reorder
+issue. I also worked out a new patch on the failover path to just drop
+packets when qlen is bigger than netdev_max_backlog, so the failover path wouldn't
+cause reorder.
+
 > 
 > 
-> Yea, so from this and the settled ntpdc -c kerninfo data before, we can
-> see that the drift is further out then the 500ppm NTP can handle.
-> 
-> So with that at least confirmed, we can focus back on to the fast-pit
-> tsc calibration code.
-> 
-> Ingo, Thomas: I'm missing a bit of the context to that patch, other then
-> just speeding up boot times, was there other rational for moving away
-> from the ACPI PM timer based calibration?
-> 
-> Could we maybe add a quick test that the pit reads actually take the
-> assumed 2us max? Doing this maybe via the HPET/ACPI PM?
-
-Hey Jesper,
-
-	Here's a very-hackish patch to see if the approach I'm considering
-might fix the issue you're hitting. Could you apply it, boot the kernel
-a few times and send me the following segments of the dmesg for each of
-those boots (the example below is from my test box)? 
-
-tsc delta: 44418024
-ref_freq: 3000100  pit_freq: 3000384
-TSC: Fast PIT calibration matches PMTIMER.
-TSC: PIT calibration matches PMTIMER. 1 loops
-Detected 3000.045 MHz processor.
-
-I'm trying to see how regular the mis-calculation is, as well as see how
-well the alternate calibration method does to handle this on your
-hardware.
-
-Its likely the fat pit calibration can be better integrated with the
-other calibration methods, so this probably isn't anything close to what
-the actual fix will look like.
-
-Ingo, Thomas: On the hardware I'm testing the fast-pit calibration only
-triggers probably 80-90% of the time. About 10-20% of the time, the
-initial check to pit_expect_msb(0xff) fails (count=0), so we may need to
-look more at this approach.
-
-thanks
--john
-
-
+> > 
+> > You must not knowingly reorder packets, and using different TX
+> > queues for packets within the same flow does that.
+> Thanks for you rexplanation which is really consistent with ﻿Stephen's speaking.
 
 
