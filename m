@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbZCEUDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZCEUET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbZCEUDe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 15:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZCEUDZ
+	id S1755848AbZCEUET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 15:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZCEUEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 15:03:25 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:42240 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755055AbZCEUDZ (ORCPT
+	Thu, 5 Mar 2009 15:04:08 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:47426 "EHLO
+	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755292AbZCEUEH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 15:03:25 -0500
-Subject: Re: [patch 0/4] genirq: add infrastructure for threaded interrupt
- handlers V2
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1235661964.7055.51.camel@perihelion.bos.jonmasters.org>
-References: <20090226131336.423054348@linutronix.de>
-	 <1235661964.7055.51.camel@perihelion.bos.jonmasters.org>
-Content-Type: text/plain
-Organization: Novell
-Date: Thu, 05 Mar 2009 12:03:17 -0800
-Message-Id: <1236283397.20484.35.camel@sven.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 15:04:07 -0500
+X-BigFish: VPS1(zzzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KG1UDW-04-I6Y-01
+Date: Thu, 5 Mar 2009 21:03:38 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@redhat.com>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [RFC][GIT PULL] dma-api debugging facility
+Message-ID: <20090305200338.GA31182@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Mar 2009 20:03:38.0628 (UTC) FILETIME=[79559C40:01C99DCD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-26 at 10:26 -0500, Jon Masters wrote:
-> On Thu, 2009-02-26 at 13:28 +0000, Thomas Gleixner wrote:
-> > This patch series implements support for threaded irq handlers for the
-> > generic IRQ layer.
-> 
-> > The code was tested with a converted USB EHCI driver. The EHCI shares
-> > an interrupt line with another device and both the threaded and the
-> > non threaded handlers coexist nicely.
-> 
-> Cool. Thanks Thomas. The previous patchset works here aside from some
-> issues with Sven's USB patch - I'll pull this new set in and see which
-> drivers I can help convert over. Are you pulling this into the RT tree
-> already?
+Hi Ingo,
 
-Hi Jon,
+The following changes since commit 0bd5c4f7c874cf48ff7904dcf8a59988c8fea0e8:
+  Ingo Molnar (1):
+        Merge branch 'iommu/fixes-2.6.29' of git://git.kernel.org/.../joro/linux-2.6-iommu into core/iommu
 
+are available in the git repository at:
 
-Were you still using the USB threading version from October? 
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git dma-api/debug
 
-There was at least a missing spin_unlock there at one point. We fixed
-that at LCA.
+David Woodhouse (2):
+      dma-debug: add function to dump dma mappings
+      dma-debug: print stacktrace of mapping path on unmap error
 
-I do take bug reports directly, btw. and might even see them if you can
-just mail them to LKML.
+Joerg Roedel (16):
+      dma-debug: add Kconfig entry
+      dma-debug: add header file and core data structures
+      dma-debug: add hash functions for dma_debug_entries
+      dma-debug: add allocator code
+      dma-debug: add initialization code
+      dma-debug: add kernel command line parameters
+      dma-debug: add debugfs interface
+      dma-debug: add core checking functions
+      dma-debug: add checking for map/unmap_page/single
+      dma-debug: add add checking for map/unmap_sg
+      dma-debug: add checking for [alloc|free]_coherent
+      dma-debug: add checks for sync_single_*
+      dma-debug: add checks for sync_single_range_*
+      dma-debug: add checks for sync_single_sg_*
+      dma-debug: x86 architecture bindings
+      dma-debug: Documentation update
 
-But "some issues" is rather vague.
+ Documentation/DMA-API.txt           |  106 +++++
+ Documentation/kernel-parameters.txt |   10 +
+ arch/Kconfig                        |    2 +
+ arch/x86/Kconfig                    |    1 +
+ arch/x86/include/asm/dma-mapping.h  |   45 ++-
+ arch/x86/kernel/pci-dma.c           |    6 +
+ include/linux/dma-debug.h           |  167 +++++++
+ lib/Kconfig.debug                   |   11 +
+ lib/Makefile                        |    2 +
+ lib/dma-debug.c                     |  870 +++++++++++++++++++++++++++++++++++
+ 10 files changed, 1214 insertions(+), 6 deletions(-)
+ create mode 100644 include/linux/dma-debug.h
+ create mode 100644 lib/dma-debug.c
 
-Thanks
+A few changes were made since the v3 post of this code:
 
-Sven
+* new checks were added
+* stack trace of mapping path is printed
+* default number of preallocated entries has been increased to 32768 on
+  x86 - in the latest tests I had more than 26000 dma-api allocations in
+  the hash
+* therefore the hash size has been increased to 1024
 
-> 
-> Jon.
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Please pull.
+
+Joerg
+
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
