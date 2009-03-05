@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZCEX1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbZCEX1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbZCEX1F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbZCEX0r
+	id S1757788AbZCEX1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbZCEX1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:26:47 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:33565 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:27:06 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:33598 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757552AbZCEX0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:26:46 -0500
-Message-Id: <20090305225520.011236565@polymtl.ca>
+	id S1757253AbZCEX1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:27:04 -0500
+Message-Id: <20090305225518.820107709@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:48:05 -0500
+Date: Thu, 05 Mar 2009 17:48:00 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,150 +31,130 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 37/41] Markers : multi-probes test
-Content-Disposition: inline; filename=markers-multi-probes-test.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:16 +0000
+Subject: [RFC patch 32/41] LTTng filter
+Content-Disposition: inline; filename=lttng-filter.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:15 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Filter module providing the filter/ directory entry.
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- samples/markers/Makefile     |    2 
- samples/markers/test-multi.c |  116 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 117 insertions(+), 1 deletion(-)
+ include/linux/ltt-tracer.h |    2 +
+ ltt/Kconfig                |    3 ++
+ ltt/Makefile               |    1 
+ ltt/ltt-filter.c           |   66 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 72 insertions(+)
 
-Index: linux-2.6-lttng/samples/markers/Makefile
+Index: linux-2.6-lttng/ltt/Makefile
 ===================================================================
---- linux-2.6-lttng.orig/samples/markers/Makefile	2009-01-09 18:15:52.000000000 -0500
-+++ linux-2.6-lttng/samples/markers/Makefile	2009-01-09 18:17:56.000000000 -0500
-@@ -1,4 +1,4 @@
- # builds the kprobes example kernel modules;
- # then to use one (as root):  insmod <module_name.ko>
- 
--obj-$(CONFIG_SAMPLE_MARKERS) += probe-example.o marker-example.o
-+obj-$(CONFIG_SAMPLE_MARKERS) += probe-example.o marker-example.o test-multi.o
-Index: linux-2.6-lttng/samples/markers/test-multi.c
+--- linux-2.6-lttng.orig/ltt/Makefile	2009-03-05 16:09:53.000000000 -0500
++++ linux-2.6-lttng/ltt/Makefile	2009-03-05 16:10:10.000000000 -0500
+@@ -13,3 +13,4 @@ obj-$(CONFIG_LTT_STATEDUMP)		+= ltt-stat
+ obj-$(CONFIG_LTT_FAST_SERIALIZE)	+= ltt-type-serializer.o
+ obj-$(CONFIG_LTT_TRACE_CONTROL)		+= ltt-trace-control.o
+ obj-$(CONFIG_LTT_USERSPACE_EVENT)	+= ltt-userspace-event.o
++obj-$(CONFIG_LTT_FILTER)		+= ltt-filter.o
+Index: linux-2.6-lttng/ltt/ltt-filter.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/samples/markers/test-multi.c	2009-01-09 18:17:56.000000000 -0500
-@@ -0,0 +1,116 @@
-+/* test-multi.c
++++ linux-2.6-lttng/ltt/ltt-filter.c	2009-03-05 16:09:59.000000000 -0500
+@@ -0,0 +1,66 @@
++/*
++ * Copyright (C) 2008 Mathieu Desnoyers
 + *
-+ * Connects multiple callbacks.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + *
-+ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
 +
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/marker.h>
-+#include <asm/atomic.h>
++#include <linux/debugfs.h>
++#include <linux/fs.h>
++#include <linux/ltt-tracer.h>
++#include <linux/mutex.h>
 +
-+struct probe_data {
-+	const char *name;
-+	const char *format;
-+	marker_probe_func *probe_func;
-+};
++#define LTT_FILTER_DIR	"filter"
 +
-+atomic_t eventb_count = ATOMIC_INIT(0);
++/*
++ * Protects the ltt_filter_dir allocation.
++ */
++static DEFINE_MUTEX(ltt_filter_mutex);
 +
-+void probe_subsystem_eventa(void *probe_data, void *call_data,
-+	const char *format, va_list *args)
++static struct dentry *ltt_filter_dir;
++
++struct dentry *get_filter_root(void)
 +{
-+	/* Increment counter */
-+	atomic_inc(&eventb_count);
-+}
++	struct dentry *ltt_root_dentry;
 +
-+void probe_subsystem_eventb(void *probe_data, void *call_data,
-+	const char *format, va_list *args)
-+{
-+	/* Increment counter */
-+	atomic_inc(&eventb_count);
-+}
++	mutex_lock(&ltt_filter_mutex);
++	if (!ltt_filter_dir) {
++		ltt_root_dentry = get_ltt_root();
++		if (!ltt_root_dentry)
++			goto err_no_root;
 +
-+void probe_subsystem_eventc(void *probe_data, void *call_data,
-+	const char *format, va_list *args)
-+{
-+	/* Increment counter */
-+	atomic_inc(&eventb_count);
-+}
-+
-+void probe_subsystem_eventd(void *probe_data, void *call_data,
-+	const char *format, va_list *args)
-+{
-+	/* Increment counter */
-+	atomic_inc(&eventb_count);
-+}
-+
-+static struct probe_data probe_array[] =
-+{
-+	{	.name = "test_multi",
-+		.format = MARK_NOARGS,
-+		.probe_func = (marker_probe_func*)0xa },
-+	{	.name = "test_multi",
-+		.format = MARK_NOARGS,
-+		.probe_func = (marker_probe_func*)0xb },
-+	{	.name = "test_multi",
-+		.format = MARK_NOARGS,
-+		.probe_func = (marker_probe_func*)0xc },
-+	{	.name = "test_multi",
-+		.format = MARK_NOARGS,
-+		.probe_func = (marker_probe_func*)0xd },
-+	{	.name = "test_multi",
-+		.format = MARK_NOARGS,
-+		.probe_func = (marker_probe_func*)0x10 },
-+	{	.name = "test_multi",
-+		.format = MARK_NOARGS,
-+		.probe_func = (marker_probe_func*)0x20 },
-+	{	.name = "test_multi",
-+		.format = MARK_NOARGS,
-+		.probe_func = (marker_probe_func*)0x30 },
-+};
-+
-+static int __init probe_init(void)
-+{
-+	int result;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
-+		result = marker_probe_register(probe_array[i].name,
-+				probe_array[i].format,
-+				probe_array[i].probe_func, (void*)(long)i);
-+		if (result)
-+			printk(KERN_INFO "Unable to register probe %s\n",
-+				probe_array[i].name);
++		ltt_filter_dir = debugfs_create_dir(LTT_FILTER_DIR,
++						    ltt_root_dentry);
++		if (!ltt_filter_dir)
++			printk(KERN_ERR
++				"ltt_filter_init: failed to create dir %s\n",
++				LTT_FILTER_DIR);
 +	}
-+	return 0;
++err_no_root:
++	mutex_unlock(&ltt_filter_mutex);
++	return ltt_filter_dir;
 +}
++EXPORT_SYMBOL_GPL(get_filter_root);
 +
-+static void __exit probe_fini(void)
++static void __exit ltt_filter_exit(void)
 +{
-+	int result;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
-+		result = marker_probe_unregister(probe_array[i].name,
-+			probe_array[i].probe_func, (void*)(long)i);
-+		if (result)
-+			printk(KERN_INFO "Unable to unregister probe %s\n",
-+				probe_array[i].name);
-+	}
-+	printk(KERN_INFO "Number of event b : %u\n",
-+		atomic_read(&eventb_count));
-+	marker_synchronize_unregister();
++	debugfs_remove(ltt_filter_dir);
 +}
 +
-+module_init(probe_init);
-+module_exit(probe_fini);
++module_exit(ltt_filter_exit);
 +
 +MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("SUBSYSTEM Probe");
++MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>");
++MODULE_DESCRIPTION("Linux Trace Toolkit Filter");
+Index: linux-2.6-lttng/include/linux/ltt-tracer.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/ltt-tracer.h	2009-03-05 16:08:41.000000000 -0500
++++ linux-2.6-lttng/include/linux/ltt-tracer.h	2009-03-05 16:09:59.000000000 -0500
+@@ -648,6 +648,8 @@ enum ltt_filter_control_msg {
+ extern int ltt_filter_control(enum ltt_filter_control_msg msg,
+ 		const char *trace_name);
+ 
++extern struct dentry *get_filter_root(void);
++
+ void ltt_write_trace_header(struct ltt_trace_struct *trace,
+ 		struct ltt_subbuffer_header *header);
+ extern void ltt_buffer_destroy(struct ltt_channel_struct *ltt_chan);
+Index: linux-2.6-lttng/ltt/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/ltt/Kconfig	2009-03-05 16:09:41.000000000 -0500
++++ linux-2.6-lttng/ltt/Kconfig	2009-03-05 16:09:59.000000000 -0500
+@@ -28,6 +28,9 @@ menuconfig LTT
+ 
+ if LTT
+ 
++config LTT_FILTER
++	tristate
++
+ config LTT_RELAY_ALLOC
+ 	def_bool n
+ 
 
 -- 
 Mathieu Desnoyers
