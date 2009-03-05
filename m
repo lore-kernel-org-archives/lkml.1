@@ -1,603 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZCEGh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbZCEGqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZCEGh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 01:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZCEGhM
+	id S1754344AbZCEGqR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 01:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZCEGp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 01:37:12 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:34833 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384AbZCEGhK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 01:37:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hCUyJcfXABoVeEj19BCJ6J/p9eEYkJqhe2qV9RSIUFKCGLddGpQsDLTeoHI0+TG4FK
-         hExf9GXv4pmWaTJls0a1ggcF3xEqEG9urB1SyjQK6FVVtGjcxRWXmv0QD0QSYcH+4uvf
-         OxW64L4jb43rEYtpjpjN2N1gFxQ/Autc3yg88=
-Date: Thu, 5 Mar 2009 07:37:04 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: prasad@linux.vnet.ibm.com
-Cc: mingo@elte.hu, Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 5 Mar 2009 01:45:58 -0500
+Received: from ns.suse.de ([195.135.220.2]:35599 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752388AbZCEGp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 01:45:57 -0500
+Date: Thu, 5 Mar 2009 07:45:54 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: linux-fsdevel@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 11/11] ftrace plugin for kernel symbol tracing using HW
-	Breakpoint interfaces
-Message-ID: <20090305063703.GB5359@nowhere>
-References: <20090305043440.189041194@linux.vnet.ibm.com> <20090305044333.GM17747@in.ibm.com>
-MIME-Version: 1.0
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>, Jan Kara <jack@suse.cz>,
+       stable@kernel.org
+Subject: [patch] fs: new inode i_state corruption fix
+Message-ID: <20090305064554.GA11916@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090305044333.GM17747@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 10:13:33AM +0530, prasad@linux.vnet.ibm.com wrote:
-> This patch adds an ftrace plugin to detect and profile memory access over
-> kernel variables. It uses HW Breakpoint interfaces to 'watch memory
-> addresses.
-> 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
-> ---
 
+There was a report of a data corruption http://lkml.org/lkml/2008/11/14/121.
+There is a script included to reproduce the problem.
 
-Hi,
+During testing, I encountered a number of strange things with ext3, so I
+tried ext2 to attempt to reduce complexity of the problem. I found that
+fsstress would quickly hang in wait_on_inode, waiting for I_LOCK to be
+cleared, even though instrumentation showed that unlock_new_inode had
+already been called for that inode. This points to memory scribble, or
+synchronisation problme.
 
-Nice feature. And moreover the standardized hardware breakpoints could
-be helpful for tracing.
+i_state of I_NEW inodes is not protected by inode_lock because other
+processes are not supposed to touch them until I_LOCK (and I_NEW) is
+cleared. Adding WARN_ON(inode->i_state & I_NEW) to sites where we modify
+i_state revealed that generic_sync_sb_inodes is picking up new inodes
+from the inode lists and passing them to __writeback_single_inode without
+waiting for I_NEW. Subsequently modifying i_state causes corruption. In
+my case it would look like this:
 
-Just some comments below.
+CPU0                            CPU1
+unlock_new_inode()              __sync_single_inode()
+ reg <- inode->i_state
+ reg -> reg & ~(I_LOCK|I_NEW)   reg <- inode->i_state
+ reg -> inode->i_state          reg -> reg | I_SYNC
+                                reg -> inode->i_state
 
+Non-atomic RMW on CPU1 overwrites CPU0 store and sets I_LOCK|I_NEW again.
 
->  kernel/trace/Kconfig      |    6 
->  kernel/trace/Makefile     |    1 
->  kernel/trace/trace.h      |   15 +
->  kernel/trace/trace_ksym.c |  399 ++++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 421 insertions(+)
-> 
-> Index: linux-2.6-tip/kernel/trace/Kconfig
-> ===================================================================
-> --- linux-2.6-tip.orig/kernel/trace/Kconfig
-> +++ linux-2.6-tip/kernel/trace/Kconfig
-> @@ -249,6 +249,12 @@ config POWER_TRACER
->  	  power management decisions, specifically the C-state and P-state
->  	  behavior.
->  
-> +config KSYM_TRACER
-> +	bool "Trace read and write access on kernel memory locations"
-> +	select TRACING
-> +	help
-> +	  This tracer helps find read and write operations on any given kernel
-> +	  symbol i.e. /proc/kallsyms.
->
->  config STACK_TRACER
->  	bool "Trace max stack"
-> Index: linux-2.6-tip/kernel/trace/Makefile
-> ===================================================================
-> --- linux-2.6-tip.orig/kernel/trace/Makefile
-> +++ linux-2.6-tip/kernel/trace/Makefile
-> @@ -41,5 +41,6 @@ obj-$(CONFIG_WORKQUEUE_TRACER) += trace_
->  obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
->  obj-$(CONFIG_EVENT_TRACER) += trace_events.o
->  obj-$(CONFIG_EVENT_TRACER) += events.o
-> +obj-$(CONFIG_KSYM_TRACER) += trace_ksym.o
->  
->  libftrace-y := ftrace.o
-> Index: linux-2.6-tip/kernel/trace/trace.h
-> ===================================================================
-> --- linux-2.6-tip.orig/kernel/trace/trace.h
-> +++ linux-2.6-tip/kernel/trace/trace.h
-> @@ -12,6 +12,8 @@
->  #include <trace/kmemtrace.h>
->  #include <trace/power.h>
->  
-> +#include <asm/hw_breakpoint.h>
-> +
->  enum trace_type {
->  	__TRACE_FIRST_TYPE = 0,
->  
-> @@ -34,6 +36,7 @@ enum trace_type {
->  	TRACE_KMEM_FREE,
->  	TRACE_POWER,
->  	TRACE_BLK,
-> +	TRACE_KSYM,
->  
->  	__TRACE_LAST_TYPE,
->  };
-> @@ -191,6 +194,17 @@ struct kmemtrace_free_entry {
->  	const void *ptr;
->  };
->  
-> +struct trace_ksym {
-> +	struct trace_entry	ent;
-> +	struct hw_breakpoint	*ksym_hbkpt;
-> +	unsigned long		ksym_addr;
-> +	unsigned long		ip;
-> +	pid_t			pid;
+Fix for this is rather than wait for I_NEW inodes, just skip over them:
+inodes concurrently being created are not subject to data integrity
+operations, and should not significantly contribute to dirty memory either.
 
+After this change, I'm unable to reproduce any of the added warnings or hangs
+after ~1hour of running. Previously, the new warnings would start immediately
+and hang would happen in under 5 minutes.
 
-Just a doubt here.
-The current pid is automatically recorded on trace_buffer_lock_reserve()
-(or unlock_commit, don't remember), so if this pid is the current one, you
-don't need to reserve a room for it, current pid is on struct trace_entry.
+I'm also testing on ext3 now, and so far no problems there either. I don't
+know whether this fixes the problem reported above, but it fixes a real
+problem for me.
 
+Cc: "Jorge Boncompte [DTI2]" <jorge@dti2.net>
+Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: stable@kernel.org
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-> +	struct hlist_node	ksym_hlist;
-> +	char			ksym_name[KSYM_NAME_LEN];
-> +	char			p_name[TASK_COMM_LEN];
-> +};
-> +
->  /*
->   * trace_flag_type is an enumeration that holds different
->   * states when a trace occurs. These are:
-> @@ -302,6 +316,7 @@ extern void __ftrace_bad_type(void);
->  			  TRACE_KMEM_ALLOC);	\
->  		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
->  			  TRACE_KMEM_FREE);	\
-> +		IF_ASSIGN(var, ent, struct trace_ksym, TRACE_KSYM); \
->  		__ftrace_bad_type();					\
->  	} while (0)
->  
-> Index: linux-2.6-tip/kernel/trace/trace_ksym.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6-tip/kernel/trace/trace_ksym.c
-> @@ -0,0 +1,399 @@
-> +#include <linux/module.h>
-> +#include <linux/fs.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/ftrace.h>
-> +#include <linux/kallsyms.h>
-> +#include <linux/uaccess.h>
-> +
-> +#include "trace.h"
-> +#include "trace_output.h"
-> +
-> +/* For now, let us restrict the no. of symbols traced simultaneously to number
-> + * of available hardware breakpoint registers.
-> + */
-> +#define KSYM_TRACER_MAX HB_NUM
-> +
-> +#define KSYM_TRACER_OP_LEN 3 /* rw- */
-> +#define KSYM_FILTER_ENTRY_LEN (KSYM_NAME_LEN + KSYM_TRACER_OP_LEN + 1)
-> +
-> +#define KSYM_DEBUG 1
-> +
-> +static struct trace_array *ksym_trace_array;
-> +
-> +DEFINE_MUTEX(ksym_tracer_mutex);
-> +
-> +static unsigned int ksym_filter_entry_count;
-> +static unsigned int ksym_tracing_enabled;
-> +
-> +static HLIST_HEAD(ksym_filter_head);
-> +
-> +/* HW Breakpoint related callback functions */
-> +void ksym_hbkpt_installed(struct hw_breakpoint *temp, struct pt_regs
-> +								*temp_regs)
-> +{
-> +}
-> +
-> +void ksym_hbkpt_uninstalled(struct hw_breakpoint *temp, struct
-> +							pt_regs * temp_regs)
-> +{
-> +}
-> +
-> +void ksym_hbkpt_handler(struct hw_breakpoint *hbkpt, struct pt_regs *regs)
-> +{
-> +	struct ring_buffer_event *event;
-> +	struct trace_array *tr;
-> +	struct trace_ksym *entry;
-> +	int pc;
-> +
-> +	if (!ksym_tracing_enabled)
-> +		return;
-> +
-> +	tr = ksym_trace_array;
-> +	pc = preempt_count();
-> +
-> +	event = trace_buffer_lock_reserve(tr, TRACE_KSYM,
-> +							sizeof(*entry), 0, pc);
-> +	if (!event)
-> +		return;
-> +
-> +	entry = ring_buffer_event_data(event);
-> +	strlcpy(entry->ksym_name, hbkpt->info.name, KSYM_SYMBOL_LEN);
-> +	entry->ksym_hbkpt = hbkpt;
-> +	entry->ip = instruction_pointer(regs);
-> +	strlcpy(entry->p_name, current->comm, TASK_COMM_LEN);
-> +
-> +	entry->pid = current->pid;
-
-
-Ah, so yes you don't need this field.
-
-
-
-> +	trace_buffer_unlock_commit(tr, event, 0, pc);
-> +}
-> +
-> +/* Valid access types are represented as
-> + *
-> + * rw- : Set Read/Write Access Breakpoint
-> + * -w- : Set Write Access Breakpoint
-> + * --- : Clear Breakpoints
-> + * --x : Set Execution Break points (Not available yet)
-> + *
-> + */
-> +static int ksym_trace_get_access_type(char *access_str)
-> +{
-> +	int pos, access = 0;
-> +
-> +	for (pos = 0; pos < KSYM_TRACER_OP_LEN; pos++) {
-> +		switch (access_str[pos]) {
-> +		case 'r':
-> +			access += (pos == 0) ? 4 : -1;
-> +			break;
-> +		case 'w':
-> +			access += (pos == 1) ? 2 : -1;
-> +			break;
-> +		case '-':
-> +			break;
-> +		default:
-> +			return -EINVAL;
-> +		}
-> +	}
-> +
-> +	switch (access) {
-> +	case 6:
-> +		access = HW_BREAKPOINT_RW;
-> +		break;
-> +	case 2:
-> +		access = HW_BREAKPOINT_WRITE;
-> +		break;
-> +	case 0:
-> +		access = 0;
-> +	}
-> +
-> +	return access;
-> +}
-> +
-> +/*
-> + * There can be several possible malformed requests and we attempt to capture
-> + * all of them. We enumerate some of the rules
-> + * 1. We will not allow kernel symbols with ':' since it is used as a delimiter.
-> + *    i.e. multiple ':' symbols disallowed. Possible uses are of the form
-> + *    <module>:<ksym_name>:<op>.
-> + * 2. No delimiter symbol ':' in the input string
-> + * 3. Spurious operator symbols or symbols not in their respective positions
-> + * 4. <ksym_name>:--- i.e. clear breakpoint request when ksym_name not in file
-> + * 5. Kernel symbol not a part of /proc/kallsyms
-> + * 6. Duplicate requests
-> + */
-> +static int parse_ksym_trace_str(char *input_string, char **ksymname,
-> +							unsigned long *addr)
-> +{
-> +	char *delimiter = ":";
-> +	int ret;
-> +
-> +	ret = -EINVAL;
-> +	*ksymname = strsep(&input_string, delimiter);
-> +	*addr = kallsyms_lookup_name(*ksymname);
-> +
-> +	/* Check for malformed request: (2), (1) and (5) */
-> +	if ((!input_string) ||
-> +		(strlen(input_string) != KSYM_TRACER_OP_LEN + 1) ||
-> +		(*addr == 0))
-> +		goto return_code;
-> +
-> +	ret = ksym_trace_get_access_type(input_string);
-> +
-> +return_code:
-> +	return ret;
-> +}
-> +
-> +static int process_new_ksym_entry(struct trace_ksym *entry, char *ksymname,
-> +			     int op, unsigned long addr)
-> +{
-> +	if (ksym_filter_entry_count >= KSYM_TRACER_MAX) {
-> +		printk(KERN_ERR "ksym_tracer: Maximum limit:(%d) reached. No"
-> +			" new requests for tracing can be accepted now.\n",
-> +			KSYM_TRACER_MAX);
-> +		return -ENOSPC;
-> +	}
-> +
-> +	entry = kzalloc(sizeof(struct trace_ksym), GFP_KERNEL);
-
-
-I'm not sure I understand, you passed an allocated entry to that function, no?
-If your are using entry as a local variable, it doesn't make sense to pass it
-as a parameter.
-
-
-> +	if (!entry)
-> +		return -ENOMEM;
->
-> +	entry->ksym_hbkpt = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
-> +	if (!entry->ksym_hbkpt)
-> +		return -ENOMEM;
-
-
-Ouch, what happens here to the memory pointed by entry?
-
-
-> +
-> +	entry->ksym_hbkpt->info.name = ksymname;
-> +	entry->ksym_hbkpt->info.type = op;
-> +	entry->ksym_addr = entry->ksym_hbkpt->info.address = addr;
-> +	entry->ksym_hbkpt->info.len = HW_BREAKPOINT_LEN_4;
-> +	entry->ksym_hbkpt->priority = HW_BREAKPOINT_PRIO_NORMAL;
-> +
-> +	entry->ksym_hbkpt->installed = (void *)ksym_hbkpt_installed;
-> +	entry->ksym_hbkpt->uninstalled = (void *)ksym_hbkpt_uninstalled;
-> +	entry->ksym_hbkpt->triggered = (void *)ksym_hbkpt_handler;
-> +
-> +	if ((register_kernel_hw_breakpoint(entry->ksym_hbkpt)) < 0) {
-> +		printk(KERN_INFO "ksym_tracer request failed. Try again"
-> +					" later!!\n");
-> +		kfree(entry);
-> +		return -EAGAIN;
-
-
-You forgot to free entry->ksym_hbkpt
-
-
-> +	}
-> +	hlist_add_head(&(entry->ksym_hlist), &ksym_filter_head);
-> +	printk(KERN_INFO "ksym_tracer changes are now effective\n");
-> +
-> +	ksym_filter_entry_count++;
-> +
-> +	return 0;
-> +}
-> +
-> +static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
-> +						size_t count, loff_t *ppos)
-> +{
-> +	struct trace_ksym *entry;
-> +	struct hlist_node *node;
-> +	char buf[KSYM_FILTER_ENTRY_LEN * KSYM_TRACER_MAX];
-> +	ssize_t ret, cnt = 0;
-> +
-> +	mutex_lock(&ksym_tracer_mutex);
-> +
-> +	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
-> +		cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt, "%s:",
-> +				entry->ksym_hbkpt->info.name);
-> +		if (entry->ksym_hbkpt->info.type == HW_BREAKPOINT_WRITE)
-> +			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> +								"-w-\n");
-> +		else if (entry->ksym_hbkpt->info.type == HW_BREAKPOINT_RW)
-> +			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> +								"rw-\n");
-> +	}
-> +	ret = simple_read_from_buffer(ubuf, count, ppos, buf, strlen(buf));
-> +	mutex_unlock(&ksym_tracer_mutex);
-> +
-> +	return ret;
-> +}
-> +
-> +static ssize_t ksym_trace_filter_write(struct file *file,
-> +					const char __user *buffer,
-> +						size_t count, loff_t *ppos)
-> +{
-> +	struct trace_ksym *entry;
-> +	struct hlist_node *node;
-> +	char *input_string, *ksymname = NULL;
-> +	unsigned long ksym_addr = 0;
-> +	int ret, op, changed = 0;
-> +
-> +	input_string = kzalloc(count, GFP_KERNEL);
-> +	if (!input_string)
-> +		return -ENOMEM;
-> +
-> +	/* Ignore echo "" > ksym_trace_filter */
-> +	if (count == 0)
-> +		return 0;
-
-
-You forgot to free input_string in !count case.
-
-
-> +
-> +	if (copy_from_user(input_string, buffer, count))
-> +		return -EFAULT;
-
-
-Ditto.
-
-> +	ret = op = parse_ksym_trace_str(input_string, &ksymname, &ksym_addr);
-> +
-> +	if (ret < 0)
-> +		goto err_ret;
-
-
-Ah, here you didn't forget.
-
-
-> +	mutex_lock(&ksym_tracer_mutex);
-> +
-> +	ret = -EINVAL;
-> +	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
-> +		if (entry->ksym_addr == ksym_addr) {
-> +			/* Check for malformed request: (6) */
-> +			if (entry->ksym_hbkpt->info.type != op)
-> +				changed = 1;
-> +			else
-> +				goto err_ret;
-> +			break;
-> +		}
-> +	}
-> +	if (changed) {
-> +		unregister_kernel_hw_breakpoint(entry->ksym_hbkpt);
-> +		entry->ksym_hbkpt->info.type = op;
-> +		if (op > 0) {
-> +			ret = register_kernel_hw_breakpoint(entry->ksym_hbkpt);
-> +			if (ret > 0) {
-> +				ret = count;
-> +				goto unlock_ret_path;
-> +			}
-> +			if (ret == 0) {
-> +				ret = -ENOSPC;
-> +				unregister_kernel_hw_breakpoint(entry->\
-> +								ksym_hbkpt);
-> +			}
-> +		}
-> +		ksym_filter_entry_count--;
-> +		hlist_del(&(entry->ksym_hlist));
-> +		kfree(entry->ksym_hbkpt);
-> +		kfree(entry);
-> +		ret = count;
-> +		goto err_ret;
-> +	} else {
-> +		/* Check for malformed request: (4) */
-> +		if (op == 0)
-> +			goto err_ret;
-> +
-> +		ret = process_new_ksym_entry(entry, ksymname, op, ksym_addr);
-
-
-You are passing an allocated entry as a parameter, but later on process_new_ksym_entry()
-you allocate a new space for entry.
-I'm confused.
-
-
-> +		if (ret)
-> +			goto err_ret;
-> +	}
-> +	ret = count;
-> +	goto unlock_ret_path;
-> +
-> +err_ret:
-> +	kfree(input_string);
-> +
-> +unlock_ret_path:
-> +	mutex_unlock(&ksym_tracer_mutex);
-> +	return ret;
-> +}
-> +
-> +static const struct file_operations ksym_tracing_fops = {
-> +	.open		= tracing_open_generic,
-> +	.read		= ksym_trace_filter_read,
-> +	.write		= ksym_trace_filter_write,
-> +};
-> +
-> +static int ksym_trace_init(struct trace_array *tr)
-> +{
-> +	int cpu;
-> +
-> +	for_each_online_cpu(cpu)
-> +		tracing_reset(tr, cpu);
-> +	ksym_tracing_enabled = 1;
-> +	ksym_trace_array = tr;
-> +
-> +	return 0;
-> +}
-> +
-> +static void ksym_trace_reset(struct trace_array *tr)
-> +{
-> +	ksym_tracing_enabled = 0;
-> +}
-> +
-> +#ifdef CONFIG_FTRACE_SELFTEST
-> +int trace_selftest_startup_ksym(struct tracer *trace, struct trace_array *tr)
-> +{
-> +	/* TODO: Will be implemented later */
-> +	return 0;
-> +}
-> +#endif /* CONFIG_FTRACE_SELFTEST */
-> +
-> +static void ksym_trace_print_header(struct seq_file *m)
-> +{
-> +
-> +	seq_puts(m,
-> +		 "#       TASK-PID      CPU#      Symbol         Type    "
-> +		 "Function         \n");
-> +	seq_puts(m,
-> +		 "#          |           |          |              |         "
-> +		 "|            \n");
-> +}
-> +
-> +static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
-> +{
-> +	struct trace_entry *entry = iter->ent;
-> +	struct trace_seq *s = &iter->seq;
-> +	struct trace_ksym *field;
-> +	char str[KSYM_SYMBOL_LEN];
-> +	int ret;
-> +
-> +	trace_assign_type(field, entry);
-> +
-> +	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ", field->p_name,
-> +				field->pid, iter->cpu, field->ksym_name);
-> +	if (!ret)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +	switch (field->ksym_hbkpt->info.type) {
-> +	case HW_BREAKPOINT_WRITE:
-> +		ret = trace_seq_printf(s, " W  ");
-> +		break;
-> +	case HW_BREAKPOINT_RW:
-> +		ret = trace_seq_printf(s, " RW ");
-> +		break;
-> +	default:
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +	}
-> +
-> +	if (!ret)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +	sprint_symbol(str, field->ip);
-> +	ret = trace_seq_printf(s, "%-20s\n", str);
-> +	if (!ret)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +	return TRACE_TYPE_HANDLED;
-> +}
-> +
-> +struct tracer ksym_tracer __read_mostly =
-> +{
-> +	.name		= "ksym_tracer",
-> +	.init		= ksym_trace_init,
-> +	.reset		= ksym_trace_reset,
-> +#ifdef CONFIG_FTRACE_SELFTEST
-> +	.selftest	= trace_selftest_startup_ksym,
-> +#endif
-> +	.print_header   = ksym_trace_print_header,
-> +	.print_line	= ksym_trace_output
-> +};
-> +
-> +__init static int init_ksym_trace(void)
-> +{
-> +	struct dentry *d_tracer;
-> +	struct dentry *entry;
-> +
-> +	d_tracer = tracing_init_dentry();
-> +	ksym_filter_entry_count = 0;
-> +
-> +	entry = debugfs_create_file("ksym_trace_filter", 0666, d_tracer,
-> +				    NULL, &ksym_tracing_fops);
-> +	if (!entry)
-> +		pr_warning("Could not create debugfs "
-> +			   "'ksym_trace_filter' file\n");
-> +
-> +	return register_tracer(&ksym_tracer);
-> +
-> +}
-> +device_initcall(init_ksym_trace);
-
-
-Well, the rest looks good.
-
+Index: linux-2.6/fs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/inode.c	2009-03-05 14:08:11.000000000 +1100
++++ linux-2.6/fs/inode.c	2009-03-05 17:20:35.000000000 +1100
+@@ -359,6 +359,7 @@ static int invalidate_list(struct list_h
+ 		invalidate_inode_buffers(inode);
+ 		if (!atomic_read(&inode->i_count)) {
+ 			list_move(&inode->i_list, dispose);
++			WARN_ON(inode->i_state & I_NEW);
+ 			inode->i_state |= I_FREEING;
+ 			count++;
+ 			continue;
+@@ -460,6 +461,7 @@ static void prune_icache(int nr_to_scan)
+ 				continue;
+ 		}
+ 		list_move(&inode->i_list, &freeable);
++		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state |= I_FREEING;
+ 		nr_pruned++;
+ 	}
+@@ -656,6 +658,7 @@ void unlock_new_inode(struct inode *inod
+ 	 * just created it (so there can be no old holders
+ 	 * that haven't tested I_LOCK).
+ 	 */
++	WARN_ON((inode->i_state & (I_LOCK|I_NEW)) != (I_LOCK|I_NEW));
+ 	inode->i_state &= ~(I_LOCK|I_NEW);
+ 	wake_up_inode(inode);
+ }
+@@ -1145,6 +1148,7 @@ void generic_delete_inode(struct inode *
  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+ 	list_del_init(&inode->i_list);
+ 	list_del_init(&inode->i_sb_list);
++	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state |= I_FREEING;
+ 	inodes_stat.nr_inodes--;
+ 	spin_unlock(&inode_lock);
+@@ -1186,16 +1190,19 @@ static void generic_forget_inode(struct 
+ 			spin_unlock(&inode_lock);
+ 			return;
+ 		}
++		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state |= I_WILL_FREE;
+ 		spin_unlock(&inode_lock);
+ 		write_inode_now(inode, 1);
+ 		spin_lock(&inode_lock);
++		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state &= ~I_WILL_FREE;
+ 		inodes_stat.nr_unused--;
+ 		hlist_del_init(&inode->i_hash);
+ 	}
+ 	list_del_init(&inode->i_list);
+ 	list_del_init(&inode->i_sb_list);
++	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state |= I_FREEING;
+ 	inodes_stat.nr_inodes--;
+ 	spin_unlock(&inode_lock);
+Index: linux-2.6/fs/fs-writeback.c
+===================================================================
+--- linux-2.6.orig/fs/fs-writeback.c	2009-03-05 16:33:22.000000000 +1100
++++ linux-2.6/fs/fs-writeback.c	2009-03-05 17:17:59.000000000 +1100
+@@ -274,6 +274,7 @@ __sync_single_inode(struct inode *inode,
+ 	int ret;
+ 
+ 	BUG_ON(inode->i_state & I_SYNC);
++	WARN_ON(inode->i_state & I_NEW);
+ 
+ 	/* Set I_SYNC, reset I_DIRTY */
+ 	dirty = inode->i_state & I_DIRTY;
+@@ -298,6 +299,7 @@ __sync_single_inode(struct inode *inode,
+ 	}
+ 
+ 	spin_lock(&inode_lock);
++	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & I_FREEING)) {
+ 		if (!(inode->i_state & I_DIRTY) &&
+@@ -470,6 +472,11 @@ void generic_sync_sb_inodes(struct super
+ 			break;
+ 		}
+ 
++		if (inode->i_state & I_NEW) {
++			requeue_io(inode);
++			continue;
++		}
++
+ 		if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 			wbc->encountered_congestion = 1;
+ 			if (!sb_is_blkdev_sb(sb))
+@@ -531,7 +538,7 @@ void generic_sync_sb_inodes(struct super
+ 		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+ 			struct address_space *mapping;
+ 
+-			if (inode->i_state & (I_FREEING|I_WILL_FREE))
++			if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
+ 				continue;
+ 			mapping = inode->i_mapping;
+ 			if (mapping->nrpages == 0)
