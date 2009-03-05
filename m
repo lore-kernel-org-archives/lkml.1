@@ -1,258 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZCEE5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZCEE7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZCEE5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 23:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbZCEE5q
+	id S1756123AbZCEE7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 23:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZCEE7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 23:57:46 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:57813 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753620AbZCEE5p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 23:57:45 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Wed, 04 Mar 2009 23:57:37 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC] atomic highmem kmap page pinning
-In-reply-to: <20090305132054.888396da.minchan.kim@barrios-desktop>
-Message-id: <alpine.LFD.2.00.0903042350210.5511@xanadu.home>
-References: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
- <20090304171429.c013013c.minchan.kim@barrios-desktop>
- <alpine.LFD.2.00.0903041101170.5511@xanadu.home>
- <20090305080717.f7832c63.minchan.kim@barrios-desktop>
- <alpine.LFD.2.00.0903042129140.5511@xanadu.home>
- <20090305132054.888396da.minchan.kim@barrios-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 4 Mar 2009 23:59:34 -0500
+Received: from tau.jukie.net ([216.239.93.128]:42146 "EHLO tau.jukie.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751438AbZCEE7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 23:59:32 -0500
+Date: Wed, 4 Mar 2009 23:59:25 -0500
+From: Bart Trojanowski <bart@jukie.net>
+To: David Miller <davem@davemloft.net>
+Cc: kaber@trash.net, greearb@candelatech.com, shemminger@vyatta.com,
+       dada1@cosmosbay.com, frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
+Message-ID: <20090305045925.GG5959@jukie.net>
+References: <49AE509B.3000305@trash.net> <20090304.025914.149394356.davem@davemloft.net> <49AE69DD.80802@trash.net> <20090304.195328.106253933.davem@davemloft.net> <20090305045442.GF5959@jukie.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090305045442.GF5959@jukie.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009, Minchan Kim wrote:
+David,
 
-> On Wed, 04 Mar 2009 21:37:43 -0500 (EST)
-> Nicolas Pitre <nico@cam.org> wrote:
+* Bart Trojanowski <bart@jukie.net> [090304 23:54]:
+> * David Miller <davem@davemloft.net> [090304 22:53]:
+> > vlan: Fix vlan-in-vlan crashes.
+> > 
+> > As analyzed by Patrick McHardy, vlan needs to reset it's
+> > netdev_ops pointer in it's ->init() function but this
+> > leaves the compat method pointers stale.
+> > 
+> > Add a netdev_resync_ops() and call it from the vlan code.
+> <snip>
+> >  include/linux/netdevice.h |    1 +
+> >  net/8021q/vlan_dev.c      |    1 +
+> >  net/core/dev.c            |   54 +++++++++++++++++++++++++++-----------------
+> >  3 files changed, 35 insertions(+), 21 deletions(-)
 > 
-> > My assertion is that the cost is negligible.  This is why I'm asking you 
-> > why you think this is a big cost.
-> 
-> Of course, I am not sure whether it's big cost or not. 
-> But I thought it already is used in many fs, driver.
-> so, whether it's big cost depends on workload type .
-> 
-> However, This patch is needed for VIVT and no coherent cache.
-> Is right ?
-> 
-> If it is right, it will add unnessary overhead in other architecture 
-> which don't have this problem.
-> 
-> I think it's not desirable although it is small cost.
-> If we have a other method which avoids unnessary overhead, It would be better.
-> Unfortunately, I don't have any way to solve this, now. 
+> I tried this patch onto v2.6.29-rc7-3-g559595a, but I still get a crash.
+> I assume that this worked for you, so I am not putting much faith in my
+> results at this late hour.  I'll confirm tomorrow morning that it's not
+> something else.
 
-OK.  What about this patch then:
+... if you're interested, here is the Oops.  And like I said, I'll
+retest tomorrow.
 
->From c4db60c3a2395476331b62e08cf1f64fc9af8d54 Mon Sep 17 00:00:00 2001
-From: Nicolas Pitre <nico@cam.org>
-Date: Wed, 4 Mar 2009 22:49:41 -0500
-Subject: [PATCH] atomic highmem kmap page pinning
+-Bart
 
-Most ARM machines have a non IO coherent cache, meaning that the
-dma_map_*() set of functions must clean and/or invalidate the affected
-memory manually before DMA occurs.  And because the majority of those
-machines have a VIVT cache, the cache maintenance operations must be
-performed using virtual
-addresses.
-
-When a highmem page is kunmap'd, its mapping (and cache) remains in place
-in case it is kmap'd again. However if dma_map_page() is then called with
-such a page, some cache maintenance on the remaining mapping must be
-performed. In that case, page_address(page) is non null and we can use
-that to synchronize the cache.
-
-It is unlikely but still possible for kmap() to race and recycle the
-virtual address obtained above, and use it for another page before some
-on-going cache invalidation loop in dma_map_page() is done. In that case,
-the new mapping could end up with dirty cache lines for another page,
-and the unsuspecting cache invalidation loop in dma_map_page() might
-simply discard those dirty cache lines resulting in data loss.
-
-For example, let's consider this sequence of events:
-
-	- dma_map_page(..., DMA_FROM_DEVICE) is called on a highmem page.
-
-	-->	- vaddr = page_address(page) is non null. In this case
-		it is likely that the page has valid cache lines
-		associated with vaddr. Remember that the cache is VIVT.
-
-		-->	for (i = vaddr; i < vaddr + PAGE_SIZE; i += 32)
-				invalidate_cache_line(i);
-
-	*** preemption occurs in the middle of the loop above ***
-
-	- kmap_high() is called for a different page.
-
-	-->	- last_pkmap_nr wraps to zero and flush_all_zero_pkmaps()
-		  is called.  The pkmap_count value for the page passed
-		  to dma_map_page() above happens to be 1, so the page
-		  is unmapped.  But prior to that, flush_cache_kmaps()
-		  cleared the cache for it.  So far so good.
-
-		- A fresh pkmap entry is assigned for this kmap request.
-		  The Murphy law says this pkmap entry will eventually
-		  happen to use the same vaddr as the one which used to
-		  belong to the other page being processed by
-		  dma_map_page() in the preempted thread above.
-
-	- The kmap_high() caller start dirtying the cache using the
-	  just assigned virtual mapping for its page.
-
-	*** the first thread is rescheduled ***
-
-			- The for(...) loop is resumed, but now cached
-			  data belonging to a different physical page is
-			  being discarded !
-
-And this is not only a preemption issue as ARM can be SMP as well,
-making the above scenario just as likely. Hence the need for some kind
-of pkmap page pinning which can be used in any context, primarily for
-the benefit of dma_map_page() on ARM.
-
-This provides the necessary interface to cope with the above issue if
-ARCH_NEEDS_KMAP_HIGH_GET is defined, otherwise the resulting code is 
-unchanged.
-
-Signed-off-by: Nicolas Pitre <nico@marvell.com>
-
-diff --git a/mm/highmem.c b/mm/highmem.c
-index b36b83b..cc61399 100644
---- a/mm/highmem.c
-+++ b/mm/highmem.c
-@@ -67,6 +67,25 @@ pte_t * pkmap_page_table;
- 
- static DECLARE_WAIT_QUEUE_HEAD(pkmap_map_wait);
- 
-+/*
-+ * Most architectures have no use for kmap_high_get(), so let's abstract
-+ * the disabling of IRQ out of the locking in that case to save on a
-+ * potential useless overhead.
-+ */
-+#ifdef ARCH_NEEDS_KMAP_HIGH_GET
-+#define spin_lock_kmap()             spin_lock_irq(&kmap_lock)
-+#define spin_unlock_kmap()           spin_unlock_irq(&kmap_lock)
-+#define spin_lock_kmap_any(flags)    spin_lock_irqsave(&kmap_lock, flags)
-+#define spin_unlock_kmap_any(flags)  spin_unlock_irqrestore(&kmap_lock, flags)
-+#else
-+#define spin_lock_kmap()             spin_lock(&kmap_lock)
-+#define spin_unlock_kmap()           spin_unlock(&kmap_lock)
-+#define spin_lock_kmap_any(flags)    \
-+	do { spin_lock(&kmap_lock); (void)(flags); } while (0)
-+#define spin_unlock_kmap_any(flags)  \
-+	do { spin_unlock(&kmap_lock); (void)(flags); } while (0)
-+#endif
-+
- static void flush_all_zero_pkmaps(void)
- {
- 	int i;
-@@ -113,9 +132,9 @@ static void flush_all_zero_pkmaps(void)
-  */
- void kmap_flush_unused(void)
- {
--	spin_lock(&kmap_lock);
-+	spin_lock_kmap();
- 	flush_all_zero_pkmaps();
--	spin_unlock(&kmap_lock);
-+	spin_unlock_kmap();
- }
- 
- static inline unsigned long map_new_virtual(struct page *page)
-@@ -145,10 +164,10 @@ start:
- 
- 			__set_current_state(TASK_UNINTERRUPTIBLE);
- 			add_wait_queue(&pkmap_map_wait, &wait);
--			spin_unlock(&kmap_lock);
-+			spin_unlock_kmap();
- 			schedule();
- 			remove_wait_queue(&pkmap_map_wait, &wait);
--			spin_lock(&kmap_lock);
-+			spin_lock_kmap();
- 
- 			/* Somebody else might have mapped it while we slept */
- 			if (page_address(page))
-@@ -184,29 +203,59 @@ void *kmap_high(struct page *page)
- 	 * For highmem pages, we can't trust "virtual" until
- 	 * after we have the lock.
- 	 */
--	spin_lock(&kmap_lock);
-+	spin_lock_kmap();
- 	vaddr = (unsigned long)page_address(page);
- 	if (!vaddr)
- 		vaddr = map_new_virtual(page);
- 	pkmap_count[PKMAP_NR(vaddr)]++;
- 	BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 2);
--	spin_unlock(&kmap_lock);
-+	spin_unlock_kmap();
- 	return (void*) vaddr;
- }
- 
- EXPORT_SYMBOL(kmap_high);
- 
-+#ifdef ARCH_NEEDS_KMAP_HIGH_GET
-+/**
-+ * kmap_high_get - pin a highmem page into memory
-+ * @page: &struct page to pin
-+ *
-+ * Returns the page's current virtual memory address, or NULL if no mapping
-+ * exists.  When and only when a non null address is returned then a
-+ * matching call to kunmap_high() is necessary.
-+ *
-+ * This can be called from any context.
-+ */
-+void *kmap_high_get(struct page *page)
-+{
-+	unsigned long vaddr, flags;
-+
-+	spin_lock_kmap_any(flags);
-+	vaddr = (unsigned long)page_address(page);
-+	if (vaddr) {
-+		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
-+		pkmap_count[PKMAP_NR(vaddr)]++;
-+	}
-+	spin_unlock_kmap_any(flags);
-+	return (void*) vaddr;
-+}
-+#endif
-+
- /**
-  * kunmap_high - map a highmem page into memory
-  * @page: &struct page to unmap
-+ *
-+ * If ARCH_NEEDS_KMAP_HIGH_GET is not defined then this may be called
-+ * only from user context.
-  */
- void kunmap_high(struct page *page)
- {
- 	unsigned long vaddr;
- 	unsigned long nr;
-+	unsigned long flags;
- 	int need_wakeup;
- 
--	spin_lock(&kmap_lock);
-+	spin_lock_kmap_any(flags);
- 	vaddr = (unsigned long)page_address(page);
- 	BUG_ON(!vaddr);
- 	nr = PKMAP_NR(vaddr);
-@@ -232,7 +281,7 @@ void kunmap_high(struct page *page)
- 		 */
- 		need_wakeup = waitqueue_active(&pkmap_map_wait);
- 	}
--	spin_unlock(&kmap_lock);
-+	spin_unlock_kmap_any(flags);
- 
- 	/* do wake-up, if needed, race-free outside of the spin lock */
- 	if (need_wakeup)
+[  231.748126] 802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
+[  231.751563] All bugs added by David S. Miller <davem@redhat.com>
+[  231.876164] PANIC: double fault, gdt at c364c000 [255 bytes]
+[  231.876271] double fault, tss at c364fae0
+[  231.876271] eip = f8163c65, esp = f3045000
+[  231.876271] eax = f3d78800, ebx = f3d78800, ecx = f8163c62, edx = f3e4ce40
+[  231.876271] esi = f3e4ce40, edi = c05228fc
+[  232.156110] BUG: unable to handle kernel paging request at a0ad0eb4
+[  232.159226] IP: [<c011fd49>] hrtick_start_fair+0x1f/0x17d
+[  232.160050] *pde = 00000000 
+[  232.160050] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+[  232.160050] last sysfs file: /sys/class/net/lo/operstate
+[  232.160050] Modules linked in: 8021q virtio_balloon virtio_pci thermal_sys
+[  232.160050] 
+[  232.160050] Pid: 0, comm: swapper Tainted: G S         (2.6.29-rc7-bisect-00004-g39fc204 #1) 
+[  232.160050] EIP: 0060:[<c011fd49>] EFLAGS: 00010092 CPU: 0
+[  232.160050] EIP is at hrtick_start_fair+0x1f/0x17d
+[  232.160050] EAX: c0599d80 EBX: c364e200 ECX: c3651dd4 EDX: f8163c85
+[  232.160050] ESI: f52f6198 EDI: f622b708 EBP: c0545ddc ESP: c0545dc4
+[  232.160050]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[  232.160050] Process swapper (pid: 0, ti=c0544000 task=c04fd380 task.ti=c0544000)
+[  232.160050] Stack:
+[  232.160050]  c3651d80 5f684afd 00000002 c3651dd4 f52f6198 c3651d80 c0545df0 c011ff82
+[  232.160050]  f4796708 c03d6ad8 00000000 c0545e14 c011da63 0d94c928 00000036 00000000
+[  232.160050]  c3651d80 c3651d80 c3648d80 00000522 c0545e20 c011daaa f4796708 c0545e34
+[  232.160050] Call Trace:
+[  232.160050]  [<c011ff82>] ? dequeue_task_fair+0x51/0x56
+[  232.160050]  [<c011da63>] ? dequeue_task+0xd5/0xe4
+[  232.160050]  [<c011daaa>] ? deactivate_task+0x19/0x1f
+[  232.160050]  [<c011e504>] ? pull_task+0x11/0x3d
+[  232.160050]  [<c011e6fc>] ? load_balance_fair+0x134/0x1ce
+[  232.160050]  [<c0124684>] ? rebalance_domains+0x219/0x421
+[  232.160050]  [<c01248ba>] ? run_rebalance_domains+0x2e/0x9e
+[  232.160050]  [<c012e0e7>] ? __do_softirq+0x8d/0x133
+[  232.160050]  [<c012e1d5>] ? do_softirq+0x48/0x57
+[  232.160050]  [<c012e2e6>] ? irq_exit+0x38/0x66
+[  232.160050]  [<c011228b>] ? smp_apic_timer_interrupt+0x74/0x82
+[  232.160050]  [<c0103cc0>] ? apic_timer_interrupt+0x28/0x30
+[  232.160050]  [<c011824f>] ? native_safe_halt+0x5/0x7
+[  232.160050]  [<c0108c92>] ? default_idle+0x30/0x58
+[  232.160050]  [<c0102605>] ? cpu_idle+0x63/0x7e
+[  232.160050]  [<c03bee3b>] ? rest_init+0x53/0x55
+[  232.160050] Code: 3e ff ff ff 83 c4 14 5b 5e 5f 5d c3 55 89 e5 57 89 d7 56 53 83 ec 0c 89 45 e8 8b 9a 80 00 00 00 b8 80 9d 59 c0 8b 52 04 8b 52 10 <03> 04 95 a0 1c 54 c0 39 45 e8 74 14 6a 00 68 7a 03 00 00 68 e1 
+[  232.160050] EIP: [<c011fd49>] hrtick_start_fair+0x1f/0x17d SS:ESP 0068:c0545dc4
+[  232.160050] ---[ end trace b72565b053d710aa ]---
+[  232.160050] Kernel panic - not syncing: Fatal exception in interrupt
+[  232.160050] ------------[ cut here ]------------
+[  232.160050] WARNING: at kernel/smp.c:329 smp_call_function_many+0x37/0x1cf()
+[  232.160050] Hardware name: 
+[  232.160050] Modules linked in: 8021q virtio_balloon virtio_pci thermal_sys
+[  232.160050] Pid: 0, comm: swapper Tainted: G S    D    2.6.29-rc7-bisect-00004-g39fc204 #1
+[  232.160050] Call Trace:
+[  232.160050]  [<c0129779>] warn_slowpath+0x71/0xa8
+[  232.160050]  [<c0288f14>] ? _raw_spin_unlock+0x74/0x78
+[  232.160050]  [<c03ce3aa>] ? _spin_unlock+0x1d/0x20
+[  232.160050]  [<c0288f6b>] ? _raw_spin_lock+0x53/0xfa
+[  232.160050]  [<c03ccadd>] ? mutex_unlock+0x8/0xa
+[  232.160050]  [<c014b26d>] smp_call_function_many+0x37/0x1cf
+[  232.160050]  [<c0108ec2>] ? stop_this_cpu+0x0/0x47
+[  232.160050]  [<c014b421>] smp_call_function+0x1c/0x23
+[  232.160050]  [<c0110e91>] native_smp_send_stop+0x1b/0x45
+[  232.160050]  [<c03cb99e>] panic+0x48/0xe4
+[  232.160050]  [<c0105ff4>] oops_end+0x9a/0xa9
+[  232.160050]  [<c0106187>] die+0x54/0x5a
+[  232.160050]  [<c01195d3>] do_page_fault+0x5f8/0x69d
+[  232.160050]  [<c0119fe8>] ? __change_page_attr_set_clr+0x2a7/0x791
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0119fe8>] ? __change_page_attr_set_clr+0x2a7/0x791
+[  232.160050]  [<c011a5b0>] ? kernel_map_pages+0xde/0xfe
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0118fdb>] ? do_page_fault+0x0/0x69d
+[  232.160050]  [<c03ce82a>] error_code+0x72/0x78
+[  232.160050]  [<f8163c85>] ? vlan_dev_neigh_setup+0x23/0x2a [8021q]
+[  232.160050]  [<c011fd49>] ? hrtick_start_fair+0x1f/0x17d
+[  232.160050]  [<c011ff82>] dequeue_task_fair+0x51/0x56
+[  232.160050]  [<c011da63>] dequeue_task+0xd5/0xe4
+[  232.160050]  [<c011daaa>] deactivate_task+0x19/0x1f
+[  232.160050]  [<c011e504>] pull_task+0x11/0x3d
+[  232.160050]  [<c011e6fc>] load_balance_fair+0x134/0x1ce
+[  232.160050]  [<c0124684>] rebalance_domains+0x219/0x421
+[  232.160050]  [<c01248ba>] run_rebalance_domains+0x2e/0x9e
+[  232.160050]  [<c012e0e7>] __do_softirq+0x8d/0x133
+[  232.160050]  [<c012e1d5>] do_softirq+0x48/0x57
+[  232.160050]  [<c012e2e6>] irq_exit+0x38/0x66
+[  232.160050]  [<c011228b>] smp_apic_timer_interrupt+0x74/0x82
+[  232.160050]  [<c0103cc0>] apic_timer_interrupt+0x28/0x30
+[  232.160050]  [<c011824f>] ? native_safe_halt+0x5/0x7
+[  232.160050]  [<c0108c92>] default_idle+0x30/0x58
+[  232.160050]  [<c0102605>] cpu_idle+0x63/0x7e
+[  232.160050]  [<c03bee3b>] rest_init+0x53/0x55
+[  232.160050] ---[ end trace b72565b053d710ab ]---
+[  232.160050] ------------[ cut here ]------------
+[  232.160050] WARNING: at kernel/smp.c:226 smp_call_function_single+0x37/0xe8()
+[  232.160050] Hardware name: 
+[  232.160050] Modules linked in: 8021q virtio_balloon virtio_pci thermal_sys
+[  232.160050] Pid: 0, comm: swapper Tainted: G S    D W  2.6.29-rc7-bisect-00004-g39fc204 #1
+[  232.160050] Call Trace:
+[  232.160050]  [<c0129779>] warn_slowpath+0x71/0xa8
+[  232.160050]  [<c0288f14>] ? _raw_spin_unlock+0x74/0x78
+[  232.160050]  [<c03ce300>] ? _read_unlock+0x15/0x20
+[  232.160050]  [<c0288f6b>] ? _raw_spin_lock+0x53/0xfa
+[  232.160050]  [<c014b185>] smp_call_function_single+0x37/0xe8
+[  232.160050]  [<c0108ec2>] ? stop_this_cpu+0x0/0x47
+[  232.160050]  [<c014b2ef>] smp_call_function_many+0xb9/0x1cf
+[  232.160050]  [<c0108ec2>] ? stop_this_cpu+0x0/0x47
+[  232.160050]  [<c014b421>] smp_call_function+0x1c/0x23
+[  232.160050]  [<c0110e91>] native_smp_send_stop+0x1b/0x45
+[  232.160050]  [<c03cb99e>] panic+0x48/0xe4
+[  232.160050]  [<c0105ff4>] oops_end+0x9a/0xa9
+[  232.160050]  [<c0106187>] die+0x54/0x5a
+[  232.160050]  [<c01195d3>] do_page_fault+0x5f8/0x69d
+[  232.160050]  [<c0119fe8>] ? __change_page_attr_set_clr+0x2a7/0x791
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0119fe8>] ? __change_page_attr_set_clr+0x2a7/0x791
+[  232.160050]  [<c011a5b0>] ? kernel_map_pages+0xde/0xfe
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0119ca2>] ? lookup_address+0x68/0x88
+[  232.160050]  [<c0118fdb>] ? do_page_fault+0x0/0x69d
+[  232.160050]  [<c03ce82a>] error_code+0x72/0x78
+[  232.160050]  [<f8163c85>] ? vlan_dev_neigh_setup+0x23/0x2a [8021q]
+[  232.160050]  [<c011fd49>] ? hrtick_start_fair+0x1f/0x17d
+[  232.160050]  [<c011ff82>] dequeue_task_fair+0x51/0x56
+[  232.160050]  [<c011da63>] dequeue_task+0xd5/0xe4
+[  232.160050]  [<c011daaa>] deactivate_task+0x19/0x1f
+[  232.160050]  [<c011e504>] pull_task+0x11/0x3d
+[  232.160050]  [<c011e6fc>] load_balance_fair+0x134/0x1ce
+[  232.160050]  [<c0124684>] rebalance_domains+0x219/0x421
+[  232.160050]  [<c01248ba>] run_rebalance_domains+0x2e/0x9e
+[  232.160050]  [<c012e0e7>] __do_softirq+0x8d/0x133
+[  232.160050]  [<c012e1d5>] do_softirq+0x48/0x57
+[  232.160050]  [<c012e2e6>] irq_exit+0x38/0x66
+[  232.160050]  [<c011228b>] smp_apic_timer_interrupt+0x74/0x82
+[  232.160050]  [<c0103cc0>] apic_timer_interrupt+0x28/0x30
+[  232.160050]  [<c011824f>] ? native_safe_halt+0x5/0x7
+[  232.160050]  [<c0108c92>] default_idle+0x30/0x58
+[  232.160050]  [<c0102605>] cpu_idle+0x63/0x7e
+[  232.160050]  [<c03bee3b>] rest_init+0x53/0x55
+[  232.160050] ---[ end trace b72565b053d710ac ]---
