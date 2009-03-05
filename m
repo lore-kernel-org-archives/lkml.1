@@ -1,16 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbZCEQjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZCEQjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbZCEQjg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZCEQjI
+	id S1756483AbZCEQjv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZCEQjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 5 Mar 2009 11:39:10 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:42921 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754650AbZCEQjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Mar 2009 11:39:08 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:58273 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230AbZCEQjG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:39:06 -0500
-Subject: [RFC][PATCH 01/11] kill '_data' in cr_hdr_fd_data name
+Subject: [RFC][PATCH 04/11] actually use f_op in checkpoint code
 To: Ingo Molnar <mingo@elte.hu>
 Cc: containers <containers@lists.linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -20,61 +19,75 @@ Cc: containers <containers@lists.linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>,
        Dave Hansen <dave@linux.vnet.ibm.com>
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Thu, 05 Mar 2009 08:38:58 -0800
+Date: Thu, 05 Mar 2009 08:39:02 -0800
 References: <20090305163857.0C18F3FD@kernel>
 In-Reply-To: <20090305163857.0C18F3FD@kernel>
-Message-Id: <20090305163858.8414173E@kernel>
+Message-Id: <20090305163902.C0DC6044@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The 'cr_hdr_fd_data' name is too long for me.  Adding data
-at the end doesn't clarify anything in its use which makes
-it a waste of space.  Kill it.
+Right now, we assume all normal files and directories
+can be checkpointed.  However, as usual in the VFS, there
+are specialized places that will always need an ability
+to override these defaults.  We could do this completely
+in the checkpoint code, but that would bitrot quickly.
+
+This adds a new 'file_operations' function for
+checkpointing a file.  I did this under the assumption
+that we should have a dirt-simple way to make something
+(un)checkpointable that fits in with current code.
+
+As you can see in the ext[234] and /proc patches, all
+that we have to do to make something simple be
+supported is add a single "generic" f_op entry.
 
 Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
 
- linux-2.6.git-dave/checkpoint/ckpt_file.c         |    2 +-
- linux-2.6.git-dave/checkpoint/rstr_file.c         |    2 +-
- linux-2.6.git-dave/include/linux/checkpoint_hdr.h |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ linux-2.6.git-dave/checkpoint/ckpt_file.c |    4 ++--
+ linux-2.6.git-dave/include/linux/fs.h     |    9 +++++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff -puN checkpoint/ckpt_file.c~f49811bdfd2cde1dfa766f38cc017a5cdd8be75e checkpoint/ckpt_file.c
---- linux-2.6.git/checkpoint/ckpt_file.c~f49811bdfd2cde1dfa766f38cc017a5cdd8be75e	2009-03-05 08:36:59.000000000 -0800
-+++ linux-2.6.git-dave/checkpoint/ckpt_file.c	2009-03-05 08:36:59.000000000 -0800
-@@ -76,7 +76,7 @@ int cr_scan_fds(struct files_struct *fil
- static int cr_write_fd_data(struct cr_ctx *ctx, struct file *file, int parent)
- {
- 	struct cr_hdr h;
--	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct cr_hdr_fd *hh = cr_hbuf_get(ctx, sizeof(*hh));
- 	struct dentry *dent = file->f_dentry;
- 	struct inode *inode = dent->d_inode;
- 	enum fd_type fd_type;
-diff -puN checkpoint/rstr_file.c~f49811bdfd2cde1dfa766f38cc017a5cdd8be75e checkpoint/rstr_file.c
---- linux-2.6.git/checkpoint/rstr_file.c~f49811bdfd2cde1dfa766f38cc017a5cdd8be75e	2009-03-05 08:36:59.000000000 -0800
-+++ linux-2.6.git-dave/checkpoint/rstr_file.c	2009-03-05 08:36:59.000000000 -0800
-@@ -71,7 +71,7 @@ static int cr_attach_get_file(struct fil
- static int
- cr_read_fd_data(struct cr_ctx *ctx, struct files_struct *files, int rparent)
- {
--	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct cr_hdr_fd *hh = cr_hbuf_get(ctx, sizeof(*hh));
- 	struct file *file;
- 	int parent, ret;
- 	int fd = 0;	/* pacify gcc warning */
-diff -puN include/linux/checkpoint_hdr.h~f49811bdfd2cde1dfa766f38cc017a5cdd8be75e include/linux/checkpoint_hdr.h
---- linux-2.6.git/include/linux/checkpoint_hdr.h~f49811bdfd2cde1dfa766f38cc017a5cdd8be75e	2009-03-05 08:36:59.000000000 -0800
-+++ linux-2.6.git-dave/include/linux/checkpoint_hdr.h	2009-03-05 08:36:59.000000000 -0800
-@@ -137,7 +137,7 @@ enum  fd_type {
- 	CR_FD_DIR,
+diff -puN checkpoint/ckpt_file.c~f_op-for-checkpointability checkpoint/ckpt_file.c
+--- linux-2.6.git/checkpoint/ckpt_file.c~f_op-for-checkpointability	2009-03-05 08:37:01.000000000 -0800
++++ linux-2.6.git-dave/checkpoint/ckpt_file.c	2009-03-05 08:37:01.000000000 -0800
+@@ -106,8 +106,8 @@ static int cr_write_fd_data(struct cr_ct
+ 
+ 	hh->fd_type = CR_FD_UNSET;
+ 	ret = -EBADF;
+-	if ((file->f_dentry->d_inode->i_mode & S_IFMT) == S_IFREG)
+-		ret = generic_file_checkpoint(file, ctx, hh);
++	if (file->f_op->checkpoint)
++		ret = file->f_op->checkpoint(file, ctx, hh);
+ 
+ 	if (ret)
+ 		goto out;
+diff -puN include/linux/fs.h~f_op-for-checkpointability include/linux/fs.h
+--- linux-2.6.git/include/linux/fs.h~f_op-for-checkpointability	2009-03-05 08:37:01.000000000 -0800
++++ linux-2.6.git-dave/include/linux/fs.h	2009-03-05 08:37:01.000000000 -0800
+@@ -1296,6 +1296,14 @@ int generic_osync_inode(struct inode *, 
+ typedef int (*filldir_t)(void *, const char *, int, loff_t, u64, unsigned);
+ struct block_device_operations;
+ 
++struct cr_ctx;
++struct cr_hdr_fd;
++#ifdef CONFIG_CHECKPOINT_RESTART
++int generic_file_checkpoint(struct file *, struct cr_ctx *, struct cr_hdr_fd *);
++#else
++#define generic_file_checkpoint NULL
++#endif
++
+ /* These macros are for out of kernel modules to test that
+  * the kernel supports the unlocked_ioctl and compat_ioctl
+  * fields in struct file_operations. */
+@@ -1334,6 +1342,7 @@ struct file_operations {
+ 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
+ 	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
+ 	int (*setlease)(struct file *, long, struct file_lock **);
++	int (*checkpoint)(struct file *, struct cr_ctx *, struct cr_hdr_fd *);
  };
  
--struct cr_hdr_fd_data {
-+struct cr_hdr_fd {
- 	__u16 fd_type;
- 	__u16 f_mode;
- 	__u32 f_flags;
+ struct inode_operations {
 _
