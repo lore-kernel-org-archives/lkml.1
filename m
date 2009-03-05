@@ -1,71 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbZCEP1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZCEP3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbZCEP1F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 10:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZCEP0x
+	id S1755396AbZCEP3l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 10:29:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZCEP3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 10:26:53 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:37225 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752366AbZCEP0w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 10:26:52 -0500
-Date: Thu, 5 Mar 2009 20:56:42 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
-Message-ID: <20090305152642.GA5482@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090302060519.GG11421@balbir.in.ibm.com> <20090302152128.e74f51ef.kamezawa.hiroyu@jp.fujitsu.com> <20090302063649.GJ11421@balbir.in.ibm.com> <20090302160602.521928a5.kamezawa.hiroyu@jp.fujitsu.com> <20090302124210.GK11421@balbir.in.ibm.com> <c31ccd23cb41f0f7594b3f56b20f0165.squirrel@webmail-b.css.fujitsu.com> <20090302174156.GM11421@balbir.in.ibm.com> <20090303085914.555089b1.kamezawa.hiroyu@jp.fujitsu.com> <20090303111244.GP11421@balbir.in.ibm.com> <20090305180410.a44035e0.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 5 Mar 2009 10:29:33 -0500
+Received: from mga09.intel.com ([134.134.136.24]:14306 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753135AbZCEP3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 10:29:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,307,1233561600"; 
+   d="scan'208";a="391939730"
+Date: Thu, 5 Mar 2009 16:29:21 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
+       ak@linux.jf.intel.com, srostedt@redhat.com
+Subject: [patch 3/4] x86, hw-branch-tracer: keep resources on stop
+Message-ID: <20090305162921.A25216@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20090305180410.a44035e0.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-05 18:04:10]:
+Distinguish init/reset and start/stop:
+init/reset will allocate and release bts tracing resources
+stop/start will suspend and resume bts tracing
 
-> On Tue, 3 Mar 2009 16:42:44 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > > I wrote
-> > > ==
-> > >  if (victim is not over soft-limit)
-> > > ==
-> > > ....Maybe this discussion style is bad and I should explain my approach in patch.
-> > > (I can't write code today, sorry.)
-> > > 
-> 
-> This is an example of my direction, " do it lazy" softlimit.
-> 
-> Maybe this is not perfect but this addresses almost all my concern.
-> I hope this will be an input for you.
-> I didn't divide patch into small pieces intentionally to show a big picture.
-> Thanks,
-> -Kame
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> An example patch. Don't trust me, this patch may have bugs.
->
+Return an error on init() if no cpu can be traced.
 
-Well this is not do it lazy, all memcg's are scanned tree is built everytime
-kswapd invokes soft limit reclaim. With 100 cgroups and 5 nodes, we'll
-end up scanning cgroups 500 times. There is no ordering of selected
-victims, so the largest victim might still be running unaffected.
 
--- 
-	Balbir
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
+
+Index: gits/kernel/trace/trace_hw_branches.c
+===================================================================
+--- gits.orig/kernel/trace/trace_hw_branches.c	2009-03-02 16:15:11.000000000 +0100
++++ gits/kernel/trace/trace_hw_branches.c	2009-03-03 10:17:31.000000000 +0100
+@@ -38,17 +38,18 @@ static DEFINE_PER_CPU(unsigned char[SIZE
+ #define this_tracer per_cpu(tracer, smp_processor_id())
+ #define this_buffer per_cpu(buffer, smp_processor_id())
+ 
+-static int __read_mostly trace_hw_branches_enabled;
++static int trace_hw_branches_enabled __read_mostly;
++static int trace_hw_branches_suspended __read_mostly;
+ static struct trace_array *hw_branch_trace __read_mostly;
+ 
+ 
+ /*
+- * Start tracing on the current cpu.
++ * Initialize the tracer for the current cpu.
+  * The argument is ignored.
+  *
+  * pre: bts_tracer_lock must be locked.
+  */
+-static void bts_trace_start_cpu(void *arg)
++static void bts_trace_init_cpu(void *arg)
+ {
+ 	if (this_tracer)
+ 		ds_release_bts(this_tracer);
+@@ -63,23 +64,39 @@ static void bts_trace_start_cpu(void *ar
+ 	}
+ }
+ 
+-static void bts_trace_start(struct trace_array *tr)
++static int bts_trace_init(struct trace_array *tr)
+ {
++	int cpu, avail;
++
+ 	spin_lock(&bts_tracer_lock);
+ 
+-	on_each_cpu(bts_trace_start_cpu, NULL, 1);
+-	trace_hw_branches_enabled = 1;
++	hw_branch_trace = tr;
++
++	on_each_cpu(bts_trace_init_cpu, NULL, 1);
++
++	/* Check on how many cpus we could enable tracing */
++	avail = 0;
++	for_each_online_cpu(cpu)
++		if (per_cpu(tracer, cpu))
++			avail++;
++
++	trace_hw_branches_enabled = (avail ? 1 : 0);
++	trace_hw_branches_suspended = 0;
+ 
+ 	spin_unlock(&bts_tracer_lock);
++
++
++	/* If we could not enable tracing on a single cpu, we fail. */
++	return avail ? 0 : -EOPNOTSUPP;
+ }
+ 
+ /*
+- * Stop tracing on the current cpu.
++ * Release the tracer for the current cpu.
+  * The argument is ignored.
+  *
+  * pre: bts_tracer_lock must be locked.
+  */
+-static void bts_trace_stop_cpu(void *arg)
++static void bts_trace_release_cpu(void *arg)
+ {
+ 	if (this_tracer) {
+ 		ds_release_bts(this_tracer);
+@@ -87,12 +104,57 @@ static void bts_trace_stop_cpu(void *arg
+ 	}
+ }
+ 
+-static void bts_trace_stop(struct trace_array *tr)
++static void bts_trace_reset(struct trace_array *tr)
+ {
+ 	spin_lock(&bts_tracer_lock);
+ 
++	on_each_cpu(bts_trace_release_cpu, NULL, 1);
+ 	trace_hw_branches_enabled = 0;
+-	on_each_cpu(bts_trace_stop_cpu, NULL, 1);
++	trace_hw_branches_suspended = 0;
++
++	spin_unlock(&bts_tracer_lock);
++}
++
++/*
++ * Resume tracing on the current cpu.
++ * The argument is ignored.
++ *
++ * pre: bts_tracer_lock must be locked.
++ */
++static void bts_trace_resume_cpu(void *arg)
++{
++	if (this_tracer)
++		ds_resume_bts(this_tracer);
++}
++
++static void bts_trace_start(struct trace_array *tr)
++{
++	spin_lock(&bts_tracer_lock);
++
++	on_each_cpu(bts_trace_resume_cpu, NULL, 1);
++	trace_hw_branches_suspended = 0;
++
++	spin_unlock(&bts_tracer_lock);
++}
++
++/*
++ * Suspend tracing on the current cpu.
++ * The argument is ignored.
++ *
++ * pre: bts_tracer_lock must be locked.
++ */
++static void bts_trace_suspend_cpu(void *arg)
++{
++	if (this_tracer)
++		ds_suspend_bts(this_tracer);
++}
++
++static void bts_trace_stop(struct trace_array *tr)
++{
++	spin_lock(&bts_tracer_lock);
++
++	on_each_cpu(bts_trace_suspend_cpu, NULL, 1);
++	trace_hw_branches_suspended = 1;
+ 
+ 	spin_unlock(&bts_tracer_lock);
+ }
+@@ -110,10 +172,14 @@ static int __cpuinit bts_hotcpu_handler(
+ 	switch (action) {
+ 	case CPU_ONLINE:
+ 	case CPU_DOWN_FAILED:
+-		smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
++		smp_call_function_single(cpu, bts_trace_init_cpu, NULL, 1);
++
++		if (trace_hw_branches_suspended)
++			smp_call_function_single(cpu, bts_trace_suspend_cpu,
++						 NULL, 1);
+ 		break;
+ 	case CPU_DOWN_PREPARE:
+-		smp_call_function_single(cpu, bts_trace_stop_cpu, NULL, 1);
++		smp_call_function_single(cpu, bts_trace_release_cpu, NULL, 1);
+ 		break;
+ 	}
+ 
+@@ -126,20 +192,6 @@ static struct notifier_block bts_hotcpu_
+ 	.notifier_call = bts_hotcpu_handler
+ };
+ 
+-static int bts_trace_init(struct trace_array *tr)
+-{
+-	hw_branch_trace = tr;
+-
+-	bts_trace_start(tr);
+-
+-	return 0;
+-}
+-
+-static void bts_trace_reset(struct trace_array *tr)
+-{
+-	bts_trace_stop(tr);
+-}
+-
+ static void bts_trace_print_header(struct seq_file *m)
+ {
+ 	seq_puts(m, "# CPU#        TO  <-  FROM\n");
+@@ -276,7 +328,8 @@ void trace_hw_branch_oops(void)
+ {
+ 	spin_lock(&bts_tracer_lock);
+ 
+-	trace_bts_cpu(hw_branch_trace);
++	if (trace_hw_branches_enabled)
++		trace_bts_cpu(hw_branch_trace);
+ 
+ 	spin_unlock(&bts_tracer_lock);
+ }
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
