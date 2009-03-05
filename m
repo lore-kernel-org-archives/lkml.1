@@ -1,162 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbZCEQvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZCEQyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbZCEQvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZCEQvW
+	id S1756473AbZCEQyi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:54:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZCEQy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 11:51:22 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:33460 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756549AbZCEQvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:51:21 -0500
-Message-ID: <49B00302.5000607@us.ibm.com>
-Date: Thu, 05 Mar 2009 08:51:14 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "lkml, " <linux-kernel@vger.kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <srostedt@redhat.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [TIP][RFC 6/7] futex: add requeue_pi calls
-References: <49AC73A9.4040804@us.ibm.com> <49AC77D1.6090106@us.ibm.com> <49AE3386.1070604@us.ibm.com>
-In-Reply-To: <49AE3386.1070604@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 5 Mar 2009 11:54:26 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:33775 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752707AbZCEQyZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 11:54:25 -0500
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: scameron@beardog.cca.cpqcorp.net
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mike.miller@hp.com, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
+In-Reply-To: <20090305142114.GG15340@beardog.cca.cpqcorp.net>
+References: <20090302145650.GW15340@beardog.cca.cpqcorp.net>
+	 <20090303153402A.fujita.tomonori@lab.ntt.co.jp>
+	 <20090303162821.GB15340@beardog.cca.cpqcorp.net>
+	 <20090305144843N.fujita.tomonori@lab.ntt.co.jp>
+	 <20090305142114.GG15340@beardog.cca.cpqcorp.net>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 16:54:19 +0000
+Message-Id: <1236272059.7050.14.camel@grinch>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart wrote:
-> Darren Hart wrote:
->> From: Darren Hart <dvhltc@us.ibm.com>
->>
->> PI Futexes must have an owner at all times, so the standard requeue 
->> commands
->> aren't sufficient.  The new commands properly manage pi futex 
->> ownership by
->> ensuring a futex with waiters has an owner at all times.  Once 
->> complete these
->> patches will allow glibc to properly handle pi mutexes with 
->> pthread_condvars.
->>
->> The approach taken here is to create two new futex op codes:
->>
->> FUTEX_WAIT_REQUEUE_PI:
->> Threads will use this op code to wait on a futex (such as a non-pi 
->> waitqueue)
->> and wake after they have been requeued to a pi futex.  Prior to 
->> returning to
->> userspace, they will take this pi futex (and the underlying rt_mutex).
->>
->> futex_wait_requeue_pi() is currently the result of a high speed collision
->> between futex_wait and futex_lock_pi (with the first part of 
->> futex_lock_pi
->> being done by futex_requeue_pi_init() on behalf of the waiter).
->>
->> FUTEX_REQUEUE_PI:
->> This call must be used to wake threads waiting with 
->> FUTEX_WAIT_REQUEUE_PI,
->> regardless of how many threads the caller intends to wake or requeue.
->> pthread_cond_broadcast should call this with nr_wake=1 and 
->> nr_requeue=-1 (all).
->> pthread_cond_signal should call this with nr_wake=1 and nr_requeue=0.  
->> The
->> reason being we need both callers to get the benefit of the
->> futex_requeue_pi_init() routine which will prepare the top_waiter (the 
->> thread
->> to be woken) to take possesion of the pi futex by setting 
->> FUTEX_WAITERS and
->> preparing the futex_q.pi_state.  futex_requeue() also enqueues the 
->> top_waiter
->> on the rt_mutex via rt_mutex_start_proxy_lock(). If 
->> pthread_cond_signal used
->> FUTEX_WAKE, we would have a similar race window where the caller can 
->> return and
->> release the mutex before the waiters can fully wake, potentially 
->> leaving the
->> rt_mutex with waiters but no owner.
->>
->> We hit a failed paging request running the testcase (7/7) in a loop
->> (only takes a few minutes at most to hit on my 8way x86_64 test
->> machine).  It appears to be the result of splitting rt_mutex_slowlock()
->> across two execution contexts by means of rt_mutex_start_proxy_lock()
->> and rt_mutex_finish_proxy_lock().  The former calls
->> task_blocks_on_rt_mutex() on behalf of the waiting task prior to
->> requeuing and waking it by the requeueing thread.  The latter is
->> executed upon wakeup by the waiting thread which somehow manages to call
->> the new __rt_mutex_slowlock() with waiter->task != NULL and still
->> succeed with try_to_take_lock(), this leads to corruption of the plists
->> and an eventual failed paging request.  See 7/7 for the rather crude
->> testcase that causes this.  Any tips on where this race might be
->> occuring are welcome.
+On Thu, 2009-03-05 at 08:21 -0600, scameron@beardog.cca.cpqcorp.net
+wrote:
+> On Thu, Mar 05, 2009 at 02:48:09PM +0900, FUJITA Tomonori wrote:
+> > On Tue, 3 Mar 2009 10:28:21 -0600
+> > scameron@beardog.cca.cpqcorp.net wrote:
+> > 
+> > > On Tue, Mar 03, 2009 at 03:35:26PM +0900, FUJITA Tomonori wrote:
+> > > > On Mon, 2 Mar 2009 08:56:50 -0600
+> > > > scameron@beardog.cca.cpqcorp.net wrote:
+> > > > 
+> > > > > [...]
+> > > > > > > +     .this_id                = -1,
+> > > > > > > +     .sg_tablesize           = MAXSGENTRIES,
+> > > > > > 
+> > > > > > MAXSGENTRIES (32) is the limitation of hardware? If not, it might be
+> > > > > > better to enlarge this for better performance?
+> > > > > 
+> > > > > Yes, definitely, though this value varies from controller to controller,
+> > > > > so this is just a default value that needs to be overridden, probably
+> > > > > in hpsa_scsi_detect().
+> > > > 
+> > > > I see. If we override this in hpsa_scsi_detect(), we need a trick for
+> > > > SG in CommandList_struct, I guess.
+> > > 
+> > > Yes.  There are some limits to what can be put into CommandList_struct
+> > > directly, but there is also scatter gather chaining, in which we use
+> > > the last element in the CommandList_struct to point to another buffer
+> > > of SG entries.
+> > > 
+> > > If you have a system with a lot of controllers, having a large number of 
+> > > scatter gathers can be a bit of a memory hog, and since this memory is all
+> > > via pci_alloc_consistent, that can be a concern.  It would be nice if
+> > > there was a way for the user to specify differing amounts of scatter
+> > > gathers for different controller instances so for instance the controller
+> > > which he's running his big oracle database, or webserver or whatever on
+> > > gets lots, while the controller he's booted from that's mostly idle
+> > > gets not so many.  I don't know what a good way for a user to identify
+> > > what controller he's talking about in a module parameter would be 
+> > > though.  Maybe by pci domain/bus/device/function?  Maybe something along
+> > > the lines of:
+> > > 
+> > > 	modprobe hpsa dev1=0:0e:00.0 sg1=1000 dev2=0:0b:00.0 sg2=31
+> > > 
+> > > to say that one controller gets 1000 scatter gather elements, but
+> > > another gets only 31.  But PCI busses can change if hardware 
+> > > configuration changes, and this isn't exactly obvious, so seems less
+> > > than ideal.  Any bright ideas on that front?
+> > 
+> > We have /sys/class/scsi_host/host*/sg_tablesize:
+> > 
+> > How about modifying this value on the fly?
+> > 
+> > fujita@clover:/sys/class/scsi_host/host3$ echo 1000 > sg_tablesize
+> > 
 > 
-> After some judicious use of printk (ftrace from tip wouldn't let me set 
-> the current_tracer, permission denied) 
-
-Thanks to Steven for helping me get a working ftrace in tip.
-
-
-I managed to catch a failing 
-> scenario where the signaling thread returns to userspace and unlocks the 
-> mutex before the waiting thread calls __rt_mutex_slowunlock() (which is 
-> fine) but the signaler calls rt_mutex_fastunlock() instead of 
-> rt_mutex_slowunlock() which is what the rt_mutex_start_proxy_lock() was 
-> supposed to prevent, so I am apparently not fully preparing the waiter 
-> and enqueueing it on the rt_mutex.  Annotated printk output:
+> We pci_alloc_consistent that space, so... I think that would mean
+> we'd have to do things considerably differently.  I think we'd have
+> to quit allocating commands in big chunks, and instead of indexing
+> into that chunk we'd probably have to have an array of pointers or
+> something.  If we wanted sg_tablesize adjustable down to single
+> command counts, we'd probably have to allocate each command separately
+> and have an array of pointers to those...
 > 
-> Signaler thread in futex_requeue()
->     lookup_pi_state: allocating a new pi state
->     futex_requeue_pi_init: futex_lock_pi_atomic returned: 0
->     futex_requeue: futex_requeue_pi_init returned: 0
+> e.g. if you did 
 > 
-> Signaler thread returned to userspace and did pthread_mutex_unlock()
->     rt_mutex_fastunlock: unlocked ffff88013d1749d0
+> 	echo 1000 > sg_tablesize
+> 	echo 999 > sg_tablesize
 > 
-> Waiting thread woke up in futex_wait_requeue_pi() and tries to finish 
-> taking the lock:
->     __rt_mutex_slowlock: waiter->task is ffff8802bdd350c0
->     try_to_take_rt_mutex: assigned rt_mutex (ffff88013d1749d0) owner
->         to current ffff8802bdd350c0
+> you probably wouldn't want to keep the 1000 commands around,
+> and then allocate 999 additional, then let all the outstanding 
+> commands using the first 1000 block complete, then finally free
+> the first block of 1000, leaving just the 999.  You'd probably want
+> instead to free one of the 1000 to get to 999.
 > 
-> Waiting thread get's the lock while waiter->task is not NULL (b/c the 
-> signaler didn't go through the slow path)
->     __rt_mutex_slowlock: got the lock
+> Likewise with this:
 > 
-> I'll continue looking into this tomorrow, but Steven if you have any 
-> ideas on what I may have missed in rt_mutex_start_proxy_lock() I'd 
-> appreciate any insight you might have to share.  Thomas, I know you gave 
-> this function some thought as well, did I take a radically different 
-> approach to what you had in mind?
- 
-I've updated my tracing and can show that rt_mutex_start_proxy_lock() is 
-not setting RT_MUTEX_HAS_WAITERS like it should be:
+> 	echo 999 > sg_tablesize
+> 	echo 1000 > sg_tablesize
+> 
+> These are somewhat pathological cases, granted.
+> 
+> I'm not sure dynamically modifying the number of SGs a controller
+> can do is something that comes up enough to be worth implementing
+> something so complicated.
+> 
+> If it's settable at init time, that would probably be enough for
+> the vast majority of uses (and more flexible than what we have now)
+> and a lot easier to implement.
+> 
+> > 
+> > Well, this needs more changes (to both the block layer and the scsi
+> > mid layer) but is it nice to change this value dynamically?
+> > 
+> > Anyway, I think that it's better to address this fancy feature later
+> > on (after the mainline inclusion). Let's put hpsa driver into mainline
+> > first.
+> 
+> Agreed, we can think about all that stuff later.
+> 
+> Another fancy feature to think about later which would be nice:
+> 
+> On Smart arrays you can expand logical drives on the fly by
+> adding physical disks, or portions of physical disks into them.
+> Would be nice if there was a non-i/o-interrupting way to notify
+> the scsi layer of this new space (maybe there already is?) so
+> that if there's, say, a filesystem which can also dynamically
+> grow on the fly on that embiggened logical drive, it can take
+> advantage of that extra space.
+> 
+> Right now, the driver will do scsi_remove_device() and then
+> scsi_add_device() if a logical drive changes size, which isn't
+> very nice.
+> 
 
-------------[ cut here ]------------
-kernel BUG at kernel/rtmutex.c:646!
-invalid opcode: 0000 [#1] PREEMPT SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:03.0/0000:01:00.0/host0/port-0:
-0/end_device-0:0/target0:0:0/0:0:0:0/vendor
-Dumping ftrace buffer:
----------------------------------
-   <...>-3793    1d..3 558351872us : lookup_pi_state: allocating a new pi state
-   <...>-3793    1d..3 558351876us : lookup_pi_state: initial rt_mutex owner: ffff88023d9486c0
-   <...>-3793    1...2 558351877us : futex_requeue: futex_lock_pi_atomic returned: 0
-   <...>-3793    1...2 558351877us : futex_requeue: futex_requeue_pi_init returned: 0
-   <...>-3793    1...3 558351879us : rt_mutex_start_proxy_lock: task_blocks_on_rt_mutex returned 0
-   <...>-3793    1...3 558351880us : rt_mutex_start_proxy_lock: lock has waiterflag: 0
-   <...>-3793    1...1 558351888us : rt_mutex_unlock: unlocking ffff88023b5f6950
-   <...>-3793    1...1 558351888us : rt_mutex_unlock: lock waiter flag: 0
-   <...>-3793    1...1 558351889us : rt_mutex_unlock: unlocked ffff88023b5f6950
-   <...>-3783    0...1 558351893us : __rt_mutex_slowlock: waiter->task is ffff88023c872440
-   <...>-3783    0...1 558351897us : try_to_take_rt_mutex: assigned rt_mutex (ffff88023b5f6950) owner to current ffff88023c872440
-   <...>-3783    0...1 558351897us : __rt_mutex_slowlock: got the lock
----------------------------------
+The following might help:
 
-I'll start digging into why that's happening, but I wanted to share the trace output.
+There are several ways to "kick off" a device size change:
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+1. For SCSI devices do:
+
+  # echo 1 > /sys/class/scsi_device/<device>/device/rescan
+
+  or
+
+  # blockdev --rereadpt <device file>
+
+2. Other devices (not device mapper)
+
+  # blockdev --rereadpt <device file>
+
+See http://marc.info/?l=linux-kernel&m=122056065131792&w=2
+
+Andrew
+
+> > 
+> > 
+> > > > > Hmm, this doesn't seem all that complicated to me, and this code snippet
+> > > > > has been pretty stable for about 10 years. it's nearly identical to what's in
+> > > > > cpqarray in the 2.2.13 kernel from 1999:
+> > > > > 
+> > > > >                 do {
+> > > > >                         i = find_first_zero_bit(h->cmd_pool_bits, NR_CMDS);
+> > > > >                         if (i == NR_CMDS)
+> > > > >                                 return NULL;
+> > > > >                 } while(test_and_set_bit(i%32, h->cmd_pool_bits+(i/32)) != 0)
+> > > > > 
+> > > > > It's fast, works well, and has needed very little maintenance over the 
+> > > > > years.  Without knowing what you have in mind specifically, I don't see a
+> > > > > big need to change this.
+> > > > 
+> > > > I see. Seems that some drivers want something similar. I might come
+> > > > back later on with a patch to replace this with library
+> > > > functions.
+> > > 
+> > > There was some other discussion about pushing this sort of thing to 
+> > > upper layers, using a tag generated in the scsi layer as a means
+> > > of allocating driver command buffers, since, presumably there's a
+> > > one to one mapping.  (I didn't completely grok it all though.)
+> > 
+> > Oops, I meant that I might come back with a patch to convert hpsa to
+> > use the the block layer tagging, which you and Mike Christie are
+> > talking about (yeah, my first suggestion to use lists was wrong. using
+> > the block layer tagging looks much better).
+> > 
+> > 
+> > By the way, have you guys started to work on the review comments for
+> 
+> We haven't really done much.  It's obvious that there's a lot to do
+> based on the comments, and it's also obvious how to do most of it,
+> and not hard, (e.g. ripping out /proc stuff, etc.), there's just a
+> lot of other non-kernel related work keeping us busy at the moment.
+> 
+> > the next submission? The driver has some minor style issues that have
+> > not been mentioned yet. For example, the comment style in the driver
+> > is not preferred:
+> > 
+> > /* If this device a non-zero lun of a multi-lun device */
+> > /* byte 4 of the 8-byte LUN addr will contain the logical */
+> > /* unit no, zero otherise. */
+> > 
+> > The preferred style is:
+> > 
+> > /*
+> >  * If this device a non-zero lun of a multi-lun device
+> >  * byte 4 of the 8-byte LUN addr will contain the logical
+> >  * unit no, zero otherise.
+> >  */
+> 
+> ok.
+> 
+> > 
+> > Another example, I think that the SCSI-ml preferred style is (not
+> > documented in CodingStyle though):
+> > 
+> > 'if (!ptr)' rather than 'if (ptr == NULL)'
+> > 'if (!value)' rather than 'if (value == 0)'
+> > 'if (ptr)' rather than 'if (ptr != NULL)'
+> > 'if (value)' rather than 'if (value != 0)'
+> 
+> Ok.
+> 
+> > 
+> > 
+> > If you are already addressing the review comments, I just wait for the
+> > next submission, then I'll send such minor patches. If you are not,
+> > I'll send patches to address the review comments (including such minor
+> > patches).
+> 
+> Ok, thanks.
+> 
+> -- steve
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
