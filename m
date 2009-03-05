@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZCENsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbZCENtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbZCENsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZCENsn
+	id S1756496AbZCENtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZCENte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:48:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36494 "EHLO hera.kernel.org"
+	Thu, 5 Mar 2009 08:49:34 -0500
+Received: from mga03.intel.com ([143.182.124.21]:20991 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752488AbZCENsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:48:43 -0500
-Subject: Re: [git-pull -tip V2] x86: msr architecture debug code
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090305133208.GC4322@elte.hu>
-References: <1236008575.3332.2.camel@localhost.localdomain>
-	 <20090302205437.GB14471@elte.hu>
-	 <1236194183.4994.9.camel@localhost.localdomain>
-	 <1236199796.3130.3.camel@localhost.localdomain>
-	 <20090305122157.GA7347@alberich.amd.com>  <20090305133208.GC4322@elte.hu>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 19:18:11 +0530
-Message-Id: <1236260891.4237.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753766AbZCENtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 08:49:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,307,1233561600"; 
+   d="scan'208";a="117078752"
+Date: Thu, 5 Mar 2009 21:48:42 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: Markus <M4rkusXXL@web.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Zdenek Kabelac <zkabelac@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: drop_caches ...
+Message-ID: <20090305134842.GB22442@localhost>
+References: <200903041057.34072.M4rkusXXL@web.de> <200903041947.41542.M4rkusXXL@web.de> <20090305004850.GA6045@localhost> <200903051255.35407.M4rkusXXL@web.de> <20090305133603.GA22442@localhost> <20090305134528.GC646@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090305134528.GC646@ics.muni.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 14:32 +0100, Ingo Molnar wrote:
-> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
->  
-> > - I've just one directory in debugfs
-> >   x86/cpu/msr/cpu0
-> >   The system has a quad-core CPU. So I guess there should be 4
-> >   directories -- one for each core.
+On Thu, Mar 05, 2009 at 03:45:28PM +0200, Lukas Hejtmanek wrote:
+> On Thu, Mar 05, 2009 at 09:36:03PM +0800, Wu Fengguang wrote:
+> >           size = file size in bytes
+> >         cached = cached pages
+> > 
+> > So it's normal that (size > cached).
 > 
-> Correct, most MSRs are per core - that needs to be fixed.
+> I guess, the question was how it can happen that (cached > size).
 
-Ok I will support all cores in next Version.
+Ah, because cached size is rounded up to page boundaries,
+so a 1K sized file will have 4K cached size.
 
 Thanks,
---
-JSR
+Fengguang
 
