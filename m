@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbZCEXbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbZCEXbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbZCEXbg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbZCEXbD
+	id S1758284AbZCEXbz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbZCEXbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:31:03 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:48312 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:31:21 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:48385 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758169AbZCEXbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:31:00 -0500
-Message-Id: <20090305225515.540448009@polymtl.ca>
+	id S1758175AbZCEXbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:31:19 -0500
+Message-Id: <20090305225517.699633425@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:45 -0500
+Date: Thu, 05 Mar 2009 17:47:55 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,711 +31,650 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 17/41] LTTng - serialization
-Content-Disposition: inline; filename=lttng-serialize.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:11 +0000
+Subject: [RFC patch 27/41] Markers use dynamic channels
+Content-Disposition: inline; filename=markers-use-dynamic-channels.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:14 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generic serialization mechanism : takes the variable argument list and
-serializes it them in the trace buffers.
+Make marker infrastructure use dynamic channels, adding a new (first) parameter
+to trace_mark( : the channel name where the data must be sent.
+Switch to per-channel marker IDs.
+Marker IDs are now managed by marker infrastructure rather than LTTng.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- ltt/ltt-serialize.c |  685 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 685 insertions(+)
+ include/linux/marker.h |  101 +++++++++++++++++------------
+ kernel/marker.c        |  168 +++++++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 195 insertions(+), 74 deletions(-)
 
-Index: linux-2.6-lttng/ltt/ltt-serialize.c
+Index: linux-2.6-lttng/include/linux/marker.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/ltt/ltt-serialize.c	2009-03-04 14:07:58.000000000 -0500
-@@ -0,0 +1,685 @@
-+/*
-+ * LTTng serializing code.
-+ *
-+ * Copyright Mathieu Desnoyers, March 2007.
-+ *
-+ * Licensed under the GPLv2.
-+ *
-+ * See this discussion about weirdness about passing va_list and then va_list to
-+ * functions. (related to array argument passing). va_list seems to be
-+ * implemented as an array on x86_64, but not on i386... This is why we pass a
-+ * va_list * to ltt_vtrace.
-+ */
+--- linux-2.6-lttng.orig/include/linux/marker.h	2009-02-06 15:44:53.000000000 -0500
++++ linux-2.6-lttng/include/linux/marker.h	2009-02-06 15:52:11.000000000 -0500
+@@ -15,6 +15,7 @@
+ #include <stdarg.h>
+ #include <linux/types.h>
+ #include <linux/immediate.h>
++#include <linux/ltt-channels.h>
+ 
+ struct module;
+ struct marker;
+@@ -40,6 +41,7 @@ struct marker_probe_closure {
+ };
+ 
+ struct marker {
++	const char *channel;	/* Name of channel where to send data */
+ 	const char *name;	/* Marker name */
+ 	const char *format;	/* Marker format string, describing the
+ 				 * variable argument list.
+@@ -47,6 +49,8 @@ struct marker {
+ 	DEFINE_IMV(char, state);/* Immediate value state. */
+ 	char ptype;		/* probe type : 0 : single, 1 : multi */
+ 				/* Probe wrapper */
++	u16 chan_id;		/* Numeric channel identifier, dynamic */
++	u16 event_id;		/* Numeric event identifier, dynamic */
+ 	void (*call)(const struct marker *mdata, void *call_private, ...);
+ 	struct marker_probe_closure single;
+ 	struct marker_probe_closure *multi;
+@@ -56,21 +60,25 @@ struct marker {
+ 
+ #ifdef CONFIG_MARKERS
+ 
+-#define _DEFINE_MARKER(name, tp_name_str, tp_cb, format)		\
+-		static const char __mstrtab_##name[]			\
++#define _DEFINE_MARKER(channel, name, tp_name_str, tp_cb, format)	\
++		static const char __mstrtab_##channel##_##name[]	\
+ 		__attribute__((section("__markers_strings")))		\
+-		= #name "\0" format;					\
+-		static struct marker __mark_##name			\
++		= #channel "\0" #name "\0" format;			\
++		static struct marker __mark_##channel##_##name		\
+ 		__attribute__((section("__markers"), aligned(8))) =	\
+-		{ __mstrtab_##name, &__mstrtab_##name[sizeof(#name)],	\
+-		  0, 0, marker_probe_cb, { __mark_empty_function, NULL},\
++		{ __mstrtab_##channel##_##name,				\
++		  &__mstrtab_##channel##_##name[sizeof(#channel)],	\
++		  &__mstrtab_##channel##_##name[sizeof(#channel) +	\
++						sizeof(#name)],		\
++		  0, 0, 0, 0, marker_probe_cb,				\
++		  { __mark_empty_function, NULL},			\
+ 		  NULL, tp_name_str, tp_cb }
+ 
+-#define DEFINE_MARKER(name, format)					\
+-		_DEFINE_MARKER(name, NULL, NULL, format)
++#define DEFINE_MARKER(channel, name, format)				\
++		_DEFINE_MARKER(channel, name, NULL, NULL, format)
+ 
+-#define DEFINE_MARKER_TP(name, tp_name, tp_cb, format)			\
+-		_DEFINE_MARKER(name, #tp_name, tp_cb, format)
++#define DEFINE_MARKER_TP(channel, name, tp_name, tp_cb, format)		\
++		_DEFINE_MARKER(channel, name, #tp_name, tp_cb, format)
+ 
+ /*
+  * Make sure the alignment of the structure in the __markers section will
+@@ -81,45 +89,49 @@ struct marker {
+  * If generic is true, a variable read is used.
+  * If generic is false, immediate values are used.
+  */
+-#define __trace_mark(generic, name, call_private, format, args...)	\
++#define __trace_mark(generic, channel, name, call_private, format, args...) \
+ 	do {								\
+-		DEFINE_MARKER(name, format);				\
++		DEFINE_MARKER(channel, name, format);			\
+ 		__mark_check_format(format, ## args);			\
+ 		if (!generic) {						\
+-			if (unlikely(imv_read(__mark_##name.state)))	\
+-				(*__mark_##name.call)			\
+-					(&__mark_##name, call_private,	\
+-					## args);			\
++			if (unlikely(imv_read(				\
++					__mark_##channel##_##name.state))) \
++				(*__mark_##channel##_##name.call)	\
++					(&__mark_##channel##_##name,	\
++					call_private, ## args);		\
+ 		} else {						\
+-			if (unlikely(_imv_read(__mark_##name.state)))	\
+-				(*__mark_##name.call)			\
+-					(&__mark_##name, call_private,	\
+-					## args);			\
++			if (unlikely(_imv_read(				\
++					__mark_##channel##_##name.state))) \
++				(*__mark_##channel##_##name.call)	\
++					(&__mark_##channel##_##name,	\
++					call_private, ## args);		\
+ 		}							\
+ 	} while (0)
+ 
+-#define __trace_mark_tp(name, call_private, tp_name, tp_cb, format, args...) \
++#define __trace_mark_tp(channel, name, call_private, tp_name, tp_cb,	\
++			format, args...)				\
+ 	do {								\
+ 		void __check_tp_type(void)				\
+ 		{							\
+ 			register_trace_##tp_name(tp_cb);		\
+ 		}							\
+-		DEFINE_MARKER_TP(name, tp_name, tp_cb, format);		\
++		DEFINE_MARKER_TP(channel, name, tp_name, tp_cb, format);\
+ 		__mark_check_format(format, ## args);			\
+-		(*__mark_##name.call)(&__mark_##name, call_private,	\
+-					## args);			\
++		(*__mark_##channel##_##name.call)(&__mark_##channel##_##name, \
++			call_private, ## args);				\
+ 	} while (0)
+ 
+ extern void marker_update_probe_range(struct marker *begin,
+ 	struct marker *end);
+ 
+-#define GET_MARKER(name)	(__mark_##name)
++#define GET_MARKER(channel, name)	(__mark_##channel##_##name)
+ 
+ #else /* !CONFIG_MARKERS */
+-#define DEFINE_MARKER(name, tp_name, tp_cb, format)
+-#define __trace_mark(generic, name, call_private, format, args...) \
++#define DEFINE_MARKER(channel, name, tp_name, tp_cb, format)
++#define __trace_mark(generic, channel, name, call_private, format, args...) \
+ 		__mark_check_format(format, ## args)
+-#define __trace_mark_tp(name, call_private, tp_name, tp_cb, format, args...) \
++#define __trace_mark_tp(channel, name, call_private, tp_name, tp_cb,	\
++		format, args...)					\
+ 	do {								\
+ 		void __check_tp_type(void)				\
+ 		{							\
+@@ -130,11 +142,12 @@ extern void marker_update_probe_range(st
+ static inline void marker_update_probe_range(struct marker *begin,
+ 	struct marker *end)
+ { }
+-#define GET_MARKER(name)
++#define GET_MARKER(channel, name)
+ #endif /* CONFIG_MARKERS */
+ 
+ /**
+  * trace_mark - Marker using code patching
++ * @channel: marker channel (where to send the data), not quoted.
+  * @name: marker name, not quoted.
+  * @format: format string
+  * @args...: variable argument list
+@@ -142,11 +155,12 @@ static inline void marker_update_probe_r
+  * Places a marker using optimized code patching technique (imv_read())
+  * to be enabled when immediate values are present.
+  */
+-#define trace_mark(name, format, args...) \
+-	__trace_mark(0, name, NULL, format, ## args)
++#define trace_mark(channel, name, format, args...) \
++	__trace_mark(0, channel, name, NULL, format, ## args)
+ 
+ /**
+  * _trace_mark - Marker using variable read
++ * @channel: marker channel (where to send the data), not quoted.
+  * @name: marker name, not quoted.
+  * @format: format string
+  * @args...: variable argument list
+@@ -156,11 +170,12 @@ static inline void marker_update_probe_r
+  * modification based enabling is not welcome. (__init and __exit functions,
+  * lockdep, some traps, printk).
+  */
+-#define _trace_mark(name, format, args...) \
+-	__trace_mark(1, name, NULL, format, ## args)
++#define _trace_mark(channel, name, format, args...) \
++	__trace_mark(1, channel, name, NULL, format, ## args)
+ 
+ /**
+  * trace_mark_tp - Marker in a tracepoint callback
++ * @channel: marker channel (where to send the data), not quoted.
+  * @name: marker name, not quoted.
+  * @tp_name: tracepoint name, not quoted.
+  * @tp_cb: tracepoint callback. Should have an associated global symbol so it
+@@ -170,14 +185,19 @@ static inline void marker_update_probe_r
+  *
+  * Places a marker in a tracepoint callback.
+  */
+-#define trace_mark_tp(name, tp_name, tp_cb, format, args...)	\
+-	__trace_mark_tp(name, NULL, tp_name, tp_cb, format, ## args)
++#define trace_mark_tp(channel, name, tp_name, tp_cb, format, args...)	\
++	__trace_mark_tp(channel, name, NULL, tp_name, tp_cb, format, ## args)
+ 
+ /**
+  * MARK_NOARGS - Format string for a marker with no argument.
+  */
+ #define MARK_NOARGS " "
+ 
++extern void lock_markers(void);
++extern void unlock_markers(void);
 +
-+#include <stdarg.h>
-+#include <linux/ctype.h>
-+#include <linux/string.h>
-+#include <linux/module.h>
-+#include <linux/ltt-tracer.h>
++extern void markers_compact_event_ids(void);
 +
-+enum ltt_type {
-+	LTT_TYPE_SIGNED_INT,
-+	LTT_TYPE_UNSIGNED_INT,
-+	LTT_TYPE_STRING,
-+	LTT_TYPE_NONE,
-+};
-+
-+#define LTT_ATTRIBUTE_NETWORK_BYTE_ORDER (1<<1)
-+
-+/*
-+ * Inspired from vsnprintf
-+ *
-+ * The serialization format string supports the basic printf format strings.
-+ * In addition, it defines new formats that can be used to serialize more
-+ * complex/non portable data structures.
-+ *
-+ * Typical use:
-+ *
-+ * field_name %ctype
-+ * field_name #tracetype %ctype
-+ * field_name #tracetype %ctype1 %ctype2 ...
-+ *
-+ * A conversion is performed between format string types supported by GCC and
-+ * the trace type requested. GCC type is used to perform type checking on format
-+ * strings. Trace type is used to specify the exact binary representation
-+ * in the trace. A mapping is done between one or more GCC types to one trace
-+ * type. Sign extension, if required by the conversion, is performed following
-+ * the trace type.
-+ *
-+ * If a gcc format is not declared with a trace format, the gcc format is
-+ * also used as binary representation in the trace.
-+ *
-+ * Strings are supported with %s.
-+ * A single tracetype (sequence) can take multiple c types as parameter.
-+ *
-+ * c types:
-+ *
-+ * see printf(3).
-+ *
-+ * Note: to write a uint32_t in a trace, the following expression is recommended
-+ * si it can be portable:
-+ *
-+ * ("#4u%lu", (unsigned long)var)
-+ *
-+ * trace types:
-+ *
-+ * Serialization specific formats :
-+ *
-+ * Fixed size integers
-+ * #1u     writes uint8_t
-+ * #2u     writes uint16_t
-+ * #4u     writes uint32_t
-+ * #8u     writes uint64_t
-+ * #1d     writes int8_t
-+ * #2d     writes int16_t
-+ * #4d     writes int32_t
-+ * #8d     writes int64_t
-+ * i.e.:
-+ * #1u%lu #2u%lu #4d%lu #8d%lu #llu%hu #d%lu
-+ *
-+ * * Attributes:
-+ *
-+ * n:  (for network byte order)
-+ * #ntracetype%ctype
-+ *            is written in the trace in network byte order.
-+ *
-+ * i.e.: #bn4u%lu, #n%lu, #b%u
-+ *
-+ * TODO (eventually)
-+ * Variable length sequence
-+ * #a #tracetype1 #tracetype2 %array_ptr %elem_size %num_elems
-+ *            In the trace:
-+ *            #a specifies that this is a sequence
-+ *            #tracetype1 is the type of elements in the sequence
-+ *            #tracetype2 is the type of the element count
-+ *            GCC input:
-+ *            array_ptr is a pointer to an array that contains members of size
-+ *            elem_size.
-+ *            num_elems is the number of elements in the array.
-+ * i.e.: #a #lu #lu %p %lu %u
-+ *
-+ * Callback
-+ * #k         callback (taken from the probe data)
-+ *            The following % arguments are exepected by the callback
-+ *
-+ * i.e.: #a #lu #lu #k %p
-+ *
-+ * Note: No conversion is done from floats to integers, nor from integers to
-+ * floats between c types and trace types. float conversion from double to float
-+ * or from float to double is also not supported.
-+ *
-+ * REMOVE
-+ * %*b     expects sizeof(data), data
-+ *         where sizeof(data) is 1, 2, 4 or 8
-+ *
-+ * Fixed length struct, union or array.
-+ * FIXME: unable to extract those sizes statically.
-+ * %*r     expects sizeof(*ptr), ptr
-+ * %*.*r   expects sizeof(*ptr), __alignof__(*ptr), ptr
-+ * struct and unions removed.
-+ * Fixed length array:
-+ * [%p]#a[len #tracetype]
-+ * i.e.: [%p]#a[12 #lu]
-+ *
-+ * Variable length sequence
-+ * %*.*:*v expects sizeof(*ptr), __alignof__(*ptr), elem_num, ptr
-+ *         where elem_num is the number of elements in the sequence
-+ */
-+static inline const char *parse_trace_type(const char *fmt,
-+		char *trace_size, enum ltt_type *trace_type,
-+		unsigned long *attributes)
+ /* To be used for string format validity checking with gcc */
+ static inline void __printf(1, 2) ___mark_check_format(const char *fmt, ...)
+ {
+@@ -198,13 +218,13 @@ extern void marker_probe_cb(const struct
+  * Connect a probe to a marker.
+  * private data pointer must be a valid allocated memory address, or NULL.
+  */
+-extern int marker_probe_register(const char *name, const char *format,
+-				marker_probe_func *probe, void *probe_private);
++extern int marker_probe_register(const char *channel, const char *name,
++	const char *format, marker_probe_func *probe, void *probe_private);
+ 
+ /*
+  * Returns the private data given to marker_probe_register.
+  */
+-extern int marker_probe_unregister(const char *name,
++extern int marker_probe_unregister(const char *channel, const char *name,
+ 	marker_probe_func *probe, void *probe_private);
+ /*
+  * Unregister a marker by providing the registered private data.
+@@ -212,8 +232,8 @@ extern int marker_probe_unregister(const
+ extern int marker_probe_unregister_private_data(marker_probe_func *probe,
+ 	void *probe_private);
+ 
+-extern void *marker_get_private_data(const char *name, marker_probe_func *probe,
+-	int num);
++extern void *marker_get_private_data(const char *channel, const char *name,
++	marker_probe_func *probe, int num);
+ 
+ /*
+  * marker_synchronize_unregister must be called between the last marker probe
+@@ -235,5 +255,6 @@ extern void marker_iter_stop(struct mark
+ extern void marker_iter_reset(struct marker_iter *iter);
+ extern int marker_get_iter_range(struct marker **marker, struct marker *begin,
+ 	struct marker *end);
++extern int is_marker_enabled(const char *channel, const char *name);
+ 
+ #endif
+Index: linux-2.6-lttng/kernel/marker.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/marker.c	2009-02-06 15:44:53.000000000 -0500
++++ linux-2.6-lttng/kernel/marker.c	2009-02-06 15:52:18.000000000 -0500
+@@ -38,6 +38,16 @@ static const int marker_debug;
+  */
+ static DEFINE_MUTEX(markers_mutex);
+ 
++void lock_markers(void)
 +{
-+	int qualifier;		/* 'h', 'l', or 'L' for integer fields */
-+				/* 'z' support added 23/7/1999 S.H.    */
-+				/* 'z' changed to 'Z' --davidm 1/25/99 */
-+				/* 't' added for ptrdiff_t */
-+
-+	/* parse attributes. */
-+repeat:
-+	switch (*fmt) {
-+	case 'n':
-+		*attributes |= LTT_ATTRIBUTE_NETWORK_BYTE_ORDER;
-+		++fmt;
-+		goto repeat;
-+	}
-+
-+	/* get the conversion qualifier */
-+	qualifier = -1;
-+	if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
-+	    *fmt == 'Z' || *fmt == 'z' || *fmt == 't' ||
-+	    *fmt == 'S' || *fmt == '1' || *fmt == '2' ||
-+	    *fmt == '4' || *fmt == 8) {
-+		qualifier = *fmt;
-+		++fmt;
-+		if (qualifier == 'l' && *fmt == 'l') {
-+			qualifier = 'L';
-+			++fmt;
-+		}
-+	}
-+
-+	switch (*fmt) {
-+	case 'c':
-+		*trace_type = LTT_TYPE_UNSIGNED_INT;
-+		*trace_size = sizeof(unsigned char);
-+		goto parse_end;
-+	case 's':
-+		*trace_type = LTT_TYPE_STRING;
-+		goto parse_end;
-+	case 'p':
-+		*trace_type = LTT_TYPE_UNSIGNED_INT;
-+		*trace_size = sizeof(void *);
-+		goto parse_end;
-+	case 'd':
-+	case 'i':
-+		*trace_type = LTT_TYPE_SIGNED_INT;
-+		break;
-+	case 'o':
-+	case 'u':
-+	case 'x':
-+	case 'X':
-+		*trace_type = LTT_TYPE_UNSIGNED_INT;
-+		break;
-+	default:
-+		if (!*fmt)
-+			--fmt;
-+		goto parse_end;
-+	}
-+	switch (qualifier) {
-+	case 'L':
-+		*trace_size = sizeof(long long);
-+		break;
-+	case 'l':
-+		*trace_size = sizeof(long);
-+		break;
-+	case 'Z':
-+	case 'z':
-+		*trace_size = sizeof(size_t);
-+		break;
-+	case 't':
-+		*trace_size = sizeof(ptrdiff_t);
-+		break;
-+	case 'h':
-+		*trace_size = sizeof(short);
-+		break;
-+	case '1':
-+		*trace_size = sizeof(uint8_t);
-+		break;
-+	case '2':
-+		*trace_size = sizeof(uint16_t);
-+		break;
-+	case '4':
-+		*trace_size = sizeof(uint32_t);
-+		break;
-+	case '8':
-+		*trace_size = sizeof(uint64_t);
-+		break;
-+	default:
-+		*trace_size = sizeof(int);
-+	}
-+
-+parse_end:
-+	return fmt;
++	mutex_lock(&markers_mutex);
 +}
 +
-+/*
-+ * Restrictions:
-+ * Field width and precision are *not* supported.
-+ * %n not supported.
-+ */
-+static inline const char *parse_c_type(const char *fmt,
-+		char *c_size, enum ltt_type *c_type)
++void unlock_markers(void)
 +{
-+	int qualifier;		/* 'h', 'l', or 'L' for integer fields */
-+				/* 'z' support added 23/7/1999 S.H.    */
-+				/* 'z' changed to 'Z' --davidm 1/25/99 */
-+				/* 't' added for ptrdiff_t */
-+
-+	/* process flags : ignore standard print formats for now. */
-+repeat:
-+	switch (*fmt) {
-+	case '-':
-+	case '+':
-+	case ' ':
-+	case '#':
-+	case '0':
-+		++fmt;
-+		goto repeat;
-+	}
-+
-+	/* get the conversion qualifier */
-+	qualifier = -1;
-+	if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
-+	    *fmt == 'Z' || *fmt == 'z' || *fmt == 't' ||
-+	    *fmt == 'S') {
-+		qualifier = *fmt;
-+		++fmt;
-+		if (qualifier == 'l' && *fmt == 'l') {
-+			qualifier = 'L';
-+			++fmt;
-+		}
-+	}
-+
-+	switch (*fmt) {
-+	case 'c':
-+		*c_type = LTT_TYPE_UNSIGNED_INT;
-+		*c_size = sizeof(unsigned char);
-+		goto parse_end;
-+	case 's':
-+		*c_type = LTT_TYPE_STRING;
-+		goto parse_end;
-+	case 'p':
-+		*c_type = LTT_TYPE_UNSIGNED_INT;
-+		*c_size = sizeof(void *);
-+		goto parse_end;
-+	case 'd':
-+	case 'i':
-+		*c_type = LTT_TYPE_SIGNED_INT;
-+		break;
-+	case 'o':
-+	case 'u':
-+	case 'x':
-+	case 'X':
-+		*c_type = LTT_TYPE_UNSIGNED_INT;
-+		break;
-+	default:
-+		if (!*fmt)
-+			--fmt;
-+		goto parse_end;
-+	}
-+	switch (qualifier) {
-+	case 'L':
-+		*c_size = sizeof(long long);
-+		break;
-+	case 'l':
-+		*c_size = sizeof(long);
-+		break;
-+	case 'Z':
-+	case 'z':
-+		*c_size = sizeof(size_t);
-+		break;
-+	case 't':
-+		*c_size = sizeof(ptrdiff_t);
-+		break;
-+	case 'h':
-+		*c_size = sizeof(short);
-+		break;
-+	default:
-+		*c_size = sizeof(int);
-+	}
-+
-+parse_end:
-+	return fmt;
++	mutex_unlock(&markers_mutex);
 +}
 +
-+static inline size_t serialize_trace_data(struct rchan_buf *buf,
-+		size_t buf_offset,
-+		char trace_size, enum ltt_type trace_type,
-+		char c_size, enum ltt_type c_type,
-+		int *largest_align, va_list *args)
-+{
-+	union {
-+		unsigned long v_ulong;
-+		uint64_t v_uint64;
-+		struct {
-+			const char *s;
-+			size_t len;
-+		} v_string;
-+	} tmp;
+ /*
+  * Marker hash table, containing the active markers.
+  * Protected by module_mutex.
+@@ -57,6 +67,7 @@ static struct hlist_head marker_table[MA
+ struct marker_entry {
+ 	struct hlist_node hlist;
+ 	char *format;
++	char *name;
+ 			/* Probe wrapper */
+ 	void (*call)(const struct marker *mdata, void *call_private, ...);
+ 	struct marker_probe_closure single;
+@@ -65,9 +76,11 @@ struct marker_entry {
+ 	struct rcu_head rcu;
+ 	void *oldptr;
+ 	int rcu_pending;
++	u16 chan_id;
++	u16 event_id;
+ 	unsigned char ptype:1;
+ 	unsigned char format_allocated:1;
+-	char name[0];	/* Contains name'\0'format'\0' */
++	char channel[0];	/* Contains channel'\0'name'\0'format'\0' */
+ };
+ 
+ /**
+@@ -205,6 +218,13 @@ static void free_old_closure(struct rcu_
+ {
+ 	struct marker_entry *entry = container_of(head,
+ 		struct marker_entry, rcu);
++	int ret;
 +
-+	/*
-+	 * Be careful about sign extension here.
-+	 * Sign extension is done with the destination (trace) type.
-+	 */
-+	switch (trace_type) {
-+	case LTT_TYPE_SIGNED_INT:
-+		switch (c_size) {
-+		case 1:
-+			tmp.v_ulong = (long)(int8_t)va_arg(*args, int);
-+			break;
-+		case 2:
-+			tmp.v_ulong = (long)(int16_t)va_arg(*args, int);
-+			break;
-+		case 4:
-+			tmp.v_ulong = (long)(int32_t)va_arg(*args, int);
-+			break;
-+		case 8:
-+			tmp.v_uint64 = va_arg(*args, int64_t);
-+			break;
-+		default:
-+			BUG();
-+		}
-+		break;
-+	case LTT_TYPE_UNSIGNED_INT:
-+		switch (c_size) {
-+		case 1:
-+			tmp.v_ulong = (unsigned long)(uint8_t)
-+					va_arg(*args, unsigned int);
-+			break;
-+		case 2:
-+			tmp.v_ulong = (unsigned long)(uint16_t)
-+					va_arg(*args, unsigned int);
-+			break;
-+		case 4:
-+			tmp.v_ulong = (unsigned long)(uint32_t)
-+					va_arg(*args, unsigned int);
-+			break;
-+		case 8:
-+			tmp.v_uint64 = va_arg(*args, uint64_t);
-+			break;
-+		default:
-+			BUG();
-+		}
-+		break;
-+	case LTT_TYPE_STRING:
-+		tmp.v_string.s = va_arg(*args, const char *);
-+		if ((unsigned long)tmp.v_string.s < PAGE_SIZE)
-+			tmp.v_string.s = "<NULL>";
-+		tmp.v_string.len = strlen(tmp.v_string.s)+1;
-+		if (buf)
-+			ltt_relay_write(buf, buf_offset, tmp.v_string.s,
-+				tmp.v_string.len);
-+		buf_offset += tmp.v_string.len;
-+		goto copydone;
-+	default:
-+		BUG();
++	/* Single probe removed */
++	if (!entry->ptype) {
++		ret = ltt_channels_unregister(entry->channel);
++		WARN_ON(ret);
 +	}
-+
-+	/*
-+	 * If trace_size is lower or equal to 4 bytes, there is no sign
-+	 * extension to do because we are already encoded in a long. Therefore,
-+	 * we can combine signed and unsigned ops. 4 bytes float also works
-+	 * with this, because we do a simple copy of 4 bytes into 4 bytes
-+	 * without manipulation (and we do not support conversion from integers
-+	 * to floats).
-+	 * It is also the case if c_size is 8 bytes, which is the largest
-+	 * possible integer.
-+	 */
-+	if (ltt_get_alignment()) {
-+		buf_offset += ltt_align(buf_offset, trace_size);
-+		if (largest_align)
-+			*largest_align = max_t(int, *largest_align, trace_size);
-+	}
-+	if (trace_size <= 4 || c_size == 8) {
-+		if (buf) {
-+			switch (trace_size) {
-+			case 1:
-+				if (c_size == 8)
-+					ltt_relay_write(buf, buf_offset,
-+					(uint8_t[]){ (uint8_t)tmp.v_uint64 },
-+					sizeof(uint8_t));
-+				else
-+					ltt_relay_write(buf, buf_offset,
-+					(uint8_t[]){ (uint8_t)tmp.v_ulong },
-+					sizeof(uint8_t));
-+				break;
-+			case 2:
-+				if (c_size == 8)
-+					ltt_relay_write(buf, buf_offset,
-+					(uint16_t[]){ (uint16_t)tmp.v_uint64 },
-+					sizeof(uint16_t));
-+				else
-+					ltt_relay_write(buf, buf_offset,
-+					(uint16_t[]){ (uint16_t)tmp.v_ulong },
-+					sizeof(uint16_t));
-+				break;
-+			case 4:
-+				if (c_size == 8)
-+					ltt_relay_write(buf, buf_offset,
-+					(uint32_t[]){ (uint32_t)tmp.v_uint64 },
-+					sizeof(uint32_t));
-+				else
-+					ltt_relay_write(buf, buf_offset,
-+					(uint32_t[]){ (uint32_t)tmp.v_ulong },
-+					sizeof(uint32_t));
-+				break;
-+			case 8:
-+				/*
-+				 * c_size cannot be other than 8 here because
-+				 * trace_size > 4.
-+				 */
-+				ltt_relay_write(buf, buf_offset,
-+				(uint64_t[]){ (uint64_t)tmp.v_uint64 },
-+				sizeof(uint64_t));
-+				break;
-+			default:
-+				BUG();
-+			}
-+		}
-+		buf_offset += trace_size;
-+		goto copydone;
-+	} else {
-+		/*
-+		 * Perform sign extension.
-+		 */
-+		if (buf) {
-+			switch (trace_type) {
-+			case LTT_TYPE_SIGNED_INT:
-+				ltt_relay_write(buf, buf_offset,
-+					(int64_t[]){ (int64_t)tmp.v_ulong },
-+					sizeof(int64_t));
-+				break;
-+			case LTT_TYPE_UNSIGNED_INT:
-+				ltt_relay_write(buf, buf_offset,
-+					(uint64_t[]){ (uint64_t)tmp.v_ulong },
-+					sizeof(uint64_t));
-+				break;
-+			default:
-+				BUG();
-+			}
-+		}
-+		buf_offset += trace_size;
-+		goto copydone;
-+	}
-+
-+copydone:
-+	return buf_offset;
-+}
-+
-+notrace size_t ltt_serialize_data(struct rchan_buf *buf, size_t buf_offset,
-+			struct ltt_serialize_closure *closure,
-+			void *serialize_private, int *largest_align,
-+			const char *fmt, va_list *args)
-+{
-+	char trace_size = 0, c_size = 0;	/*
-+						 * 0 (unset), 1, 2, 4, 8 bytes.
-+						 */
-+	enum ltt_type trace_type = LTT_TYPE_NONE, c_type = LTT_TYPE_NONE;
-+	unsigned long attributes = 0;
-+
-+	for (; *fmt ; ++fmt) {
-+		switch (*fmt) {
-+		case '#':
-+			/* tracetypes (#) */
-+			++fmt;			/* skip first '#' */
-+			if (*fmt == '#')	/* Escaped ## */
-+				break;
-+			attributes = 0;
-+			fmt = parse_trace_type(fmt, &trace_size, &trace_type,
-+				&attributes);
-+			break;
-+		case '%':
-+			/* c types (%) */
-+			++fmt;			/* skip first '%' */
-+			if (*fmt == '%')	/* Escaped %% */
-+				break;
-+			fmt = parse_c_type(fmt, &c_size, &c_type);
-+			/*
-+			 * Output c types if no trace types has been
-+			 * specified.
-+			 */
-+			if (!trace_size)
-+				trace_size = c_size;
-+			if (trace_type == LTT_TYPE_NONE)
-+				trace_type = c_type;
-+			if (c_type == LTT_TYPE_STRING)
-+				trace_type = LTT_TYPE_STRING;
-+			/* perform trace write */
-+			buf_offset = serialize_trace_data(buf,
-+						buf_offset, trace_size,
-+						trace_type, c_size, c_type,
-+						largest_align, args);
-+			trace_size = 0;
-+			c_size = 0;
-+			trace_type = LTT_TYPE_NONE;
-+			c_size = LTT_TYPE_NONE;
-+			attributes = 0;
-+			break;
-+			/* default is to skip the text, doing nothing */
-+		}
-+	}
-+	return buf_offset;
-+}
-+EXPORT_SYMBOL_GPL(ltt_serialize_data);
-+
-+/*
-+ * Calculate data size
-+ * Assume that the padding for alignment starts at a sizeof(void *) address.
-+ */
-+static notrace size_t ltt_get_data_size(struct ltt_serialize_closure *closure,
-+				void *serialize_private, int *largest_align,
-+				const char *fmt, va_list *args)
-+{
-+	ltt_serialize_cb cb = closure->callbacks[0];
-+	closure->cb_idx = 0;
-+	return (size_t)cb(NULL, 0, closure, serialize_private,
-+				largest_align, fmt, args);
-+}
-+
-+static notrace
-+void ltt_write_event_data(struct rchan_buf *buf, size_t buf_offset,
-+				struct ltt_serialize_closure *closure,
-+				void *serialize_private, int largest_align,
-+				const char *fmt, va_list *args)
-+{
-+	ltt_serialize_cb cb = closure->callbacks[0];
-+	closure->cb_idx = 0;
-+	buf_offset += ltt_align(buf_offset, largest_align);
-+	cb(buf, buf_offset, closure, serialize_private, NULL, fmt, args);
-+}
-+
-+
-+notrace void ltt_vtrace(const struct marker *mdata, void *probe_data,
-+			void *call_data, const char *fmt, va_list *args)
-+{
-+	int largest_align, ret;
-+	struct ltt_active_marker *pdata;
-+	uint16_t eID;
-+	size_t data_size, slot_size;
-+	unsigned int chan_index;
-+	struct ltt_channel_struct *channel;
-+	struct ltt_trace_struct *trace, *dest_trace = NULL;
-+	struct rchan_buf *buf;
-+	void *transport_data;
-+	uint64_t tsc;
-+	long buf_offset;
-+	va_list args_copy;
-+	struct ltt_serialize_closure closure;
-+	struct ltt_probe_private_data *private_data = call_data;
-+	void *serialize_private = NULL;
-+	int cpu;
-+	unsigned int rflags;
-+
-+	/*
-+	 * This test is useful for quickly exiting static tracing when no trace
-+	 * is active. We expect to have an active trace when we get here.
-+	 */
-+	if (unlikely(ltt_traces.num_active_traces == 0))
-+		return;
-+
-+	rcu_read_lock_sched_notrace();
-+	cpu = smp_processor_id();
-+	__get_cpu_var(ltt_nesting)++;
-+
-+	pdata = (struct ltt_active_marker *)probe_data;
-+	eID = mdata->event_id;
-+	chan_index = mdata->channel_id;
-+	closure.callbacks = pdata->probe->callbacks;
-+
-+	if (unlikely(private_data)) {
-+		dest_trace = private_data->trace;
-+		if (private_data->serializer)
-+			closure.callbacks = &private_data->serializer;
-+		serialize_private = private_data->serialize_private;
-+	}
-+
-+	va_copy(args_copy, *args);
-+	/*
-+	 * Assumes event payload to start on largest_align alignment.
-+	 */
-+	largest_align = 1;	/* must be non-zero for ltt_align */
-+	data_size = ltt_get_data_size(&closure, serialize_private,
-+					&largest_align, fmt, &args_copy);
-+	largest_align = min_t(int, largest_align, sizeof(void *));
-+	va_end(args_copy);
-+
-+	/* Iterate on each trace */
-+	list_for_each_entry_rcu(trace, &ltt_traces.head, list) {
-+		/*
-+		 * Expect the filter to filter out events. If we get here,
-+		 * we went through tracepoint activation as a first step.
-+		 */
-+		if (unlikely(dest_trace && trace != dest_trace))
-+			continue;
-+		if (unlikely(!trace->active))
-+			continue;
-+		if (unlikely(!ltt_run_filter(trace, eID)))
-+			continue;
-+#ifdef CONFIG_LTT_DEBUG_EVENT_SIZE
-+		rflags = LTT_RFLAG_ID_SIZE;
-+#else
-+		if (unlikely(eID >= LTT_FREE_EVENTS))
-+			rflags = LTT_RFLAG_ID;
+ 	kfree(entry->oldptr);
+ 	/* Make sure we free the data before setting the pending flag to 0 */
+ 	smp_wmb();
+@@ -354,16 +374,19 @@ marker_entry_remove_probe(struct marker_
+  * Must be called with markers_mutex held.
+  * Returns NULL if not present.
+  */
+-static struct marker_entry *get_marker(const char *name)
++static struct marker_entry *get_marker(const char *channel, const char *name)
+ {
+ 	struct hlist_head *head;
+ 	struct hlist_node *node;
+ 	struct marker_entry *e;
+-	u32 hash = jhash(name, strlen(name), 0);
++	size_t channel_len = strlen(channel) + 1;
++	size_t name_len = strlen(name) + 1;
++	u32 hash;
+ 
++	hash = jhash(channel, channel_len-1, 0) ^ jhash(name, name_len-1, 0);
+ 	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
+ 	hlist_for_each_entry(e, node, head, hlist) {
+-		if (!strcmp(name, e->name))
++		if (!strcmp(channel, e->channel) && !strcmp(name, e->name))
+ 			return e;
+ 	}
+ 	return NULL;
+@@ -373,22 +396,25 @@ static struct marker_entry *get_marker(c
+  * Add the marker to the marker hash table. Must be called with markers_mutex
+  * held.
+  */
+-static struct marker_entry *add_marker(const char *name, const char *format)
++static struct marker_entry *add_marker(const char *channel, const char *name,
++		const char *format)
+ {
+ 	struct hlist_head *head;
+ 	struct hlist_node *node;
+ 	struct marker_entry *e;
++	size_t channel_len = strlen(channel) + 1;
+ 	size_t name_len = strlen(name) + 1;
+ 	size_t format_len = 0;
+-	u32 hash = jhash(name, name_len-1, 0);
++	u32 hash;
+ 
++	hash = jhash(channel, channel_len-1, 0) ^ jhash(name, name_len-1, 0);
+ 	if (format)
+ 		format_len = strlen(format) + 1;
+ 	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
+ 	hlist_for_each_entry(e, node, head, hlist) {
+-		if (!strcmp(name, e->name)) {
++		if (!strcmp(channel, e->channel) && !strcmp(name, e->name)) {
+ 			printk(KERN_NOTICE
+-				"Marker %s busy\n", name);
++				"Marker %s.%s busy\n", channel, name);
+ 			return ERR_PTR(-EBUSY);	/* Already there */
+ 		}
+ 	}
+@@ -396,13 +422,16 @@ static struct marker_entry *add_marker(c
+ 	 * Using kmalloc here to allocate a variable length element. Could
+ 	 * cause some memory fragmentation if overused.
+ 	 */
+-	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
+-			GFP_KERNEL);
++	e = kmalloc(sizeof(struct marker_entry)
++		    + channel_len + name_len + format_len,
++		    GFP_KERNEL);
+ 	if (!e)
+ 		return ERR_PTR(-ENOMEM);
+-	memcpy(&e->name[0], name, name_len);
++	memcpy(e->channel, channel, channel_len);
++	e->name = &e->channel[channel_len];
++	memcpy(e->name, name, name_len);
+ 	if (format) {
+-		e->format = &e->name[name_len];
++		e->format = &e->name[channel_len + name_len];
+ 		memcpy(e->format, format, format_len);
+ 		if (strcmp(e->format, MARK_NOARGS) == 0)
+ 			e->call = marker_probe_cb_noarg;
+@@ -435,12 +464,14 @@ static int remove_marker(const char *nam
+ 	struct hlist_node *node;
+ 	struct marker_entry *e;
+ 	int found = 0;
+-	size_t len = strlen(name) + 1;
+-	u32 hash = jhash(name, len-1, 0);
++	size_t channel_len = strlen(channel) + 1;
++	size_t name_len = strlen(name) + 1;
++	u32 hash;
+ 
++	hash = jhash(channel, channel_len-1, 0) ^ jhash(name, name_len-1, 0);
+ 	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
+ 	hlist_for_each_entry(e, node, head, hlist) {
+-		if (!strcmp(name, e->name)) {
++		if (!strcmp(channel, e->channel) && !strcmp(name, e->name)) {
+ 			found = 1;
+ 			break;
+ 		}
+@@ -665,6 +696,7 @@ static void marker_update_probes(void)
+ 
+ /**
+  * marker_probe_register -  Connect a probe to a marker
++ * @channel: marker channel
+  * @name: marker name
+  * @format: format string
+  * @probe: probe handler
+@@ -674,27 +706,43 @@ static void marker_update_probes(void)
+  * Returns 0 if ok, error value on error.
+  * The probe address must at least be aligned on the architecture pointer size.
+  */
+-int marker_probe_register(const char *name, const char *format,
+-			marker_probe_func *probe, void *probe_private)
++int marker_probe_register(const char *channel, const char *name,
++			  const char *format, marker_probe_func *probe,
++			  void *probe_private)
+ {
+ 	struct marker_entry *entry;
+-	int ret = 0;
++	int ret = 0, ret_err;
+ 	struct marker_probe_closure *old;
++	int first_probe = 0;
+ 
+ 	mutex_lock(&markers_mutex);
+ 	entry = get_marker(name);
+ 	if (!entry) {
+-		entry = add_marker(name, format);
++		first_probe = 1;
++		entry = add_marker(channel, name, format);
+ 		if (IS_ERR(entry))
+ 			ret = PTR_ERR(entry);
++		if (ret)
++			goto end;
++		ret = ltt_channels_register(channel);
++		if (ret)
++			goto error_remove_marker;
++		ret = ltt_channels_get_index_from_name(channel);
++		if (ret < 0)
++			goto error_unregister_channel;
++		entry->channel_id = ret;
++		ret = ltt_channels_get_event_id(channel);
++		if (ret < 0)
++			goto error_unregister_channel;
++		entry->event_id = ret;
+ 	} else if (format) {
+ 		if (!entry->format)
+ 			ret = marker_set_format(entry, format);
+ 		else if (strcmp(entry->format, format))
+ 			ret = -EPERM;
++		if (ret)
++			goto end;
+ 	}
+-	if (ret)
+-		goto end;
+ 
+ 	/*
+ 	 * If we detect that a call_rcu is pending for this marker,
+@@ -705,12 +753,17 @@ int marker_probe_register(const char *na
+ 	old = marker_entry_add_probe(entry, probe, probe_private);
+ 	if (IS_ERR(old)) {
+ 		ret = PTR_ERR(old);
+-		goto end;
++		if (first_probe)
++			goto error_unregister_channel;
 +		else
-+			rflags = 0;
-+#endif
-+		/*
-+		 * Skip channels added after trace creation.
-+		 */
-+		if (unlikely(chan_index >= trace->nr_channels))
-+			continue;
-+		channel = &trace->channels[chan_index];
-+		if (!channel->active)
-+			continue;
++			goto end;
+ 	}
+ 	mutex_unlock(&markers_mutex);
 +
-+		/* reserve space : header and data */
-+		ret = ltt_reserve_slot(trace, channel, &transport_data,
-+					data_size, &slot_size, &buf_offset,
-+					&tsc, &rflags,
-+					largest_align, cpu);
-+		if (unlikely(ret < 0))
-+			continue; /* buffer full */
+ 	marker_update_probes();
 +
-+		va_copy(args_copy, *args);
-+		/* FIXME : could probably encapsulate transport better. */
-+		buf = ((struct rchan *)channel->trans_channel_data)->buf[cpu];
-+		/* Out-of-order write : header and data */
-+		buf_offset = ltt_write_event_header(trace,
-+					channel, buf, buf_offset,
-+					eID, data_size, tsc, rflags);
-+		ltt_write_event_data(buf, buf_offset, &closure,
-+					serialize_private,
-+					largest_align, fmt, &args_copy);
-+		va_end(args_copy);
-+		/* Out-of-order commit */
-+		ltt_commit_slot(channel, &transport_data, buf_offset,
-+				slot_size);
-+	}
-+	__get_cpu_var(ltt_nesting)--;
-+	rcu_read_unlock_sched_notrace();
-+}
-+EXPORT_SYMBOL_GPL(ltt_vtrace);
+ 	mutex_lock(&markers_mutex);
+-	entry = get_marker(name);
++	entry = get_marker(channel, name);
+ 	if (!entry)
+ 		goto end;
+ 	if (entry->rcu_pending)
+@@ -720,6 +773,13 @@ int marker_probe_register(const char *na
+ 	/* write rcu_pending before calling the RCU callback */
+ 	smp_wmb();
+ 	call_rcu_sched(&entry->rcu, free_old_closure);
 +
-+notrace void ltt_trace(const struct marker *mdata, void *probe_data,
-+		       void *call_data, const char *fmt, ...)
++error_unregister_channel:
++	ret_err = ltt_channels_unregister(channel);
++	WARN_ON(ret_err);
++error_remove_marker:
++	ret_err = remove_marker(channel, name);
++	WARN_ON(ret_err);
+ end:
+ 	mutex_unlock(&markers_mutex);
+ 	return ret;
+@@ -728,6 +788,7 @@ EXPORT_SYMBOL_GPL(marker_probe_register)
+ 
+ /**
+  * marker_probe_unregister -  Disconnect a probe from a marker
++ * @channel: marker channel
+  * @name: marker name
+  * @probe: probe function pointer
+  * @probe_private: probe private data
+@@ -738,24 +799,26 @@ EXPORT_SYMBOL_GPL(marker_probe_register)
+  * itself uses stop_machine(), which insures that every preempt disabled section
+  * have finished.
+  */
+-int marker_probe_unregister(const char *name,
+-	marker_probe_func *probe, void *probe_private)
++int marker_probe_unregister(const char *channel, const char *name,
++			    marker_probe_func *probe, void *probe_private)
+ {
+ 	struct marker_entry *entry;
+ 	struct marker_probe_closure *old;
+ 	int ret = -ENOENT;
+ 
+ 	mutex_lock(&markers_mutex);
+-	entry = get_marker(name);
++	entry = get_marker(channel, name);
+ 	if (!entry)
+ 		goto end;
+ 	if (entry->rcu_pending)
+ 		rcu_barrier_sched();
+ 	old = marker_entry_remove_probe(entry, probe, probe_private);
+ 	mutex_unlock(&markers_mutex);
++
+ 	marker_update_probes();
++
+ 	mutex_lock(&markers_mutex);
+-	entry = get_marker(name);
++	entry = get_marker(channel, name);
+ 	if (!entry)
+ 		goto end;
+ 	if (entry->rcu_pending)
+@@ -765,7 +828,7 @@ int marker_probe_unregister(const char *
+ 	/* write rcu_pending before calling the RCU callback */
+ 	smp_wmb();
+ 	call_rcu_sched(&entry->rcu, free_old_closure);
+-	remove_marker(name);	/* Ignore busy error message */
++	remove_marker(channel, name);	/* Ignore busy error message */
+ 	ret = 0;
+ end:
+ 	mutex_unlock(&markers_mutex);
+@@ -823,6 +886,7 @@ int marker_probe_unregister_private_data
+ 	struct marker_entry *entry;
+ 	int ret = 0;
+ 	struct marker_probe_closure *old;
++	const char *channel = NULL, *name = NULL;
+ 
+ 	mutex_lock(&markers_mutex);
+ 	entry = get_marker_from_private_data(probe, probe_private);
+@@ -833,10 +897,14 @@ int marker_probe_unregister_private_data
+ 	if (entry->rcu_pending)
+ 		rcu_barrier_sched();
+ 	old = marker_entry_remove_probe(entry, NULL, probe_private);
++	channel = kstrdup(entry->channel, GFP_KERNEL);
++	name = kstrdup(entry->name, GFP_KERNEL);
+ 	mutex_unlock(&markers_mutex);
++
+ 	marker_update_probes();
++
+ 	mutex_lock(&markers_mutex);
+-	entry = get_marker_from_private_data(probe, probe_private);
++	entry = get_marker(channel, name);
+ 	if (!entry)
+ 		goto end;
+ 	if (entry->rcu_pending)
+@@ -846,15 +914,19 @@ int marker_probe_unregister_private_data
+ 	/* write rcu_pending before calling the RCU callback */
+ 	smp_wmb();
+ 	call_rcu_sched(&entry->rcu, free_old_closure);
+-	remove_marker(entry->name);	/* Ignore busy error message */
++	/* Ignore busy error message */
++	remove_marker(channel, name);
+ end:
+ 	mutex_unlock(&markers_mutex);
++	kfree(channel);
++	kfree(name);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(marker_probe_unregister_private_data);
+ 
+ /**
+  * marker_get_private_data - Get a marker's probe private data
++ * @channel: marker channel
+  * @name: marker name
+  * @probe: probe to match
+  * @num: get the nth matching probe's private data
+@@ -866,19 +938,21 @@ EXPORT_SYMBOL_GPL(marker_probe_unregiste
+  * owner of the data, or its content could vanish. This is mostly used to
+  * confirm that a caller is the owner of a registered probe.
+  */
+-void *marker_get_private_data(const char *name, marker_probe_func *probe,
+-		int num)
++void *marker_get_private_data(const char *channel, const char *name,
++			      marker_probe_func *probe, int num)
+ {
+ 	struct hlist_head *head;
+ 	struct hlist_node *node;
+ 	struct marker_entry *e;
++	size_t channel_len = strlen(channel) + 1;
+ 	size_t name_len = strlen(name) + 1;
+-	u32 hash = jhash(name, name_len-1, 0);
+ 	int i;
++	u32 hash;
+ 
++	hash = jhash(channel, channel_len-1, 0) ^ jhash(name, name_len-1, 0);
+ 	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
+ 	hlist_for_each_entry(e, node, head, hlist) {
+-		if (!strcmp(name, e->name)) {
++		if (!strcmp(channel, e->channel) && !strcmp(name, e->name)) {
+ 			if (!e->ptype) {
+ 				if (num == 0 && e->single.func == probe)
+ 					return e->single.probe_private;
+@@ -900,6 +974,32 @@ void *marker_get_private_data(const char
+ }
+ EXPORT_SYMBOL_GPL(marker_get_private_data);
+ 
++/**
++ * markers_compact_event_ids - Compact markers event IDs and reassign channels
++ *
++ * Called when no channel users are active by the channel infrastructure.
++ * Called with lock_markers() held.
++ */
++void markers_compact_event_ids(void)
 +{
-+	va_list args;
++	struct marker_entry *entry;
++	unsigned int i;
++	struct hlist_head *head;
++	struct hlist_node *node;
 +
-+	va_start(args, fmt);
-+	ltt_vtrace(mdata, probe_data, call_data, fmt, &args);
-+	va_end(args);
++	for (i = 0; i < MARKER_TABLE_SIZE; i++) {
++		head = &marker_table[i];
++		hlist_for_each_entry(entry, node, head, hlist) {
++			ret = ltt_channels_get_index_from_name(entry->channel);
++			WARN_ON(ret < 0);
++			entry->channel_id = ret;
++			ret = ltt_channels_get_event_id(entry->channel);
++			WARN_ON(ret < 0);
++			entry->event_id = ret;
++		}
++	}
 +}
-+EXPORT_SYMBOL_GPL(ltt_trace);
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Serializer");
+ #ifdef CONFIG_MODULES
+ 
+ /**
 
 -- 
 Mathieu Desnoyers
