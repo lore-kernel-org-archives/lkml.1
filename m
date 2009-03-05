@@ -1,76 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbZCER32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZCEReC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542AbZCER32 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 12:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZCER3T
+	id S1755881AbZCEReC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 12:34:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZCERdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 12:29:19 -0500
-Received: from gw-ca.panasas.com ([209.116.51.66]:19974 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753121AbZCER3S (ORCPT
+	Thu, 5 Mar 2009 12:33:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:19542 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753321AbZCERdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 12:29:18 -0500
-Message-ID: <49B00B83.20400@panasas.com>
-Date: Thu, 05 Mar 2009 19:27:31 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Mar 2009 12:33:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dm1zp4ETVHQZlG6S1h8fDHK53P+4kZiDY/+PQBtA7gTracg0Xi5MWJSIPlDoUFNDNy
+         i6Yh9M1seUge5M8ehXlW4OP9S6j98KmYRD7IJzhikW2+s9OVrC2/ky6dUuVvcl8FqFC/
+         Uwap5Qo58Y4bNiZvkgOXCcqa/7kQ9Ts2kyDIc=
+Date: Thu, 5 Mar 2009 20:40:37 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
+Message-ID: <20090305174037.GA2274@x200.localdomain>
+References: <20090305163857.0C18F3FD@kernel>
 MIME-Version: 1.0
-To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
-CC: uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: um: WARNING: vmlinux: 'memcpy' exported twice. Previous export
- was in vmlinux
-References: <49AFC206.9080004@panasas.com> <20090305130610.GA4265@hack.private> <49AFD780.8080500@panasas.com> <20090305160447.GB4265@hack.private>
-In-Reply-To: <20090305160447.GB4265@hack.private>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 05 Mar 2009 17:28:05.0485 (UTC) FILETIME=[BE5901D0:01C99DB7]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090305163857.0C18F3FD@kernel>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo Wang wrote:
-> On Thu, Mar 05, 2009 at 03:45:36PM +0200, Boaz Harrosh wrote:
->> Américo Wang wrote:
->>> On Thu, Mar 05, 2009 at 02:13:58PM +0200, Boaz Harrosh wrote:
->>>> On today's linus v2.6.29-rc7-3-g559595a
->>>>
->>>> Doing make ARCH=um defconfig & make ARCH=um
->>>> give's me:
->>>>
->>>> LD vmlinux.o
->>>> MODPOST vmlinux.o
->>>> WARNING: vmlinux: 'memcpy' exported twice. Previous export was in vmlinux
->>>>
->>>>
->>>> Sorry if this is a duplicate report
->>>>
->>> Weird...
->>> I tried to compile like what you said, I can't reproduce it.
->>>
->>> Which gcc are you using?
->>>
->>> Thanks.
->>>
->> $ gcc --version
->> gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
->>
->> I'm running on an x86_64 Fedora10 system (updated recently)
->> $ uname -o -s -r -m -p -i
->> Linux 2.6.27.15-170.2.24.fc10.x86_64 x86_64 x86_64 x86_64 GNU/Linux
->>
-> 
-> I am using the same thing, but on i386. I still can't reproduce it. :(
-> 
+On Thu, Mar 05, 2009 at 08:38:57AM -0800, Dave Hansen wrote:
+> This takes a suggestion of Ingo's along with comments from lots of
+> other people.  It can track whether a given file is able to be
+> checkpointed.  It introduces a f_op to allow easy customization
+> like the reset of the VFS.
 
-What can I say I just did it again from scratch
+Here is how alternative looks like
+* without touching VFS at all
+* without adding default handlers
+* without duplicate code every ->checkpoint hook will have
+* without largely useless "special file" messages
+  (what's so special about it?)
+* without adding userspace-visible /proc/*/checkpointable 
+* without recalculating "checkpointable" property on fs_struct
+  on every C/R=y kernel.
 
-$ mkdir .build_um
-$ make ARCH=um KBUILD_OUTPUT=.build_um defconfig
-$ make ARCH=um KBUILD_OUTPUT=.build_um
+* with "ban by default" policy as well
+* with error message immediatly understandable by developer:
 
-(I'm using KBUILD_OUTPUT= because O= does not work when also using M= with
- external modules, so it's a habit)
+	cr_check_file: can't checkpoint file f61a0f40, ->f_op = socket_file_ops+0x0/0x1c0
 
-Thanks for your help. I will try to bisect it on Sunday
-Boaz
+It may lack some printk, but printks are trivial to insert including
+using d_path for precise info.
+
+
+
+static int cr_check_file(struct file *file)
+{
+	struct inode *inode = file->f_path.dentry->d_inode;
+	unsigned int major, minor;
+
+	if (d_unhashed(file->f_path.dentry))
+		return -EINVAL;
+#ifdef CONFIG_SECURITY
+	if (file->f_security)
+		return -EINVAL;
+#endif
+#ifdef CONFIG_EPOLL
+	spin_lock(&file->f_ep_lock);
+	if (!list_empty(&file->f_ep_links)) {
+		spin_unlock(&file->f_ep_lock);
+		return -EINVAL;
+	}
+	spin_unlock(&file->f_ep_lock);
+#endif
+
+	switch (inode->i_mode & S_IFMT) {
+	case S_IFREG:
+	case S_IFDIR:
+		/* Likely on-disk filesystem. */
+		/* FIXME: FUSE, NFS, other networking filesystems */
+		if (inode->i_sb->s_type->fs_flags & FS_REQUIRES_DEV)
+			return 0;
+		break;
+	case S_IFBLK:
+		major = imajor(inode);
+		minor = iminor(inode);
+		printk("%s: can't checkpoint block device %u:%u, ->f_op = %pS\n", __func__, major, minor, file->f_op);
+		return -EINVAL;
+	case S_IFCHR:
+		major = imajor(inode);
+		minor = iminor(inode);
+		if (major == UNIX98_PTY_SLAVE_MAJOR)
+			return 0;
+		printk("%s: can't checkpoint char device %u:%u, ->f_op = %pS\n", __func__, major, minor, file->f_op);
+		return -EINVAL;
+	case S_IFIFO:
+		break;
+	case S_IFSOCK:
+		return 0;
+	case S_IFLNK:
+		/* One can't open symlink. */
+		BUG();
+	}
+	printk("%s: can't checkpoint file %p, ->f_op = %pS\n", __func__, file, file->f_op);
+	return -EINVAL;
+}
+
+static int __cr_collect_file(struct cr_context *ctx, struct file *file)
+{
+	struct cr_object *obj;
+
+	obj = cr_find_obj_by_ptr(ctx, file, CR_CTX_FILE);
+	if (obj) {
+		obj->o_count++;
+		return 0;
+	}
+
+	obj = cr_object_create(file);
+	if (!obj)
+		return -ENOMEM;
+	list_add_tail(&obj->o_list, &ctx->cr_obj[CR_CTX_FILE]);
+	printk("collect file %p\n", file);
+	return 0;
+}
+
+int cr_collect_file(struct cr_context *ctx, struct file *file)
+{
+	int rv;
+
+	rv = cr_check_file(file);
+	if (rv < 0)
+		return rv;
+	return __cr_collect_file(ctx, file);
+}
