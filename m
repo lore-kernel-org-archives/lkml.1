@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZCEC0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZCECiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756561AbZCEC0m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 21:26:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbZCEC0R
+	id S1754902AbZCECiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 21:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZCECiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 21:26:17 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36660 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756075AbZCEC0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 21:26:16 -0500
-Subject: Re: commit "radeonfb: Fix resume from D3Cold on some platforms"
- breaks resume from RAM on PowerBook
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gaudenz Steinlin <gaudenz@soziologie.ch>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090304083859.GB6889@soziologie.ch>
-References: <20090304083859.GB6889@soziologie.ch>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 13:25:20 +1100
-Message-Id: <1236219920.7260.6.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 21:38:09 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:30997 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbZCECiI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 21:38:08 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 04 Mar 2009 21:37:43 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC] atomic highmem kmap page pinning
+In-reply-to: <20090305080717.f7832c63.minchan.kim@barrios-desktop>
+Message-id: <alpine.LFD.2.00.0903042129140.5511@xanadu.home>
+References: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
+ <20090304171429.c013013c.minchan.kim@barrios-desktop>
+ <alpine.LFD.2.00.0903041101170.5511@xanadu.home>
+ <20090305080717.f7832c63.minchan.kim@barrios-desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 09:38 +0100, Gaudenz Steinlin wrote:
-> Hi Benjamin
+On Thu, 5 Mar 2009, Minchan Kim wrote:
+
+> I thought kmap and dma_map_page usage was following.
 > 
-> The commit 1fb25cb8b83e85f5bf1a4adb3c9a254c4ce92405 "radeonfb: Fix resume 
-> from D3Cold on some platforms" breaks resume from suspend to RAM on my
-> PowerBook (Model PowerBook5,8 with ATI Mobility Radeon 9600 M10).
+> kmap(page);
+> ...
+> dma_map_page(...)
+>   invalidate_cache_line
 > 
-> On resume the pulsing led indicating sleep just changes to solid white
-> and nothing else happens. 
+> kunmap(page);
 > 
-> Reverting this commit on top of the current Linus' tree fixes resume.
-
-Ok, so after some tests here on what appear to the the exact same
-machine...
-
-I did the commit specifically to -fix- a regression due to upstream
-changes, ie, for me it doesn't work without that commit. That is very
-weird.
-
-In fact, I just tried also with AGP and DRM enabled with X wobbly
-windows etc... and it's working just fine.
-
-I know that the early resume hack I have in there for powerbooks might
-be a bit fishy, so please try without it (according to my previous email
-on that matter).
-
-Please let me know if that makes a difference.
-
-Cheers,
-Ben.
+> In this case, how do pkmap_count value for the page passed to dma_map_page become 1 ?
+> The caller have to make sure to complete dma_map_page before kunmap.
 
 
+The caller doesn't have to call kmap() on pages it intends to use for 
+DMA.
+
+> Do I miss something ?
+
+See above.
+
+> > > As far as I understand, To make irq_disable to prevent this problem is 
+> > > rather big cost.
+> > 
+> > How big?  Could you please elaborate on the significance of this cost?
+> 
+> I don't have a number. It depends on you for submitting this patch. 
+
+My assertion is that the cost is negligible.  This is why I'm asking you 
+why you think this is a big cost.
+
+
+Nicolas
