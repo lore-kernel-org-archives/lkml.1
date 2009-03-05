@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbZCENKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbZCENKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755095AbZCENKi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:10:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbZCENIm
+	id S1756012AbZCENKw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:10:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbZCENIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:08:42 -0500
-Received: from smtp-68.nebula.fi ([83.145.220.68]:39715 "EHLO
+	Thu, 5 Mar 2009 08:08:43 -0500
+Received: from smtp-68.nebula.fi ([83.145.220.68]:39720 "EHLO
 	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754065AbZCENIj (ORCPT
+	with ESMTP id S1753827AbZCENIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Mar 2009 08:08:39 -0500
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: mingo@elte.hu
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 08/17] x86: unify kernel_physical_mapping_init() call in init_memory_mapping()
-Date: Thu,  5 Mar 2009 14:54:59 +0200
-Message-Id: <1236257708-27269-8-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 13/17] x86: add stub init_gbpages() for 32-bit init_memory_mapping()
+Date: Thu,  5 Mar 2009 14:55:04 +0200
+Message-Id: <1236257708-27269-13-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -26,111 +26,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-The 64-bit version of init_memory_mapping() uses the last mapped address
-returned from kernel_physical_mapping_init() whereas the 32-bit version
-doesn't. This patch adds relevant ifdefs to both versions of the function to
-reduce the diff between them.
+This patch adds an empty static inline init_gbpages() for the 32-bit version of
+init_memory_mapping() making both versions identical.
 
 Cc: Yinghai Lu <yinghai@kernel.org>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- arch/x86/mm/init_32.c |   10 +++++++++-
- arch/x86/mm/init_64.c |   21 +++++++++++++--------
- 2 files changed, 22 insertions(+), 9 deletions(-)
+ arch/x86/mm/init_32.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index cc5c399..00c1d85 100644
+index f59e9b8..cd3c24b 100644
 --- a/arch/x86/mm/init_32.c
 +++ b/arch/x86/mm/init_32.c
-@@ -929,6 +929,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	unsigned long page_size_mask = 0;
- 	unsigned long start_pfn, end_pfn;
- 	unsigned long pos;
-+	unsigned long ret;
- 
- 	struct map_range mr[NR_RANGE_MR];
- 	int nr_range, i;
-@@ -1040,11 +1041,18 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	if (!after_bootmem)
- 		find_early_table_space(end, use_pse, use_gbpages);
- 
-+#ifdef CONFIG_X86_32
- 	for (i = 0; i < nr_range; i++)
- 		kernel_physical_mapping_init(
- 				mr[i].start >> PAGE_SHIFT,
- 				mr[i].end >> PAGE_SHIFT,
- 				mr[i].page_size_mask == (1<<PG_LEVEL_2M));
-+	ret = end;
-+#else /* CONFIG_X86_64 */
-+	for (i = 0; i < nr_range; i++)
-+		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
-+						   mr[i].page_size_mask);
-+#endif
- 
- 	early_ioremap_page_table_range_init();
- 
-@@ -1059,7 +1067,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	if (!after_bootmem)
- 		early_memtest(start, end);
- 
--	return end >> PAGE_SHIFT;
-+	return ret >> PAGE_SHIFT;
+@@ -922,6 +922,10 @@ static int save_mr(struct map_range *mr, int nr_range,
+ 	return nr_range;
  }
  
++static inline void init_gbpages(void)
++{
++}
++
+ /*
+  * Setup the direct mapping of the physical memory at PAGE_OFFSET.
+  * This runs before bootmem is initialized and gets pages directly from
+@@ -941,6 +945,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
  
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index c3c0be5..e4fadea 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -686,10 +686,10 @@ static int save_mr(struct map_range *mr, int nr_range,
- unsigned long __init_refok init_memory_mapping(unsigned long start,
- 					       unsigned long end)
- {
--	unsigned long last_map_addr = 0;
- 	unsigned long page_size_mask = 0;
- 	unsigned long start_pfn, end_pfn;
- 	unsigned long pos;
-+	unsigned long ret;
+ 	printk(KERN_INFO "init_memory_mapping: %016lx-%016lx\n", start, end);
  
- 	struct map_range mr[NR_RANGE_MR];
- 	int nr_range, i;
-@@ -819,10 +819,18 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	if (!after_bootmem)
- 		find_early_table_space(end, use_pse, use_gbpages);
- 
-+#ifdef CONFIG_X86_32
-+	for (i = 0; i < nr_range; i++)
-+		kernel_physical_mapping_init(
-+				mr[i].start >> PAGE_SHIFT,
-+				mr[i].end >> PAGE_SHIFT,
-+				mr[i].page_size_mask == (1<<PG_LEVEL_2M));
-+	ret = end;
-+#else /* CONFIG_X86_64 */
- 	for (i = 0; i < nr_range; i++)
--		last_map_addr = kernel_physical_mapping_init(
--					mr[i].start, mr[i].end,
--					mr[i].page_size_mask);
-+		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
-+						   mr[i].page_size_mask);
-+#endif
- 
- 	if (!after_bootmem)
- 		mmu_cr4_features = read_cr4();
-@@ -832,13 +840,10 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 		reserve_early(table_start << PAGE_SHIFT,
- 				 table_end << PAGE_SHIFT, "PGTABLE");
- 
--	printk(KERN_INFO "last_map_addr: %lx end: %lx\n",
--			 last_map_addr, end);
--
- 	if (!after_bootmem)
- 		early_memtest(start, end);
- 
--	return last_map_addr >> PAGE_SHIFT;
-+	return ret >> PAGE_SHIFT;
- }
- 
- #ifndef CONFIG_NUMA
++	if (!after_bootmem)
++		init_gbpages();
++
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ 	/*
+ 	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
 -- 
 1.5.4.3
 
