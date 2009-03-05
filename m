@@ -1,116 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZCELTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbZCELWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbZCELTW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 06:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZCELTN
+	id S1754413AbZCELWh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 06:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZCELW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 06:19:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39325 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751173AbZCELTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 06:19:11 -0500
-Date: Thu, 5 Mar 2009 11:18:27 GMT
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49af243d.06e9300a.53ad.ffff840c@mx.google.com>
-References: <49af243d.06e9300a.53ad.ffff840c@mx.google.com>
-Subject: [tip:tracing/function-graph-tracer] tracing/function-graph-tracer: use the more lightweight local clock
-Message-ID: <tip-0012693ad4f636c720fed3802027f9427962f540@git.kernel.org>
-Git-Commit-ID: 0012693ad4f636c720fed3802027f9427962f540
-X-Mailer: tip-git-log-daemon
+	Thu, 5 Mar 2009 06:22:29 -0500
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:30884
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751405AbZCELW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 06:22:28 -0500
+X-BigFish: VPS-14(z21eWzzzzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KG1693-01-78I-01
+Date: Thu, 5 Mar 2009 12:22:15 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@redhat.com>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] iommu fixes for 2.6.29-rc7
+Message-ID: <20090305112215.GB8751@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Mar 2009 11:18:29 +0000 (UTC)
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 05 Mar 2009 11:22:15.0634 (UTC) FILETIME=[A3378B20:01C99D84]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0012693ad4f636c720fed3802027f9427962f540
-Gitweb:     http://git.kernel.org/tip/0012693ad4f636c720fed3802027f9427962f540
-Author:     "Frederic Weisbecker" <fweisbec@gmail.com>
-AuthorDate: Thu, 5 Mar 2009 01:49:22 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 5 Mar 2009 12:14:41 +0100
+Hi Ingo,
 
-tracing/function-graph-tracer: use the more lightweight local clock
+The following changes since commit 559595a985e106d2fa9f0c79b7f5805453fed593:
+  Linus Torvalds (1):
+        Merge branch 'merge' of git://git.kernel.org/.../benh/powerpc
 
-Impact: decrease hangs risks with the graph tracer on slow systems
+are available in the git repository at:
 
-Since the function graph tracer can spend too much time on timer
-interrupts, it's better now to use the more lightweight local
-clock. Anyway, the function graph traces are more reliable on a
-per cpu trace.
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu/fixes-2.6.29
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <49af243d.06e9300a.53ad.ffff840c@mx.google.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+FUJITA Tomonori (1):
+      AMD IOMMU: remove unnecessary ifdef
 
+Hannes Eder (1):
+      IOMMU-API: use ANSI style function declaration for 'iommu_found'
 
----
- arch/x86/kernel/ftrace.c             |    2 +-
- include/linux/ftrace.h               |   13 +++++++------
- kernel/trace/trace_functions_graph.c |    2 +-
- 3 files changed, 9 insertions(+), 8 deletions(-)
+ arch/x86/kernel/amd_iommu.c |    2 --
+ drivers/base/iommu.c        |    2 +-
+ 2 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 3925ec0..a85da17 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -436,7 +436,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 		return;
- 	}
+One fix is for AMD IOMMU and the other one for the IOMMU-API. Please
+pull.
+
+Joerg
+
+Here is the full diff:
+
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 5113c08..d7a7c4c 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -23,9 +23,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/scatterlist.h>
+ #include <linux/iommu-helper.h>
+-#ifdef CONFIG_IOMMU_API
+ #include <linux/iommu.h>
+-#endif
+ #include <asm/proto.h>
+ #include <asm/iommu.h>
+ #include <asm/gart.h>
+diff --git a/drivers/base/iommu.c b/drivers/base/iommu.c
+index 5e039d4..c2d1eed 100644
+--- a/drivers/base/iommu.c
++++ b/drivers/base/iommu.c
+@@ -31,7 +31,7 @@ void register_iommu(struct iommu_ops *ops)
+ 	iommu_ops = ops;
+ }
  
--	calltime = cpu_clock(raw_smp_processor_id());
-+	calltime = trace_clock_local();
- 
- 	if (ftrace_push_return_trace(old, calltime,
- 				self_addr, &trace.depth) == -EBUSY) {
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 1f69ac7..6ea62ac 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -1,15 +1,16 @@
- #ifndef _LINUX_FTRACE_H
- #define _LINUX_FTRACE_H
- 
--#include <linux/linkage.h>
--#include <linux/fs.h>
--#include <linux/ktime.h>
--#include <linux/init.h>
--#include <linux/types.h>
--#include <linux/module.h>
-+#include <linux/trace_clock.h>
- #include <linux/kallsyms.h>
-+#include <linux/linkage.h>
- #include <linux/bitops.h>
-+#include <linux/module.h>
-+#include <linux/ktime.h>
- #include <linux/sched.h>
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/fs.h>
- 
- #include <asm/ftrace.h>
- 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index c009553..e527f2f 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -112,7 +112,7 @@ unsigned long ftrace_return_to_handler(void)
- 	unsigned long ret;
- 
- 	ftrace_pop_return_trace(&trace, &ret);
--	trace.rettime = cpu_clock(raw_smp_processor_id());
-+	trace.rettime = trace_clock_local();
- 	ftrace_graph_return(&trace);
- 
- 	if (unlikely(!ret)) {
+-bool iommu_found()
++bool iommu_found(void)
+ {
+ 	return iommu_ops != NULL;
+ }
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
