@@ -1,94 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZCEOh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZCEOiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbZCEOh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 09:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZCEOhL
+	id S1755374AbZCEOiB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 09:38:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZCEOhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 09:37:11 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:26600 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbZCEOhK (ORCPT
+	Thu, 5 Mar 2009 09:37:51 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:25996 "EHLO
+	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbZCEOhu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 09:37:10 -0500
-Message-ID: <49AFE390.5070001@codemonkey.ws>
-Date: Thu, 05 Mar 2009 08:37:04 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Mar 2009 09:37:50 -0500
+X-BigFish: VPS-36(zz1432R98dR936eQ1805M936fKzzzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KG1FAI-01-DAY-01
+Date: Thu, 5 Mar 2009 15:37:26 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: msr architecture debug code
+Message-ID: <20090305143726.GC7347@alberich.amd.com>
+References: <1236008575.3332.2.camel@localhost.localdomain> <20090302205437.GB14471@elte.hu> <20090305135444.GB7347@alberich.amd.com> <1236262346.2527.3.camel@ht.satnam>
 MIME-Version: 1.0
-To: George Dunlap <George.Dunlap@eu.citrix.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Xen-devel] Re: [PATCH] xen: core dom0 support
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org>	 <200902282309.07576.nickpiggin@yahoo.com.au>	 <49AB19E1.4050604@goop.org>	 <200903021737.24903.nickpiggin@yahoo.com.au>	 <49AB9336.7010103@goop.org> <49AEBB8C.2000405@codemonkey.ws> <de76405a0903050259j5a0f9649v28e8f8fd29003d5f@mail.gmail.com>
-In-Reply-To: <de76405a0903050259j5a0f9649v28e8f8fd29003d5f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <1236262346.2527.3.camel@ht.satnam>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 05 Mar 2009 14:37:33.0297 (UTC) FILETIME=[EB7D0610:01C99D9F]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-George Dunlap wrote:
-> On Wed, Mar 4, 2009 at 5:34 PM, Anthony Liguori <anthony@codemonkey.ws> wrote:
->   
->> Can you point to benchmarks?  I have a hard time believing this.
->>
->> How can shadow paging beat nested paging assuming the presence of large
->> pages?
->>     
->
-> If these benchmarks would help this discussion, we can certainly run
-> some.  As of last Fall, even with superpage support, certain workloads
-> perform significantly less well with HAP (hardware-assisted paging)
-> than with shadow pagetables.  Examples are specjbb, which does almost
-> no pagetable updates, but totally thrashes the TLB.
+On Thu, Mar 05, 2009 at 07:42:26PM +0530, Jaswinder Singh Rajput wrote:
+> On Thu, 2009-03-05 at 14:54 +0100, Andreas Herrmann wrote:
+> 
+> > All nice suggestions but why in-kernel?
+> > 
+> 
+> In Kernel Space:
+> 
+> We can read/write MSRs and can change the bits and see it effect without
+> writing any code.
 
-I suspected specjbb was the benchmark.   specjbb is really an anomaly as 
-it's really the only benchmark where even a naive shadow paging 
-implementation performs very close to native.
+Sorry, I can't (or maybe I don't like to) follow.
 
-specjbb also turns into a pathological case with HAP.  In my 
-measurements, HAP with 4k pages was close to 70% of native for specjbb.  
-Once you enable large pages though, you get pretty close to native.  
-IIRC, around 95%.  I suspect that over time as the caching algorithms 
-improve, this will approach 100% of native.
+(BTW, you don't even need to write C-code. You can use a one-liner in perl
+or python to seek and read any MSR using /dev/cpu/*/msr.)
 
-Then again, there are workloads like kernbench that are pathological for 
-shadow paging in a much more dramatic way.  At least on shadow2, I was 
-seeing around 60% of native with kernbench.  With direct paging, it goes 
-to about 85% of native.  With NPT and large pages, it's almost 100% of 
-native.
+> And we can also dump these value if something goes wrong in thats
+> sections for kernel that's why I am also using printk.
 
->   SysMark also
-> performed much better with shadow pagetables than HAP.  And of course,
-> 64-bit is worse than 32-bit.  (It's actually a bit annoying from a
-> default-policy perspective, since about half of our workloads perform
-> better with HAP (up to 30% better) and half of them perform worse (up
-> to 30% worse)).
->
-> Our comparison would, of course, be comparing Xen+HAP to Xen+Shadow,
-> which isn't necessarily comparable to KVM+HAP.
->
-> Having HAP work well would be great for us as well as KVM.  But
-> there's still the argument about hardware support: Xen can run
-> paravirtualized VMs on hardware with no HVM support, and can run fully
-> virtualized domains very well on hardware that has HVM support but not
-> HAP support.
->   
+Just some example how to do this today. (I've recently used this for
+debugging.) Using a kernel with msr module loaded or built-in plus using
+x86info/lsmsr and hpa's msr-tools.
 
-Xen is definitely not going away and as such, supporting it in Linux 
-seems like a good idea to me.  I'm just refuting claims that the Xen 
-architecture has intrinsic advantages wrt MMU virtualization.  It's 
-simply not the case :-)
+# lsmsr MTRRfix -c 0
+MTRRfix64K_00000     = 0x0606060606060606
+MTRRfix16K_80000     = 0x0606060606060606
+MTRRfix16K_A0000     = 0x0000000000000000
+MTRRfix4K_C0000      = 0x0505050505050505
+MTRRfix4K_C8000      = 0x0505050505050505
+MTRRfix4K_D0000      = 0x0000000000000000
+MTRRfix4K_D8000      = 0x0000000000000000
+MTRRfix4K_E0000      = 0x0505050500000000
+MTRRfix4K_E8000      = 0x0505050505050505
+MTRRfix4K_F0000      = 0x0505050505050505
+MTRRfix4K_F8000      = 0x0505050505050505
+# lsmsr SYS_CFG
+SYS_CFG              = 0x0000000000160600
+# lsmsr SYS_CFG -l -V3
+SYS_CFG             : 0xc0010010
+  8-8:SetDirtyEnE
+  9-9:SetDirtyEnS
+  10-10:SetDirtyEnO
+  16-16:ChxToDirtyDis
+  17-17:SysUcLockEn
+  18-18:MtrrFixDramEn
+  19-19:MtrrFixDramModEn
+  20-20:MtrrVarDramEn
+  21-21:MtrrTom2En
+  22-22:Tom2ForceMemTypeWB
+# wrmsr -p 0 0xc0010010 0x00000000001e0600
+# lsmsr SYS_CFG
+SYS_CFG              = 0x00000000001e0600
+# lsmsr MTRRfix -c 0
+MTRRfix64K_00000     = 0x1e1e1e1e1e1e1e1e
+MTRRfix16K_80000     = 0x1e1e1e1e1e1e1e1e
+MTRRfix16K_A0000     = 0x0000000000000000
+MTRRfix4K_C0000      = 0x1515151515151515
+MTRRfix4K_C8000      = 0x1515151515151515
+MTRRfix4K_D0000      = 0x0000000000000000
+MTRRfix4K_D8000      = 0x0000000000000000
+MTRRfix4K_E0000      = 0x1515151500000000
+MTRRfix4K_E8000      = 0x1515151515151515
+MTRRfix4K_F0000      = 0x1515151515151515
+MTRRfix4K_F8000      = 0x1515151515151515
+
+
+IMHO, there is no need to do this in-kernel.
+
 
 Regards,
 
-Anthony Liguori
+Andreas
 
->  -George Dunlap
->   
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
 
