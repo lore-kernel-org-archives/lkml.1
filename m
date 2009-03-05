@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZCELKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCELMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZCELKz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 06:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCELKn
+	id S1754205AbZCELMp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 06:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZCELMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 06:10:43 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:55398 "EHLO kernel.dk"
+	Thu, 5 Mar 2009 06:12:35 -0500
+Received: from ns.suse.de ([195.135.220.2]:43048 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751173AbZCELKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 06:10:42 -0500
-Date: Thu, 5 Mar 2009 12:10:40 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: tglx@linutronix.de, James.Bottomley@HansenPartnership.com,
-       jengelh@medozas.de, bharrosh@panasas.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
-	scsi-sgpool)objects
-Message-ID: <20090305111040.GZ11787@kernel.dk>
-References: <20090305101436.GV11787@kernel.dk> <20090305192737I.fujita.tomonori@lab.ntt.co.jp> <20090305103023.GW11787@kernel.dk> <20090305194118A.fujita.tomonori@lab.ntt.co.jp>
+	id S1750810AbZCELMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 06:12:34 -0500
+Date: Thu, 5 Mar 2009 12:12:26 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>, stable@kernel.org
+Subject: Re: [patch] fs: new inode i_state corruption fix
+Message-ID: <20090305111226.GB29531@duck.suse.cz>
+References: <20090305064554.GA11916@wotan.suse.de> <20090305100000.GA29177@duck.suse.cz> <20090305101637.GB17815@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090305194118A.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090305101637.GB17815@wotan.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05 2009, FUJITA Tomonori wrote:
-> On Thu, 5 Mar 2009 11:30:24 +0100
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Thu 05-03-09 11:16:37, Nick Piggin wrote:
+> On Thu, Mar 05, 2009 at 11:00:01AM +0100, Jan Kara wrote:
+> > On Thu 05-03-09 07:45:54, Nick Piggin wrote:
+> > > after ~1hour of running. Previously, the new warnings would start immediately
+> > > and hang would happen in under 5 minutes.
+> >   A quick grep seems to indicate that you've still missed a few cases,
+> > haven't you? I still see the same problem in
+> > drop_caches.c:drop_pagecache_sb() scanning, inode.c:invalidate_inodes()
+> > scanning, and dquot.c:add_dquot_ref() scanning.
+> >   Otherwise the patch looks fine.
 > 
-> > > > While merging that, I think we can do better than this. Essentially we
-> > > > just need to have __blk_recalc_rq_segments() track the back bio as well,
-> > > > then we don't have to pass in a pointer for segment sizes.
-> > > > 
-> > > > Totally untested, comments welcome...
-> > > 
-> > > Yeah, I think that updating bi_seg_front_size and bi_seg_back_size at
-> > > one place, __blk_recalc_rq_segments, is better. I thought about the
-> > > same way. But we are already in -rc7 and this must go into mainline
-> > > now. So I chose a less-intrusive way (similar to what we have done in
-> > > the past).
-> > > 
-> > > As you know, the merging code is really complicated and we could
-> > > overlook stuff easily. ;) It might be better to simplify the merging
-> > > code a bit.
-> > 
-> > If someone (Ingo?) is willing to test the last variant, I'd much rather
-> > add that. It does simplify it (imho), and it kills 23 lines while only
-> > adding 9. But a quick response would be nice, then I can ask Linus to
-> > pull it later today.
-> 
-> I prefer to keep your change for 2.6.30 but if you want to push it
-> now, it's fine by me.
+> I thought they should be OK; drop_pagecache_sb doesn't play with flags,
+> invalidate_inodes won't if refcount is elevated, and I think add_dquot_ref
+> won't if writecount is not elevated...
+  Ah, ok, you are probably right.
 
-I honestly can't see much of a difference in change complexity, so I
-don't see much point in putting one fix in 2.6.29 and then doing another
-for 2.6.30...
+> But maybe that's  abit fragile and it would be better policy to always
+> skip I_NEW in these traverals?
+  Yes, it seems too fragile to me. I'm not saying we have to forbid
+everything for I_NEW inodes but I think we should set clear simple rules
+what is protected by I_NEW and then verify that all sites which can come
+across such inodes obey them.
 
-> Ingo, you can quickly hit this bug without the patch?
-> 
-> I've not hit this bug while I've been performing intensive I/Os for
-> the last three hours. And I thought that Thomas took two hours to hit
-> this. So maybe it's too early to give 'Tested-by'. With 
-> max_segment_size decreased, we might hit this easier.
-
-Yep, that may help. I haven't seen this thread until I was cc'ed on it,
-so I haven't even read up on the generic problem yet...
-
+									Honza
 -- 
-Jens Axboe
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
