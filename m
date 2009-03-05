@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZCEKFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZCEKFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZCEKFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbZCEKFV
+	id S1755841AbZCEKFp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbZCEKF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:05:21 -0500
-Received: from mx2.suse.de ([195.135.220.15]:59525 "EHLO mx2.suse.de"
+	Thu, 5 Mar 2009 05:05:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40460 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbZCEKFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:05:19 -0500
-Date: Thu, 5 Mar 2009 11:05:16 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net, linux-ext4@vger.kernel.org
-Subject: Re: fsx-linux loosing mmap() writes under memory pressure
-Message-ID: <20090305100516.GB29177@duck.suse.cz>
-References: <20090304145109.GA7140@duck.suse.cz> <20090304155535.GA23108@duck.suse.cz> <20090304175031.GA24730@duck.suse.cz> <200903051355.43909.nickpiggin@yahoo.com.au>
+	id S1754141AbZCEKF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:05:27 -0500
+Date: Thu, 5 Mar 2009 11:05:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Brian Maly <bmaly@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix DMI for EFI
+Message-ID: <20090305100515.GA29499@elte.hu>
+References: <49A9F597.4010601@redhat.com> <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com> <49ADEDA3.1030406@redhat.com> <20090304110022.GB18165@elte.hu> <49AE9850.9020103@redhat.com> <20090304175418.GB29823@elte.hu> <1236216818.24215.24.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903051355.43909.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1236216818.24215.24.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 05-03-09 13:55:43, Nick Piggin wrote:
-> On Thursday 05 March 2009 04:50:31 Jan Kara wrote:
-> > On Wed 04-03-09 16:55:35, Jan Kara wrote:
-> > > On Wed 04-03-09 15:51:09, Jan Kara wrote:
-> > > >   first, I'd like to point out that this has happened under UML so it
-> > > > can be just some obscure bug in that architecture but I belive it's
-> > > > worth debugging anyway. Now to the problem:
-> > > >   This has happened with today Linus's git snapshot. The filesystem is
-> > > > ext3 with *1KB* blocksize. I booted UML with 64MB of memory and run
-> > > > (these are test's from Andrew Morton's torture tests):
-> > > >   fsx-linux -l 8000000 /mnt/testfile
-> > > >   bash-shared-mapping -t 8 /mnt/bashfile 50000000
-> > > > (the second test just makes the UML under memory pressure and stresses
-> > > > the filesystem, otherwise it does not interact with fsx-linux in any
-> > > > way). After some time (like an hour) fsx-linux reported the file is
-> > > > corrupted. I tried again and it happened again so probably some
-> > > > debugging should be possible.
-> > > >   Both times it seems we've simply completely lost a write which
-> > > > happened through mmap (2 pages in the first case, 3 pages in the second
-> > > > case). Also I've checked and in the first case no blocks are allocated
-> > > > for the offsets where the data should be so most probably we've lost
-> > > > the write before block_write_full_page() called get_block().
-> > > >   I'll debug this further but I wanted let people know there's some
-> > > > problem and maybe somebody has some bright idea :).  I'm attaching the
-> > > > log from fsx if someone is interested.
+
+* Huang Ying <ying.huang@intel.com> wrote:
+
+> On Thu, 2009-03-05 at 01:54 +0800, Ingo Molnar wrote:
+> > * Brian Maly <bmaly@redhat.com> wrote:
+> > 
 > > >
-> > >   Testing a bit more, I managed to reproduce the problem on ext2 and
-> > > what's more strange, now the lost page was written via ordinary write()
-> > > (fsxlog attached). So I believe this is more likely to be UML specific...
-> >
-> >   And to add even more information, this also happens on ext2 with 4KB
-> > blocksize (although much more rarely it seems). Again the data was written
-> > by an extending write() but the block for it was not even allocated...
+> > >
+> > >> Hm, could we ever find ourselves in the positition of having to access 
+> > >> the DMI strings table in the EFI init code, to implement a quirk? I 
+> > >> think that's quite plausible.
+> > >
+> > >> OTOH, with some DMI quirks in EFI tables it's a bit of a chicken and 
+> > >> egg problem. Can DMI strings ever be outside of EFI tables on EFI 
+> > >> systems?
+> > >
+> > >> 	Ingo
+> > >
+> > > Right now it is EFI that loads the dmi tables (and all other 
+> > > tables such as ACPI), so it is a chicken and the egg. I think 
+> > > that if dmi is ever needed by EFI, the dmi scan will have to 
+> > > be moved inside efi_init. We could move the dmi scan into 
+> > > efi_init and do the dmi scan the moment we have the dmi table. 
+> > > Thats really the soonest point we could scan on EFI systems. 
+> > > Im OK with moving dmi to efi_init if you prefer.
+> > 
+> > Your patch looks fine, but i'd like to hear the opinion of Ying 
+> > Huang as well.
 > 
-> What block device driver are you using?
-  UML was just using image file to back the filesystem I was testing on.
-But I don't think that plays a big role because the blocks were not even
-allocated in the fs-image so we must have lost them quite early.
+> This patch is OK for me.
 
-> Can it be reproduced without mapped reads and writes completely? (-W -R)
-  Good idea, will try.
+thanks. There are two EFI patches queued up for .29:
 
-									Honza
+dd39ecf: x86: EFI: Back efi_ioremap with init_memory_mapping instead of FIX_MAP
+ff0c087: x86: fix DMI on EFI
 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+	Ingo
