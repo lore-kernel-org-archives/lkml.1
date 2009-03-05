@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZCEA4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZCEBAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZCEA4B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 19:56:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbZCEAzx
+	id S1755542AbZCEBAl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 20:00:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZCEBAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 19:55:53 -0500
-Received: from wa4ehsobe001.messaging.microsoft.com ([216.32.181.11]:23115
-	"EHLO WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750752AbZCEAzw (ORCPT
+	Wed, 4 Mar 2009 20:00:33 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:52762 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbZCEBAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 19:55:52 -0500
-X-BigFish: VPS1(zzzzzzz32i62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KG0D8J-04-G4C-01
-From: Robert Richter <robert.richter@amd.com>
-To: Greg KH <gregkh@suse.de>
-CC: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Axel Wachtler <axel.wachtler@atmel.com>,
-       Robert Richter <robert.richter@amd.com>
-Subject: [PATCH] usb/serial: adding FTDI USB/Serial converter devices
-Date: Thu, 5 Mar 2009 01:54:39 +0100
-Message-ID: <1236214479-28555-1-git-send-email-robert.richter@amd.com>
-X-Mailer: git-send-email 1.6.1.3
-X-OriginalArrivalTime: 05 Mar 2009 00:55:39.0757 (UTC) FILETIME=[1A53F9D0:01C99D2D]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Wed, 4 Mar 2009 20:00:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:date:subject:to:cc;
+        b=oRF6PwsQL3PP+GVWdmg1Xx220hx/b4KPSf6fac6TNMzOaTDUKIR+JatNwEoOBcvi1r
+         HSLxjqlIiX5XP6knFrYo6b+1HWWnG4F18QG7fBgoxmKHsu0Np6UkkBsJYMAMWQyNrjSk
+         IagTHCgf7UYlhK0CY7sAfnvDLGPII76305qOY=
+Message-ID: <49af242d.1c07d00a.32d5.ffffc019@mx.google.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Thu, 5 Mar 2009 01:27:02 +0100
+Subject: [PATCH 1/2] sched: don't rebalance if attached on NULL domain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Axel Wachtler <axel.wachtler@atmel.com>
+Impact: fix function graph trace hang / drop pointless softirq on UP
 
-This patch adds the following devices to the USB FTDI SIO device
-table:
+While debugging a function graph trace hang on an old PII, I saw that it
+consumed most of its time on the timer interrupt.
+And the domain rebalancing softirq was the most concerned.
 
- Bus 001 Device 009: ID 03eb:2109 Atmel Corp.
- http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4187
+The timer interrupt calls trigger_load_balance() which will decide if it is
+worth to schedule a rebalancing softirq.
 
- Bus 001 Device 008: ID 1cf1:0001
- http://www.dresden-elektronik.de/shop/prod75.html
+In case of builtin UP kernel, no problem arises because there is no
+domain question.
 
- Bus 001 Device 007: ID 1c1f:0004
- http://www.dresden-elektronik.de/shop/prod64.html
+In case of builtin SMP kernel running on an SMP box, still no problem,
+the softirq will be raised each time we reach the next_balance time.
 
-Signed-off-by: Axel Wachtler <axel.wachtler@atmel.com>
-Signed-off-by: Robert Richter <robert.richter@amd.com>
+In case of builtin SMP kernel running on a UP box (most distros provide default SMP
+kernels, whatever the box you have), then the CPU is attached to the NULL sched domain.
+So a kind of unexpected behaviour happen:
+
+trigger_load_balance() -> raises the rebalancing softirq
+later on softirq: run_rebalance_domains() -> rebalance_domains() where
+the for_each_domain(cpu, sd) is not taken because of the NULL domain we are attached at.
+Which means rq->next_balance is never updated.
+So on the next timer tick, we will enter trigger_load_balance() which will always reschedule()
+the rebalacing softirq:
+
+if (time_after_eq(jiffies, rq->next_balance))
+	raise_softirq(SCHED_SOFTIRQ);
+
+So for each tick, we process this pointless softirq.
+
+This patch fixes it by checking if we are attached to the null domain before raising the softirq,
+another possible fix would be to set the maximal possible JIFFIES value to rq->next_balance if we are
+attached to the NULL domain.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- drivers/usb/serial/ftdi_sio.c |    3 +++
- drivers/usb/serial/ftdi_sio.h |   13 +++++++++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
+ kernel/sched.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index f92f4d7..f773392 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -663,6 +663,9 @@ static struct usb_device_id id_table_combined [] = {
- 	{ USB_DEVICE(ALTI2_VID, ALTI2_N3_PID) },
- 	{ USB_DEVICE(FTDI_VID, DIEBOLD_BCS_SE923_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_NDI_HUC_PID) },
-+	{ USB_DEVICE(ATMEL_VID, STK541_PID) },
-+	{ USB_DEVICE(DE_VID, STB_PID) },
-+	{ USB_DEVICE(DE_VID, WHT_PID) },
- 	{ },					/* Optional parameter entry */
- 	{ }					/* Terminating entry */
- };
-diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
-index e300c84..f2745ed 100644
---- a/drivers/usb/serial/ftdi_sio.h
-+++ b/drivers/usb/serial/ftdi_sio.h
-@@ -893,6 +893,19 @@
- #define DIEBOLD_BCS_SE923_PID	0xfb99
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 7335a65..89e2ca0 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -680,6 +680,11 @@ inline void update_rq_clock(struct rq *rq)
+ 	rq->clock = sched_clock_cpu(cpu_of(rq));
+ }
  
++static inline int on_null_domain(int cpu)
++{
++	return !rcu_dereference(cpu_rq(cpu)->sd);
++}
++
  /*
-+ * Atmel STK541
-+ */
-+#define ATMEL_VID		0x03eb /* Vendor ID */
-+#define STK541_PID		0x2109 /* Zigbee Controller */
-+
-+/*
-+ * Dresden Elektronic Sensor Terminal Board
-+ */
-+#define DE_VID			0x1cf1 /* Vendor ID */
-+#define STB_PID			0x0001 /* Sensor Terminal Board */
-+#define WHT_PID			0x0004 /* Wireless Handheld Terminal */
-+
-+/*
-  *   BmRequestType:  1100 0000b
-  *   bRequest:       FTDI_E2_READ
-  *   wValue:         0
+  * Tunables that become constants when CONFIG_SCHED_DEBUG is off:
+  */
+@@ -4267,7 +4272,9 @@ static inline void trigger_load_balance(struct rq *rq, int cpu)
+ 	    cpumask_test_cpu(cpu, nohz.cpu_mask))
+ 		return;
+ #endif
+-	if (time_after_eq(jiffies, rq->next_balance))
++	/* Don't need to rebalance while attached to NULL domain */
++	if (time_after_eq(jiffies, rq->next_balance) &&
++	    likely(!on_null_domain(cpu)))
+ 		raise_softirq(SCHED_SOFTIRQ);
+ }
+ 
 -- 
-1.6.1.3
+1.6.1
 
 
