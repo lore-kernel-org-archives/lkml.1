@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbZCESOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbZCESRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbZCESOa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 13:14:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZCESOU
+	id S1756500AbZCESRP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 13:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZCESQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 13:14:20 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42311 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754161AbZCESOT (ORCPT
+	Thu, 5 Mar 2009 13:16:58 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51836 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbZCESQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 13:14:19 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 5 Mar 2009 19:13:43 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firedtv: fix printk format mismatch
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Message-ID: <tkrat.89b6c7e0ebef51fe@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Thu, 5 Mar 2009 13:16:57 -0500
+Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20090305181325.GA10666@us.ibm.com>
+References: <20090305163857.0C18F3FD@kernel>
+	 <20090305181325.GA10666@us.ibm.com>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 10:16:43 -0800
+Message-Id: <1236277003.22399.89.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eliminate
-drivers/media/dvb/firewire/firedtv-avc.c: In function 'debug_fcp':
-drivers/media/dvb/firewire/firedtv-avc.c:156: warning: format '%d' expects type 'int', but argument 5 has type 'size_t'
+On Thu, 2009-03-05 at 12:13 -0600, Serge E. Hallyn wrote:
+> 
+> ---
+>  fs/proc/base.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index bde92c3..12543b6 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -1657,7 +1657,7 @@ static void proc_fd_write_info(struct file *file, char *info)
+> 
+>         if (file->f_op->checkpoint)
+>                 checkpointable = 1;
+> -       p += scnprintf(info+p, max-p, "checkpointable:\t%d", checkpointable);
+> +       p += scnprintf(info+p, max-p, "checkpointable:\t%d\n", checkpointable);
+>         if (!checkpointable)
+>                 p += cr_explain_file(file, info+p, max-p);
+>  }
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
+I'll apply that, thanks Serge.
 
-Mauro, if you don't mind I queue it up in linux1394-2.6.git for after
-2.6.29, before 2.6.30-rc1.  There may be firewire subsystem related
-changes of firedtv coming together until then.
-
- drivers/media/dvb/firewire/firedtv-avc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux/drivers/media/dvb/firewire/firedtv-avc.c
-===================================================================
---- linux.orig/drivers/media/dvb/firewire/firedtv-avc.c
-+++ linux/drivers/media/dvb/firewire/firedtv-avc.c
-@@ -115,7 +115,7 @@ static const char *debug_fcp_ctype(unsig
- }
- 
- static const char *debug_fcp_opcode(unsigned int opcode,
--				    const u8 *data, size_t length)
-+				    const u8 *data, int length)
- {
- 	switch (opcode) {
- 	case AVC_OPCODE_VENDOR:			break;
-@@ -141,7 +141,7 @@ static const char *debug_fcp_opcode(unsi
- 	return "Vendor";
- }
- 
--static void debug_fcp(const u8 *data, size_t length)
-+static void debug_fcp(const u8 *data, int length)
- {
- 	unsigned int subunit_type, subunit_id, op;
- 	const char *prefix = data[0] > 7 ? "FCP <- " : "FCP -> ";
-
--- 
-Stefan Richter
--=====-==--= --== --=-=
-http://arcgraph.de/sr/
+-- Dave
 
