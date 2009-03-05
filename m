@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbZCESfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZCESko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbZCESfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 13:35:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZCESfF
+	id S1755067AbZCESko (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 13:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbZCESkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 13:35:05 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39826 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbZCESfE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 13:35:04 -0500
-Date: Thu, 5 Mar 2009 15:34:30 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: Re: [PATCH] firedtv: fix printk format mismatch
-Message-ID: <20090305153430.40e86905@pedra.chehab.org>
-In-Reply-To: <tkrat.89b6c7e0ebef51fe@s5r6.in-berlin.de>
-References: <tkrat.89b6c7e0ebef51fe@s5r6.in-berlin.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Thu, 5 Mar 2009 13:40:36 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56457 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753812AbZCESkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 13:40:35 -0500
+Subject: Re: [git-pull -tip] x86: msr architecture debug code
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090305182318.GE7347@alberich.amd.com>
+References: <1236008575.3332.2.camel@localhost.localdomain>
+	 <20090302205437.GB14471@elte.hu> <20090305135444.GB7347@alberich.amd.com>
+	 <1236262346.2527.3.camel@ht.satnam>
+	 <20090305143726.GC7347@alberich.amd.com>
+	 <1236268057.2527.23.camel@ht.satnam>
+	 <20090305182318.GE7347@alberich.amd.com>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 00:10:12 +0530
+Message-Id: <1236278412.3316.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009 19:13:43 +0100 (CET)
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> Eliminate
-> drivers/media/dvb/firewire/firedtv-avc.c: In function 'debug_fcp':
-> drivers/media/dvb/firewire/firedtv-avc.c:156: warning: format '%d' expects type 'int', but argument 5 has type 'size_t'
+On Thu, 2009-03-05 at 19:23 +0100, Andreas Herrmann wrote:
+> On Thu, Mar 05, 2009 at 09:17:37PM +0530, Jaswinder Singh Rajput wrote:
+> > 
+> > You are running these commands on shell when every thing is working.
+> > 
+> > What you will do if you are not getting the shell and kernel is dumping
+> > or rebooting before that.
 > 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-> ---
-> 
-> Mauro, if you don't mind I queue it up in linux1394-2.6.git for after
-> 2.6.29, before 2.6.30-rc1.  There may be firewire subsystem related
-> changes of firedtv coming together until then.
-
-Seems fine for me.
-
-> 
->  drivers/media/dvb/firewire/firedtv-avc.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux/drivers/media/dvb/firewire/firedtv-avc.c
-> ===================================================================
-> --- linux.orig/drivers/media/dvb/firewire/firedtv-avc.c
-> +++ linux/drivers/media/dvb/firewire/firedtv-avc.c
-> @@ -115,7 +115,7 @@ static const char *debug_fcp_ctype(unsig
->  }
->  
->  static const char *debug_fcp_opcode(unsigned int opcode,
-> -				    const u8 *data, size_t length)
-> +				    const u8 *data, int length)
->  {
->  	switch (opcode) {
->  	case AVC_OPCODE_VENDOR:			break;
-> @@ -141,7 +141,7 @@ static const char *debug_fcp_opcode(unsi
->  	return "Vendor";
->  }
->  
-> -static void debug_fcp(const u8 *data, size_t length)
-> +static void debug_fcp(const u8 *data, int length)
->  {
->  	unsigned int subunit_type, subunit_id, op;
->  	const char *prefix = data[0] > 7 ? "FCP <- " : "FCP -> ";
+> In this case a deep debugfs tree with all the MSR details is not of
+> use either.
 > 
 
-
-
+Yes, then functions from msr_debug.c will dump the details on screen if
+seq is NULL (thats why I am also using printk ;-)
 
 Cheers,
-Mauro
+--
+JSR
+
