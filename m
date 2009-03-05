@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZCEUPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbZCEU1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbZCEUPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 15:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZCEUPe
+	id S1755859AbZCEU1v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 15:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZCEU1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 15:15:34 -0500
-Received: from gw.goop.org ([64.81.55.164]:54401 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755696AbZCEUPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 15:15:32 -0500
-Message-ID: <49B032E1.50303@goop.org>
-Date: Thu, 05 Mar 2009 12:15:29 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Mar 2009 15:27:42 -0500
+Received: from [213.79.90.228] ([213.79.90.228]:46754 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751439AbZCEU1m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 15:27:42 -0500
+Date: Thu, 5 Mar 2009 23:27:37 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 0/11] FSL eSDHC support
+Message-ID: <20090305202737.GA24166@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-To: Hannes Eder <hannes@hanneseder.net>
-CC: trivial@kernel.org, xen-devel@lists.xensource.com,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org
-Subject: Re: [PATCH v2 03/15] NULL noise: arch/x86/xen/smp.c
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net> <20090305191350.30062.68789.stgit@f10box.hanneseder.net>
-In-Reply-To: <20090305191350.30062.68789.stgit@f10box.hanneseder.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Eder wrote:
-> Fix this sparse warnings:
->   arch/x86/xen/smp.c:316:52: warning: Using plain integer as NULL pointer
->   arch/x86/xen/smp.c:421:60: warning: Using plain integer as NULL pointer
->
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
->   
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Hi all,
 
-    J
+Much thanks for the previous comments. Here comes v2.
+
+Changes since v1:
+- "Add support for bus-specific IO memory accessors" patch no longer
+  touches sdhci-pci. The changes were no longer needed since I dropped
+  "Add type checking ..." patch back in RFCv2;
+- Patch "Add support for hosts with strict 32 bit addressing" dropped.
+  Now we handle the 32 bit magic in eSDHC's writew() accessor;
+- Patch "Add quirk for controllers with max. block size up to 4096 bytes"
+  replaced by "Add quirk for forcing maximum block size to 2048 bytes";
+- SDHCI_INT_ALL_MASK changed to (unsigned int)-1;
+- Addressed Pierre's comments in "Add support for card-detection polling"
+  patch.
+
+Changes since the third RFC:
+- Use uninitialized_var() (suggested by Laurent Pinchart);
+- Fixed a bug in eSDHC SDCLK prescaler calculations because of which
+  we were over-clocking the SDCLK, and that caused CRC errors using some
+  SD cards;
+- Not a change, but some status: SDHS (50 MHz) cards were tested to
+  NOT work (at least on MPC837x boards) -- this is to be investigated
+  further. SDHC (> 4 GB) cards were not tested, yet.
+
+Changes since the second RFC:
+- Addressed all comments that were raised by Pierre Ossman.
+  There were too many to mention them all, so here is the link:
+  http://lkml.org/lkml/2009/2/6/320
+
+Changes since the first RFC:
+- Use of_iomap() in sdhci-of.c (suggested by Arnd Bergmann). Also added
+  Arnd's Acked-by: line for the sdhci-of patch.
+- Kconfig help text improved (thanks to Matt Sealey and M. Warner Losh).
+- In "sdhci: Add quirk to suppress PIO interrupts during DMA transfers"
+  patch: sdhci_init() now clears SDHCI_PIO_DISABLED flag, otherwise we
+  won't disable PIO interrupts after suspend.
+- New patch: "sdhci: Add type checking for IO memory accessors"
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
