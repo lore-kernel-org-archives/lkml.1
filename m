@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbZCEXpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZCEXqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbZCEXpJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:45:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756324AbZCEXo4
+	id S1757379AbZCEXqe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:46:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbZCEXqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:44:56 -0500
-Received: from fifo99.com ([67.223.236.141]:45825 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754415AbZCEXo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:44:56 -0500
-Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
-From: Daniel Walker <dwalker@fifo99.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Yinghai Lu <yinghai@kernel.org>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
-       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <49B06327.5020307@oracle.com>
-References: <Pine.LNX.4.44L0.0903051751330.2174-100000@iolanthe.rowland.org>
-	 <1236294142.5937.88.camel@desktop>  <49B05ACF.2010708@oracle.com>
-	 <1236294733.5937.92.camel@desktop>  <49B05DFC.1090807@oracle.com>
-	 <1236295961.5937.99.camel@desktop>  <49B06327.5020307@oracle.com>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 15:44:54 -0800
-Message-Id: <1236296694.5937.107.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 18:46:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59301 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753488AbZCEXqX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:46:23 -0500
+Date: Thu, 5 Mar 2009 15:44:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       =?ISO-8859-15?Q?Arve__Hj=F8nnev=E5g?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [RFC][PATCH 0/4] Rework disabling of interrupts during
+ suspend-resume
+In-Reply-To: <200903012321.40328.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0903051542270.19207@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 15:41 -0800, Randy Dunlap wrote:
 
-> If you have time to make a proposal for all such rules, please go ahead.
-> I don't have time for it just now.
 
-I don't know what kind of rules there are .. The 80 columns thing was
-new to me.
+On Sun, 1 Mar 2009, Rafael J. Wysocki wrote:
+> 
+> The following patches modifiy the way in which we handle disabling interrupts
+> during suspend and enabling them during resume.  They also change the ordering
+> of the core suspend and hibernation code.
 
-> Yes, some examples, diagrams, samples, etc. are over 80 columns.
-> It's not a diehard rule.
+Side note - I've tested them on the EeePC that had trouble resuming due to 
+interrupt timings, and it suspends and resumes fine with these patches 
+(modulo some new X problems, but that's what I get for living with 
+Fedora-11 testing).
 
-With code it sort of is die hard , even tho the CodingStyle doesn't
-specify it that way.
+Of course, it also suspends and resumes without them, since the CPU "cli" 
+was sufficient for that machine, and it doesn't have any ACPI issues. But 
+it's still an ack that at least nothing breaks that I can tell.
 
-Daniel
-
+		Linus
