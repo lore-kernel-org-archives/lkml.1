@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbZCEX0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZCEX1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757520AbZCEX0p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZCEX0X
+	id S1757587AbZCEX1F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:27:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbZCEX0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:26:23 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:33486 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:26:47 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:33565 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757235AbZCEX0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:26:22 -0500
-Message-Id: <20090305225519.788239483@polymtl.ca>
+	id S1757552AbZCEX0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:26:46 -0500
+Message-Id: <20090305225520.011236565@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:48:04 -0500
+Date: Thu, 05 Mar 2009 17:48:05 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,98 +31,150 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 36/41] kvm markers API update
-Content-Disposition: inline; filename=kvm-markers-api-update.patch
+Subject: [RFC patch 37/41] Markers : multi-probes test
+Content-Disposition: inline; filename=markers-multi-probes-test.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:16 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update kvm markers to new API.
-
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/kvm_host.h |   12 ++++++------
- virt/kvm/kvm_trace.c     |   12 +++++++-----
- 2 files changed, 13 insertions(+), 11 deletions(-)
+ samples/markers/Makefile     |    2 
+ samples/markers/test-multi.c |  116 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 117 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/include/linux/kvm_host.h
+Index: linux-2.6-lttng/samples/markers/Makefile
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/kvm_host.h	2009-03-05 15:21:55.000000000 -0500
-+++ linux-2.6-lttng/include/linux/kvm_host.h	2009-03-05 15:49:23.000000000 -0500
-@@ -416,22 +416,22 @@ extern struct kvm_stats_debugfs_item deb
- extern struct dentry *kvm_debugfs_dir;
+--- linux-2.6-lttng.orig/samples/markers/Makefile	2009-01-09 18:15:52.000000000 -0500
++++ linux-2.6-lttng/samples/markers/Makefile	2009-01-09 18:17:56.000000000 -0500
+@@ -1,4 +1,4 @@
+ # builds the kprobes example kernel modules;
+ # then to use one (as root):  insmod <module_name.ko>
  
- #define KVMTRACE_5D(evt, vcpu, d1, d2, d3, d4, d5, name) \
--	trace_mark(kvm_trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt, \
-+	trace_mark(kvm, trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt,\
- 						vcpu, 5, d1, d2, d3, d4, d5)
- #define KVMTRACE_4D(evt, vcpu, d1, d2, d3, d4, name) \
--	trace_mark(kvm_trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt, \
-+	trace_mark(kvm, trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt,\
- 						vcpu, 4, d1, d2, d3, d4, 0)
- #define KVMTRACE_3D(evt, vcpu, d1, d2, d3, name) \
--	trace_mark(kvm_trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt, \
-+	trace_mark(kvm, trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt,\
- 						vcpu, 3, d1, d2, d3, 0, 0)
- #define KVMTRACE_2D(evt, vcpu, d1, d2, name) \
--	trace_mark(kvm_trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt, \
-+	trace_mark(kvm, trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt,\
- 						vcpu, 2, d1, d2, 0, 0, 0)
- #define KVMTRACE_1D(evt, vcpu, d1, name) \
--	trace_mark(kvm_trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt, \
-+	trace_mark(kvm, trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt,\
- 						vcpu, 1, d1, 0, 0, 0, 0)
- #define KVMTRACE_0D(evt, vcpu, name) \
--	trace_mark(kvm_trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt, \
-+	trace_mark(kvm, trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt,\
- 						vcpu, 0, 0, 0, 0, 0, 0)
- 
- #ifdef CONFIG_KVM_TRACE
-Index: linux-2.6-lttng/virt/kvm/kvm_trace.c
+-obj-$(CONFIG_SAMPLE_MARKERS) += probe-example.o marker-example.o
++obj-$(CONFIG_SAMPLE_MARKERS) += probe-example.o marker-example.o test-multi.o
+Index: linux-2.6-lttng/samples/markers/test-multi.c
 ===================================================================
---- linux-2.6-lttng.orig/virt/kvm/kvm_trace.c	2009-03-05 15:21:55.000000000 -0500
-+++ linux-2.6-lttng/virt/kvm/kvm_trace.c	2009-03-05 15:49:23.000000000 -0500
-@@ -48,7 +48,8 @@ static inline int calc_rec_size(int time
- 	return timestamp ? rec_size += KVM_TRC_CYCLE_SIZE : rec_size;
- }
- 
--static void kvm_add_trace(void *probe_private, void *call_data,
-+static void kvm_add_trace(const struct marker *mdata,
-+			  void *probe_private, void *call_private,
- 			  const char *format, va_list *args)
- {
- 	struct kvm_trace_probe *p = probe_private;
-@@ -88,8 +89,8 @@ static void kvm_add_trace(void *probe_pr
- }
- 
- static struct kvm_trace_probe kvm_trace_probes[] = {
--	{ "kvm_trace_entryexit", "%u %p %u %u %u %u %u %u", 1, kvm_add_trace },
--	{ "kvm_trace_handler", "%u %p %u %u %u %u %u %u", 0, kvm_add_trace },
-+	{ "trace_entryexit", "%u %p %u %u %u %u %u %u", 1, kvm_add_trace },
-+	{ "trace_handler", "%u %p %u %u %u %u %u %u", 0, kvm_add_trace },
- };
- 
- static int lost_records_get(void *data, u64 *val)
-@@ -182,7 +183,8 @@ static int do_kvm_trace_enable(struct kv
- 	for (i = 0; i < ARRAY_SIZE(kvm_trace_probes); i++) {
- 		struct kvm_trace_probe *p = &kvm_trace_probes[i];
- 
--		r = marker_probe_register(p->name, p->format, p->probe_func, p);
-+		r = marker_probe_register("kvm", p->name, p->format,
-+					  p->probe_func, p);
- 		if (r)
- 			printk(KERN_INFO "Unable to register probe %s\n",
- 			       p->name);
-@@ -250,7 +252,7 @@ void kvm_trace_cleanup(void)
- 
- 		for (i = 0; i < ARRAY_SIZE(kvm_trace_probes); i++) {
- 			struct kvm_trace_probe *p = &kvm_trace_probes[i];
--			marker_probe_unregister(p->name, p->probe_func, p);
-+			marker_probe_unregister("kvm", p->name, p->probe_func, p);
- 		}
- 		marker_synchronize_unregister();
- 
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/markers/test-multi.c	2009-01-09 18:17:56.000000000 -0500
+@@ -0,0 +1,116 @@
++/* test-multi.c
++ *
++ * Connects multiple callbacks.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <asm/atomic.h>
++
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
++};
++
++atomic_t eventb_count = ATOMIC_INIT(0);
++
++void probe_subsystem_eventa(void *probe_data, void *call_data,
++	const char *format, va_list *args)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++void probe_subsystem_eventb(void *probe_data, void *call_data,
++	const char *format, va_list *args)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++void probe_subsystem_eventc(void *probe_data, void *call_data,
++	const char *format, va_list *args)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++void probe_subsystem_eventd(void *probe_data, void *call_data,
++	const char *format, va_list *args)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++static struct probe_data probe_array[] =
++{
++	{	.name = "test_multi",
++		.format = MARK_NOARGS,
++		.probe_func = (marker_probe_func*)0xa },
++	{	.name = "test_multi",
++		.format = MARK_NOARGS,
++		.probe_func = (marker_probe_func*)0xb },
++	{	.name = "test_multi",
++		.format = MARK_NOARGS,
++		.probe_func = (marker_probe_func*)0xc },
++	{	.name = "test_multi",
++		.format = MARK_NOARGS,
++		.probe_func = (marker_probe_func*)0xd },
++	{	.name = "test_multi",
++		.format = MARK_NOARGS,
++		.probe_func = (marker_probe_func*)0x10 },
++	{	.name = "test_multi",
++		.format = MARK_NOARGS,
++		.probe_func = (marker_probe_func*)0x20 },
++	{	.name = "test_multi",
++		.format = MARK_NOARGS,
++		.probe_func = (marker_probe_func*)0x30 },
++};
++
++static int __init probe_init(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_probe_register(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].probe_func, (void*)(long)i);
++		if (result)
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probe_array[i].name);
++	}
++	return 0;
++}
++
++static void __exit probe_fini(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_probe_unregister(probe_array[i].name,
++			probe_array[i].probe_func, (void*)(long)i);
++		if (result)
++			printk(KERN_INFO "Unable to unregister probe %s\n",
++				probe_array[i].name);
++	}
++	printk(KERN_INFO "Number of event b : %u\n",
++		atomic_read(&eventb_count));
++	marker_synchronize_unregister();
++}
++
++module_init(probe_init);
++module_exit(probe_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("SUBSYSTEM Probe");
 
 -- 
 Mathieu Desnoyers
