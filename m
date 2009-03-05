@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZCEILs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZCEIQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbZCEILs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCEILj
+	id S1754695AbZCEIQp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCEIQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:11:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46275 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750868AbZCEILi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:11:38 -0500
-Message-ID: <49AF891A.30200@kernel.org>
-Date: Thu, 05 Mar 2009 17:11:06 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 5 Mar 2009 03:16:36 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35647 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbZCEIQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 03:16:36 -0500
+Date: Thu, 5 Mar 2009 09:19:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
+	standard config registers of all devices early)
+Message-ID: <20090305081908.GA30418@elf.ucw.cz>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902032253.42709.rjw@sisk.pl> <1233700390.16867.97.camel@pasglop> <200902032344.22348.rjw@sisk.pl> <1233702327.16867.109.camel@pasglop> <alpine.LFD.2.00.0902031514510.3247@localhost.localdomain> <20090304080212.GA1489@ucw.cz> <1236209104.6696.73.camel@pasglop>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: percpu allocator vs reclaim
-References: <1236184563.5330.8074.camel@laptop>	 <49AEAEF2.7040908@kernel.org> <1236185363.5330.8121.camel@laptop>
-In-Reply-To: <1236185363.5330.8121.camel@laptop>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Mar 2009 08:11:10 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236209104.6696.73.camel@pasglop>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-03-05 at 01:40 +0900, Tejun Heo wrote:
->> Peter Zijlstra wrote:
->>> Hi Tejun,
->>>
->>> Thomas hit the below on recent -tip kernels.
->>>
->>> Which basically states that we could deadlock due to reclaim lock
->>> recursion.
->>>
->>> Looking at the code I don't see a quick solution, other than using
->>> GFP_NOFS, which is a bit of a bother (as I suspect it might easily grow
->>> __GFP_IO inversion too, if it doesn't already have it).
->> Ah... maybe percpu allocator should just swallow @gfp.  Any better
->> ideas? :-(
+On Thu 2009-03-05 10:25:04, Benjamin Herrenschmidt wrote:
 > 
-> Could you somehow break that lock so that you get something like:
+> > As long as we claim to support cpu hotplug, suspending the cpus early
+> > should work. User might have unplugged the cpu manually...
+> > 
+> > If something is broken in acpi, we may need to disable  cpu*/onlone on
+> >  affected systems.
 > 
->   alloc_lock
->     kmalloc(GFP_KERNEL)
->     free_lock
-> 
-> Where
-> 
->  percpu_free()
->    lock(free_lock)
->      put area on free list
-> 
->  percpu_alloc()
->    lock(free_list)
->      collect free list
->    kmalloc()
-> 
-> Then the free code can be used from reclaim, because there's never an
-> allocation done while holding it, and the alloc path can first
-> check/cleanup whatever mess the last free left behind before trying an
-> allocation.
+> You seem to miss some context here... it seems that ACPI mandates that
+> CPUs are suspended after devices and you know that we can't just start
+> blacklisting half of the machines out there just because we happen not
+> to do the same as what Windows does...
 
-Yeap, I think I can do that.  Will work on it.
+I did not see that ACPI mandate... where is it?
 
-Thanks.
+ That would interfere with user's ability to online/offline cpus,
+badly.
 
+Are you saying that we should online all the CPUs before starting
+suspend to stay on the "safe side"?
+									Pavel
 -- 
-tejun
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
