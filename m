@@ -1,58 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZCEIoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZCEIq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbZCEIoU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 03:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZCEIoL
+	id S1755390AbZCEIq1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 03:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZCEIqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 03:44:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54324 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZCEIoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 03:44:10 -0500
-Date: Thu, 5 Mar 2009 09:43:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Jesper Krogh <jesper@krogh.cc>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: Linux 2.6.29-rc6
-Message-ID: <20090305084338.GA16026@elte.hu>
-References: <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc> <1236110026.6068.18.camel@localhost> <49AD90E2.7050209@krogh.cc> <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc> <49AECA3B.5030503@krogh.cc> <1236193075.3793.63.camel@jstultz-laptop> <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain>
+	Thu, 5 Mar 2009 03:46:19 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:19254 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750972AbZCEIqS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 03:46:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=E87t4u6+FgNQ8xwLw91VsTRY8FckSYYoLi/a6zprQflGWvNnjGY0bxMyhONRIcCTR+
+         ubp2a0fyiylAUYpFkYeOq/lRx3s+M6osTO1VhPI0RHyJ9B2h8NEi+QCk8F40iDWIoR6k
+         aJ08zc2vce5GSA1EoO5nAdGrDTccjvgAGO288=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236221530.6863.9.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>
+References: <dd18b0c30903042141k1adc0f6cj4bc286cfa29f475c@mail.gmail.com>
+	 <20090305060436.GA5359@nowhere>
+	 <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>
+Date: Thu, 5 Mar 2009 00:46:16 -0800
+Message-ID: <dd18b0c30903050046v4fc9eff3h99734406112ec0f1@mail.gmail.com>
+Subject: Re: [PATCH 1/1] unifdef.c change "getline" to "get_line" to avoid C 
+	library confusion.
+From: Justin Mattock <justinmattock@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 4, 2009 at 11:51 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+> On Wed, Mar 4, 2009 at 10:04 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>> On Wed, Mar 04, 2009 at 09:41:09PM -0800, Justin Mattock wrote:
+>>> From: Justin P. Mattock <justinmattock@gmail.com>
+>>>
+>>> This fixes an error when compiling the kernel.
+>>>
+>>>   CHK     include/linux/version.h
+>>>   HOSTCC  scripts/unifdef
+>>> scripts/unifdef.c:209: error: conflicting types for 'getline'
+>>> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
+>>> make[1]: *** [scripts/unifdef] Error 1
+>>> make: *** [__headers] Error 2
+>>>
+>>> --
+>>> scripts/unifdef.c  |  3 +++
+>>> 1 files changed, 3 insertions(+),0 deletions(-)
+>>>
+>>> diff --git a/scripts/unifdef.c b/scripts/unifdef.c
+>>> ---a/scripts/unifdef.c
+>>> +++b/scripts/unifdef.c
+>>> @@ -203,1 +203,0 @@ static void             addsym(bool, bool, char *);
+>>>
+>>>
+>>> static void             done(void);
+>>> static void             error(const char *);
+>>> static int              findsym(const char *);
+>>> static void             flushline(bool);
+>>> -static Linetype         getline(void);
+>>> +static Linetype         get_line(void);
+>>> static Linetype         ifeval(const char **);
+>>> static void             ignoreoff(void);
+>>> static void             ignoreon(void);
+>>> static void             keywordedit(const char *);
+>>>
+>>>
+>>>
+>>>
+>>> @@ -509,1 +509,0 @@ process(void)
+>>>
+>>>
+>>> {
+>>>       Linetype lineval;
+>>>
+>>>       for (;;) {
+>>>               linenum++;
+>>> -               lineval = getline();
+>>> +             lineval = get_line();
+>>>               trans_table[ifstate[depth]][lineval]();
+>>>               debug("process %s -> %s depth %d",
+>>>                   linetype_name[lineval],
+>>>                   ifstate_name[ifstate[depth]], depth);
+>>>       }
+>>> }
+>>>
+>>>
+>>> @@ -528,1 +528,0 @@ static Linetype
+>>> -getline(void)
+>>> +get_line(void)
+>>> {
+>>>       const char *cp;
+>>>
+>>> --
+>>>
+>>>
+>>> keep in mind I've never created a patch before,
+>>> (so go easy on me);
+>>
+>>
+>> Hi,
+>>
+>> You forgot to put your Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+>> :)
+>>
+>> See Documentation/SubmittingPatches
+>>
+>> I don't know who is the maintainer of this file.
+>> Adding Andrew in Cc.
+>>
+>>
+>>> regards;
+>>>
+>>> --
+>>> Justin P. Mattock
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>>
+>
+> Cool,
+> thanks for the help.
+> I'll look at the doc's and google
+> as much as possible, so I get this
+> correct.
+>
+> regards;
+>
+> --
+> Justin P. Mattock
+>
 
-* john stultz <johnstul@us.ibm.com> wrote:
+O.K. after doing some reading,
+I have a better idea of how to make a
+patch. I used diff, used patch -Np1, and compiled.
+and added the signed off part.
+I'll post after this post.
+and take any suggestions on what to do next.
 
-> > Ingo, Thomas: On the hardware I'm testing the fast-pit 
-> > calibration only triggers probably 80-90% of the time. About 
-> > 10-20% of the time, the initial check to 
-> > pit_expect_msb(0xff) fails (count=0), so we may need to look 
-> > more at this approach.
-
-We definitely need to improve calibration quality.
-
-The question is - why does fast-calibration fail 10-20% of the 
-time on your test-system? Also, why exactly do we miscalibrate? 
-Could you please have a look at that?
-
-One theory would be that the PIT readout is unreliable. Windows 
-does not make use of it, so it's not the most tested aspect of 
-the PIT. Is that what happens on your box?
-
-	Ingo
+-- 
+Justin P. Mattock
