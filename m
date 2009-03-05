@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZCELEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZCELFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbZCELEy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 06:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbZCELEn
+	id S1756206AbZCELFu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 06:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZCELFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 06:04:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58350 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Mar 2009 06:05:38 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:55831 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755569AbZCELEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 06:04:42 -0500
-Date: Thu, 5 Mar 2009 12:04:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] tracing/function-graph-tracer: use the more
-	lightweight local clock
-Message-ID: <20090305110433.GH32407@elte.hu>
-References: <49af243d.06e9300a.53ad.ffff840c@mx.google.com>
+	id S1752717AbZCELFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 06:05:37 -0500
+Date: Thu, 5 Mar 2009 12:05:34 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tglx@linutronix.de,
+       James.Bottomley@HansenPartnership.com, jengelh@medozas.de,
+       bharrosh@panasas.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
+	scsi-sgpool)objects
+Message-ID: <20090305110534.GX11787@kernel.dk>
+References: <20090305182958Q.fujita.tomonori@lab.ntt.co.jp> <20090305100901.GU11787@kernel.dk> <20090305101436.GV11787@kernel.dk> <20090305192737I.fujita.tomonori@lab.ntt.co.jp> <20090305103023.GW11787@kernel.dk> <20090305104159.GE32407@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49af243d.06e9300a.53ad.ffff840c@mx.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090305104159.GE32407@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Impact: decrease hangs risks with the graph tracer on slow systems
+On Thu, Mar 05 2009, Ingo Molnar wrote:
 > 
-> Since the function graph tracer can spend too much time on 
-> timer interrupts, it's better now to use the more lightweight 
-> local clock. Anyway, the function graph traces are more 
-> reliable on a per cpu trace.
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  arch/x86/kernel/ftrace.c             |    2 +-
->  kernel/trace/trace_functions_graph.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> > > > Totally untested, comments welcome...
+> > > 
+> > > Yeah, I think that updating bi_seg_front_size and 
+> > > bi_seg_back_size at one place, __blk_recalc_rq_segments, is 
+> > > better. I thought about the same way. But we are already in 
+> > > -rc7 and this must go into mainline now. So I chose a 
+> > > less-intrusive way (similar to what we have done in the 
+> > > past).
+> > > 
+> > > As you know, the merging code is really complicated and we 
+> > > could overlook stuff easily. ;) It might be better to 
+> > > simplify the merging code a bit.
+> > 
+> > If someone (Ingo?) is willing to test the last variant, I'd 
+> > much rather add that. It does simplify it (imho), and it kills 
+> > 23 lines while only adding 9. But a quick response would be 
+> > nice, then I can ask Linus to pull it later today.
 > 
-> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> index 3925ec0..40960c2 100644
-> --- a/arch/x86/kernel/ftrace.c
-> +++ b/arch/x86/kernel/ftrace.c
-> @@ -436,7 +436,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
->  		return;
->  	}
->  
-> -	calltime = cpu_clock(raw_smp_processor_id());
-> +	calltime = sched_clock();
+> sure, can give it a whirl.
+> 
+> Note that your patch in this thread does no apply cleanly. Could 
+> you please send a pull request of your latest fixes that i could 
+> pull into tip:out-of-tree for testing purposes?
 
-I changed this to trace_clock_local() :-)
+Hmm that's odd, I have no changes in blk-merge.c in my tree against
+Linus'. But you can pull:
 
-(btw, we should turn trace_clock_local() into an inline 
-function)
+  git://git.kernel.dk/linux-2.6-block.git for-linus
 
-There will be one problem though: function trace elapsed time 
-measurements across idle. Those are not correctly measured by 
-the local clock.
+Jens Axboe (2):
+      cciss: remove 30 second initial timeout on controller reset
+      block: fix missing bio back/front segment size setting in blk_recount_segments()
 
-	Ingo
+Kris Shannon (1):
+      Fix kernel NULL pointer dereference in xen-blkfront
+
+Roel Kluin (1):
+      loop: don't increment p->offset with (size_t) -EINVAL
+
+ block/blk-merge.c            |   25 +++++++++----------------
+ drivers/block/cciss.c        |    8 +++-----
+ drivers/block/loop.c         |    3 +--
+ drivers/block/xen-blkfront.c |    2 ++
+ 4 files changed, 15 insertions(+), 23 deletions(-)
+
+-- 
+Jens Axboe
+
