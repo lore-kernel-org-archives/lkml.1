@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbZCENLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZCENMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756909AbZCENLv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:11:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZCENIq
+	id S1754711AbZCENMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbZCENIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 5 Mar 2009 08:08:46 -0500
-Received: from smtp-68.nebula.fi ([83.145.220.68]:39747 "EHLO
+Received: from smtp-68.nebula.fi ([83.145.220.68]:39714 "EHLO
 	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754844AbZCENIk (ORCPT
+	with ESMTP id S1754068AbZCENIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:08:40 -0500
+	Thu, 5 Mar 2009 08:08:39 -0500
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: mingo@elte.hu
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 09/17] x86: add table start and end sanity checks to 32-bit init_memory_mapping()
-Date: Thu,  5 Mar 2009 14:55:00 +0200
-Message-Id: <1236257708-27269-9-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 01/17] x86: init_memory_mapping() trivial cleanups
+Date: Thu,  5 Mar 2009 14:54:52 +0200
+Message-Id: <1236257708-27269-1-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -26,27 +26,223 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-This patch adds a sanity check to the 32-bit version of init_memory_mapping()
-to reduce the diff to the 64-bit version.
+To reduce the diff between the 32-bit and 64-bit versions of
+init_memory_mapping(), fix up all trivial issues.
 
 Cc: Yinghai Lu <yinghai@kernel.org>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- arch/x86/mm/init_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/mm/init_32.c |   42 +++++++++++++++++++++++++-----------------
+ arch/x86/mm/init_64.c |   26 +++++++++++++++-----------
+ 2 files changed, 40 insertions(+), 28 deletions(-)
 
 diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 00c1d85..0a3707f 100644
+index c351456..ad4e03c 100644
 --- a/arch/x86/mm/init_32.c
 +++ b/arch/x86/mm/init_32.c
-@@ -1060,7 +1060,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+@@ -868,11 +868,10 @@ static void __init find_early_table_space(unsigned long end, int use_pse)
  
- 	__flush_tlb_all();
+ 	table_start >>= PAGE_SHIFT;
+ 	table_end = table_start;
+-	table_top = table_start + (tables>>PAGE_SHIFT);
++	table_top = table_start + (tables >> PAGE_SHIFT);
  
--	if (!after_bootmem)
-+	if (!after_bootmem && table_end > table_start)
- 		reserve_early(table_start << PAGE_SHIFT,
- 				 table_end << PAGE_SHIFT, "PGTABLE");
+ 	printk(KERN_DEBUG "kernel direct mapping tables up to %lx @ %lx-%lx\n",
+-		end, table_start << PAGE_SHIFT,
+-		(table_start << PAGE_SHIFT) + tables);
++		end, table_start << PAGE_SHIFT, table_top << PAGE_SHIFT);
+ }
+ 
+ struct map_range {
+@@ -899,8 +898,13 @@ static int save_mr(struct map_range *mr, int nr_range,
+ 	return nr_range;
+ }
+ 
++/*
++ * Setup the direct mapping of the physical memory at PAGE_OFFSET.
++ * This runs before bootmem is initialized and gets pages directly from
++ * the physical memory. To access them they are temporarily mapped.
++ */
+ unsigned long __init_refok init_memory_mapping(unsigned long start,
+-						unsigned long end)
++					       unsigned long end)
+ {
+ 	pgd_t *pgd_base = swapper_pg_dir;
+ 	unsigned long page_size_mask = 0;
+@@ -911,7 +915,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	int nr_range, i;
+ 	int use_pse;
+ 
+-	printk(KERN_INFO "init_memory_mapping: %08lx-%08lx\n", start, end);
++	printk(KERN_INFO "init_memory_mapping: %016lx-%016lx\n", start, end);
+ 
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ 	/*
+@@ -940,19 +944,19 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 		__supported_pte_mask |= _PAGE_GLOBAL;
+ 	}
+ 
+-	memset(mr, 0, sizeof(mr));
+-	nr_range = 0;
+-
+ 	if (use_pse)
+ 		page_size_mask |= 1 << PG_LEVEL_2M;
+ 
++	memset(mr, 0, sizeof(mr));
++	nr_range = 0;
++
+ 	/*
+ 	 * Don't use a large page for the first 2/4MB of memory
+ 	 * because there are often fixed size MTRRs in there
+ 	 * and overlapping MTRRs into large pages can cause
+ 	 * slowdowns.
+ 	 */
+-	/* head could not be big page alignment ? */
++	/* head if not big page alignment ? */
+ 	start_pfn = start >> PAGE_SHIFT;
+ 	pos = start_pfn << PAGE_SHIFT;
+ 	if (pos == 0)
+@@ -960,14 +964,14 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	else
+ 		end_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
+ 				 << (PMD_SHIFT - PAGE_SHIFT);
+-	if (end_pfn > (end>>PAGE_SHIFT))
+-		end_pfn = end>>PAGE_SHIFT;
++	if (end_pfn > (end >> PAGE_SHIFT))
++		end_pfn = end >> PAGE_SHIFT;
+ 	if (start_pfn < end_pfn) {
+ 		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
+ 		pos = end_pfn << PAGE_SHIFT;
+ 	}
+ 
+-	/* big page range */
++	/* big page (2M) range */
+ 	start_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
+ 			 << (PMD_SHIFT - PAGE_SHIFT);
+ 	end_pfn = (end>>PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
+@@ -977,7 +981,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 		pos = end_pfn << PAGE_SHIFT;
+ 	}
+ 
+-	/* tail is not big page alignment ? */
++	/* tail is not big page (2M) alignment */
+ 	start_pfn = pos>>PAGE_SHIFT;
+ 	end_pfn = end>>PAGE_SHIFT;
+ 	if (start_pfn < end_pfn)
+@@ -998,13 +1002,17 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	}
+ 
+ 	for (i = 0; i < nr_range; i++)
+-		printk(KERN_DEBUG " %08lx - %08lx page %s\n",
+-			mr[i].start, mr[i].end,
+-			(mr[i].page_size_mask & (1<<PG_LEVEL_2M)) ?
+-				  "big page" : "4k");
++		printk(KERN_DEBUG " %010lx - %010lx page %s\n",
++				mr[i].start, mr[i].end,
++			(mr[i].page_size_mask & (1<<PG_LEVEL_1G))?"1G":(
++			 (mr[i].page_size_mask & (1<<PG_LEVEL_2M))?"2M":"4k"));
+ 
+ 	/*
+ 	 * Find space for the kernel direct mapping tables.
++	 *
++	 * Later we should allocate these tables in the local node of the
++	 * memory mapped. Unfortunately this is done currently before the
++	 * nodes are discovered.
+ 	 */
+ 	if (!after_init_bootmem)
+ 		find_early_table_space(end, use_pse);
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index d325186..cdb3be1 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -554,20 +554,25 @@ static void __init find_early_table_space(unsigned long end, int use_pse,
+ 
+ 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
+ 	tables = roundup(puds * sizeof(pud_t), PAGE_SIZE);
++
+ 	if (use_gbpages) {
+ 		unsigned long extra;
++
+ 		extra = end - ((end>>PUD_SHIFT) << PUD_SHIFT);
+ 		pmds = (extra + PMD_SIZE - 1) >> PMD_SHIFT;
+ 	} else
+ 		pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
++
+ 	tables += roundup(pmds * sizeof(pmd_t), PAGE_SIZE);
+ 
+ 	if (use_pse) {
+ 		unsigned long extra;
++
+ 		extra = end - ((end>>PMD_SHIFT) << PMD_SHIFT);
+ 		ptes = (extra + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 	} else
+ 		ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
+ 	tables += roundup(ptes * sizeof(pte_t), PAGE_SIZE);
+ 
+ 	/*
+@@ -647,7 +652,6 @@ static int save_mr(struct map_range *mr, int nr_range,
+ 		   unsigned long start_pfn, unsigned long end_pfn,
+ 		   unsigned long page_size_mask)
+ {
+-
+ 	if (start_pfn < end_pfn) {
+ 		if (nr_range >= NR_RANGE_MR)
+ 			panic("run out of range for init_memory_mapping\n");
+@@ -679,13 +683,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 
+ 	printk(KERN_INFO "init_memory_mapping: %016lx-%016lx\n", start, end);
+ 
+-	/*
+-	 * Find space for the kernel direct mapping tables.
+-	 *
+-	 * Later we should allocate these tables in the local node of the
+-	 * memory mapped. Unfortunately this is done currently before the
+-	 * nodes are discovered.
+-	 */
+ 	if (!after_bootmem)
+ 		init_gbpages();
+ 
+@@ -709,7 +706,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	memset(mr, 0, sizeof(mr));
+ 	nr_range = 0;
+ 
+-	/* head if not big page alignment ?*/
++	/* head if not big page alignment ? */
+ 	start_pfn = start >> PAGE_SHIFT;
+ 	pos = start_pfn << PAGE_SHIFT;
+ 	end_pfn = ((pos + (PMD_SIZE - 1)) >> PMD_SHIFT)
+@@ -721,7 +718,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 		pos = end_pfn << PAGE_SHIFT;
+ 	}
+ 
+-	/* big page (2M) range*/
++	/* big page (2M) range */
+ 	start_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
+ 			 << (PMD_SHIFT - PAGE_SHIFT);
+ 	end_pfn = ((pos + (PUD_SIZE - 1))>>PUD_SHIFT)
+@@ -769,7 +766,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 		/* move it */
+ 		old_start = mr[i].start;
+ 		memmove(&mr[i], &mr[i+1],
+-			 (nr_range - 1 - i) * sizeof (struct map_range));
++			(nr_range - 1 - i) * sizeof(struct map_range));
+ 		mr[i--].start = old_start;
+ 		nr_range--;
+ 	}
+@@ -780,6 +777,13 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 			(mr[i].page_size_mask & (1<<PG_LEVEL_1G))?"1G":(
+ 			 (mr[i].page_size_mask & (1<<PG_LEVEL_2M))?"2M":"4k"));
+ 
++	/*
++	 * Find space for the kernel direct mapping tables.
++	 *
++	 * Later we should allocate these tables in the local node of the
++	 * memory mapped. Unfortunately this is done currently before the
++	 * nodes are discovered.
++	 */
+ 	if (!after_bootmem)
+ 		find_early_table_space(end, use_pse, use_gbpages);
  
 -- 
 1.5.4.3
