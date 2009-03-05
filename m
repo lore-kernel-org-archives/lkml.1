@@ -1,70 +1,1122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbZCEXem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbZCEXfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758430AbZCEXem (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbZCEXeX
+	id S1758633AbZCEXfe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZCEXe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:34:23 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:11369 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758572AbZCEXeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:34:21 -0500
-Date: Thu, 5 Mar 2009 17:34:20 -0600
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, coldwell@redhat.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH 2/2] cciss: change to discover first memory BAR
-Message-ID: <20090305233420.GB24830@roadking.ldev.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Thu, 5 Mar 2009 18:34:59 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:37122 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758604AbZCEXe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:34:57 -0500
+Message-Id: <20090305225517.925220169@polymtl.ca>
+References: <20090305224728.947235917@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Thu, 05 Mar 2009 17:47:56 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, ltt-dev@lists.casi.polymtl.ca,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com
+Cc: Zhao Lei <zhaolei@cn.fujitsu.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC patch 28/41] LTT trace control
+Content-Disposition: inline; filename=ltt-trace-control.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:14 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH 2 of 2
+ltt-trace-control is used to control ltt's traces.
+It exports the tracing control through a debugfs interface.
 
-This patch adds a method for discovering the first memory BAR. All Smart
-Array controllers to date have always had the the memory BAR as the first
-BAR. A new controller to be released later this year breaks that model.
+From: Zhao Lei <zhaolei@cn.fujitsu.com>
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ ltt/ltt-trace-control.c | 1061 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1061 insertions(+)
+ create mode 100644 ltt/ltt-trace-control.c
 
-Please consider this for inclusion.
-
-Signed-off-by: Mike Miller <mike.miller@hp.com>
-
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index e189abd..311b81e 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3245,12 +3245,21 @@ static int __devinit cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
-  */
- 	cciss_interrupt_mode(c, pdev, board_id);
- 
--	/*
--	 * Memory base addr is first addr , the second points to the config
--	 *   table
--	 */
-+	/* find the memory BAR */
-+	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+		if (pci_resource_flags(pdev, i) & IORESOURCE_MEM)
-+			break;
-+	}
-+	if (i == DEVICE_COUNT_RESOURCE) {
-+		printk(KERN_WARNING "cciss: No memory BAR found\n");
-+		err = -ENODEV;
-+		goto err_out_free_res;
+Index: linux-2.6-lttng/ltt/ltt-trace-control.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/ltt/ltt-trace-control.c	2009-03-05 15:46:27.000000000 -0500
+@@ -0,0 +1,1061 @@
++/*
++ * LTT trace control module over debugfs.
++ *
++ * Copyright 2008 - Zhaolei <zhaolei@cn.fujitsu.com>
++ *
++ * Copyright 2009 - Gui Jianfeng <guijianfeng@cn.fujitsu.com>
++ *                  Make mark-control work in debugfs
++ */
++
++/*
++ * Todo:
++ *   Impl read operations for control file to read attributes
++ *   Create a README file in ltt control dir, for display help info
++ */
++
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/uaccess.h>
++#include <linux/debugfs.h>
++#include <linux/ltt-tracer.h>
++#include <linux/notifier.h>
++
++#define LTT_CONTROL_DIR "control"
++#define MARKERS_CONTROL_DIR "markers"
++#define LTT_SETUP_TRACE_FILE "setup_trace"
++#define LTT_DESTROY_TRACE_FILE "destroy_trace"
++
++#define LTT_WRITE_MAXLEN	(128)
++
++struct dentry *ltt_control_dir, *ltt_setup_trace_file, *ltt_destroy_trace_file,
++	*markers_control_dir;
++
++/*
++ * the traces_lock nests inside control_lock.
++ */
++static DEFINE_MUTEX(control_lock);
++
++/*
++ * lookup a file/dir in parent dir.
++ * only designed to work well for debugfs.
++ * (although it maybe ok for other fs)
++ *
++ * return:
++ *	file/dir's dentry on success
++ *	NULL on failure
++ */
++static struct dentry *dir_lookup(struct dentry *parent, const char *name)
++{
++	struct qstr q;
++	struct dentry *d;
++
++	q.name = name;
++	q.len = strlen(name);
++	q.hash = full_name_hash(q.name, q.len);
++
++	d = d_lookup(parent, &q);
++	if (d)
++		dput(d);
++
++	return d;
++}
++
++
++static ssize_t alloc_write(struct file *file, const char __user *user_buf,
++		size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	char cmd[NAME_MAX];
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%s", cmd) != 1) {
++		err = -EPERM;
++		goto err_get_cmd;
 +	}
 +
-+	c->paddr = pci_resource_start(pdev, i); /* addressing mode bits
-+						 * already removed
-+						 */
- 
--	c->paddr = pci_resource_start(pdev, 0);	/* addressing mode bits already removed */
- #ifdef CCISS_DEBUG
- 	printk("address 0 = %lx\n", c->paddr);
- #endif				/* CCISS_DEBUG */
++	if ((cmd[0] != 'Y' && cmd[0] != 'y' && cmd[0] != '1') || cmd[1]) {
++		err = -EPERM;
++		goto err_bad_cmd;
++	}
++
++	err = ltt_trace_alloc(file->f_dentry->d_parent->d_name.name);
++	if (IS_ERR_VALUE(err)) {
++		printk(KERN_ERR "alloc_write: ltt_trace_alloc failed: %d\n",
++			err);
++		goto err_alloc_trace;
++	}
++
++	return count;
++
++err_alloc_trace:
++err_bad_cmd:
++err_get_cmd:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_alloc_operations = {
++	.write = alloc_write,
++};
++
++
++static ssize_t enabled_write(struct file *file, const char __user *user_buf,
++		size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	char cmd[NAME_MAX];
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%s", cmd) != 1) {
++		err = -EPERM;
++		goto err_get_cmd;
++	}
++
++	if (cmd[1]) {
++		err = -EPERM;
++		goto err_bad_cmd;
++	}
++
++	switch (cmd[0]) {
++	case 'Y':
++	case 'y':
++	case '1':
++		err = ltt_trace_start(file->f_dentry->d_parent->d_name.name);
++		if (IS_ERR_VALUE(err)) {
++			printk(KERN_ERR
++				"enabled_write: ltt_trace_start failed: %d\n",
++				err);
++			err = -EPERM;
++			goto err_start_trace;
++		}
++		break;
++	case 'N':
++	case 'n':
++	case '0':
++		err = ltt_trace_stop(file->f_dentry->d_parent->d_name.name);
++		if (IS_ERR_VALUE(err)) {
++			printk(KERN_ERR
++				"enabled_write: ltt_trace_stop failed: %d\n",
++				err);
++			err = -EPERM;
++			goto err_stop_trace;
++		}
++		break;
++	default:
++		err = -EPERM;
++		goto err_bad_cmd;
++	}
++
++	return count;
++
++err_stop_trace:
++err_start_trace:
++err_bad_cmd:
++err_get_cmd:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_enabled_operations = {
++	.write = enabled_write,
++};
++
++
++static ssize_t trans_write(struct file *file, const char __user *user_buf,
++		size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	char trans_name[NAME_MAX];
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%s", trans_name) != 1) {
++		err = -EPERM;
++		goto err_get_transname;
++	}
++
++	err = ltt_trace_set_type(file->f_dentry->d_parent->d_name.name,
++		trans_name);
++	if (IS_ERR_VALUE(err)) {
++		printk(KERN_ERR "trans_write: ltt_trace_set_type failed: %d\n",
++			err);
++		goto err_set_trans;
++	}
++
++	return count;
++
++err_set_trans:
++err_get_transname:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_trans_operations = {
++	.write = trans_write,
++};
++
++
++static ssize_t channel_subbuf_num_write(struct file *file,
++		const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	unsigned int num;
++	const char *channel_name;
++	const char *trace_name;
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%u", &num) != 1) {
++		err = -EPERM;
++		goto err_get_number;
++	}
++
++	channel_name = file->f_dentry->d_parent->d_name.name;
++	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
++
++	err = ltt_trace_set_channel_subbufcount(trace_name, channel_name, num);
++	if (IS_ERR_VALUE(err)) {
++		printk(KERN_ERR "channel_subbuf_num_write: "
++			"ltt_trace_set_channel_subbufcount failed: %d\n", err);
++		goto err_set_subbufcount;
++	}
++
++	return count;
++
++err_set_subbufcount:
++err_get_number:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_channel_subbuf_num_operations = {
++	.write = channel_subbuf_num_write,
++};
++
++
++static ssize_t channel_subbuf_size_write(struct file *file,
++	const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	unsigned int num;
++	const char *channel_name;
++	const char *trace_name;
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%u", &num) != 1) {
++		err = -EPERM;
++		goto err_get_number;
++	}
++
++	channel_name = file->f_dentry->d_parent->d_name.name;
++	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
++
++	err = ltt_trace_set_channel_subbufsize(trace_name, channel_name, num);
++	if (IS_ERR_VALUE(err)) {
++		printk(KERN_ERR "channel_subbuf_size_write: "
++		"ltt_trace_set_channel_subbufsize failed: %d\n", err);
++		goto err_set_subbufsize;
++	}
++
++	return count;
++
++err_set_subbufsize:
++err_get_number:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_channel_subbuf_size_operations = {
++	.write = channel_subbuf_size_write,
++};
++
++
++static ssize_t channel_overwrite_write(struct file *file,
++	const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	char cmd[NAME_MAX];
++	const char *channel_name;
++	const char *trace_name;
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%s", cmd) != 1) {
++		err = -EPERM;
++		goto err_get_cmd;
++	}
++
++	if (cmd[1]) {
++		err = -EPERM;
++		goto err_bad_cmd;
++	}
++
++	channel_name = file->f_dentry->d_parent->d_name.name;
++	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
++
++	switch (cmd[0]) {
++	case 'Y':
++	case 'y':
++	case '1':
++		err = ltt_trace_set_channel_overwrite(trace_name, channel_name,
++			1);
++		if (IS_ERR_VALUE(err)) {
++			printk(KERN_ERR "channel_overwrite_write: "
++			"ltt_trace_set_channel_overwrite failed: %d\n", err);
++			goto err_set_subbufsize;
++		}
++		break;
++	case 'N':
++	case 'n':
++	case '0':
++		err = ltt_trace_set_channel_overwrite(trace_name, channel_name,
++			0);
++		if (IS_ERR_VALUE(err)) {
++			printk(KERN_ERR "channel_overwrite_write: "
++			"ltt_trace_set_channel_overwrite failed: %d\n", err);
++			goto err_set_subbufsize;
++		}
++		break;
++	default:
++		err = -EPERM;
++		goto err_bad_cmd;
++	}
++
++	return count;
++
++err_set_subbufsize:
++err_bad_cmd:
++err_get_cmd:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_channel_overwrite_operations = {
++	.write = channel_overwrite_write,
++};
++
++
++static ssize_t channel_enable_write(struct file *file,
++	const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	char cmd[NAME_MAX];
++	const char *channel_name;
++	const char *trace_name;
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%s", cmd) != 1) {
++		err = -EPERM;
++		goto err_get_cmd;
++	}
++
++	if (cmd[1]) {
++		err = -EPERM;
++		goto err_bad_cmd;
++	}
++
++	channel_name = file->f_dentry->d_parent->d_name.name;
++	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
++
++	switch (cmd[0]) {
++	case 'Y':
++	case 'y':
++	case '1':
++		err = ltt_trace_set_channel_enable(trace_name, channel_name,
++			1);
++		if (IS_ERR_VALUE(err)) {
++			printk(KERN_ERR "channel_enable_write: "
++			"ltt_trace_set_channel_enable failed: %d\n", err);
++			goto err_set_subbufsize;
++		}
++		break;
++	case 'N':
++	case 'n':
++	case '0':
++		err = ltt_trace_set_channel_enable(trace_name, channel_name,
++			0);
++		if (IS_ERR_VALUE(err)) {
++			printk(KERN_ERR "channel_enable_write: "
++			"ltt_trace_set_channel_enable failed: %d\n", err);
++			goto err_set_subbufsize;
++		}
++		break;
++	default:
++		err = -EPERM;
++		goto err_bad_cmd;
++	}
++
++	return count;
++
++err_set_subbufsize:
++err_bad_cmd:
++err_get_cmd:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_channel_enable_operations = {
++	.write = channel_enable_write,
++};
++
++
++static int _create_trace_control_dir(const char *trace_name,
++				     struct ltt_trace_struct *trace)
++{
++	int err;
++	struct dentry *trace_root, *channel_root;
++	struct dentry *tmp_den;
++	int i;
++
++	/* debugfs/control/trace_name */
++	trace_root = debugfs_create_dir(trace_name, ltt_control_dir);
++	if (IS_ERR(trace_root) || !trace_root) {
++		printk(KERN_ERR "_create_trace_control_dir: "
++			"create control root dir of %s failed\n", trace_name);
++		err = -ENOMEM;
++		goto err_create_trace_root;
++	}
++
++	/* debugfs/control/trace_name/alloc */
++	tmp_den = debugfs_create_file("alloc", S_IWUSR, trace_root, NULL,
++		&ltt_alloc_operations);
++	if (IS_ERR(tmp_den) || !tmp_den) {
++		printk(KERN_ERR "_create_trace_control_dir: "
++			"create file of alloc failed\n");
++		err = -ENOMEM;
++		goto err_create_subdir;
++	}
++
++	/* debugfs/control/trace_name/trans */
++	tmp_den = debugfs_create_file("trans", S_IWUSR, trace_root, NULL,
++		&ltt_trans_operations);
++	if (IS_ERR(tmp_den) || !tmp_den) {
++		printk(KERN_ERR "_create_trace_control_dir: "
++			"create file of trans failed\n");
++		err = -ENOMEM;
++		goto err_create_subdir;
++	}
++
++	/* debugfs/control/trace_name/enabled */
++	tmp_den = debugfs_create_file("enabled", S_IWUSR, trace_root, NULL,
++		&ltt_enabled_operations);
++	if (IS_ERR(tmp_den) || !tmp_den) {
++		printk(KERN_ERR "_create_trace_control_dir: "
++			"create file of enabled failed\n");
++		err = -ENOMEM;
++		goto err_create_subdir;
++	}
++
++	/* debugfs/control/trace_name/channel/ */
++	channel_root = debugfs_create_dir("channel", trace_root);
++	if (IS_ERR(channel_root) || !channel_root) {
++		printk(KERN_ERR "_create_trace_control_dir: "
++			"create dir of channel failed\n");
++		err = -ENOMEM;
++		goto err_create_subdir;
++	}
++
++	/*
++	 * Create dir and files in debugfs/ltt/control/trace_name/channel/
++	 * Following things(without <>) will be created:
++	 * `-- <control>
++	 *     `-- <trace_name>
++	 *         `-- <channel>
++	 *             |-- <channel_name>
++	 *             |   |-- enable
++	 *             |   |-- overwrite
++	 *             |   |-- subbuf_num
++	 *             |   `-- subbuf_size
++	 *             `-- ...
++	 */
++
++	for (i = 0; i < trace->nr_channels; i++) {
++		struct dentry *channel_den;
++		struct ltt_channel_struct *channel;
++
++		channel = &trace->channels[i];
++		if (!channel->active)
++			continue;
++		channel_den = debugfs_create_dir(channel->channel_name,
++						 channel_root);
++		if (IS_ERR(channel_den) || !channel_den) {
++			printk(KERN_ERR "_create_trace_control_dir: "
++				"create channel dir of %s failed\n",
++				channel->channel_name);
++			err = -ENOMEM;
++			goto err_create_subdir;
++		}
++
++		tmp_den = debugfs_create_file("subbuf_num", S_IWUSR,
++			channel_den, NULL, &ltt_channel_subbuf_num_operations);
++		if (IS_ERR(tmp_den) || !tmp_den) {
++			printk(KERN_ERR "_create_trace_control_dir: "
++				"create subbuf_num in %s failed\n",
++				channel->channel_name);
++			err = -ENOMEM;
++			goto err_create_subdir;
++		}
++
++		tmp_den = debugfs_create_file("subbuf_size", S_IWUSR,
++			channel_den, NULL, &ltt_channel_subbuf_size_operations);
++		if (IS_ERR(tmp_den) || !tmp_den) {
++			printk(KERN_ERR "_create_trace_control_dir: "
++				"create subbuf_size in %s failed\n",
++				channel->channel_name);
++			err = -ENOMEM;
++			goto err_create_subdir;
++		}
++
++		tmp_den = debugfs_create_file("enable", S_IWUSR, channel_den,
++			NULL, &ltt_channel_enable_operations);
++		if (IS_ERR(tmp_den) || !tmp_den) {
++			printk(KERN_ERR "_create_trace_control_dir: "
++				"create enable in %s failed\n",
++				channel->channel_name);
++			err = -ENOMEM;
++			goto err_create_subdir;
++		}
++
++		tmp_den = debugfs_create_file("overwrite", S_IWUSR, channel_den,
++			NULL, &ltt_channel_overwrite_operations);
++		if (IS_ERR(tmp_den) || !tmp_den) {
++			printk(KERN_ERR "_create_trace_control_dir: "
++				"create overwrite in %s failed\n",
++				channel->channel_name);
++			err = -ENOMEM;
++			goto err_create_subdir;
++		}
++	}
++
++	return 0;
++
++err_create_subdir:
++	debugfs_remove_recursive(trace_root);
++err_create_trace_root:
++	return err;
++}
++
++static ssize_t setup_trace_write(struct file *file, const char __user *user_buf,
++		size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	char trace_name[NAME_MAX];
++	struct ltt_trace_struct *trace;
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%s", trace_name) != 1) {
++		err = -EPERM;
++		goto err_get_tracename;
++	}
++
++	mutex_lock(&control_lock);
++	ltt_lock_traces();
++
++	err = _ltt_trace_setup(trace_name);
++	if (IS_ERR_VALUE(err)) {
++		printk(KERN_ERR
++			"setup_trace_write: ltt_trace_setup failed: %d\n", err);
++		goto err_setup_trace;
++	}
++	trace = _ltt_trace_find_setup(trace_name);
++	BUG_ON(!trace);
++	err = _create_trace_control_dir(trace_name, trace);
++	if (IS_ERR_VALUE(err)) {
++		printk(KERN_ERR "setup_trace_write: "
++			"_create_trace_control_dir failed: %d\n", err);
++		goto err_create_trace_control_dir;
++	}
++
++	ltt_unlock_traces();
++	mutex_unlock(&control_lock);
++
++	return count;
++
++err_create_trace_control_dir:
++	ltt_trace_destroy(trace_name);
++err_setup_trace:
++	ltt_unlock_traces();
++	mutex_unlock(&control_lock);
++err_get_tracename:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_setup_trace_operations = {
++	.write = setup_trace_write,
++};
++
++static ssize_t destroy_trace_write(struct file *file,
++		const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	int err = 0;
++	char buf[NAME_MAX];
++	int buf_size;
++	char trace_name[NAME_MAX];
++	struct dentry *trace_den;
++
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto err_copy_from_user;
++	buf[buf_size] = 0;
++
++	if (sscanf(buf, "%s", trace_name) != 1) {
++		err = -EPERM;
++		goto err_get_tracename;
++	}
++
++	mutex_lock(&control_lock);
++
++	err = ltt_trace_destroy(trace_name);
++	if (IS_ERR_VALUE(err)) {
++		printk(KERN_ERR
++			"destroy_trace_write: ltt_trace_destroy failed: %d\n",
++			err);
++		err = -EPERM;
++		goto err_destroy_trace;
++	}
++
++	trace_den = dir_lookup(ltt_control_dir, trace_name);
++	if (!trace_den) {
++		printk(KERN_ERR
++			"destroy_trace_write: lookup for %s's dentry failed\n",
++			trace_name);
++		err = -ENOENT;
++		goto err_get_dentry;
++	}
++
++	debugfs_remove_recursive(trace_den);
++
++	mutex_unlock(&control_lock);
++
++	return count;
++
++err_get_dentry:
++err_destroy_trace:
++	mutex_unlock(&control_lock);
++err_get_tracename:
++err_copy_from_user:
++	return err;
++}
++
++static const struct file_operations ltt_destroy_trace_operations = {
++	.write = destroy_trace_write,
++};
++
++static int marker_enable_open(struct inode *inode, struct file *filp)
++{
++	filp->private_data = inode->i_private;
++	return 0;
++}
++
++static ssize_t marker_enable_read(struct file *filp, char __user *ubuf,
++			    size_t cnt, loff_t *ppos)
++{
++	struct marker *marker;
++	char *buf;
++	int len;
++
++	marker = (struct marker *)filp->private_data;
++	buf = kmalloc(1024, GFP_KERNEL);
++
++	len = sprintf(buf, "%d\n", _imv_read(marker->state));
++
++	len = simple_read_from_buffer(ubuf, cnt, ppos, buf, len);
++	kfree(buf);
++
++	return len;
++}
++
++static ssize_t marker_enable_write(struct file *filp, const char __user *ubuf,
++				size_t cnt, loff_t *ppos)
++{
++	char buf[NAME_MAX];
++	int buf_size;
++	int err = 0;
++	struct marker *marker;
++
++	marker = (struct marker *)filp->private_data;
++	buf_size = min(cnt, sizeof(buf) - 1);
++	err = copy_from_user(buf, ubuf, buf_size);
++	if (err)
++		return err;
++
++	buf[buf_size] = 0;
++
++	switch (buf[0]) {
++	case 'Y':
++	case 'y':
++	case '1':
++		err = ltt_marker_connect(marker->channel, marker->name,
++					 "default");
++		if (err)
++			return err;
++		break;
++	case 'N':
++	case 'n':
++	case '0':
++		err = ltt_marker_disconnect(marker->channel, marker->name,
++					    "default");
++		if (err)
++			return err;
++		break;
++	default:
++		return -EPERM;
++	}
++
++	return cnt;
++}
++
++static const struct file_operations enable_fops = {
++	.open = marker_enable_open,
++	.read = marker_enable_read,
++	.write = marker_enable_write,
++};
++
++static int marker_info_open(struct inode *inode, struct file *filp)
++{
++	filp->private_data = inode->i_private;
++	return 0;
++}
++
++static ssize_t marker_info_read(struct file *filp, char __user *ubuf,
++			    size_t cnt, loff_t *ppos)
++{
++	struct marker *marker;
++	char *buf;
++	int len;
++
++	marker = (struct marker *)filp->private_data;
++	buf = kmalloc(1024, GFP_KERNEL);
++
++	len = sprintf(buf, "format: \"%s\"\nstate: %d\n"
++		      "event_id: %hu\n"
++		      "call: 0x%p\n"
++		      "probe %s : 0x%p\n",
++		      marker->format, _imv_read(marker->state),
++		      marker->event_id, marker->call, marker->ptype ?
++		      "multi" : "single", marker->ptype ?
++		      (void *)marker->multi : (void *)marker->single.func);
++
++	len = simple_read_from_buffer(ubuf, cnt, ppos, buf, len);
++	kfree(buf);
++
++	return len;
++}
++
++static const struct file_operations info_fops = {
++	.open = marker_info_open,
++	.read = marker_info_read,
++};
++
++static int build_marker_file(struct marker *marker)
++{
++	struct dentry *channel_d, *marker_d, *enable_d, *info_d;
++	int err;
++
++	channel_d = dir_lookup(markers_control_dir, marker->channel);
++	if (!channel_d) {
++		channel_d = debugfs_create_dir(marker->channel,
++					       markers_control_dir);
++		if (IS_ERR(channel_d) || !channel_d) {
++			printk(KERN_ERR
++			       "%s: build channel dir of %s failed\n",
++			       __func__, marker->channel);
++			err = -ENOMEM;
++			goto err_build_fail;
++		}
++	}
++
++	marker_d  = dir_lookup(channel_d, marker->name);
++	if (!marker_d) {
++		marker_d = debugfs_create_dir(marker->name, channel_d);
++		if (IS_ERR(marker_d) || !marker_d) {
++			printk(KERN_ERR
++			       "%s: marker dir of %s failed\n",
++			       __func__, marker->name);
++			err = -ENOMEM;
++			goto err_build_fail;
++		}
++	}
++
++	enable_d = dir_lookup(marker_d, "enable");
++	if (!enable_d) {
++		enable_d = debugfs_create_file("enable", 0644, marker_d,
++						marker, &enable_fops);
++		if (IS_ERR(enable_d) || !enable_d) {
++			printk(KERN_ERR
++			       "%s: create file of %s failed\n",
++			       __func__, "enable");
++			err = -ENOMEM;
++			goto err_build_fail;
++		}
++	}
++
++	info_d = dir_lookup(marker_d, "info");
++	if (!info_d) {
++		info_d = debugfs_create_file("info", 0444, marker_d,
++						marker, &info_fops);
++		if (IS_ERR(info_d) || !info_d) {
++			printk(KERN_ERR
++			       "%s: create file of %s failed\n",
++			       __func__, "enable");
++			err = -ENOMEM;
++			goto err_build_fail;
++		}
++	}
++
++	return 0;
++
++err_build_fail:
++	return err;
++}
++
++static int build_marker_control_files(void)
++{
++	struct marker_iter iter;
++	int err;
++
++	err = 0;
++	if (!markers_control_dir)
++		return -EEXIST;
++
++	marker_iter_reset(&iter);
++	marker_iter_start(&iter);
++	for (; iter.marker != NULL; marker_iter_next(&iter)) {
++		err = build_marker_file(iter.marker);
++		if (err)
++			goto err_build_fail;
++	}
++	marker_iter_stop(&iter);
++	return 0;
++
++err_build_fail:
++	return err;
++}
++
++static int remove_marker_control_dir(struct marker *marker)
++{
++	struct dentry *channel_d, *marker_d;
++
++	channel_d = dir_lookup(markers_control_dir, marker->channel);
++	if (!channel_d)
++		return -ENOENT;
++
++	marker_d = dir_lookup(channel_d, marker->name);
++	if (!marker_d)
++		return -ENOENT;
++
++	debugfs_remove_recursive(marker_d);
++	if (list_empty(&channel_d->d_subdirs))
++		debugfs_remove(channel_d);
++
++	return 0;
++}
++
++static void cleanup_control_dir(struct marker *begin, struct marker *end)
++{
++	struct marker *iter;
++
++	if (!markers_control_dir)
++		return;
++
++	for (iter = begin; iter < end; iter++)
++		remove_marker_control_dir(iter);
++
++	return;
++}
++
++static void build_control_dir(struct marker *begin, struct marker *end)
++{
++	struct marker *iter;
++	int err;
++
++	err = 0;
++	if (!markers_control_dir)
++		return;
++
++	for (iter = begin; iter < end; iter++) {
++		err = build_marker_file(iter);
++		if (err)
++			goto err_build_fail;
++	}
++
++	return;
++err_build_fail:
++	cleanup_control_dir(begin, end);
++}
++
++static int module_notify(struct notifier_block *self,
++		  unsigned long val, void *data)
++{
++	struct module *mod = data;
++
++	switch (val) {
++	case MODULE_STATE_COMING:
++		build_control_dir(mod->markers,
++				  mod->markers + mod->num_markers);
++		break;
++	case MODULE_STATE_GOING:
++		cleanup_control_dir(mod->markers,
++				    mod->markers + mod->num_markers);
++		break;
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block module_nb = {
++	.notifier_call = module_notify,
++};
++
++static int __init ltt_trace_control_init(void)
++{
++	int err = 0;
++	struct dentry *ltt_root_dentry;
++
++	ltt_root_dentry = get_ltt_root();
++	if (!ltt_root_dentry) {
++		err = -ENOENT;
++		goto err_no_root;
++	}
++
++	ltt_control_dir = debugfs_create_dir(LTT_CONTROL_DIR, ltt_root_dentry);
++	if (IS_ERR(ltt_control_dir) || !ltt_control_dir) {
++		printk(KERN_ERR
++			"ltt_channel_control_init: create dir of %s failed\n",
++			LTT_CONTROL_DIR);
++		err = -ENOMEM;
++		goto err_create_control_dir;
++	}
++
++	ltt_setup_trace_file = debugfs_create_file(LTT_SETUP_TRACE_FILE,
++		S_IWUSR, ltt_root_dentry, NULL, &ltt_setup_trace_operations);
++	if (IS_ERR(ltt_setup_trace_file) || !ltt_setup_trace_file) {
++		printk(KERN_ERR
++			"ltt_channel_control_init: create file of %s failed\n",
++			LTT_SETUP_TRACE_FILE);
++		err = -ENOMEM;
++		goto err_create_setup_trace_file;
++	}
++
++	ltt_destroy_trace_file = debugfs_create_file(LTT_DESTROY_TRACE_FILE,
++		S_IWUSR, ltt_root_dentry, NULL, &ltt_destroy_trace_operations);
++	if (IS_ERR(ltt_destroy_trace_file) || !ltt_destroy_trace_file) {
++		printk(KERN_ERR
++			"ltt_channel_control_init: create file of %s failed\n",
++			LTT_DESTROY_TRACE_FILE);
++		err = -ENOMEM;
++		goto err_create_destroy_trace_file;
++	}
++
++	markers_control_dir = debugfs_create_dir(MARKERS_CONTROL_DIR,
++						 ltt_root_dentry);
++	if (IS_ERR(markers_control_dir) || !markers_control_dir) {
++		printk(KERN_ERR
++			"ltt_channel_control_init: create dir of %s failed\n",
++			MARKERS_CONTROL_DIR);
++		err = -ENOMEM;
++		goto err_create_marker_control_dir;
++	}
++
++	if (build_marker_control_files())
++		goto err_build_fail;
++
++	if (!register_module_notifier(&module_nb))
++		return 0;
++
++err_build_fail:
++	debugfs_remove_recursive(markers_control_dir);
++	markers_control_dir = NULL;
++err_create_marker_control_dir:
++	debugfs_remove(ltt_destroy_trace_file);
++err_create_destroy_trace_file:
++	debugfs_remove(ltt_setup_trace_file);
++err_create_setup_trace_file:
++	debugfs_remove(ltt_control_dir);
++err_create_control_dir:
++err_no_root:
++	return err;
++}
++
++static void __exit ltt_trace_control_exit(void)
++{
++	struct dentry *trace_dir;
++
++	/* destory all traces */
++	list_for_each_entry(trace_dir, &ltt_control_dir->d_subdirs,
++		d_u.d_child) {
++		ltt_trace_stop(trace_dir->d_name.name);
++		ltt_trace_destroy(trace_dir->d_name.name);
++	}
++
++	/* clean dirs in debugfs */
++	debugfs_remove(ltt_setup_trace_file);
++	debugfs_remove(ltt_destroy_trace_file);
++	debugfs_remove_recursive(ltt_control_dir);
++	debugfs_remove_recursive(markers_control_dir);
++	unregister_module_notifier(&module_nb);
++	put_ltt_root();
++}
++
++module_init(ltt_trace_control_init);
++module_exit(ltt_trace_control_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Zhao Lei <zhaolei@cn.fujitsu.com>");
++MODULE_DESCRIPTION("Linux Trace Toolkit Trace Controller");
++
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
