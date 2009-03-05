@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZCETeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZCETfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbZCETeo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 14:34:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZCETef
+	id S1756428AbZCETfp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 14:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZCETff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 14:34:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46417 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754700AbZCETee (ORCPT
+	Thu, 5 Mar 2009 14:35:35 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:58019 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752650AbZCETfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 14:34:34 -0500
-Subject: Re: [PATCH] perfcounters: IRQ and NMI support on AMD CPUs
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236279393.3316.13.camel@localhost.localdomain>
-References: <1236273633.5187.286.camel@laptop>
-	 <1236277959.3316.3.camel@localhost.localdomain>
-	 <1236278730.5187.378.camel@laptop>
-	 <1236279393.3316.13.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 20:34:21 +0100
-Message-Id: <1236281661.5187.432.camel@laptop>
+	Thu, 5 Mar 2009 14:35:34 -0500
+Date: Thu, 5 Mar 2009 20:35:27 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Dan Smith <danms@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Re: [PATCH] s390: Expose a constant for the number of words
+ representing the CRs
+Message-ID: <20090305203527.48d7c2cd@skybook>
+In-Reply-To: <87tz67vrkc.fsf@caffeine.danplanet.com>
+References: <1236271688-18806-1-git-send-email-danms@us.ibm.com>
+	<87tz67vrkc.fsf@caffeine.danplanet.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 00:26 +0530, Jaswinder Singh Rajput wrote:
+On Thu, 05 Mar 2009 08:54:11 -0800
+Dan Smith <danms@us.ibm.com> wrote:
 
-> But kerneltop is still not working and I am not getting any NMI Interrupts.
+> If there aren't any objections to this patch, can it get picked up?
 
-Does the below work for you?
+Have you looked at git390 lately ?
 
-The BKGD suggests its 48 for all existing machines (it certainly is for
-mine).
+-- 
+-- 
+blue skies,
+   Martin.
 
-Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -959,20 +959,8 @@ static struct pmc_x86_ops *pmc_amd_init(
- 
- 	nr_counters_generic = 4;
- 	nr_counters_fixed = 0;
--	counter_value_mask = ~0ULL;
--
--	rdmsrl(MSR_K7_PERFCTR0, old);
--	wrmsrl(MSR_K7_PERFCTR0, counter_value_mask);
--	/*
--	 * read the truncated mask
--	 */
--	rdmsrl(MSR_K7_PERFCTR0, counter_value_mask);
--	wrmsrl(MSR_K7_PERFCTR0, old);
--
--	bits = 32 + fls(counter_value_mask >> 32);
--	if (bits == 32)
--		bits = fls((u32)counter_value_mask);
--	counter_value_bits = bits;
-+	counter_value_mask = 0x0000FFFFFFFFFFFFULL;
-+	counter_value_bits = 48;
- 
- 	pr_info("AMD Performance Monitoring support detected.\n");
- 
-
+"Reality continues to ruin my life." - Calvin.
 
