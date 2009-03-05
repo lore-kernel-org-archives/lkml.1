@@ -1,57 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZCEWic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZCEWkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZCEWic (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 17:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZCEWiX
+	id S1756442AbZCEWkh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 17:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZCEWk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 17:38:23 -0500
-Received: from mga01.intel.com ([192.55.52.88]:57862 "EHLO mga01.intel.com"
+	Thu, 5 Mar 2009 17:40:28 -0500
+Received: from fifo99.com ([67.223.236.141]:60051 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753162AbZCEWiX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 17:38:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,309,1233561600"; 
-   d="scan'208";a="670715259"
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Maurice Volaski <mvolaski@aecom.yu.edu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-Date: Thu, 5 Mar 2009 14:38:13 -0800
-Subject: RE: e1000 is subtly incompatible with jumbo frames
-Thread-Topic: e1000 is subtly incompatible with jumbo frames
-Thread-Index: Acmd3/YFjEAc/yCKQ6KEQPmhERTXBAAAu9LQ
-Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A1E6EABF2@orsmsx507.amr.corp.intel.com>
-References: <a06240409c5d5e74a49d0@[129.98.90.227]>
-In-Reply-To: <a06240409c5d5e74a49d0@[129.98.90.227]>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1753162AbZCEWk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 17:40:28 -0500
+Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
+From: Daniel Walker <dwalker@fifo99.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       stern@rowland.harvard.edu, randy.dunlap@oracle.com,
+       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
+       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <49B02692.3000500@kernel.org>
+References: <49AF18B7.4050305@kernel.org>
+	 <tip-a1aade478862fca8710904532cbc6efed97fd05a@git.kernel.org>
+	 <1236267366.5937.56.camel@desktop>  <49B02692.3000500@kernel.org>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 14:40:23 -0800
+Message-Id: <1236292823.5937.84.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maurice Volaski wrote:
-> I have a system using the e1000 driver with the MTU set to 9000. If I
-> try FTP to get a file, the transfer does not start. Something about
-> the 9000 MTU is preventing the NIC from receiving packets back from
-> the FTP server. (The FTP server is on the same subnet and its NIC
-> also has MTU 9000.) The 9000 MTU NIC works fine in every other
-> respect, even allowing me to access the system via ssh. When I change
-> the MTU to 1500, then FTP works fine. The problem is common to
-> numerous kernel versions including 2.6.24 through 2.6.29-rc5.
+On Thu, 2009-03-05 at 11:22 -0800, Yinghai Lu wrote:
 
-This sounds like you have not configured the MTU the same on both ends
-or some station in between is having issues with the large packets
+> 
+> thanks for checking it.
+> 
+> can you submit patch to Ingo according to tip/master?
 
-please double check your configuration.
 
-we also need to know kernel version, driver version, lspci output
+Hows this?
 
-Thanks,
-  Jesse
+--
+
+Fix up some typos, and make the requirements section slightly cleaner.
+
+Signed-Off-By: Daniel Walker dwalker@fifo99.com
+
+diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
+index 607b1a0..5b51aef 100644
+--- a/Documentation/x86/earlyprintk.txt
++++ b/Documentation/x86/earlyprintk.txt
+@@ -9,7 +9,9 @@ and two USB cables, connected like this:
+ 
+ 1. There are three specific hardware requirements:
+ 
+- a.) Host/target system needs to have USB debug port capability.
++ a.) You will need two USB ports. One on the client/console system and one one the target system.
++ 
++ b.) The client/console and target USB ports must have the debug port capability.
+ 
+  You can check this capability by looking at a 'Debug port' bit in
+  the lspci -vvv output:
+@@ -35,15 +37,13 @@ and two USB cables, connected like this:
+ ( If your system does not list a debug port capability then you probably
+   wont be able to use the USB debug key. )
+ 
+- b.) You also need a Netchip USB debug cable/key:
++ c.) You also need a Netchip USB debug cable/key:
+ 
+         http://www.plxtech.com/products/NET2000/NET20DC/default.asp
+ 
+      This is a small blue plastic connector with two USB connections,
+      it draws power from its USB connections.
+ 
+- c.) Thirdly, you need a second client/console system with a regular USB port.
+-
+ 2. Software requirements:
+ 
+  a.) On the host/target system:
+@@ -54,7 +54,7 @@ and two USB cables, connected like this:
+ 
+     And you need to add the boot command line: "earlyprintk=dbgp".
+     (If you are using Grub, append it to the 'kernel' line in
+-     /etc/grub.conf)
++     grub.conf (i.e. /boot/grub/grub.conf) )
+ 
+     NOTE: normally earlyprintk console gets turned off once the
+     regular console is alive - use "earlyprintk=dbgp,keep" to keep
+@@ -72,7 +72,7 @@ and two USB cables, connected like this:
+ 
+     Now this channel of kernel messages is ready to be used: start
+     your favorite terminal emulator (minicom, etc.) and set
+-    it up to use /dev/ttyUSB0 - or use a raw 'cat /dev/ttyUSBx' to
++    it up to use /dev/ttyUSBx - or use a raw 'cat /dev/ttyUSBx' to
+     see the raw output.
+ 
+  c.) On Nvidia Southbridge based systems: the kernel will try to probe
+@@ -92,7 +92,7 @@ and two USB cables, connected like this:
+ 
+    On the client/console system do:
+ 
+-       cat /dev/ttyUSB0
++       cat /dev/ttyUSBx
+ 
+    And you should see the help line above displayed shortly after you've
+    provoked it on the host system.
+
+
