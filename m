@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZCETls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZCETok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbZCETls (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 14:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZCETlk
+	id S1754925AbZCETok (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 14:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZCEToc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 14:41:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35303 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Mar 2009 14:44:32 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:46471 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbZCETlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 14:41:39 -0500
-Date: Thu, 5 Mar 2009 20:41:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perfcounters: IRQ and NMI support on AMD CPUs
-Message-ID: <20090305194127.GA2039@elte.hu>
-References: <1236273633.5187.286.camel@laptop> <1236277959.3316.3.camel@localhost.localdomain> <1236278730.5187.378.camel@laptop> <1236279393.3316.13.camel@localhost.localdomain> <1236281661.5187.432.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236281661.5187.432.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754368AbZCETob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 14:44:31 -0500
+Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090305174037.GA2274@x200.localdomain>
+References: <20090305163857.0C18F3FD@kernel>
+	 <20090305174037.GA2274@x200.localdomain>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 11:44:16 -0800
+Message-Id: <1236282256.22399.102.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-03-05 at 20:40 +0300, Alexey Dobriyan wrote:
+> * without largely useless "special file" messages
+>   (what's so special about it?)
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Thanks for pointing this out, Alexey.  After going and looking at these,
+I realized that this changed sometime in the last 5 or 6 years. :)
 
-> On Fri, 2009-03-06 at 00:26 +0530, Jaswinder Singh Rajput wrote:
-> 
-> > But kerneltop is still not working and I am not getting any NMI Interrupts.
-> 
-> Does the below work for you?
-> 
-> The BKGD suggests its 48 for all existing machines (it 
-> certainly is for mine).
+My f_op approach works for these even without the special_file()
+check.  
 
-Yeah, this did the trick on AMD/Barcelona!
+-- Dave
 
-NMI:      11310      14932      11729      12705      11207      
-13454      13378      10714      14526      11986      10973      
-10765      12669      12093      13430       9661   Non-maskable 
-interrupts
-
-KernelTop works just fine:
-
-------------------------------------------------------------------------------
- KernelTop:    1019 irqs/sec  kernel:27.9% [NMI, 1000000 CPU 
-cycles],  (all, 16 CPUs)
-------------------------------------------------------------------------------
-
-             events         RIP          kernel function
-  ______     ______   ________________   _______________
-
-            5260.00 - ffffffff8037e420 : clear_page_c
-            1065.00 - ffffffff805811a0 : page_fault
-             699.00 - ffffffff8037e690 : copy_user_generic_string!
-             669.00 - ffffffff80294ed8 : get_page_from_freelist
-             575.00 - ffffffff804cd033 : acpi_pm_read
-             551.00 - ffffffff8025fd1b : generic_exec_single
-             416.00 - ffffffff80580c9c : _spin_lock
-             413.00 - ffffffff802a32ad : unmap_vmas
-             392.00 - ffffffff80580fc2 : _spin_lock_irqsave
-
-Thanks!
-
-	Ingo
