@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZCEMu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZCEMwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZCEMu0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 07:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZCEMuN
+	id S1754624AbZCEMwS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 07:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZCEMwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 07:50:13 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:55107 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbZCEMuM (ORCPT
+	Thu, 5 Mar 2009 07:52:04 -0500
+Received: from mail.polezero.com ([216.68.55.34]:48966 "EHLO
+	firewall.polezero.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751593AbZCEMwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 07:50:12 -0500
-Date: Thu, 5 Mar 2009 12:50:05 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug #12762] Disk errors loop forever in 2.6.29
-Message-ID: <20090305125005.GA16693@silver.sucs.org>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera> <SLCXkuHtxAO.A.MVC.EVarJB@chimera> <1236118049.24019.6.camel@localhost.localdomain>
+	Thu, 5 Mar 2009 07:52:03 -0500
+Subject: Re: New HID device support
+From: Jason Noble <nobleja@polezero.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LNX.2.00.0903042355320.4971@jikos.suse.cz>
+References: <1236096277.26321.29.camel@paradox.pz.local>
+	 <alpine.LNX.2.00.0903031720380.5295@jikos.suse.cz>
+	 <1236107096.7793.1.camel@paradox.pz.local>
+	 <alpine.LNX.2.00.0903041144310.4971@jikos.suse.cz>
+	 <1236172544.21288.3.camel@paradox.pz.local>
+	 <alpine.LNX.2.00.0903041419250.4971@jikos.suse.cz>
+	 <1236173654.21288.8.camel@paradox.pz.local>
+	 <alpine.LNX.2.00.0903041436210.4971@jikos.suse.cz>
+	 <1236178031.9121.6.camel@paradox.pz.local>
+	 <alpine.LNX.2.00.0903041612210.4971@jikos.suse.cz>
+	 <1236179770.9121.12.camel@paradox.pz.local>
+	 <alpine.LNX.2.00.0903042355320.4971@jikos.suse.cz>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 07:51:52 -0500
+Message-Id: <1236257512.25955.0.camel@paradox.pz.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236118049.24019.6.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 03, 2009 at 04:07:29PM -0600, James Bottomley wrote:
-> In theory, the fix should be upstream here:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=126c098296c8f96cf7f6ca0fdb47265ac7994f00
-> 
-> (not in a released -rc yet, but should be in -rc7).
+Sounds good, thanks again!
 
-Yup - just tested -rc7 and the problem is gone. Thanks!
+On Wed, 2009-03-04 at 23:56 +0100, Jiri Kosina wrote:
+> On Wed, 4 Mar 2009, Jason Noble wrote:
+> 
+> > No problem, glad to help out.
+> > Very glad to get my buttons working. ;-)
+> > 
+> > Do you think this will make its way into 2.6.29?
+> 
+> If there is any urgent bugfix that needs to go to 2.6.29, I will push it 
+> altogether. Otherwise it will probably go through 2.6.30 queue.
+> 
 
--- 
-Sitsofe | http://sucs.org/~sits/
