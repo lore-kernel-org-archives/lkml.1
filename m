@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZCEV4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbZCEV54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbZCEV4Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 16:56:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCEV4O
+	id S1754943AbZCEV54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 16:57:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCEV5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 16:56:14 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:59816 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221AbZCEV4N (ORCPT
+	Thu, 5 Mar 2009 16:57:47 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:46183 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbZCEV5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 16:56:13 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Thu, 05 Mar 2009 22:55:04 +0100
-Message-ID: <20090305215455.23866.57598.stgit@f10box.hanneseder.net>
-User-Agent: StGit/0.14.3.348.gcb02.dirty
+	Thu, 5 Mar 2009 16:57:47 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=mNKEISPWyJmGtE6aSRZFdM8ZmJsi/g4szQbjeZ/eKOyuOODTeiwNxKzZ1910MjgZ4
+	Lb4pQeHOsyIa0FM5Rr2Dw==
+Date: Thu, 5 Mar 2009 13:57:18 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] lockdep: initialize lockdep debugging statistics
+In-Reply-To: <20090305110522.GI32407@elte.hu>
+Message-ID: <alpine.DEB.2.00.0903051355010.25505@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com> <alpine.DEB.2.00.0903050223240.30401@chino.kir.corp.google.com> <1236250159.4228.186.camel@laptop> <20090305110522.GI32407@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH v3 09/15] NULL noise: drivers/scsi/FlashPoint.c
-To: trivial@kernel.org
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <154e089b0903051215q1216aa53icd41556e2af8b234@mail.gmail.com>
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
-	     <20090305191602.30062.71301.stgit@f10box.hanneseder.net>
-	      <1236283546.5626.45.camel@localhost.localdomain>
-	       <154e089b0903051215q1216aa53icd41556e2af8b234@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warnings:
-  drivers/scsi/FlashPoint.c:906:9: warning: Using plain integer as NULL pointer
-  drivers/scsi/FlashPoint.c:907:53: warning: Using plain integer as NULL pointer
-  drivers/scsi/FlashPoint.c:922:1: warning: Using plain integer as NULL pointer
+On Thu, 5 Mar 2009, Ingo Molnar wrote:
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
-v2: fix checkpatch.pl issue.
-v2.1: other subject, as suggested by Al Viro
-v3: no need to explicitly initialize the variables, as they are in the
-    .bss section anyway (pointed out by James Bottomley)
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Thu, 2009-03-05 at 02:29 -0800, David Rientjes wrote:
+> > > The CONFIG_DEBUG_LOCKDEP statistics need to be initialized with
+> > > ATOMIC_INIT(0) since they are of type atomic_t.
+> > 
+> > And how does ATOMIC_INIT(0) differ from the global/static 
+> > storage being initialized to 0?
+> > 
+> > All I can see this doing it moving the variables from bss to 
+> > data for some compilers.
+> 
 
- drivers/scsi/FlashPoint.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+It's actually the opposite for gcc 4.1.1, the debugging symbols are now in 
+bss.
 
-diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
-index b898d38..ac67307 100644
---- a/drivers/scsi/FlashPoint.c
-+++ b/drivers/scsi/FlashPoint.c
-@@ -902,13 +902,12 @@ static unsigned char FPT_scmachid(unsigned char p_card,
- static void FPT_autoCmdCmplt(unsigned long p_port, unsigned char p_card);
- static void FPT_autoLoadDefaultMap(unsigned long p_port);
- 
--static struct sccb_mgr_tar_info FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR] =
--    { {{0}} };
--static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {0} };
--static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR] = { {{0}} };
--static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS] = { {0} };
-+static struct sccb_mgr_tar_info FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR];
-+static struct sccb_card FPT_BL_Card[MAX_CARDS];
-+static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR];
-+static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS];
- 
--static unsigned char FPT_mbCards = 0;
-+static unsigned char FPT_mbCards;
- static unsigned char FPT_scamHAString[] =
-     { 0x63, 0x07, 'B', 'U', 'S', 'L', 'O', 'G', 'I', 'C',
- 	' ', 'B', 'T', '-', '9', '3', '0',
-@@ -916,10 +915,9 @@ static unsigned char FPT_scamHAString[] =
- 	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
- };
- 
--static unsigned short FPT_default_intena = 0;
-+static unsigned short FPT_default_intena;
- 
--static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {
--0};
-+static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char);
- 
- /*---------------------------------------------------------------------
-  *
+> ok, i dropped it for now.
+> 
 
+It shouldn't be dropped, the initialization is necessary because we can't 
+rely on atomic_t's implementation.
