@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCELMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbZCELN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZCELMp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 06:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZCELMf
+	id S1755107AbZCELN7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 06:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZCELNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 06:12:35 -0500
-Received: from ns.suse.de ([195.135.220.2]:43048 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbZCELMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 06:12:34 -0500
-Date: Thu, 5 Mar 2009 12:12:26 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-fsdevel@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>, stable@kernel.org
-Subject: Re: [patch] fs: new inode i_state corruption fix
-Message-ID: <20090305111226.GB29531@duck.suse.cz>
-References: <20090305064554.GA11916@wotan.suse.de> <20090305100000.GA29177@duck.suse.cz> <20090305101637.GB17815@wotan.suse.de>
+	Thu, 5 Mar 2009 06:13:51 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:18280 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750868AbZCELNu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 06:13:50 -0500
+X-BigFish: VPS-27(zz1432R98dR1805M936fKzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KG15UG-04-12R-01
+Date: Thu, 5 Mar 2009 12:13:28 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Hannes Eder <hannes@hanneseder.net>
+CC: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IOMMU: use ANSI style function declaration for 'iommu_found'
+Message-ID: <20090305111328.GA8751@amd.com>
+References: <20090302000010.14884.9400.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20090305101637.GB17815@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090302000010.14884.9400.stgit@localhost.localdomain>
+User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Mar 2009 11:13:28.0232 (UTC) FILETIME=[68DC6280:01C99D83]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 05-03-09 11:16:37, Nick Piggin wrote:
-> On Thu, Mar 05, 2009 at 11:00:01AM +0100, Jan Kara wrote:
-> > On Thu 05-03-09 07:45:54, Nick Piggin wrote:
-> > > after ~1hour of running. Previously, the new warnings would start immediately
-> > > and hang would happen in under 5 minutes.
-> >   A quick grep seems to indicate that you've still missed a few cases,
-> > haven't you? I still see the same problem in
-> > drop_caches.c:drop_pagecache_sb() scanning, inode.c:invalidate_inodes()
-> > scanning, and dquot.c:add_dquot_ref() scanning.
-> >   Otherwise the patch looks fine.
+On Mon, Mar 02, 2009 at 01:00:41AM +0100, Hannes Eder wrote:
+> Fix this sparse warning:
+>   drivers/base/iommu.c:34:18: warning: non-ANSI function declaration of function 'iommu_found'
 > 
-> I thought they should be OK; drop_pagecache_sb doesn't play with flags,
-> invalidate_inodes won't if refcount is elevated, and I think add_dquot_ref
-> won't if writecount is not elevated...
-  Ah, ok, you are probably right.
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  drivers/base/iommu.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/iommu.c b/drivers/base/iommu.c
+> index 5e039d4..c2d1eed 100644
+> --- a/drivers/base/iommu.c
+> +++ b/drivers/base/iommu.c
+> @@ -31,7 +31,7 @@ void register_iommu(struct iommu_ops *ops)
+>  	iommu_ops = ops;
+>  }
+>  
+> -bool iommu_found()
+> +bool iommu_found(void)
+>  {
+>  	return iommu_ops != NULL;
+>  }
 
-> But maybe that's  abit fragile and it would be better policy to always
-> skip I_NEW in these traverals?
-  Yes, it seems too fragile to me. I'm not saying we have to forbid
-everything for I_NEW inodes but I think we should set clear simple rules
-what is protected by I_NEW and then verify that all sites which can come
-across such inodes obey them.
+Applied, thanks.
 
-									Honza
+Joerg
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
+
