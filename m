@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZCESBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZCESFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756745AbZCESBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 13:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbZCESBq
+	id S1756586AbZCESFv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 13:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbZCESFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 13:01:46 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:22872 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754055AbZCESBq (ORCPT
+	Thu, 5 Mar 2009 13:05:42 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:39808 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754055AbZCESFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 13:01:46 -0500
-Date: Thu, 5 Mar 2009 19:01:26 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: djwong@us.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH] lm90: Document support for the MAX6648/6692 chips
-Message-ID: <20090305190126.249bd10f@hyperion.delvare>
-In-Reply-To: <20090305173732.GM6550@plum>
-References: <20090302210106.GD6550@plum>
-	<20090305152517.4e0b8983@hyperion.delvare>
-	<20090305154729.GL6550@plum>
-	<20090305174418.02fd9593@hyperion.delvare>
-	<20090305173732.GM6550@plum>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+	Thu, 5 Mar 2009 13:05:41 -0500
+Subject: Re: Regression - locking (all from 2.6.28)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jan sonnek <ha2nny@gmail.com>,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <1236214452.22399.68.camel@nimitz>
+References: <49AC334A.9030800@gmail.com>
+	 <20090302121127.e46dc4be.akpm@linux-foundation.org>
+	 <1236076864.8547.20.camel@pc1117.cambridge.arm.com>
+	 <1236092480.8547.67.camel@pc1117.cambridge.arm.com>
+	 <1236214452.22399.68.camel@nimitz>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 05 Mar 2009 18:04:34 +0000
+Message-Id: <1236276274.18136.32.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Mar 2009 18:04:54.0724 (UTC) FILETIME=[E3282040:01C99DBC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009 09:37:33 -0800, Darrick J. Wong wrote:
-> Update documentation to prevent further confusion/duplication.
+On Wed, 2009-03-04 at 16:54 -0800, Dave Hansen wrote:
+> On Tue, 2009-03-03 at 15:01 +0000, Catalin Marinas wrote:
+> > > +     /* mem_map scanning */
+> > > +     for_each_online_node(i) {
+> > > +             struct page *page, *end;
+> > > +
+> > > +             page = NODE_MEM_MAP(i);
+> > > +             end  = page + NODE_DATA(i)->node_spanned_pages;
+> > > +
+> > > +             scan_block(page, end, NULL);
+> > > +     }
+[...]
+> The above is *not* a valid code sequence.
 > 
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> ---
+> It is valid with discontig, but isn't valid for sparsemem.  You simply
+> can't expect to do math on 'struct page' pointers for any granularity
+> larger than MAX_ORDER_NR_PAGES.
 > 
->  drivers/hwmon/Kconfig |    4 ++--
->  drivers/hwmon/lm90.c  |    8 ++++----
->  2 files changed, 6 insertions(+), 6 deletions(-)
+> Also, we don't even define NODE_MEM_MAP() for all configurations so that
+> code snippet won't even compile.  We would be smart to kill that macro.
 > 
-> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-> index 8c312c6..7da49d3 100644
-> --- a/drivers/hwmon/Kconfig
-> +++ b/drivers/hwmon/Kconfig
-> @@ -550,8 +550,8 @@ config SENSORS_LM90
->  	help
->  	  If you say yes here you get support for National Semiconductor LM90,
->  	  LM86, LM89 and LM99, Analog Devices ADM1032 and ADT7461, and Maxim
-> -	  MAX6646, MAX6647, MAX6649, MAX6657, MAX6658, MAX6659, MAX6680 and
-> -	  MAX6681 sensor chips.
-> +	  MAX6646, MAX6647, MAX6649, MAX6657, MAX6658, MAX6659, MAX6680,
-> +	  MAX6648, MAX6692 and MAX6681 sensor chips.
->  
->  	  This driver can also be built as a module.  If so, the module
->  	  will be called lm90.
-> diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
-> index 96a7018..58012b7 100644
-> --- a/drivers/hwmon/lm90.c
-> +++ b/drivers/hwmon/lm90.c
-> @@ -32,10 +32,10 @@
->   * supported by this driver. These chips lack the remote temperature
->   * offset feature.
->   *
-> - * This driver also supports the MAX6646, MAX6647 and MAX6649 chips
-> - * made by Maxim.  These are again similar to the LM86, but they use
-> - * unsigned temperature values and can report temperatures from 0 to
-> - * 145 degrees.
-> + * This driver also supports the MAX6646, MAX6647, MAX6648, MAX6649, and
-> + * MAX6692 chips made by Maxim.  These are again similar to the LM86,
-> + * but they use unsigned temperature values and can report temperatures
-> + * from 0 to 145 degrees.
->   *
->   * This driver also supports the MAX6680 and MAX6681, two other sensor
->   * chips made by Maxim. These are quite similar to the other Maxim
+> One completely unoptimized thing you can do which will scan a 'struct
+> page' at a time is this:
+> 
+> 	for_each_online_node(i) {
+> 		unsigned long pfn;
+> 		for (pfn = node_start_pfn(i); pfn < node_end_pfn(i); pfn++) {
+> 			struct page *page;
+> 			if (!pfn_valid(pfn))
+> 				continue;
+> 			page = pfn_to_page(pfn);
+> 			scan_block(page, page+1, NULL);
+> 		}
+> 	}
+> 		
+> The way to optimize it would be to call scan_block() only once for each
+> MAX_ORDER_NR_PAGES that you encounter.  The other option would be to use
+> the active_regions functions to walk the memory.  
+> 
+> Is there a requirement to reduce the number of calls to scan_block()
+> here?
 
-Applied, thanks!
+I think the improvement wouldn't be that big since scan_block() is
+pretty time consuming as it checks every value that looks like a pointer
+against a prio_tree.
+
+BTW, is there a way to know whether the page is in use or on the free
+list? Is page_count(page) feasible?
+
+Thanks.
 
 -- 
-Jean Delvare
+Catalin
+
