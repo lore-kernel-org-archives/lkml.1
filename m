@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZCEXjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbZCEXke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbZCEXjW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZCEXjF
+	id S1756827AbZCEXke (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbZCEXkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:39:05 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:45635 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:40:24 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:45842 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756742AbZCEXjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:39:03 -0500
-Message-Id: <20090305225513.388952352@polymtl.ca>
+	id S1754309AbZCEXkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:40:22 -0500
+Message-Id: <20090305225512.522863829@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:36 -0500
+Date: Thu, 05 Mar 2009 17:47:33 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,775 +31,968 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Zhao Lei <zhaolei@cn.fujitsu.com>,
-       "Dennis W. Tokarski" <dwt@PolTec.COM>,
-       Jan Kiszka <jan.kiszka@siemens.com>
-Subject: [RFC patch 08/41] LTTng - tracer header
-Content-Disposition: inline; filename=lttng-tracer-header.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:09 +0000
+       Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Tom Zanussi <zanussi@comcast.net>, prasad@linux.vnet.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>, od@suse.com, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>
+Subject: [RFC patch 05/41] LTTng relay buffer allocation, read, write
+Content-Disposition: inline; filename=lttng-relay-alloc.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Declaration of traces/channel structures. Tracer infrastructure API.
+As I told Martin, I was thinking about taking an axe and moving stuff around in
+relay. Which I just did.
 
-Contains the structures that expresses the traces and "channels" (set of buffers
-conveying part of the trace data, typically splitted in high, medium and low
-data rate channels).
+This patch reimplements relay with a linked list of pages. Provides read/write
+wrappers which should be used to read or write from the buffers. It's the core
+of a layered approach to the design requirements expressed by Martin and
+discussed earlier.
 
-Also contains the tracing API : tracing behavior can be controlled from within
-the kernel through calls to this API.
+It does not provide _any_ sort of locking on buffer data. Locking should be done
+by the caller. Given that we might think of very lightweight locking schemes, it
+makes sense to me that the underlying buffering infrastructure supports event
+records larger than 1 page.
 
-Thanks to Jan Kiszka <jan.kiszka@siemens.com> for cleanup of some home brewed
-macros.
+A cache saving 4 pointers is used to keep track of current page used for the
+buffer for write, current page read and two contiguous subbuffer header pointer
+lookup. The offset of each page within the buffer is saved in a structure
+containing the offset, linked list and page frame pointer to permit cache lookup
+without extra locking.
 
-Credits to Zhao Lei <zhaolei@cn.fujitsu.com> for a lot of fixes and extensions
-which have been folded in this patch.
+The offset and linked list are not placed in the page frame itself to allow
+using the pages directly for disk I/O, network I/O or to mmap it to userspace
+for live processing.
 
-Credits to "Dennis W. Tokarski" <dwt@PolTec.COM> for compile fixes.
+Write and header address lookup tested through LTTng. This patch contains
+self-test code which detects if a client is actually trying to use the
+read/write/get header address API to do random buffer offset access. If such
+behavior is detected, a warning message is issued and the random access is done
+as requested.
+
+TODO : Currently, no splice file operations are implemented. Should come soon.
+The idea is to splice the buffers directly into files or to the network.
+We have to make sure the page frame fields used are not used by disk I/O or
+network.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Zhao Lei <zhaolei@cn.fujitsu.com>
-CC: "Dennis W. Tokarski" <dwt@PolTec.COM>
-CC: Jan Kiszka <jan.kiszka@siemens.com>
+CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Martin Bligh <mbligh@google.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Tom Zanussi <zanussi@comcast.net>
+CC: prasad@linux.vnet.ibm.com
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Steven Rostedt <rostedt@goodmis.org>
+CC: od@suse.com
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: hch@lst.de
+CC: David Wilder <dwilder@us.ibm.com>
 ---
- include/linux/ltt-tracer.h |  729 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 729 insertions(+)
+ include/linux/ltt-relay.h |  182 +++++++++++
+ ltt/ltt-relay-alloc.c     |  705 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 887 insertions(+)
 
-Index: linux-2.6-lttng/include/linux/ltt-tracer.h
+Index: linux-2.6-lttng/ltt/ltt-relay-alloc.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/linux/ltt-tracer.h	2009-03-05 16:40:10.000000000 -0500
-@@ -0,0 +1,729 @@
++++ linux-2.6-lttng/ltt/ltt-relay-alloc.c	2009-03-05 15:05:56.000000000 -0500
+@@ -0,0 +1,705 @@
 +/*
-+ * Copyright (C) 2005,2006,2008 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ * Public API and common code for kernel->userspace relay file support.
 + *
-+ * This contains the definitions for the Linux Trace Toolkit tracer.
++ * Copyright (C) 2002-2005 - Tom Zanussi (zanussi@us.ibm.com), IBM Corp
++ * Copyright (C) 1999-2005 - Karim Yaghmour (karim@opersys.com)
++ * Copyright (C) 2008 - Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ *
++ * Moved to kernel/relay.c by Paul Mundt, 2006.
++ * November 2006 - CPU hotplug support by Mathieu Desnoyers
++ * 	(mathieu.desnoyers@polymtl.ca)
++ *
++ * This file is released under the GPL.
 + */
-+
-+#ifndef _LTT_TRACER_H
-+#define _LTT_TRACER_H
-+
-+#include <stdarg.h>
-+#include <linux/types.h>
-+#include <linux/limits.h>
-+#include <linux/list.h>
-+#include <linux/cache.h>
-+#include <linux/kernel.h>
-+#include <linux/timex.h>
-+#include <linux/wait.h>
++#include <linux/errno.h>
++#include <linux/stddef.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/string.h>
 +#include <linux/ltt-relay.h>
-+#include <linux/ltt-channels.h>
-+#include <linux/ltt-core.h>
-+#include <linux/marker.h>
-+#include <linux/trace-clock.h>
-+#include <asm/atomic.h>
-+#include <asm/local.h>
++#include <linux/vmalloc.h>
++#include <linux/mm.h>
++#include <linux/cpu.h>
++#include <linux/splice.h>
++#include <linux/bitops.h>
 +
-+/* Number of bytes to log with a read/write event */
-+#define LTT_LOG_RW_SIZE			32L
++/* list of open channels, for cpu hotplug */
++static DEFINE_MUTEX(relay_channels_mutex);
++static LIST_HEAD(relay_channels);
 +
-+/* Interval (in jiffies) at which the LTT per-CPU timer fires */
-+#define LTT_PERCPU_TIMER_INTERVAL	1
-+
-+#ifndef LTT_ARCH_TYPE
-+#define LTT_ARCH_TYPE			LTT_ARCH_TYPE_UNDEFINED
-+#endif
-+
-+#ifndef LTT_ARCH_VARIANT
-+#define LTT_ARCH_VARIANT		LTT_ARCH_VARIANT_NONE
-+#endif
-+
-+struct ltt_active_marker;
-+
-+/* Maximum number of callbacks per marker */
-+#define LTT_NR_CALLBACKS	10
-+
-+struct ltt_serialize_closure;
-+struct ltt_probe_private_data;
-+
-+/* Serialization callback '%k' */
-+typedef size_t (*ltt_serialize_cb)(struct rchan_buf *buf, size_t buf_offset,
-+			struct ltt_serialize_closure *closure,
-+			void *serialize_private, int *largest_align,
-+			const char *fmt, va_list *args);
-+
-+struct ltt_serialize_closure {
-+	ltt_serialize_cb *callbacks;
-+	long cb_args[LTT_NR_CALLBACKS];
-+	unsigned int cb_idx;
-+};
-+
-+size_t ltt_serialize_data(struct rchan_buf *buf, size_t buf_offset,
-+			struct ltt_serialize_closure *closure,
-+			void *serialize_private,
-+			int *largest_align, const char *fmt, va_list *args);
-+
-+struct ltt_available_probe {
-+	const char *name;		/* probe name */
-+	const char *format;
-+	marker_probe_func *probe_func;
-+	ltt_serialize_cb callbacks[LTT_NR_CALLBACKS];
-+	struct list_head node;		/* registered probes list */
-+};
-+
-+struct ltt_probe_private_data {
-+	struct ltt_trace_struct *trace;	/*
-+					 * Target trace, for metadata
-+					 * or statedump.
-+					 */
-+	ltt_serialize_cb serializer;	/*
-+					 * Serialization function override.
-+					 */
-+	void *serialize_private;	/*
-+					 * Private data for serialization
-+					 * functions.
-+					 */
-+};
-+
-+enum ltt_channels {
-+	LTT_CHANNEL_METADATA,
-+	LTT_CHANNEL_FD_STATE,
-+	LTT_CHANNEL_GLOBAL_STATE,
-+	LTT_CHANNEL_IRQ_STATE,
-+	LTT_CHANNEL_MODULE_STATE,
-+	LTT_CHANNEL_NETIF_STATE,
-+	LTT_CHANNEL_SOFTIRQ_STATE,
-+	LTT_CHANNEL_SWAP_STATE,
-+	LTT_CHANNEL_SYSCALL_STATE,
-+	LTT_CHANNEL_TASK_STATE,
-+	LTT_CHANNEL_VM_STATE,
-+	LTT_CHANNEL_FS,
-+	LTT_CHANNEL_INPUT,
-+	LTT_CHANNEL_IPC,
-+	LTT_CHANNEL_KERNEL,
-+	LTT_CHANNEL_MM,
-+	LTT_CHANNEL_RCU,
-+	LTT_CHANNEL_DEFAULT,
-+};
-+
-+struct ltt_active_marker {
-+	struct list_head node;		/* active markers list */
-+	const char *channel;
-+	const char *name;
-+	const char *format;
-+	struct ltt_available_probe *probe;
-+};
-+
-+extern void ltt_vtrace(const struct marker *mdata, void *probe_data,
-+	void *call_data, const char *fmt, va_list *args);
-+extern void ltt_trace(const struct marker *mdata, void *probe_data,
-+	void *call_data, const char *fmt, ...);
-+
-+/*
-+ * Unique ID assigned to each registered probe.
++/**
++ *	relay_alloc_buf - allocate a channel buffer
++ *	@buf: the buffer struct
++ *	@size: total size of the buffer
 + */
-+enum marker_id {
-+	MARKER_ID_SET_MARKER_ID = 0,	/* Static IDs available (range 0-7) */
-+	MARKER_ID_SET_MARKER_FORMAT,
-+	MARKER_ID_COMPACT,		/* Compact IDs (range: 8-127)	    */
-+	MARKER_ID_DYNAMIC,		/* Dynamic IDs (range: 128-65535)   */
-+};
-+
-+/* static ids 0-1 reserved for internal use. */
-+#define MARKER_CORE_IDS		2
-+static inline enum marker_id marker_id_type(uint16_t id)
++static int relay_alloc_buf(struct rchan_buf *buf, size_t *size)
 +{
-+	if (id < MARKER_CORE_IDS)
-+		return (enum marker_id)id;
-+	else
-+		return MARKER_ID_DYNAMIC;
-+}
++	unsigned int i, n_pages;
++	struct buf_page *buf_page, *n;
 +
-+#if defined(CONFIG_LTT) && defined(CONFIG_LTT_ALIGNMENT)
++	*size = PAGE_ALIGN(*size);
++	n_pages = *size >> PAGE_SHIFT;
 +
-+/*
-+ * Calculate the offset needed to align the type.
-+ * size_of_type must be non-zero.
-+ */
-+static inline unsigned int ltt_align(size_t align_drift, size_t size_of_type)
-+{
-+	size_t alignment = min(sizeof(void *), size_of_type);
-+	return (alignment - align_drift) & (alignment - 1);
-+}
-+/* Default arch alignment */
-+#define LTT_ALIGN
++	INIT_LIST_HEAD(&buf->pages);
 +
-+static inline int ltt_get_alignment(void)
-+{
-+	return sizeof(void *);
-+}
-+
-+#else
-+
-+static inline unsigned int ltt_align(size_t align_drift,
-+		 size_t size_of_type)
-+{
++	for (i = 0; i < n_pages; i++) {
++		buf_page = kmalloc_node(sizeof(*buf_page), GFP_KERNEL,
++			cpu_to_node(buf->cpu));
++		if (unlikely(!buf_page))
++			goto depopulate;
++		buf_page->page = alloc_pages_node(cpu_to_node(buf->cpu),
++			GFP_KERNEL | __GFP_ZERO, 0);
++		if (unlikely(!buf_page->page)) {
++			kfree(buf_page);
++			goto depopulate;
++		}
++		list_add_tail(&buf_page->list, &buf->pages);
++		buf_page->offset = (size_t)i << PAGE_SHIFT;
++		set_page_private(buf_page->page, (unsigned long)buf_page);
++		if (i == 0) {
++			buf->wpage = buf_page;
++			buf->hpage[0] = buf_page;
++			buf->hpage[1] = buf_page;
++			buf->rpage = buf_page;
++		}
++	}
++	buf->page_count = n_pages;
 +	return 0;
++
++depopulate:
++	list_for_each_entry_safe(buf_page, n, &buf->pages, list) {
++		list_del_init(&buf_page->list);
++		__free_page(buf_page->page);
++		kfree(buf_page);
++	}
++	return -ENOMEM;
 +}
 +
-+#define LTT_ALIGN __attribute__((packed))
-+
-+static inline int ltt_get_alignment(void)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_LTT_ALIGNMENT */
-+
-+#ifdef CONFIG_LTT
-+
-+struct user_dbg_data {
-+	unsigned long avail_size;
-+	unsigned long write;
-+	unsigned long read;
-+};
-+
-+struct ltt_trace_ops {
-+	/* First 32 bytes cache-hot cacheline */
-+	int (*reserve_slot) (struct ltt_trace_struct *trace,
-+				struct ltt_channel_struct *channel,
-+				void **transport_data, size_t data_size,
-+				size_t *slot_size, long *buf_offset, u64 *tsc,
-+				unsigned int *rflags,
-+				int largest_align,
-+				int cpu);
-+	void (*commit_slot) (struct ltt_channel_struct *channel,
-+				void **transport_data, long buf_offset,
-+				size_t slot_size);
-+	void (*wakeup_channel) (struct ltt_channel_struct *ltt_channel);
-+	int (*user_blocking) (struct ltt_trace_struct *trace,
-+				unsigned int index, size_t data_size,
-+				struct user_dbg_data *dbg);
-+	/* End of first 32 bytes cacheline */
-+	int (*create_dirs) (struct ltt_trace_struct *new_trace);
-+	void (*remove_dirs) (struct ltt_trace_struct *new_trace);
-+	int (*create_channel) (const char *trace_name,
-+				struct ltt_trace_struct *trace,
-+				struct dentry *dir, const char *channel_name,
-+				struct ltt_channel_struct *ltt_chan,
-+				unsigned int subbuf_size,
-+				unsigned int n_subbufs, int overwrite);
-+	void (*finish_channel) (struct ltt_channel_struct *channel);
-+	void (*remove_channel) (struct ltt_channel_struct *channel);
-+	void (*user_errors) (struct ltt_trace_struct *trace,
-+				unsigned int index, size_t data_size,
-+				struct user_dbg_data *dbg, int cpu);
-+#ifdef CONFIG_HOTPLUG_CPU
-+	int (*handle_cpuhp) (struct notifier_block *nb,
-+				unsigned long action, void *hcpu,
-+				struct ltt_trace_struct *trace);
-+#endif
-+} ____cacheline_aligned;
-+
-+struct ltt_transport {
-+	char *name;
-+	struct module *owner;
-+	struct list_head node;
-+	struct ltt_trace_ops ops;
-+};
-+
-+enum trace_mode { LTT_TRACE_NORMAL, LTT_TRACE_FLIGHT, LTT_TRACE_HYBRID };
-+
-+#define CHANNEL_FLAG_ENABLE	(1U<<0)
-+#define CHANNEL_FLAG_OVERWRITE	(1U<<1)
-+
-+/* Per-trace information - each trace/flight recorder represented by one */
-+struct ltt_trace_struct {
-+	/* First 32 bytes cache-hot cacheline */
-+	struct list_head list;
-+	struct ltt_trace_ops *ops;
-+	int active;
-+	/* Second 32 bytes cache-hot cacheline */
-+	struct ltt_channel_struct *channels;
-+	unsigned int nr_channels;
-+	u32 freq_scale;
-+	u64 start_freq;
-+	u64 start_tsc;
-+	unsigned long long start_monotonic;
-+	struct timeval		start_time;
-+	struct ltt_channel_setting *settings;
-+	struct {
-+		struct dentry			*trace_root;
-+	} dentry;
-+	struct rchan_callbacks callbacks;
-+	struct kref kref; /* Each channel has a kref of the trace struct */
-+	struct ltt_transport *transport;
-+	struct kref ltt_transport_kref;
-+	wait_queue_head_t kref_wq; /* Place for ltt_trace_destroy to sleep */
-+	char trace_name[NAME_MAX];
-+} ____cacheline_aligned;
-+
-+/* Hardcoded event headers
++/**
++ *	relay_create_buf - allocate and initialize a channel buffer
++ *	@chan: the relay channel
++ *	@cpu: cpu the buffer belongs to
 + *
-+ * event header for a trace with active heartbeat : 27 bits timestamps
-+ *
-+ * headers are 32-bits aligned. In order to insure such alignment, a dynamic per
-+ * trace alignment value must be done.
-+ *
-+ * Remember that the C compiler does align each member on the boundary
-+ * equivalent to their own size.
-+ *
-+ * As relay subbuffers are aligned on pages, we are sure that they are 4 and 8
-+ * bytes aligned, so the buffer header and trace header are aligned.
-+ *
-+ * Event headers are aligned depending on the trace alignment option.
-+ *
-+ * Note using C structure bitfields for cross-endianness and portability
-+ * concerns.
++ *	Returns channel buffer if successful, %NULL otherwise.
 + */
++static struct rchan_buf *relay_create_buf(struct rchan *chan, int cpu)
++{
++	int ret;
++	struct rchan_buf *buf = kzalloc(sizeof(struct rchan_buf), GFP_KERNEL);
++	if (!buf)
++		return NULL;
 +
-+#define LTT_RESERVED_EVENTS	3
-+#define LTT_EVENT_BITS		5
-+#define LTT_FREE_EVENTS		((1 << LTT_EVENT_BITS) - LTT_RESERVED_EVENTS)
-+#define LTT_TSC_BITS		27
-+#define LTT_TSC_MASK		((1 << LTT_TSC_BITS) - 1)
++	buf->cpu = cpu;
++	ret = relay_alloc_buf(buf, &chan->alloc_size);
++	if (ret)
++		goto free_buf;
 +
-+struct ltt_event_header {
-+	u32 id_time;		/* 5 bits event id (MSB); 27 bits time (LSB) */
-+};
++	buf->chan = chan;
++	kref_get(&buf->chan->kref);
++	return buf;
 +
-+/* Reservation flags */
-+#define	LTT_RFLAG_ID			(1 << 0)
-+#define	LTT_RFLAG_ID_SIZE		(1 << 1)
-+#define	LTT_RFLAG_ID_SIZE_TSC		(1 << 2)
++free_buf:
++	kfree(buf);
++	return NULL;
++}
 +
-+#define LTT_MAX_SMALL_SIZE		0xFFFFU
++/**
++ *	relay_destroy_channel - free the channel struct
++ *	@kref: target kernel reference that contains the relay channel
++ *
++ *	Should only be called from kref_put().
++ */
++static void relay_destroy_channel(struct kref *kref)
++{
++	struct rchan *chan = container_of(kref, struct rchan, kref);
++	kfree(chan);
++}
++
++void ltt_relay_get_chan(struct rchan *chan)
++{
++	kref_get(&chan->kref);
++}
++EXPORT_SYMBOL_GPL(ltt_relay_get_chan);
++
++void ltt_relay_put_chan(struct rchan *chan)
++{
++	kref_put(&chan->kref, relay_destroy_channel);
++}
++EXPORT_SYMBOL_GPL(ltt_relay_put_chan);
++
++/**
++ *	relay_destroy_buf - destroy an rchan_buf struct and associated buffer
++ *	@buf: the buffer struct
++ */
++static void relay_destroy_buf(struct rchan_buf *buf)
++{
++	struct rchan *chan = buf->chan;
++	struct buf_page *buf_page, *n;
++
++	list_for_each_entry_safe(buf_page, n, &buf->pages, list) {
++		list_del_init(&buf_page->list);
++		__free_page(buf_page->page);
++		kfree(buf_page);
++	}
++	chan->buf[buf->cpu] = NULL;
++	kfree(buf);
++	kref_put(&chan->kref, relay_destroy_channel);
++}
++
++/**
++ *	relay_remove_buf - remove a channel buffer
++ *	@kref: target kernel reference that contains the relay buffer
++ *
++ *	Removes the file from the fileystem, which also frees the
++ *	rchan_buf_struct and the channel buffer.  Should only be called from
++ *	kref_put().
++ */
++static void relay_remove_buf(struct kref *kref)
++{
++	struct rchan_buf *buf = container_of(kref, struct rchan_buf, kref);
++	buf->chan->cb->remove_buf_file(buf->dentry);
++	relay_destroy_buf(buf);
++}
++
++void ltt_relay_get_chan_buf(struct rchan_buf *buf)
++{
++	kref_get(&buf->kref);
++}
++EXPORT_SYMBOL_GPL(ltt_relay_get_chan_buf);
++
++void ltt_relay_put_chan_buf(struct rchan_buf *buf)
++{
++	kref_put(&buf->kref, relay_remove_buf);
++}
++EXPORT_SYMBOL_GPL(ltt_relay_put_chan_buf);
 +
 +/*
-+ * We use asm/timex.h : cpu_khz/HZ variable in here : we might have to deal
-+ * specifically with CPU frequency scaling someday, so using an interpolation
-+ * between the start and end of buffer values is not flexible enough. Using an
-+ * immediate frequency value permits to calculate directly the times for parts
-+ * of a buffer that would be before a frequency change.
-+ *
-+ * Keep the natural field alignment for _each field_ within this structure if
-+ * you ever add/remove a field from this header. Packed attribute is not used
-+ * because gcc generates poor code on at least powerpc and mips. Don't ever
-+ * let gcc add padding between the structure elements.
++ * High-level relay kernel API and associated functions.
 + */
-+struct ltt_subbuffer_header {
-+	uint64_t cycle_count_begin;	/* Cycle count at subbuffer start */
-+	uint64_t cycle_count_end;	/* Cycle count at subbuffer end */
-+	uint32_t magic_number;		/*
-+					 * Trace magic number.
-+					 * contains endianness information.
-+					 */
-+	uint8_t major_version;
-+	uint8_t minor_version;
-+	uint8_t arch_size;		/* Architecture pointer size */
-+	uint8_t alignment;		/* LTT data alignment */
-+	uint64_t start_time_sec;	/* NTP-corrected start time */
-+	uint64_t start_time_usec;
-+	uint64_t start_freq;		/*
-+					 * Frequency at trace start,
-+					 * used all along the trace.
-+					 */
-+	uint32_t freq_scale;		/* Frequency scaling (divisor) */
-+	uint32_t lost_size;		/* Size unused at end of subbuffer */
-+	uint32_t buf_size;		/* Size of this subbuffer */
-+	uint32_t events_lost;		/*
-+					 * Events lost in this subbuffer since
-+					 * the beginning of the trace.
-+					 * (may overflow)
-+					 */
-+	uint32_t subbuf_corrupt;	/*
-+					 * Corrupted (lost) subbuffers since
-+					 * the begginig of the trace.
-+					 * (may overflow)
-+					 */
-+	uint8_t header_end[0];		/* End of header */
++
++/*
++ * rchan_callback implementations defining default channel behavior.  Used
++ * in place of corresponding NULL values in client callback struct.
++ */
++
++/*
++ * create_buf_file_create() default callback.  Does nothing.
++ */
++static struct dentry *create_buf_file_default_callback(const char *filename,
++						       struct dentry *parent,
++						       int mode,
++						       struct rchan_buf *buf)
++{
++	return NULL;
++}
++
++/*
++ * remove_buf_file() default callback.  Does nothing.
++ */
++static int remove_buf_file_default_callback(struct dentry *dentry)
++{
++	return -EINVAL;
++}
++
++/* relay channel default callbacks */
++static struct rchan_callbacks default_channel_callbacks = {
++	.create_buf_file = create_buf_file_default_callback,
++	.remove_buf_file = remove_buf_file_default_callback,
 +};
 +
 +/**
-+ * ltt_subbuffer_header_size - called on buffer-switch to a new sub-buffer
++ *	__relay_reset - reset a channel buffer
++ *	@buf: the channel buffer
++ *	@init: 1 if this is a first-time initialization
 + *
-+ * Return header size without padding after the structure. Don't use packed
-+ * structure because gcc generates inefficient code on some architectures
-+ * (powerpc, mips..)
++ *	See relay_reset() for description of effect.
 + */
-+static inline size_t ltt_subbuffer_header_size(void)
++static void __relay_reset(struct rchan_buf *buf, unsigned int init)
 +{
-+	return offsetof(struct ltt_subbuffer_header, header_end);
++	if (init)
++		kref_init(&buf->kref);
 +}
 +
 +/*
-+ * ltt_get_header_size
++ *	relay_open_buf - create a new relay channel buffer
 + *
-+ * Calculate alignment offset to 32-bits. This is the alignment offset of the
-+ * event header.
-+ *
-+ * Important note :
-+ * The event header must be 32-bits. The total offset calculated here :
-+ *
-+ * Alignment of header struct on 32 bits (min arch size, header size)
-+ * + sizeof(header struct)  (32-bits)
-+ * + (opt) u16 (ext. event id)
-+ * + (opt) u16 (event_size)
-+ *             (if event_size == LTT_MAX_SMALL_SIZE, has ext. event size)
-+ * + (opt) u32 (ext. event size)
-+ * + (opt) u64 full TSC (aligned on min(64-bits, arch size))
-+ *
-+ * The payload must itself determine its own alignment from the biggest type it
-+ * contains.
-+ * */
-+static inline unsigned char ltt_get_header_size(
-+		struct ltt_channel_struct *channel,
-+		size_t offset,
-+		size_t data_size,
-+		size_t *before_hdr_pad,
-+		unsigned int rflags)
++ *	used by relay_open() and CPU hotplug.
++ */
++static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
 +{
-+	size_t orig_offset = offset;
-+	size_t padding;
++	struct rchan_buf *buf = NULL;
++	struct dentry *dentry;
++	char *tmpname;
 +
-+	BUILD_BUG_ON(sizeof(struct ltt_event_header) != sizeof(u32));
++	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
++	if (!tmpname)
++		goto end;
++	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
 +
-+	padding = ltt_align(offset, sizeof(struct ltt_event_header));
-+	offset += padding;
-+	offset += sizeof(struct ltt_event_header);
++	buf = relay_create_buf(chan, cpu);
++	if (!buf)
++		goto free_name;
 +
-+	switch (rflags) {
-+	case LTT_RFLAG_ID_SIZE_TSC:
-+		offset += sizeof(u16) + sizeof(u16);
-+		if (data_size >= LTT_MAX_SMALL_SIZE)
-+			offset += sizeof(u32);
-+		offset += ltt_align(offset, sizeof(u64));
-+		offset += sizeof(u64);
-+		break;
-+	case LTT_RFLAG_ID_SIZE:
-+		offset += sizeof(u16) + sizeof(u16);
-+		if (data_size >= LTT_MAX_SMALL_SIZE)
-+			offset += sizeof(u32);
-+		break;
-+	case LTT_RFLAG_ID:
-+		offset += sizeof(u16);
-+		break;
-+	}
++	__relay_reset(buf, 1);
 +
-+	*before_hdr_pad = padding;
-+	return offset - orig_offset;
++	/* Create file in fs */
++	dentry = chan->cb->create_buf_file(tmpname, chan->parent, S_IRUSR,
++					   buf);
++	if (!dentry)
++		goto free_buf;
++
++	buf->dentry = dentry;
++
++	goto free_name;
++
++free_buf:
++	relay_destroy_buf(buf);
++	buf = NULL;
++free_name:
++	kfree(tmpname);
++end:
++	return buf;
 +}
 +
-+/*
-+ * ltt_write_event_header
++/**
++ *	relay_close_buf - close a channel buffer
++ *	@buf: channel buffer
 + *
-+ * Writes the event header to the offset (already aligned on 32-bits).
-+ *
-+ * @trace : trace to write to.
-+ * @channel : pointer to the channel structure..
-+ * @buf : buffer to write to.
-+ * @buf_offset : buffer offset to write to (aligned on 32 bits).
-+ * @eID : event ID
-+ * @event_size : size of the event, excluding the event header.
-+ * @tsc : time stamp counter.
-+ * @rflags : reservation flags.
-+ *
-+ * returns : offset where the event data must be written.
++ *	Restores the default callbacks.
++ *	The channel buffer and channel buffer data structure are then freed
++ *	automatically when the last reference is given up.
 + */
-+static inline size_t ltt_write_event_header(struct ltt_trace_struct *trace,
-+		struct ltt_channel_struct *channel,
-+		struct rchan_buf *buf, long buf_offset,
-+		u16 eID, size_t event_size,
-+		u64 tsc, unsigned int rflags)
++static void relay_close_buf(struct rchan_buf *buf)
 +{
-+	struct ltt_event_header header;
-+	size_t small_size;
++	kref_put(&buf->kref, relay_remove_buf);
++}
 +
-+	switch (rflags) {
-+	case LTT_RFLAG_ID_SIZE_TSC:
-+		header.id_time = 29 << LTT_TSC_BITS;
-+		break;
-+	case LTT_RFLAG_ID_SIZE:
-+		header.id_time = 30 << LTT_TSC_BITS;
-+		break;
-+	case LTT_RFLAG_ID:
-+		header.id_time = 31 << LTT_TSC_BITS;
-+		break;
-+	default:
-+		header.id_time = eID << LTT_TSC_BITS;
-+		break;
++static void setup_callbacks(struct rchan *chan,
++				   struct rchan_callbacks *cb)
++{
++	if (!cb) {
++		chan->cb = &default_channel_callbacks;
++		return;
 +	}
-+	header.id_time |= (u32)tsc & LTT_TSC_MASK;
-+	ltt_relay_write(buf, buf_offset, &header, sizeof(header));
-+	buf_offset += sizeof(header);
 +
-+	switch (rflags) {
-+	case LTT_RFLAG_ID_SIZE_TSC:
-+		small_size = min_t(size_t, event_size, LTT_MAX_SMALL_SIZE);
-+		ltt_relay_write(buf, buf_offset,
-+			(u16[]){ (u16)eID }, sizeof(u16));
-+		buf_offset += sizeof(u16);
-+		ltt_relay_write(buf, buf_offset,
-+			(u16[]){ (u16)small_size }, sizeof(u16));
-+		buf_offset += sizeof(u16);
-+		if (small_size == LTT_MAX_SMALL_SIZE) {
-+			ltt_relay_write(buf, buf_offset,
-+				(u32[]){ (u32)event_size }, sizeof(u32));
-+			buf_offset += sizeof(u32);
++	if (!cb->create_buf_file)
++		cb->create_buf_file = create_buf_file_default_callback;
++	if (!cb->remove_buf_file)
++		cb->remove_buf_file = remove_buf_file_default_callback;
++	chan->cb = cb;
++}
++
++/**
++ * 	relay_hotcpu_callback - CPU hotplug callback
++ * 	@nb: notifier block
++ * 	@action: hotplug action to take
++ * 	@hcpu: CPU number
++ *
++ * 	Returns the success/failure of the operation. (%NOTIFY_OK, %NOTIFY_BAD)
++ */
++static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
++				unsigned long action,
++				void *hcpu)
++{
++	unsigned int hotcpu = (unsigned long)hcpu;
++	struct rchan *chan;
++
++	switch (action) {
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		mutex_lock(&relay_channels_mutex);
++		list_for_each_entry(chan, &relay_channels, list) {
++			if (chan->buf[hotcpu])
++				continue;
++			chan->buf[hotcpu] = relay_open_buf(chan, hotcpu);
++			if (!chan->buf[hotcpu]) {
++				printk(KERN_ERR
++					"relay_hotcpu_callback: cpu %d buffer "
++					"creation failed\n", hotcpu);
++				mutex_unlock(&relay_channels_mutex);
++				return NOTIFY_BAD;
++			}
 +		}
-+		buf_offset += ltt_align(buf_offset, sizeof(u64));
-+		ltt_relay_write(buf, buf_offset,
-+			(u64[]){ (u64)tsc }, sizeof(u64));
-+		buf_offset += sizeof(u64);
++		mutex_unlock(&relay_channels_mutex);
 +		break;
-+	case LTT_RFLAG_ID_SIZE:
-+		small_size = min_t(size_t, event_size, LTT_MAX_SMALL_SIZE);
-+		ltt_relay_write(buf, buf_offset,
-+			(u16[]){ (u16)eID }, sizeof(u16));
-+		buf_offset += sizeof(u16);
-+		ltt_relay_write(buf, buf_offset,
-+			(u16[]){ (u16)small_size }, sizeof(u16));
-+		buf_offset += sizeof(u16);
-+		if (small_size == LTT_MAX_SMALL_SIZE) {
-+			ltt_relay_write(buf, buf_offset,
-+				(u32[]){ (u32)event_size }, sizeof(u32));
-+			buf_offset += sizeof(u32);
-+		}
-+		break;
-+	case LTT_RFLAG_ID:
-+		ltt_relay_write(buf, buf_offset,
-+			(u16[]){ (u16)eID }, sizeof(u16));
-+		buf_offset += sizeof(u16);
-+		break;
-+	default:
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++		/* No need to flush the cpu : will be flushed upon
++		 * final relay_flush() call. */
 +		break;
 +	}
-+
-+	return buf_offset;
++	return NOTIFY_OK;
 +}
 +
-+/* Lockless LTTng */
-+
-+/* Buffer offset macros */
-+
-+/*
-+ * BUFFER_TRUNC zeroes the subbuffer offset and the subbuffer number parts of
-+ * the offset, which leaves only the buffer number.
++/**
++ *	ltt_relay_open - create a new relay channel
++ *	@base_filename: base name of files to create
++ *	@parent: dentry of parent directory, %NULL for root directory
++ *	@subbuf_size: size of sub-buffers
++ *	@n_subbufs: number of sub-buffers
++ *	@cb: client callback functions
++ *	@private_data: user-defined data
++ *
++ *	Returns channel pointer if successful, %NULL otherwise.
++ *
++ *	Creates a channel buffer for each cpu using the sizes and
++ *	attributes specified.  The created channel buffer files
++ *	will be named base_filename0...base_filenameN-1.  File
++ *	permissions will be %S_IRUSR.
 + */
-+#define BUFFER_TRUNC(offset, chan) \
-+	((offset) & (~((chan)->alloc_size-1)))
-+#define BUFFER_OFFSET(offset, chan) ((offset) & ((chan)->alloc_size - 1))
-+#define SUBBUF_OFFSET(offset, chan) ((offset) & ((chan)->subbuf_size - 1))
-+#define SUBBUF_ALIGN(offset, chan) \
-+	(((offset) + (chan)->subbuf_size) & (~((chan)->subbuf_size - 1)))
-+#define SUBBUF_TRUNC(offset, chan) \
-+	((offset) & (~((chan)->subbuf_size - 1)))
-+#define SUBBUF_INDEX(offset, chan) \
-+	(BUFFER_OFFSET((offset), chan) >> (chan)->subbuf_size_order)
-+
-+/*
-+ * ltt_reserve_slot
-+ *
-+ * Atomic slot reservation in a LTTng buffer. It will take care of
-+ * sub-buffer switching.
-+ *
-+ * Parameters:
-+ *
-+ * @trace : the trace structure to log to.
-+ * @channel : the chanel to reserve space into.
-+ * @transport_data : specific transport data.
-+ * @data_size : size of the variable length data to log.
-+ * @slot_size : pointer to total size of the slot (out)
-+ * @buf_offset : pointer to reserve offset (out)
-+ * @tsc : pointer to the tsc at the slot reservation (out)
-+ * @rflags : reservation flags (header specificity)
-+ * @cpu : cpu id
-+ *
-+ * Return : -ENOSPC if not enough space, else 0.
-+ */
-+static inline int ltt_reserve_slot(
-+		struct ltt_trace_struct *trace,
-+		struct ltt_channel_struct *channel,
-+		void **transport_data,
-+		size_t data_size,
-+		size_t *slot_size,
-+		long *buf_offset,
-+		u64 *tsc,
-+		unsigned int *rflags,
-+		int largest_align,
-+		int cpu)
++struct rchan *ltt_relay_open(const char *base_filename,
++			 struct dentry *parent,
++			 size_t subbuf_size,
++			 size_t n_subbufs,
++			 struct rchan_callbacks *cb,
++			 void *private_data)
 +{
-+	return trace->ops->reserve_slot(trace, channel, transport_data,
-+			data_size, slot_size, buf_offset, tsc, rflags,
-+			largest_align, cpu);
++	unsigned int i;
++	struct rchan *chan;
++	if (!base_filename)
++		return NULL;
++
++	if (!(subbuf_size && n_subbufs))
++		return NULL;
++
++	chan = kzalloc(sizeof(struct rchan), GFP_KERNEL);
++	if (!chan)
++		return NULL;
++
++	chan->version = LTT_RELAY_CHANNEL_VERSION;
++	chan->n_subbufs = n_subbufs;
++	chan->subbuf_size = subbuf_size;
++	chan->subbuf_size_order = get_count_order(subbuf_size);
++	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
++	chan->parent = parent;
++	chan->private_data = private_data;
++	strlcpy(chan->base_filename, base_filename, NAME_MAX);
++	setup_callbacks(chan, cb);
++	kref_init(&chan->kref);
++
++	mutex_lock(&relay_channels_mutex);
++	for_each_online_cpu(i) {
++		chan->buf[i] = relay_open_buf(chan, i);
++		if (!chan->buf[i])
++			goto free_bufs;
++	}
++	list_add(&chan->list, &relay_channels);
++	mutex_unlock(&relay_channels_mutex);
++
++	return chan;
++
++free_bufs:
++	for_each_possible_cpu(i) {
++		if (!chan->buf[i])
++			break;
++		relay_close_buf(chan->buf[i]);
++	}
++
++	kref_put(&chan->kref, relay_destroy_channel);
++	mutex_unlock(&relay_channels_mutex);
++	return NULL;
 +}
++EXPORT_SYMBOL_GPL(ltt_relay_open);
 +
-+
-+/*
-+ * ltt_commit_slot
++/**
++ *	ltt_relay_close - close the channel
++ *	@chan: the channel
 + *
-+ * Atomic unordered slot commit. Increments the commit count in the
-+ * specified sub-buffer, and delivers it if necessary.
-+ *
-+ * Parameters:
-+ *
-+ * @channel : the chanel to reserve space into.
-+ * @transport_data : specific transport data.
-+ * @buf_offset : offset of beginning of reserved slot
-+ * @slot_size : size of the reserved slot.
++ *	Closes all channel buffers and frees the channel.
 + */
-+static inline void ltt_commit_slot(
-+		struct ltt_channel_struct *channel,
-+		void **transport_data,
-+		long buf_offset,
-+		size_t slot_size)
++void ltt_relay_close(struct rchan *chan)
 +{
-+	struct ltt_trace_struct *trace = channel->trace;
++	unsigned int i;
 +
-+	trace->ops->commit_slot(channel, transport_data, buf_offset, slot_size);
++	if (!chan)
++		return;
++
++	mutex_lock(&relay_channels_mutex);
++	for_each_possible_cpu(i)
++		if (chan->buf[i])
++			relay_close_buf(chan->buf[i]);
++
++	list_del(&chan->list);
++	kref_put(&chan->kref, relay_destroy_channel);
++	mutex_unlock(&relay_channels_mutex);
++}
++EXPORT_SYMBOL_GPL(ltt_relay_close);
++
++/*
++ * Start iteration at the previous element. Skip the real list head.
++ */
++static struct buf_page *ltt_relay_find_prev_page(struct rchan_buf *buf,
++	struct buf_page *page, size_t offset, ssize_t diff_offset)
++{
++	struct buf_page *iter;
++	size_t orig_iter_off;
++	unsigned int i = 0;
++
++	orig_iter_off = page->offset;
++	list_for_each_entry_reverse(iter, &page->list, list) {
++		/*
++		 * Skip the real list head.
++		 */
++		if (&iter->list == &buf->pages)
++			continue;
++		i++;
++		if (offset >= iter->offset
++			&& offset < iter->offset + PAGE_SIZE) {
++#ifdef CONFIG_LTT_RELAY_CHECK_RANDOM_ACCESS
++			if (i > 1) {
++				printk(KERN_WARNING
++					"Backward random access detected in "
++					"ltt_relay. Iterations %u, "
++					"offset %zu, orig iter->off %zu, "
++					"iter->off %zu diff_offset %zd.\n", i,
++					offset, orig_iter_off, iter->offset,
++					diff_offset);
++				WARN_ON(1);
++			}
++#endif
++			return iter;
++		}
++	}
++	return NULL;
 +}
 +
 +/*
-+ * Control channels :
-+ * control/metadata
-+ * control/interrupts
-+ * control/...
-+ *
-+ * cpu channel :
-+ * cpu
++ * Start iteration at the next element. Skip the real list head.
 + */
-+#define LTT_RELAY_ROOT		"ltt"
-+#define LTT_RELAY_LOCKED_ROOT	"ltt-locked"
++static struct buf_page *ltt_relay_find_next_page(struct rchan_buf *buf,
++	struct buf_page *page, size_t offset, ssize_t diff_offset)
++{
++	struct buf_page *iter;
++	unsigned int i = 0;
++	size_t orig_iter_off;
 +
-+#define LTT_METADATA_CHANNEL		"metadata_state"
-+#define LTT_FD_STATE_CHANNEL		"fd_state"
-+#define LTT_GLOBAL_STATE_CHANNEL	"global_state"
-+#define LTT_IRQ_STATE_CHANNEL		"irq_state"
-+#define LTT_MODULE_STATE_CHANNEL	"module_state"
-+#define LTT_NETIF_STATE_CHANNEL		"netif_state"
-+#define LTT_SOFTIRQ_STATE_CHANNEL	"softirq_state"
-+#define LTT_SWAP_STATE_CHANNEL		"swap_state"
-+#define LTT_SYSCALL_STATE_CHANNEL	"syscall_state"
-+#define LTT_TASK_STATE_CHANNEL		"task_state"
-+#define LTT_VM_STATE_CHANNEL		"vm_state"
-+#define LTT_FS_CHANNEL			"fs"
-+#define LTT_INPUT_CHANNEL		"input"
-+#define LTT_IPC_CHANNEL			"ipc"
-+#define LTT_KERNEL_CHANNEL		"kernel"
-+#define LTT_MM_CHANNEL			"mm"
-+#define LTT_RCU_CHANNEL			"rcu"
-+
-+#define LTT_FLIGHT_PREFIX	"flight-"
-+
-+/* Tracer properties */
-+#define LTT_DEFAULT_SUBBUF_SIZE_LOW	65536
-+#define LTT_DEFAULT_N_SUBBUFS_LOW	2
-+#define LTT_DEFAULT_SUBBUF_SIZE_MED	262144
-+#define LTT_DEFAULT_N_SUBBUFS_MED	2
-+#define LTT_DEFAULT_SUBBUF_SIZE_HIGH	1048576
-+#define LTT_DEFAULT_N_SUBBUFS_HIGH	2
-+#define LTT_TRACER_MAGIC_NUMBER		0x00D6B7ED
-+#define LTT_TRACER_VERSION_MAJOR	2
-+#define LTT_TRACER_VERSION_MINOR	3
++	orig_iter_off = page->offset;
++	list_for_each_entry(iter, &page->list, list) {
++		/*
++		 * Skip the real list head.
++		 */
++		if (&iter->list == &buf->pages)
++			continue;
++		i++;
++		if (offset >= iter->offset
++			&& offset < iter->offset + PAGE_SIZE) {
++#ifdef CONFIG_LTT_RELAY_CHECK_RANDOM_ACCESS
++			if (i > 1) {
++				printk(KERN_WARNING
++					"Forward random access detected in "
++					"ltt_relay. Iterations %u, "
++					"offset %zu, orig iter->off %zu, "
++					"iter->off %zu diff_offset %zd.\n", i,
++					offset, orig_iter_off, iter->offset,
++					diff_offset);
++				WARN_ON(1);
++			}
++#endif
++			return iter;
++		}
++	}
++	return NULL;
++}
 +
 +/*
-+ * Size reserved for high priority events (interrupts, NMI, BH) at the end of a
-+ * nearly full buffer. User space won't use this last amount of space when in
-+ * blocking mode. This space also includes the event header that would be
-+ * written by this user space event.
++ * Find the page containing "offset". Cache it if it is after the currently
++ * cached page.
 + */
-+#define LTT_RESERVE_CRITICAL		4096
++static struct buf_page *ltt_relay_cache_page(struct rchan_buf *buf,
++		struct buf_page **page_cache,
++		struct buf_page *page, size_t offset)
++{
++	ssize_t diff_offset;
++	ssize_t half_buf_size = buf->chan->alloc_size >> 1;
 +
-+/* Register and unregister function pointers */
++	/*
++	 * Make sure this is the page we want to write into. The current
++	 * page is changed concurrently by other writers. [wrh]page are
++	 * used as a cache remembering the last page written
++	 * to/read/looked up for header address. No synchronization;
++	 * could have to find the previous page is a nested write
++	 * occured. Finding the right page is done by comparing the
++	 * dest_offset with the buf_page offsets.
++	 * When at the exact opposite of the buffer, bias towards forward search
++	 * because it will be cached.
++	 */
 +
-+enum ltt_module_function {
-+	LTT_FUNCTION_RUN_FILTER,
-+	LTT_FUNCTION_FILTER_CONTROL,
-+	LTT_FUNCTION_STATEDUMP
++	diff_offset = (ssize_t)offset - (ssize_t)page->offset;
++	if (diff_offset <= -(ssize_t)half_buf_size)
++		diff_offset += buf->chan->alloc_size;
++	else if (diff_offset > half_buf_size)
++		diff_offset -= buf->chan->alloc_size;
++
++	if (unlikely(diff_offset >= (ssize_t)PAGE_SIZE)) {
++		page = ltt_relay_find_next_page(buf, page, offset, diff_offset);
++		WARN_ON(!page);
++		*page_cache = page;
++	} else if (unlikely(diff_offset < 0)) {
++		page = ltt_relay_find_prev_page(buf, page, offset, diff_offset);
++		WARN_ON(!page);
++	}
++	return page;
++}
++
++/**
++ * ltt_relay_write - write data to a ltt_relay buffer.
++ * @buf : buffer
++ * @offset : offset within the buffer
++ * @src : source address
++ * @len : length to write
++ */
++int ltt_relay_write(struct rchan_buf *buf, size_t offset,
++	const void *src, size_t len)
++{
++	struct buf_page *page;
++	ssize_t pagecpy, orig_len;
++
++	orig_len = len;
++	offset &= buf->chan->alloc_size - 1;
++	page = buf->wpage;
++	if (unlikely(!len))
++		return 0;
++	for (;;) {
++		page = ltt_relay_cache_page(buf, &buf->wpage, page, offset);
++		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
++		memcpy(page_address(page->page)
++			+ (offset & ~PAGE_MASK), src, pagecpy);
++		len -= pagecpy;
++		if (likely(!len))
++			break;
++		src += pagecpy;
++		offset += pagecpy;
++		/*
++		 * Underlying layer should never ask for writes across
++		 * subbuffers.
++		 */
++		WARN_ON(offset >= buf->chan->alloc_size);
++	}
++	return orig_len;
++}
++EXPORT_SYMBOL_GPL(ltt_relay_write);
++
++/**
++ * ltt_relay_read - read data from ltt_relay_buffer.
++ * @buf : buffer
++ * @offset : offset within the buffer
++ * @dest : destination address
++ * @len : length to write
++ */
++int ltt_relay_read(struct rchan_buf *buf, size_t offset,
++	void *dest, size_t len)
++{
++	struct buf_page *page;
++	ssize_t pagecpy, orig_len;
++
++	orig_len = len;
++	offset &= buf->chan->alloc_size - 1;
++	page = buf->rpage;
++	if (unlikely(!len))
++		return 0;
++	for (;;) {
++		page = ltt_relay_cache_page(buf, &buf->rpage, page, offset);
++		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
++		memcpy(dest, page_address(page->page) + (offset & ~PAGE_MASK),
++			pagecpy);
++		len -= pagecpy;
++		if (likely(!len))
++			break;
++		dest += pagecpy;
++		offset += pagecpy;
++		/*
++		 * Underlying layer should never ask for reads across
++		 * subbuffers.
++		 */
++		WARN_ON(offset >= buf->chan->alloc_size);
++	}
++	return orig_len;
++}
++EXPORT_SYMBOL_GPL(ltt_relay_read);
++
++/**
++ * ltt_relay_read_get_page - Get a whole page to read from
++ * @buf : buffer
++ * @offset : offset within the buffer
++ */
++struct buf_page *ltt_relay_read_get_page(struct rchan_buf *buf, size_t offset)
++{
++	struct buf_page *page;
++
++	offset &= buf->chan->alloc_size - 1;
++	page = buf->rpage;
++	page = ltt_relay_cache_page(buf, &buf->rpage, page, offset);
++	return page;
++}
++EXPORT_SYMBOL_GPL(ltt_relay_read_get_page);
++
++/**
++ * ltt_relay_offset_address - get address of a location within the buffer
++ * @buf : buffer
++ * @offset : offset within the buffer.
++ *
++ * Return the address where a given offset is located.
++ * Should be used to get the current subbuffer header pointer. Given we know
++ * it's never on a page boundary, it's safe to write directly to this address,
++ * as long as the write is never bigger than a page size.
++ */
++void *ltt_relay_offset_address(struct rchan_buf *buf, size_t offset)
++{
++	struct buf_page *page;
++	unsigned int odd;
++
++	offset &= buf->chan->alloc_size - 1;
++	odd = !!(offset & buf->chan->subbuf_size);
++	page = buf->hpage[odd];
++	if (offset < page->offset || offset >= page->offset + PAGE_SIZE)
++		buf->hpage[odd] = page = buf->wpage;
++	page = ltt_relay_cache_page(buf, &buf->hpage[odd], page, offset);
++	return page_address(page->page) + (offset & ~PAGE_MASK);
++}
++EXPORT_SYMBOL_GPL(ltt_relay_offset_address);
++
++/**
++ *	relay_file_open - open file op for relay files
++ *	@inode: the inode
++ *	@filp: the file
++ *
++ *	Increments the channel buffer refcount.
++ */
++static int relay_file_open(struct inode *inode, struct file *filp)
++{
++	struct rchan_buf *buf = inode->i_private;
++	kref_get(&buf->kref);
++	filp->private_data = buf;
++
++	return nonseekable_open(inode, filp);
++}
++
++/**
++ *	relay_file_release - release file op for relay files
++ *	@inode: the inode
++ *	@filp: the file
++ *
++ *	Decrements the channel refcount, as the filesystem is
++ *	no longer using it.
++ */
++static int relay_file_release(struct inode *inode, struct file *filp)
++{
++	struct rchan_buf *buf = filp->private_data;
++	kref_put(&buf->kref, relay_remove_buf);
++
++	return 0;
++}
++
++const struct file_operations ltt_relay_file_operations = {
++	.open		= relay_file_open,
++	.release	= relay_file_release,
++};
++EXPORT_SYMBOL_GPL(ltt_relay_file_operations);
++
++static __init int relay_init(void)
++{
++	hotcpu_notifier(relay_hotcpu_callback, 5);
++	return 0;
++}
++
++module_init(relay_init);
+Index: linux-2.6-lttng/include/linux/ltt-relay.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/linux/ltt-relay.h	2009-03-05 15:05:56.000000000 -0500
+@@ -0,0 +1,182 @@
++/*
++ * linux/include/linux/ltt-relay.h
++ *
++ * Copyright (C) 2002, 2003 - Tom Zanussi (zanussi@us.ibm.com), IBM Corp
++ * Copyright (C) 1999, 2000, 2001, 2002 - Karim Yaghmour (karim@opersys.com)
++ * Copyright (C) 2008 - Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ *
++ * CONFIG_RELAY definitions and declarations
++ */
++
++#ifndef _LINUX_LTT_RELAY_H
++#define _LINUX_LTT_RELAY_H
++
++#include <linux/types.h>
++#include <linux/sched.h>
++#include <linux/timer.h>
++#include <linux/wait.h>
++#include <linux/list.h>
++#include <linux/fs.h>
++#include <linux/poll.h>
++#include <linux/kref.h>
++#include <linux/mm.h>
++
++/* Needs a _much_ better name... */
++#define FIX_SIZE(x) ((((x) - 1) & PAGE_MASK) + PAGE_SIZE)
++
++/*
++ * Tracks changes to rchan/rchan_buf structs
++ */
++#define LTT_RELAY_CHANNEL_VERSION		8
++
++struct rchan_buf;
++
++struct buf_page {
++	struct page *page;
++	size_t offset;		/* page offset in the buffer */
++	struct list_head list;	/* buffer linked list */
 +};
 +
-+extern int ltt_module_register(enum ltt_module_function name, void *function,
-+		struct module *owner);
-+extern void ltt_module_unregister(enum ltt_module_function name);
++/*
++ * Per-cpu relay channel buffer
++ */
++struct rchan_buf {
++	void *chan_private;		/* private data for this buf */
++	struct rchan *chan;		/* associated channel */
++	struct dentry *dentry;		/* channel file dentry */
++	struct kref kref;		/* channel buffer refcount */
++	struct list_head pages;		/* list of buffer pages */
++	struct buf_page *wpage;		/* current write page (cache) */
++	struct buf_page *hpage[2];	/* current subbuf header page (cache) */
++	struct buf_page *rpage;		/* current subbuf read page (cache) */
++	unsigned int page_count;	/* number of current buffer pages */
++	unsigned int cpu;		/* this buf's cpu */
++} ____cacheline_aligned;
 +
-+void ltt_transport_register(struct ltt_transport *transport);
-+void ltt_transport_unregister(struct ltt_transport *transport);
-+
-+/* Exported control function */
-+
-+enum ltt_control_msg {
-+	LTT_CONTROL_START,
-+	LTT_CONTROL_STOP,
-+	LTT_CONTROL_CREATE_TRACE,
-+	LTT_CONTROL_DESTROY_TRACE
++/*
++ * Relay channel data structure
++ */
++struct rchan {
++	u32 version;			/* the version of this struct */
++	size_t subbuf_size;		/* sub-buffer size */
++	size_t n_subbufs;		/* number of sub-buffers per buffer */
++	size_t alloc_size;		/* total buffer size allocated */
++	struct rchan_callbacks *cb;	/* client callbacks */
++	struct kref kref;		/* channel refcount */
++	void *private_data;		/* for user-defined data */
++	struct rchan_buf *buf[NR_CPUS]; /* per-cpu channel buffers */
++	struct list_head list;		/* for channel list */
++	struct dentry *parent;		/* parent dentry passed to open */
++	int subbuf_size_order;		/* order of sub-buffer size */
++	char base_filename[NAME_MAX];	/* saved base filename */
 +};
 +
-+union ltt_control_args {
-+	struct {
-+		enum trace_mode mode;
-+		unsigned int subbuf_size_low;
-+		unsigned int n_subbufs_low;
-+		unsigned int subbuf_size_med;
-+		unsigned int n_subbufs_med;
-+		unsigned int subbuf_size_high;
-+		unsigned int n_subbufs_high;
-+	} new_trace;
++/*
++ * Relay channel client callbacks
++ */
++struct rchan_callbacks {
++	/*
++	 * subbuf_start - called on buffer-switch to a new sub-buffer
++	 * @buf: the channel buffer containing the new sub-buffer
++	 * @subbuf: the start of the new sub-buffer
++	 * @prev_subbuf: the start of the previous sub-buffer
++	 * @prev_padding: unused space at the end of previous sub-buffer
++	 *
++	 * The client should return 1 to continue logging, 0 to stop
++	 * logging.
++	 *
++	 * NOTE: subbuf_start will also be invoked when the buffer is
++	 *       created, so that the first sub-buffer can be initialized
++	 *       if necessary.  In this case, prev_subbuf will be NULL.
++	 *
++	 * NOTE: the client can reserve bytes at the beginning of the new
++	 *       sub-buffer by calling subbuf_start_reserve() in this callback.
++	 */
++	int (*subbuf_start) (struct rchan_buf *buf,
++			     void *subbuf,
++			     void *prev_subbuf,
++			     size_t prev_padding);
++
++	/*
++	 * create_buf_file - create file to represent a relay channel buffer
++	 * @filename: the name of the file to create
++	 * @parent: the parent of the file to create
++	 * @mode: the mode of the file to create
++	 * @buf: the channel buffer
++	 *
++	 * Called during relay_open(), once for each per-cpu buffer,
++	 * to allow the client to create a file to be used to
++	 * represent the corresponding channel buffer.  If the file is
++	 * created outside of relay, the parent must also exist in
++	 * that filesystem.
++	 *
++	 * The callback should return the dentry of the file created
++	 * to represent the relay buffer.
++	 *
++	 * Setting the is_global outparam to a non-zero value will
++	 * cause relay_open() to create a single global buffer rather
++	 * than the default set of per-cpu buffers.
++	 *
++	 * See Documentation/filesystems/relayfs.txt for more info.
++	 */
++	struct dentry *(*create_buf_file)(const char *filename,
++					  struct dentry *parent,
++					  int mode,
++					  struct rchan_buf *buf);
++
++	/*
++	 * remove_buf_file - remove file representing a relay channel buffer
++	 * @dentry: the dentry of the file to remove
++	 *
++	 * Called during relay_close(), once for each per-cpu buffer,
++	 * to allow the client to remove a file used to represent a
++	 * channel buffer.
++	 *
++	 * The callback should return 0 if successful, negative if not.
++	 */
++	int (*remove_buf_file)(struct dentry *dentry);
 +};
 +
-+int _ltt_trace_setup(const char *trace_name);
-+int ltt_trace_setup(const char *trace_name);
-+struct ltt_trace_struct *_ltt_trace_find_setup(const char *trace_name);
-+int ltt_trace_set_type(const char *trace_name, const char *trace_type);
-+int ltt_trace_set_channel_subbufsize(const char *trace_name,
-+		const char *channel_name, unsigned int size);
-+int ltt_trace_set_channel_subbufcount(const char *trace_name,
-+		const char *channel_name, unsigned int cnt);
-+int ltt_trace_set_channel_enable(const char *trace_name,
-+		const char *channel_name, unsigned int enable);
-+int ltt_trace_set_channel_overwrite(const char *trace_name,
-+		const char *channel_name, unsigned int overwrite);
-+int ltt_trace_alloc(const char *trace_name);
-+int ltt_trace_destroy(const char *trace_name);
-+int ltt_trace_start(const char *trace_name);
-+int ltt_trace_stop(const char *trace_name);
++extern int ltt_relay_write(struct rchan_buf *buf, size_t offset,
++	const void *src, size_t len);
 +
-+extern int ltt_control(enum ltt_control_msg msg, const char *trace_name,
-+		const char *trace_type, union ltt_control_args args);
++extern int ltt_relay_read(struct rchan_buf *buf, size_t offset,
++	void *dest, size_t len);
 +
-+enum ltt_filter_control_msg {
-+	LTT_FILTER_DEFAULT_ACCEPT,
-+	LTT_FILTER_DEFAULT_REJECT
-+};
++extern struct buf_page *ltt_relay_read_get_page(struct rchan_buf *buf,
++	size_t offset);
 +
-+extern int ltt_filter_control(enum ltt_filter_control_msg msg,
-+		const char *trace_name);
++/*
++ * Return the address where a given offset is located.
++ * Should be used to get the current subbuffer header pointer. Given we know
++ * it's never on a page boundary, it's safe to write directly to this address,
++ * as long as the write is never bigger than a page size.
++ */
++extern void *ltt_relay_offset_address(struct rchan_buf *buf,
++	size_t offset);
 +
-+void ltt_write_trace_header(struct ltt_trace_struct *trace,
-+		struct ltt_subbuffer_header *header);
-+extern void ltt_buffer_destroy(struct ltt_channel_struct *ltt_chan);
++/*
++ * CONFIG_LTT_RELAY kernel API, ltt/ltt-relay-alloc.c
++ */
 +
-+void ltt_core_register(int (*function)(u8, void *));
++struct rchan *ltt_relay_open(const char *base_filename,
++			 struct dentry *parent,
++			 size_t subbuf_size,
++			 size_t n_subbufs,
++			 struct rchan_callbacks *cb,
++			 void *private_data);
++extern void ltt_relay_close(struct rchan *chan);
 +
-+void ltt_core_unregister(void);
++void ltt_relay_get_chan(struct rchan *chan);
++void ltt_relay_put_chan(struct rchan *chan);
 +
-+void ltt_release_trace(struct kref *kref);
-+void ltt_release_transport(struct kref *kref);
++void ltt_relay_get_chan_buf(struct rchan_buf *buf);
++void ltt_relay_put_chan_buf(struct rchan_buf *buf);
 +
-+extern int ltt_probe_register(struct ltt_available_probe *pdata);
-+extern int ltt_probe_unregister(struct ltt_available_probe *pdata);
-+extern int ltt_marker_connect(const char *channel, const char *mname,
-+		const char *pname);
-+extern int ltt_marker_disconnect(const char *channel, const char *mname,
-+		const char *pname);
-+extern void ltt_dump_marker_state(struct ltt_trace_struct *trace);
++/*
++ * exported ltt_relay file operations, ltt/ltt-relay-alloc.c
++ */
++extern const struct file_operations ltt_relay_file_operations;
 +
-+void ltt_lock_traces(void);
-+void ltt_unlock_traces(void);
++#endif /* _LINUX_LTT_RELAY_H */
 +
-+/* Relay IOCTL */
-+
-+/* Get the next sub buffer that can be read. */
-+#define RELAY_GET_SUBBUF		_IOR(0xF5, 0x00, __u32)
-+/* Release the oldest reserved (by "get") sub buffer. */
-+#define RELAY_PUT_SUBBUF		_IOW(0xF5, 0x01, __u32)
-+/* returns the number of sub buffers in the per cpu channel. */
-+#define RELAY_GET_N_SUBBUFS		_IOR(0xF5, 0x02, __u32)
-+/* returns the size of the sub buffers. */
-+#define RELAY_GET_SUBBUF_SIZE		_IOR(0xF5, 0x03, __u32)
-+
-+#endif /* CONFIG_LTT */
-+
-+#endif /* _LTT_TRACER_H */
 
 -- 
 Mathieu Desnoyers
