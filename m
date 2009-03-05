@@ -1,15 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbZCEQmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbZCEQmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbZCEQmt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZCEQji
+	id S1757036AbZCEQmd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbZCEQjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 11:39:38 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59888 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756284AbZCEQjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:39:37 -0500
-Subject: [RFC][PATCH 07/11] file c/r: expose functions to query fs support
+	Thu, 5 Mar 2009 11:39:35 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:47149 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756208AbZCEQje (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 11:39:34 -0500
+Subject: [RFC][PATCH 06/11] add checkpoint_file_generic() to /proc
 To: Ingo Molnar <mingo@elte.hu>
 Cc: containers <containers@lists.linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -19,98 +20,167 @@ Cc: containers <containers@lists.linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>,
        Dave Hansen <dave@linux.vnet.ibm.com>
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Thu, 05 Mar 2009 08:39:07 -0800
+Date: Thu, 05 Mar 2009 08:39:06 -0800
 References: <20090305163857.0C18F3FD@kernel>
 In-Reply-To: <20090305163857.0C18F3FD@kernel>
-Message-Id: <20090305163907.143E9D50@kernel>
+Message-Id: <20090305163906.756FAD1A@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This pair of functions will check to see whether a given
-'struct file' can be checkpointed.  If it can't be, the
-"explain" function can also give a description why.
+/proc gets opened a *lot* including during some things that
+ld.so does (according to Serge).  If we want *anything* to
+be checkpointable, we need to handle at least a few things
+in /proc.
 
-Note that we assume the presence of an f_op->checkpoint
-implies that a file is always checkpointable.  That may
-have to change in the future, but it is a fixed rule
-for now.
-  
+My approach here was we should be conservative.  We should
+only mark things that we basically already know can change
+at any time, so a process would not be confused if they
+changed.
+
+Things like /proc/kcore are a bit trickier and should be
+left alone for now.
+
 Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
 
- linux-2.6.git-dave/checkpoint/ckpt_file.c     |   26 ++++++++++++++++++++++++++
- linux-2.6.git-dave/include/linux/checkpoint.h |   18 ++++++++++++++++++
- 2 files changed, 44 insertions(+)
+ linux-2.6.git-dave/fs/proc/base.c    |    9 +++++++++
+ linux-2.6.git-dave/fs/proc/meminfo.c |    1 +
+ linux-2.6.git-dave/fs/proc/stat.c    |    1 +
+ linux-2.6.git-dave/mm/vmstat.c       |    4 ++++
+ 4 files changed, 15 insertions(+)
 
-diff -puN checkpoint/ckpt_file.c~cfcc333a1e665c38185a12ba119c32cf796dbd85 checkpoint/ckpt_file.c
---- linux-2.6.git/checkpoint/ckpt_file.c~cfcc333a1e665c38185a12ba119c32cf796dbd85	2009-03-05 08:37:03.000000000 -0800
-+++ linux-2.6.git-dave/checkpoint/ckpt_file.c	2009-03-05 08:37:03.000000000 -0800
-@@ -93,6 +93,32 @@ int generic_file_checkpoint(struct file 
- 	return 0;
- }
+diff -puN fs/proc/base.c~add-stupid-checkpoint-to-proc-0 fs/proc/base.c
+--- linux-2.6.git/fs/proc/base.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
++++ linux-2.6.git-dave/fs/proc/base.c	2009-03-05 08:37:02.000000000 -0800
+@@ -690,6 +690,7 @@ static const struct file_operations proc
+ 	.llseek		= seq_lseek,
+ 	.release	= mounts_release,
+ 	.poll		= mounts_poll,
++	.checkpoint	= generic_file_checkpoint,
+ };
  
-+int cr_explain_file(struct file *file, char *explain, int left)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+
-+	if (!file->f_op->checkpoint)
-+		return scnprintf(explain, left, " (no checkpoint handler)");
-+
-+	if (special_file(inode->i_mode))
-+		return scnprintf(explain, left, " (special file)");
-+
-+	return 0;
-+}
-+
-+int cr_file_supported(struct file *file)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+
-+	if (!file->f_op->checkpoint)
-+		return 0;
-+
-+	if (special_file(inode->i_mode))
-+		return 0;
-+
-+	return 1;
-+}
-+
- /* cr_write_fd_data - dump the state of a given file pointer */
- static int cr_write_fd_data(struct cr_ctx *ctx, struct file *file, int parent)
- {
-diff -puN include/linux/checkpoint.h~cfcc333a1e665c38185a12ba119c32cf796dbd85 include/linux/checkpoint.h
---- linux-2.6.git/include/linux/checkpoint.h~cfcc333a1e665c38185a12ba119c32cf796dbd85	2009-03-05 08:37:03.000000000 -0800
-+++ linux-2.6.git-dave/include/linux/checkpoint.h	2009-03-05 08:37:03.000000000 -0800
-@@ -13,6 +13,8 @@
- #include <linux/path.h>
- #include <linux/fs.h>
+ static int mountinfo_open(struct inode *inode, struct file *file)
+@@ -703,6 +704,7 @@ static const struct file_operations proc
+ 	.llseek		= seq_lseek,
+ 	.release	= mounts_release,
+ 	.poll		= mounts_poll,
++	.checkpoint	= generic_file_checkpoint,
+ };
  
-+#ifdef CONFIG_CHECKPOINT_RESTART
-+
- #define CR_VERSION  2
+ static int mountstats_open(struct inode *inode, struct file *file)
+@@ -715,6 +717,7 @@ static const struct file_operations proc
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= mounts_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
  
- struct cr_ctx {
-@@ -99,4 +101,20 @@ extern int cr_read_files(struct cr_ctx *
+ #define PROC_BLOCK_SIZE	(3*1024)		/* 4K page size but our output routines use some slack for overruns */
+@@ -751,6 +754,7 @@ out_no_task:
  
- #define pr_fmt(fmt) "[%d:c/r:%s] " fmt, task_pid_vnr(current), __func__
+ static const struct file_operations proc_info_file_operations = {
+ 	.read		= proc_info_read,
++	.checkpoint	= generic_file_checkpoint,
+ };
  
-+int cr_explain_file(struct file *file, char *explain, int left);
-+int cr_file_supported(struct file *file);
-+
-+#else /* !CONFIG_CHECKPOINT_RESTART */
-+
-+static inline int cr_explain_file(struct file *file, char *explain, int left)
-+{
-+	return 0;
-+}
-+
-+static inline int cr_file_supported(struct file *file)
-+{
-+	return 0;
-+}
-+
-+#endif /* CONFIG_CHECKPOINT_RESTART */
- #endif /* _CHECKPOINT_CKPT_H_ */
+ static int proc_single_show(struct seq_file *m, void *v)
+@@ -790,6 +794,7 @@ static const struct file_operations proc
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= single_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ static int mem_open(struct inode* inode, struct file* file)
+@@ -1008,6 +1013,7 @@ out_no_task:
+ 
+ static const struct file_operations proc_environ_operations = {
+ 	.read		= environ_read,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ static ssize_t oom_adjust_read(struct file *file, char __user *buf,
+@@ -1063,6 +1069,7 @@ static ssize_t oom_adjust_write(struct f
+ static const struct file_operations proc_oom_adjust_operations = {
+ 	.read		= oom_adjust_read,
+ 	.write		= oom_adjust_write,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ #ifdef CONFIG_AUDITSYSCALL
+@@ -1130,6 +1137,7 @@ out_free_page:
+ static const struct file_operations proc_loginuid_operations = {
+ 	.read		= proc_loginuid_read,
+ 	.write		= proc_loginuid_write,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ static ssize_t proc_sessionid_read(struct file * file, char __user * buf,
+@@ -1150,6 +1158,7 @@ static ssize_t proc_sessionid_read(struc
+ 
+ static const struct file_operations proc_sessionid_operations = {
+ 	.read		= proc_sessionid_read,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ #endif
+ 
+diff -puN fs/proc/meminfo.c~add-stupid-checkpoint-to-proc-0 fs/proc/meminfo.c
+--- linux-2.6.git/fs/proc/meminfo.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
++++ linux-2.6.git-dave/fs/proc/meminfo.c	2009-03-05 08:37:02.000000000 -0800
+@@ -164,6 +164,7 @@ static const struct file_operations memi
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= single_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ static int __init proc_meminfo_init(void)
+diff -puN fs/proc/stat.c~add-stupid-checkpoint-to-proc-0 fs/proc/stat.c
+--- linux-2.6.git/fs/proc/stat.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
++++ linux-2.6.git-dave/fs/proc/stat.c	2009-03-05 08:37:02.000000000 -0800
+@@ -142,6 +142,7 @@ static const struct file_operations proc
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= single_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ static int __init proc_stat_init(void)
+diff -puN mm/vmstat.c~add-stupid-checkpoint-to-proc-0 mm/vmstat.c
+--- linux-2.6.git/mm/vmstat.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
++++ linux-2.6.git-dave/mm/vmstat.c	2009-03-05 08:37:02.000000000 -0800
+@@ -598,6 +598,7 @@ static const struct file_operations frag
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= seq_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ static const struct seq_operations pagetypeinfo_op = {
+@@ -617,6 +618,7 @@ static const struct file_operations page
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= seq_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ #ifdef CONFIG_ZONE_DMA
+@@ -813,6 +815,7 @@ static const struct file_operations proc
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= seq_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ 
+ static void *vmstat_start(struct seq_file *m, loff_t *pos)
+@@ -887,6 +890,7 @@ static const struct file_operations proc
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= seq_release,
++	.checkpoint	= generic_file_checkpoint,
+ };
+ #endif /* CONFIG_PROC_FS */
+ 
 _
