@@ -1,94 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbZCEQUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbZCEQVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbZCEQUS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbZCEQUD
+	id S1756097AbZCEQVq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZCEQVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 11:20:03 -0500
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:32879 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753074AbZCEQUB (ORCPT
+	Thu, 5 Mar 2009 11:21:38 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38070 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbZCEQVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:20:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=EsvyacqeeHY0r3UeV+aRrJ9MglJNDtZ7G6iDk0LczzBP4GriJpXdpxFz2mDrxggOuK
-         CoKLa8q5x0RJA5lbE6o2E7uooT8oIcWtfK2ZhnFDhxRz4jdRGeyokji79AR4JYisJB96
-         Ue927MjXQeK+E3nJssb96R7/Q7mnHiR7MOtxU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] libata: add CFA specific identify data words
-Date: Thu, 5 Mar 2009 17:20:23 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-next-20090304; KDE/4.2.0; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, sshtylyov@ru.mvista.com,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20090305154040.GA23182@havoc.gtf.org>
-In-Reply-To: <20090305154040.GA23182@havoc.gtf.org>
+	Thu, 5 Mar 2009 11:21:37 -0500
+Date: Thu, 5 Mar 2009 11:21:33 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH][GIT PULL] add tracing_on/tracing_off to kernel.h
+Message-ID: <alpine.DEB.2.00.0903051120110.26101@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200903051720.24108.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 March 2009, Jeff Garzik wrote:
-> From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> 
-> Declare and use constants for CFA specific identify data words 162 and 163.
-> 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> 
-> ---
-> Sergei said:
-> This patch is against the current pata-2.6 series. I'd prefer that Bart merged
-> it thru his tree as my next patch adding CF mode support to IDE depends on it.
-> 
-> jgarzik adds:
-> I didn't see this in your latest submission, Bart.  It is simple and
 
-Simply because I haven't yet got to those patches + Sergei mentioned
-that they need to be tested yet.
+Ingo,
 
-> harmless and might as well go ahead upstream, to eliminate the
-> cross-tree dependency that Sergei speaks of (his patch also touched
-> drivers/ata/libata-core.c, but I excluded that from below).
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-Fine with me if this makes things easier for everyone.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
-I updated git pull request with this patch fixing patch summary
-(this is not libata specific change) and patch description (constants
-are not currently unused) while at it.
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: [PATCH] ata: add CFA specific identify data words
+Steven Rostedt (1):
+      tracing: add tracing_on/tracing_off to kernel.h
 
-Declare CFA specific identify data words 162 and 163 for future use.
+----
+ include/linux/kernel.h      |   29 ++++++++++++++++++++++++++++-
+ include/linux/ring_buffer.h |   15 ---------------
+ 2 files changed, 28 insertions(+), 16 deletions(-)
+---------------------------
+commit 2002c258faaa8f89543df284fdbaa9e4b171547f
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Mar 5 10:35:56 2009 -0500
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-[bart: update patch summary/description]
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- include/linux/ata.h       |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+    tracing: add tracing_on/tracing_off to kernel.h
+    
+    Impact: cleanup
+    
+    The functions tracing_start/tracing_stop have been moved to kernel.h.
+    These are not the functions a developer most likely wants to use
+    when they want to insert a place to stop tracing and restart it from
+    user space.
+    
+    tracing_start/tracing_stop was created to work with things like
+    suspend to ram, where even calling smp_processor_id() can crash the
+    system. The tracing_start/tracing_stop was used to stop the tracer from
+    doing anything. These are still light weight functions, but add a bit
+    more overhead to be able to stop the tracers. They also have no interface
+    back to userland. That is, if the kernel calls tracing_stop, userland
+    can not start tracing.
+    
+    What a developer most likely wants to use is tracing_on/tracing_off.
+    These are very light weight functions (simply sets or clears a bit).
+    These functions just stop recording into the ring buffer. The tracers
+    don't even know that this happens except that they would receive NULL
+    from the ring_buffer_lock_reserve function.
+    
+    Also, there's a way for the user land to enable or disable this bit.
+    In debugfs/tracing/tracing_on, a user may echo "0" (same as tracing_off())
+    or echo "1" (same as tracing_on()) into this file. This becomes handy when
+    a kernel developer is debugging and wants tracing to turn off when it
+    hits an anomaly. Then the developer can examine the trace, and restart
+    tracing if they want to try again (echo 1 > tracing_on).
+    
+    This patch moves the prototypes for tracing_on/tracing_off to kernel.h
+    and comments their use, so that a kernel developer will know how
+    to use them.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-Index: linux-2.6/include/linux/ata.h
-===================================================================
---- linux-2.6.orig/include/linux/ata.h
-+++ linux-2.6/include/linux/ata.h
-@@ -89,6 +89,8 @@ enum {
- 	ATA_ID_DLF		= 128,
- 	ATA_ID_CSFO		= 129,
- 	ATA_ID_CFA_POWER	= 160,
-+	ATA_ID_CFA_KEY_MGMT	= 162,
-+	ATA_ID_CFA_MODES	= 163,
- 	ATA_ID_ROT_SPEED	= 217,
- 	ATA_ID_PIO4		= (1 << 1),
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 08bf5da..d4614a8 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -369,8 +369,35 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
+ 
+ /*
+  * General tracing related utility functions - trace_printk(),
+- * tracing_start()/tracing_stop:
++ * tracing_on/tracing_off and tracing_start()/tracing_stop
++ *
++ * Use tracing_on/tracing_off when you want to quickly turn on or off
++ * tracing. It simply enables or disables the recording of the trace events.
++ * This also corresponds to the user space debugfs/tracing/tracing_on
++ * file, which gives a means for the kernel and userspace to interact.
++ * Place a tracing_off() in the kernel where you want tracing to end.
++ * From user space, examine the trace, and then echo 1 > tracing_on
++ * to continue tracing.
++ *
++ * tracing_stop/tracing_start has slightly more overhead. It is used
++ * by things like suspend to ram where disabling the recording of the
++ * trace is not enough, but tracing must actually stop because things
++ * like calling smp_processor_id() may crash the system.
++ *
++ * Most likely, you want to use tracing_on/tracing_off.
+  */
++#ifdef CONFIG_RING_BUFFER
++void tracing_on(void);
++void tracing_off(void);
++/* trace_off_permanent stops recording with no way to bring it back */
++void tracing_off_permanent(void);
++int tracing_is_on(void);
++#else
++static inline void tracing_on(void) { }
++static inline void tracing_off(void) { }
++static inline void tracing_off_permanent(void) { }
++static inline int tracing_is_on(void) { return 0; }
++#endif
+ #ifdef CONFIG_TRACING
+ extern void tracing_start(void);
+ extern void tracing_stop(void);
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index 79fcbc4..b1a0068 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -124,21 +124,6 @@ void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
+ size_t ring_buffer_page_len(void *page);
+ 
+ 
+-/*
+- * The below functions are fine to use outside the tracing facility.
+- */
+-#ifdef CONFIG_RING_BUFFER
+-void tracing_on(void);
+-void tracing_off(void);
+-void tracing_off_permanent(void);
+-int tracing_is_on(void);
+-#else
+-static inline void tracing_on(void) { }
+-static inline void tracing_off(void) { }
+-static inline void tracing_off_permanent(void) { }
+-static inline int tracing_is_on(void) { return 0; }
+-#endif
+-
+ void *ring_buffer_alloc_read_page(struct ring_buffer *buffer);
+ void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data);
+ int ring_buffer_read_page(struct ring_buffer *buffer, void **data_page,
+
