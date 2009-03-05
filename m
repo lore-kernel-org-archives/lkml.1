@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZCETyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZCET71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbZCETyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 14:54:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbZCETyV
+	id S1755841AbZCET71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 14:59:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZCET7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 14:54:21 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:21859 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754700AbZCETyU (ORCPT
+	Thu, 5 Mar 2009 14:59:18 -0500
+Received: from charybdis-ext.suse.de ([195.135.221.2]:59602 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754751AbZCET7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 14:54:20 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH v3 02/15] NULL noise: arch/x86/kernel/amd_iommu*.c
-Date: Thu, 05 Mar 2009 20:53:42 +0100
-Message-ID: <20090305195228.2407.4911.stgit@f10box.hanneseder.net>
-User-Agent: StGit/0.14.3.348.gcb02.dirty
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 5 Mar 2009 14:59:18 -0500
+Subject: Re: [patch 3/4] genirq: add a quick check handler
+From: Sven-Thorsten Dietrich <sdietrich@novell.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jon Masters <jonathan@jonmasters.org>
+In-Reply-To: <20090228222408.GB7797@infradead.org>
+References: <20090226131336.423054348@linutronix.de>
+	 <20090226131719.640887792@linutronix.de>
+	 <20090228222408.GB7797@infradead.org>
+Content-Type: text/plain
+Organization: Novell
+Date: Thu, 05 Mar 2009 11:59:09 -0800
+Message-Id: <1236283149.20484.31.camel@sven.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-To: trivial@kernel.org
-Cc: Joerg Roedel <joerg.roedel@amd.com>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Joe Perches <joe@perches.com>
-In-Reply-To: <20090305191312.30062.28919.stgit@f10box.hanneseder.net>
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net> <20090305191312.30062.28919.stgit@f10box.hanneseder.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warning(s):
-  arch/x86/kernel/amd_iommu_init.c:901:37: warning: Using plain integer as NULL pointer
-  arch/x86/kernel/amd_iommu.c:1522:24: warning: Using plain integer as NULL pointer
+On Sat, 2009-02-28 at 17:24 -0500, Christoph Hellwig wrote:
+> I really disagree with the notation of the pre-handler.  Instead of
+> adding an additional pre handler method you should add a new threadfn
+> method.  The handler could just as now handle/not handle the interrupt,
+> or as a third option defer it to the thread.  That makes the different
+> semantics a lot clearer, and means ->handler and ->threadfn both have
+> very well defined contexts, instead of sometimes calling ->handler
+> sometimes from irq and sometimes from thread context.  This also
+> makes it much easier for complex hardware that might have simple and
+> fast interrupts that it may want to handle directly from hardirq context
+> in just a couple of cycles or complex interrupts that might be deferred
+> to process context.
+> 
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
-v2: other subject, as suggested by Al Viro
-v3: no need to init the variable (thanks to Joe Perches)
+Most of the IRQ handler, whether run in a thread or IRQ context, will be
+the same code - so what you are proposing would have to eliminate code
+duplication as well as heavy runtime branching overhead.
 
- arch/x86/kernel/amd_iommu.c      |    2 +-
- arch/x86/kernel/amd_iommu_init.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Ultimately, no matter how its done, the concept of disabling IRQ assert
+at the device level, rather than the apic level, is the optimal
+"correct" implementation.
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 008e522..3f6e1c8 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -1519,7 +1519,7 @@ static void *alloc_coherent(struct device *dev, size_t size,
- 	flag |= __GFP_ZERO;
- 	virt_addr = (void *)__get_free_pages(flag, get_order(size));
- 	if (!virt_addr)
--		return 0;
-+		return NULL;
- 
- 	paddr = virt_to_phys(virt_addr);
- 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 42c33ce..9bccd0f 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -898,7 +898,7 @@ static int __init init_exclusion_range(struct ivmd_header *m)
- /* called for unity map ACPI definition */
- static int __init init_unity_map_range(struct ivmd_header *m)
- {
--	struct unity_map_entry *e = 0;
-+	struct unity_map_entry *e;
- 
- 	e = kzalloc(sizeof(*e), GFP_KERNEL);
- 	if (e == NULL)
+Formulating that into the code, as Thomas proposed with the quickcheck,
+supplies structural demarcation for semi as well as software design.
+
+Things just get quite ugly - as-is- when you try to add runtime thread
+enable and disable.
+
+Sven
+
 
