@@ -1,146 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbZCEXsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZCEXwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757508AbZCEXsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZCEXsn
+	id S1755860AbZCEXwb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbZCEXwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:48:43 -0500
-Received: from fifo99.com ([67.223.236.141]:45891 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753829AbZCEXsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:48:42 -0500
-Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
-From: Daniel Walker <dwalker@fifo99.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
-       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0903051751330.2174-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0903051751330.2174-100000@iolanthe.rowland.org>
+	Thu, 5 Mar 2009 18:52:21 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:40077 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752872AbZCEXwU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:52:20 -0500
+Subject: Re: [PATCH 1/2] cciss: kernel thread to detect changes on MSA2012
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mike Miller <mike.miller@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, coldwell@redhat.com,
+       LKML-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090305232647.GA24830@roadking.ldev.net>
+References: <20090305232647.GA24830@roadking.ldev.net>
 Content-Type: text/plain
-Date: Thu, 05 Mar 2009 15:48:41 -0800
-Message-Id: <1236296921.5937.109.camel@desktop>
+Date: Thu, 05 Mar 2009 23:52:14 +0000
+Message-Id: <1236297134.5626.89.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 17:54 -0500, Alan Stern wrote:
-> On Thu, 5 Mar 2009, Daniel Walker wrote:
+On Thu, 2009-03-05 at 17:26 -0600, Mike Miller wrote:
+> PATCH 1 of 2
 > 
-> > Fix up some typos, and make the requirements section slightly cleaner.
-> > 
-> > Signed-Off-By: Daniel Walker dwalker@fifo99.com
-> > 
-> > diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
-> > index 607b1a0..5b51aef 100644
-> > --- a/Documentation/x86/earlyprintk.txt
-> > +++ b/Documentation/x86/earlyprintk.txt
-> > @@ -9,7 +9,9 @@ and two USB cables, connected like this:
-> >  
-> >  1. There are three specific hardware requirements:
-> >  
-> > - a.) Host/target system needs to have USB debug port capability.
-> > + a.) You will need two USB ports. One on the client/console system and one one the target system.
+> The MSA2000 the firmware cannot tell the driver to rescan when logical
+> drives are added or deleted. This patch adds a check for unit attentions and
+> if a change in the topology is detected a kernel thread will fire off and
+> call rebuild_lun_table to update the drivers view of the world.
 > 
-> s/one one/one on/
+> The MSA2012 uses out of band management for configuration unlike any other
+> storage box we support. This is the reason for this patch.
 > 
-> You might also try harder to observe the 80-column rule.
+> Please consider this for inclusion.
 > 
-> > + 
-> > + b.) The client/console and target USB ports must have the debug port capability.
-> >  
-> >   You can check this capability by looking at a 'Debug port' bit in
-> >   the lspci -vvv output:
-> > @@ -35,15 +37,13 @@ and two USB cables, connected like this:
-> >  ( If your system does not list a debug port capability then you probably
-> >    wont be able to use the USB debug key. )
-> >  
-> > - b.) You also need a Netchip USB debug cable/key:
-> > + c.) You also need a Netchip USB debug cable/key:
-> >  
-> >          http://www.plxtech.com/products/NET2000/NET20DC/default.asp
-> >  
-> >       This is a small blue plastic connector with two USB connections,
-> >       it draws power from its USB connections.
+> Signed-off-by: Mike Miller <mike.miller@hp.com>
 > 
-> No.  It draws power from one of its USB connections (the one on the 
-> right side when you're looking at the face with the PLX logo).
-> 
-> Alan Stern
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> index d2cb67b..d745d8c 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -186,6 +186,7 @@ static int sendcmd_withirq(__u8 cmd, int ctlr, void *buff, size_t size,
+>  			   __u8 page_code, int cmd_type);
+>  
+>  static void fail_all_cmds(unsigned long ctlr);
+> +static int scan_thread(ctlr_info_t *h);
+>  
+>  #ifdef CONFIG_PROC_FS
+>  static void cciss_procinit(int i);
+> @@ -3008,6 +3009,69 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +static int scan_thread(ctlr_info_t *h)
+> +{
+> +	int rc;
+> +
+> +	DECLARE_COMPLETION(wait);
+> +	INIT_COMPLETION(wait);
+> +	h->rescan_wait = &wait;
+> +
+> +	for (;;) {
+> +		rc = wait_for_completion_timeout(&wait);
 
---
+wait_for_completion_timeout needs a timeout parameter as well, doesn't
+it?
 
-Fix up some typos, and make the requirements section slightly cleaner.
-Updated the power draw comment per Alan Stern.
+> +		if (!rc)
+> +			continue;
+> +		else
+> +			rebuild_lun_table(h, 0);
+> +
+> +		INIT_COMPLETION(wait);
+> +	}
+> +
+> +	return 0;
+> +}
 
-Signed-Off-By: Daniel Walker <dwalker@fifo99.com>
+You can't really have and endless loop for a thread in a modular driver,
+since you have to consider what happens if the module is removed.  The
+code the thread is executing gets freed.  If you're using the timeout
+wait then when it wakes up it immediately crashes.
 
-diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
-index 607b1a0..ac913a6 100644
---- a/Documentation/x86/earlyprintk.txt
-+++ b/Documentation/x86/earlyprintk.txt
-@@ -9,7 +9,11 @@ and two USB cables, connected like this:
- 
- 1. There are three specific hardware requirements:
- 
-- a.) Host/target system needs to have USB debug port capability.
-+ a.) You will need two USB ports. One on the client/console system and one on 
-+     the target system.
-+ 
-+ b.) The client/console and target USB ports must have the debug port
-+     capability.
- 
-  You can check this capability by looking at a 'Debug port' bit in
-  the lspci -vvv output:
-@@ -35,14 +39,13 @@ and two USB cables, connected like this:
- ( If your system does not list a debug port capability then you probably
-   wont be able to use the USB debug key. )
- 
-- b.) You also need a Netchip USB debug cable/key:
-+ c.) You also need a Netchip USB debug cable/key:
- 
-         http://www.plxtech.com/products/NET2000/NET20DC/default.asp
- 
-      This is a small blue plastic connector with two USB connections,
--     it draws power from its USB connections.
--
-- c.) Thirdly, you need a second client/console system with a regular USB port.
-+     it draws power from one of its USB connections (the one on the 
-+     right side when you're looking at the face with the PLX logo).
- 
- 2. Software requirements:
- 
-@@ -54,7 +57,7 @@ and two USB cables, connected like this:
- 
-     And you need to add the boot command line: "earlyprintk=dbgp".
-     (If you are using Grub, append it to the 'kernel' line in
--     /etc/grub.conf)
-+     grub.conf (i.e. /boot/grub/grub.conf) )
- 
-     NOTE: normally earlyprintk console gets turned off once the
-     regular console is alive - use "earlyprintk=dbgp,keep" to keep
-@@ -72,7 +75,7 @@ and two USB cables, connected like this:
- 
-     Now this channel of kernel messages is ready to be used: start
-     your favorite terminal emulator (minicom, etc.) and set
--    it up to use /dev/ttyUSB0 - or use a raw 'cat /dev/ttyUSBx' to
-+    it up to use /dev/ttyUSBx - or use a raw 'cat /dev/ttyUSBx' to
-     see the raw output.
- 
-  c.) On Nvidia Southbridge based systems: the kernel will try to probe
-@@ -92,7 +95,7 @@ and two USB cables, connected like this:
- 
-    On the client/console system do:
- 
--       cat /dev/ttyUSB0
-+       cat /dev/ttyUSBx
- 
-    And you should see the help line above displayed shortly after you've
-    provoked it on the host system.
+If you want an example of using the kernel thread stop API for the
+module removal case, see scsi_error.c:scsi_error_handler() and
+hosts.c:scsi_host_dev_release()
+
+James
 
 
