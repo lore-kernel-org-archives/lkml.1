@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbZCEXax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbZCEXbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbZCEXax (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbZCEX36
+	id S1758171AbZCEXbV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbZCEXaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:29:58 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:48108 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:30:24 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:48208 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758085AbZCEX34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:29:56 -0500
-Message-Id: <20090305225512.994530628@polymtl.ca>
+	id S1758103AbZCEXaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:30:21 -0500
+Message-Id: <20090305225519.056985711@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:35 -0500
+Date: Thu, 05 Mar 2009 17:48:01 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,465 +31,581 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 07/41] LTTng dynamic channels
-Content-Disposition: inline; filename=lttng-dynamic-channels.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:09 +0000
+Subject: [RFC patch 33/41] LTTng dynamic tracing support with kprobes
+Content-Disposition: inline; filename=lttng-kprobes-support.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:15 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make channels dynamic (a channel can be added at module load time).
-When a trace is setup, its channel array stays fixed even if the channels
-change.
+Add Kprobe support to LTTng, so we can use
+
+/mnt/debugfs/ltt/kprobe/enable
+/mnt/debugfs/ltt/kprobe/disable
+/mnt/debugfs/ltt/kprobe/list
+
+to respectively enable, disable and list(!) all LTTng-kprobes.
+
+An event kernel.kprobes will be logged. It records the instruction pointer
+associated with the probe hit.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/ltt-channels.h |   94 +++++++++++
- ltt/ltt-channels.c           |  338 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 432 insertions(+)
+ include/linux/ltt-tracer.h |    8 
+ kernel/kallsyms.c          |    1 
+ ltt/Kconfig                |   15 +
+ ltt/Makefile               |    1 
+ ltt/ltt-kprobes.c          |  479 +++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 504 insertions(+)
 
-Index: linux-2.6-lttng/ltt/ltt-channels.c
+Index: linux-2.6-lttng/ltt/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/ltt/Kconfig	2009-03-05 16:09:59.000000000 -0500
++++ linux-2.6-lttng/ltt/Kconfig	2009-03-05 16:10:12.000000000 -0500
+@@ -136,4 +136,19 @@ config LTT_VMCORE
+ 
+ 	  Special crash extension should be used to extract ltt buffers.
+ 
++config LTT_KPROBES
++	bool "Linux Trace Toolkit Kprobes Support"
++	depends on HAVE_KPROBES
++	select LTT_TRACE_CONTROL
++	select LTT_FAST_SERIALIZE
++	select KPROBES
++	select KALLSYMS
++	default y
++	help
++	  Allows connecting the LTTng tracer on kprobes using simple debugfs
++	  file operations :
++	    ltt/kprobes/enable
++	    ltt/kprobes/disable
++	    ltt/kprobes/list
++
+ endif # LTT
+Index: linux-2.6-lttng/ltt/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/ltt/Makefile	2009-03-05 16:10:10.000000000 -0500
++++ linux-2.6-lttng/ltt/Makefile	2009-03-05 16:10:12.000000000 -0500
+@@ -14,3 +14,4 @@ obj-$(CONFIG_LTT_FAST_SERIALIZE)	+= ltt-
+ obj-$(CONFIG_LTT_TRACE_CONTROL)		+= ltt-trace-control.o
+ obj-$(CONFIG_LTT_USERSPACE_EVENT)	+= ltt-userspace-event.o
+ obj-$(CONFIG_LTT_FILTER)		+= ltt-filter.o
++obj-$(CONFIG_LTT_KPROBES)		+= ltt-kprobes.o
+Index: linux-2.6-lttng/ltt/ltt-kprobes.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/ltt/ltt-channels.c	2009-03-05 15:03:00.000000000 -0500
-@@ -0,0 +1,338 @@
++++ linux-2.6-lttng/ltt/ltt-kprobes.c	2009-03-05 16:10:12.000000000 -0500
+@@ -0,0 +1,479 @@
 +/*
-+ * ltt/ltt-channels.c
++ * (C) Copyright	2009 -
++ * 		Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
 + *
-+ * (C) Copyright 2008 - Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
-+ *
-+ * LTTng channel management.
-+ *
-+ * Author:
-+ *	Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ * LTTng kprobes integration module.
 + */
 +
 +#include <linux/module.h>
-+#include <linux/ltt-channels.h>
++#include <linux/kprobes.h>
++#include <linux/ltt-tracer.h>
++#include <linux/marker.h>
 +#include <linux/mutex.h>
-+#include <linux/vmalloc.h>
++#include <linux/jhash.h>
++#include <linux/seq_file.h>
++#include <linux/slab.h>
++#include <linux/debugfs.h>
++#include <linux/kallsyms.h>
++#include <linux/ltt-type-serializer.h>
 +
-+/*
-+ * ltt_channel_mutex may be nested inside the LTT trace mutex.
-+ * ltt_channel_mutex mutex may be nested inside markers mutex.
-+ */
-+static DEFINE_MUTEX(ltt_channel_mutex);
-+static LIST_HEAD(ltt_channels);
-+/*
-+ * Index of next channel in array. Makes sure that as long as a trace channel is
-+ * allocated, no array index will be re-used when a channel is freed and then
-+ * another channel is allocated. This index is cleared and the array indexeds
-+ * get reassigned when the index_kref goes back to 0, which indicates that no
-+ * more trace channels are allocated.
-+ */
-+static unsigned int free_index;
-+static struct kref index_kref;	/* Keeps track of allocated trace channels */
++#define LTT_KPROBES_DIR 	"kprobes"
++#define LTT_KPROBES_ENABLE	"enable"
++#define LTT_KPROBES_DISABLE	"disable"
++#define LTT_KPROBES_LIST	"list"
 +
-+static struct ltt_channel_setting *lookup_channel(const char *name)
++/* Active LTTng kprobes hash table */
++static DEFINE_MUTEX(ltt_kprobes_mutex);
++
++#define LTT_KPROBE_HASH_BITS	6
++#define LTT_KPROBE_TABLE_SIZE	(1 << LTT_KPROBE_HASH_BITS)
++static struct hlist_head ltt_kprobe_table[LTT_KPROBE_TABLE_SIZE];
++
++struct kprobe_entry {
++	struct hlist_node hlist;
++	struct kprobe kp;
++	char key[0];
++};
++
++static struct dentry *ltt_kprobes_dir,
++		     *ltt_kprobes_enable_dentry,
++		     *ltt_kprobes_disable_dentry,
++		     *ltt_kprobes_list_dentry;
++
++static int module_exit;
++
++
++static void trace_kprobe_table_entry(void *call_data, struct kprobe_entry *e)
 +{
-+	struct ltt_channel_setting *iter;
++	char namebuf[KSYM_NAME_LEN];
++	unsigned long addr;
 +
-+	list_for_each_entry(iter, &ltt_channels, list)
-+		if (strcmp(name, iter->name) == 0)
-+			return iter;
-+	return NULL;
-+}
-+
-+/*
-+ * Must be called when channel refcount falls to 0 _and_ also when the last
-+ * trace is freed. This function is responsible for compacting the channel and
-+ * event IDs when no users are active.
-+ *
-+ * Called with lock_markers() and channels mutex held.
-+ */
-+static void release_channel_setting(struct kref *kref)
-+{
-+	struct ltt_channel_setting *setting = container_of(kref,
-+		struct ltt_channel_setting, kref);
-+	struct ltt_channel_setting *iter;
-+
-+	if (atomic_read(&index_kref.refcount) == 0
-+	    && atomic_read(&setting->kref.refcount) == 0) {
-+		list_del(&setting->list);
-+		kfree(setting);
-+
-+		free_index = 0;
-+		list_for_each_entry(iter, &ltt_channels, list) {
-+			iter->index = free_index++;
-+			iter->free_event_id = 0;
-+		}
-+		markers_compact_event_ids();
++	if (e->kp.addr) {
++		sprint_symbol(namebuf,
++			      (unsigned long)e->kp.addr);
++		addr = (unsigned long)e->kp.addr;
++	} else {
++		strcpy(namebuf, e->kp.symbol_name);
++		/* TODO : add offset */
++		addr = kallsyms_lookup_name(namebuf);
 +	}
++	if (addr)
++		__trace_mark(0, kprobe_state, kprobe_table,
++			call_data,
++			"ip 0x%lX symbol %s", addr, namebuf);
 +}
 +
-+/*
-+ * Perform channel index compaction when the last trace channel is freed.
-+ *
-+ * Called with lock_markers() and channels mutex held.
-+ */
-+static void release_trace_channel(struct kref *kref)
-+{
-+	struct ltt_channel_setting *iter, *n;
++DEFINE_MARKER(kernel, kprobe, "ip %lX");
 +
-+	list_for_each_entry_safe(iter, n, &ltt_channels, list)
-+		release_channel_setting(&iter->kref);
++static int ltt_kprobe_handler_pre(struct kprobe *p, struct pt_regs *regs)
++{
++	struct marker *marker;
++	unsigned long data;
++
++	data = (unsigned long)p->addr;
++	marker = &GET_MARKER(kernel, kprobe);
++	ltt_specialized_trace(marker, marker->single.probe_private,
++		&data, sizeof(data), sizeof(data));
++	return 0;
 +}
 +
-+/**
-+ * ltt_channels_register - Register a trace channel.
-+ * @name: channel name
-+ *
-+ * Uses refcounting.
-+ */
-+int ltt_channels_register(const char *name)
++static int ltt_register_kprobe(const char *key)
 +{
-+	struct ltt_channel_setting *setting;
-+	int ret = 0;
-+
-+	mutex_lock(&ltt_channel_mutex);
-+	setting = lookup_channel(name);
-+	if (setting) {
-+		if (atomic_read(&setting->kref.refcount) == 0)
-+			goto init_kref;
-+		else {
-+			kref_get(&setting->kref);
-+			goto end;
-+		}
-+	}
-+	setting = kzalloc(sizeof(*setting), GFP_KERNEL);
-+	if (!setting) {
-+		ret = -ENOMEM;
-+		goto end;
-+	}
-+	list_add(&setting->list, &ltt_channels);
-+	strncpy(setting->name, name, PATH_MAX-1);
-+	setting->index = free_index++;
-+init_kref:
-+	kref_init(&setting->kref);
-+end:
-+	mutex_unlock(&ltt_channel_mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(ltt_channels_register);
-+
-+/**
-+ * ltt_channels_unregister - Unregister a trace channel.
-+ * @name: channel name
-+ *
-+ * Must be called with markers mutex held.
-+ */
-+int ltt_channels_unregister(const char *name)
-+{
-+	struct ltt_channel_setting *setting;
-+	int ret = 0;
-+
-+	mutex_lock(&ltt_channel_mutex);
-+	setting = lookup_channel(name);
-+	if (!setting || atomic_read(&setting->kref.refcount) == 0) {
-+		ret = -ENOENT;
-+		goto end;
-+	}
-+	kref_put(&setting->kref, release_channel_setting);
-+end:
-+	mutex_unlock(&ltt_channel_mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(ltt_channels_unregister);
-+
-+/**
-+ * ltt_channels_set_default - Set channel default behavior.
-+ * @name: default channel name
-+ * @subbuf_size: size of the subbuffers
-+ * @subbuf_cnt: number of subbuffers
-+ */
-+int ltt_channels_set_default(const char *name,
-+			     unsigned int subbuf_size,
-+			     unsigned int subbuf_cnt)
-+{
-+	struct ltt_channel_setting *setting;
-+	int ret = 0;
-+
-+	mutex_lock(&ltt_channel_mutex);
-+	setting = lookup_channel(name);
-+	if (!setting || atomic_read(&setting->kref.refcount) == 0) {
-+		ret = -ENOENT;
-+		goto end;
-+	}
-+	setting->subbuf_size = subbuf_size;
-+	setting->subbuf_cnt = subbuf_cnt;
-+end:
-+	mutex_unlock(&ltt_channel_mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(ltt_channels_set_default);
-+
-+/**
-+ * ltt_channels_get_name_from_index - get channel name from channel index
-+ * @index: channel index
-+ *
-+ * Allows to lookup the channel name given its index. Done to keep the name
-+ * information outside of each trace channel instance.
-+ */
-+const char *ltt_channels_get_name_from_index(unsigned int index)
-+{
-+	struct ltt_channel_setting *iter;
-+
-+	list_for_each_entry(iter, &ltt_channels, list)
-+		if (iter->index == index && atomic_read(&iter->kref.refcount))
-+			return iter->name;
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(ltt_channels_get_name_from_index);
-+
-+static struct ltt_channel_setting *
-+ltt_channels_get_setting_from_name(const char *name)
-+{
-+	struct ltt_channel_setting *iter;
-+
-+	list_for_each_entry(iter, &ltt_channels, list)
-+		if (!strcmp(iter->name, name)
-+		    && atomic_read(&iter->kref.refcount))
-+			return iter;
-+	return NULL;
-+}
-+
-+/**
-+ * ltt_channels_get_index_from_name - get channel index from channel name
-+ * @name: channel name
-+ *
-+ * Allows to lookup the channel index given its name. Done to keep the name
-+ * information outside of each trace channel instance.
-+ * Returns -1 if not found.
-+ */
-+int ltt_channels_get_index_from_name(const char *name)
-+{
-+	struct ltt_channel_setting *setting;
-+
-+	setting = ltt_channels_get_setting_from_name(name);
-+	if (setting)
-+		return setting->index;
-+	else
-+		return -1;
-+}
-+EXPORT_SYMBOL_GPL(ltt_channels_get_index_from_name);
-+
-+/**
-+ * ltt_channels_trace_alloc - Allocate channel structures for a trace
-+ * @subbuf_size: subbuffer size. 0 uses default.
-+ * @subbuf_cnt: number of subbuffers per per-cpu buffers. 0 uses default.
-+ * @flags: Default channel flags
-+ *
-+ * Use the current channel list to allocate the channels for a trace.
-+ * Called with trace lock held. Does not perform the trace buffer allocation,
-+ * because we must let the user overwrite specific channel sizes.
-+ */
-+struct ltt_channel_struct *ltt_channels_trace_alloc(unsigned int *nr_channels,
-+						    int overwrite,
-+						    int active)
-+{
-+	struct ltt_channel_struct *channel = NULL;
-+	struct ltt_channel_setting *iter;
-+
-+	mutex_lock(&ltt_channel_mutex);
-+	if (!free_index)
-+		goto end;
-+	if (!atomic_read(&index_kref.refcount))
-+		kref_init(&index_kref);
-+	else
-+		kref_get(&index_kref);
-+	*nr_channels = free_index;
-+	channel = kzalloc(sizeof(struct ltt_channel_struct) * free_index,
-+			  GFP_KERNEL);
-+	if (!channel)
-+		goto end;
-+	list_for_each_entry(iter, &ltt_channels, list) {
-+		if (!atomic_read(&iter->kref.refcount))
-+			continue;
-+		channel[iter->index].subbuf_size = iter->subbuf_size;
-+		channel[iter->index].subbuf_cnt = iter->subbuf_cnt;
-+		channel[iter->index].overwrite = overwrite;
-+		channel[iter->index].active = active;
-+		channel[iter->index].channel_name = iter->name;
-+	}
-+end:
-+	mutex_unlock(&ltt_channel_mutex);
-+	return channel;
-+}
-+EXPORT_SYMBOL_GPL(ltt_channels_trace_alloc);
-+
-+/**
-+ * ltt_channels_trace_free - Free one trace's channels
-+ * @channels: channels to free
-+ *
-+ * Called with trace lock held. The actual channel buffers must be freed before
-+ * this function is called.
-+ */
-+void ltt_channels_trace_free(struct ltt_channel_struct *channels)
-+{
-+	lock_markers();
-+	mutex_lock(&ltt_channel_mutex);
-+	kfree(channels);
-+	kref_put(&index_kref, release_trace_channel);
-+	mutex_unlock(&ltt_channel_mutex);
-+	unlock_markers();
-+}
-+EXPORT_SYMBOL_GPL(ltt_channels_trace_free);
-+
-+/**
-+ * _ltt_channels_get_event_id - get next event ID for a marker
-+ * @channel: channel name
-+ * @name: event name
-+ *
-+ * Returns a unique event ID (for this channel) or < 0 on error.
-+ * Must be called with channels mutex held.
-+ */
-+int _ltt_channels_get_event_id(const char *channel, const char *name)
-+{
-+	struct ltt_channel_setting *setting;
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct kprobe_entry *e = NULL;
++	char *symbol_name = NULL;
++	unsigned long addr;
++	unsigned int offset = 0;
++	u32 hash;
++	size_t key_len = strlen(key) + 1;
 +	int ret;
 +
-+	setting = ltt_channels_get_setting_from_name(channel);
-+	if (!setting) {
-+		ret = -ENOENT;
-+		goto end;
-+	}
-+	if (strcmp(channel, "metadata") == 0) {
-+		if (strcmp(name, "core_marker_id") == 0)
-+			ret = 0;
-+		else if (strcmp(name, "core_marker_format") == 0)
-+			ret = 1;
++	if (key_len == 1)
++		return -ENOENT;	/* only \0 */
++
++	if (sscanf(key, "%li", &addr) != 1)
++		addr = 0;
++
++	if (!addr) {
++		const char *symbol_end = NULL;
++		unsigned int symbol_len;	/* includes final \0 */
++
++		symbol_end = strchr(key, ' ');
++		if (symbol_end)
++			symbol_len = symbol_end - key + 1;
 +		else
-+			ret = -ENOENT;
-+		goto end;
++			symbol_len = key_len;
++		symbol_name = kmalloc(symbol_len, GFP_KERNEL);
++		if (!symbol_name) {
++			ret = -ENOMEM;
++			goto error;
++		}
++		memcpy(symbol_name, key, symbol_len - 1);
++		symbol_name[symbol_len-1] = '\0';
++		if (symbol_end) {
++			symbol_end++;	/* start of offset */
++			if (sscanf(symbol_end, "%i", &offset) != 1)
++				offset = 0;
++		}
 +	}
-+	if (setting->free_event_id == EVENTS_PER_CHANNEL - 1) {
-+		ret = -ENOSPC;
-+		goto end;
++
++	hash = jhash(key, key_len-1, 0);
++	head = &ltt_kprobe_table[hash & ((1 << LTT_KPROBE_HASH_BITS)-1)];
++	hlist_for_each_entry(e, node, head, hlist) {
++		if (!strcmp(key, e->key)) {
++			printk(KERN_NOTICE "Kprobe %s busy\n", key);
++			ret = -EBUSY;
++			goto error;
++		}
 +	}
-+	ret = setting->free_event_id++;
-+end:
++	/*
++	 * Using kzalloc here to allocate a variable length element. Could
++	 * cause some memory fragmentation if overused.
++	 */
++	e = kzalloc(sizeof(struct kprobe_entry) + key_len, GFP_KERNEL);
++	if (!e) {
++		ret = -ENOMEM;
++		goto error;
++	}
++	memcpy(e->key, key, key_len);
++	hlist_add_head(&e->hlist, head);
++	e->kp.pre_handler = ltt_kprobe_handler_pre;
++	e->kp.symbol_name = symbol_name;
++	e->kp.offset = offset;
++	e->kp.addr = (void *)addr;
++	ret = register_kprobe(&e->kp);
++	if (ret < 0)
++		goto error_list_del;
++	trace_kprobe_table_entry(NULL, e);
++	return 0;
++
++error_list_del:
++	hlist_del(&e->hlist);
++error:
++	kfree(symbol_name);
++	kfree(e);
 +	return ret;
 +}
 +
-+/**
-+ * ltt_channels_get_event_id - get next event ID for a marker
-+ * @channel: channel name
-+ * @name: event name
-+ *
-+ * Returns a unique event ID (for this channel) or < 0 on error.
++static int ltt_unregister_kprobe(const char *key)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct kprobe_entry *e;
++	int found = 0;
++	size_t key_len = strlen(key) + 1;
++	u32 hash;
++
++	hash = jhash(key, key_len-1, 0);
++	head = &ltt_kprobe_table[hash & ((1 << LTT_KPROBE_HASH_BITS)-1)];
++	hlist_for_each_entry(e, node, head, hlist) {
++		if (!strcmp(key, e->key)) {
++			found = 1;
++			break;
++		}
++	}
++	if (!found)
++		return -ENOENT;
++	hlist_del(&e->hlist);
++	unregister_kprobe(&e->kp);
++	kfree(e->kp.symbol_name);
++	kfree(e);
++	return 0;
++}
++
++static void ltt_unregister_all_kprobes(void)
++{
++	struct kprobe_entry *e;
++	struct hlist_head *head;
++	struct hlist_node *node, *tmp;
++	unsigned int i;
++
++	for (i = 0; i < LTT_KPROBE_TABLE_SIZE; i++) {
++		head = &ltt_kprobe_table[i];
++		hlist_for_each_entry_safe(e, node, tmp, head, hlist) {
++			hlist_del(&e->hlist);
++			unregister_kprobe(&e->kp);
++			kfree(e->kp.symbol_name);
++			kfree(e);
++		}
++	}
++}
++
++/*
++ * Allows to specify either
++ * - symbol
++ * - symbol offset
++ * - address
 + */
-+int ltt_channels_get_event_id(const char *channel, const char *name)
++static ssize_t enable_op_write(struct file *file,
++	const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	int err, buf_size;
++	char buf[NAME_MAX];
++	char *end;
++
++	mutex_lock(&ltt_kprobes_mutex);
++	if (module_exit) {
++		err = -EPERM;
++		goto error;
++	}
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto error;
++	buf[buf_size] = '\0';
++	end = strchr(buf, '\n');
++	if (end)
++		*end = '\0';
++	err = ltt_register_kprobe(buf);
++	if (err)
++		goto error;
++	mutex_unlock(&ltt_kprobes_mutex);
++
++	return count;
++error:
++	mutex_unlock(&ltt_kprobes_mutex);
++	return err;
++}
++
++static const struct file_operations ltt_kprobes_enable = {
++	.write = enable_op_write,
++};
++
++static ssize_t disable_op_write(struct file *file,
++	const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	int err, buf_size;
++	char buf[NAME_MAX];
++	char *end;
++
++	mutex_lock(&ltt_kprobes_mutex);
++	if (module_exit)
++		goto end;
++
++	buf_size = min(count, sizeof(buf) - 1);
++	err = copy_from_user(buf, user_buf, buf_size);
++	if (err)
++		goto error;
++	buf[buf_size] = '\0';
++	end = strchr(buf, '\n');
++	if (end)
++		*end = '\0';
++	err = ltt_unregister_kprobe(buf);
++	if (err)
++		goto error;
++end:
++	mutex_unlock(&ltt_kprobes_mutex);
++	return count;
++error:
++	mutex_unlock(&ltt_kprobes_mutex);
++	return err;
++}
++
++static const struct file_operations ltt_kprobes_disable = {
++	.write = disable_op_write,
++};
++
++/*
++ * This seqfile read is not perfectly safe, as a kprobe could be removed from
++ * the hash table between two reads. This will result in an incomplete output.
++ */
++static struct kprobe_entry *ltt_find_next_kprobe(struct kprobe_entry *prev)
++{
++	struct kprobe_entry *e;
++	struct hlist_head *head;
++	struct hlist_node *node;
++	unsigned int i;
++	int found = 0;
++
++	if (prev == (void *)-1UL)
++		return NULL;
++
++	if (!prev)
++		found = 1;
++
++	for (i = 0; i < LTT_KPROBE_TABLE_SIZE; i++) {
++		head = &ltt_kprobe_table[i];
++		hlist_for_each_entry(e, node, head, hlist) {
++			if (found)
++				return e;
++			if (e == prev)
++				found = 1;
++		}
++	}
++	return NULL;
++}
++
++static void *lk_next(struct seq_file *m, void *p, loff_t *pos)
++{
++	m->private = ltt_find_next_kprobe(m->private);
++	if (!m->private) {
++		m->private = (void *)-1UL;
++		return NULL;
++	}
++	return m->private;
++}
++
++static void *lk_start(struct seq_file *m, loff_t *pos)
++{
++	mutex_lock(&ltt_kprobes_mutex);
++	if (!*pos)
++		m->private = NULL;
++	m->private = ltt_find_next_kprobe(m->private);
++	if (!m->private) {
++		m->private = (void *)-1UL;
++		return NULL;
++	}
++	return m->private;
++}
++
++static void lk_stop(struct seq_file *m, void *p)
++{
++	mutex_unlock(&ltt_kprobes_mutex);
++}
++
++static int lk_show(struct seq_file *m, void *p)
++{
++	struct kprobe_entry *e = m->private;
++	seq_printf(m, "%s\n", e->key);
++	return 0;
++}
++
++static const struct seq_operations ltt_kprobes_list_op = {
++	.start = lk_start,
++	.next = lk_next,
++	.stop = lk_stop,
++	.show = lk_show,
++};
++
++static int ltt_kprobes_list_open(struct inode *inode, struct file *file)
 +{
 +	int ret;
 +
-+	mutex_lock(&ltt_channel_mutex);
-+	ret = _ltt_channels_get_event_id(channel, name);
-+	mutex_unlock(&ltt_channel_mutex);
++	ret = seq_open(file, &ltt_kprobes_list_op);
++	if (ret == 0)
++		((struct seq_file *)file->private_data)->private = NULL;
 +	return ret;
 +}
++
++static int ltt_kprobes_list_release(struct inode *inode, struct file *file)
++{
++	struct seq_file *seq = file->private_data;
++
++	seq->private = NULL;
++	return seq_release(inode, file);
++}
++
++static const struct file_operations ltt_kprobes_list = {
++	.open = ltt_kprobes_list_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = ltt_kprobes_list_release,
++};
++
++void ltt_dump_kprobes_table(void *call_data)
++{
++	struct kprobe_entry *e;
++	struct hlist_head *head;
++	struct hlist_node *node;
++	unsigned int i;
++
++	for (i = 0; i < LTT_KPROBE_TABLE_SIZE; i++) {
++		head = &ltt_kprobe_table[i];
++		hlist_for_each_entry(e, node, head, hlist)
++			trace_kprobe_table_entry(call_data, e);
++	}
++}
++EXPORT_SYMBOL_GPL(ltt_dump_kprobes_table);
++
++static int __init ltt_kprobes_init(void)
++{
++	struct dentry *ltt_root_dentry;
++	int ret = 0;
++
++	printk(KERN_INFO "LTT : ltt-kprobes init\n");
++	mutex_lock(&ltt_kprobes_mutex);
++
++	ltt_root_dentry = get_ltt_root();
++	if (!ltt_root_dentry) {
++		ret = -ENOENT;
++		goto err_no_root;
++	}
++
++	ltt_kprobes_dir = debugfs_create_dir(LTT_KPROBES_DIR, ltt_root_dentry);
++	if (!ltt_kprobes_dir) {
++		printk(KERN_ERR
++		       "ltt_kprobes_init: failed to create dir %s\n",
++			LTT_KPROBES_DIR);
++		ret = -ENOMEM;
++		goto err_no_dir;
++	}
++
++	ltt_kprobes_enable_dentry = debugfs_create_file(LTT_KPROBES_ENABLE,
++		S_IWUSR, ltt_kprobes_dir, NULL,
++		&ltt_kprobes_enable);
++	if (IS_ERR(ltt_kprobes_enable_dentry) || !ltt_kprobes_enable_dentry) {
++		printk(KERN_ERR
++		       "ltt_kprobes_init: failed to create file %s\n",
++			LTT_KPROBES_ENABLE);
++		ret = -ENOMEM;
++		goto err_no_enable;
++	}
++
++	ltt_kprobes_disable_dentry = debugfs_create_file(LTT_KPROBES_DISABLE,
++		S_IWUSR, ltt_kprobes_dir, NULL,
++		&ltt_kprobes_disable);
++	if (IS_ERR(ltt_kprobes_disable_dentry) || !ltt_kprobes_disable_dentry) {
++		printk(KERN_ERR
++		       "ltt_kprobes_init: failed to create file %s\n",
++			LTT_KPROBES_DISABLE);
++		ret = -ENOMEM;
++		goto err_no_disable;
++	}
++
++	ltt_kprobes_list_dentry = debugfs_create_file(LTT_KPROBES_LIST,
++		S_IWUSR, ltt_kprobes_dir, NULL,
++		&ltt_kprobes_list);
++	if (IS_ERR(ltt_kprobes_list_dentry) || !ltt_kprobes_list_dentry) {
++		printk(KERN_ERR
++		       "ltt_kprobes_init: failed to create file %s\n",
++			LTT_KPROBES_LIST);
++		ret = -ENOMEM;
++		goto err_no_list;
++	}
++
++	mutex_unlock(&ltt_kprobes_mutex);
++	return ret;
++
++err_no_list:
++	debugfs_remove(ltt_kprobes_disable_dentry);
++err_no_disable:
++	debugfs_remove(ltt_kprobes_enable_dentry);
++err_no_enable:
++	debugfs_remove(ltt_kprobes_dir);
++err_no_dir:
++err_no_root:
++	mutex_unlock(&ltt_kprobes_mutex);
++	return ret;
++}
++module_init(ltt_kprobes_init);
++
++static void __exit ltt_kprobes_exit(void)
++{
++	printk(KERN_INFO "LTT : ltt-kprobes exit\n");
++	mutex_lock(&ltt_kprobes_mutex);
++	module_exit = 1;
++	debugfs_remove(ltt_kprobes_list_dentry);
++	debugfs_remove(ltt_kprobes_disable_dentry);
++	debugfs_remove(ltt_kprobes_enable_dentry);
++	debugfs_remove(ltt_kprobes_dir);
++	ltt_unregister_all_kprobes();
++	mutex_unlock(&ltt_kprobes_mutex);
++}
++module_exit(ltt_kprobes_exit);
 +
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Channel Management");
-Index: linux-2.6-lttng/include/linux/ltt-channels.h
++MODULE_DESCRIPTION("Linux Trace Toolkit Kprobes Support");
+Index: linux-2.6-lttng/include/linux/ltt-tracer.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/linux/ltt-channels.h	2009-03-05 15:03:13.000000000 -0500
-@@ -0,0 +1,94 @@
-+#ifndef _LTT_CHANNELS_H
-+#define _LTT_CHANNELS_H
+--- linux-2.6-lttng.orig/include/linux/ltt-tracer.h	2009-03-05 16:09:59.000000000 -0500
++++ linux-2.6-lttng/include/linux/ltt-tracer.h	2009-03-05 16:10:12.000000000 -0500
+@@ -672,6 +672,14 @@ extern void ltt_dump_marker_state(struct
+ void ltt_lock_traces(void);
+ void ltt_unlock_traces(void);
+ 
++#ifdef CONFIG_LTT_KPROBES
++extern void ltt_dump_kprobes_table(void *call_data);
++#else
++static inline void ltt_dump_kprobes_table(void *call_data)
++{
++}
++#endif
 +
-+/*
-+ * Copyright (C) 2008 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
-+ *
-+ * Dynamic tracer channel allocation.
-+ */
-+
-+#include <linux/limits.h>
-+#include <linux/kref.h>
-+#include <linux/list.h>
-+
-+#define EVENTS_PER_CHANNEL	65536
-+
-+struct ltt_trace_struct;
-+struct rchan_buf;
-+
-+struct ltt_channel_struct {
-+	/* First 32 bytes cache-hot cacheline */
-+	struct ltt_trace_struct	*trace;
-+	void *buf;
-+	void *trans_channel_data;
-+	int overwrite:1;
-+	int active:1;
-+	unsigned int n_subbufs_order;
-+	unsigned long commit_count_mask;	/*
-+						 * Commit count mask, removing
-+						 * the MSBs corresponding to
-+						 * bits used to represent the
-+						 * subbuffer index.
-+						 */
-+	/* End of first 32 bytes cacheline */
-+
-+	/*
-+	 * buffer_begin - called on buffer-switch to a new sub-buffer
-+	 * @buf: the channel buffer containing the new sub-buffer
-+	 */
-+	void (*buffer_begin) (struct rchan_buf *buf,
-+			u64 tsc, unsigned int subbuf_idx);
-+	/*
-+	 * buffer_end - called on buffer-switch to a new sub-buffer
-+	 * @buf: the channel buffer containing the previous sub-buffer
-+	 */
-+	void (*buffer_end) (struct rchan_buf *buf,
-+			u64 tsc, unsigned int offset, unsigned int subbuf_idx);
-+	struct kref kref;	/* Channel transport reference count */
-+	struct ltt_channel_buf_access_ops *buf_access_ops;
-+	unsigned int subbuf_size;
-+	unsigned int subbuf_cnt;
-+	const char *channel_name;
-+} ____cacheline_aligned;
-+
-+/*
-+ * ops for accessing struct channel data.
-+ * Only meant to be used in slow-path code (ascii formatter code,
-+ * buffer read-side access through a system call).
-+ */
-+struct ltt_channel_buf_access_ops {
-+	unsigned long (*get_offset)(struct rchan_buf *buf);
-+	unsigned long (*get_consumed)(struct rchan_buf *buf);
-+	int (*open)(struct rchan_buf *buf);
-+	int (*release)(struct rchan_buf *buf);
-+	int (*get_subbuf)(struct rchan_buf *buf, unsigned long *consumed);
-+	int (*put_subbuf)(struct rchan_buf *buf, unsigned long consumed);
-+	unsigned long (*get_n_subbufs)(struct rchan_buf *buf);
-+	unsigned long (*get_subbuf_size)(struct rchan_buf *buf);
-+};
-+
-+struct ltt_channel_setting {
-+	unsigned int subbuf_size;
-+	unsigned int subbuf_cnt;
-+	struct kref kref;	/* Number of references to structure content */
-+	struct list_head list;
-+	unsigned int index;	/* index of channel in trace channel array */
-+	u16 free_event_id;	/* Next event ID to allocate */
-+	char name[PATH_MAX];
-+};
-+
-+int ltt_channels_register(const char *name);
-+int ltt_channels_unregister(const char *name);
-+int ltt_channels_set_default(const char *name,
-+			     unsigned int subbuf_size,
-+			     unsigned int subbuf_cnt);
-+const char *ltt_channels_get_name_from_index(unsigned int index);
-+int ltt_channels_get_index_from_name(const char *name);
-+struct ltt_channel_struct *ltt_channels_trace_alloc(unsigned int *nr_channels,
-+						    int overwrite,
-+						    int active);
-+void ltt_channels_trace_free(struct ltt_channel_struct *channels);
-+int _ltt_channels_get_event_id(const char *channel, const char *name);
-+int ltt_channels_get_event_id(const char *channel, const char *name);
-+
-+#endif /* _LTT_CHANNELS_H */
+ /* Relay IOCTL */
+ 
+ /* Get the next sub buffer that can be read. */
+Index: linux-2.6-lttng/kernel/kallsyms.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/kallsyms.c	2009-03-05 16:08:41.000000000 -0500
++++ linux-2.6-lttng/kernel/kallsyms.c	2009-03-05 16:10:12.000000000 -0500
+@@ -160,6 +160,7 @@ unsigned long kallsyms_lookup_name(const
+ 	}
+ 	return module_kallsyms_lookup_name(name);
+ }
++EXPORT_SYMBOL_GPL(kallsyms_lookup_name);
+ 
+ static unsigned long get_symbol_pos(unsigned long addr,
+ 				    unsigned long *symbolsize,
 
 -- 
 Mathieu Desnoyers
