@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbZCED1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZCED2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbZCED1l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 22:27:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZCED1R
+	id S1754438AbZCED2A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 22:28:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZCED1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 22:27:17 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:43793 "EHLO
+	Wed, 4 Mar 2009 22:27:18 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40185 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753142AbZCED1P (ORCPT
+	with ESMTP id S1752678AbZCED1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Mar 2009 22:27:15 -0500
-Message-Id: <20090305032712.764688306@goodmis.org>
+Message-Id: <20090305032712.546335280@goodmis.org>
 References: <20090305032532.802709985@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Mar 2009 22:25:34 -0500
+Date: Wed, 04 Mar 2009 22:25:33 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,80 +21,59 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>, Theodore Tso <tytso@mit.edu>,
        Thomas Gleixner <tglx@linutronix.de>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/7] tracing: do not return EFAULT if read copied anything
-Content-Disposition: inline; filename=0002-tracing-do-not-return-EFAULT-if-read-copied-anythin.patch
+Subject: [PATCH 1/7] ring-buffer: fix timestamp in partial ring_buffer_page_read
+Content-Disposition: inline; filename=0001-ring-buffer-fix-timestamp-in-partial-ring_buffer_pa.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: fix trace read to conform to standards
+If a partial ring_buffer_page_read happens, then some of the
+incremental timestamps may be lost. This patch writes the
+recent timestamp into the page that is passed back to the caller.
 
-Andrew Morton, Theodore Tso and H. Peter Anvin brought to my attention
-that a userspace read should not return -EFAULT if it succeeded in
-copying anything. It should only return -EFAULT if it failed to copy
-at all.
-
-This patch modifies the check of copy_from_user and updates the return
-code appropriately.
-
-I also used H. Peter Anvin's short cut rule to just test ret == count.
+A partial ring_buffer_page_read is where the full page would not
+be written back to the user, and instead, just part of the page
+is copied to the user. A full page would be a page swap with the
+ring buffer and the timestamps would be correct.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
+ kernel/trace/ring_buffer.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index ab5cbca..57155dc 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -346,6 +346,9 @@ ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf, size_t cnt)
- 	int len;
- 	int ret;
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index f2a163d..f747364 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2461,6 +2461,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 	unsigned long flags;
+ 	unsigned int commit;
+ 	unsigned int read;
++	u64 save_timestamp;
+ 	int ret = -1;
  
-+	if (!cnt)
-+		return 0;
+ 	/*
+@@ -2515,6 +2516,9 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 		if (len < size)
+ 			goto out;
+ 
++		/* save the current timestamp, since the user will need it */
++		save_timestamp = cpu_buffer->read_stamp;
 +
- 	if (s->len <= s->readpos)
- 		return -EBUSY;
+ 		/* Need to copy one event at a time */
+ 		do {
+ 			memcpy(bpage->data + pos, rpage->data + rpos, size);
+@@ -2531,7 +2535,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
  
-@@ -353,9 +356,11 @@ ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf, size_t cnt)
- 	if (cnt > len)
- 		cnt = len;
- 	ret = copy_to_user(ubuf, s->buffer + s->readpos, cnt);
--	if (ret)
-+	if (ret == cnt)
- 		return -EFAULT;
+ 		/* update bpage */
+ 		local_set(&bpage->commit, pos);
+-		bpage->time_stamp = rpage->time_stamp;
++		bpage->time_stamp = save_timestamp;
  
-+	cnt -= ret;
-+
- 	s->readpos += len;
- 	return cnt;
- }
-@@ -3049,6 +3054,9 @@ tracing_buffers_read(struct file *filp, char __user *ubuf,
- 	ssize_t ret;
- 	size_t size;
- 
-+	if (!count)
-+		return 0;
-+
- 	/* Do we have previous read data to read? */
- 	if (info->read < PAGE_SIZE)
- 		goto read;
-@@ -3073,8 +3081,10 @@ read:
- 		size = count;
- 
- 	ret = copy_to_user(ubuf, info->spare + info->read, size);
--	if (ret)
-+	if (ret == size)
- 		return -EFAULT;
-+	size -= ret;
-+
- 	*ppos += size;
- 	info->read += size;
- 
+ 		/* we copied everything to the beginning */
+ 		read = 0;
 -- 
 1.6.1.3
 
