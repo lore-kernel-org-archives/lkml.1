@@ -1,179 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZCEKKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbZCEKOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756088AbZCEKKR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbZCEKKD
+	id S1755265AbZCEKOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbZCEKOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:10:03 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:59709 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754005AbZCEKKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:10:01 -0500
-Date: Thu, 5 Mar 2009 03:09:59 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH A 09/10] OMAP2/3: Remove OMAP_PRM_REGADDR, OMAP_CM_REGADDR
- (fwd)
-Message-ID: <alpine.DEB.2.00.0903050309170.26353@utopia.booyaka.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 5 Mar 2009 05:14:40 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:45008 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753445AbZCEKOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:14:39 -0500
+Date: Thu, 5 Mar 2009 11:14:36 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: tglx@linutronix.de, James.Bottomley@HansenPartnership.com,
+       jengelh@medozas.de, bharrosh@panasas.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
+	scsi-sgpool)objects
+Message-ID: <20090305101436.GV11787@kernel.dk>
+References: <1236207389.21486.19.camel@localhost.localdomain> <20090305173649M.fujita.tomonori@lab.ntt.co.jp> <20090305173952U.fujita.tomonori@lab.ntt.co.jp> <20090305182958Q.fujita.tomonori@lab.ntt.co.jp> <20090305100901.GU11787@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090305100901.GU11787@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Copying lkml for anyone following along there,
-
-- Paul
-
----------- Forwarded message ----------
-Date: Thu, 5 Mar 2009 03:07:37 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>,
-    linux-arm-kernel@lists.arm.linux.org.uk, Tony Lindgren <tony@atomide.com>,
-    linux-omap@vger.kernel.org
-Subject: Re: [PATCH A 09/10] OMAP2/3: Remove OMAP_PRM_REGADDR, OMAP_CM_REGADDR
-
-Hello Richard
-
-On Tue, 3 Mar 2009, Russell King - ARM Linux wrote:
-
-> On Tue, Mar 03, 2009 at 07:09:35AM -0800, Kevin Hilman wrote:
-> > Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
+On Thu, Mar 05 2009, Jens Axboe wrote:
+> On Thu, Mar 05 2009, FUJITA Tomonori wrote:
+> > Oops, somehow I forgot to CC Jens...
 > > 
-> > > On Mon, Mar 02, 2009 at 07:48:07PM -0700, Paul Walmsley wrote:
-> > >> Hi Kevin,
-> > >> 
-> > >> On Mon, 2 Mar 2009, Kevin Hilman wrote:
-> > >> 
-> > >> > What about the rest of the *_PRM_REGADDR() accessor macro changes in
-> > >> > this patch?
-> > >> > 
-> > >> > The rest of the PM core code uses these and so does not build on top
-> > >> > of the Russell's omap-clks3 branch.
-> > >> 
-> > >> yes, all of the *_{PRM,CM}_REGADDR() work should be kept.
-> > >
-> > > Well, in case it wasn't clear from my previous mail, I'm not merging this.
+> > On Thu, 5 Mar 2009 17:39:17 +0900
+> > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > > 
-> > It was clear why you weren't merging the couple pieces that you
-> > referenced, but it wasn't clear whether you had problems with the rest
-> > of the patch.
+> > > On Thu, 5 Mar 2009 17:36:13 +0900
+> > > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > 
+> > > > CC'ed Jens,
+> > > > 
+> > > > On Wed, 04 Mar 2009 22:56:29 +0000
+> > > > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > > 
+> > > > > On Wed, 2009-03-04 at 22:45 +0100, Thomas Gleixner wrote:
+> > > > > > On Wed, 4 Mar 2009, Thomas Gleixner wrote:
+> > > > > > 
+> > > > > > Instrumented the code and the result of the failing request is
+> > > > > > below. Looks like the function which sets up the request gets
+> > > > > > nr_phys_segments wrong by one. 
+> > > > > > 
+> > > > > > If you need further trace data feel free to ask.
+> > > > > 
+> > > > > OK, the mapping all checks out correctly ... there must be something
+> > > > > wrong with the way we count before mapping.
+> > > > 
+> > > > Yeah, looks we miscalculate nr_phys_segments in the merging path.
+> > > > 
+> > > > blk_recount_segments() needs to set bi_seg_front_size and
+> > > > bi_seg_back_size for ll_merge_requests_fn()?
+> > > > 
+> > > > =
+> > > > diff --git a/block/blk-merge.c b/block/blk-merge.c
+> > > > index a104593..efb65b6 100644
+> > > > --- a/block/blk-merge.c
+> > > > +++ b/block/blk-merge.c
+> > > > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
+> > > >  
+> > > >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
+> > > >  {
+> > > > +	unsigned int seg_size;
+> > > >  	struct bio *nxt = bio->bi_next;
+> > > >  
+> > > >  	bio->bi_next = NULL;
+> > > > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
+> > > > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
+> > > >  	bio->bi_next = nxt;
+> > > >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
+> > > > +
+> > > > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
+> > > > +		bio->bi_seg_front_size = seg_size;
+> > > > +	if (bio->bi_phys_segments > bio->bi_seg_back_size)
+> > > > +		bio->bi_seg_back_size = seg_size;
+> > > > +
+> > > >  }
+> > > >  EXPORT_SYMBOL(blk_recount_segments);
+> > > 
+> > > Duh, here's the proper patch.
+> > > 
+> > > diff --git a/block/blk-merge.c b/block/blk-merge.c
+> > > index a104593..06e0db4 100644
+> > > --- a/block/blk-merge.c
+> > > +++ b/block/blk-merge.c
+> > > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
+> > >  
+> > >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
+> > >  {
+> > > +	unsigned int seg_size;
+> > >  	struct bio *nxt = bio->bi_next;
+> > >  
+> > >  	bio->bi_next = NULL;
+> > > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
+> > > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
+> > >  	bio->bi_next = nxt;
+> > >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
+> > > +
+> > > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
+> > > +		bio->bi_seg_front_size = seg_size;
+> > > +	if (seg_size > bio->bi_seg_back_size)
+> > > +		bio->bi_seg_back_size = seg_size;
+> > > +
+> > >  }
+> > >  EXPORT_SYMBOL(blk_recount_segments);
 > 
-> Because it's just plain wrong.  It persists in creating new instances of
-> crap that I've already removed, such as using 'u32' instead of void __iomem
-> pointers for register addresses.
-> It persists in the init-time fixup of addresses. 
+> Good catch, I merged it with a slight change of layout and clearing
+> seg_size initially, to avoid gcc silly errors.
 
-Sounds like there has been some miscommunication.  From our previous 
-E-mail on this topic, 
+While merging that, I think we can do better than this. Essentially we
+just need to have __blk_recalc_rq_segments() track the back bio as well,
+then we don't have to pass in a pointer for segment sizes.
 
-   http://lkml.org/lkml/2009/1/29/32
+Totally untested, comments welcome...
 
-... we agreed that the register rewriting part of this patch should not be 
-merged; and noted that the register base rewriting was removed by D 10.  
-(At the end of the six series, all virtual addresses are typed as void 
-__iomem *.)
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index 6be3797..5a244f0 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -39,14 +39,13 @@ void blk_recalc_rq_sectors(struct request *rq, int nsect)
+ }
+ 
+ static unsigned int __blk_recalc_rq_segments(struct request_queue *q,
+-					     struct bio *bio,
+-					     unsigned int *seg_size_ptr)
++					     struct bio *bio)
+ {
+ 	unsigned int phys_size;
+ 	struct bio_vec *bv, *bvprv = NULL;
+ 	int cluster, i, high, highprv = 1;
+ 	unsigned int seg_size, nr_phys_segs;
+-	struct bio *fbio;
++	struct bio *fbio, *bbio;
+ 
+ 	if (!bio)
+ 		return 0;
+@@ -87,41 +86,28 @@ new_segment:
+ 			seg_size = bv->bv_len;
+ 			highprv = high;
+ 		}
++		bbio = bio;
+ 	}
+ 
+-	if (seg_size_ptr)
+-		*seg_size_ptr = seg_size;
++	if (nr_phys_segs == 1 && seg_size > fbio->bi_seg_front_size)
++		fbio->bi_seg_front_size = seg_size;
++	if (seg_size > bbio->bi_seg_back_size)
++		bbio->bi_seg_back_size = seg_size;
+ 
+ 	return nr_phys_segs;
+ }
+ 
+ void blk_recalc_rq_segments(struct request *rq)
+ {
+-	unsigned int seg_size = 0, phys_segs;
+-
+-	phys_segs = __blk_recalc_rq_segments(rq->q, rq->bio, &seg_size);
+-
+-	if (phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
+-		rq->bio->bi_seg_front_size = seg_size;
+-	if (seg_size > rq->biotail->bi_seg_back_size)
+-		rq->biotail->bi_seg_back_size = seg_size;
+-
+-	rq->nr_phys_segments = phys_segs;
++	rq->nr_phys_segments = __blk_recalc_rq_segments(rq->q, rq->bio);
+ }
+ 
+ void blk_recount_segments(struct request_queue *q, struct bio *bio)
+ {
+ 	struct bio *nxt = bio->bi_next;
+-	unsigned int seg_size = 0;
+ 
+ 	bio->bi_next = NULL;
+-	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
+-
+-	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
+-		bio->bi_seg_front_size = seg_size;
+-	if (seg_size > bio->bi_seg_back_size)
+-		bio->bi_seg_back_size = seg_size;
+-
++	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio);
+ 	bio->bi_next = nxt;
+ 	bio->bi_flags |= (1 << BIO_SEG_VALID);
+ }
 
-> The clkdm.name->clkdm.ptr fixup is unreliable without having a flag to 
-> say whether it's been done or not.
+-- 
+Jens Axboe
 
-Could we just add a simple CLOCK_INITED clock flag to resolve your 
-concerns here?  Or are you referring to a different problem?
-
-> And so forth.
->
-> While the powerdomain stuff can be (and has been) failed, clocks can't be
-> failed as a result of the rewrites not working - since they're referenced
-> by other clocks, we'd need some way to ensure all childs of a failed parent
-> also fail.
-
-This seems to be an inherent issue with the structure of the clock tree 
-itself, with parent pointers to static structures, rather than with 
-clockdomain rewriting.  Undoubtedly we could put plenty more validity 
-checks into the clock code.  The question is whether they would be worth 
-the code space/development time tradeoff.  Most of the validity problems 
-observed during the last few years of work prompted checks to be added.
-
-> Moreover, the approach taken in the series of patches introducing it
-> requires some clocks to be split up just for the sake of supporting this
-> alternative method - I'm referring here to the creation of the mcbsp
-> src clocks.
-
-It's true that the mcbsp_fck clocks needed to split to accomodate the PRCM 
-module + register offset change, but as noted before, I don't think it 
-affects anything in practice.  It's an internal clock tree structure 
-detail that ultimately won't be exposed to the driver.  It doesn't involve 
-any rewriting.
-
-> If I look at the remaining patch dependencies, then it works out as
-> something like this:
-> 
-> +---[A 09] OMAP2/3: Remove OMAP_PRM_REGADDR, OMAP_CM_REGADDR
-> +---[D 05] OMAP2 clock: add clk.prcm_mod field; annotate OMAP2xxx clocks
-> +---[D 06] OMAP3 clock: add "prcm_mod" field to OMAP3xxx clocks
-> +---[D 07] OMAP2/3 clock: add _omap2_clk_{read,write}_reg()
-> +---[D 08] OMAP2/3 clock: use clk->prcm_mod for all struct clk register addres
-> +---[D 09] OMAP2/3 clock: encode target IDLEST bits
-> +---[F 05] OMAP clock: add OMAP chip family-specific clk_register() option
-> +---[D 04] OMAP3 clock: split mcbspX_src_fck from mcbspX_fck
-> |
-> | +-[B 01] OMAP2/3 clock: combine clkdm, clkdm_name into union in struct clk
-> | +-[B 03] OMAP2/3 clockdomains: add CM, PRM, virt_opp_clkdm clockdomains
-> | +-[B 05] OMAP2/3 clock: add clockdomains to all remaining clocks; fix clkdm
-> | |
-> +-+-[F 12] OMAP2/3 McBSP: add temporary clockdomain fix for McBSP virtual cloc
->   |
->   +-[F 06] OMAP2/3 clock: every clock must have a clkdm
-> 
-> where D4 is a side effect of the way register addresses are being handled
-> (iow D6), and F12 is a side effect of requiring F6 and D4.  Moreover,
-> the virt_opp_clkdm part of B03 is a side effect of F6.
-> 
-> If we're having to introduce work-arounds for ways things are being done,
-> that's a sure sign that the original change was not correct.
-
-Or that we haven't yet had the opportunity to implement a more 
-wide-ranging code change, as is the case with the virt_opp_clkdm.  That is 
-slated for removal; it's currently removed for OMAP3 in development code.
-
-The working model has been to work on individual pieces separately, to 
-build towards an end-goal, rather than making a huge set of changes all at 
-once with multiple interlocking code pieces.
-
-Patch F 12 is no longer needed, as we discussed earlier.  It was only 
-needed because the old McBSP driver used some buggy custom clocks, and 
-this has already been fixed in the driver.
-
-> Also, from what I've heard, the register access issue is going to be far
-> larger and is going to require _significant_ rework when OMAP4 becomes
-> available - apparantly, not only are the unit base addresses different,
-> but also the offsets within each functional unit.
-
-OMAP4 will require many changes, to many other parts of the code also.  
-It would be unfortunate if many of the OMAP2/3 changes will stall until 
-the OMAP4 work is completed - that's several months away at least.
-
-> So, rather than continuing with what is a sub-standard approach, I think
-> it needs more thought and consideration, and in my opinion it is not ready
-> for mainline.
-> 
-> So, what can we do to cleanly sort this out?  I have an idea, but I need
-> time to work on it... time I don't think I can spend this late in the
-> kernel cycle.
-
-Can you propose your idea for discussion?  That way, we can discuss it, 
-and if it works out, we can go forward with implementing it, if you wind 
-up being busy with other things.
-
-> So at this point I'm going to say: okay, the above patches are not going
-> to get merged.  I'm going to push out what I have onto the list later
-> today, and if nothing comes back I'll merge the omap-clks3 branch into
-> the devel branch for the next merge window.
-
-regards,
-
-- Paul
