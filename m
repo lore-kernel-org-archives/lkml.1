@@ -1,86 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZCEOXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZCEOZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZCEOXk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 09:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZCEOXa
+	id S1754788AbZCEOZi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 09:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZCEOZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 09:23:30 -0500
-Received: from mga03.intel.com ([143.182.124.21]:5823 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754334AbZCEOX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 09:23:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,307,1233561600"; 
-   d="scan'208";a="117089959"
-Date: Thu, 5 Mar 2009 22:22:30 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Markus <M4rkusXXL@web.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Zdenek Kabelac <zkabelac@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Subject: Re: drop_caches ...
-Message-ID: <20090305142230.GA23465@localhost>
-References: <200903041057.34072.M4rkusXXL@web.de> <200903051255.35407.M4rkusXXL@web.de> <20090305132906.GA22524@localhost> <200903051505.26584.M4rkusXXL@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903051505.26584.M4rkusXXL@web.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Mar 2009 09:25:30 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:48826 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbZCEOZ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 09:25:29 -0500
+Date: Thu, 5 Mar 2009 15:25:17 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [PATCH] lm90: Support the MAX6648/6692 chips
+Message-ID: <20090305152517.4e0b8983@hyperion.delvare>
+In-Reply-To: <20090302210106.GD6550@plum>
+References: <20090302210106.GD6550@plum>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Markus,
+Hi Darrick
 
-On Thu, Mar 05, 2009 at 04:05:26PM +0200, Markus wrote:
-> > Could you please try the attached patch which will also show the
-> > user and process that opened these files? It adds three more fields
-> > when CONFIG_PROC_FILECACHE_EXTRAS is selected.
-> > 
-> > Thanks,
-> > Fengguang
-> >  
-> > On Thu, Mar 05, 2009 at 01:55:35PM +0200, Markus wrote:
-> > > 
-> > > # sort -n -k 3 filecache-2009-03-05 | tail -n 5
-> > >      15886       7112     7112     100      1    d- 00:08
-> > > (tmpfs)        /dev/zero\040(deleted)
-> > >      16209      35708    35708     100      1    d- 00:08
-> > > (tmpfs)        /dev/zero\040(deleted)
-> > >      16212      82128    82128     100      1    d- 00:08
-> > > (tmpfs)        /dev/zero\040(deleted)
-> > >      15887     340024   340024     100      1    d- 00:08
-> > > (tmpfs)        /dev/zero\040(deleted)
-> > >      15884     455008   455008     100      1    d- 00:08
-> > > (tmpfs)        /dev/zero\040(deleted)
-> > > 
-> > > The sum of the third column is 1013 MB.
-> > > To note the biggest ones (or do you want the whole file?)... and 
-> thats 
-> > > after a sync and a drop_caches! (Can be seen in the commands given.)
+On Mon, 2 Mar 2009 13:01:06 -0800, Darrick J. Wong wrote:
+> The max6648 chip has nearly the same register set as the 6657 and
+> seems to have a working manufacturer/chip id so we can detect it.
+> This patch adds support for it.  Tested on a Nvidia Quadro FX 1500
+> card.
 > 
-> I could, but I know where these things belong to. Its from sphinx (a 
-> mysql indexer) searchd. It loads parts of the index into memory.
-> The sizes looked well-known and killing the searchd will reduce "cached" 
-> to a normal amount ;)
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/hwmon/Kconfig |    4 ++--
+>  drivers/hwmon/lm90.c  |    7 ++++++-
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+> index 8c312c6..7da49d3 100644
+> --- a/drivers/hwmon/Kconfig
+> +++ b/drivers/hwmon/Kconfig
+> @@ -550,8 +550,8 @@ config SENSORS_LM90
+>  	help
+>  	  If you say yes here you get support for National Semiconductor LM90,
+>  	  LM86, LM89 and LM99, Analog Devices ADM1032 and ADT7461, and Maxim
+> -	  MAX6646, MAX6647, MAX6649, MAX6657, MAX6658, MAX6659, MAX6680 and
+> -	  MAX6681 sensor chips.
+> +	  MAX6646, MAX6647, MAX6649, MAX6657, MAX6658, MAX6659, MAX6680,
+> +	  MAX6648, MAX6692 and MAX6681 sensor chips.
+>  
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called lm90.
+> diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
+> index 96a7018..1802366 100644
+> --- a/drivers/hwmon/lm90.c
+> +++ b/drivers/hwmon/lm90.c
+> @@ -776,7 +776,12 @@ static int lm90_detect(struct i2c_client *new_client, int kind,
+>  			 && (reg_config1 & 0x3f) == 0x00
+>  			 && reg_convrate <= 0x07) {
+>  				kind = max6646;
+> -			}
+> +			} else
+> +			/* The MAX6648/6692 chips have a working man/chip id
+> +			 * and the same register set as the 6657.
+> +			 */
+> +			if (chip_id == 0x59 && address == 0x4C)
+> +				kind = max6657;
+>  		}
+>  
+>  		if (kind <= 0) { /* identification failed */
 
-And it's weird about the file name: /dev/zero.  I wonder how it
-managed to create that file, and then delete it, inside a tmpfs!
+I am confused. According to my notes, the MAX6648/MAX6692 is the same
+chip as the MAX6646/MAX6647/MAX6649 (same chip ID of 0x59), the only
+difference being the I2C address (0x4c for the MAX6646, 0x4e for the
+MAX6647 and 0x4d for the MAX6648/MAX6649/MAX6692). So the current code
+should _already_ detect your MAX6648 or MAX6692 as kind = max6646.
 
-Just out of curiosity, are they shm objects? Can you show us the
-output of 'df'? In your convenient time.
+Can you please test the latest version of the sensors-detect script [1]
+and let me know if your chip is properly detected? If not, please
+provide a dump of your chip.
 
-> I just dont know why its in "cached" (can that be swapped out btw?).
-> But I think thats not a problem of the kernel, but of anonymous 
-> mmap-ing.
+[1] http://www.lm-sensors.org/svn/lm-sensors/trunk/prog/detect/sensors-detect
 
-You know, because the file is created in tmpfs, which is swap-backed.
-By definition the pages here cannot be dropped by third-party.
-
-> I think its resolved, thanks to everybody and Fengguang in particular!
-
-You are welcome :-)
-
-Thanks,
-Fengguang
+-- 
+Jean Delvare
