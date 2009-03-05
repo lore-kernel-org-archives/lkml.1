@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZCERng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZCERuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbZCERng (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 12:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbZCERnY
+	id S1756158AbZCERuM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 12:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbZCERt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 12:43:24 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:34576 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754133AbZCERnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 12:43:23 -0500
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Message-Id: <4BC7466E-89A4-44E3-8189-C5531F994D73@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: Hannes Eder <hannes@hanneseder.net>
-In-Reply-To: <20090304183136.525.13769.stgit@f10box.hanneseder.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 0/3] xfs: fix sparse warnings
-Date: Thu, 5 Mar 2009 11:43:20 -0600
-References: <20090304183136.525.13769.stgit@f10box.hanneseder.net>
-X-Mailer: Apple Mail (2.926)
+	Thu, 5 Mar 2009 12:49:59 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:40833 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754736AbZCERt6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 12:49:58 -0500
+Date: Thu, 5 Mar 2009 11:49:51 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>, Dave Hansen <haveblue@us.ibm.com>
+Cc: Linux Containers <containers@lists.osdl.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] checkpoint: define pid==0 as self-checkpoint
+Message-ID: <20090305174951.GA9782@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[ this is on top of Dave's version of Oren's patchset, i.e.
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/daveh/linux-2.6-cr.git;a=shortlog;h=dave-v13.4 ]
 
-On Mar 4, 2009, at 12:33 PM, Hannes Eder wrote:
+Define pid=0 when calling sys_checkpoint as asking for
+a self-checkpoint.
 
-> The following series fixes a fair amount of the remaining sparse
-> warnings in fs/xfs with !CONFIG_XFS_DEBUG.
->
-> With CONFIG_XFS_DEBUG we still got alot of "Should it be static?"
-> warnings, but that's a different issue.
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ checkpoint/sys.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Looks good to me with the changes Christoph pointed out.
-I'll push it in. Thanks.
-
-Reviewed-by: Felix Blyakher <felixb@sgi.com>
-
->
->
-> ---
-> Hannes Eder (3):
->      xfs: include header files for prototypes
->      xfs: make symbols static
->      xfs: move declaration to header file
->
-> fs/xfs/linux-2.6/xfs_ioctl.c |    1 +
-> fs/xfs/linux-2.6/xfs_super.c |    6 +++---
-> fs/xfs/support/debug.c       |    1 +
-> fs/xfs/xfs_bmap.c            |    2 +-
-> fs/xfs/xfs_da_btree.h        |    1 +
-> fs/xfs/xfs_dir2.c            |    2 --
-> fs/xfs/xfs_dir2_leaf.c       |    2 +-
-> 7 files changed, 8 insertions(+), 7 deletions(-)
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+index 4a51ed3..acc5121 100644
+--- a/checkpoint/sys.c
++++ b/checkpoint/sys.c
+@@ -224,6 +224,8 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+ 	if (flags)
+ 		return -EINVAL;
+ 
++	if (pid == 0)
++		pid = current->pid;
+ 	ctx = cr_ctx_alloc(fd, flags | CR_CTX_CKPT);
+ 	if (IS_ERR(ctx))
+ 		return PTR_ERR(ctx);
+-- 
+1.5.4.3
 
