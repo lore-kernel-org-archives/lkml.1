@@ -1,90 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZCEPcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZCEPgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbZCEPcw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 10:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZCEPcn
+	id S1756007AbZCEPgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 10:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZCEPgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 10:32:43 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:58344 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbZCEPcm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 10:32:42 -0500
-Message-ID: <49AFF0D7.8080007@oracle.com>
-Date: Thu, 05 Mar 2009 07:33:43 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] unifdef.c change "getline" to "get_line" to avoid
- C 	library confusion.
-References: <dd18b0c30903042141k1adc0f6cj4bc286cfa29f475c@mail.gmail.com>	 <20090305060436.GA5359@nowhere>	 <dd18b0c30903042351oae6fafck255d6b1058c83f1f@mail.gmail.com>	 <dd18b0c30903050046v4fc9eff3h99734406112ec0f1@mail.gmail.com> <dd18b0c30903050049g68073bcamce13b9a2605372ba@mail.gmail.com>
-In-Reply-To: <dd18b0c30903050049g68073bcamce13b9a2605372ba@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 5 Mar 2009 10:36:10 -0500
+Received: from fifo99.com ([67.223.236.141]:44812 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753998AbZCEPgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 10:36:09 -0500
+Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
+From: Daniel Walker <dwalker@fifo99.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, stern@rowland.harvard.edu, randy.dunlap@oracle.com,
+       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
+       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-a1aade478862fca8710904532cbc6efed97fd05a@git.kernel.org>
+References: <49AF18B7.4050305@kernel.org>
+	 <tip-a1aade478862fca8710904532cbc6efed97fd05a@git.kernel.org>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 07:36:06 -0800
+Message-Id: <1236267366.5937.56.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.49AFF078.00FE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Justin P. Mattock <justinmattock@gmail.com>
-> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
-> 
-> This fixes an error when compiling the kernel.
+On Thu, 2009-03-05 at 10:00 +0000, Yinghai Lu wrote:
 
-Did you determine why you need this now and other people don't
-need it (yet)?  Maybe the rest of us will need it in the future...
+> +
+> +Mini-HOWTO for using the earlyprintk=dbgp boot option with a
+> +USB2 Debug port key and a debug cable, on x86 systems.
+> +
+> +You need two computers, the 'USB debug key' special gadget and
+> +and two USB cables, connected like this:
+> +
+> +  [host/target] <-------> [USB debug key] <-------> [client/console]
+> +
+> +1. There are three specific hardware requirements:
+> +
+> + a.) Host/target system needs to have USB debug port capability.
+> +
+> + You can check this capability by looking at a 'Debug port' bit in
+> + the lspci -vvv output:
 
+...
 
->  CHK     include/linux/version.h
->  HOSTCC  scripts/unifdef
-> scripts/unifdef.c:209: error: conflicting types for 'getline'
-> /usr/include/stdio.h:651: note: previous declaration of 'getline' was here
-> make[1]: *** [scripts/unifdef] Error 1
-> make: *** [__headers] Error 2
-> 
-> --
-> scripts/unifdef.c  |  3 +++
-> 1 files changed, 3 insertions(+),0 deletions(-)
-> 
-> ---a/scripts/unifdef.c	        2009-03-05 00:07:28.000000000 -0800
-> +++b/scripts/unifdef.c	2009-03-05 00:04:56.000000000 -0800
-> @@ -206,7 +206,7 @@ static void             done(void);
->  static void             error(const char *);
->  static int              findsym(const char *);
->  static void             flushline(bool);
-> -static Linetype         getline(void);
-> +static Linetype         get_line(void);
->  static Linetype         ifeval(const char **);
->  static void             ignoreoff(void);
->  static void             ignoreon(void);
-> @@ -512,7 +512,7 @@ process(void)
-> 
->  	for (;;) {
->  		linenum++;
-> -		lineval = getline();
-> +		lineval = get_line();
->  		trans_table[ifstate[depth]][lineval]();
->  		debug("process %s -> %s depth %d",
->  		    linetype_name[lineval],
-> @@ -526,7 +526,7 @@ process(void)
->   * help from skipcomment().
->   */
->  static Linetype
-> -getline(void)
-> +get_line(void)
->  {
->  	const char *cp;
->  	int cursym;
-> 
-> 
+> + c.) Thirdly, you need a second client/console system with a regular USB port.
 
+You might want to combine a.) and c.) since there is some disconnect
+between the two. c.) doesn't explicitly say a second time that the
+client/console needs the debug port capability ..
 
--- 
-~Randy
+Or say
+
+a.) You will need two USB ports. One on the client/console system and
+one one the target system.
+
+b.) The client/console and target USB ports must have the debug port
+capability. You can check for this as follows,
+
+c.) ...
+
+I just felt the disconnect between the two a.) , and c.) left some
+questions.
+
+> +2. Software requirements:
+> +
+> + a.) On the host/target system:
+> +
+> +    You need to enable the following kernel config option:
+> +
+> +      CONFIG_EARLY_PRINTK_DBGP=y
+> +
+> +    And you need to add the boot command line: "earlyprintk=dbgp".
+> +    (If you are using Grub, append it to the 'kernel' line in
+> +     /etc/grub.conf)
+
+Isn't the usual grub.conf in /boot/grub/grub.conf ? That's where mine
+always seem to end up.
+
+> +    NOTE: normally earlyprintk console gets turned off once the
+> +    regular console is alive - use "earlyprintk=dbgp,keep" to keep
+> +    this channel open beyond early bootup. This can be useful for
+> +    debugging crashes under Xorg, etc.
+> +
+> + b.) On the client/console system:
+> +
+> +    You should enable the following kernel config option:
+> +
+> +      CONFIG_USB_SERIAL_DEBUG=y
+> +
+> +    On the next bootup with the modified kernel you should
+> +    get a /dev/ttyUSBx device(s).
+> +
+> +    Now this channel of kernel messages is ready to be used: start
+> +    your favorite terminal emulator (minicom, etc.) and set
+> +    it up to use /dev/ttyUSB0 - or use a raw 'cat /dev/ttyUSBx' to
+> +    see the raw output.
+
+You might want to switch the first /dev/ttyUSB0 to /dev/ttyUSBx .
+
+> + c.) On Nvidia Southbridge based systems: the kernel will try to probe
+> +     and find out which port has debug device connected.
+> +
+> +3. Testing that it works fine:
+> +
+> +   You can test the output by using earlyprintk=dbgp,keep and provoking
+> +   kernel messages on the host/target system. You can provoke a harmless
+> +   kernel message by for example doing:
+> +
+> +     echo h > /proc/sysrq-trigger
+> +
+> +   On the host/target system you should see this help line in "dmesg" output:
+> +
+> +     SysRq : HELP : loglevel(0-9) reBoot Crashdump terminate-all-tasks(E) memory-full-oom-kill(F) kill-all-tasks(I) saK show-backtrace-all-active-cpus(L) show-memory-usage(M) nice-all-RT-tasks(N) powerOff show-registers(P) show-all-timers(Q) unRaw Sync show-task-states(T) Unmount show-blocked-tasks(W) dump-ftrace-buffer(Z)
+> +
+> +   On the client/console system do:
+> +
+> +       cat /dev/ttyUSB0
+
+Missing "x" here too.
+
+Seems like a nice document. Thanks for writing it.
+
+Daniel
+
