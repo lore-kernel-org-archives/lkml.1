@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbZCEU3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZCEUaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756390AbZCEU3o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 15:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZCEU2h
+	id S1756883AbZCEUaa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 15:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZCEU2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 15:28:37 -0500
-Received: from [213.79.90.228] ([213.79.90.228]:46797 "EHLO
+	Thu, 5 Mar 2009 15:28:43 -0500
+Received: from [213.79.90.228] ([213.79.90.228]:46817 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755192AbZCEU2g (ORCPT
+	by vger.kernel.org with ESMTP id S1755229AbZCEU2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 15:28:36 -0500
-Date: Thu, 5 Mar 2009 23:28:34 +0300
+	Thu, 5 Mar 2009 15:28:42 -0500
+Date: Thu, 5 Mar 2009 23:28:40 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/11] sdhci: Add support for card-detection polling
-Message-ID: <20090305202834.GD28709@oksana.dev.rtsoft.ru>
+Subject: [PATCH 06/11] sdhci: Add get_{max,timeout}_clock callbacks
+Message-ID: <20090305202840.GF28709@oksana.dev.rtsoft.ru>
 References: <20090305202737.GA24166@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -29,84 +29,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds SDHCI_QUIRK_BROKEN_CARD_DETECTION quirk. When specified,
-sdhci driver will set MMC_CAP_NEEDS_POLL MMC host capability, and won't
-enable card insert/remove interrupts.
+From: Ben Dooks <ben-linux@fluff.org>
 
-This is needed for hosts with unreliable card detection, such as FSL
-eSDHC. The original eSDHC driver was tring to "debounce" card-detection
-IRQs by reading present state and disabling particular interrupts. But
-with this debouncing scheme I noticed that sometimes we miss card
-insertion/removal events.
+Some controllers do not provide clock information in their capabilities
+(in the Samsung case, it is because there are multiple clock sources
+available to the controller). Add hooks to allow the system to supply
+clock information.
 
+p.s.
+In the original Ben's patch there was a bug that makes sdhci_add_host()
+return -ENODEV even if callbacks were specified. This is fixed now.
+
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   17 +++++++++++++++--
+ drivers/mmc/host/sdhci.c |   22 +++++++++++++++-------
  drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 17 insertions(+), 2 deletions(-)
+ 2 files changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 0cbde8e..d71c877 100644
+index 8aaf3a5..cca80d3 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -167,6 +167,9 @@ static void sdhci_set_card_detection(struct sdhci_host *host, bool enable)
- {
- 	u32 irqs = SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT;
+@@ -1729,19 +1729,27 @@ int sdhci_add_host(struct sdhci_host *host)
  
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		return;
-+
- 	if (enable)
- 		sdhci_unmask_irqs(host, irqs);
- 	else
-@@ -1096,6 +1099,7 @@ out:
- static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
- {
- 	struct sdhci_host *host;
-+	bool present;
- 	unsigned long flags;
+ 	host->max_clk =
+ 		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
++	host->max_clk *= 1000000;
+ 	if (host->max_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++		if (!host->ops->get_max_clock) {
++			printk(KERN_ERR
++			       "%s: Hardware doesn't specify base clock "
++			       "frequency.\n", mmc_hostname(mmc));
++			return -ENODEV;
++		}
++		host->max_clk = host->ops->get_max_clock(host);
+ 	}
+-	host->max_clk *= 1000000;
  
- 	host = mmc_priv(mmc);
-@@ -1110,8 +1114,14 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 
- 	host->mrq = mrq;
- 
--	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)
--		|| (host->flags & SDHCI_DEVICE_DEAD)) {
-+	/* If polling, assume that the card is always present. */
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		present = true;
-+	else
-+		present = sdhci_readl(host, SDHCI_PRESENT_STATE) &
-+				SDHCI_CARD_PRESENT;
-+
-+	if (!present || host->flags & SDHCI_DEVICE_DEAD) {
- 		host->mrq->cmd->error = -ENOMEDIUM;
- 		tasklet_schedule(&host->finish_tasklet);
- 	} else
-@@ -1745,6 +1755,9 @@ int sdhci_add_host(struct sdhci_host *host)
- 	if (caps & SDHCI_CAN_DO_HISPD)
- 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
- 
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		mmc->caps |= MMC_CAP_NEEDS_POLL;
-+
- 	mmc->ocr_avail = 0;
- 	if (caps & SDHCI_CAN_VDD_330)
- 		mmc->ocr_avail |= MMC_VDD_32_33|MMC_VDD_33_34;
+ 	host->timeout_clk =
+ 		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
+ 	if (host->timeout_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++		if (!host->ops->get_timeout_clock) {
++			printk(KERN_ERR
++			       "%s: Hardware doesn't specify timeout clock "
++			       "frequency.\n", mmc_hostname(mmc));
++			return -ENODEV;
++		}
++		host->timeout_clk = host->ops->get_timeout_clock(host);
+ 	}
+ 	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
+ 		host->timeout_clk *= 1000;
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 1c29895..09a4363 100644
+index d0d812e..34f1849 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -212,6 +212,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_BROKEN_SMALL_PIO			(1<<13)
- /* Controller does not provide transfer-complete interrupt when not busy */
- #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<14)
-+/* Controller has unreliable card detection */
-+#define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<15)
+@@ -281,6 +281,8 @@ struct sdhci_ops {
+ 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
  
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
+ 	int		(*enable_dma)(struct sdhci_host *host);
++	unsigned int	(*get_max_clock)(struct sdhci_host *host);
++	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
+ };
+ 
+ extern void sdhci_writel(struct sdhci_host *host, u32 val, int reg);
 -- 
 1.5.6.5
 
