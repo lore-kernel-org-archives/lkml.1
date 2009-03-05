@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZCEKqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZCEKtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbZCEKqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 05:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZCEKqP
+	id S1753759AbZCEKtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 05:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbZCEKtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 05:46:15 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:44775 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbZCEKqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 05:46:14 -0500
-Date: Thu, 5 Mar 2009 11:45:48 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Martin Michlmayr <tbm@cyrius.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] MIPS: compat: Implement is_compat_task.
-Message-ID: <20090305104548.GA20667@linux-mips.org>
-References: <20090304202746.GA28981@deprecation.cyrius.com>
+	Thu, 5 Mar 2009 05:49:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45238 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750764AbZCEKs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 05:48:59 -0500
+Date: Thu, 5 Mar 2009 10:48:25 GMT
+From: David Rientjes <rientjes@google.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, tglx@linutronix.de, rientjes@google.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, tglx@linutronix.de, rientjes@google.com,
+       mingo@elte.hu
+In-Reply-To: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>
+Subject: [tip:core/locking] lockdep: remove duplicate CONFIG_DEBUG_LOCKDEP definitions
+Message-ID: <tip-03d78913f01e8f6599823f00357ed17b32747d3d@git.kernel.org>
+Git-Commit-ID: 03d78913f01e8f6599823f00357ed17b32747d3d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090304202746.GA28981@deprecation.cyrius.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Mar 2009 10:48:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is merely a build fix required after
-5b1017404aea6d2e552e991b3fd814d839e9cd67 was applied.  MIPS doesn't have
-the issue that was fixed for x86-64 by that patch.
+Commit-ID:  03d78913f01e8f6599823f00357ed17b32747d3d
+Gitweb:     http://git.kernel.org/tip/03d78913f01e8f6599823f00357ed17b32747d3d
+Author:     "David Rientjes" <rientjes@google.com>
+AuthorDate: Thu, 5 Mar 2009 02:29:05 -0800
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 5 Mar 2009 11:46:00 +0100
 
-This also doesn't solve the N32 issue which is that N32 seccomp processes
-will be treated as non-compat processes thus only have access to N64
-syscalls.
+lockdep: remove duplicate CONFIG_DEBUG_LOCKDEP definitions
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Impact: cleanup
 
-diff --git a/arch/mips/include/asm/compat.h b/arch/mips/include/asm/compat.h
-index ac5d541..6c5b409 100644
---- a/arch/mips/include/asm/compat.h
-+++ b/arch/mips/include/asm/compat.h
-@@ -3,6 +3,8 @@
- /*
-  * Architecture specific compatibility types
-  */
-+#include <linux/seccomp.h>
-+#include <linux/thread_info.h>
- #include <linux/types.h>
- #include <asm/page.h>
- #include <asm/ptrace.h>
-@@ -218,4 +220,9 @@ struct compat_shmid64_ds {
- 	compat_ulong_t	__unused2;
- };
+The atomic debug modifiers are already defined in
+kernel/lockdep_internals.h.
+
+Signed-off-by: David Rientjes <rientjes@google.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/lockdep.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 02014f7..9a1e2bc 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -433,13 +433,6 @@ atomic_t nr_find_usage_forwards_checks;
+ atomic_t nr_find_usage_forwards_recursions;
+ atomic_t nr_find_usage_backwards_checks;
+ atomic_t nr_find_usage_backwards_recursions;
+-# define debug_atomic_inc(ptr)		atomic_inc(ptr)
+-# define debug_atomic_dec(ptr)		atomic_dec(ptr)
+-# define debug_atomic_read(ptr)		atomic_read(ptr)
+-#else
+-# define debug_atomic_inc(ptr)		do { } while (0)
+-# define debug_atomic_dec(ptr)		do { } while (0)
+-# define debug_atomic_read(ptr)		0
+ #endif
  
-+static inline int is_compat_task(void)
-+{
-+	return test_thread_flag(TIF_32BIT);
-+}
-+
- #endif /* _ASM_COMPAT_H */
+ /*
