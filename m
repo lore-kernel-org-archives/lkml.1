@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZCEBdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbZCEBiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZCEBdw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 20:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZCEBdm
+	id S1754605AbZCEBiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 20:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZCEBiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 20:33:42 -0500
-Received: from mga02.intel.com ([134.134.136.20]:31873 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751077AbZCEBdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 20:33:41 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,304,1233561600"; 
-   d="asc'?scan'208";a="495050224"
-Subject: Re: [PATCH] fix DMI for EFI
-From: Huang Ying <ying.huang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Brian Maly <bmaly@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090304175418.GB29823@elte.hu>
-References: <49A9F597.4010601@redhat.com>
-	 <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com>
-	 <49ADEDA3.1030406@redhat.com> <20090304110022.GB18165@elte.hu>
-	 <49AE9850.9020103@redhat.com>  <20090304175418.GB29823@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-236M7aES5dQZkOV/Aoox"
-Date: Thu, 05 Mar 2009 09:33:38 +0800
-Message-Id: <1236216818.24215.24.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 4 Mar 2009 20:38:12 -0500
+Received: from n11b.bullet.mail.mud.yahoo.com ([209.191.125.178]:22970 "HELO
+	n11b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750761AbZCEBiL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 20:38:11 -0500
+X-Yahoo-Newman-Id: 595037.91259.bm@omp405.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=qW9pw6JqIOGHyaHp8mb3JlvE57JnQ+FD1S4eaIvaGc/wgQdIYPDFDLykIGbpuSVTrYzqLYWepA3sXUAyYlN42RIARhL01qEJV9RFunMmucNoHFDLAWpFWXZz/itABP4+/gyvqmXAWySQAKBOhvHDFjc5Ve8yK22yK/JVgf5/NnA=  ;
+X-YMail-OSG: CxX6f2AVM1mR.dh3UOWNO1W1WooCKaH7_A4a6laVpPyAhFsRDXOtiXBenyAsUnvRPzDRnx4w0qIhIC7tkorcfZ30a_IiHUFMB0RxXcj2evpCGE3kNZj0HqZUxBXK1ZxlohybnxEEdpZF6DRPAQdMa4TvNKd.Ge6udS3F6nbLlE_6bPz.kjiLNfuNbgXY
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: felipe.balbi@nokia.com, ext Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 1/2] input: misc: add twl4030-pwrbutton driver
+Date: Wed, 4 Mar 2009 17:38:07 -0800
+User-Agent: KMail/1.9.10
+Cc: Felipe Balbi <me@felipebalbi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Ortiz <sameo@openedhand.com>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <20090304090026.GC7394@dtor-d630.eng.vmware.com> <20090304101231.GS4640@scadufax.research.nokia.com>
+In-Reply-To: <20090304101231.GS4640@scadufax.research.nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903041738.07659.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 04 March 2009, Felipe Balbi wrote:
+> 
+> > Cool, I will keep it in my tree pending the threaded IRQ issue
+> > resolution.
+> 
+> I guess the threaded IRQ issue will still take a while to be solved and
+> this driver is working as is, so there's no big problem in pushing it
+> and fixing the threaded irq on later patches. But I'd like to hear from
+> Andrew, Dave and the others about that.
 
---=-236M7aES5dQZkOV/Aoox
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I'd say just push this driver with the other 2.6.30 stuff.
+There's no point in holding it back.
 
-On Thu, 2009-03-05 at 01:54 +0800, Ingo Molnar wrote:
-> * Brian Maly <bmaly@redhat.com> wrote:
->=20
-> >
-> >
-> >> Hm, could we ever find ourselves in the positition of having to access=
-=20
-> >> the DMI strings table in the EFI init code, to implement a quirk? I=20
-> >> think that's quite plausible.
-> >
-> >> OTOH, with some DMI quirks in EFI tables it's a bit of a chicken and=20
-> >> egg problem. Can DMI strings ever be outside of EFI tables on EFI=20
-> >> systems?
-> >
-> >> 	Ingo
-> >
-> > Right now it is EFI that loads the dmi tables (and all other=20
-> > tables such as ACPI), so it is a chicken and the egg. I think=20
-> > that if dmi is ever needed by EFI, the dmi scan will have to=20
-> > be moved inside efi_init. We could move the dmi scan into=20
-> > efi_init and do the dmi scan the moment we have the dmi table.=20
-> > Thats really the soonest point we could scan on EFI systems.=20
-> > Im OK with moving dmi to efi_init if you prefer.
->=20
-> Your patch looks fine, but i'd like to hear the opinion of Ying=20
-> Huang as well.
+The yet-to-be-merged threaded IRQ support won't break the
+in-tree stuff.  And it's not exactly fully cooked, since
+it doesn't yet handle a highly-relevant use-case ... :)
 
-This patch is OK for me.
+So the plan of record remains unchanged:  once mainline
+has adequately functional threaded IRQ support, update
+twl4030-family drivers to use it.  Meanwhile, use the
+current stuff, which despite some aesthetic warts still
+works just fine.
 
-Thanks,
-Huang Ying
+The positive note seems to be that the IRQ threading
+patches have gotten refreshed.
 
+- Dave
 
---=-236M7aES5dQZkOV/Aoox
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmvK+MACgkQKhFGF+eHlpjzxQCgkdMnzW5yolv13cMqmbYZ+uJD
-mGAAnA+LoOkkfzDKIOlCqyvFSHgTPTHh
-=5D7M
------END PGP SIGNATURE-----
-
---=-236M7aES5dQZkOV/Aoox--
 
