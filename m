@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZCENfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbZCENhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZCENfm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZCENfe
+	id S1754854AbZCENhM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZCENg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:35:34 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:40913 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbZCENfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:35:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=qkQfZQFNODQTtPGGaKmBwmpwWcdOw86VFoWMbv0d879n2jH5mrSw2GqOkfbmG82Owz
-         ra7uG3cyiF/oNewYK9yknr/hYFFzg5DEKgERiA6F275MBPBN8/ZTPXX1QcYUt3DDAMOF
-         4AsKQL5hA22OmMp8VvQz+xDQQjXucqilvMyDU=
-Date: Thu, 5 Mar 2009 16:42:19 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org, alan@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] devpts: remove graffiti
-Message-ID: <20090305134219.GA2202@x200.localdomain>
+	Thu, 5 Mar 2009 08:36:59 -0500
+Received: from mga14.intel.com ([143.182.124.37]:44474 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752721AbZCENg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 08:36:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,307,1233561600"; 
+   d="scan'208";a="117074946"
+Date: Thu, 5 Mar 2009 21:36:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Markus <M4rkusXXL@web.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Zdenek Kabelac <zkabelac@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Subject: Re: drop_caches ...
+Message-ID: <20090305133603.GA22442@localhost>
+References: <200903041057.34072.M4rkusXXL@web.de> <200903041947.41542.M4rkusXXL@web.de> <20090305004850.GA6045@localhost> <200903051255.35407.M4rkusXXL@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200903051255.35407.M4rkusXXL@web.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Very annoying when working with containters.
+Hi Markus,
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+On Thu, Mar 05, 2009 at 01:55:35PM +0200, Markus wrote:
+> > Markus, you may want to try this patch, it will have better chance to figure out
+> > the hidden file pages.
+> > 
+> > 1) apply the patch and recompile kernel with CONFIG_PROC_FILECACHE=m
+> > 2) after booting:
+> >         modprobe filecache
+> >         cp /proc/filecache filecache-`date +'%F'`
+> > 3) send us the copied file, it will list all cached files, including
+> >    the normally hidden ones.
+> 
+> The file consists of 674 lines. If I interpret it right, "size" is the 
+> filesize and "cached" the amount of the file being in cache (why can 
+> this be bigger than the file?!).
 
- fs/devpts/inode.c |    5 -----
- 1 file changed, 5 deletions(-)
+          size = file size in bytes
+        cached = cached pages
 
---- a/fs/devpts/inode.c
-+++ b/fs/devpts/inode.c
-@@ -198,9 +198,6 @@ static int mknod_ptmx(struct super_block *sb)
- 
- 	fsi->ptmx_dentry = dentry;
- 	rc = 0;
--
--	printk(KERN_DEBUG "Created ptmx node in devpts ino %lu\n",
--			inode->i_ino);
- out:
- 	mutex_unlock(&root->d_inode->i_mutex);
- 	return rc;
-@@ -369,8 +366,6 @@ static int new_pts_mount(struct file_system_type *fs_type, int flags,
- 	struct pts_fs_info *fsi;
- 	struct pts_mount_opts *opts;
- 
--	printk(KERN_NOTICE "devpts: newinstance mount\n");
--
- 	err = get_sb_nodev(fs_type, flags, data, devpts_fill_super, mnt);
- 	if (err)
- 		return err;
+So it's normal that (size > cached).
+
+Thanks,
+Fengguang
