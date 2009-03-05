@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbZCEX0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZCEX01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbZCEX0B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:26:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbZCEXZs
+	id S1757118AbZCEX01 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757255AbZCEX0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:25:48 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:33401 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:26:07 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:33446 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757425AbZCEXZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:25:46 -0500
-Message-Id: <20090305225515.754674167@polymtl.ca>
+	id S1757425AbZCEX0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:26:04 -0500
+Message-Id: <20090305225511.794620538@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:46 -0500
+Date: Thu, 05 Mar 2009 17:47:30 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,118 +31,151 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 18/41] Seq_file add support for sorted list
-Content-Disposition: inline; filename=seq_file_sorted.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:12 +0000
+Subject: [RFC patch 02/41] LTTng - core data structures
+Content-Disposition: inline; filename=lttng-core.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for sorted list in seq_file. It aims at changing the way
-/proc/modules and kallsyms iterates on the module list to remove a race between
-module unload and module/symbol listing.
+Home of the traces data structures. Needs to be built into the kernel.
 
-The list is sorted by ascending list_head pointer address.
-
-Changelog:
-
-When reading the data by small chunks (i.e. byte by byte), the index (ppos) is
-incremented by seq_read() directly and no "next" callback is called when going
-to the next module.
-
-Therefore, use ppos instead of m->private to deal with the fact that this index
-is incremented directly to pass to the next module in seq_read() after the
-buffer has been emptied.
+LTT heartbeat is a module specialized into firing periodical interrupts to
+record events in traces (so cycle counter rollover can be detected) and to
+update the 64 bits "synthetic TSC" (extended from the CPU 32 bits TSC on MIPS).
+Also needs to be built into the kernel.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- fs/seq_file.c            |   45 ++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/seq_file.h |   20 ++++++++++++++++++++
- 2 files changed, 64 insertions(+), 1 deletion(-)
+ MAINTAINERS              |    7 +++
+ include/linux/ltt-core.h |   10 ++++
+ ltt/ltt-core.c           |  101 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 118 insertions(+)
 
-Index: linux-2.6-lttng/fs/seq_file.c
+Index: linux-2.6-lttng/MAINTAINERS
 ===================================================================
---- linux-2.6-lttng.orig/fs/seq_file.c	2009-03-05 15:44:04.000000000 -0500
-+++ linux-2.6-lttng/fs/seq_file.c	2009-03-05 15:44:36.000000000 -0500
-@@ -671,5 +671,48 @@ struct list_head *seq_list_next(void *v,
- 	++*ppos;
- 	return lh == head ? NULL : lh;
- }
--
- EXPORT_SYMBOL(seq_list_next);
-+
-+struct list_head *seq_sorted_list_start(struct list_head *head, loff_t *ppos)
-+{
-+	struct list_head *lh;
-+
-+	list_for_each(lh, head)
-+		if ((unsigned long)lh >= *ppos) {
-+			*ppos = (unsigned long)lh;
-+			return lh;
-+		}
-+	return NULL;
-+}
-+EXPORT_SYMBOL(seq_sorted_list_start);
-+
-+struct list_head *seq_sorted_list_start_head(struct list_head *head,
-+		loff_t *ppos)
-+{
-+	struct list_head *lh;
-+
-+	if (!*ppos) {
-+		*ppos = (unsigned long)head;
-+		return head;
-+	}
-+	list_for_each(lh, head)
-+		if ((unsigned long)lh >= *ppos) {
-+			*ppos = (long)lh->prev;
-+			return lh->prev;
-+		}
-+	return NULL;
-+}
-+EXPORT_SYMBOL(seq_sorted_list_start_head);
-+
-+struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
-+		loff_t *ppos)
-+{
-+	struct list_head *lh;
-+	void *next;
-+
-+	lh = ((struct list_head *)p)->next;
-+	next = (lh == head) ? NULL : lh;
-+	*ppos = next ? ((unsigned long)next) : (-1UL);
-+	return next;
-+}
-+EXPORT_SYMBOL(seq_sorted_list_next);
-Index: linux-2.6-lttng/include/linux/seq_file.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/seq_file.h	2009-03-05 15:44:04.000000000 -0500
-+++ linux-2.6-lttng/include/linux/seq_file.h	2009-03-05 15:44:05.000000000 -0500
-@@ -95,4 +95,24 @@ extern struct list_head *seq_list_start_
- extern struct list_head *seq_list_next(void *v, struct list_head *head,
- 		loff_t *ppos);
+--- linux-2.6-lttng.orig/MAINTAINERS	2009-03-04 13:24:38.000000000 -0500
++++ linux-2.6-lttng/MAINTAINERS	2009-03-04 13:24:59.000000000 -0500
+@@ -2766,6 +2766,13 @@ P:	Eric Piel
+ M:	eric.piel@tremplin-utc.net
+ S:	Maintained
  
-+/*
-+ * Helpers for iteration over a list sorted by ascending head pointer address.
-+ * To be used in contexts where preemption cannot be disabled to insure to
-+ * continue iteration on a modified list starting at the same location where it
-+ * stopped, or at a following location. It insures that the lost information
-+ * will only be in elements added/removed from the list between iterations.
-+ * void *pos is only used to get the next list element and may not be a valid
-+ * list_head anymore when given to seq_sorted_list_start() or
-+ * seq_sorted_list_start_head().
-+ */
-+extern struct list_head *seq_sorted_list_start(struct list_head *head,
-+		loff_t *ppos);
-+extern struct list_head *seq_sorted_list_start_head(struct list_head *head,
-+		loff_t *ppos);
-+/*
-+ * next must be called with an existing p node
-+ */
-+extern struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
-+		loff_t *ppos);
++LINUX TRACE TOOLKIT NEXT GENERATION
++P:	Mathieu Desnoyers
++M:	mathieu.desnoyers@polymtl.ca
++L:	ltt-dev@lttng.org
++W:	http://ltt.polymtl.ca
++S:	Maintained
 +
- #endif
+ LM83 HARDWARE MONITOR DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+Index: linux-2.6-lttng/ltt/ltt-core.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/ltt/ltt-core.c	2009-03-04 13:36:17.000000000 -0500
+@@ -0,0 +1,101 @@
++/*
++ * LTT core in-kernel infrastructure.
++ *
++ * Copyright 2006 - Mathieu Desnoyers mathieu.desnoyers@polymtl.ca
++ *
++ * Distributed under the GPL license
++ */
++
++#include <linux/ltt-core.h>
++#include <linux/percpu.h>
++#include <linux/module.h>
++#include <linux/debugfs.h>
++#include <linux/kref.h>
++
++/* Traces structures */
++struct ltt_traces ltt_traces = {
++	.setup_head = LIST_HEAD_INIT(ltt_traces.setup_head),
++	.head = LIST_HEAD_INIT(ltt_traces.head),
++};
++EXPORT_SYMBOL(ltt_traces);
++
++/* Traces list writer locking */
++static DEFINE_MUTEX(ltt_traces_mutex);
++
++/* root dentry mutex */
++static DEFINE_MUTEX(ltt_root_mutex);
++/* dentry of ltt's root dir */
++static struct dentry *ltt_root_dentry;
++static struct kref ltt_root_kref = {
++	.refcount = ATOMIC_INIT(0),
++};
++
++static void ltt_root_release(struct kref *ref)
++{
++	debugfs_remove(ltt_root_dentry);
++	ltt_root_dentry = NULL;
++}
++
++void put_ltt_root(void)
++{
++	mutex_lock(&ltt_root_mutex);
++	if (ltt_root_dentry)
++		kref_put(&ltt_root_kref, ltt_root_release);
++	mutex_unlock(&ltt_root_mutex);
++}
++EXPORT_SYMBOL_GPL(put_ltt_root);
++
++struct dentry *get_ltt_root(void)
++{
++	mutex_lock(&ltt_root_mutex);
++	if (!ltt_root_dentry) {
++		ltt_root_dentry = debugfs_create_dir(LTT_ROOT, NULL);
++		if (!ltt_root_dentry) {
++			printk(KERN_ERR "LTT : create ltt root dir failed\n");
++			goto out;
++		}
++		kref_init(&ltt_root_kref);
++		goto out;
++	}
++	kref_get(&ltt_root_kref);
++out:
++	mutex_unlock(&ltt_root_mutex);
++	return ltt_root_dentry;
++}
++EXPORT_SYMBOL_GPL(get_ltt_root);
++
++void ltt_lock_traces(void)
++{
++	mutex_lock(&ltt_traces_mutex);
++}
++EXPORT_SYMBOL_GPL(ltt_lock_traces);
++
++void ltt_unlock_traces(void)
++{
++	mutex_unlock(&ltt_traces_mutex);
++}
++EXPORT_SYMBOL_GPL(ltt_unlock_traces);
++
++DEFINE_PER_CPU(unsigned int, ltt_nesting);
++EXPORT_PER_CPU_SYMBOL(ltt_nesting);
++
++int ltt_run_filter_default(void *trace, uint16_t eID)
++{
++	return 1;
++}
++
++/* This function pointer is protected by a trace activation check */
++ltt_run_filter_functor ltt_run_filter = ltt_run_filter_default;
++EXPORT_SYMBOL_GPL(ltt_run_filter);
++
++void ltt_filter_register(ltt_run_filter_functor func)
++{
++	ltt_run_filter = func;
++}
++EXPORT_SYMBOL_GPL(ltt_filter_register);
++
++void ltt_filter_unregister(void)
++{
++	ltt_run_filter = ltt_run_filter_default;
++}
++EXPORT_SYMBOL_GPL(ltt_filter_unregister);
 
 -- 
 Mathieu Desnoyers
