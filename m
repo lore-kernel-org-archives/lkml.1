@@ -1,108 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZCEWdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZCEWd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbZCEWdF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 17:33:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZCEWcx
+	id S1756386AbZCEWd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 17:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbZCEWdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 17:32:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50013 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752925AbZCEWcw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 17:32:52 -0500
-Date: Thu, 5 Mar 2009 14:31:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, jirislaby@gmail.com,
-       rmk+lkml@arm.linux.org.uk
-Subject: Re: [PATCH] generic debug pagealloc (-v2)
-Message-Id: <20090305143150.136e2708.akpm@linux-foundation.org>
-In-Reply-To: <20090305145926.GA27015@localhost.localdomain>
-References: <20090305145926.GA27015@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 17:33:10 -0500
+Received: from 8bytes.org ([88.198.83.132]:59159 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755336AbZCEWdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 17:33:06 -0500
+Date: Thu, 5 Mar 2009 23:33:02 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joerg.roedel@amd.com, iommu@lists.linux-foundation.org, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][GIT PULL] dma-api debugging facility
+Message-ID: <20090305223302.GN2125@8bytes.org>
+References: <20090305200338.GA31182@amd.com> <20090306055944Q.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090306055944Q.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009 23:59:27 +0900
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
-
-> CONFIG_DEBUG_PAGEALLOC is now supported by x86, powerpc, sparc (64bit),
-> and s390. This patch implements it for the rest of the architectures
-> by filling the pages with poison byte patterns after free_pages() and
-> verifying the poison patterns before alloc_pages().
+On Fri, Mar 06, 2009 at 05:59:18AM +0900, FUJITA Tomonori wrote:
+> On Thu, 5 Mar 2009 21:03:38 +0100
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> This generic one cannot detect invalid read accesses and it can only
-> detect invalid write accesses after a long delay. But it is a feasible way
-> for nommu architectures.
+> > Hi Ingo,
+> > 
+> > The following changes since commit 0bd5c4f7c874cf48ff7904dcf8a59988c8fea0e8:
+> >   Ingo Molnar (1):
+> >         Merge branch 'iommu/fixes-2.6.29' of git://git.kernel.org/.../joro/linux-2.6-iommu into core/iommu
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git dma-api/debug
+> > 
+> > David Woodhouse (2):
+> >       dma-debug: add function to dump dma mappings
+> >       dma-debug: print stacktrace of mapping path on unmap error
+> > 
+> > Joerg Roedel (16):
+> >       dma-debug: add Kconfig entry
+> >       dma-debug: add header file and core data structures
+> >       dma-debug: add hash functions for dma_debug_entries
+> >       dma-debug: add allocator code
+> >       dma-debug: add initialization code
+> >       dma-debug: add kernel command line parameters
+> >       dma-debug: add debugfs interface
+> >       dma-debug: add core checking functions
+> >       dma-debug: add checking for map/unmap_page/single
+> >       dma-debug: add add checking for map/unmap_sg
+> >       dma-debug: add checking for [alloc|free]_coherent
+> >       dma-debug: add checks for sync_single_*
+> >       dma-debug: add checks for sync_single_range_*
+> >       dma-debug: add checks for sync_single_sg_*
+> >       dma-debug: x86 architecture bindings
+> >       dma-debug: Documentation update
+> > 
+> >  Documentation/DMA-API.txt           |  106 +++++
+> >  Documentation/kernel-parameters.txt |   10 +
+> >  arch/Kconfig                        |    2 +
+> >  arch/x86/Kconfig                    |    1 +
+> >  arch/x86/include/asm/dma-mapping.h  |   45 ++-
+> >  arch/x86/kernel/pci-dma.c           |    6 +
+> >  include/linux/dma-debug.h           |  167 +++++++
+> >  lib/Kconfig.debug                   |   11 +
+> >  lib/Makefile                        |    2 +
+> >  lib/dma-debug.c                     |  870 +++++++++++++++++++++++++++++++++++
+> >  10 files changed, 1214 insertions(+), 6 deletions(-)
+> >  create mode 100644 include/linux/dma-debug.h
+> >  create mode 100644 lib/dma-debug.c
+> > 
+> > A few changes were made since the v3 post of this code:
+> > 
+> > * new checks were added
+> > * stack trace of mapping path is printed
+> > * default number of preallocated entries has been increased to 32768 on
+> >   x86 - in the latest tests I had more than 26000 dma-api allocations in
+> >   the hash
+> > * therefore the hash size has been increased to 1024
 > 
-> ...
->
-> +#include <linux/kernel.h>
-> +#include <linux/mm.h>
-> +
-> +static void poison_page(struct page *page)
-> +{
-> +	void *addr;
-> +
-> +	if (PageHighMem(page))
-> +		return; /* i goofed */
+> You have not posted patches that addressed some reviewed comments. For
+> example, dma-debug's dma_map_sg support is just wrong:
+> 
+> http://marc.info/?l=linux-kernel&m=123556055325566&w=2
 
-heh.  A more complete comment would be needed here.
+Thats fixed in the tree above. I will send out the patches tomorrow
+seperatly for easier reviewing and commenting.
 
-Also, as this is a kernel bug, perhaps some sort of runtime warning?
-
-> +	page->poison = true;
-> +	addr = page_address(page);
-> +	memset(addr, PAGE_POISON, PAGE_SIZE);
-> +}
-> +
-> +static void poison_pages(struct page *page, int n)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < n; i++)
-> +		poison_page(page + i);
-> +}
-> +
-> +static void check_poison_mem(unsigned char *mem, size_t bytes)
-> +{
-> +	unsigned char *start;
-> +	unsigned char *end;
-> +
-> +	for (start = mem; start < mem + bytes; start++) {
-> +		if (*start != PAGE_POISON)
-> +			break;
-> +	}
-> +	if (start == mem + bytes)
-> +		return;
-> +
-> +	for (end = mem + bytes - 1; end > start; end--) {
-> +		if (*end != PAGE_POISON)
-> +			break;
-> +	}
-> +	printk(KERN_ERR "Page corruption: %p-%p\n", start, end);
-> +	print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1, start,
-> +			end - start + 1, 1);
-> +}
-> +
-> +static void unpoison_page(struct page *page)
-> +{
-> +	void *addr;
-> +
-
-Shouldn't we check PageHighmem() here also?
-
-> +	if (!page->poison)
-> +		return;
-> +
-> +	addr = page_address(page);
-> +	check_poison_mem(addr, PAGE_SIZE);
-> +	page->poison = false;
-> +}
-> +
+Joerg
 
