@@ -1,125 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbZCENxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZCENzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756431AbZCENxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZCENxc
+	id S1755353AbZCENzX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZCENzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:53:32 -0500
-Received: from el-out-1112.google.com ([209.85.162.178]:16524 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbZCENxb convert rfc822-to-8bit (ORCPT
+	Thu, 5 Mar 2009 08:55:08 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:7420 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809AbZCENzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:53:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=Efok0l5KpzsmBHLjUV+vgDJ/VGY6SaaEPEqz2CG9gpPtW3Fz0S5ybjZn0pTb9Qv0E0
-         UNvAaCbZgJY6z0bZhFdIw1PjS06aXyt2l60VqJUHPkkzerIOXa6wQEFRNypZLRsT/AsZ
-         kRdzWBTDxs4/PjQP1Ct8B3iZQxIzADKbHwLCE=
+	Thu, 5 Mar 2009 08:55:06 -0500
+X-BigFish: VPS-36(zz1432R14e0Q98dR1805M936fKzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KG1DB7-02-G8Y-01
+Date: Thu, 5 Mar 2009 14:54:44 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: msr architecture debug code
+Message-ID: <20090305135444.GB7347@alberich.amd.com>
+References: <1236008575.3332.2.camel@localhost.localdomain> <20090302205437.GB14471@elte.hu>
 MIME-Version: 1.0
-Reply-To: petkovbb@gmail.com
-In-Reply-To: <200903051312.29784.bzolnier@gmail.com>
-References: <1236158216-23052-1-git-send-email-petkovbb@gmail.com>
-	 <1236158216-23052-4-git-send-email-petkovbb@gmail.com>
-	 <200903051312.29784.bzolnier@gmail.com>
-Date: Thu, 5 Mar 2009 14:53:28 +0100
-Message-ID: <9ea470500903050553m6ab9dfa5hab340213388a4c67@mail.gmail.com>
-Subject: Re: [PATCH 3/3] ide-{cd,floppy}: do not map all cmds to an sg
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090302205437.GB14471@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 05 Mar 2009 13:54:46.0679 (UTC) FILETIME=[F1AA3270:01C99D99]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Mar 02, 2009 at 09:54:37PM +0100, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-On Thu, Mar 5, 2009 at 1:12 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
->
-> Hi,
->
-> On Wednesday 04 March 2009, Borislav Petkov wrote:
->> ... since some do not transfer any data from the drive and
->> rq->buffer is unset leading to an OOPS when checking VM translations
->> (CONFIG_DEBUG_VIRTUAL).
->>
->> Tested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
->> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
->
-> Thanks for fixing it but I worry that the patch is not entirely correct
-> (why o why did you have to throw in unrelated changes...?)
+Oops, didn't read this mail till the end.
+Thus I missed this part.
 
-What unrelated changes? This is the ide-cd fix for when mapping a NULL
-rq->buffer pointer to an sg. If you mean the [2/3] patch, I had to
-remove the partial completions for ide-floppy because it was OOPSing on NULL
-rq-pointer in the interrupt handler. I sent you a pretty detailed OOPS along
-with backtracking to the offending code line, remember? Also, for reasons of
-bisectability.
+> > +{
+> > +	struct cpuinfo_x86 *cpu = &cpu_data(0);
+> > +
+> > +	if (!cpu_has(cpu, X86_FEATURE_MSR))
+> > +		return -ENODEV;
+> > +
+> > +	msr_dir = debugfs_create_dir("msr", arch_debugfs_dir);
+> > +
+> > +	msr_file = debugfs_create_file("msr", S_IRUGO, msr_dir,
+> > +					NULL, &msr_fops);
+> > +	pmc_file = debugfs_create_file("pmc", S_IRUGO, msr_dir,
+> > +					NULL, &pmc_fops);
+> 
+> I think it would be possible to have a much more intuitive file 
+> layout under /debug/x86/msr/ than these two /debug/x86/msr/msr 
+> and /debug/x86/msr/pmc files.
+> 
+> Firstly, it should move one level deeper, to /debug/x86/cpu/msr/ 
+> - because the MSR is really a property of the CPU, and there are 
+> other properties of the CPU we might want to expose in the 
+> future.
+> 
+> Secondly, the picking of debugfs (as opposed to sysfs) is a good 
+> choice, because we probably want to tweak the layout a number of 
+> times and want to keep flexibility, without being limited by the 
+> sysfs ABI.
+> 
+> So i like the idea - but we really want to do even more and add 
+> more structure to this. If we just want dumb msr enumeration we 
+> already have /dev/msr.
+> 
+> Regarding the msr directory: one good approach would be to have 
+> have several "topic" directories under /debug/x86/cpu/msr/.
+> 
+> One such topic would be the 'pmu', with a structure like:
+> 
+>  /debug/x86/cpu/msr/pmu/
+>  /debug/x86/cpu/msr/pmu/pmc_0/
+>  /debug/x86/cpu/msr/pmu/pmc_0/counter
+>  /debug/x86/cpu/msr/pmu/pmc_0/eventsel
+> 
+> There would also be a /debug/x86/cpu/msr/raw/ directory with all 
+> MSR numbers we know about explicitly, for example:
+> 
+>  /debug/x86/cpu/msr/raw/0x372/value
+>  /debug/x86/cpu/msr/raw/0x372/width
 
-> also ideally there should have been two patches:
-> - minimal bugfix for the buggy patch
-> - unification/cleanup of PIO sg setup
->
->> ---
->>  drivers/ide/ide-atapi.c  |    9 ++++++++-
->>  drivers/ide/ide-cd.c     |    4 ----
->>  drivers/ide/ide-floppy.c |    4 ----
->>  3 files changed, 8 insertions(+), 9 deletions(-)
->>
+Having this stuff in the kernel unnecessarily bloats up kernel code.
+What the kernel needs to provide is a reliable interface to access
+MSRs -- to pass the data to userspace. This interface is already there.
 
-..
+IMHO all kind of parsing and grouping of that data belongs in user
+space.
 
->> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
->> index 091d414..106cacb 100644
->> --- a/drivers/ide/ide-cd.c
->> +++ b/drivers/ide/ide-cd.c
->> @@ -916,10 +916,6 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
->>
->>       cmd.rq = rq;
->>
->> -     ide_init_sg_cmd(&cmd,
->> -             blk_fs_request(rq) ? (rq->nr_sectors << 9) : rq->data_len);
->> -     ide_map_sg(drive, &cmd);
->> -
->>       return ide_issue_pc(drive, &cmd);
->>  out_end:
->>       nsectors = rq->hard_nr_sectors;
->> diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
->> index 2f8f453..b91deef 100644
->> --- a/drivers/ide/ide-floppy.c
->> +++ b/drivers/ide/ide-floppy.c
->> @@ -281,10 +281,6 @@ static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
->>               cmd.tf_flags |= IDE_TFLAG_WRITE;
->>
->>       cmd.rq = rq;
->> -
->> -     ide_init_sg_cmd(&cmd, pc->req_xfer);
->
-> There was a reason for using ->req_xfer.
+One exception are MSRs that need to be checked early during boot
+(e.g. MTRRs). For debugging purposes you might want to dump certain
+MSRs early. But then you will use printk and not debugfs.
 
-Yeah, this is also one of those painful places where I cringe everytime I have
-to look at. We finally have to sit down and decide which is which; sometimes
-pc->req_xfer _is_ rq->data_len (idefloppy_blockpc_cmd()) and sometimes obviously
-not. I'll take a look at that whole mess next and try to come up with something
-more clean.
+> Maybe a symlink pointing it back to the topic directory would be 
+> useful as well. For example:
+> 
+>  /debug/x86/cpu/msr/raw/0x372/topic_dir -> /debug/x86/cpu/msr/pmu/pmc_0/
+> 
+> Other "topic directories" are possible too: a 
+> /debug/x86/cpu/msr/apic/ layout would be very useful and 
+> informative as well, and so are some of the other MSRs we tweak 
+> during bootup.
 
-> I don't see where rq->data_len is set for REQ_TYPE_SPECIAL requests
-> (ide_queue_pc_tail() and friends)?
+All nice suggestions but why in-kernel?
 
-me neither :(.
+Just hack some script to do this. This is much more maintainable.
+You don't need a kernel update to add support for new CPUs or to fix
+bugs in this code itself -- you just have to tweak your script.
 
->> -     ide_map_sg(drive, &cmd);
->> -
->>       pc->rq = rq;
->>
->>       return ide_floppy_issue_pc(drive, &cmd, pc);
 
-Man, this sucks!
+Regards,
+Andreas
 
--- 
-Regards/Gruss,
-Boris
+
