@@ -1,152 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbZCEQVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbZCEQ0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbZCEQVq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZCEQVi
+	id S1755933AbZCEQ0d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:26:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZCEQ0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 11:21:38 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38070 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbZCEQVh (ORCPT
+	Thu, 5 Mar 2009 11:26:24 -0500
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:35602 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbZCEQ0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:21:37 -0500
-Date: Thu, 5 Mar 2009 11:21:33 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH][GIT PULL] add tracing_on/tracing_off to kernel.h
-Message-ID: <alpine.DEB.2.00.0903051120110.26101@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 5 Mar 2009 11:26:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=aK67g7yA5sIj6eiy/ephLoeglwK0n7IkJMspLE7Z3GjqgllPkPjDmwCJM2UIce1E6o
+         H6mEail9nOyDDeuS1KKEGbSGskN5QpUwXlQ7RuBU+NlSdXDpsl5KyOa6fjk1kCXcv4vc
+         8XIVd5mDnZ3XJ4Bc/ZQ18K2YG/8+cV3yWZ9wQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] IDE fixes
+Date: Thu, 5 Mar 2009 17:27:47 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-next-20090304; KDE/4.2.0; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200903051630.32792.bzolnier@gmail.com>
+In-Reply-To: <200903051630.32792.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903051727.47877.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 05 March 2009, Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+> Two bug fixes (for odd-length ATAPI PIO transfers from Sergei Shtylyov
+> and for insanely long DMA timeouts from Roel Kluin), some sparse fixes
+> (from Hannes Eder) and a new driver for AT91 Static Memory Controller
+> with Compact Flash True IDE Mode logic (from Stanislaw Gruszka, arch
+> specific part has been acked by a platform maintainer).
 
-Ingo,
+Now with <linux/ata.h> change (add CFA identify words for the future use)
+from Sergei & Jeff.
 
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> Linus, please pull from:
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
+> 
+> to receive the following updates:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
+ arch/arm/mach-at91/at91sam9263_devices.c |  105 +++++++
+ arch/arm/mach-at91/include/mach/board.h  |    3 +
+ drivers/ide/Kconfig                      |    5 +
+ drivers/ide/Makefile                     |    1 +
+ drivers/ide/at91_ide.c                   |  467 ++++++++++++++++++++++++++++++
+ drivers/ide/ide-disk_proc.c              |    2 +-
+ drivers/ide/ide-floppy_proc.c            |    2 +-
+ drivers/ide/ide-io.c                     |    3 +-
+ drivers/ide/ide-iops.c                   |    2 +
+ drivers/ide/ide-probe.c                  |    7 +-
+ drivers/ide/ide-proc.c                   |    2 +-
+ drivers/ide/ide-tape.c                   |    2 +-
+ include/linux/ata.h                      |    2 +
+ include/linux/hdreg.h                    |    1 -
+ include/linux/ide.h                      |    1 +
+ 15 files changed, 598 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/ide/at91_ide.c
 
 
-Steven Rostedt (1):
-      tracing: add tracing_on/tracing_off to kernel.h
+Bartlomiej Zolnierkiewicz (1):
+      remove stale comment from <linux/hdreg.h>
 
-----
- include/linux/kernel.h      |   29 ++++++++++++++++++++++++++++-
- include/linux/ring_buffer.h |   15 ---------------
- 2 files changed, 28 insertions(+), 16 deletions(-)
----------------------------
-commit 2002c258faaa8f89543df284fdbaa9e4b171547f
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Thu Mar 5 10:35:56 2009 -0500
+Hannes Eder (1):
+      ide: NULL noise: drivers/ide/ide-*.c
 
-    tracing: add tracing_on/tracing_off to kernel.h
-    
-    Impact: cleanup
-    
-    The functions tracing_start/tracing_stop have been moved to kernel.h.
-    These are not the functions a developer most likely wants to use
-    when they want to insert a place to stop tracing and restart it from
-    user space.
-    
-    tracing_start/tracing_stop was created to work with things like
-    suspend to ram, where even calling smp_processor_id() can crash the
-    system. The tracing_start/tracing_stop was used to stop the tracer from
-    doing anything. These are still light weight functions, but add a bit
-    more overhead to be able to stop the tracers. They also have no interface
-    back to userland. That is, if the kernel calls tracing_stop, userland
-    can not start tracing.
-    
-    What a developer most likely wants to use is tracing_on/tracing_off.
-    These are very light weight functions (simply sets or clears a bit).
-    These functions just stop recording into the ring buffer. The tracers
-    don't even know that this happens except that they would receive NULL
-    from the ring_buffer_lock_reserve function.
-    
-    Also, there's a way for the user land to enable or disable this bit.
-    In debugfs/tracing/tracing_on, a user may echo "0" (same as tracing_off())
-    or echo "1" (same as tracing_on()) into this file. This becomes handy when
-    a kernel developer is debugging and wants tracing to turn off when it
-    hits an anomaly. Then the developer can examine the trace, and restart
-    tracing if they want to try again (echo 1 > tracing_on).
-    
-    This patch moves the prototypes for tracing_on/tracing_off to kernel.h
-    and comments their use, so that a kernel developer will know how
-    to use them.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Roel Kluin (1):
+      ide: expiry() returns int, negative expiry() return values won't be noticed
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 08bf5da..d4614a8 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -369,8 +369,35 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
+Sergei Shtylyov (2):
+      ide-iops: fix odd-length ATAPI PIO transfers
+      ata: add CFA specific identify data words
+
+Stanislaw Gruszka (3):
+      ide: allow to wrap interrupt handler
+      ide: add at91_ide driver
+      AT91: initialize Compact Flash on AT91SAM9263 cpu
+
+[...]
+
+diff --git a/include/linux/ata.h b/include/linux/ata.h
+index 08a86d5..9a061ac 100644
+--- a/include/linux/ata.h
++++ b/include/linux/ata.h
+@@ -89,6 +89,8 @@ enum {
+ 	ATA_ID_DLF		= 128,
+ 	ATA_ID_CSFO		= 129,
+ 	ATA_ID_CFA_POWER	= 160,
++	ATA_ID_CFA_KEY_MGMT	= 162,
++	ATA_ID_CFA_MODES	= 163,
+ 	ATA_ID_ROT_SPEED	= 217,
+ 	ATA_ID_PIO4		= (1 << 1),
  
- /*
-  * General tracing related utility functions - trace_printk(),
-- * tracing_start()/tracing_stop:
-+ * tracing_on/tracing_off and tracing_start()/tracing_stop
-+ *
-+ * Use tracing_on/tracing_off when you want to quickly turn on or off
-+ * tracing. It simply enables or disables the recording of the trace events.
-+ * This also corresponds to the user space debugfs/tracing/tracing_on
-+ * file, which gives a means for the kernel and userspace to interact.
-+ * Place a tracing_off() in the kernel where you want tracing to end.
-+ * From user space, examine the trace, and then echo 1 > tracing_on
-+ * to continue tracing.
-+ *
-+ * tracing_stop/tracing_start has slightly more overhead. It is used
-+ * by things like suspend to ram where disabling the recording of the
-+ * trace is not enough, but tracing must actually stop because things
-+ * like calling smp_processor_id() may crash the system.
-+ *
-+ * Most likely, you want to use tracing_on/tracing_off.
-  */
-+#ifdef CONFIG_RING_BUFFER
-+void tracing_on(void);
-+void tracing_off(void);
-+/* trace_off_permanent stops recording with no way to bring it back */
-+void tracing_off_permanent(void);
-+int tracing_is_on(void);
-+#else
-+static inline void tracing_on(void) { }
-+static inline void tracing_off(void) { }
-+static inline void tracing_off_permanent(void) { }
-+static inline int tracing_is_on(void) { return 0; }
-+#endif
- #ifdef CONFIG_TRACING
- extern void tracing_start(void);
- extern void tracing_stop(void);
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index 79fcbc4..b1a0068 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -124,21 +124,6 @@ void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
- size_t ring_buffer_page_len(void *page);
- 
- 
--/*
-- * The below functions are fine to use outside the tracing facility.
-- */
--#ifdef CONFIG_RING_BUFFER
--void tracing_on(void);
--void tracing_off(void);
--void tracing_off_permanent(void);
--int tracing_is_on(void);
--#else
--static inline void tracing_on(void) { }
--static inline void tracing_off(void) { }
--static inline void tracing_off_permanent(void) { }
--static inline int tracing_is_on(void) { return 0; }
--#endif
--
- void *ring_buffer_alloc_read_page(struct ring_buffer *buffer);
- void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data);
- int ring_buffer_read_page(struct ring_buffer *buffer, void **data_page,
-
