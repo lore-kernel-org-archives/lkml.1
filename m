@@ -1,106 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZCEABR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbZCEAMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbZCEABR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 19:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZCEABE
+	id S1755658AbZCEAMk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 19:12:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZCEAMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 19:01:04 -0500
-Received: from gw.goop.org ([64.81.55.164]:37913 "EHLO mail.goop.org"
+	Wed, 4 Mar 2009 19:12:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56445 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753965AbZCEABD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 19:01:03 -0500
-Message-ID: <49AF163A.8080701@goop.org>
-Date: Wed, 04 Mar 2009 16:00:58 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1751916AbZCEAM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 19:12:29 -0500
+Message-ID: <49AF18B7.4050305@kernel.org>
+Date: Wed, 04 Mar 2009 16:11:35 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [x86] warning: parameter has incomplete type
-References: <200903042001.FBI26540.QFHLFSMJVFOOtO@I-love.SAKURA.ne.jp>
-In-Reply-To: <200903042001.FBI26540.QFHLFSMJVFOOtO@I-love.SAKURA.ne.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Sarah Sharp <sarah.a.sharp@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-usb@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86/doc: doc the using earlyprintk=dbgp
+References: <m1bpshx912.fsf@fess.ebiederm.org> <Pine.LNX.4.44L0.0903041657140.6145-100000@iolanthe.rowland.org> <20090304225500.GB13509@gamba.jf.intel.com>
+In-Reply-To: <20090304225500.GB13509@gamba.jf.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> Hello.
->
-> Is there a patch to suppress below warning messages (which are printed for every
-> file when compiling kernel using gcc 3.3.5)?
->   
 
-Hm, that's a very old compiler.  The warning is correct, I guess, but of 
-no consequence.  It would be impossible to call the functions without a 
-proper definition of the structure in scope, and the structure 
-forward-declaration guarantees that the prototype and the eventual 
-structure definition will be the same.
+Impact: doc
 
-The simple fix, include pgtable_types.h, is undesireable because we're 
-trying to untangle the headers rather than add more interdependencies.  
-I think the fix is to put those prototypes somewhere else (asm/pat.h, 
-perhaps?).
+simple using howto for earlyprintk=dbgp
 
-    J
-> Regards.
-> --------------------
-> # cat ~/warn.sh
-> #! /bin/sh
-> make -s oldconfig
-> touch init/main.c
-> make init/main.o > /tmp/log 2>&1
-> grep -qF "warning: parameter has incomplete type" /tmp/log && exit 1
-> exit 0
-> # git bisect start next-20090227 v2.6.29-rc6 --
-> Bisecting: 4206 revisions left to test after this
-> [617e8ed824f58c467b97d3c08ad3fc46efc9041c] Merge commit 'kvm/master'
-> # git bisect run ~/warn.sh
-> running /root/warn.sh
-> #
-> # configuration written to .config
-> #
-> In file included from /usr/src/all/linux-next/arch/x86/include/asm/page.h:8,
->                  from /usr/src/all/linux-next/arch/x86/include/asm/processor.h:18,
->                  from /usr/src/all/linux-next/arch/x86/include/asm/atomic_32.h:6,
->                  from /usr/src/all/linux-next/arch/x86/include/asm/atomic.h:2,
->                  from include/linux/crypto.h:20,
->                  from arch/x86/kernel/asm-offsets_32.c:7,
->                  from arch/x86/kernel/asm-offsets.c:2:
-> /usr/src/all/linux-next/arch/x86/include/asm/page_types.h:54: warning: parameter has incomplete type
-> /usr/src/all/linux-next/arch/x86/include/asm/page_types.h:56: warning: parameter has incomplete type
-> In file included from /usr/src/all/linux-next/arch/x86/include/asm/page.h:8,
->                  from /usr/src/all/linux-next/arch/x86/include/asm/processor.h:18,
->                  from include/linux/prefetch.h:14,
->                  from include/linux/list.h:6,
->                  from include/linux/module.h:9,
->                  from init/main.c:13:
-> /usr/src/all/linux-next/arch/x86/include/asm/page_types.h:54: warning: parameter has incomplete type
-> /usr/src/all/linux-next/arch/x86/include/asm/page_types.h:56: warning: parameter has incomplete type
-> (... snipped ...)
-> Bisecting: 0 revisions left to test after this
-> [e2f5bda94152fa567f6b48126741014123f982b8] x86: define pud_flags and pud_large properly to allow non-PAE builds
-> running /root/warn.sh
-> #
-> # configuration written to .config
-> #
-> 54321d947ae9d6a051b81e3eccaf2d8658aeecc6 is first bad commit
-> commit 54321d947ae9d6a051b81e3eccaf2d8658aeecc6
-> Author: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> Date:   Wed Feb 11 10:20:05 2009 -0800
->
->     x86: move pte types into pgtable*.h
->
->     pgtable*.h is intended for definitions relating to actual pagetables
->     and their entries, so move all the definitions for
->     (pte|pmd|pud|pgd)(val)?_t to the appropriate pgtable*.h headers.
->
->     Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->
-> :040000 040000 b7eda528704700c2e053ba659b4b6823d044d741 f169afe254054f023240ccc371def6774385e742 M      arch
-> bisect run success
->   
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+---
+ Documentation/x86/earlyprintk.txt |   41 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+Index: linux-2.6/Documentation/x86/earlyprintk.txt
+===================================================================
+--- /dev/null
++++ linux-2.6/Documentation/x86/earlyprintk.txt
+@@ -0,0 +1,41 @@
++
++Using earlyprintk with USB2 Debug port and debug cable
++
++1. HW:
++a. target system need to have debug port
++
++# lspci -vvv
++...
++00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 03) (prog-if 20 [EHCI])
++        Subsystem: Lenovo ThinkPad T61
++        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
++        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
++        Latency: 0
++        Interrupt: pin D routed to IRQ 19
++        Region 0: Memory at fe227000 (32-bit, non-prefetchable) [size=1K]
++        Capabilities: [50] Power Management version 2
++                Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
++                Status: D0 PME-Enable- DSel=0 DScale=0 PME+
++        Capabilities: [58] Debug port: BAR=1 offset=00a0
++        Kernel driver in use: ehci_hcd
++        Kernel modules: ehci-hcd
++...
++b. netchip USB debug cable
++   http://www.plxtech.com/products/NET2000/NET20DC/default.asp
++
++c. console system: have USB2 port
++
++2. SW setting
++a. console system: need to have kernel config
++   CONFIG_USB_SERIAL_DEBUG
++   you should get /dev/ttyUSBx
++
++   # cat /dev/ttyUSBx could get output
++
++b. target system: need to have kernel config
++   CONFIG_EARLY_PRINTK_DBGP
++
++   boot command line: earlyprintk=dbgp
++
++c. for Nvidia Southbridge based system: kernel will try to probe and find out which port has debug device connneted.
++
