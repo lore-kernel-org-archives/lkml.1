@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbZCEBFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZCEBL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbZCEBFV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 20:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZCEBFE
+	id S1755487AbZCEBL2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 20:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbZCEBLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 20:05:04 -0500
-Received: from mga10.intel.com ([192.55.52.92]:55810 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750775AbZCEBFC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 20:05:02 -0500
+	Wed, 4 Mar 2009 20:11:18 -0500
+Received: from mga03.intel.com ([143.182.124.21]:24206 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751077AbZCEBLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 20:11:17 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,304,1233561600"; 
-   d="scan'208";a="436274421"
-Subject: Re: [RFC v1] hand off skb list to other cpu to submit to upper
-	layer
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
-       shemminger@vyatta.com
-In-Reply-To: <20090304.013937.129768263.davem@davemloft.net>
-References: <1235546423.2604.556.camel@ymzhang>
-	 <20090224.233115.240823417.davem@davemloft.net>
-	 <1236158868.2567.93.camel@ymzhang>
-	 <20090304.013937.129768263.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 05 Mar 2009 09:04:36 +0800
-Message-Id: <1236215076.2567.105.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+   d="scan'208";a="116884340"
+Date: Thu, 5 Mar 2009 09:09:20 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Lin, Ming M" <ming.m.lin@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #12809] iozone regression with 2.6.29-rc6
+Message-ID: <20090305010920.GB11575@localhost>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera> <SLCXkuHtxAO.A.9MB.pUarJB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <SLCXkuHtxAO.A.9MB.pUarJB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 01:39 -0800, David Miller wrote:
-> From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-> Date: Wed, 04 Mar 2009 17:27:48 +0800
+On Tue, Mar 03, 2009 at 09:25:59PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> > Both the new skb_record_rx_queue and current kernel have an
-> > assumption on multi-queue. The assumption is it's best to send out
-> > packets from the TX of the same number of queue like the one of RX
-> > if the receved packets are related to the out packets. Or more
-> > direct speaking is we need send packets on the same cpu on which we
-> > receive them. The start point is that could reduce skb and data
-> > cache miss.
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> We have to use the same TX queue for all packets for the same
-> connection flow (same src/dst IP address and ports) otherwise
-> we introduce reordering.
-> Herbert brought this up, now I have explicitly brought this up,
-> and you cannot ignore this issue.
-Thanks. ﻿Stephen Hemminger brought it up and explained what reorder
-is. I answered in a reply (sorry for not clear) that mostly we need spread
-packets among RX/TX in a 1:1 mapping or N:1 mapping. For example, all packets
-received from RX 8 will be spreaded to TX 0 always.
-
-
 > 
-> You must not knowingly reorder packets, and using different TX
-> queues for packets within the same flow does that.
-Thanks for you rexplanation which is really consistent with ﻿Stephen's speaking.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12809
+> Subject		: iozone regression with 2.6.29-rc6
+> Submitter	: Lin Ming <ming.m.lin@intel.com>
+> Date		: 2009-02-27 9:13 (5 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cf6e7d83bf334cc5916137862c920a97aabc018
+> References	: http://marc.info/?l=linux-kernel&m=123572630504360&w=4
+> Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
 
+Following Peter's idea of relaxing writeback throttling, Lin Ming
+and I tried the idea of totally disabling writeback throttling by
+doing benchmarks with the following parameters:
 
+        echo 60 > /proc/sys/vm/dirty_ratio
+        echo 50 > /proc/sys/vm/dirty_background_ratio
+
+The result is encouraging: the iozone performance is restored to the
+level of 2.6.29-rc5!
+
+We'll continue to evaluate the dirty/throttling numbers with Nick's patch.
+
+Thanks,
+Fengguang
