@@ -1,1444 +1,935 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZCEJe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCEJjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZCEJe7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 04:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZCEJev
+	id S1755287AbZCEJjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 04:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZCEJjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 04:34:51 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:44832 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753884AbZCEJet (ORCPT
+	Thu, 5 Mar 2009 04:39:04 -0500
+Received: from rv-out-0506.google.com ([209.85.198.226]:60827 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZCEJjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 04:34:49 -0500
+	Thu, 5 Mar 2009 04:39:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RmoTKElL5UAaRinEOHrGuhEu5AaJS1kiOIS7jOQMesBlxLTHLgLU39wun1lEP2fkb1
-         70I8b25gal9+Tp9iKWOWlvVkxbcWuWvqk/ze29D6K2SXTGYm8GXUIE7+O3kRrPt4yyUf
-         IWbw1YnJgeyA5wytV3atgRKy9hxkfOD9cpU3M=
-Date: Thu, 5 Mar 2009 10:34:41 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5 v4] vsprintf: unify the format decoding layer for its 3
-	users
-Message-ID: <20090305093440.GF5359@nowhere>
-References: <49af5f1b.1818d00a.209c.ffff9783@mx.google.com> <19f34abd0903042353i58c8e72eh33be515bf09a36f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0903042353i58c8e72eh33be515bf09a36f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=H7jWbmaaH7CF+ToGS5sUTcoqnnN0Bnv4/KkGacRgLlC/nLkvMVVjb6/o20gonTUbMp
+         MkM9gRcu/xsONgtLHGvX1+ozwtmKXuArKVHKPBqYZGLV4zQmoqa/YEwGpNCt8wqiDBDa
+         PbOA1JpUi12/cm0ndRhv8DwxMVfKZJnQBgrXc=
+From: unsik Kim <donari75@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       shdl@zakalwe.fi, harvey.harrison@gmail.com, minchan.kim@gmail.com,
+       unsik Kim <donari75@gmail.com>
+Subject: [PATCH] mflash: reflect akpm's review
+Date: Thu,  5 Mar 2009 18:38:19 +0900
+Message-Id: <1236245899-6706-1-git-send-email-donari75@gmail.com>
+X-Mailer: git-send-email 1.5.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 08:53:14AM +0100, Vegard Nossum wrote:
-> This looks a bit strange. We can't ever change the format string, so
-> it doesn't make sense to try to use it as a non-const pointer anyway.
-> Why not make the variable "const char *" and drop the cast?
-> 
-> The same for another case.
-> 
-> 
-> Vegard
-> 
+* refine and reduce mg_wait's timeout value
+* reduce probing time:
+add dev_attr field to mg_drv_data and reset-out
+GPIO resource
+* remove uneffective reset when error occured
+* remove pointless "?"
+* use correct jiffy wrap
+* replace local mg_ide_fixstring to libata_core's
+* avoid divide-by-zero
+* change host->dev_base type to 'void __iomem *'
+* add missing GPIOLIB and ATA dependency
 
-Heh, indeed, see the v4 below.
-
-Thanks!
-
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Thu, 5 Mar 2009 10:25:57 +0100
-Subject: [PATCH 5/5 v4] vsprintf: unify the format decoding layer for its 3 users
-Cc: Andrew Morton <akpm@linux-foundation.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-Linus Torvalds <torvalds@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>,
-Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-Vegard Nossum <vegard.nossum@gmail.com>
-
-An new optimization is making its way to ftrace. Its purpose is to
-make ftrace_printk() consuming less memory and be faster.
-
-Written by Lai Jiangshan, the approach is to delay the formatting
-job from tracing time to output time.
-Currently, a call to ftrace_printk will format the whole string and
-insert it into the ring buffer. Then you can read it on /debug/tracing/trace
-file.
-
-The new implementation stores the address of the format string and
-the binary parameters into the ring buffer, making the packet more compact
-and faster to insert.
-Later, when the user exports the traces, the format string is retrieved
-with the binary parameters and the formatting job is eventually done.
-
-The new implementation rewrites a lot of format decoding bits from
-vsnprintf() function, making now 3 differents functions to maintain
-in their duplicated parts of printf format decoding bits.
-
-Suggested by Ingo Molnar, this patch tries to factorize the most
-possible common bits from these functions.
-The real common part between them is the format decoding. Although
-they do somewhat similar jobs, their way to export or import the parameters
-is very different. Thus, only the decoding layer is extracted, unless you see
-other parts that could be worth factorized.
-
-Changes in V2:
-
-- Address a suggestion from Linus to group the format_decode() parameters inside
-  a structure.
-
-Changes in v3:
-
-- Address other cleanups suggested by Ingo and Linus such as passing the
-  printf_spec struct to the format helpers: pointer()/number()/string()
-  Note that this struct is passed by copy and not by address. This is to
-  avoid side effects because these functions often change these values and the
-  changes shoudn't be persistant when a callee helper returns.
-  It would be too risky.
-
-- Various cleanups (code alignement, switch/case instead of if/else fountains).
-
-- Fix a bug that printed the first format specifier following a %p
-
-Changes in v4:
-
-- drop unapropriate const qualifier loss while casting fmt to a char *
-  (thanks to Vegard Nossum who pointed this out).
-
+Signed-off-by: unsik Kim <donari75@gmail.com>
 ---
- lib/vsprintf.c |  976 +++++++++++++++++++++++++++++++-------------------------
- 1 files changed, 543 insertions(+), 433 deletions(-)
+When using interrupt mode, most of the busy wait eliminated.
+The worst case of busy wait is under 10msec. (This is extremely
+rare case) Typically wait <500nsec at mg_out's mg_wait.
+---
+ Documentation/blockdev/mflash.txt |   13 ++-
+ drivers/block/Kconfig             |    2 +-
+ drivers/block/mg_disk.c           |  352 ++++++++++++++++++++-----------------
+ include/linux/mg_disk.h           |   57 +++++--
+ 4 files changed, 246 insertions(+), 178 deletions(-)
 
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 3543bbe..25f0157 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -396,7 +396,38 @@ static noinline char* put_dec(char *buf, unsigned long long num)
- #define SMALL	32		/* Must be 32 == 0x20 */
- #define SPECIAL	64		/* 0x */
+diff --git a/Documentation/blockdev/mflash.txt b/Documentation/blockdev/mflash.txt
+index d7522eb..1f610ec 100644
+--- a/Documentation/blockdev/mflash.txt
++++ b/Documentation/blockdev/mflash.txt
+@@ -36,6 +36,8 @@ configuration file is all. Here is some pseudo example.
+ static struct mg_drv_data mflash_drv_data = {
+ 	/* If you want to polling driver set to 1 */
+ 	.use_polling = 0,
++	/* device attribution */
++	.dev_attr = MG_BOOT_DEV
+ };
  
--static char *number(char *buf, char *end, unsigned long long num, int base, int size, int precision, int type)
-+enum format_type {
-+	FORMAT_TYPE_NONE, /* Just a string part */
-+	FORMAT_TYPE_WITDH,
-+	FORMAT_TYPE_PRECISION,
-+	FORMAT_TYPE_CHAR,
-+	FORMAT_TYPE_STR,
-+	FORMAT_TYPE_PTR,
-+	FORMAT_TYPE_PERCENT_CHAR,
-+	FORMAT_TYPE_INVALID,
-+	FORMAT_TYPE_LONG_LONG,
-+	FORMAT_TYPE_ULONG,
-+	FORMAT_TYPE_LONG,
-+	FORMAT_TYPE_USHORT,
-+	FORMAT_TYPE_SHORT,
-+	FORMAT_TYPE_UINT,
-+	FORMAT_TYPE_INT,
-+	FORMAT_TYPE_NRCHARS,
-+	FORMAT_TYPE_SIZE_T,
-+	FORMAT_TYPE_PTRDIFF
-+};
-+
-+struct printf_spec {
-+	enum format_type	type;
-+	int			flags;		/* flags to number() */
-+	int			field_width;	/* width of output field */
-+	int			base;
-+	int			precision;	/* # of digits/chars */
-+	int			qualifier;
-+};
-+
-+static char *number(char *buf, char *end, unsigned long long num,
-+			struct printf_spec spec)
- {
- 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
- 	static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
-@@ -404,32 +435,32 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
- 	char tmp[66];
- 	char sign;
- 	char locase;
--	int need_pfx = ((type & SPECIAL) && base != 10);
-+	int need_pfx = ((spec.flags & SPECIAL) && spec.base != 10);
- 	int i;
- 
- 	/* locase = 0 or 0x20. ORing digits or letters with 'locase'
- 	 * produces same digits or (maybe lowercased) letters */
--	locase = (type & SMALL);
--	if (type & LEFT)
--		type &= ~ZEROPAD;
-+	locase = (spec.flags & SMALL);
-+	if (spec.flags & LEFT)
-+		spec.flags &= ~ZEROPAD;
- 	sign = 0;
--	if (type & SIGN) {
-+	if (spec.flags & SIGN) {
- 		if ((signed long long) num < 0) {
- 			sign = '-';
- 			num = - (signed long long) num;
--			size--;
--		} else if (type & PLUS) {
-+			spec.field_width--;
-+		} else if (spec.flags & PLUS) {
- 			sign = '+';
--			size--;
--		} else if (type & SPACE) {
-+			spec.field_width--;
-+		} else if (spec.flags & SPACE) {
- 			sign = ' ';
--			size--;
-+			spec.field_width--;
- 		}
- 	}
- 	if (need_pfx) {
--		size--;
--		if (base == 16)
--			size--;
-+		spec.field_width--;
-+		if (spec.base == 16)
-+			spec.field_width--;
- 	}
- 
- 	/* generate full string in tmp[], in reverse order */
-@@ -441,10 +472,10 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
- 		tmp[i++] = (digits[do_div(num,base)] | locase);
- 	} while (num != 0);
- 	*/
--	else if (base != 10) { /* 8 or 16 */
--		int mask = base - 1;
-+	else if (spec.base != 10) { /* 8 or 16 */
-+		int mask = spec.base - 1;
- 		int shift = 3;
--		if (base == 16) shift = 4;
-+		if (spec.base == 16) shift = 4;
- 		do {
- 			tmp[i++] = (digits[((unsigned char)num) & mask] | locase);
- 			num >>= shift;
-@@ -454,12 +485,12 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
- 	}
- 
- 	/* printing 100 using %2d gives "100", not "00" */
--	if (i > precision)
--		precision = i;
-+	if (i > spec.precision)
-+		spec.precision = i;
- 	/* leading space padding */
--	size -= precision;
--	if (!(type & (ZEROPAD+LEFT))) {
--		while(--size >= 0) {
-+	spec.field_width -= spec.precision;
-+	if (!(spec.flags & (ZEROPAD+LEFT))) {
-+		while(--spec.field_width >= 0) {
- 			if (buf < end)
- 				*buf = ' ';
- 			++buf;
-@@ -476,23 +507,23 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
- 		if (buf < end)
- 			*buf = '0';
- 		++buf;
--		if (base == 16) {
-+		if (spec.base == 16) {
- 			if (buf < end)
- 				*buf = ('X' | locase);
- 			++buf;
- 		}
- 	}
- 	/* zero or space padding */
--	if (!(type & LEFT)) {
--		char c = (type & ZEROPAD) ? '0' : ' ';
--		while (--size >= 0) {
-+	if (!(spec.flags & LEFT)) {
-+		char c = (spec.flags & ZEROPAD) ? '0' : ' ';
-+		while (--spec.field_width >= 0) {
- 			if (buf < end)
- 				*buf = c;
- 			++buf;
- 		}
- 	}
- 	/* hmm even more zero padding? */
--	while (i <= --precision) {
-+	while (i <= --spec.precision) {
- 		if (buf < end)
- 			*buf = '0';
- 		++buf;
-@@ -504,7 +535,7 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
- 		++buf;
- 	}
- 	/* trailing space padding */
--	while (--size >= 0) {
-+	while (--spec.field_width >= 0) {
- 		if (buf < end)
- 			*buf = ' ';
- 		++buf;
-@@ -512,17 +543,17 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
- 	return buf;
- }
- 
--static char *string(char *buf, char *end, char *s, int field_width, int precision, int flags)
-+static char *string(char *buf, char *end, char *s, struct printf_spec spec)
- {
- 	int len, i;
- 
- 	if ((unsigned long)s < PAGE_SIZE)
- 		s = "<NULL>";
- 
--	len = strnlen(s, precision);
-+	len = strnlen(s, spec.precision);
- 
--	if (!(flags & LEFT)) {
--		while (len < field_width--) {
-+	if (!(spec.flags & LEFT)) {
-+		while (len < spec.field_width--) {
- 			if (buf < end)
- 				*buf = ' ';
- 			++buf;
-@@ -533,7 +564,7 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
- 			*buf = *s;
- 		++buf; ++s;
- 	}
--	while (len < field_width--) {
-+	while (len < spec.field_width--) {
- 		if (buf < end)
- 			*buf = ' ';
- 		++buf;
-@@ -541,21 +572,24 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
- 	return buf;
- }
- 
--static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int precision, int flags)
-+static char *symbol_string(char *buf, char *end, void *ptr,
-+				struct printf_spec spec)
- {
- 	unsigned long value = (unsigned long) ptr;
- #ifdef CONFIG_KALLSYMS
- 	char sym[KSYM_SYMBOL_LEN];
- 	sprint_symbol(sym, value);
--	return string(buf, end, sym, field_width, precision, flags);
-+	return string(buf, end, sym, spec);
- #else
--	field_width = 2*sizeof(void *);
--	flags |= SPECIAL | SMALL | ZEROPAD;
--	return number(buf, end, value, 16, field_width, precision, flags);
-+	spec.field_width = 2*sizeof(void *);
-+	spec.flags |= SPECIAL | SMALL | ZEROPAD;
-+	spec.base = 16;
-+	return number(buf, end, value, spec);
- #endif
- }
- 
--static char *resource_string(char *buf, char *end, struct resource *res, int field_width, int precision, int flags)
-+static char *resource_string(char *buf, char *end, struct resource *res,
-+				struct printf_spec spec)
- {
- #ifndef IO_RSRC_PRINTK_SIZE
- #define IO_RSRC_PRINTK_SIZE	4
-@@ -564,7 +598,11 @@ static char *resource_string(char *buf, char *end, struct resource *res, int fie
- #ifndef MEM_RSRC_PRINTK_SIZE
- #define MEM_RSRC_PRINTK_SIZE	8
- #endif
--
-+	struct printf_spec num_spec = {
-+		.base = 16,
-+		.precision = -1,
-+		.flags = SPECIAL | SMALL | ZEROPAD,
-+	};
- 	/* room for the actual numbers, the two "0x", -, [, ] and the final zero */
- 	char sym[4*sizeof(resource_size_t) + 8];
- 	char *p = sym, *pend = sym + sizeof(sym);
-@@ -576,17 +614,18 @@ static char *resource_string(char *buf, char *end, struct resource *res, int fie
- 		size = MEM_RSRC_PRINTK_SIZE;
- 
- 	*p++ = '[';
--	p = number(p, pend, res->start, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
-+	num_spec.field_width = size;
-+	p = number(p, pend, res->start, num_spec);
- 	*p++ = '-';
--	p = number(p, pend, res->end, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
-+	p = number(p, pend, res->end, num_spec);
- 	*p++ = ']';
- 	*p = 0;
- 
--	return string(buf, end, sym, field_width, precision, flags);
-+	return string(buf, end, sym, spec);
- }
- 
--static char *mac_address_string(char *buf, char *end, u8 *addr, int field_width,
--				int precision, int flags)
-+static char *mac_address_string(char *buf, char *end, u8 *addr,
-+				struct printf_spec spec)
- {
- 	char mac_addr[6 * 3]; /* (6 * 2 hex digits), 5 colons and trailing zero */
- 	char *p = mac_addr;
-@@ -594,16 +633,17 @@ static char *mac_address_string(char *buf, char *end, u8 *addr, int field_width,
- 
- 	for (i = 0; i < 6; i++) {
- 		p = pack_hex_byte(p, addr[i]);
--		if (!(flags & SPECIAL) && i != 5)
-+		if (!(spec.flags & SPECIAL) && i != 5)
- 			*p++ = ':';
- 	}
- 	*p = '\0';
-+	spec.flags &= ~SPECIAL;
- 
--	return string(buf, end, mac_addr, field_width, precision, flags & ~SPECIAL);
-+	return string(buf, end, mac_addr, spec);
- }
- 
--static char *ip6_addr_string(char *buf, char *end, u8 *addr, int field_width,
--			 int precision, int flags)
-+static char *ip6_addr_string(char *buf, char *end, u8 *addr,
-+				struct printf_spec spec)
- {
- 	char ip6_addr[8 * 5]; /* (8 * 4 hex digits), 7 colons and trailing zero */
- 	char *p = ip6_addr;
-@@ -612,16 +652,17 @@ static char *ip6_addr_string(char *buf, char *end, u8 *addr, int field_width,
- 	for (i = 0; i < 8; i++) {
- 		p = pack_hex_byte(p, addr[2 * i]);
- 		p = pack_hex_byte(p, addr[2 * i + 1]);
--		if (!(flags & SPECIAL) && i != 7)
-+		if (!(spec.flags & SPECIAL) && i != 7)
- 			*p++ = ':';
- 	}
- 	*p = '\0';
-+	spec.flags &= ~SPECIAL;
- 
--	return string(buf, end, ip6_addr, field_width, precision, flags & ~SPECIAL);
-+	return string(buf, end, ip6_addr, spec);
- }
- 
--static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
--			 int precision, int flags)
-+static char *ip4_addr_string(char *buf, char *end, u8 *addr,
-+				struct printf_spec spec)
- {
- 	char ip4_addr[4 * 4]; /* (4 * 3 decimal digits), 3 dots and trailing zero */
- 	char temp[3];	/* hold each IP quad in reverse order */
-@@ -637,8 +678,9 @@ static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
- 			*p++ = '.';
- 	}
- 	*p = '\0';
-+	spec.flags &= ~SPECIAL;
- 
--	return string(buf, end, ip4_addr, field_width, precision, flags & ~SPECIAL);
-+	return string(buf, end, ip4_addr, spec);
- }
- 
- /*
-@@ -663,41 +705,234 @@ static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
-  * function pointers are really function descriptors, which contain a
-  * pointer to the real address.
-  */
--static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
-+static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
-+			struct printf_spec spec)
- {
- 	if (!ptr)
--		return string(buf, end, "(null)", field_width, precision, flags);
-+		return string(buf, end, "(null)", spec);
- 
- 	switch (*fmt) {
- 	case 'F':
- 		ptr = dereference_function_descriptor(ptr);
- 		/* Fallthrough */
- 	case 'S':
--		return symbol_string(buf, end, ptr, field_width, precision, flags);
-+		return symbol_string(buf, end, ptr, spec);
- 	case 'R':
--		return resource_string(buf, end, ptr, field_width, precision, flags);
-+		return resource_string(buf, end, ptr, spec);
- 	case 'm':
--		flags |= SPECIAL;
-+		spec.flags |= SPECIAL;
- 		/* Fallthrough */
- 	case 'M':
--		return mac_address_string(buf, end, ptr, field_width, precision, flags);
-+		return mac_address_string(buf, end, ptr, spec);
- 	case 'i':
--		flags |= SPECIAL;
-+		spec.flags |= SPECIAL;
- 		/* Fallthrough */
- 	case 'I':
- 		if (fmt[1] == '6')
--			return ip6_addr_string(buf, end, ptr, field_width, precision, flags);
-+			return ip6_addr_string(buf, end, ptr, spec);
- 		if (fmt[1] == '4')
--			return ip4_addr_string(buf, end, ptr, field_width, precision, flags);
--		flags &= ~SPECIAL;
-+			return ip4_addr_string(buf, end, ptr, spec);
-+		spec.flags &= ~SPECIAL;
-+		break;
+ static struct resource mg_mflash_rsc[] = {
+@@ -55,9 +57,18 @@ static struct resource mg_mflash_rsc[] = {
+ 	[2] = {
+ 		.start = 43,
+ 		.end = 43,
+-		.name = "mg_rst",
++		.name = MG_RST_PIN,
+ 		.flags = IORESOURCE_IO
+ 	},
++	/* mflash reset-out pin
++	 * If you use mflash as storage device (i.e. other than MG_BOOT_DEV),
++	 * should assign this */
++	[3] = {
++		.start = 51,
++		.end = 51,
++		.name = MG_RSTOUT_PIN,
++		.flags = IORESOURCE_IO
 +	}
-+	spec.flags |= SMALL;
-+	if (spec.field_width == -1) {
-+		spec.field_width = 2*sizeof(void *);
-+		spec.flags |= ZEROPAD;
-+	}
-+	spec.base = 16;
+ };
+ 
+ static struct platform_device mflash_dev = {
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index 88ad8e7..8d32823 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -405,7 +405,7 @@ config ATA_OVER_ETH
+ 
+ config MG_DISK
+ 	tristate "mGine mflash, gflash support"
+-	depends on ARM
++	depends on ARM && ATA && GPIOLIB
+ 	help
+ 	  mGine mFlash(gFlash) block device driver
+ 
+diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
+index 10ac8d6..fb39d9a 100644
+--- a/drivers/block/mg_disk.c
++++ b/drivers/block/mg_disk.c
+@@ -17,6 +17,7 @@
+ #include <linux/fs.h>
+ #include <linux/blkdev.h>
+ #include <linux/hdreg.h>
++#include <linux/libata.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ #include <linux/platform_device.h>
+@@ -30,7 +31,7 @@ static void mg_request(struct request_queue *);
+ static void mg_dump_status(const char *msg, unsigned int stat,
+ 		struct mg_host *host)
+ {
+-	char *name = MG_DISK_NAME"?";
++	char *name = MG_DISK_NAME;
+ 	struct request *req;
+ 
+ 	if (host->breq) {
+@@ -39,7 +40,7 @@ static void mg_dump_status(const char *msg, unsigned int stat,
+ 			name = req->rq_disk->disk_name;
+ 	}
+ 
+-	printk(KERN_DEBUG "%s: %s: status=0x%02x { ", name, msg, stat & 0xff);
++	printk(KERN_ERR "%s: %s: status=0x%02x { ", name, msg, stat & 0xff);
+ 	if (stat & MG_REG_STATUS_BIT_BUSY)
+ 		printk("Busy ");
+ 	if (stat & MG_REG_STATUS_BIT_READY)
+@@ -58,8 +59,8 @@ static void mg_dump_status(const char *msg, unsigned int stat,
+ 	if ((stat & MG_REG_STATUS_BIT_ERROR) == 0) {
+ 		host->error = 0;
+ 	} else {
+-		host->error = inb(host->dev_base + MG_REG_ERROR);
+-		printk(KERN_DEBUG "%s: %s: error=0x%02x { ", name, msg,
++		host->error = inb((unsigned long)host->dev_base + MG_REG_ERROR);
++		printk(KERN_ERR "%s: %s: error=0x%02x { ", name, msg,
+ 				host->error & 0xff);
+ 		if (host->error & MG_REG_ERR_BBK)
+ 			printk("BadSector ");
+@@ -89,14 +90,16 @@ static void mg_dump_status(const char *msg, unsigned int stat,
+ static unsigned int mg_wait(struct mg_host *host, u32 expect, u32 msec)
+ {
+ 	u8 status;
+-	u64 expire, cur_jiffies;
++	unsigned long expire, cur_jiffies;
++	struct mg_drv_data *prv_data = host->dev->platform_data;
+ 
+ 	host->error = MG_ERR_NONE;
+-	expire = get_jiffies_64() + msecs_to_jiffies(msec);
++	expire = jiffies + msecs_to_jiffies(msec);
 +
-+	return number(buf, end, (unsigned long) ptr, spec);
++	status = inb((unsigned long)host->dev_base + MG_REG_STATUS);
+ 
+-	status = inb(host->dev_base + MG_REG_STATUS);
+ 	do {
+-		cur_jiffies = get_jiffies_64();
++		cur_jiffies = jiffies;
+ 		if (status & MG_REG_STATUS_BIT_BUSY) {
+ 			if (expect == MG_REG_STATUS_BIT_BUSY)
+ 				break;
+@@ -115,18 +118,39 @@ static unsigned int mg_wait(struct mg_host *host, u32 expect, u32 msec)
+ 				if (status & MG_REG_STATUS_BIT_DATA_REQ)
+ 					break;
+ 		}
+-		status = inb(host->dev_base + MG_REG_STATUS);
+-	} while (cur_jiffies < expire);
++		if (!msec) {
++			mg_dump_status("not ready", status, host);
++			return MG_ERR_INV_STAT;
++		}
++		if (prv_data->use_polling)
++			msleep(1);
++
++		status = inb((unsigned long)host->dev_base + MG_REG_STATUS);
++	} while (time_before(cur_jiffies, expire));
+ 
+-	if (cur_jiffies >= expire)
++	if (time_after_eq(cur_jiffies, expire) && msec)
+ 		host->error = MG_ERR_TIMEOUT;
+ 
+ 	return host->error;
+ }
+ 
++static unsigned int mg_wait_rstout(u32 rstout, u32 msec)
++{
++	unsigned long expire;
++
++	expire = jiffies + msecs_to_jiffies(msec);
++	while (time_before(jiffies, expire)) {
++		if (gpio_get_value(rstout) == 1)
++			return MG_ERR_NONE;
++		msleep(10);
++	}
++
++	return MG_ERR_RSTOUT;
 +}
 +
-+/*
-+ * Helper function to decode printf style format.
-+ * Each call decode a token from the format and return the
-+ * number of characters read (or likely the delta where it wants
-+ * to go on the next call).
-+ * The decoded token is returned through the parameters
-+ *
-+ * 'h', 'l', or 'L' for integer fields
-+ * 'z' support added 23/7/1999 S.H.
-+ * 'z' changed to 'Z' --davidm 1/25/99
-+ * 't' added for ptrdiff_t
-+ *
-+ * @fmt: the format string
-+ * @type of the token returned
-+ * @flags: various flags such as +, -, # tokens..
-+ * @field_width: overwritten width
-+ * @base: base of the number (octal, hex, ...)
-+ * @precision: precision of a number
-+ * @qualifier: qualifier of a number (long, size_t, ...)
-+ */
-+static int format_decode(const char *fmt, struct printf_spec *spec)
-+{
-+	const char *start = fmt;
-+	bool sign = false;
-+
-+	/* we finished early by reading the field width */
-+	if (spec->type == FORMAT_TYPE_WITDH) {
-+		if (spec->field_width < 0) {
-+			spec->field_width = -spec->field_width;
-+			spec->flags |= LEFT;
-+		}
-+		spec->type = FORMAT_TYPE_NONE;
-+		goto precision;
-+	}
-+
-+	/* we finished early by reading the precision */
-+	if (spec->type == FORMAT_TYPE_PRECISION) {
-+		if (spec->precision < 0)
-+			spec->precision = 0;
-+
-+		spec->type = FORMAT_TYPE_NONE;
-+		goto qualifier;
-+	}
-+
-+	/* By default */
-+	spec->type = FORMAT_TYPE_NONE;
-+
-+	for (; *fmt ; ++fmt) {
-+		if (*fmt == '%')
-+			break;
-+	}
-+
-+	/* Return the current non-format string */
-+	if (fmt != start || !*fmt)
-+		return fmt - start;
-+
-+	/* Process flags */
-+	spec->flags = 0;
-+
-+	while (1) { /* this also skips first '%' */
-+		bool found = true;
-+
-+		++fmt;
-+
-+		switch (*fmt) {
-+		case '-': spec->flags |= LEFT;    break;
-+		case '+': spec->flags |= PLUS;    break;
-+		case ' ': spec->flags |= SPACE;   break;
-+		case '#': spec->flags |= SPECIAL; break;
-+		case '0': spec->flags |= ZEROPAD; break;
-+		default:  found = false;
-+		}
-+
-+		if (!found)
-+			break;
-+	}
-+
-+	/* get field width */
-+	spec->field_width = -1;
-+
-+	if (isdigit(*fmt))
-+		spec->field_width = skip_atoi(&fmt);
-+	else if (*fmt == '*') {
-+		/* it's the next argument */
-+		spec->type = FORMAT_TYPE_WITDH;
-+		return ++fmt - start;
-+	}
-+
-+precision:
-+	/* get the precision */
-+	spec->precision = -1;
-+	if (*fmt == '.') {
-+		++fmt;
-+		if (isdigit(*fmt)) {
-+			spec->precision = skip_atoi(&fmt);
-+			if (spec->precision < 0)
-+				spec->precision = 0;
-+		} else if (*fmt == '*') {
-+			/* it's the next argument */
-+			spec->type = FORMAT_TYPE_WITDH;
-+			return ++fmt - start;
-+		}
-+	}
-+
-+qualifier:
-+	/* get the conversion qualifier */
-+	spec->qualifier = -1;
-+	if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
-+	    *fmt == 'Z' || *fmt == 'z' || *fmt == 't') {
-+		spec->qualifier = *fmt;
-+		++fmt;
-+		if (spec->qualifier == 'l' && *fmt == 'l') {
-+			spec->qualifier = 'L';
-+			++fmt;
-+		}
-+	}
-+
-+	/* default base */
-+	spec->base = 10;
-+	switch (*fmt) {
-+	case 'c':
-+		spec->type = FORMAT_TYPE_CHAR;
-+		return ++fmt - start;
-+
-+	case 's':
-+		spec->type = FORMAT_TYPE_STR;
-+		return ++fmt - start;
-+
-+	case 'p':
-+		spec->type = FORMAT_TYPE_PTR;
-+		return fmt - start;
-+		/* skip alnum */
-+
-+	case 'n':
-+		spec->type = FORMAT_TYPE_NRCHARS;
-+		return ++fmt - start;
-+
-+	case '%':
-+		spec->type = FORMAT_TYPE_PERCENT_CHAR;
-+		return ++fmt - start;
-+
-+	/* integer number formats - set up the flags and "break" */
-+	case 'o':
-+		spec->base = 8;
- 		break;
-+
-+	case 'x':
-+		spec->flags |= SMALL;
-+
-+	case 'X':
-+		spec->base = 16;
-+		break;
-+
-+	case 'd':
-+	case 'i':
-+		sign = true;
-+	case 'u':
-+		break;
-+
-+	default:
-+		spec->type = FORMAT_TYPE_INVALID;
-+		return fmt - start;
- 	}
--	flags |= SMALL;
--	if (field_width == -1) {
--		field_width = 2*sizeof(void *);
--		flags |= ZEROPAD;
-+
-+	if (spec->qualifier == 'L')
-+		spec->type = FORMAT_TYPE_LONG_LONG;
-+	else if (spec->qualifier == 'l') {
-+		if (sign)
-+			spec->type = FORMAT_TYPE_LONG;
-+		else
-+			spec->type = FORMAT_TYPE_ULONG;
-+	} else if (spec->qualifier == 'Z' || spec->qualifier == 'z') {
-+		spec->type = FORMAT_TYPE_SIZE_T;
-+	} else if (spec->qualifier == 't') {
-+		spec->type = FORMAT_TYPE_PTRDIFF;
-+	} else if (spec->qualifier == 'h') {
-+		if (sign)
-+			spec->type = FORMAT_TYPE_SHORT;
-+		else
-+			spec->type = FORMAT_TYPE_USHORT;
-+	} else {
-+		if (sign)
-+			spec->type = FORMAT_TYPE_INT;
-+		else
-+			spec->type = FORMAT_TYPE_UINT;
- 	}
--	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
-+
-+	return ++fmt - start;
+ static void mg_unexpected_intr(struct mg_host *host)
+ {
+-	u32 status = inb(host->dev_base + MG_REG_STATUS);
++	u32 status = inb((unsigned long)host->dev_base + MG_REG_STATUS);
+ 
+ 	mg_dump_status("mg_unexpected_intr", status, host);
+ }
+@@ -144,84 +168,64 @@ static irqreturn_t mg_irq(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
  }
  
- /**
-@@ -726,18 +961,9 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
- int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+-static void mg_ide_fixstring(u8 *s, const int bytecount)
+-{
+-	u8 *p, *end = &s[bytecount & ~1]; /* bytecount must be even */
+-
+-	/* convert from big-endian to host byte order */
+-	for (p = s ; p != end ; p += 2)
+-		be16_to_cpus((u16 *) p);
+-
+-	/* strip leading blanks */
+-	p = s;
+-	while (s != end && *s == ' ')
+-		++s;
+-	/* compress internal blanks and strip trailing blanks */
+-	while (s != end && *s) {
+-		if (*s++ != ' ' || (s != end && *s && *s != ' '))
+-			*p++ = *(s-1);
+-	}
+-	/* wipe out trailing garbage */
+-	while (p != end)
+-		*p++ = '\0';
+-}
+-
+ static int mg_get_disk_id(struct mg_host *host)
  {
- 	unsigned long long num;
--	int base;
- 	char *str, *end, c;
--
--	int flags;		/* flags to number() */
--
--	int field_width;	/* width of output field */
--	int precision;		/* min. # of digits for integers; max
--				   number of chars for from string */
--	int qualifier;		/* 'h', 'l', or 'L' for integer fields */
--				/* 'z' support added 23/7/1999 S.H.    */
--				/* 'z' changed to 'Z' --davidm 1/25/99 */
--				/* 't' added for ptrdiff_t */
-+	int read;
-+	struct printf_spec spec = {0};
+-	u32 i, res;
++	u32 i;
+ 	s32 err;
+-	u16 *id = (u16 *)&host->id_data;
++	const u16 *id = host->id;
+ 	struct mg_drv_data *prv_data = host->dev->platform_data;
++	char fwrev[ATA_ID_FW_REV_LEN + 1];
++	char model[ATA_ID_PROD_LEN + 1];
++	char serial[ATA_ID_SERNO_LEN + 1];
  
- 	/* Reject out-of-range values early.  Large positive sizes are
- 	   used for unknown buffer sizes. */
-@@ -758,184 +984,144 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 		size = end - buf;
- 	}
+ 	if (!prv_data->use_polling)
+ 		outb(MG_REG_CTRL_INTR_DISABLE,
+-				host->dev_base + MG_REG_DRV_CTRL);
++				(unsigned long)host->dev_base +
++				MG_REG_DRV_CTRL);
  
--	for (; *fmt ; ++fmt) {
--		if (*fmt != '%') {
--			if (str < end)
--				*str = *fmt;
--			++str;
--			continue;
--		}
-+	while (*fmt) {
-+		const char *old_fmt = fmt;
+-	outb(MG_CMD_ID, host->dev_base + MG_REG_COMMAND);
+-	err = mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000);
++	outb(MG_CMD_ID, (unsigned long)host->dev_base + MG_REG_COMMAND);
++	err = mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, MG_TMAX_WAIT_RD_DRQ);
+ 	if (err)
+ 		return err;
  
--		/* process flags */
--		flags = 0;
--		repeat:
--			++fmt;		/* this also skips first '%' */
--			switch (*fmt) {
--				case '-': flags |= LEFT; goto repeat;
--				case '+': flags |= PLUS; goto repeat;
--				case ' ': flags |= SPACE; goto repeat;
--				case '#': flags |= SPECIAL; goto repeat;
--				case '0': flags |= ZEROPAD; goto repeat;
--			}
-+		read = format_decode(fmt, &spec);
+ 	for (i = 0; i < (MG_SECTOR_SIZE >> 1); i++)
+-		id[i] = le16_to_cpu(inw(host->dev_base + MG_BUFF_OFFSET +
+-					i * 2));
++		host->id[i] = le16_to_cpu(inw((unsigned long)host->dev_base +
++					MG_BUFF_OFFSET + i * 2));
  
--		/* get field width */
--		field_width = -1;
--		if (isdigit(*fmt))
--			field_width = skip_atoi(&fmt);
--		else if (*fmt == '*') {
--			++fmt;
--			/* it's the next argument */
--			field_width = va_arg(args, int);
--			if (field_width < 0) {
--				field_width = -field_width;
--				flags |= LEFT;
--			}
--		}
-+		fmt += read;
+-	outb(MG_CMD_RD_CONF, host->dev_base + MG_REG_COMMAND);
+-	err = mg_wait(host, MG_STAT_READY, 3000);
++	outb(MG_CMD_RD_CONF, (unsigned long)host->dev_base + MG_REG_COMMAND);
++	err = mg_wait(host, MG_STAT_READY, MG_TMAX_CONF_TO_CMD);
+ 	if (err)
+ 		return err;
  
--		/* get the precision */
--		precision = -1;
--		if (*fmt == '.') {
--			++fmt;	
--			if (isdigit(*fmt))
--				precision = skip_atoi(&fmt);
--			else if (*fmt == '*') {
--				++fmt;
--				/* it's the next argument */
--				precision = va_arg(args, int);
-+		switch (spec.type) {
-+		case FORMAT_TYPE_NONE: {
-+			int copy = read;
-+			if (str < end) {
-+				if (copy > end - str)
-+					copy = end - str;
-+				memcpy(str, old_fmt, copy);
- 			}
--			if (precision < 0)
--				precision = 0;
-+			str += read;
-+			break;
- 		}
+-	if ((host->id_data.field_valid & 1) == 0)
++	if ((id[ATA_ID_FIELD_VALID] & 1) == 0)
+ 		return MG_ERR_TRANSLATION;
  
--		/* get the conversion qualifier */
--		qualifier = -1;
--		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
--		    *fmt =='Z' || *fmt == 'z' || *fmt == 't') {
--			qualifier = *fmt;
--			++fmt;
--			if (qualifier == 'l' && *fmt == 'l') {
--				qualifier = 'L';
--				++fmt;
--			}
--		}
-+		case FORMAT_TYPE_WITDH:
-+			spec.field_width = va_arg(args, int);
-+			break;
- 
--		/* default base */
--		base = 10;
-+		case FORMAT_TYPE_PRECISION:
-+			spec.precision = va_arg(args, int);
-+			break;
- 
--		switch (*fmt) {
--			case 'c':
--				if (!(flags & LEFT)) {
--					while (--field_width > 0) {
--						if (str < end)
--							*str = ' ';
--						++str;
--					}
--				}
--				c = (unsigned char) va_arg(args, int);
--				if (str < end)
--					*str = c;
--				++str;
--				while (--field_width > 0) {
-+		case FORMAT_TYPE_CHAR:
-+			if (!(spec.flags & LEFT)) {
-+				while (--spec.field_width > 0) {
- 					if (str < end)
- 						*str = ' ';
- 					++str;
--				}
--				continue;
--
--			case 's':
--				str = string(str, end, va_arg(args, char *), field_width, precision, flags);
--				continue;
--
--			case 'p':
--				str = pointer(fmt+1, str, end,
--						va_arg(args, void *),
--						field_width, precision, flags);
--				/* Skip all alphanumeric pointer suffixes */
--				while (isalnum(fmt[1]))
--					fmt++;
--				continue;
--
--			case 'n':
--				/* FIXME:
--				* What does C99 say about the overflow case here? */
--				if (qualifier == 'l') {
--					long * ip = va_arg(args, long *);
--					*ip = (str - buf);
--				} else if (qualifier == 'Z' || qualifier == 'z') {
--					size_t * ip = va_arg(args, size_t *);
--					*ip = (str - buf);
--				} else {
--					int * ip = va_arg(args, int *);
--					*ip = (str - buf);
--				}
--				continue;
- 
--			case '%':
-+				}
-+			}
-+			c = (unsigned char) va_arg(args, int);
-+			if (str < end)
-+				*str = c;
-+			++str;
-+			while (--spec.field_width > 0) {
- 				if (str < end)
--					*str = '%';
-+					*str = ' ';
- 				++str;
--				continue;
-+			}
-+			break;
- 
--				/* integer number formats - set up the flags and "break" */
--			case 'o':
--				base = 8;
--				break;
-+		case FORMAT_TYPE_STR:
-+			str = string(str, end, va_arg(args, char *), spec);
-+			break;
- 
--			case 'x':
--				flags |= SMALL;
--			case 'X':
--				base = 16;
--				break;
-+		case FORMAT_TYPE_PTR:
-+			str = pointer(fmt+1, str, end, va_arg(args, void *),
-+				      spec);
-+			while (isalnum(*fmt))
-+				fmt++;
-+			break;
- 
--			case 'd':
--			case 'i':
--				flags |= SIGN;
--			case 'u':
--				break;
-+		case FORMAT_TYPE_PERCENT_CHAR:
-+			if (str < end)
-+				*str = '%';
-+			++str;
-+			break;
- 
--			default:
-+		case FORMAT_TYPE_INVALID:
-+			if (str < end)
-+				*str = '%';
-+			++str;
-+			if (*fmt) {
- 				if (str < end)
--					*str = '%';
-+					*str = *fmt;
- 				++str;
--				if (*fmt) {
--					if (str < end)
--						*str = *fmt;
--					++str;
--				} else {
--					--fmt;
--				}
--				continue;
-+			} else {
-+				--fmt;
-+			}
-+			break;
+-#ifdef __BIG_ENDIAN
+-	host->id_data.lba_capacity = (host->id_data.lba_capacity << 16)
+-		| (host->id_data.lba_capacity >> 16);
+-#endif /* __BIG_ENDIAN */
+-	if (MG_RES_SEC) {
+-		/* modify cyls, lba_capacity */
+-		host->id_data.cyls = (host->id_data.lba_capacity - MG_RES_SEC) /
+-			host->id_data.heads / host->id_data.sectors;
+-		res = host->id_data.lba_capacity - host->id_data.cyls *
+-			host->id_data.heads * host->id_data.sectors;
+-		host->id_data.lba_capacity -= res;
+-	}
+-	host->tot_sectors = host->id_data.lba_capacity;
+-	mg_ide_fixstring(host->id_data.model,
+-			sizeof(host->id_data.model));
+-	mg_ide_fixstring(host->id_data.serial_no,
+-			sizeof(host->id_data.serial_no));
+-	mg_ide_fixstring(host->id_data.fw_rev,
+-			sizeof(host->id_data.fw_rev));
+-	printk(KERN_INFO "mg_disk: model: %s\n", host->id_data.model);
+-	printk(KERN_INFO "mg_disk: firm: %.8s\n", host->id_data.fw_rev);
+-	printk(KERN_INFO "mg_disk: serial: %s\n",
+-			host->id_data.serial_no);
++	host->n_sectors = ata_id_u32(id, ATA_ID_LBA_CAPACITY);
++	host->cyls = id[ATA_ID_CYLS];
++	host->heads = id[ATA_ID_HEADS];
++	host->sectors = id[ATA_ID_SECTORS];
 +
-+		case FORMAT_TYPE_NRCHARS: {
-+			int qualifier = spec.qualifier;
++	if (MG_RES_SEC && host->heads && host->sectors) {
++		/* modify cyls, n_sectors */
++		host->cyls = (host->n_sectors - MG_RES_SEC) /
++			host->heads / host->sectors;
++		host->nres_sectors = host->n_sectors - host->cyls *
++			host->heads * host->sectors;
++		host->n_sectors -= host->nres_sectors;
++	}
 +
-+			if (qualifier == 'l') {
-+				long *ip = va_arg(args, long *);
-+				*ip = (str - buf);
-+			} else if (qualifier == 'Z' ||
-+					qualifier == 'z') {
-+				size_t *ip = va_arg(args, size_t *);
-+				*ip = (str - buf);
-+			} else {
-+				int *ip = va_arg(args, int *);
-+				*ip = (str - buf);
-+			}
-+			break;
- 		}
--		if (qualifier == 'L')
--			num = va_arg(args, long long);
--		else if (qualifier == 'l') {
--			num = va_arg(args, unsigned long);
--			if (flags & SIGN)
--				num = (signed long) num;
--		} else if (qualifier == 'Z' || qualifier == 'z') {
--			num = va_arg(args, size_t);
--		} else if (qualifier == 't') {
--			num = va_arg(args, ptrdiff_t);
--		} else if (qualifier == 'h') {
--			num = (unsigned short) va_arg(args, int);
--			if (flags & SIGN)
--				num = (signed short) num;
--		} else {
--			num = va_arg(args, unsigned int);
--			if (flags & SIGN)
--				num = (signed int) num;
-+
-+		default:
-+			switch (spec.type) {
-+			case FORMAT_TYPE_LONG_LONG:
-+				num = va_arg(args, long long);
-+				break;
-+			case FORMAT_TYPE_ULONG:
-+				num = va_arg(args, unsigned long);
-+				break;
-+			case FORMAT_TYPE_LONG:
-+				num = va_arg(args, long);
-+				break;
-+			case FORMAT_TYPE_SIZE_T:
-+				num = va_arg(args, size_t);
-+				break;
-+			case FORMAT_TYPE_PTRDIFF:
-+				num = va_arg(args, ptrdiff_t);
-+				break;
-+			case FORMAT_TYPE_USHORT:
-+				num = (unsigned short) va_arg(args, int);
-+				break;
-+			case FORMAT_TYPE_SHORT:
-+				num = (short) va_arg(args, int);
-+				break;
-+			case FORMAT_TYPE_UINT:
-+				num = va_arg(args, unsigned int);
-+				break;
-+			default:
-+				num = va_arg(args, unsigned int);
-+			}
-+
-+			str = number(str, end, num, spec);
- 		}
--		str = number(str, end, num, base,
--				field_width, precision, flags);
- 	}
-+
- 	if (size > 0) {
- 		if (str < end)
- 			*str = '\0';
- 		else
- 			end[-1] = '\0';
- 	}
-+
- 	/* the trailing null byte doesn't count towards the total */
- 	return str-buf;
-+
++	ata_id_c_string(id, fwrev, ATA_ID_FW_REV, sizeof(fwrev));
++	ata_id_c_string(id, model, ATA_ID_PROD, sizeof(model));
++	ata_id_c_string(id, serial, ATA_ID_SERNO, sizeof(serial));
++	printk(KERN_INFO "mg_disk: model: %s\n", model);
++	printk(KERN_INFO "mg_disk: firm: %.8s\n", fwrev);
++	printk(KERN_INFO "mg_disk: serial: %s\n", serial);
+ 	printk(KERN_INFO "mg_disk: %d + reserved %d sectors\n",
+-			host->tot_sectors, res);
++			host->n_sectors, host->nres_sectors);
+ 
+ 	if (!prv_data->use_polling)
+-		outb(MG_REG_CTRL_INTR_ENABLE, host->dev_base + MG_REG_DRV_CTRL);
++		outb(MG_REG_CTRL_INTR_ENABLE, (unsigned long)host->dev_base +
++				MG_REG_DRV_CTRL);
+ 
+ 	return err;
  }
- EXPORT_SYMBOL(vsnprintf);
+@@ -235,13 +239,13 @@ static int mg_disk_init(struct mg_host *host)
  
-@@ -1084,8 +1270,9 @@ EXPORT_SYMBOL(sprintf);
-  */
- int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args)
+ 	/* hdd rst low */
+ 	gpio_set_value(host->rst, 0);
+-	err = mg_wait(host, MG_REG_STATUS_BIT_BUSY, 300);
++	err = mg_wait(host, MG_REG_STATUS_BIT_BUSY, MG_TMAX_RST_TO_BUSY);
+ 	if (err)
+ 		return err;
+ 
+ 	/* hdd rst high */
+ 	gpio_set_value(host->rst, 1);
+-	err = mg_wait(host, MG_STAT_READY, 3000);
++	err = mg_wait(host, MG_STAT_READY, MG_TMAX_HDRST_TO_RDY);
+ 	if (err)
+ 		return err;
+ 
+@@ -249,20 +253,20 @@ static int mg_disk_init(struct mg_host *host)
+ 	outb(MG_REG_CTRL_RESET |
+ 			(prv_data->use_polling ? MG_REG_CTRL_INTR_DISABLE :
+ 			 MG_REG_CTRL_INTR_ENABLE),
+-			host->dev_base + MG_REG_DRV_CTRL);
+-	err = mg_wait(host, MG_REG_STATUS_BIT_BUSY, 3000);
++			(unsigned long)host->dev_base + MG_REG_DRV_CTRL);
++	err = mg_wait(host, MG_REG_STATUS_BIT_BUSY, MG_TMAX_RST_TO_BUSY);
+ 	if (err)
+ 		return err;
+ 
+ 	/* soft reset off */
+ 	outb(prv_data->use_polling ? MG_REG_CTRL_INTR_DISABLE :
+ 			MG_REG_CTRL_INTR_ENABLE,
+-			host->dev_base + MG_REG_DRV_CTRL);
+-	err = mg_wait(host, MG_STAT_READY, 3000);
++			(unsigned long)host->dev_base + MG_REG_DRV_CTRL);
++	err = mg_wait(host, MG_STAT_READY, MG_TMAX_SWRST_TO_RDY);
+ 	if (err)
+ 		return err;
+ 
+-	init_status = inb(host->dev_base + MG_REG_STATUS) & 0xf;
++	init_status = inb((unsigned long)host->dev_base + MG_REG_STATUS) & 0xf;
+ 
+ 	if (init_status == 0xf)
+ 		return MG_ERR_INIT_STAT;
+@@ -273,15 +277,10 @@ static int mg_disk_init(struct mg_host *host)
+ static void mg_bad_rw_intr(struct mg_host *host)
  {
-+	struct printf_spec spec = {0};
- 	char *str, *end;
--	int qualifier;
-+	int read;
- 
- 	str = (char *)bin_buf;
- 	end = (char *)(bin_buf + size);
-@@ -1110,57 +1297,26 @@ do {									\
- 	str += sizeof(type);						\
- } while (0)
- 
--	for (; *fmt ; ++fmt) {
--		if (*fmt != '%')
--			continue;
- 
--repeat:
--		/* parse flags */
--		++fmt;		/* this also skips first '%' */
--		if (*fmt == '-' || *fmt == '+' || *fmt == ' '
--				|| *fmt == '#' || *fmt == '0')
--			goto repeat;
-+	while (*fmt) {
-+		read = format_decode(fmt, &spec);
- 
--		/* parse field width */
--		if (isdigit(*fmt))
--			skip_atoi(&fmt);
--		else if (*fmt == '*') {
--			++fmt;
--			/* it's the next argument */
--			save_arg(int);
+ 	struct request *req = elv_next_request(host->breq);
+-	if (req != NULL) {
+-		if (++req->errors >= MG_MAX_ERRORS) {
++	if (req != NULL)
++		if (++req->errors >= MG_MAX_ERRORS ||
++				host->error == MG_ERR_TIMEOUT)
+ 			end_request(req, 0);
+-		} else if (req->errors % MG_RESET_FREQ == 0 ||
+-				host->error == MG_ERR_TIMEOUT) {
+-			host->reset = 1;
 -		}
-+		fmt += read;
- 
--		/* parse the precision */
--		if (*fmt == '.') {
--			++fmt;
--			if (isdigit(*fmt))
--				skip_atoi(&fmt);
--			else if (*fmt == '*') {
--				++fmt;
--				/* it's the next argument */
--				save_arg(int);
--			}
--		}
-+		switch (spec.type) {
-+		case FORMAT_TYPE_NONE:
-+			break;
- 
--		/* parse the conversion qualifier */
--		qualifier = -1;
--		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
--		    *fmt == 'Z' || *fmt == 'z' || *fmt == 't') {
--			qualifier = *fmt;
--			++fmt;
--			if (qualifier == 'l' && *fmt == 'l') {
--				qualifier = 'L';
--				++fmt;
--			}
--		}
-+		case FORMAT_TYPE_WITDH:
-+		case FORMAT_TYPE_PRECISION:
-+			save_arg(int);
-+			break;
- 
--		/* parse format type */
--		switch (*fmt) {
--		case 'c':
-+		case FORMAT_TYPE_CHAR:
- 			save_arg(char);
--			continue;
--		case 's': {
--			/* save the string argument */
-+			break;
-+
-+		case FORMAT_TYPE_STR: {
- 			const char *save_str = va_arg(args, char *);
- 			size_t len;
- 			if ((unsigned long)save_str > (unsigned long)-PAGE_SIZE
-@@ -1170,16 +1326,27 @@ repeat:
- 			if (str + len + 1 < end)
- 				memcpy(str, save_str, len + 1);
- 			str += len + 1;
--			continue;
-+			break;
- 		}
--		case 'p':
-+
-+		case FORMAT_TYPE_PTR:
- 			save_arg(void *);
- 			/* skip all alphanumeric pointer suffixes */
--			while (isalnum(fmt[1]))
-+			while (isalnum(*fmt))
- 				fmt++;
--			continue;
--		case 'n': {
-+			break;
-+
-+		case FORMAT_TYPE_PERCENT_CHAR:
-+			break;
-+
-+		case FORMAT_TYPE_INVALID:
-+			if (!*fmt)
-+				--fmt;
-+			break;
-+
-+		case FORMAT_TYPE_NRCHARS: {
- 			/* skip %n 's argument */
-+			int qualifier = spec.qualifier;
- 			void *skip_arg;
- 			if (qualifier == 'l')
- 				skip_arg = va_arg(args, long *);
-@@ -1187,37 +1354,37 @@ repeat:
- 				skip_arg = va_arg(args, size_t *);
- 			else
- 				skip_arg = va_arg(args, int *);
--			continue;
-+			break;
- 		}
--		case 'o':
--		case 'x':
--		case 'X':
--		case 'd':
--		case 'i':
--		case 'u':
--			/* save arg for case: 'o', 'x', 'X', 'd', 'i', 'u' */
--			if (qualifier == 'L')
-+
-+		default:
-+			switch (spec.type) {
-+
-+			case FORMAT_TYPE_LONG_LONG:
- 				save_arg(long long);
--			else if (qualifier == 'l')
-+				break;
-+			case FORMAT_TYPE_ULONG:
-+			case FORMAT_TYPE_LONG:
- 				save_arg(unsigned long);
--			else if (qualifier == 'Z' || qualifier == 'z')
-+				break;
-+			case FORMAT_TYPE_SIZE_T:
- 				save_arg(size_t);
--			else if (qualifier == 't')
-+				break;
-+			case FORMAT_TYPE_PTRDIFF:
- 				save_arg(ptrdiff_t);
--			else if (qualifier == 'h')
-+				break;
-+			case FORMAT_TYPE_USHORT:
-+			case FORMAT_TYPE_SHORT:
- 				save_arg(short);
--			else
-+				break;
-+			default:
- 				save_arg(int);
--			continue;
--		default:
--			if (!*fmt)
--				--fmt;
--			continue;
-+			}
- 		}
- 	}
--#undef save_arg
--
- 	return (u32 *)(PTR_ALIGN(str, sizeof(u32))) - bin_buf;
-+
-+#undef save_arg
+-		/* Otherwise just retry */
+-	}
  }
- EXPORT_SYMBOL_GPL(vbin_printf);
  
-@@ -1249,14 +1416,10 @@ EXPORT_SYMBOL_GPL(vbin_printf);
- int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
+ static unsigned int mg_out(struct mg_host *host,
+@@ -292,7 +291,7 @@ static unsigned int mg_out(struct mg_host *host,
  {
- 	unsigned long long num;
--	int base;
- 	char *str, *end, c;
- 	const char *args = (const char *)bin_buf;
+ 	struct mg_drv_data *prv_data = host->dev->platform_data;
  
--	int flags;
--	int field_width;
--	int precision;
--	int qualifier;
-+	struct printf_spec spec = {0};
+-	if (mg_wait(host, MG_STAT_READY, 3000))
++	if (mg_wait(host, MG_STAT_READY, MG_TMAX_CONF_TO_CMD))
+ 		return host->error;
  
- 	if (unlikely((int) size < 0)) {
- 		/* There can be only one.. */
-@@ -1290,84 +1453,37 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
- 		size = end - buf;
+ 	if (!prv_data->use_polling) {
+@@ -301,13 +300,15 @@ static unsigned int mg_out(struct mg_host *host,
  	}
+ 	if (MG_RES_SEC)
+ 		sect_num += MG_RES_SEC;
+-	outb((u8)sect_cnt, host->dev_base + MG_REG_SECT_CNT);
+-	outb((u8)sect_num, host->dev_base + MG_REG_SECT_NUM);
+-	outb((u8)(sect_num >> 8), host->dev_base + MG_REG_CYL_LOW);
+-	outb((u8)(sect_num >> 16), host->dev_base + MG_REG_CYL_HIGH);
++	outb((u8)sect_cnt, (unsigned long)host->dev_base + MG_REG_SECT_CNT);
++	outb((u8)sect_num, (unsigned long)host->dev_base + MG_REG_SECT_NUM);
++	outb((u8)(sect_num >> 8), (unsigned long)host->dev_base +
++			MG_REG_CYL_LOW);
++	outb((u8)(sect_num >> 16), (unsigned long)host->dev_base +
++			MG_REG_CYL_HIGH);
+ 	outb((u8)((sect_num >> 24) | MG_REG_HEAD_LBA_MODE),
+-			host->dev_base + MG_REG_DRV_HEAD);
+-	outb(cmd, host->dev_base + MG_REG_COMMAND);
++			(unsigned long)host->dev_base + MG_REG_DRV_HEAD);
++	outb(cmd, (unsigned long)host->dev_base + MG_REG_COMMAND);
+ 	return MG_ERR_NONE;
+ }
  
--	for (; *fmt ; ++fmt) {
--		if (*fmt != '%') {
--			if (str < end)
--				*str = *fmt;
--			++str;
--			continue;
+@@ -318,14 +319,6 @@ static void mg_read(struct request *req)
+ 
+ 	remains = req->nr_sectors;
+ 
+-	if (host->reset) {
+-		if (mg_disk_init(host)) {
+-			end_request(req, 0);
+-			return;
 -		}
-+	while (*fmt) {
-+		int read;
-+		const char *old_fmt = fmt;
+-		host->reset = 0;
+-	}
+-
+ 	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_RD, 0) !=
+ 			MG_ERR_NONE)
+ 		mg_bad_rw_intr(host);
+@@ -334,14 +327,15 @@ static void mg_read(struct request *req)
+ 			remains, req->sector, req->buffer);
  
--		/* process flags */
--		flags = 0;
--repeat:
--		++fmt;		/* this also skips first '%' */
--		switch (*fmt) {
--		case '-':
--			flags |= LEFT;
--			goto repeat;
--		case '+':
--			flags |= PLUS;
--			goto repeat;
--		case ' ':
--			flags |= SPACE;
--			goto repeat;
--		case '#':
--			flags |= SPECIAL;
--			goto repeat;
--		case '0':
--			flags |= ZEROPAD;
--			goto repeat;
--		}
-+		read = format_decode(fmt, &spec);
- 
--		/* get field width */
--		field_width = -1;
--		if (isdigit(*fmt))
--			field_width = skip_atoi(&fmt);
--		else if (*fmt == '*') {
--			++fmt;
--			/* it's the next argument */
--			field_width = get_arg(int);
--			if (field_width < 0) {
--				field_width = -field_width;
--				flags |= LEFT;
--			}
--		}
-+		fmt += read;
- 
--		/* get the precision */
--		precision = -1;
--		if (*fmt == '.') {
--			++fmt;
--			if (isdigit(*fmt))
--				precision = skip_atoi(&fmt);
--			else if (*fmt == '*') {
--				++fmt;
--				/* it's the next argument */
--				precision = get_arg(int);
-+		switch (spec.type) {
-+		case FORMAT_TYPE_NONE: {
-+			int copy = read;
-+			if (str < end) {
-+				if (copy > end - str)
-+					copy = end - str;
-+				memcpy(str, old_fmt, copy);
- 			}
--			if (precision < 0)
--				precision = 0;
-+			str += read;
-+			break;
+ 	while (remains) {
+-		if (mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000) !=
+-				MG_ERR_NONE) {
++		if (mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ,
++					MG_TMAX_WAIT_RD_DRQ) != MG_ERR_NONE) {
+ 			mg_bad_rw_intr(host);
+ 			return;
+ 		}
+ 		for (j = 0; j < MG_SECTOR_SIZE >> 1; j++) {
+ 			*(u16 *)req->buffer =
+-				inw(host->dev_base + MG_BUFF_OFFSET + (j << 1));
++				inw((unsigned long)host->dev_base +
++						MG_BUFF_OFFSET + (j << 1));
+ 			req->buffer += 2;
  		}
  
--		/* get the conversion qualifier */
--		qualifier = -1;
--		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
--		    *fmt == 'Z' || *fmt == 'z' || *fmt == 't') {
--			qualifier = *fmt;
--			++fmt;
--			if (qualifier == 'l' && *fmt == 'l') {
--				qualifier = 'L';
--				++fmt;
--			}
--		}
-+		case FORMAT_TYPE_WITDH:
-+			spec.field_width = get_arg(int);
-+			break;
- 
--		/* default base */
--		base = 10;
-+		case FORMAT_TYPE_PRECISION:
-+			spec.precision = get_arg(int);
-+			break;
- 
--		switch (*fmt) {
--		case 'c':
--			if (!(flags & LEFT)) {
--				while (--field_width > 0) {
-+		case FORMAT_TYPE_CHAR:
-+			if (!(spec.flags & LEFT)) {
-+				while (--spec.field_width > 0) {
- 					if (str < end)
- 						*str = ' ';
- 					++str;
-@@ -1377,58 +1493,34 @@ repeat:
- 			if (str < end)
- 				*str = c;
- 			++str;
--			while (--field_width > 0) {
-+			while (--spec.field_width > 0) {
- 				if (str < end)
- 					*str = ' ';
- 				++str;
- 			}
--			continue;
-+			break;
- 
--		case 's':{
-+		case FORMAT_TYPE_STR: {
- 			const char *str_arg = args;
- 			size_t len = strlen(str_arg);
- 			args += len + 1;
--			str = string(str, end, (char *)str_arg, field_width,
--					precision, flags);
--			continue;
-+			str = string(str, end, (char *)str_arg, spec);
-+			break;
+@@ -357,7 +351,8 @@ static void mg_read(struct request *req)
+ 				req = elv_next_request(host->breq);
  		}
  
--		case 'p':
--			str = pointer(fmt+1, str, end, get_arg(void *),
--					field_width, precision, flags);
--			/* Skip all alphanumeric pointer suffixes */
--			while (isalnum(fmt[1]))
-+		case FORMAT_TYPE_PTR:
-+			str = pointer(fmt+1, str, end, get_arg(void *), spec);
-+			while (isalnum(*fmt))
- 				fmt++;
--			continue;
--
--		case 'n':
--			/* skip %n */
--			continue;
-+			break;
+-		outb(MG_CMD_RD_CONF, host->dev_base + MG_REG_COMMAND);
++		outb(MG_CMD_RD_CONF, (unsigned long)host->dev_base +
++				MG_REG_COMMAND);
+ 	}
+ }
  
--		case '%':
-+		case FORMAT_TYPE_PERCENT_CHAR:
- 			if (str < end)
- 				*str = '%';
- 			++str;
--			continue;
+@@ -368,14 +363,6 @@ static void mg_write(struct request *req)
+ 
+ 	remains = req->nr_sectors;
+ 
+-	if (host->reset) {
+-		if (mg_disk_init(host)) {
+-			end_request(req, 0);
+-			return;
+-		}
+-		host->reset = 0;
+-	}
 -
--		/* integer number formats - set up the flags and "break" */
--		case 'o':
--			base = 8;
--			break;
--
--		case 'x':
--			flags |= SMALL;
--		case 'X':
--			base = 16;
+ 	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_WR, 0) !=
+ 			MG_ERR_NONE) {
+ 		mg_bad_rw_intr(host);
+@@ -386,13 +373,14 @@ static void mg_write(struct request *req)
+ 	MG_DBG("requested %d sects (from %ld), buffer=0x%p\n",
+ 			remains, req->sector, req->buffer);
+ 	while (remains) {
+-		if (mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000) !=
+-				MG_ERR_NONE) {
++		if (mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ,
++					MG_TMAX_WAIT_WR_DRQ) != MG_ERR_NONE) {
+ 			mg_bad_rw_intr(host);
+ 			return;
+ 		}
+ 		for (j = 0; j < MG_SECTOR_SIZE >> 1; j++) {
+-			outw(*(u16 *)req->buffer, host->dev_base +
++			outw(*(u16 *)req->buffer,
++					(unsigned long)host->dev_base +
+ 					MG_BUFF_OFFSET + (j << 1));
+ 			req->buffer += 2;
+ 		}
+@@ -407,7 +395,8 @@ static void mg_write(struct request *req)
+ 				req = elv_next_request(host->breq);
+ 		}
+ 
+-		outb(MG_CMD_WR_CONF, host->dev_base + MG_REG_COMMAND);
++		outb(MG_CMD_WR_CONF, (unsigned long)host->dev_base +
++				MG_REG_COMMAND);
+ 	}
+ }
+ 
+@@ -418,7 +407,7 @@ static void mg_read_intr(struct mg_host *host)
+ 
+ 	/* check status */
+ 	do {
+-		i = inb(host->dev_base + MG_REG_STATUS);
++		i = inb((unsigned long)host->dev_base + MG_REG_STATUS);
+ 		if (i & MG_REG_STATUS_BIT_BUSY)
  			break;
+ 		if (!MG_READY_OK(i))
+@@ -438,7 +427,8 @@ ok_to_read:
+ 	/* read 1 sector */
+ 	for (i = 0; i < MG_SECTOR_SIZE >> 1; i++) {
+ 		*(u16 *)req->buffer =
+-			inw(host->dev_base + MG_BUFF_OFFSET + (i << 1));
++			inw((unsigned long)host->dev_base + MG_BUFF_OFFSET +
++					(i << 1));
+ 		req->buffer += 2;
+ 	}
  
--		case 'd':
--		case 'i':
--			flags |= SIGN;
--		case 'u':
--			break;
--
--		default:
-+		case FORMAT_TYPE_INVALID:
- 			if (str < end)
- 				*str = '%';
- 			++str;
-@@ -1439,36 +1531,54 @@ repeat:
- 			} else {
- 				--fmt;
- 			}
--			continue;
--		}
--		if (qualifier == 'L')
--			num = get_arg(long long);
--		else if (qualifier == 'l') {
--			num = get_arg(unsigned long);
--			if (flags & SIGN)
--				num = (signed long) num;
--		} else if (qualifier == 'Z' || qualifier == 'z') {
--			num = get_arg(size_t);
--		} else if (qualifier == 't') {
--			num = get_arg(ptrdiff_t);
--		} else if (qualifier == 'h') {
--			num = (unsigned short) get_arg(short);
--			if (flags & SIGN)
--				num = (signed short) num;
--		} else {
--			num = get_arg(unsigned int);
--			if (flags & SIGN)
--				num = (signed int) num;
-+			break;
-+
-+		case FORMAT_TYPE_NRCHARS:
-+			/* skip */
-+			break;
-+
-+		default:
-+			switch (spec.type) {
-+
-+			case FORMAT_TYPE_LONG_LONG:
-+				num = get_arg(long long);
-+				break;
-+			case FORMAT_TYPE_ULONG:
-+				num = get_arg(unsigned long);
-+				break;
-+			case FORMAT_TYPE_LONG:
-+				num = get_arg(unsigned long);
-+				break;
-+			case FORMAT_TYPE_SIZE_T:
-+				num = get_arg(size_t);
-+				break;
-+			case FORMAT_TYPE_PTRDIFF:
-+				num = get_arg(ptrdiff_t);
-+				break;
-+			case FORMAT_TYPE_USHORT:
-+				num = get_arg(unsigned short);
-+				break;
-+			case FORMAT_TYPE_SHORT:
-+				num = get_arg(short);
-+				break;
-+			case FORMAT_TYPE_UINT:
-+				num = get_arg(unsigned int);
-+				break;
-+			default:
-+				num = get_arg(int);
-+			}
-+
-+			str = number(str, end, num, spec);
+@@ -462,7 +452,7 @@ ok_to_read:
+ 	}
+ 
+ 	/* send read confirm */
+-	outb(MG_CMD_RD_CONF, host->dev_base + MG_REG_COMMAND);
++	outb(MG_CMD_RD_CONF, (unsigned long)host->dev_base + MG_REG_COMMAND);
+ 
+ 	/* goto next request */
+ 	if (!i)
+@@ -480,7 +470,7 @@ static void mg_write_intr(struct mg_host *host)
+ 
+ 	/* check status */
+ 	do {
+-		i = inb(host->dev_base + MG_REG_STATUS);
++		i = inb((unsigned long)host->dev_base + MG_REG_STATUS);
+ 		if (i & MG_REG_STATUS_BIT_BUSY)
+ 			break;
+ 		if (!MG_READY_OK(i))
+@@ -508,7 +498,8 @@ ok_to_write:
+ 	if (i > 0) {
+ 		buff = (u16 *)req->buffer;
+ 		for (j = 0; j < MG_STORAGE_BUFFER_SIZE >> 1; j++) {
+-			outw(*buff, host->dev_base + MG_BUFF_OFFSET + (j << 1));
++			outw(*buff, (unsigned long)host->dev_base +
++					MG_BUFF_OFFSET + (j << 1));
+ 			buff++;
  		}
--		str = number(str, end, num, base,
--				field_width, precision, flags);
+ 		MG_DBG("sector %ld, remaining=%ld, buffer=0x%p\n",
+@@ -518,7 +509,7 @@ ok_to_write:
  	}
-+
- 	if (size > 0) {
- 		if (str < end)
- 			*str = '\0';
- 		else
- 			end[-1] = '\0';
- 	}
-+
- #undef get_arg
  
- 	/* the trailing null byte doesn't count towards the total */
+ 	/* send write confirm */
+-	outb(MG_CMD_WR_CONF, host->dev_base + MG_REG_COMMAND);
++	outb(MG_CMD_WR_CONF, (unsigned long)host->dev_base + MG_REG_COMMAND);
+ 
+ 	if (!i)
+ 		mg_request(host->breq);
+@@ -589,26 +580,30 @@ static unsigned int mg_issue_req(struct request *req,
+ 	case WRITE:
+ 		/* TODO : handler */
+ 		outb(MG_REG_CTRL_INTR_DISABLE,
+-				host->dev_base + MG_REG_DRV_CTRL);
++				(unsigned long)host->dev_base +
++				MG_REG_DRV_CTRL);
+ 		if (mg_out(host, sect_num, sect_cnt, MG_CMD_WR, &mg_write_intr)
+ 				!= MG_ERR_NONE) {
+ 			mg_bad_rw_intr(host);
+ 			return host->error;
+ 		}
+ 		del_timer(&host->timer);
+-		mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000);
+-		outb(MG_REG_CTRL_INTR_ENABLE, host->dev_base + MG_REG_DRV_CTRL);
++		mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, MG_TMAX_WAIT_WR_DRQ);
++		outb(MG_REG_CTRL_INTR_ENABLE, (unsigned long)host->dev_base +
++				MG_REG_DRV_CTRL);
+ 		if (host->error) {
+ 			mg_bad_rw_intr(host);
+ 			return host->error;
+ 		}
+ 		buff = (u16 *)req->buffer;
+ 		for (i = 0; i < MG_SECTOR_SIZE >> 1; i++) {
+-			outw(*buff, host->dev_base + MG_BUFF_OFFSET + (i << 1));
++			outw(*buff, (unsigned long)host->dev_base +
++					MG_BUFF_OFFSET + (i << 1));
+ 			buff++;
+ 		}
+ 		mod_timer(&host->timer, jiffies + 3 * HZ);
+-		outb(MG_CMD_WR_CONF, host->dev_base + MG_REG_COMMAND);
++		outb(MG_CMD_WR_CONF, (unsigned long)host->dev_base +
++				MG_REG_COMMAND);
+ 		break;
+ 	default:
+ 		printk(KERN_WARNING "%s:%d unknown command\n",
+@@ -639,14 +634,6 @@ static void mg_request(struct request_queue *q)
+ 
+ 		del_timer(&host->timer);
+ 
+-		if (host->reset) {
+-			if (mg_disk_init(host)) {
+-				end_request(req, 0);
+-				return;
+-			}
+-			host->reset = 0;
+-		}
+-
+ 		sect_num = req->sector;
+ 		/* deal whole segments */
+ 		sect_cnt = req->nr_sectors;
+@@ -675,9 +662,9 @@ static int mg_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+ {
+ 	struct mg_host *host = bdev->bd_disk->private_data;
+ 
+-	geo->cylinders = host->id_data.cyls;
+-	geo->heads = host->id_data.heads;
+-	geo->sectors = host->id_data.sectors;
++	geo->cylinders = (unsigned short)host->cyls;
++	geo->heads = (unsigned char)host->heads;
++	geo->sectors = (unsigned char)host->sectors;
+ 	return 0;
+ }
+ 
+@@ -690,20 +677,23 @@ static int mg_suspend(struct platform_device *plat_dev, pm_message_t state)
+ 	struct mg_drv_data *prv_data = plat_dev->dev.platform_data;
+ 	struct mg_host *host = prv_data->host;
+ 
+-	if (mg_wait(host, MG_STAT_READY, 3000))
++	if (mg_wait(host, MG_STAT_READY, MG_TMAX_CONF_TO_CMD))
+ 		return -EIO;
+ 
+ 	if (!prv_data->use_polling)
+ 		outb(MG_REG_CTRL_INTR_DISABLE,
+-				host->dev_base + MG_REG_DRV_CTRL);
++				(unsigned long)host->dev_base +
++				MG_REG_DRV_CTRL);
+ 
+-	outb(MG_CMD_SLEEP, host->dev_base + MG_REG_COMMAND);
+-	mdelay(1);
++	outb(MG_CMD_SLEEP, (unsigned long)host->dev_base + MG_REG_COMMAND);
++	/* wait until mflash deep sleep */
++	msleep(1);
+ 
+-	if (mg_wait(host, MG_STAT_READY, 3000)) {
++	if (mg_wait(host, MG_STAT_READY, MG_TMAX_CONF_TO_CMD)) {
+ 		if (!prv_data->use_polling)
+ 			outb(MG_REG_CTRL_INTR_ENABLE,
+-					host->dev_base + MG_REG_DRV_CTRL);
++					(unsigned long)host->dev_base +
++					MG_REG_DRV_CTRL);
+ 		return -EIO;
+ 	}
+ 
+@@ -715,17 +705,19 @@ static int mg_resume(struct platform_device *plat_dev)
+ 	struct mg_drv_data *prv_data = plat_dev->dev.platform_data;
+ 	struct mg_host *host = prv_data->host;
+ 
+-	if (mg_wait(host, MG_STAT_READY, 3000))
++	if (mg_wait(host, MG_STAT_READY, MG_TMAX_CONF_TO_CMD))
+ 		return -EIO;
+ 
+-	outb(MG_CMD_WAKEUP, host->dev_base + MG_REG_COMMAND);
+-	mdelay(1);
++	outb(MG_CMD_WAKEUP, (unsigned long)host->dev_base + MG_REG_COMMAND);
++	/* wait until mflash wakeup */
++	msleep(1);
+ 
+-	if (mg_wait(host, MG_STAT_READY, 3000))
++	if (mg_wait(host, MG_STAT_READY, MG_TMAX_CONF_TO_CMD))
+ 		return -EIO;
+ 
+ 	if (!prv_data->use_polling)
+-		outb(MG_REG_CTRL_INTR_ENABLE, host->dev_base + MG_REG_DRV_CTRL);
++		outb(MG_REG_CTRL_INTR_ENABLE, (unsigned long)host->dev_base +
++				MG_REG_DRV_CTRL);
+ 
+ 	return 0;
+ }
+@@ -745,14 +737,13 @@ static int mg_probe(struct platform_device *plat_dev)
+ 	}
+ 
+ 	/* alloc mg_host */
+-	host = kmalloc(sizeof(struct mg_host), GFP_KERNEL);
++	host = kzalloc(sizeof(struct mg_host), GFP_KERNEL);
+ 	if (!host) {
+ 		printk(KERN_ERR "%s:%d fail (no memory for mg_host)\n",
+ 				__func__, __LINE__);
+ 		err = -ENOMEM;
+ 		goto probe_err;
+ 	}
+-	memset(host, 0, sizeof(struct mg_host));
+ 	host->major = MG_DISK_MAJ;
+ 
+ 	/* link each other */
+@@ -767,7 +758,7 @@ static int mg_probe(struct platform_device *plat_dev)
+ 		err = -EINVAL;
+ 		goto probe_err_2;
+ 	}
+-	host->dev_base = (unsigned long)ioremap(rsc->start , rsc->end + 1);
++	host->dev_base = ioremap(rsc->start , rsc->end + 1);
+ 	if (!host->dev_base) {
+ 		printk(KERN_ERR "%s:%d ioremap fail\n",
+ 				__func__, __LINE__);
+@@ -777,7 +768,8 @@ static int mg_probe(struct platform_device *plat_dev)
+ 	MG_DBG("dev_base = 0x%x\n", (u32)host->dev_base);
+ 
+ 	/* get reset pin */
+-	rsc = platform_get_resource(plat_dev, IORESOURCE_IO, 0);
++	rsc = platform_get_resource_byname(plat_dev, IORESOURCE_IO,
++			MG_RST_PIN);
+ 	if (!rsc) {
+ 		printk(KERN_ERR "%s:%d get reset pin fail\n",
+ 				__func__, __LINE__);
+@@ -787,18 +779,44 @@ static int mg_probe(struct platform_device *plat_dev)
+ 	host->rst = rsc->start;
+ 
+ 	/* init rst pin */
+-	err = gpio_request(host->rst, "mg_rst");
++	err = gpio_request(host->rst, MG_RST_PIN);
+ 	if (err)
+ 		goto probe_err_3;
+ 	gpio_direction_output(host->rst, 1);
+ 
+-	/* disk init */
+-	err = mg_disk_init(host);
+-	if (err) {
+-		printk(KERN_ERR "%s:%d fail (err code : %d)\n",
+-				__func__, __LINE__, err);
+-		err = -EIO;
++	/* reset out pin */
++	if (!(prv_data->dev_attr & MG_DEV_MASK))
+ 		goto probe_err_3a;
++
++	if (prv_data->dev_attr != MG_BOOT_DEV) {
++		rsc = platform_get_resource_byname(plat_dev, IORESOURCE_IO,
++				MG_RSTOUT_PIN);
++		if (!rsc) {
++			printk(KERN_ERR "%s:%d get reset-out pin fail\n",
++					__func__, __LINE__);
++			err = -EIO;
++			goto probe_err_3a;
++		}
++		host->rstout = rsc->start;
++		err = gpio_request(host->rstout, MG_RSTOUT_PIN);
++		if (err)
++			goto probe_err_3a;
++		gpio_direction_input(host->rstout);
++	}
++
++	/* disk reset */
++	if (prv_data->dev_attr == MG_STORAGE_DEV) {
++		/* If POR seq. not yet finised, wait */
++		err = mg_wait_rstout(host->rstout, MG_TMAX_RSTOUT);
++		if (err)
++			goto probe_err_3b;
++		err = mg_disk_init(host);
++		if (err) {
++			printk(KERN_ERR "%s:%d fail (err code : %d)\n",
++					__func__, __LINE__, err);
++			err = -EIO;
++			goto probe_err_3b;
++		}
+ 	}
+ 
+ 	/* get irq resource */
+@@ -806,7 +824,7 @@ static int mg_probe(struct platform_device *plat_dev)
+ 		host->irq = platform_get_irq(plat_dev, 0);
+ 		if (host->irq == -ENXIO) {
+ 			err = host->irq;
+-			goto probe_err_3a;
++			goto probe_err_3b;
+ 		}
+ 		err = request_irq(host->irq, mg_irq,
+ 				IRQF_DISABLED | IRQF_TRIGGER_RISING,
+@@ -814,7 +832,7 @@ static int mg_probe(struct platform_device *plat_dev)
+ 		if (err) {
+ 			printk(KERN_ERR "%s:%d fail (request_irq err=%d)\n",
+ 					__func__, __LINE__, err);
+-			goto probe_err_3a;
++			goto probe_err_3b;
+ 		}
+ 
+ 	}
+@@ -880,7 +898,7 @@ static int mg_probe(struct platform_device *plat_dev)
+ 	host->gd->private_data = host;
+ 	sprintf(host->gd->disk_name, MG_DISK_NAME"a");
+ 
+-	set_capacity(host->gd, host->tot_sectors);
++	set_capacity(host->gd, host->n_sectors);
+ 
+ 	add_disk(host->gd);
+ 
+@@ -895,10 +913,12 @@ probe_err_5:
+ probe_err_4:
+ 	if (!prv_data->use_polling)
+ 		free_irq(host->irq, host);
++probe_err_3b:
++	gpio_free(host->rstout);
+ probe_err_3a:
+ 	gpio_free(host->rst);
+ probe_err_3:
+-	iounmap((void __iomem *)host->dev_base);
++	iounmap(host->dev_base);
+ probe_err_2:
+ 	kfree(host);
+ probe_err:
+@@ -930,13 +950,17 @@ static int mg_remove(struct platform_device *plat_dev)
+ 	if (!prv_data->use_polling)
+ 		free_irq(host->irq, host);
+ 
++	/* free reset-out pin */
++	if (prv_data->dev_attr != MG_BOOT_DEV)
++		gpio_free(host->rstout);
++
+ 	/* free rst pin */
+ 	if (host->rst)
+ 		gpio_free(host->rst);
+ 
+ 	/* unmap io */
+ 	if (host->dev_base)
+-		iounmap((void __iomem *)host->dev_base);
++		iounmap(host->dev_base);
+ 
+ 	/* free mg_host */
+ 	kfree(host);
+diff --git a/include/linux/mg_disk.h b/include/linux/mg_disk.h
+index 4f1a4a2..1f76b1e 100644
+--- a/include/linux/mg_disk.h
++++ b/include/linux/mg_disk.h
+@@ -16,7 +16,7 @@
+ #define __MG_DISK_H__
+ 
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
++#include <linux/ata.h>
+ 
+ /* name for block device */
+ #define MG_DISK_NAME "mgd"
+@@ -91,14 +91,15 @@
+ #define MG_REG_ERR_BBK		0x80
+ 
+ /* error code for others */
+-#define MG_ERR_NONE 0
+-#define MG_ERR_TIMEOUT 0x100
+-#define MG_ERR_INIT_STAT 0x101
+-#define MG_ERR_TRANSLATION 0x102
+-#define MG_ERR_CTRL_RST 0x103
++#define MG_ERR_NONE		0
++#define MG_ERR_TIMEOUT		0x100
++#define MG_ERR_INIT_STAT	0x101
++#define MG_ERR_TRANSLATION	0x102
++#define MG_ERR_CTRL_RST		0x103
++#define MG_ERR_INV_STAT		0x104
++#define MG_ERR_RSTOUT		0x105
+ 
+-#define MG_MAX_ERRORS	16	/* Max read/write errors/sector */
+-#define MG_RESET_FREQ	4	/* Reset controller every 4th retry */
++#define MG_MAX_ERRORS	6	/* Max read/write errors */
+ 
+ /* command */
+ #define MG_CMD_RD 0x20
+@@ -127,11 +128,38 @@
+ #define MG_BURST_LEN_32 (4 << 1)
+ #define MG_BURST_LEN_CONT (0 << 1)
+ 
++/* timeout value (unit: ms) */
++#define MG_TMAX_CONF_TO_CMD	1
++#define MG_TMAX_WAIT_RD_DRQ	10
++#define MG_TMAX_WAIT_WR_DRQ	500
++#define MG_TMAX_RST_TO_BUSY	10
++#define MG_TMAX_HDRST_TO_RDY	500
++#define MG_TMAX_SWRST_TO_RDY	500
++#define MG_TMAX_RSTOUT		3000
++
++/* device attribution */
++/* use mflash as boot device */
++#define MG_BOOT_DEV		(1 << 0)
++/* use mflash as storage device */
++#define MG_STORAGE_DEV		(1 << 1)
++/* same as MG_STORAGE_DEV, but bootloader already done reset sequence */
++#define MG_STORAGE_DEV_SKIP_RST	(1 << 2)
++
++#define MG_DEV_MASK (MG_BOOT_DEV | MG_STORAGE_DEV | MG_STORAGE_DEV_SKIP_RST)
++
++/* names of GPIO resource */
++#define MG_RST_PIN	"mg_rst"
++/* except MG_BOOT_DEV, reset-out pin should be assigned */
++#define MG_RSTOUT_PIN	"mg_rstout"
++
+ /* private driver data */
+ struct mg_drv_data {
+ 	/* disk resource */
+ 	u32 use_polling;
+ 
++	/* device attribution */
++	u32 dev_attr;
++
+ 	/* internally used */
+ 	struct mg_host *host;
+ };
+@@ -147,16 +175,21 @@ struct mg_host {
+ 	struct timer_list timer;
+ 	void (*mg_do_intr) (struct mg_host *);
+ 
+-	struct hd_driveid id_data;
+-	u32 tot_sectors;
++	u16 id[ATA_ID_WORDS];
++
++	u16 cyls;
++	u16 heads;
++	u16 sectors;
++	u32 n_sectors;
++	u32 nres_sectors;
+ 
+-	unsigned long dev_base;
++	void __iomem *dev_base;
+ 	unsigned int irq;
+ 	unsigned int rst;
++	unsigned int rstout;
+ 
+ 	u32 major;
+ 	u32 error;
+-	u32 reset;
+ };
+ 
+ /*
 -- 
-1.6.1
-
-
-
+1.5.6.6
+Regards,
+unsik Kim
