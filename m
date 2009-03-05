@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbZCETTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZCETYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbZCETTl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 14:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZCETS6
+	id S1756652AbZCETYa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 14:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbZCETYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 14:18:58 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:33492 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757678AbZCETS5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 14:18:57 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH v2 15/15] NULL noise: mm/memcontrol.c
-Date: Thu, 05 Mar 2009 20:18:44 +0100
-Message-ID: <20090305191839.30062.91081.stgit@f10box.hanneseder.net>
-In-Reply-To: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>
-User-Agent: StGit/0.14.3.348.gcb02.dirty
+	Thu, 5 Mar 2009 14:24:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44570 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754517AbZCETYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 14:24:19 -0500
+Message-ID: <49B02692.3000500@kernel.org>
+Date: Thu, 05 Mar 2009 11:22:58 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Daniel Walker <dwalker@fifo99.com>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       stern@rowland.harvard.edu, randy.dunlap@oracle.com,
+       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
+       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
+References: <49AF18B7.4050305@kernel.org>	 <tip-a1aade478862fca8710904532cbc6efed97fd05a@git.kernel.org> <1236267366.5937.56.camel@desktop>
+In-Reply-To: <1236267366.5937.56.camel@desktop>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-To: trivial@kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warning:
-  mm/memcontrol.c:1637:32: warning: Using plain integer as NULL pointer
+Daniel Walker wrote:
+> On Thu, 2009-03-05 at 10:00 +0000, Yinghai Lu wrote:
+> 
+>> +
+>> +Mini-HOWTO for using the earlyprintk=dbgp boot option with a
+>> +USB2 Debug port key and a debug cable, on x86 systems.
+>> +
+>> +You need two computers, the 'USB debug key' special gadget and
+>> +and two USB cables, connected like this:
+>> +
+>> +  [host/target] <-------> [USB debug key] <-------> [client/console]
+>> +
+>> +1. There are three specific hardware requirements:
+>> +
+>> + a.) Host/target system needs to have USB debug port capability.
+>> +
+>> + You can check this capability by looking at a 'Debug port' bit in
+>> + the lspci -vvv output:
+> 
+> ...
+> 
+>> + c.) Thirdly, you need a second client/console system with a regular USB port.
+> 
+> You might want to combine a.) and c.) since there is some disconnect
+> between the two. c.) doesn't explicitly say a second time that the
+> client/console needs the debug port capability ..
+> 
+> Or say
+> 
+> a.) You will need two USB ports. One on the client/console system and
+> one one the target system.
+> 
+> b.) The client/console and target USB ports must have the debug port
+> capability. You can check for this as follows,
+> 
+> c.) ...
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
-v2: other subject, as suggested by Al Viro
+thanks for checking it.
 
- mm/memcontrol.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+can you submit patch to Ingo according to tip/master?
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 8e4be9c..09d6650 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1634,7 +1634,7 @@ static int mem_cgroup_force_empty_list(struct mem_cgroup *mem,
- 		pc = list_entry(list->prev, struct page_cgroup, lru);
- 		if (busy == pc) {
- 			list_move(&pc->lru, list);
--			busy = 0;
-+			busy = NULL;
- 			spin_unlock_irqrestore(&zone->lru_lock, flags);
- 			continue;
- 		}
-
+YH
