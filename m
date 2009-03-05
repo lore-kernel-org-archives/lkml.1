@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZCEXWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbZCEXWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbZCEXWX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbZCEXWI
+	id S1756645AbZCEXWh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZCEXWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:22:08 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:37429 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:22:23 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:37465 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752872AbZCEXWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:22:06 -0500
-Message-Id: <20090305225514.355264287@polymtl.ca>
+	id S1756767AbZCEXWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:22:22 -0500
+Message-Id: <20090305225512.274276534@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:40 -0500
+Date: Thu, 05 Mar 2009 17:47:32 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,31 +31,43 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 12/41] x86 : export vmalloc_sync_all()
-Content-Disposition: inline; filename=export-vmalloc-sync-all-symbol.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:10 +0000
+Subject: [RFC patch 04/41] LTTng core powerpc
+Content-Disposition: inline; filename=lttng-core-powerpc.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Needed by the tracer module. Used to make sure the tracer will not trigger a
-page faults. It would be useful in case of full page fault handler
-instrumentation.
+Adds OOPS printing indication of nesting within tracer code.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- arch/x86/mm/fault.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/traps.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Index: linux-2.6-lttng/arch/x86/mm/fault.c
+Index: linux-2.6-lttng/arch/powerpc/kernel/traps.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/mm/fault.c	2009-03-04 13:24:31.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/mm/fault.c	2009-03-04 14:11:47.000000000 -0500
-@@ -935,3 +935,4 @@ void vmalloc_sync_all(void)
- 	}
+--- linux-2.6-lttng.orig/arch/powerpc/kernel/traps.c	2009-01-09 18:16:47.000000000 -0500
++++ linux-2.6-lttng/arch/powerpc/kernel/traps.c	2009-01-09 18:17:23.000000000 -0500
+@@ -33,6 +33,7 @@
+ #include <linux/backlight.h>
+ #include <linux/bug.h>
+ #include <linux/kdebug.h>
++#include <linux/ltt-core.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+@@ -138,6 +139,10 @@ int die(const char *str, struct pt_regs 
+ #ifdef CONFIG_NUMA
+ 		printk("NUMA ");
  #endif
- }
-+EXPORT_SYMBOL_GPL(vmalloc_sync_all);
++#ifdef CONFIG_LTT
++		printk("LTT NESTING LEVEL : %u ", __get_cpu_var(ltt_nesting));
++		printk("\n");
++#endif
+ 		printk("%s\n", ppc_md.name ? ppc_md.name : "");
+ 
+ 		print_modules();
 
 -- 
 Mathieu Desnoyers
