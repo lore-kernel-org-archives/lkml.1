@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZCEMPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZCEMTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbZCEMPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 07:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZCEMOh
+	id S1754761AbZCEMTs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 07:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZCEMTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 07:14:37 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:58412 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755892AbZCEMOg (ORCPT
+	Thu, 5 Mar 2009 07:19:40 -0500
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:43787 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbZCEMTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 07:14:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=EypP2+QwT11vGLnxcBgly5zdXGbmWxl56qNGrRyXkoXqKkKz7+GVFKZDYshSuLD0a+
-         LcgxaK0IAcckkovU/0cI06HViwh6KNcdbGS9PwCAO01oPXylw4ZD6hHcFA1wcIsUoMEL
-         33Did07NmVXxCC+/z09xNVb7rcECr6Nxy+Iq0=
-Message-ID: <49AFC206.9080004@panasas.com>
-Date: Thu, 05 Mar 2009 14:13:58 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Mar 2009 07:19:39 -0500
+Date: Thu, 5 Mar 2009 17:49:29 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@elte.hu, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 11/11] ftrace plugin for kernel symbol tracing using HW
+	Breakpoint interfaces
+Message-ID: <20090305121929.GB25213@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090305043440.189041194@linux.vnet.ibm.com> <20090305044333.GM17747@in.ibm.com> <20090305063703.GB5359@nowhere> <20090305113359.GA25213@in.ibm.com>
 MIME-Version: 1.0
-To: uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: um: WARNING: vmlinux: 'memcpy' exported twice. Previous export was
- in vmlinux
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090305113359.GA25213@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On today's linus v2.6.29-rc7-3-g559595a
+On Thu, Mar 05, 2009 at 05:03:59PM +0530, K.Prasad wrote:
+> On Thu, Mar 05, 2009 at 07:37:04AM +0100, Frederic Weisbecker wrote:
+> > On Thu, Mar 05, 2009 at 10:13:33AM +0530, prasad@linux.vnet.ibm.com wrote:
+> > > This patch adds an ftrace plugin to detect and profile memory access over
+> > > kernel variables. It uses HW Breakpoint interfaces to 'watch memory
+> > > addresses.
+> > > 
+> > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
+> > > ---
+> > 
+> > 
+> > > +
+> > > +		ret = process_new_ksym_entry(entry, ksymname, op, ksym_addr);
+> > 
+> > 
+> > You are passing an allocated entry as a parameter, but later on process_new_ksym_entry()
+> > you allocate a new space for entry.
+> > I'm confused.
+> > 
+> >
+> 
+> When changed = 1, entry points to the existing instance of 'struct
+> trace_ksym' and will be used for changing the type of breakpoint. If the
+> input is a new request to ksym_trace_filter file process_new_ksym_entry()
+> takes a pointer to 'struct trace_ksym' i.e entry for
+> allocation/initialisation rather than use it as a parameter in the true
+> sense.
+> 
+> This is similar to the usage of parameters 'ksymname and addr' in
+> parse_ksym_trace_str() where they are used to return multiple values.
+> 
+> I hope you find the usage acceptable.
+>
 
-Doing make ARCH=um defconfig & make ARCH=um
-give's me:
+aah....but entry isn't used anywhere anywhere in
+ksym_trace_filter_write() after process_new_ksym_entry(). I was trying
+to explain why I used entry as a parameter to let
+process_new_ksym_entry() return multiple values, but it isn't used after
+that. I will remove it, and thanks for pointing it.
 
-LD vmlinux.o
-MODPOST vmlinux.o
-WARNING: vmlinux: 'memcpy' exported twice. Previous export was in vmlinux
-
-
-Sorry if this is a duplicate report
-
-Boaz
+-- K.Prasad
 
