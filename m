@@ -1,145 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZCEReC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbZCERhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZCEReC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 12:34:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZCERdw
+	id S1756478AbZCERhq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 12:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZCERhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 12:33:52 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:19542 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753321AbZCERdv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 12:33:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dm1zp4ETVHQZlG6S1h8fDHK53P+4kZiDY/+PQBtA7gTracg0Xi5MWJSIPlDoUFNDNy
-         i6Yh9M1seUge5M8ehXlW4OP9S6j98KmYRD7IJzhikW2+s9OVrC2/ky6dUuVvcl8FqFC/
-         Uwap5Qo58Y4bNiZvkgOXCcqa/7kQ9Ts2kyDIc=
-Date: Thu, 5 Mar 2009 20:40:37 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090305174037.GA2274@x200.localdomain>
-References: <20090305163857.0C18F3FD@kernel>
+	Thu, 5 Mar 2009 12:37:38 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:50311 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753321AbZCERhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 12:37:37 -0500
+Date: Thu, 5 Mar 2009 09:37:33 -0800
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: [PATCH] lm90: Document support for the MAX6648/6692 chips
+Message-ID: <20090305173732.GM6550@plum>
+Reply-To: djwong@us.ibm.com
+References: <20090302210106.GD6550@plum> <20090305152517.4e0b8983@hyperion.delvare> <20090305154729.GL6550@plum> <20090305174418.02fd9593@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090305163857.0C18F3FD@kernel>
+In-Reply-To: <20090305174418.02fd9593@hyperion.delvare>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 08:38:57AM -0800, Dave Hansen wrote:
-> This takes a suggestion of Ingo's along with comments from lots of
-> other people.  It can track whether a given file is able to be
-> checkpointed.  It introduces a f_op to allow easy customization
-> like the reset of the VFS.
+Update documentation to prevent further confusion/duplication.
 
-Here is how alternative looks like
-* without touching VFS at all
-* without adding default handlers
-* without duplicate code every ->checkpoint hook will have
-* without largely useless "special file" messages
-  (what's so special about it?)
-* without adding userspace-visible /proc/*/checkpointable 
-* without recalculating "checkpointable" property on fs_struct
-  on every C/R=y kernel.
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-* with "ban by default" policy as well
-* with error message immediatly understandable by developer:
+ drivers/hwmon/Kconfig |    4 ++--
+ drivers/hwmon/lm90.c  |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-	cr_check_file: can't checkpoint file f61a0f40, ->f_op = socket_file_ops+0x0/0x1c0
-
-It may lack some printk, but printks are trivial to insert including
-using d_path for precise info.
-
-
-
-static int cr_check_file(struct file *file)
-{
-	struct inode *inode = file->f_path.dentry->d_inode;
-	unsigned int major, minor;
-
-	if (d_unhashed(file->f_path.dentry))
-		return -EINVAL;
-#ifdef CONFIG_SECURITY
-	if (file->f_security)
-		return -EINVAL;
-#endif
-#ifdef CONFIG_EPOLL
-	spin_lock(&file->f_ep_lock);
-	if (!list_empty(&file->f_ep_links)) {
-		spin_unlock(&file->f_ep_lock);
-		return -EINVAL;
-	}
-	spin_unlock(&file->f_ep_lock);
-#endif
-
-	switch (inode->i_mode & S_IFMT) {
-	case S_IFREG:
-	case S_IFDIR:
-		/* Likely on-disk filesystem. */
-		/* FIXME: FUSE, NFS, other networking filesystems */
-		if (inode->i_sb->s_type->fs_flags & FS_REQUIRES_DEV)
-			return 0;
-		break;
-	case S_IFBLK:
-		major = imajor(inode);
-		minor = iminor(inode);
-		printk("%s: can't checkpoint block device %u:%u, ->f_op = %pS\n", __func__, major, minor, file->f_op);
-		return -EINVAL;
-	case S_IFCHR:
-		major = imajor(inode);
-		minor = iminor(inode);
-		if (major == UNIX98_PTY_SLAVE_MAJOR)
-			return 0;
-		printk("%s: can't checkpoint char device %u:%u, ->f_op = %pS\n", __func__, major, minor, file->f_op);
-		return -EINVAL;
-	case S_IFIFO:
-		break;
-	case S_IFSOCK:
-		return 0;
-	case S_IFLNK:
-		/* One can't open symlink. */
-		BUG();
-	}
-	printk("%s: can't checkpoint file %p, ->f_op = %pS\n", __func__, file, file->f_op);
-	return -EINVAL;
-}
-
-static int __cr_collect_file(struct cr_context *ctx, struct file *file)
-{
-	struct cr_object *obj;
-
-	obj = cr_find_obj_by_ptr(ctx, file, CR_CTX_FILE);
-	if (obj) {
-		obj->o_count++;
-		return 0;
-	}
-
-	obj = cr_object_create(file);
-	if (!obj)
-		return -ENOMEM;
-	list_add_tail(&obj->o_list, &ctx->cr_obj[CR_CTX_FILE]);
-	printk("collect file %p\n", file);
-	return 0;
-}
-
-int cr_collect_file(struct cr_context *ctx, struct file *file)
-{
-	int rv;
-
-	rv = cr_check_file(file);
-	if (rv < 0)
-		return rv;
-	return __cr_collect_file(ctx, file);
-}
+diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+index 8c312c6..7da49d3 100644
+--- a/drivers/hwmon/Kconfig
++++ b/drivers/hwmon/Kconfig
+@@ -550,8 +550,8 @@ config SENSORS_LM90
+ 	help
+ 	  If you say yes here you get support for National Semiconductor LM90,
+ 	  LM86, LM89 and LM99, Analog Devices ADM1032 and ADT7461, and Maxim
+-	  MAX6646, MAX6647, MAX6649, MAX6657, MAX6658, MAX6659, MAX6680 and
+-	  MAX6681 sensor chips.
++	  MAX6646, MAX6647, MAX6649, MAX6657, MAX6658, MAX6659, MAX6680,
++	  MAX6648, MAX6692 and MAX6681 sensor chips.
+ 
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called lm90.
+diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
+index 96a7018..58012b7 100644
+--- a/drivers/hwmon/lm90.c
++++ b/drivers/hwmon/lm90.c
+@@ -32,10 +32,10 @@
+  * supported by this driver. These chips lack the remote temperature
+  * offset feature.
+  *
+- * This driver also supports the MAX6646, MAX6647 and MAX6649 chips
+- * made by Maxim.  These are again similar to the LM86, but they use
+- * unsigned temperature values and can report temperatures from 0 to
+- * 145 degrees.
++ * This driver also supports the MAX6646, MAX6647, MAX6648, MAX6649, and
++ * MAX6692 chips made by Maxim.  These are again similar to the LM86,
++ * but they use unsigned temperature values and can report temperatures
++ * from 0 to 145 degrees.
+  *
+  * This driver also supports the MAX6680 and MAX6681, two other sensor
+  * chips made by Maxim. These are quite similar to the other Maxim
