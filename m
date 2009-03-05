@@ -1,135 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZCEL5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZCEL6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbZCEL5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 06:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbZCEL5I
+	id S1753880AbZCEL6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 06:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZCEL6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 06:57:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44415 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Mar 2009 06:58:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45226 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751638AbZCEL5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 06:57:06 -0500
-Date: Thu, 5 Mar 2009 12:56:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] tracing/function-graph-tracer: use the more
-	lightweight local clock
-Message-ID: <20090305115652.GA18745@elte.hu>
-References: <49af243d.06e9300a.53ad.ffff840c@mx.google.com> <20090305011941.GA9821@nowhere> <1236238213.5330.10111.camel@laptop> <20090305084639.GC5359@nowhere> <20090305105652.GG32407@elte.hu> <20090305111646.GG5359@nowhere>
+	id S1753062AbZCEL6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 06:58:09 -0500
+Message-ID: <49AFBE4A.1010605@redhat.com>
+Date: Thu, 05 Mar 2009 12:58:02 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090305111646.GG5359@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alexander Holler <holler@ahsoftware.de>
+CC: linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>
+Subject: [PATCH] Re: Oops using 2.6.28.n after a lazy umount of a crypted
+ loop-device
+References: <49AFA565.6030902@ahsoftware.de>
+In-Reply-To: <49AFA565.6030902@ahsoftware.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alexander Holler wrote:
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Thu, Mar 05, 2009 at 11:56:52AM +0100, Ingo Molnar wrote:
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > On Thu, Mar 05, 2009 at 08:30:13AM +0100, Peter Zijlstra wrote:
-> > > > On Thu, 2009-03-05 at 02:19 +0100, Frederic Weisbecker wrote:
-> > > > 
-> > > > > It takes 1 ms to execute while tracing.
-> > > > > Considering my frequency is 250 Hz, it means 1/4 of the system is used
-> > > > > on timer interrupt while tracing.
-> > > > > 
-> > > > > For now the hang is fixed, but not the awful latency. And I'm just too frightened
-> > > > > to test it on 1000 Hz.
-> > > > > 
-> > > > > But I plan to add a kind of watchdog to check how many time we spent inside an
-> > > > > interrupt while graph tracing.
-> > > > > By checking this time against the current Hz value, I could decide to abort the tracing
-> > > > > for all irq.
-> > > > 
-> > > > That would basically render the thing useless :-(
-> > > 
-> > > 
-> > > It would be only for slow machines :-)
-> > > I'm talking about something that happened on a Pentium II.
-> > > 
-> > >  
-> > > > Is it specifically function_graph that is so expensive? If so, is that
-> > > > because of the function exit hook?
-> > > 
-> > > 
-> > > Yes, specifically the function_graph, the function tracer is 
-> > > not concerned. The function graph tracer takes more than 
-> > > double overhead compared to the function tracer.
-> > > 
-> > > Usually the function tracer hooks directly the the function 
-> > > that insert the event, it's pretty straightforward.
-> > > 
-> > > The function graph does much more work: 
-> > > 
-> > > entry: basic checks, take the time, push the infos on the stack, insert an event
-> > >        on the ring-buffer, hook the return value.
-> > > return: pop the infos from stack, insert an event on the ring-buffer, jump
-> > >         to the original caller.
-> > > 
-> > > It has a high cost... which makes me sad because I plan to 
-> > > port it in on Arm and I fear the little Arm boad I recently 
-> > > purshased will not let me trace the interrupts without 
-> > > hanging...
-> > > :-(
-> > > 
-> > > I guess I should start thinking on some optimizations, perhaps 
-> > > using perfcounter?
-> > 
-> > yeah. perfcounters and KernelTop might not work on a PII CPU out 
-> > of box though.
-> > 
-> > But hacking perfcounters and looking at perfstat/kerneltop 
-> > output is serious amount of fun so if you are interested you 
-> > could try to implement support for it. Do you have any box where 
-> > perfcounters work? (that would be Core2 Intel boxes or pretty 
-> > much any AMD box)
-> > 
-> > You could have a look at how oprofile works on your box - the 
-> > code for PII CPUs should be in 
-> > arch/x86/oprofile/op_model_ppro.c.
-> > 
-> > There's also hardcoded support for a single perfcounter in the 
-> > nmi_watchdog=2 code, in arch/x86/kernel/cpu/perfctr-watchdog.c, 
-> > for pretty much any x86 CPU that has a PMU.
-> > 
-> > Plus there's also the CPU documentation on Intel's site. It's 
-> > quite well written and pretty well structured. The URL for the 
-> > CPU's PMU ("Performance Monitoring") should be:
-> > 
-> >   http://download.intel.com/design/processor/manuals/253669.pdf
-> > 
-> > As a last resort ;-)
-> > 
-> > 	Ingo
-> 
-> Ah yes, That could be fun!
-> So, by reading your description, it should work on my labtop I guess?
+> Hello,
 >
-> -> Intel(R) Pentium(R) Dual  CPU  T2310  @ 1.46GHz
+> for some reason I can't remember I've done a lazy umount follwing the
+> deregistration of the loop-device. The commands in question are:
+>
+> ---------
+> umount -l /mnt/crypted
+> cryptsetup luksClose crypted
+> losetup -d /dev/loop1
+> ---------
+>
+> Using Kernels 2.6.28.2 and .7 this two times resulted
+> in an Oops like the following (both having the same Call Trace):
+>
+>   
+Please Can you try attached patch if helps here?
+(Patch is not perfect, but should help, at least identify that
+it is the same problem I am fixing:-)
 
-Yeah, should work fine there - so that should be a good 
-reference point to start off. Let me know if you see any 
-bugs/problems.
+Milan
+--
+mbroz@redhat.com
 
-> Anyway, I will give it a try and see what I can do.
-> Thanks for the pointers.
+dm crypt: Wait for possible unfinished endio() call in destructor
 
-You are welcome.
+When user set dm-crypt over loop device and the loop thread processing
+bios calls bio_endio later than the dm-crypt mapping is destroyed
+(including mempool for dm io request), the endio can cause this OOPs:
 
-	Ingo
+(mempool_free from already destroyed mempool).
+
+[   70.381058] EIP is at mempool_free+0x12/0x6b
+...
+[   70.381058] Process loop0 (pid: 4268, ti=cf3b2000 task=cf1cc1f0 task.ti=cf3b2000)
+...
+[   70.381058] Call Trace:
+[   70.381058]  [<d0d76601>] ? crypt_dec_pending+0x5e/0x62 [dm_crypt]
+[   70.381058]  [<d0d767b8>] ? crypt_endio+0xa2/0xaa [dm_crypt]
+[   70.381058]  [<d0d76716>] ? crypt_endio+0x0/0xaa [dm_crypt]
+[   70.381058]  [<c01a2f24>] ? bio_endio+0x2b/0x2e
+[   70.381058]  [<d0806530>] ? dec_pending+0x224/0x23b [dm_mod]
+[   70.381058]  [<d08066e4>] ? clone_endio+0x79/0xa4 [dm_mod]
+[   70.381058]  [<d080666b>] ? clone_endio+0x0/0xa4 [dm_mod]
+[   70.381058]  [<c01a2f24>] ? bio_endio+0x2b/0x2e
+[   70.381058]  [<c02bad86>] ? loop_thread+0x380/0x3b7
+[   70.381058]  [<c02ba8a1>] ? do_lo_send_aops+0x0/0x165
+[   70.381058]  [<c013754f>] ? autoremove_wake_function+0x0/0x33
+[   70.381058]  [<c02baa06>] ? loop_thread+0x0/0x3b7
+
+Fix it by adding reference counter into crypt config and wait till
+all endio operations finishes.
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+---
+ drivers/md/dm-crypt.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+index 35bda49..fa37c87 100644
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -95,6 +95,8 @@ struct crypt_config {
+ 	struct workqueue_struct *io_queue;
+ 	struct workqueue_struct *crypt_queue;
+ 
++	atomic_t pending;
++
+ 	/*
+ 	 * crypto related data
+ 	 */
+@@ -566,6 +568,7 @@ static void crypt_dec_pending(struct dm_crypt_io *io)
+ 	}
+ 
+ 	mempool_free(io, cc->io_pool);
++	atomic_dec(&cc->pending);
+ }
+ 
+ /*
+@@ -1113,6 +1116,8 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ 		goto bad_crypt_queue;
+ 	}
+ 
++	atomic_set(&cc->pending, 0);
++
+ 	ti->private = cc;
+ 	return 0;
+ 
+@@ -1149,6 +1154,9 @@ static void crypt_dtr(struct dm_target *ti)
+ 	destroy_workqueue(cc->io_queue);
+ 	destroy_workqueue(cc->crypt_queue);
+ 
++	while (atomic_read(&cc->pending))
++		msleep(1);
++
+ 	if (cc->req)
+ 		mempool_free(cc->req, cc->req_pool);
+ 
+@@ -1171,8 +1179,11 @@ static void crypt_dtr(struct dm_target *ti)
+ static int crypt_map(struct dm_target *ti, struct bio *bio,
+ 		     union map_info *map_context)
+ {
++	struct crypt_config *cc = ti->private;
+ 	struct dm_crypt_io *io;
+ 
++	atomic_inc(&cc->pending);
++
+ 	io = crypt_io_alloc(ti, bio, bio->bi_sector - ti->begin);
+ 
+ 	if (bio_data_dir(io->base_bio) == READ)
+
+
