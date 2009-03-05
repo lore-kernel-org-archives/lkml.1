@@ -1,186 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbZCEQmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbZCEQnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbZCEQmd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbZCEQjf
+	id S1757149AbZCEQnL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:43:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbZCEQlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 11:39:35 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:47149 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756208AbZCEQje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:39:34 -0500
-Subject: [RFC][PATCH 06/11] add checkpoint_file_generic() to /proc
-To: Ingo Molnar <mingo@elte.hu>
-Cc: containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Thu, 05 Mar 2009 08:39:06 -0800
-References: <20090305163857.0C18F3FD@kernel>
-In-Reply-To: <20090305163857.0C18F3FD@kernel>
-Message-Id: <20090305163906.756FAD1A@kernel>
+	Thu, 5 Mar 2009 11:41:05 -0500
+Received: from mx1.emlix.com ([193.175.82.87]:42794 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756627AbZCEQlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 11:41:04 -0500
+From: "Oskar Schirmer" <os@emlix.com>
+Date: Thu, 5 Mar 2009 17:40:28 +0100
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Johannes Weiner <jw@emlix.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Russell King <rmk@arm.linux.org.uk>, Bryan Wu <cooloney@kernel.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -v2] flat: fix data sections alignment
+References: <E1LerUo-0000NE-Q3@mailer.emlix.com> <8bd0f97a0903041348i2c88343fvbc7a1b6d428c7e7a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0903041348i2c88343fvbc7a1b6d428c7e7a@mail.gmail.com>
+Organization: emlix GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <E1LfGcX-00071u-ID@mailer.emlix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 04, 2009 at 16:48:04 -0500, Mike Frysinger wrote:
+> On Wed, Mar 4, 2009 at 08:51, Johannes Weiner wrote:
+> > -       sp = (unsigned long *) ((-(unsigned long)sizeof(char *))&(unsigned long) p);
+> > -
+> > -       sp -= envc+1;
+> > -       envp = sp;
+> > -       sp -= argc+1;
+> > -       argv = sp;
+> > +       sp = (unsigned long *)p;
+> > +       sp -= (envc + argc + 2) + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
+> > +       sp = (unsigned long *) ((unsigned long)sp & -FLAT_DATA_ALIGN);
+> > +       argv = sp + 1 + (flat_argvp_envp_on_stack() ? 2 : 0);
+> > +       envp = argv + (argc + 1);
+> 
+> can this be cleaned up a bit so that the argv/envp assignment happens
+> by using sp before aligning sp ?  that would be defensive coding wrt
+> preventing sp adjustment falling out of line with argv initialization,
+> and cut down on duplicated code.
 
-/proc gets opened a *lot* including during some things that
-ld.so does (according to Serge).  If we want *anything* to
-be checkpointable, we need to handle at least a few things
-in /proc.
+The stack grows down and needs to be aligned when done,
+i.e. where it's user space's turn. Therefor, we need to
+first calculate the amount of space we need for argv/envp,
+then align the result, and finally push argv/envp backward
+into the reserved space. Note, that all this was done
+before too, with one difference: Alignment was requested
+in the middle of the calculation, which is nonsense (as
+the comment in the ARM flat.h prooved).
 
-My approach here was we should be conservative.  We should
-only mark things that we basically already know can change
-at any time, so a process would not be confused if they
-changed.
+> > @@ -854,7 +861,7 @@ static int load_flat_binary(struct linux
+> >        stack_len = TOP_OF_ARGS - bprm->p;             /* the strings */
+> >        stack_len += (bprm->argc + 1) * sizeof(char *); /* the argv array */
+> >        stack_len += (bprm->envc + 1) * sizeof(char *); /* the envp array */
+> > -
+> > +       stack_len += FLAT_DATA_ALIGN;
+> 
+> this seems weird.  alignment is for aligning data, not padding it out
+> some value ...
 
-Things like /proc/kcore are a bit trickier and should be
-left alone for now.
+stack_len is the minimum amount of space to reserve
+for the stack later on. As the stack pointer will be
+aligned after pushing argv/envp (see above), we need
+to reserve the additional space for maximum possible
+alignment upon allocation.
 
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
-
- linux-2.6.git-dave/fs/proc/base.c    |    9 +++++++++
- linux-2.6.git-dave/fs/proc/meminfo.c |    1 +
- linux-2.6.git-dave/fs/proc/stat.c    |    1 +
- linux-2.6.git-dave/mm/vmstat.c       |    4 ++++
- 4 files changed, 15 insertions(+)
-
-diff -puN fs/proc/base.c~add-stupid-checkpoint-to-proc-0 fs/proc/base.c
---- linux-2.6.git/fs/proc/base.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
-+++ linux-2.6.git-dave/fs/proc/base.c	2009-03-05 08:37:02.000000000 -0800
-@@ -690,6 +690,7 @@ static const struct file_operations proc
- 	.llseek		= seq_lseek,
- 	.release	= mounts_release,
- 	.poll		= mounts_poll,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static int mountinfo_open(struct inode *inode, struct file *file)
-@@ -703,6 +704,7 @@ static const struct file_operations proc
- 	.llseek		= seq_lseek,
- 	.release	= mounts_release,
- 	.poll		= mounts_poll,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static int mountstats_open(struct inode *inode, struct file *file)
-@@ -715,6 +717,7 @@ static const struct file_operations proc
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= mounts_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- #define PROC_BLOCK_SIZE	(3*1024)		/* 4K page size but our output routines use some slack for overruns */
-@@ -751,6 +754,7 @@ out_no_task:
- 
- static const struct file_operations proc_info_file_operations = {
- 	.read		= proc_info_read,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static int proc_single_show(struct seq_file *m, void *v)
-@@ -790,6 +794,7 @@ static const struct file_operations proc
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= single_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static int mem_open(struct inode* inode, struct file* file)
-@@ -1008,6 +1013,7 @@ out_no_task:
- 
- static const struct file_operations proc_environ_operations = {
- 	.read		= environ_read,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static ssize_t oom_adjust_read(struct file *file, char __user *buf,
-@@ -1063,6 +1069,7 @@ static ssize_t oom_adjust_write(struct f
- static const struct file_operations proc_oom_adjust_operations = {
- 	.read		= oom_adjust_read,
- 	.write		= oom_adjust_write,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- #ifdef CONFIG_AUDITSYSCALL
-@@ -1130,6 +1137,7 @@ out_free_page:
- static const struct file_operations proc_loginuid_operations = {
- 	.read		= proc_loginuid_read,
- 	.write		= proc_loginuid_write,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static ssize_t proc_sessionid_read(struct file * file, char __user * buf,
-@@ -1150,6 +1158,7 @@ static ssize_t proc_sessionid_read(struc
- 
- static const struct file_operations proc_sessionid_operations = {
- 	.read		= proc_sessionid_read,
-+	.checkpoint	= generic_file_checkpoint,
- };
- #endif
- 
-diff -puN fs/proc/meminfo.c~add-stupid-checkpoint-to-proc-0 fs/proc/meminfo.c
---- linux-2.6.git/fs/proc/meminfo.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
-+++ linux-2.6.git-dave/fs/proc/meminfo.c	2009-03-05 08:37:02.000000000 -0800
-@@ -164,6 +164,7 @@ static const struct file_operations memi
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= single_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static int __init proc_meminfo_init(void)
-diff -puN fs/proc/stat.c~add-stupid-checkpoint-to-proc-0 fs/proc/stat.c
---- linux-2.6.git/fs/proc/stat.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
-+++ linux-2.6.git-dave/fs/proc/stat.c	2009-03-05 08:37:02.000000000 -0800
-@@ -142,6 +142,7 @@ static const struct file_operations proc
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= single_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static int __init proc_stat_init(void)
-diff -puN mm/vmstat.c~add-stupid-checkpoint-to-proc-0 mm/vmstat.c
---- linux-2.6.git/mm/vmstat.c~add-stupid-checkpoint-to-proc-0	2009-03-05 08:37:02.000000000 -0800
-+++ linux-2.6.git-dave/mm/vmstat.c	2009-03-05 08:37:02.000000000 -0800
-@@ -598,6 +598,7 @@ static const struct file_operations frag
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= seq_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static const struct seq_operations pagetypeinfo_op = {
-@@ -617,6 +618,7 @@ static const struct file_operations page
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= seq_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- #ifdef CONFIG_ZONE_DMA
-@@ -813,6 +815,7 @@ static const struct file_operations proc
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= seq_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- 
- static void *vmstat_start(struct seq_file *m, loff_t *pos)
-@@ -887,6 +890,7 @@ static const struct file_operations proc
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
- 	.release	= seq_release,
-+	.checkpoint	= generic_file_checkpoint,
- };
- #endif /* CONFIG_PROC_FS */
- 
-_
+  Oskar
