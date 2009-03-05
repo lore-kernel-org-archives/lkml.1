@@ -1,852 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZCEQNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbZCEQUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbZCEQNM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 11:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZCEQLc
+	id S1755535AbZCEQUS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 11:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbZCEQUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 11:11:32 -0500
-Received: from sh.osrg.net ([192.16.179.4]:40823 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753908AbZCEQLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 11:11:22 -0500
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH -mm 5/5] nilfs2: introduce secondary super block
-Date: Fri,  6 Mar 2009 01:07:49 +0900
-Message-Id: <1236269269-512-6-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1236269269-512-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-References: <1236269269-512-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Dispatcher: imput version 20050308(IM148)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 06 Mar 2009 01:11:12 +0900 (JST)
+	Thu, 5 Mar 2009 11:20:03 -0500
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:32879 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753074AbZCEQUB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 11:20:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=EsvyacqeeHY0r3UeV+aRrJ9MglJNDtZ7G6iDk0LczzBP4GriJpXdpxFz2mDrxggOuK
+         CoKLa8q5x0RJA5lbE6o2E7uooT8oIcWtfK2ZhnFDhxRz4jdRGeyokji79AR4JYisJB96
+         Ue927MjXQeK+E3nJssb96R7/Q7mnHiR7MOtxU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] libata: add CFA specific identify data words
+Date: Thu, 5 Mar 2009 17:20:23 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-next-20090304; KDE/4.2.0; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, sshtylyov@ru.mvista.com,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20090305154040.GA23182@havoc.gtf.org>
+In-Reply-To: <20090305154040.GA23182@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200903051720.24108.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The former versions didn't have extra super blocks.  This improves
-the weak point by introducing another super block at unused region in
-tail of the partition.
+On Thursday 05 March 2009, Jeff Garzik wrote:
+> From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> 
+> Declare and use constants for CFA specific identify data words 162 and 163.
+> 
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> 
+> ---
+> Sergei said:
+> This patch is against the current pata-2.6 series. I'd prefer that Bart merged
+> it thru his tree as my next patch adding CF mode support to IDE depends on it.
+> 
+> jgarzik adds:
+> I didn't see this in your latest submission, Bart.  It is simple and
 
-This doesn't break disk format compatibility; older versions just
-ingore the secondary super block, and new versions just recover it if
-it doesn't exist.  The partition created by an old mkfs may not have
-unused region, but in that case, the secondary super block will not be
-added.
+Simply because I haven't yet got to those patches + Sergei mentioned
+that they need to be tested yet.
 
-This doesn't make more redundant copies of the super block; it is a
-future work.
+> harmless and might as well go ahead upstream, to eliminate the
+> cross-tree dependency that Sergei speaks of (his patch also touched
+> drivers/ata/libata-core.c, but I excluded that from below).
 
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Fine with me if this makes things easier for everyone.
+
+I updated git pull request with this patch fixing patch summary
+(this is not libata specific change) and patch description (constants
+are not currently unused) while at it.
+
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: [PATCH] ata: add CFA specific identify data words
+
+Declare CFA specific identify data words 162 and 163 for future use.
+
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+[bart: update patch summary/description]
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- fs/nilfs2/nilfs.h         |    7 +-
- fs/nilfs2/recovery.c      |    1 -
- fs/nilfs2/segment.c       |    8 +-
- fs/nilfs2/segment.h       |    2 -
- fs/nilfs2/super.c         |  229 +++++++++++++++++++--------------------------
- fs/nilfs2/the_nilfs.c     |  179 ++++++++++++++++++++++++++++++-----
- fs/nilfs2/the_nilfs.h     |   18 +++-
- include/linux/nilfs2_fs.h |    4 +
- 8 files changed, 273 insertions(+), 175 deletions(-)
+ include/linux/ata.h       |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/nilfs2/nilfs.h b/fs/nilfs2/nilfs.h
-index 84e747d..dc85a51 100644
---- a/fs/nilfs2/nilfs.h
-+++ b/fs/nilfs2/nilfs.h
-@@ -275,13 +275,10 @@ extern void nilfs_error(struct super_block *, const char *, const char *, ...)
- extern void nilfs_warning(struct super_block *, const char *, const char *, ...)
-        __attribute__ ((format (printf, 3, 4)));
- extern struct nilfs_super_block *
--nilfs_load_super_block(struct super_block *, struct buffer_head **);
--extern struct nilfs_super_block *
--nilfs_reload_super_block(struct super_block *, struct buffer_head **, int);
-+nilfs_read_super_block(struct super_block *, u64, int, struct buffer_head **);
- extern int nilfs_store_magic_and_option(struct super_block *,
- 					struct nilfs_super_block *, char *);
--extern void nilfs_update_last_segment(struct nilfs_sb_info *, int);
--extern int nilfs_commit_super(struct nilfs_sb_info *);
-+extern int nilfs_commit_super(struct nilfs_sb_info *, int);
- extern int nilfs_attach_checkpoint(struct nilfs_sb_info *, __u64);
- extern void nilfs_detach_checkpoint(struct nilfs_sb_info *);
- 
-diff --git a/fs/nilfs2/recovery.c b/fs/nilfs2/recovery.c
-index 6ab4c8f..6ade096 100644
---- a/fs/nilfs2/recovery.c
-+++ b/fs/nilfs2/recovery.c
-@@ -870,7 +870,6 @@ int nilfs_search_super_root(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi,
- 		if (scan_newer)
- 			ri->ri_need_recovery = NILFS_RECOVERY_SR_UPDATED;
- 		else {
--			nilfs->ns_prot_seq = ssi.seg_seq;
- 			if (nilfs->ns_mount_state & NILFS_VALID_FS)
- 				goto super_root_found;
- 			scan_newer = 1;
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index e43558d..fb70ec3 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -2068,7 +2068,8 @@ static void nilfs_segctor_complete_write(struct nilfs_sc_info *sci)
- 
- 	if (update_sr) {
- 		nilfs_set_last_segment(nilfs, segbuf->sb_pseg_start,
--				       segbuf->sb_sum.seg_seq, nilfs->ns_cno);
-+				       segbuf->sb_sum.seg_seq, nilfs->ns_cno++);
-+		sbi->s_super->s_dirt = 1;
- 
- 		clear_bit(NILFS_SC_HAVE_DELTA, &sci->sc_flags);
- 		clear_bit(NILFS_SC_DIRTY, &sci->sc_flags);
-@@ -2224,9 +2225,6 @@ static int nilfs_segctor_do_construct(struct nilfs_sc_info *sci, int mode)
- 
- 		/* Commit segments */
- 		if (has_sr) {
--			down_write(&nilfs->ns_sem);
--			nilfs_update_last_segment(sbi, 1);
--			up_write(&nilfs->ns_sem);
- 			nilfs_segctor_commit_free_segments(sci);
- 			nilfs_segctor_clear_metadata_dirty(sci);
- 		}
-@@ -2564,7 +2562,7 @@ static int nilfs_segctor_construct(struct nilfs_sc_info *sci,
- 		if (test_bit(NILFS_SC_SUPER_ROOT, &sci->sc_flags) &&
- 		    nilfs_discontinued(nilfs)) {
- 			down_write(&nilfs->ns_sem);
--			req->sb_err = nilfs_commit_super(sbi);
-+			req->sb_err = nilfs_commit_super(sbi, 0);
- 			up_write(&nilfs->ns_sem);
- 		}
- 	}
-diff --git a/fs/nilfs2/segment.h b/fs/nilfs2/segment.h
-index 4a64eb8..a98fc1e 100644
---- a/fs/nilfs2/segment.h
-+++ b/fs/nilfs2/segment.h
-@@ -206,8 +206,6 @@ enum {
- 					   logical segment with a super root */
- #define NILFS_SC_DEFAULT_SR_FREQ    30  /* Maximum frequency of super root
- 					   creation */
--#define NILFS_SC_DEFAULT_SB_FREQ    30  /* Minimum interval of periodical
--					   update of superblock (reserved) */
- 
- /*
-  * The default threshold amount of data, in block counts.
-diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
-index ef31e9a..e2ced82 100644
---- a/fs/nilfs2/super.c
-+++ b/fs/nilfs2/super.c
-@@ -103,8 +103,9 @@ void nilfs_error(struct super_block *sb, const char *function,
- 		down_write(&nilfs->ns_sem);
- 		if (!(nilfs->ns_mount_state & NILFS_ERROR_FS)) {
- 			nilfs->ns_mount_state |= NILFS_ERROR_FS;
--			nilfs->ns_sbp->s_state |= cpu_to_le16(NILFS_ERROR_FS);
--			nilfs_commit_super(sbi);
-+			nilfs->ns_sbp[0]->s_state |=
-+				cpu_to_le16(NILFS_ERROR_FS);
-+			nilfs_commit_super(sbi, 1);
- 		}
- 		up_write(&nilfs->ns_sem);
- 
-@@ -208,90 +209,106 @@ static void nilfs_clear_inode(struct inode *inode)
- 	nilfs_btnode_cache_clear(&ii->i_btnode_cache);
- }
- 
--/**
-- * nilfs_update_last_segment - change pointer to the latest segment
-- * @sbi: nilfs_sb_info
-- * @update_cno: flag whether to update checkpoint number.
-- *
-- * nilfs_update_last_segment() changes information in the super block
-- * after a partial segment is written out successfully. The super
-- * block is marked dirty. It will be written out at the next VFS sync
-- * operations such as sync_supers() and generic_shutdown_super().
-- */
--void nilfs_update_last_segment(struct nilfs_sb_info *sbi, int update_cno)
--{
--	struct the_nilfs *nilfs = sbi->s_nilfs;
--	struct nilfs_super_block *sbp = nilfs->ns_sbp;
--
--	/* nilfs->sem must be locked by the caller. */
--	spin_lock(&nilfs->ns_last_segment_lock);
--	if (update_cno)
--		nilfs->ns_last_cno = nilfs->ns_cno++;
--	sbp->s_last_seq = cpu_to_le64(nilfs->ns_last_seq);
--	sbp->s_last_pseg = cpu_to_le64(nilfs->ns_last_pseg);
--	sbp->s_last_cno = cpu_to_le64(nilfs->ns_last_cno);
--	spin_unlock(&nilfs->ns_last_segment_lock);
--
--	sbi->s_super->s_dirt = 1; /* must be set if delaying the call of
--				     nilfs_commit_super() */
--}
--
--static int nilfs_sync_super(struct nilfs_sb_info *sbi)
-+static int nilfs_sync_super(struct nilfs_sb_info *sbi, int dupsb)
- {
- 	struct the_nilfs *nilfs = sbi->s_nilfs;
- 	int err;
- 	int barrier_done = 0;
- 
- 	if (nilfs_test_opt(sbi, BARRIER)) {
--		set_buffer_ordered(nilfs->ns_sbh);
-+		set_buffer_ordered(nilfs->ns_sbh[0]);
- 		barrier_done = 1;
- 	}
-  retry:
--	set_buffer_dirty(nilfs->ns_sbh);
--	err = sync_dirty_buffer(nilfs->ns_sbh);
-+	set_buffer_dirty(nilfs->ns_sbh[0]);
-+	err = sync_dirty_buffer(nilfs->ns_sbh[0]);
- 	if (err == -EOPNOTSUPP && barrier_done) {
- 		nilfs_warning(sbi->s_super, __func__,
- 			      "barrier-based sync failed. "
- 			      "disabling barriers\n");
- 		nilfs_clear_opt(sbi, BARRIER);
- 		barrier_done = 0;
--		clear_buffer_ordered(nilfs->ns_sbh);
-+		clear_buffer_ordered(nilfs->ns_sbh[0]);
- 		goto retry;
- 	}
--	if (unlikely(err))
-+	if (unlikely(err)) {
- 		printk(KERN_ERR
- 		       "NILFS: unable to write superblock (err=%d)\n", err);
--	else {
-+		if (err == -EIO && nilfs->ns_sbh[1]) {
-+			nilfs_fall_back_super_block(nilfs);
-+			goto retry;
-+		}
-+	} else {
-+		struct nilfs_super_block *sbp = nilfs->ns_sbp[0];
-+
-+		/*
-+		 * The latest segment becomes trailable from the position
-+		 * written in superblock.
-+		 */
- 		clear_nilfs_discontinued(nilfs);
--		spin_lock(&nilfs->ns_last_segment_lock);
--		nilfs->ns_prot_seq = le64_to_cpu(nilfs->ns_sbp->s_last_seq);
--		spin_unlock(&nilfs->ns_last_segment_lock);
-+
-+		/* update GC protection for recent segments */
-+		if (nilfs->ns_sbh[1]) {
-+			sbp = NULL;
-+			if (dupsb) {
-+				set_buffer_dirty(nilfs->ns_sbh[1]);
-+				if (!sync_dirty_buffer(nilfs->ns_sbh[1]))
-+					sbp = nilfs->ns_sbp[1];
-+			}
-+		}
-+		if (sbp) {
-+			spin_lock(&nilfs->ns_last_segment_lock);
-+			nilfs->ns_prot_seq = le64_to_cpu(sbp->s_last_seq);
-+			spin_unlock(&nilfs->ns_last_segment_lock);
-+		}
- 	}
- 
- 	return err;
- }
- 
--int nilfs_commit_super(struct nilfs_sb_info *sbi)
-+int nilfs_commit_super(struct nilfs_sb_info *sbi, int dupsb)
- {
- 	struct the_nilfs *nilfs = sbi->s_nilfs;
--	struct nilfs_super_block *sbp = nilfs->ns_sbp;
-+	struct nilfs_super_block **sbp = nilfs->ns_sbp;
- 	sector_t nfreeblocks;
-+	time_t t;
- 	int err;
- 
- 	/* nilfs->sem must be locked by the caller. */
-+	if (sbp[0]->s_magic != NILFS_SUPER_MAGIC) {
-+		if (sbp[1] && sbp[1]->s_magic == NILFS_SUPER_MAGIC)
-+			nilfs_swap_super_block(nilfs);
-+		else {
-+			printk(KERN_CRIT "NILFS: superblock broke on dev %s\n",
-+			       sbi->s_super->s_id);
-+			return -EIO;
-+		}
-+	}
- 	err = nilfs_count_free_blocks(nilfs, &nfreeblocks);
- 	if (unlikely(err)) {
- 		printk(KERN_ERR "NILFS: failed to count free blocks\n");
- 		return err;
- 	}
--	sbp->s_free_blocks_count = cpu_to_le64(nfreeblocks);
--	sbp->s_wtime = cpu_to_le64(get_seconds());
--	sbp->s_sum = 0;
--	sbp->s_sum = cpu_to_le32(crc32_le(nilfs->ns_crc_seed,
--					  (unsigned char *)sbp,
--					  le16_to_cpu(sbp->s_bytes)));
-+	spin_lock(&nilfs->ns_last_segment_lock);
-+	sbp[0]->s_last_seq = cpu_to_le64(nilfs->ns_last_seq);
-+	sbp[0]->s_last_pseg = cpu_to_le64(nilfs->ns_last_pseg);
-+	sbp[0]->s_last_cno = cpu_to_le64(nilfs->ns_last_cno);
-+	spin_unlock(&nilfs->ns_last_segment_lock);
-+
-+	t = get_seconds();
-+	nilfs->ns_sbwtime[0] = t;
-+	sbp[0]->s_free_blocks_count = cpu_to_le64(nfreeblocks);
-+	sbp[0]->s_wtime = cpu_to_le64(t);
-+	sbp[0]->s_sum = 0;
-+	sbp[0]->s_sum = cpu_to_le32(crc32_le(nilfs->ns_crc_seed,
-+					     (unsigned char *)sbp[0],
-+					     nilfs->ns_sbsize));
-+	if (dupsb && sbp[1]) {
-+		memcpy(sbp[1], sbp[0], nilfs->ns_sbsize);
-+		nilfs->ns_sbwtime[1] = t;
-+	}
- 	sbi->s_super->s_dirt = 0;
--	return nilfs_sync_super(sbi);
-+	return nilfs_sync_super(sbi, dupsb);
- }
- 
- static void nilfs_put_super(struct super_block *sb)
-@@ -303,8 +320,8 @@ static void nilfs_put_super(struct super_block *sb)
- 
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		down_write(&nilfs->ns_sem);
--		nilfs->ns_sbp->s_state = cpu_to_le16(nilfs->ns_mount_state);
--		nilfs_commit_super(sbi);
-+		nilfs->ns_sbp[0]->s_state = cpu_to_le16(nilfs->ns_mount_state);
-+		nilfs_commit_super(sbi, 1);
- 		up_write(&nilfs->ns_sem);
- 	}
- 
-@@ -330,7 +347,7 @@ static void nilfs_put_super(struct super_block *sb)
-  *   2.    down_write(&nilfs->ns_sem)
-  *
-  * Inside NILFS, locking ns_sem is enough to protect s_dirt and the buffer
-- * of the super block (nilfs->ns_sbp).
-+ * of the super block (nilfs->ns_sbp[]).
-  *
-  * In most cases, VFS functions call lock_super() before calling these
-  * methods.  So we must be careful not to bring on deadlocks when using
-@@ -346,8 +363,19 @@ static void nilfs_write_super(struct super_block *sb)
- 	struct the_nilfs *nilfs = sbi->s_nilfs;
- 
- 	down_write(&nilfs->ns_sem);
--	if (!(sb->s_flags & MS_RDONLY))
--		nilfs_commit_super(sbi);
-+	if (!(sb->s_flags & MS_RDONLY)) {
-+		struct nilfs_super_block **sbp = nilfs->ns_sbp;
-+		u64 t = get_seconds();
-+		int dupsb;
-+
-+		if (!nilfs_discontinued(nilfs) && t >= nilfs->ns_sbwtime[0] &&
-+		    t < nilfs->ns_sbwtime[0] + NILFS_SB_FREQ) {
-+			up_write(&nilfs->ns_sem);
-+			return;
-+		}
-+		dupsb = sbp[1] && t > nilfs->ns_sbwtime[1] + NILFS_ALTSB_FREQ;
-+		nilfs_commit_super(sbi, dupsb);
-+	}
- 	sb->s_dirt = 0;
- 	up_write(&nilfs->ns_sem);
- }
-@@ -436,7 +464,7 @@ static int nilfs_mark_recovery_complete(struct nilfs_sb_info *sbi)
- 	down_write(&nilfs->ns_sem);
- 	if (!(nilfs->ns_mount_state & NILFS_VALID_FS)) {
- 		nilfs->ns_mount_state |= NILFS_VALID_FS;
--		err = nilfs_commit_super(sbi);
-+		err = nilfs_commit_super(sbi, 1);
- 		if (likely(!err))
- 			printk(KERN_INFO "NILFS: recovery complete.\n");
- 	}
-@@ -652,7 +680,7 @@ nilfs_set_default_options(struct nilfs_sb_info *sbi,
- static int nilfs_setup_super(struct nilfs_sb_info *sbi)
- {
- 	struct the_nilfs *nilfs = sbi->s_nilfs;
--	struct nilfs_super_block *sbp = nilfs->ns_sbp;
-+	struct nilfs_super_block *sbp = nilfs->ns_sbp[0];
- 	int max_mnt_count = le16_to_cpu(sbp->s_max_mnt_count);
- 	int mnt_count = le16_to_cpu(sbp->s_mnt_count);
- 
-@@ -674,88 +702,29 @@ static int nilfs_setup_super(struct nilfs_sb_info *sbi)
- 	sbp->s_mnt_count = cpu_to_le16(mnt_count + 1);
- 	sbp->s_state = cpu_to_le16(le16_to_cpu(sbp->s_state) & ~NILFS_VALID_FS);
- 	sbp->s_mtime = cpu_to_le64(get_seconds());
--	return nilfs_commit_super(sbi);
-+	return nilfs_commit_super(sbi, 1);
- }
- 
--struct nilfs_super_block *
--nilfs_load_super_block(struct super_block *sb, struct buffer_head **pbh)
-+struct nilfs_super_block *nilfs_read_super_block(struct super_block *sb,
-+						 u64 pos, int blocksize,
-+						 struct buffer_head **pbh)
- {
--	int blocksize;
--	unsigned long offset, sb_index;
--
--	/*
--	 * Adjusting block size
--	 * Blocksize will be enlarged when it is smaller than hardware
--	 * sector size.
--	 * Disk format of superblock does not change.
--	 */
--	blocksize = sb_min_blocksize(sb, BLOCK_SIZE);
--	if (!blocksize) {
--		printk(KERN_ERR
--		       "NILFS: unable to set blocksize of superblock\n");
--		return NULL;
--	}
--	sb_index = NILFS_SB_OFFSET_BYTES / blocksize;
--	offset = NILFS_SB_OFFSET_BYTES % blocksize;
-+	unsigned long long sb_index = pos;
-+	unsigned long offset;
- 
-+	offset = do_div(sb_index, blocksize);
- 	*pbh = sb_bread(sb, sb_index);
--	if (!*pbh) {
--		printk(KERN_ERR "NILFS: unable to read superblock\n");
-+	if (!*pbh)
- 		return NULL;
--	}
- 	return (struct nilfs_super_block *)((char *)(*pbh)->b_data + offset);
- }
- 
--struct nilfs_super_block *
--nilfs_reload_super_block(struct super_block *sb, struct buffer_head **pbh,
--			 int blocksize)
--{
--	struct nilfs_super_block *sbp;
--	unsigned long offset, sb_index;
--	int hw_blocksize = bdev_hardsect_size(sb->s_bdev);
--
--	if (blocksize < hw_blocksize) {
--		printk(KERN_ERR
--		       "NILFS: blocksize %d too small for device "
--		       "(sector-size = %d).\n",
--		       blocksize, hw_blocksize);
--		goto failed_sbh;
--	}
--	brelse(*pbh);
--	sb_set_blocksize(sb, blocksize);
--
--	sb_index = NILFS_SB_OFFSET_BYTES / blocksize;
--	offset = NILFS_SB_OFFSET_BYTES % blocksize;
--
--	*pbh = sb_bread(sb, sb_index);
--	if (!*pbh) {
--		printk(KERN_ERR
--		       "NILFS: cannot read superblock on 2nd try.\n");
--		goto failed;
--	}
--
--	sbp = (struct nilfs_super_block *)((char *)(*pbh)->b_data + offset);
--	if (sbp->s_magic != cpu_to_le16(NILFS_SUPER_MAGIC)) {
--		printk(KERN_ERR
--		       "NILFS: !? Magic mismatch on 2nd try.\n");
--		goto failed_sbh;
--	}
--	return sbp;
--
-- failed_sbh:
--	brelse(*pbh);
--
-- failed:
--	return NULL;
--}
--
- int nilfs_store_magic_and_option(struct super_block *sb,
- 				 struct nilfs_super_block *sbp,
- 				 char *data)
- {
- 	struct nilfs_sb_info *sbi = NILFS_SB(sb);
- 
--	/* trying to fill super (1st stage) */
- 	sb->s_magic = le16_to_cpu(sbp->s_magic);
- 
- 	/* FS independent flags */
-@@ -763,11 +732,6 @@ int nilfs_store_magic_and_option(struct super_block *sb,
- 	sb->s_flags |= MS_NOATIME;
- #endif
- 
--	if (sb->s_magic != NILFS_SUPER_MAGIC) {
--		printk("NILFS: Can't find nilfs on dev %s.\n", sb->s_id);
--		return -EINVAL;
--	}
--
- 	nilfs_set_default_options(sbi, sbp);
- 
- 	sbi->s_resuid = le16_to_cpu(sbp->s_def_resuid);
-@@ -775,10 +739,7 @@ int nilfs_store_magic_and_option(struct super_block *sb,
- 	sbi->s_interval = le32_to_cpu(sbp->s_c_interval);
- 	sbi->s_watermark = le32_to_cpu(sbp->s_c_block_max);
- 
--	if (!parse_options(data, sb))
--		return -EINVAL;
--
--	return 0;
-+	return !parse_options(data, sb) ? -EINVAL : 0 ;
- }
- 
- /**
-@@ -967,12 +928,12 @@ static int nilfs_remount(struct super_block *sb, int *flags, char *data)
- 		 * the RDONLY flag and then mark the partition as valid again.
- 		 */
- 		down_write(&nilfs->ns_sem);
--		sbp = nilfs->ns_sbp;
-+		sbp = nilfs->ns_sbp[0];
- 		if (!(sbp->s_state & le16_to_cpu(NILFS_VALID_FS)) &&
- 		    (nilfs->ns_mount_state & NILFS_VALID_FS))
- 			sbp->s_state = cpu_to_le16(nilfs->ns_mount_state);
- 		sbp->s_mtime = cpu_to_le64(get_seconds());
--		nilfs_commit_super(sbi);
-+		nilfs_commit_super(sbi, 1);
- 		up_write(&nilfs->ns_sem);
- 	} else {
- 		/*
-diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-index 661ab76..f233ba7 100644
---- a/fs/nilfs2/the_nilfs.c
-+++ b/fs/nilfs2/the_nilfs.c
-@@ -25,6 +25,7 @@
- #include <linux/slab.h>
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
-+#include <linux/crc32.h>
- #include "nilfs.h"
- #include "segment.h"
- #include "alloc.h"
-@@ -105,7 +106,8 @@ void put_nilfs(struct the_nilfs *nilfs)
- 	}
- 	if (nilfs_init(nilfs)) {
- 		nilfs_destroy_gccache(nilfs);
--		brelse(nilfs->ns_sbh);
-+		brelse(nilfs->ns_sbh[0]);
-+		brelse(nilfs->ns_sbh[1]);
- 	}
- 	kfree(nilfs);
- }
-@@ -115,6 +117,7 @@ static int nilfs_load_super_root(struct the_nilfs *nilfs,
- {
- 	struct buffer_head *bh_sr;
- 	struct nilfs_super_root *raw_sr;
-+	struct nilfs_super_block **sbp = nilfs->ns_sbp;
- 	unsigned dat_entry_size, segment_usage_size, checkpoint_size;
- 	unsigned inode_size;
- 	int err;
-@@ -124,9 +127,9 @@ static int nilfs_load_super_root(struct the_nilfs *nilfs,
- 		return err;
- 
- 	down_read(&nilfs->ns_sem);
--	dat_entry_size = le16_to_cpu(nilfs->ns_sbp->s_dat_entry_size);
--	checkpoint_size = le16_to_cpu(nilfs->ns_sbp->s_checkpoint_size);
--	segment_usage_size = le16_to_cpu(nilfs->ns_sbp->s_segment_usage_size);
-+	dat_entry_size = le16_to_cpu(sbp[0]->s_dat_entry_size);
-+	checkpoint_size = le16_to_cpu(sbp[0]->s_checkpoint_size);
-+	segment_usage_size = le16_to_cpu(sbp[0]->s_segment_usage_size);
- 	up_read(&nilfs->ns_sem);
- 
- 	inode_size = nilfs->ns_inode_size;
-@@ -270,11 +273,8 @@ int load_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi)
- 			nilfs_mdt_destroy(nilfs->ns_dat);
- 			goto failed;
- 		}
--		if (ri.ri_need_recovery == NILFS_RECOVERY_SR_UPDATED) {
--			down_write(&nilfs->ns_sem);
--			nilfs_update_last_segment(sbi, 0);
--			up_write(&nilfs->ns_sem);
--		}
-+		if (ri.ri_need_recovery == NILFS_RECOVERY_SR_UPDATED)
-+			sbi->s_super->s_dirt = 1;
- 	}
- 
- 	set_nilfs_loaded(nilfs);
-@@ -296,9 +296,8 @@ static unsigned long long nilfs_max_size(unsigned int blkbits)
- 	return res;
- }
- 
--static int
--nilfs_store_disk_layout(struct the_nilfs *nilfs, struct super_block *sb,
--			struct nilfs_super_block *sbp)
-+static int nilfs_store_disk_layout(struct the_nilfs *nilfs,
-+				   struct nilfs_super_block *sbp)
- {
- 	if (le32_to_cpu(sbp->s_rev_level) != NILFS_CURRENT_REV) {
- 		printk(KERN_ERR "NILFS: revision mismatch "
-@@ -309,6 +308,10 @@ nilfs_store_disk_layout(struct the_nilfs *nilfs, struct super_block *sb,
- 		       NILFS_CURRENT_REV, NILFS_MINOR_REV);
- 		return -EINVAL;
- 	}
-+	nilfs->ns_sbsize = le16_to_cpu(sbp->s_bytes);
-+	if (nilfs->ns_sbsize > BLOCK_SIZE)
-+		return -EINVAL;
-+
- 	nilfs->ns_inode_size = le16_to_cpu(sbp->s_inode_size);
- 	nilfs->ns_first_ino = le32_to_cpu(sbp->s_first_ino);
- 
-@@ -330,6 +333,122 @@ nilfs_store_disk_layout(struct the_nilfs *nilfs, struct super_block *sb,
- 	return 0;
- }
- 
-+static int nilfs_valid_sb(struct nilfs_super_block *sbp)
-+{
-+	static unsigned char sum[4];
-+	const int sumoff = offsetof(struct nilfs_super_block, s_sum);
-+	size_t bytes;
-+	u32 crc;
-+
-+	if (!sbp || le16_to_cpu(sbp->s_magic) != NILFS_SUPER_MAGIC)
-+		return 0;
-+	bytes = le16_to_cpu(sbp->s_bytes);
-+	if (bytes > BLOCK_SIZE)
-+		return 0;
-+	crc = crc32_le(le32_to_cpu(sbp->s_crc_seed), (unsigned char *)sbp,
-+		       sumoff);
-+	crc = crc32_le(crc, sum, 4);
-+	crc = crc32_le(crc, (unsigned char *)sbp + sumoff + 4,
-+		       bytes - sumoff - 4);
-+	return crc == le32_to_cpu(sbp->s_sum);
-+}
-+
-+static int nilfs_sb2_bad_offset(struct nilfs_super_block *sbp, u64 offset)
-+{
-+	return offset < ((le64_to_cpu(sbp->s_nsegments) *
-+			  le32_to_cpu(sbp->s_blocks_per_segment)) <<
-+			 (le32_to_cpu(sbp->s_log_block_size) + 10));
-+}
-+
-+static void nilfs_release_super_block(struct the_nilfs *nilfs)
-+{
-+	int i;
-+
-+	for (i = 0; i < 2; i++) {
-+		if (nilfs->ns_sbp[i]) {
-+			brelse(nilfs->ns_sbh[i]);
-+			nilfs->ns_sbh[i] = NULL;
-+			nilfs->ns_sbp[i] = NULL;
-+		}
-+	}
-+}
-+
-+void nilfs_fall_back_super_block(struct the_nilfs *nilfs)
-+{
-+	brelse(nilfs->ns_sbh[0]);
-+	nilfs->ns_sbh[0] = nilfs->ns_sbh[1];
-+	nilfs->ns_sbp[0] = nilfs->ns_sbp[1];
-+	nilfs->ns_sbh[1] = NULL;
-+	nilfs->ns_sbp[1] = NULL;
-+}
-+
-+void nilfs_swap_super_block(struct the_nilfs *nilfs)
-+{
-+	struct buffer_head *tsbh = nilfs->ns_sbh[0];
-+	struct nilfs_super_block *tsbp = nilfs->ns_sbp[0];
-+
-+	nilfs->ns_sbh[0] = nilfs->ns_sbh[1];
-+	nilfs->ns_sbp[0] = nilfs->ns_sbp[1];
-+	nilfs->ns_sbh[1] = tsbh;
-+	nilfs->ns_sbp[1] = tsbp;
-+}
-+
-+static int nilfs_load_super_block(struct the_nilfs *nilfs,
-+				  struct super_block *sb, int blocksize,
-+				  struct nilfs_super_block **sbpp)
-+{
-+	struct nilfs_super_block **sbp = nilfs->ns_sbp;
-+	struct buffer_head **sbh = nilfs->ns_sbh;
-+	u64 sb2off = NILFS_SB2_OFFSET_BYTES(nilfs->ns_bdev->bd_inode->i_size);
-+	int valid[2], swp = 0;
-+
-+	sbp[0] = nilfs_read_super_block(sb, NILFS_SB_OFFSET_BYTES, blocksize,
-+					&sbh[0]);
-+	sbp[1] = nilfs_read_super_block(sb, sb2off, blocksize, &sbh[1]);
-+
-+	if (!sbp[0]) {
-+		if (!sbp[1]) {
-+			printk(KERN_ERR "NILFS: unable to read superblock\n");
-+			return -EIO;
-+		}
-+		printk(KERN_WARNING
-+		       "NILFS warning: unable to read primary superblock\n");
-+	} else if (!sbp[1])
-+		printk(KERN_WARNING
-+		       "NILFS warning: unable to read secondary superblock\n");
-+
-+	valid[0] = nilfs_valid_sb(sbp[0]);
-+	valid[1] = nilfs_valid_sb(sbp[1]);
-+	swp = valid[1] &&
-+		(!valid[0] ||
-+		 le64_to_cpu(sbp[1]->s_wtime) > le64_to_cpu(sbp[0]->s_wtime));
-+
-+	if (valid[swp] && nilfs_sb2_bad_offset(sbp[swp], sb2off)) {
-+		brelse(sbh[1]);
-+		sbh[1] = NULL;
-+		sbp[1] = NULL;
-+		swp = 0;
-+	}
-+	if (!valid[swp]) {
-+		nilfs_release_super_block(nilfs);
-+		printk(KERN_ERR "NILFS: Can't find nilfs on dev %s.\n",
-+		       sb->s_id);
-+		return -EINVAL;
-+	}
-+
-+	if (swp) {
-+		printk(KERN_WARNING "NILFS warning: broken superblock. "
-+		       "using spare superblock.\n");
-+		nilfs_swap_super_block(nilfs);
-+	}
-+
-+	nilfs->ns_sbwtime[0] = le64_to_cpu(sbp[0]->s_wtime);
-+	nilfs->ns_sbwtime[1] = valid[!swp] ? le64_to_cpu(sbp[1]->s_wtime) : 0;
-+	nilfs->ns_prot_seq = le64_to_cpu(sbp[valid[1] & !swp]->s_last_seq);
-+	*sbpp = sbp[0];
-+	return 0;
-+}
-+
- /**
-  * init_nilfs - initialize a NILFS instance.
-  * @nilfs: the_nilfs structure
-@@ -352,7 +471,6 @@ nilfs_store_disk_layout(struct the_nilfs *nilfs, struct super_block *sb,
- int init_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi, char *data)
- {
- 	struct super_block *sb = sbi->s_super;
--	struct buffer_head *sbh;
- 	struct nilfs_super_block *sbp;
- 	struct backing_dev_info *bdi;
- 	int blocksize;
-@@ -361,7 +479,7 @@ int init_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi, char *data)
- 	down_write(&nilfs->ns_sem);
- 	if (nilfs_init(nilfs)) {
- 		/* Load values from existing the_nilfs */
--		sbp = nilfs->ns_sbp;
-+		sbp = nilfs->ns_sbp[0];
- 		err = nilfs_store_magic_and_option(sb, sbp, data);
- 		if (err)
- 			goto out;
-@@ -377,36 +495,49 @@ int init_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi, char *data)
- 		goto out;
- 	}
- 
--	sbp = nilfs_load_super_block(sb, &sbh);
--	if (!sbp) {
-+	blocksize = sb_min_blocksize(sb, BLOCK_SIZE);
-+	if (!blocksize) {
-+		printk(KERN_ERR "NILFS: unable to set blocksize\n");
- 		err = -EINVAL;
- 		goto out;
- 	}
-+	err = nilfs_load_super_block(nilfs, sb, blocksize, &sbp);
-+	if (err)
-+		goto out;
-+
- 	err = nilfs_store_magic_and_option(sb, sbp, data);
- 	if (err)
- 		goto failed_sbh;
- 
- 	blocksize = BLOCK_SIZE << le32_to_cpu(sbp->s_log_block_size);
- 	if (sb->s_blocksize != blocksize) {
--		sbp = nilfs_reload_super_block(sb, &sbh, blocksize);
--		if (!sbp) {
--			err = -EINVAL;
-+		int hw_blocksize = bdev_hardsect_size(sb->s_bdev);
-+
-+		if (blocksize < hw_blocksize) {
-+			printk(KERN_ERR
-+			       "NILFS: blocksize %d too small for device "
-+			       "(sector-size = %d).\n",
-+			       blocksize, hw_blocksize);
-+			goto failed_sbh;
-+		}
-+		nilfs_release_super_block(nilfs);
-+		sb_set_blocksize(sb, blocksize);
-+
-+		err = nilfs_load_super_block(nilfs, sb, blocksize, &sbp);
-+		if (err)
- 			goto out;
- 			/* not failed_sbh; sbh is released automatically
- 			   when reloading fails. */
--		}
- 	}
- 	nilfs->ns_blocksize_bits = sb->s_blocksize_bits;
- 
--	err = nilfs_store_disk_layout(nilfs, sb, sbp);
-+	err = nilfs_store_disk_layout(nilfs, sbp);
- 	if (err)
- 		goto failed_sbh;
- 
- 	sb->s_maxbytes = nilfs_max_size(sb->s_blocksize_bits);
- 
- 	nilfs->ns_mount_state = le16_to_cpu(sbp->s_state);
--	nilfs->ns_sbh = sbh;
--	nilfs->ns_sbp = sbp;
- 
- 	bdi = nilfs->ns_bdev->bd_inode_backing_dev_info;
- 	if (!bdi)
-@@ -443,7 +574,7 @@ int init_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi, char *data)
- 	return err;
- 
-  failed_sbh:
--	brelse(sbh);
-+	nilfs_release_super_block(nilfs);
- 	goto out;
- }
- 
-diff --git a/fs/nilfs2/the_nilfs.h b/fs/nilfs2/the_nilfs.h
-index d750e48..30fe587 100644
---- a/fs/nilfs2/the_nilfs.h
-+++ b/fs/nilfs2/the_nilfs.h
-@@ -49,8 +49,10 @@ enum {
-  * @ns_sem: semaphore for shared states
-  * @ns_writer_mutex: mutex protecting ns_writer attach/detach
-  * @ns_writer_refcount: number of referrers on ns_writer
-- * @ns_sbh: buffer head of the on-disk super block
-- * @ns_sbp: pointer to the super block data
-+ * @ns_sbh: buffer heads of on-disk super blocks
-+ * @ns_sbp: pointers to super block data
-+ * @ns_sbwtime: previous write time of super blocks
-+ * @ns_sbsize: size of valid data in super block
-  * @ns_supers: list of nilfs super block structs
-  * @ns_seg_seq: segment sequence counter
-  * @ns_segnum: index number of the latest full segment.
-@@ -101,8 +103,10 @@ struct the_nilfs {
- 	 * - protecting s_dirt in the super_block struct
- 	 *   (see nilfs_write_super) and the following fields.
- 	 */
--	struct buffer_head     *ns_sbh;
--	struct nilfs_super_block *ns_sbp;
-+	struct buffer_head     *ns_sbh[2];
-+	struct nilfs_super_block *ns_sbp[2];
-+	time_t			ns_sbwtime[2];
-+	unsigned		ns_sbsize;
- 	unsigned		ns_mount_state;
- 	struct list_head	ns_supers;
- 
-@@ -182,6 +186,10 @@ THE_NILFS_FNS(INIT, init)
- THE_NILFS_FNS(LOADED, loaded)
- THE_NILFS_FNS(DISCONTINUED, discontinued)
- 
-+/* Minimum interval of periodical update of superblocks (in seconds) */
-+#define NILFS_SB_FREQ		10
-+#define NILFS_ALTSB_FREQ	60  /* spare superblock */
-+
- void nilfs_set_last_segment(struct the_nilfs *, sector_t, u64, __u64);
- struct the_nilfs *alloc_nilfs(struct block_device *);
- void put_nilfs(struct the_nilfs *);
-@@ -190,6 +198,8 @@ int load_nilfs(struct the_nilfs *, struct nilfs_sb_info *);
- int nilfs_count_free_blocks(struct the_nilfs *, sector_t *);
- int nilfs_checkpoint_is_mounted(struct the_nilfs *, __u64, int);
- int nilfs_near_disk_full(struct the_nilfs *);
-+void nilfs_fall_back_super_block(struct the_nilfs *);
-+void nilfs_swap_super_block(struct the_nilfs *);
- 
- 
- static inline void get_nilfs(struct the_nilfs *nilfs)
-diff --git a/include/linux/nilfs2_fs.h b/include/linux/nilfs2_fs.h
-index cbce664..1275b30 100644
---- a/include/linux/nilfs2_fs.h
-+++ b/include/linux/nilfs2_fs.h
-@@ -252,6 +252,10 @@ struct nilfs_super_block {
- #define NILFS_MIN_NRSVSEGS	8	/* Minimum number of reserved
- 					   segments */
- 
-+/*
-+ * bytes offset of secondary super block
-+ */
-+#define NILFS_SB2_OFFSET_BYTES(devsize)	((((devsize) >> 12) - 1) << 12)
- 
- /*
-  * Maximal count of links to a file
--- 
-1.5.6.5
-
+Index: linux-2.6/include/linux/ata.h
+===================================================================
+--- linux-2.6.orig/include/linux/ata.h
++++ linux-2.6/include/linux/ata.h
+@@ -89,6 +89,8 @@ enum {
+ 	ATA_ID_DLF		= 128,
+ 	ATA_ID_CSFO		= 129,
+ 	ATA_ID_CFA_POWER	= 160,
++	ATA_ID_CFA_KEY_MGMT	= 162,
++	ATA_ID_CFA_MODES	= 163,
+ 	ATA_ID_ROT_SPEED	= 217,
+ 	ATA_ID_PIO4		= (1 << 1),
