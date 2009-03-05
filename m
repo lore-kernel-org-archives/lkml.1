@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbZCEXfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbZCEXfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758633AbZCEXfe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZCEXe7
+	id S1754943AbZCEXfA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbZCEXed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:34:59 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:37122 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:34:33 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:37054 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758604AbZCEXe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:34:57 -0500
-Message-Id: <20090305225517.925220169@polymtl.ca>
+	id S1758586AbZCEXeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:34:31 -0500
+Message-Id: <20090305225512.756882817@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:56 -0500
+Date: Thu, 05 Mar 2009 17:47:34 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -30,1092 +30,454 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Jiaying Zhang <jiayingz@google.com>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
-Cc: Zhao Lei <zhaolei@cn.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 28/41] LTT trace control
-Content-Disposition: inline; filename=ltt-trace-control.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:14 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>
+Subject: [RFC patch 06/41] LTTng optimize write to page function
+Content-Disposition: inline; filename=lttng-optimize-write-to-page-function.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ltt-trace-control is used to control ltt's traces.
-It exports the tracing control through a debugfs interface.
+The functions in ltt-relay-alloc.c take care of writing the data into
+the buffer pages. Those pages are allocated from the page allocator and
+no virtual mapping is done so we can save precious TLB entries.
+ltt-relay-alloc.c is the abstraction layer which makes the buffers
+"look" like a contiguous memory area, although they are made from
+physically discontiguous pages linked with a linked list. A caching
+mechanism makes sure we never walk over more than 1-2 entries of the
+list. We use a linked list rather than a table to make sure we don't
+depend on vmalloc to allocate large pointer arrays.
 
-From: Zhao Lei <zhaolei@cn.fujitsu.com>
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+I did a bit of profiling with oprofile on LTTng and found out that write
+functions in ltt-relay-alloc.c were taking a lot of CPU time. I thought it would
+be good to improve them a bit.
+
+Running a 2.6.29-rc3 kernel
+
+Compiling a 2.6.25 kernel using make -j10 on a 8-cores x86_64 with a vanilla
+2.6.29-rc3 kernel (all tests are cache-hot) :
+real 1m22.103s
+
+With dormant instrumentation
+real 1m24.667s
+(note : this 2s regression should be identified eventually by doing a bissection
+of the LTTng tree.)
+
+ltt-armall
+
+Without modification, with flight recorder tracing active :
+real 1m31.135s
+
+Replacing the memcpy call with a specialized call for 1, 2, 4 and 8 bytes :
+real 1m30.440s
+
+Inlining the fast path of the write function (v2) :
+real 1m29.349s
+
+
+* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
+> Hi
+>
+> > +static inline void ltt_relay_do_copy(void *dest, const void *src, size_t
++len)
+> > +{
+> > +   switch (len) {
+> > +   case 1: *(u8 *)dest = *(const u8 *)src;
+> > +           break;
+> > +   case 2: *(u16 *)dest = *(const u16 *)src;
+> > +           break;
+> > +   case 4: *(u32 *)dest = *(const u32 *)src;
+> > +           break;
+> > +#if (BITS_PER_LONG == 64)
+> > +   case 8: *(u64 *)dest = *(const u64 *)src;
+> > +           break;
+> > +#endif
+> > +   default:
+> > +           memcpy(dest, src, len);
+> > +   }
+> > +}
+>
+> hm, interesting.
+>
+> IIRC, few month ago, linus said this optimization is not optimazation.
+> lastest gcc does this inlining automatically.
+> (but I can't point its url, sorry)
+>
+> Is this result gcc version independent? and can you send
+> the difference of gcc assembly outout?
+
+
+
+Here we go :
+
+x86_64
+gcc (Debian 4.3.2-1) 4.3.2 (haven't tried other compiler versions)
+kernel 2.6.29-rc3
+
+char dataout[100];
+char datain[100];
+
+int sizea = 8;
+
+void testfct_ltt(void)
+{
+        asm ("/* begin */");
+        ltt_relay_do_copy(dataout, datain, sizea);
+        asm ("/* end*/");
+}
+
+Turns into a jump table :
+
+        movslq  sizea(%rip),%rdx
+        cmpq    $8, %rdx
+        jbe     .L15
+.L6:
+        movq    $datain, %rsi
+        movq    $dataout, %rdi
+        call    memcpy
+        .p2align 4,,10
+        .p2align 3
+.L7:
+[...]
+.L15:
+        jmp     *.L12(,%rdx,8)
+
+        .section        .rodata
+        .align 8
+        .align 4
+.L12:
+        .quad   .L7
+        .quad   .L8
+        .quad   .L9
+        .quad   .L6
+        .quad   .L10
+        .quad   .L6
+        .quad   .L6
+        .quad   .L6
+        .quad   .L11
+        .text
+        .p2align 4,,10
+        .p2align 3
+.L11:
+        movq    datain(%rip), %rax
+        movq    %rax, dataout(%rip)
+        jmp     .L7
+        .p2align 4,,10
+        .p2align 3
+.L8:
+        movzbl  datain(%rip), %eax
+        movb    %al, dataout(%rip)
+        jmp     .L7
+        .p2align 4,,10
+        .p2align 3
+.L9:
+        movzwl  datain(%rip), %eax
+        movw    %ax, dataout(%rip)
+        jmp     .L7
+        .p2align 4,,10
+        .p2align 3
+.L10:
+        movl    datain(%rip), %eax
+        movl    %eax, dataout(%rip)
+        jmp     .L7
+        .size   testfct_ltt, .-testfct_ltt
+        .p2align 4,,15
+
+
+void testfct_memcpy(void)
+{
+        asm ("/* begin */");
+        memcpy(dataout, datain, sizea);
+        asm ("/* end */");
+}
+
+Turns into a function call because the size is not statically known :
+
+        movslq  sizea(%rip),%rdx
+        movq    $datain, %rsi
+        movq    $dataout, %rdi
+        call    memcpy
+
+
+Below, when a constant is passed, both behave similarly :
+
+void testfct_ltt_const(void)
+{
+        asm ("/* begin */");
+        ltt_relay_do_copy(dataout, datain, 8);
+        asm ("/* end*/");
+}
+
+        movq    datain(%rip), %rax
+        movq    %rax, dataout(%rip)
+
+
+void testfct_memcpy_const(void)
+{
+        asm ("/* begin */");
+        memcpy(dataout, datain, 8);
+        asm ("/* end */");
+}
+
+        movq    datain(%rip), %rax
+        movq    %rax, dataout(%rip)
+
+
+Therefore, I agree that when memcpy is passed a constant, it will do
+the same as my ltt_relay_do_copy. However, when we know we usually
+expect sizes of 1, 2, 4 and 8 bytes (unknown at compile-time), the jump
+table saves the costly function call to memcpy.
+
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Martin Bligh <mbligh@google.com>
+CC: Zhaolei <zhaolei@cn.fujitsu.com>
 ---
- ltt/ltt-trace-control.c | 1061 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1061 insertions(+)
- create mode 100644 ltt/ltt-trace-control.c
+ include/linux/ltt-relay.h |   91 ++++++++++++++++++++++++++++++++++++++++++++--
+ ltt/ltt-relay-alloc.c     |   80 +++++++++-------------------------------
+ 2 files changed, 107 insertions(+), 64 deletions(-)
 
-Index: linux-2.6-lttng/ltt/ltt-trace-control.c
+Index: linux-2.6-lttng/ltt/ltt-relay-alloc.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/ltt/ltt-trace-control.c	2009-03-05 15:46:27.000000000 -0500
-@@ -0,0 +1,1061 @@
-+/*
-+ * LTT trace control module over debugfs.
-+ *
-+ * Copyright 2008 - Zhaolei <zhaolei@cn.fujitsu.com>
-+ *
-+ * Copyright 2009 - Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-+ *                  Make mark-control work in debugfs
+--- linux-2.6-lttng.orig/ltt/ltt-relay-alloc.c	2009-03-05 15:22:47.000000000 -0500
++++ linux-2.6-lttng/ltt/ltt-relay-alloc.c	2009-03-05 15:22:49.000000000 -0500
+@@ -428,7 +428,7 @@ EXPORT_SYMBOL_GPL(ltt_relay_close);
+ /*
+  * Start iteration at the previous element. Skip the real list head.
+  */
+-static struct buf_page *ltt_relay_find_prev_page(struct rchan_buf *buf,
++struct buf_page *ltt_relay_find_prev_page(struct rchan_buf *buf,
+ 	struct buf_page *page, size_t offset, ssize_t diff_offset)
+ {
+ 	struct buf_page *iter;
+@@ -460,13 +460,15 @@ static struct buf_page *ltt_relay_find_p
+ 			return iter;
+ 		}
+ 	}
++	WARN_ON(1);
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(ltt_relay_find_prev_page);
+ 
+ /*
+  * Start iteration at the next element. Skip the real list head.
+  */
+-static struct buf_page *ltt_relay_find_next_page(struct rchan_buf *buf,
++struct buf_page *ltt_relay_find_next_page(struct rchan_buf *buf,
+ 	struct buf_page *page, size_t offset, ssize_t diff_offset)
+ {
+ 	struct buf_page *iter;
+@@ -498,48 +500,10 @@ static struct buf_page *ltt_relay_find_n
+ 			return iter;
+ 		}
+ 	}
++	WARN_ON(1);
+ 	return NULL;
+ }
+-
+-/*
+- * Find the page containing "offset". Cache it if it is after the currently
+- * cached page.
+- */
+-static struct buf_page *ltt_relay_cache_page(struct rchan_buf *buf,
+-		struct buf_page **page_cache,
+-		struct buf_page *page, size_t offset)
+-{
+-	ssize_t diff_offset;
+-	ssize_t half_buf_size = buf->chan->alloc_size >> 1;
+-
+-	/*
+-	 * Make sure this is the page we want to write into. The current
+-	 * page is changed concurrently by other writers. [wrh]page are
+-	 * used as a cache remembering the last page written
+-	 * to/read/looked up for header address. No synchronization;
+-	 * could have to find the previous page is a nested write
+-	 * occured. Finding the right page is done by comparing the
+-	 * dest_offset with the buf_page offsets.
+-	 * When at the exact opposite of the buffer, bias towards forward search
+-	 * because it will be cached.
+-	 */
+-
+-	diff_offset = (ssize_t)offset - (ssize_t)page->offset;
+-	if (diff_offset <= -(ssize_t)half_buf_size)
+-		diff_offset += buf->chan->alloc_size;
+-	else if (diff_offset > half_buf_size)
+-		diff_offset -= buf->chan->alloc_size;
+-
+-	if (unlikely(diff_offset >= (ssize_t)PAGE_SIZE)) {
+-		page = ltt_relay_find_next_page(buf, page, offset, diff_offset);
+-		WARN_ON(!page);
+-		*page_cache = page;
+-	} else if (unlikely(diff_offset < 0)) {
+-		page = ltt_relay_find_prev_page(buf, page, offset, diff_offset);
+-		WARN_ON(!page);
+-	}
+-	return page;
+-}
++EXPORT_SYMBOL_GPL(ltt_relay_find_next_page);
+ 
+ /**
+  * ltt_relay_write - write data to a ltt_relay buffer.
+@@ -547,26 +511,14 @@ static struct buf_page *ltt_relay_cache_
+  * @offset : offset within the buffer
+  * @src : source address
+  * @len : length to write
++ * @page : cached buffer page
++ * @pagecpy : page size copied so far
+  */
+-int ltt_relay_write(struct rchan_buf *buf, size_t offset,
+-	const void *src, size_t len)
++void _ltt_relay_write(struct rchan_buf *buf, size_t offset,
++	const void *src, size_t len, struct buf_page *page, ssize_t pagecpy)
+ {
+-	struct buf_page *page;
+-	ssize_t pagecpy, orig_len;
+-
+-	orig_len = len;
+-	offset &= buf->chan->alloc_size - 1;
+-	page = buf->wpage;
+-	if (unlikely(!len))
+-		return 0;
+-	for (;;) {
+-		page = ltt_relay_cache_page(buf, &buf->wpage, page, offset);
+-		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+-		memcpy(page_address(page->page)
+-			+ (offset & ~PAGE_MASK), src, pagecpy);
++	do {
+ 		len -= pagecpy;
+-		if (likely(!len))
+-			break;
+ 		src += pagecpy;
+ 		offset += pagecpy;
+ 		/*
+@@ -574,10 +526,14 @@ int ltt_relay_write(struct rchan_buf *bu
+ 		 * subbuffers.
+ 		 */
+ 		WARN_ON(offset >= buf->chan->alloc_size);
+-	}
+-	return orig_len;
++
++		page = ltt_relay_cache_page(buf, &buf->wpage, page, offset);
++		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
++		ltt_relay_do_copy(page_address(page->page)
++			+ (offset & ~PAGE_MASK), src, pagecpy);
++	} while (unlikely(len != pagecpy));
+ }
+-EXPORT_SYMBOL_GPL(ltt_relay_write);
++EXPORT_SYMBOL_GPL(_ltt_relay_write);
+ 
+ /**
+  * ltt_relay_read - read data from ltt_relay_buffer.
+Index: linux-2.6-lttng/include/linux/ltt-relay.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/ltt-relay.h	2009-03-05 15:22:47.000000000 -0500
++++ linux-2.6-lttng/include/linux/ltt-relay.h	2009-03-05 15:23:47.000000000 -0500
+@@ -137,8 +137,14 @@ struct rchan_callbacks {
+ 	int (*remove_buf_file)(struct dentry *dentry);
+ };
+ 
+-extern int ltt_relay_write(struct rchan_buf *buf, size_t offset,
+-	const void *src, size_t len);
++extern struct buf_page *ltt_relay_find_prev_page(struct rchan_buf *buf,
++	struct buf_page *page, size_t offset, ssize_t diff_offset);
++
++extern struct buf_page *ltt_relay_find_next_page(struct rchan_buf *buf,
++	struct buf_page *page, size_t offset, ssize_t diff_offset);
++
++extern void _ltt_relay_write(struct rchan_buf *buf, size_t offset,
++	const void *src, size_t len, struct buf_page *page, ssize_t pagecpy);
+ 
+ extern int ltt_relay_read(struct rchan_buf *buf, size_t offset,
+ 	void *dest, size_t len);
+@@ -156,6 +162,87 @@ extern void *ltt_relay_offset_address(st
+ 	size_t offset);
+ 
+ /*
++ * Find the page containing "offset". Cache it if it is after the currently
++ * cached page.
 + */
-+
-+/*
-+ * Todo:
-+ *   Impl read operations for control file to read attributes
-+ *   Create a README file in ltt control dir, for display help info
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/uaccess.h>
-+#include <linux/debugfs.h>
-+#include <linux/ltt-tracer.h>
-+#include <linux/notifier.h>
-+
-+#define LTT_CONTROL_DIR "control"
-+#define MARKERS_CONTROL_DIR "markers"
-+#define LTT_SETUP_TRACE_FILE "setup_trace"
-+#define LTT_DESTROY_TRACE_FILE "destroy_trace"
-+
-+#define LTT_WRITE_MAXLEN	(128)
-+
-+struct dentry *ltt_control_dir, *ltt_setup_trace_file, *ltt_destroy_trace_file,
-+	*markers_control_dir;
-+
-+/*
-+ * the traces_lock nests inside control_lock.
-+ */
-+static DEFINE_MUTEX(control_lock);
-+
-+/*
-+ * lookup a file/dir in parent dir.
-+ * only designed to work well for debugfs.
-+ * (although it maybe ok for other fs)
-+ *
-+ * return:
-+ *	file/dir's dentry on success
-+ *	NULL on failure
-+ */
-+static struct dentry *dir_lookup(struct dentry *parent, const char *name)
++static inline struct buf_page *ltt_relay_cache_page(struct rchan_buf *buf,
++		struct buf_page **page_cache,
++		struct buf_page *page, size_t offset)
 +{
-+	struct qstr q;
-+	struct dentry *d;
-+
-+	q.name = name;
-+	q.len = strlen(name);
-+	q.hash = full_name_hash(q.name, q.len);
-+
-+	d = d_lookup(parent, &q);
-+	if (d)
-+		dput(d);
-+
-+	return d;
-+}
-+
-+
-+static ssize_t alloc_write(struct file *file, const char __user *user_buf,
-+		size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	char cmd[NAME_MAX];
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%s", cmd) != 1) {
-+		err = -EPERM;
-+		goto err_get_cmd;
-+	}
-+
-+	if ((cmd[0] != 'Y' && cmd[0] != 'y' && cmd[0] != '1') || cmd[1]) {
-+		err = -EPERM;
-+		goto err_bad_cmd;
-+	}
-+
-+	err = ltt_trace_alloc(file->f_dentry->d_parent->d_name.name);
-+	if (IS_ERR_VALUE(err)) {
-+		printk(KERN_ERR "alloc_write: ltt_trace_alloc failed: %d\n",
-+			err);
-+		goto err_alloc_trace;
-+	}
-+
-+	return count;
-+
-+err_alloc_trace:
-+err_bad_cmd:
-+err_get_cmd:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_alloc_operations = {
-+	.write = alloc_write,
-+};
-+
-+
-+static ssize_t enabled_write(struct file *file, const char __user *user_buf,
-+		size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	char cmd[NAME_MAX];
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%s", cmd) != 1) {
-+		err = -EPERM;
-+		goto err_get_cmd;
-+	}
-+
-+	if (cmd[1]) {
-+		err = -EPERM;
-+		goto err_bad_cmd;
-+	}
-+
-+	switch (cmd[0]) {
-+	case 'Y':
-+	case 'y':
-+	case '1':
-+		err = ltt_trace_start(file->f_dentry->d_parent->d_name.name);
-+		if (IS_ERR_VALUE(err)) {
-+			printk(KERN_ERR
-+				"enabled_write: ltt_trace_start failed: %d\n",
-+				err);
-+			err = -EPERM;
-+			goto err_start_trace;
-+		}
-+		break;
-+	case 'N':
-+	case 'n':
-+	case '0':
-+		err = ltt_trace_stop(file->f_dentry->d_parent->d_name.name);
-+		if (IS_ERR_VALUE(err)) {
-+			printk(KERN_ERR
-+				"enabled_write: ltt_trace_stop failed: %d\n",
-+				err);
-+			err = -EPERM;
-+			goto err_stop_trace;
-+		}
-+		break;
-+	default:
-+		err = -EPERM;
-+		goto err_bad_cmd;
-+	}
-+
-+	return count;
-+
-+err_stop_trace:
-+err_start_trace:
-+err_bad_cmd:
-+err_get_cmd:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_enabled_operations = {
-+	.write = enabled_write,
-+};
-+
-+
-+static ssize_t trans_write(struct file *file, const char __user *user_buf,
-+		size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	char trans_name[NAME_MAX];
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%s", trans_name) != 1) {
-+		err = -EPERM;
-+		goto err_get_transname;
-+	}
-+
-+	err = ltt_trace_set_type(file->f_dentry->d_parent->d_name.name,
-+		trans_name);
-+	if (IS_ERR_VALUE(err)) {
-+		printk(KERN_ERR "trans_write: ltt_trace_set_type failed: %d\n",
-+			err);
-+		goto err_set_trans;
-+	}
-+
-+	return count;
-+
-+err_set_trans:
-+err_get_transname:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_trans_operations = {
-+	.write = trans_write,
-+};
-+
-+
-+static ssize_t channel_subbuf_num_write(struct file *file,
-+		const char __user *user_buf, size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	unsigned int num;
-+	const char *channel_name;
-+	const char *trace_name;
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%u", &num) != 1) {
-+		err = -EPERM;
-+		goto err_get_number;
-+	}
-+
-+	channel_name = file->f_dentry->d_parent->d_name.name;
-+	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
-+
-+	err = ltt_trace_set_channel_subbufcount(trace_name, channel_name, num);
-+	if (IS_ERR_VALUE(err)) {
-+		printk(KERN_ERR "channel_subbuf_num_write: "
-+			"ltt_trace_set_channel_subbufcount failed: %d\n", err);
-+		goto err_set_subbufcount;
-+	}
-+
-+	return count;
-+
-+err_set_subbufcount:
-+err_get_number:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_channel_subbuf_num_operations = {
-+	.write = channel_subbuf_num_write,
-+};
-+
-+
-+static ssize_t channel_subbuf_size_write(struct file *file,
-+	const char __user *user_buf, size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	unsigned int num;
-+	const char *channel_name;
-+	const char *trace_name;
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%u", &num) != 1) {
-+		err = -EPERM;
-+		goto err_get_number;
-+	}
-+
-+	channel_name = file->f_dentry->d_parent->d_name.name;
-+	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
-+
-+	err = ltt_trace_set_channel_subbufsize(trace_name, channel_name, num);
-+	if (IS_ERR_VALUE(err)) {
-+		printk(KERN_ERR "channel_subbuf_size_write: "
-+		"ltt_trace_set_channel_subbufsize failed: %d\n", err);
-+		goto err_set_subbufsize;
-+	}
-+
-+	return count;
-+
-+err_set_subbufsize:
-+err_get_number:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_channel_subbuf_size_operations = {
-+	.write = channel_subbuf_size_write,
-+};
-+
-+
-+static ssize_t channel_overwrite_write(struct file *file,
-+	const char __user *user_buf, size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	char cmd[NAME_MAX];
-+	const char *channel_name;
-+	const char *trace_name;
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%s", cmd) != 1) {
-+		err = -EPERM;
-+		goto err_get_cmd;
-+	}
-+
-+	if (cmd[1]) {
-+		err = -EPERM;
-+		goto err_bad_cmd;
-+	}
-+
-+	channel_name = file->f_dentry->d_parent->d_name.name;
-+	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
-+
-+	switch (cmd[0]) {
-+	case 'Y':
-+	case 'y':
-+	case '1':
-+		err = ltt_trace_set_channel_overwrite(trace_name, channel_name,
-+			1);
-+		if (IS_ERR_VALUE(err)) {
-+			printk(KERN_ERR "channel_overwrite_write: "
-+			"ltt_trace_set_channel_overwrite failed: %d\n", err);
-+			goto err_set_subbufsize;
-+		}
-+		break;
-+	case 'N':
-+	case 'n':
-+	case '0':
-+		err = ltt_trace_set_channel_overwrite(trace_name, channel_name,
-+			0);
-+		if (IS_ERR_VALUE(err)) {
-+			printk(KERN_ERR "channel_overwrite_write: "
-+			"ltt_trace_set_channel_overwrite failed: %d\n", err);
-+			goto err_set_subbufsize;
-+		}
-+		break;
-+	default:
-+		err = -EPERM;
-+		goto err_bad_cmd;
-+	}
-+
-+	return count;
-+
-+err_set_subbufsize:
-+err_bad_cmd:
-+err_get_cmd:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_channel_overwrite_operations = {
-+	.write = channel_overwrite_write,
-+};
-+
-+
-+static ssize_t channel_enable_write(struct file *file,
-+	const char __user *user_buf, size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	char cmd[NAME_MAX];
-+	const char *channel_name;
-+	const char *trace_name;
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%s", cmd) != 1) {
-+		err = -EPERM;
-+		goto err_get_cmd;
-+	}
-+
-+	if (cmd[1]) {
-+		err = -EPERM;
-+		goto err_bad_cmd;
-+	}
-+
-+	channel_name = file->f_dentry->d_parent->d_name.name;
-+	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
-+
-+	switch (cmd[0]) {
-+	case 'Y':
-+	case 'y':
-+	case '1':
-+		err = ltt_trace_set_channel_enable(trace_name, channel_name,
-+			1);
-+		if (IS_ERR_VALUE(err)) {
-+			printk(KERN_ERR "channel_enable_write: "
-+			"ltt_trace_set_channel_enable failed: %d\n", err);
-+			goto err_set_subbufsize;
-+		}
-+		break;
-+	case 'N':
-+	case 'n':
-+	case '0':
-+		err = ltt_trace_set_channel_enable(trace_name, channel_name,
-+			0);
-+		if (IS_ERR_VALUE(err)) {
-+			printk(KERN_ERR "channel_enable_write: "
-+			"ltt_trace_set_channel_enable failed: %d\n", err);
-+			goto err_set_subbufsize;
-+		}
-+		break;
-+	default:
-+		err = -EPERM;
-+		goto err_bad_cmd;
-+	}
-+
-+	return count;
-+
-+err_set_subbufsize:
-+err_bad_cmd:
-+err_get_cmd:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_channel_enable_operations = {
-+	.write = channel_enable_write,
-+};
-+
-+
-+static int _create_trace_control_dir(const char *trace_name,
-+				     struct ltt_trace_struct *trace)
-+{
-+	int err;
-+	struct dentry *trace_root, *channel_root;
-+	struct dentry *tmp_den;
-+	int i;
-+
-+	/* debugfs/control/trace_name */
-+	trace_root = debugfs_create_dir(trace_name, ltt_control_dir);
-+	if (IS_ERR(trace_root) || !trace_root) {
-+		printk(KERN_ERR "_create_trace_control_dir: "
-+			"create control root dir of %s failed\n", trace_name);
-+		err = -ENOMEM;
-+		goto err_create_trace_root;
-+	}
-+
-+	/* debugfs/control/trace_name/alloc */
-+	tmp_den = debugfs_create_file("alloc", S_IWUSR, trace_root, NULL,
-+		&ltt_alloc_operations);
-+	if (IS_ERR(tmp_den) || !tmp_den) {
-+		printk(KERN_ERR "_create_trace_control_dir: "
-+			"create file of alloc failed\n");
-+		err = -ENOMEM;
-+		goto err_create_subdir;
-+	}
-+
-+	/* debugfs/control/trace_name/trans */
-+	tmp_den = debugfs_create_file("trans", S_IWUSR, trace_root, NULL,
-+		&ltt_trans_operations);
-+	if (IS_ERR(tmp_den) || !tmp_den) {
-+		printk(KERN_ERR "_create_trace_control_dir: "
-+			"create file of trans failed\n");
-+		err = -ENOMEM;
-+		goto err_create_subdir;
-+	}
-+
-+	/* debugfs/control/trace_name/enabled */
-+	tmp_den = debugfs_create_file("enabled", S_IWUSR, trace_root, NULL,
-+		&ltt_enabled_operations);
-+	if (IS_ERR(tmp_den) || !tmp_den) {
-+		printk(KERN_ERR "_create_trace_control_dir: "
-+			"create file of enabled failed\n");
-+		err = -ENOMEM;
-+		goto err_create_subdir;
-+	}
-+
-+	/* debugfs/control/trace_name/channel/ */
-+	channel_root = debugfs_create_dir("channel", trace_root);
-+	if (IS_ERR(channel_root) || !channel_root) {
-+		printk(KERN_ERR "_create_trace_control_dir: "
-+			"create dir of channel failed\n");
-+		err = -ENOMEM;
-+		goto err_create_subdir;
-+	}
++	ssize_t diff_offset;
++	ssize_t half_buf_size = buf->chan->alloc_size >> 1;
 +
 +	/*
-+	 * Create dir and files in debugfs/ltt/control/trace_name/channel/
-+	 * Following things(without <>) will be created:
-+	 * `-- <control>
-+	 *     `-- <trace_name>
-+	 *         `-- <channel>
-+	 *             |-- <channel_name>
-+	 *             |   |-- enable
-+	 *             |   |-- overwrite
-+	 *             |   |-- subbuf_num
-+	 *             |   `-- subbuf_size
-+	 *             `-- ...
++	 * Make sure this is the page we want to write into. The current
++	 * page is changed concurrently by other writers. [wrh]page are
++	 * used as a cache remembering the last page written
++	 * to/read/looked up for header address. No synchronization;
++	 * could have to find the previous page is a nested write
++	 * occured. Finding the right page is done by comparing the
++	 * dest_offset with the buf_page offsets.
++	 * When at the exact opposite of the buffer, bias towards forward search
++	 * because it will be cached.
 +	 */
 +
-+	for (i = 0; i < trace->nr_channels; i++) {
-+		struct dentry *channel_den;
-+		struct ltt_channel_struct *channel;
++	diff_offset = (ssize_t)offset - (ssize_t)page->offset;
++	if (diff_offset <= -(ssize_t)half_buf_size)
++		diff_offset += buf->chan->alloc_size;
++	else if (diff_offset > half_buf_size)
++		diff_offset -= buf->chan->alloc_size;
 +
-+		channel = &trace->channels[i];
-+		if (!channel->active)
-+			continue;
-+		channel_den = debugfs_create_dir(channel->channel_name,
-+						 channel_root);
-+		if (IS_ERR(channel_den) || !channel_den) {
-+			printk(KERN_ERR "_create_trace_control_dir: "
-+				"create channel dir of %s failed\n",
-+				channel->channel_name);
-+			err = -ENOMEM;
-+			goto err_create_subdir;
-+		}
-+
-+		tmp_den = debugfs_create_file("subbuf_num", S_IWUSR,
-+			channel_den, NULL, &ltt_channel_subbuf_num_operations);
-+		if (IS_ERR(tmp_den) || !tmp_den) {
-+			printk(KERN_ERR "_create_trace_control_dir: "
-+				"create subbuf_num in %s failed\n",
-+				channel->channel_name);
-+			err = -ENOMEM;
-+			goto err_create_subdir;
-+		}
-+
-+		tmp_den = debugfs_create_file("subbuf_size", S_IWUSR,
-+			channel_den, NULL, &ltt_channel_subbuf_size_operations);
-+		if (IS_ERR(tmp_den) || !tmp_den) {
-+			printk(KERN_ERR "_create_trace_control_dir: "
-+				"create subbuf_size in %s failed\n",
-+				channel->channel_name);
-+			err = -ENOMEM;
-+			goto err_create_subdir;
-+		}
-+
-+		tmp_den = debugfs_create_file("enable", S_IWUSR, channel_den,
-+			NULL, &ltt_channel_enable_operations);
-+		if (IS_ERR(tmp_den) || !tmp_den) {
-+			printk(KERN_ERR "_create_trace_control_dir: "
-+				"create enable in %s failed\n",
-+				channel->channel_name);
-+			err = -ENOMEM;
-+			goto err_create_subdir;
-+		}
-+
-+		tmp_den = debugfs_create_file("overwrite", S_IWUSR, channel_den,
-+			NULL, &ltt_channel_overwrite_operations);
-+		if (IS_ERR(tmp_den) || !tmp_den) {
-+			printk(KERN_ERR "_create_trace_control_dir: "
-+				"create overwrite in %s failed\n",
-+				channel->channel_name);
-+			err = -ENOMEM;
-+			goto err_create_subdir;
-+		}
++	if (unlikely(diff_offset >= (ssize_t)PAGE_SIZE)) {
++		page = ltt_relay_find_next_page(buf, page, offset, diff_offset);
++		*page_cache = page;
++	} else if (unlikely(diff_offset < 0)) {
++		page = ltt_relay_find_prev_page(buf, page, offset, diff_offset);
 +	}
-+
-+	return 0;
-+
-+err_create_subdir:
-+	debugfs_remove_recursive(trace_root);
-+err_create_trace_root:
-+	return err;
++	return page;
 +}
 +
-+static ssize_t setup_trace_write(struct file *file, const char __user *user_buf,
-+		size_t count, loff_t *ppos)
++static inline void ltt_relay_do_copy(void *dest, const void *src, size_t len)
 +{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	char trace_name[NAME_MAX];
-+	struct ltt_trace_struct *trace;
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%s", trace_name) != 1) {
-+		err = -EPERM;
-+		goto err_get_tracename;
-+	}
-+
-+	mutex_lock(&control_lock);
-+	ltt_lock_traces();
-+
-+	err = _ltt_trace_setup(trace_name);
-+	if (IS_ERR_VALUE(err)) {
-+		printk(KERN_ERR
-+			"setup_trace_write: ltt_trace_setup failed: %d\n", err);
-+		goto err_setup_trace;
-+	}
-+	trace = _ltt_trace_find_setup(trace_name);
-+	BUG_ON(!trace);
-+	err = _create_trace_control_dir(trace_name, trace);
-+	if (IS_ERR_VALUE(err)) {
-+		printk(KERN_ERR "setup_trace_write: "
-+			"_create_trace_control_dir failed: %d\n", err);
-+		goto err_create_trace_control_dir;
-+	}
-+
-+	ltt_unlock_traces();
-+	mutex_unlock(&control_lock);
-+
-+	return count;
-+
-+err_create_trace_control_dir:
-+	ltt_trace_destroy(trace_name);
-+err_setup_trace:
-+	ltt_unlock_traces();
-+	mutex_unlock(&control_lock);
-+err_get_tracename:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_setup_trace_operations = {
-+	.write = setup_trace_write,
-+};
-+
-+static ssize_t destroy_trace_write(struct file *file,
-+		const char __user *user_buf, size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	char trace_name[NAME_MAX];
-+	struct dentry *trace_den;
-+
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto err_copy_from_user;
-+	buf[buf_size] = 0;
-+
-+	if (sscanf(buf, "%s", trace_name) != 1) {
-+		err = -EPERM;
-+		goto err_get_tracename;
-+	}
-+
-+	mutex_lock(&control_lock);
-+
-+	err = ltt_trace_destroy(trace_name);
-+	if (IS_ERR_VALUE(err)) {
-+		printk(KERN_ERR
-+			"destroy_trace_write: ltt_trace_destroy failed: %d\n",
-+			err);
-+		err = -EPERM;
-+		goto err_destroy_trace;
-+	}
-+
-+	trace_den = dir_lookup(ltt_control_dir, trace_name);
-+	if (!trace_den) {
-+		printk(KERN_ERR
-+			"destroy_trace_write: lookup for %s's dentry failed\n",
-+			trace_name);
-+		err = -ENOENT;
-+		goto err_get_dentry;
-+	}
-+
-+	debugfs_remove_recursive(trace_den);
-+
-+	mutex_unlock(&control_lock);
-+
-+	return count;
-+
-+err_get_dentry:
-+err_destroy_trace:
-+	mutex_unlock(&control_lock);
-+err_get_tracename:
-+err_copy_from_user:
-+	return err;
-+}
-+
-+static const struct file_operations ltt_destroy_trace_operations = {
-+	.write = destroy_trace_write,
-+};
-+
-+static int marker_enable_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+	return 0;
-+}
-+
-+static ssize_t marker_enable_read(struct file *filp, char __user *ubuf,
-+			    size_t cnt, loff_t *ppos)
-+{
-+	struct marker *marker;
-+	char *buf;
-+	int len;
-+
-+	marker = (struct marker *)filp->private_data;
-+	buf = kmalloc(1024, GFP_KERNEL);
-+
-+	len = sprintf(buf, "%d\n", _imv_read(marker->state));
-+
-+	len = simple_read_from_buffer(ubuf, cnt, ppos, buf, len);
-+	kfree(buf);
-+
-+	return len;
-+}
-+
-+static ssize_t marker_enable_write(struct file *filp, const char __user *ubuf,
-+				size_t cnt, loff_t *ppos)
-+{
-+	char buf[NAME_MAX];
-+	int buf_size;
-+	int err = 0;
-+	struct marker *marker;
-+
-+	marker = (struct marker *)filp->private_data;
-+	buf_size = min(cnt, sizeof(buf) - 1);
-+	err = copy_from_user(buf, ubuf, buf_size);
-+	if (err)
-+		return err;
-+
-+	buf[buf_size] = 0;
-+
-+	switch (buf[0]) {
-+	case 'Y':
-+	case 'y':
-+	case '1':
-+		err = ltt_marker_connect(marker->channel, marker->name,
-+					 "default");
-+		if (err)
-+			return err;
++	switch (len) {
++	case 0:
 +		break;
-+	case 'N':
-+	case 'n':
-+	case '0':
-+		err = ltt_marker_disconnect(marker->channel, marker->name,
-+					    "default");
-+		if (err)
-+			return err;
++	case 1:
++		*(u8 *)dest = *(const u8 *)src;
 +		break;
++	case 2:
++		*(u16 *)dest = *(const u16 *)src;
++		break;
++	case 4:
++		*(u32 *)dest = *(const u32 *)src;
++		break;
++#if (BITS_PER_LONG == 64)
++	case 8:
++		*(u64 *)dest = *(const u64 *)src;
++		break;
++#endif
 +	default:
-+		return -EPERM;
++		memcpy(dest, src, len);
 +	}
-+
-+	return cnt;
 +}
 +
-+static const struct file_operations enable_fops = {
-+	.open = marker_enable_open,
-+	.read = marker_enable_read,
-+	.write = marker_enable_write,
-+};
-+
-+static int marker_info_open(struct inode *inode, struct file *filp)
++static inline int ltt_relay_write(struct rchan_buf *buf, size_t offset,
++	const void *src, size_t len)
 +{
-+	filp->private_data = inode->i_private;
-+	return 0;
-+}
++	struct buf_page *page;
++	ssize_t pagecpy;
 +
-+static ssize_t marker_info_read(struct file *filp, char __user *ubuf,
-+			    size_t cnt, loff_t *ppos)
-+{
-+	struct marker *marker;
-+	char *buf;
-+	int len;
++	offset &= buf->chan->alloc_size - 1;
++	page = buf->wpage;
 +
-+	marker = (struct marker *)filp->private_data;
-+	buf = kmalloc(1024, GFP_KERNEL);
++	page = ltt_relay_cache_page(buf, &buf->wpage, page, offset);
++	pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
++	ltt_relay_do_copy(page_address(page->page)
++		+ (offset & ~PAGE_MASK), src, pagecpy);
 +
-+	len = sprintf(buf, "format: \"%s\"\nstate: %d\n"
-+		      "event_id: %hu\n"
-+		      "call: 0x%p\n"
-+		      "probe %s : 0x%p\n",
-+		      marker->format, _imv_read(marker->state),
-+		      marker->event_id, marker->call, marker->ptype ?
-+		      "multi" : "single", marker->ptype ?
-+		      (void *)marker->multi : (void *)marker->single.func);
-+
-+	len = simple_read_from_buffer(ubuf, cnt, ppos, buf, len);
-+	kfree(buf);
-+
++	if (unlikely(len != pagecpy))
++		_ltt_relay_write(buf, offset, src, len, page, pagecpy);
 +	return len;
 +}
 +
-+static const struct file_operations info_fops = {
-+	.open = marker_info_open,
-+	.read = marker_info_read,
-+};
-+
-+static int build_marker_file(struct marker *marker)
-+{
-+	struct dentry *channel_d, *marker_d, *enable_d, *info_d;
-+	int err;
-+
-+	channel_d = dir_lookup(markers_control_dir, marker->channel);
-+	if (!channel_d) {
-+		channel_d = debugfs_create_dir(marker->channel,
-+					       markers_control_dir);
-+		if (IS_ERR(channel_d) || !channel_d) {
-+			printk(KERN_ERR
-+			       "%s: build channel dir of %s failed\n",
-+			       __func__, marker->channel);
-+			err = -ENOMEM;
-+			goto err_build_fail;
-+		}
-+	}
-+
-+	marker_d  = dir_lookup(channel_d, marker->name);
-+	if (!marker_d) {
-+		marker_d = debugfs_create_dir(marker->name, channel_d);
-+		if (IS_ERR(marker_d) || !marker_d) {
-+			printk(KERN_ERR
-+			       "%s: marker dir of %s failed\n",
-+			       __func__, marker->name);
-+			err = -ENOMEM;
-+			goto err_build_fail;
-+		}
-+	}
-+
-+	enable_d = dir_lookup(marker_d, "enable");
-+	if (!enable_d) {
-+		enable_d = debugfs_create_file("enable", 0644, marker_d,
-+						marker, &enable_fops);
-+		if (IS_ERR(enable_d) || !enable_d) {
-+			printk(KERN_ERR
-+			       "%s: create file of %s failed\n",
-+			       __func__, "enable");
-+			err = -ENOMEM;
-+			goto err_build_fail;
-+		}
-+	}
-+
-+	info_d = dir_lookup(marker_d, "info");
-+	if (!info_d) {
-+		info_d = debugfs_create_file("info", 0444, marker_d,
-+						marker, &info_fops);
-+		if (IS_ERR(info_d) || !info_d) {
-+			printk(KERN_ERR
-+			       "%s: create file of %s failed\n",
-+			       __func__, "enable");
-+			err = -ENOMEM;
-+			goto err_build_fail;
-+		}
-+	}
-+
-+	return 0;
-+
-+err_build_fail:
-+	return err;
-+}
-+
-+static int build_marker_control_files(void)
-+{
-+	struct marker_iter iter;
-+	int err;
-+
-+	err = 0;
-+	if (!markers_control_dir)
-+		return -EEXIST;
-+
-+	marker_iter_reset(&iter);
-+	marker_iter_start(&iter);
-+	for (; iter.marker != NULL; marker_iter_next(&iter)) {
-+		err = build_marker_file(iter.marker);
-+		if (err)
-+			goto err_build_fail;
-+	}
-+	marker_iter_stop(&iter);
-+	return 0;
-+
-+err_build_fail:
-+	return err;
-+}
-+
-+static int remove_marker_control_dir(struct marker *marker)
-+{
-+	struct dentry *channel_d, *marker_d;
-+
-+	channel_d = dir_lookup(markers_control_dir, marker->channel);
-+	if (!channel_d)
-+		return -ENOENT;
-+
-+	marker_d = dir_lookup(channel_d, marker->name);
-+	if (!marker_d)
-+		return -ENOENT;
-+
-+	debugfs_remove_recursive(marker_d);
-+	if (list_empty(&channel_d->d_subdirs))
-+		debugfs_remove(channel_d);
-+
-+	return 0;
-+}
-+
-+static void cleanup_control_dir(struct marker *begin, struct marker *end)
-+{
-+	struct marker *iter;
-+
-+	if (!markers_control_dir)
-+		return;
-+
-+	for (iter = begin; iter < end; iter++)
-+		remove_marker_control_dir(iter);
-+
-+	return;
-+}
-+
-+static void build_control_dir(struct marker *begin, struct marker *end)
-+{
-+	struct marker *iter;
-+	int err;
-+
-+	err = 0;
-+	if (!markers_control_dir)
-+		return;
-+
-+	for (iter = begin; iter < end; iter++) {
-+		err = build_marker_file(iter);
-+		if (err)
-+			goto err_build_fail;
-+	}
-+
-+	return;
-+err_build_fail:
-+	cleanup_control_dir(begin, end);
-+}
-+
-+static int module_notify(struct notifier_block *self,
-+		  unsigned long val, void *data)
-+{
-+	struct module *mod = data;
-+
-+	switch (val) {
-+	case MODULE_STATE_COMING:
-+		build_control_dir(mod->markers,
-+				  mod->markers + mod->num_markers);
-+		break;
-+	case MODULE_STATE_GOING:
-+		cleanup_control_dir(mod->markers,
-+				    mod->markers + mod->num_markers);
-+		break;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block module_nb = {
-+	.notifier_call = module_notify,
-+};
-+
-+static int __init ltt_trace_control_init(void)
-+{
-+	int err = 0;
-+	struct dentry *ltt_root_dentry;
-+
-+	ltt_root_dentry = get_ltt_root();
-+	if (!ltt_root_dentry) {
-+		err = -ENOENT;
-+		goto err_no_root;
-+	}
-+
-+	ltt_control_dir = debugfs_create_dir(LTT_CONTROL_DIR, ltt_root_dentry);
-+	if (IS_ERR(ltt_control_dir) || !ltt_control_dir) {
-+		printk(KERN_ERR
-+			"ltt_channel_control_init: create dir of %s failed\n",
-+			LTT_CONTROL_DIR);
-+		err = -ENOMEM;
-+		goto err_create_control_dir;
-+	}
-+
-+	ltt_setup_trace_file = debugfs_create_file(LTT_SETUP_TRACE_FILE,
-+		S_IWUSR, ltt_root_dentry, NULL, &ltt_setup_trace_operations);
-+	if (IS_ERR(ltt_setup_trace_file) || !ltt_setup_trace_file) {
-+		printk(KERN_ERR
-+			"ltt_channel_control_init: create file of %s failed\n",
-+			LTT_SETUP_TRACE_FILE);
-+		err = -ENOMEM;
-+		goto err_create_setup_trace_file;
-+	}
-+
-+	ltt_destroy_trace_file = debugfs_create_file(LTT_DESTROY_TRACE_FILE,
-+		S_IWUSR, ltt_root_dentry, NULL, &ltt_destroy_trace_operations);
-+	if (IS_ERR(ltt_destroy_trace_file) || !ltt_destroy_trace_file) {
-+		printk(KERN_ERR
-+			"ltt_channel_control_init: create file of %s failed\n",
-+			LTT_DESTROY_TRACE_FILE);
-+		err = -ENOMEM;
-+		goto err_create_destroy_trace_file;
-+	}
-+
-+	markers_control_dir = debugfs_create_dir(MARKERS_CONTROL_DIR,
-+						 ltt_root_dentry);
-+	if (IS_ERR(markers_control_dir) || !markers_control_dir) {
-+		printk(KERN_ERR
-+			"ltt_channel_control_init: create dir of %s failed\n",
-+			MARKERS_CONTROL_DIR);
-+		err = -ENOMEM;
-+		goto err_create_marker_control_dir;
-+	}
-+
-+	if (build_marker_control_files())
-+		goto err_build_fail;
-+
-+	if (!register_module_notifier(&module_nb))
-+		return 0;
-+
-+err_build_fail:
-+	debugfs_remove_recursive(markers_control_dir);
-+	markers_control_dir = NULL;
-+err_create_marker_control_dir:
-+	debugfs_remove(ltt_destroy_trace_file);
-+err_create_destroy_trace_file:
-+	debugfs_remove(ltt_setup_trace_file);
-+err_create_setup_trace_file:
-+	debugfs_remove(ltt_control_dir);
-+err_create_control_dir:
-+err_no_root:
-+	return err;
-+}
-+
-+static void __exit ltt_trace_control_exit(void)
-+{
-+	struct dentry *trace_dir;
-+
-+	/* destory all traces */
-+	list_for_each_entry(trace_dir, &ltt_control_dir->d_subdirs,
-+		d_u.d_child) {
-+		ltt_trace_stop(trace_dir->d_name.name);
-+		ltt_trace_destroy(trace_dir->d_name.name);
-+	}
-+
-+	/* clean dirs in debugfs */
-+	debugfs_remove(ltt_setup_trace_file);
-+	debugfs_remove(ltt_destroy_trace_file);
-+	debugfs_remove_recursive(ltt_control_dir);
-+	debugfs_remove_recursive(markers_control_dir);
-+	unregister_module_notifier(&module_nb);
-+	put_ltt_root();
-+}
-+
-+module_init(ltt_trace_control_init);
-+module_exit(ltt_trace_control_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Zhao Lei <zhaolei@cn.fujitsu.com>");
-+MODULE_DESCRIPTION("Linux Trace Toolkit Trace Controller");
-+
++/*
+  * CONFIG_LTT_RELAY kernel API, ltt/ltt-relay-alloc.c
+  */
+ 
 
 -- 
 Mathieu Desnoyers
