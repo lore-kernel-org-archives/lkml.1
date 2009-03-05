@@ -1,158 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbZCEAac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbZCEAcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbZCEAac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 19:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZCEAaY
+	id S1755951AbZCEAcY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 19:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZCEAcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 19:30:24 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:34176 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbZCEAaX convert rfc822-to-8bit (ORCPT
+	Wed, 4 Mar 2009 19:32:13 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:62512 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbZCEAcM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 19:30:23 -0500
+	Wed, 4 Mar 2009 19:32:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=EtwN2te+8Qm5TDyGlekHx8u3dPT6zDCg1Fqgp14rE5sxPekrQHNoI9MGeF81j6U2d+
-         aQ3hjfcx5ApTUQk7yieaEy1bVWsg0dJsJVAQzh6hLrnYFnwrHg4kTOBgm5Nh9XKNbWyF
-         2RrXzSxzf6+swwYL1MIcwH6CBwhMY/jvMOvgM=
+        b=roa+JuWozqxAehrRzWU+k4xgtZHTwmuYlqH1BRviRYaxVOINlQ5h3nXZbmdUfiV/r8
+         BY3+RHCF3qvm2bpOsX7XYEMOieRZFmAGdlsK7mfl74YiM0SRNeW+3iRgbVTOs8yNMrHq
+         uGb58twK6t2RsBWNf+kNpaUx/M0UL0wlOYJRg=
 MIME-Version: 1.0
-In-Reply-To: <20090305092534.740ee3c9.minchan.kim@barrios-desktop>
-References: <alpine.LFD.2.00.0903040014140.5511@xanadu.home>
-	 <20090304171429.c013013c.minchan.kim@barrios-desktop>
-	 <alpine.LFD.2.00.0903041101170.5511@xanadu.home>
-	 <20090305080717.f7832c63.minchan.kim@barrios-desktop>
-	 <20090304234633.GD14744@n2100.arm.linux.org.uk>
-	 <20090305092534.740ee3c9.minchan.kim@barrios-desktop>
-Date: Thu, 5 Mar 2009 09:30:21 +0900
-Message-ID: <28c262360903041630u44bd8993ve7c0ea97c5c82e2e@mail.gmail.com>
-Subject: Re: [RFC] atomic highmem kmap page pinning
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Minchan Kim <minchan.kim@gmail.com>, Nicolas Pitre <nico@cam.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Andrea Arcangeli <andrea@cpushare.com>, Nick Piggin <npiggin@suse.de>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20090304233458.GA8303@ami.dom.local>
+References: <a5d9929e0903011636w6bff1032y28ab58c0ff8c8052@mail.gmail.com>
+	 <20090301165729.8e08e1d7.akpm@linux-foundation.org>
+	 <49AC28FF.1040102@gmail.com>
+	 <a5d9929e0903031510r7f173f5cib7bd1a2426e92473@mail.gmail.com>
+	 <1236135028.7883.44.camel@Maple> <20090304233458.GA8303@ami.dom.local>
+Date: Thu, 5 Mar 2009 00:32:08 +0000
+Message-ID: <a5d9929e0903041632r56af217r3b6645d3d01c8ca5@mail.gmail.com>
+Subject: Re: [PATCH] Re: some tc commands fail on 2.6.29-rc6-git5, works on 
+	2.6.28.7
+From: Joao Correia <joaomiguelcorreia@gmail.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: John Dykstra <john.dykstra1@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       Stephen Hemminger <shemminger@vyatta.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems Andrea's mail address is changed.
-I will resend new Andrea's mail address.
+Hello
 
-On Thu, Mar 5, 2009 at 9:25 AM, Minchan Kim <minchan.kim@gmail.com> wrote:
-> - Show quoted text -
-> On Wed, 4 Mar 2009 23:46:33 +0000
-> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
->
->> On Thu, Mar 05, 2009 at 08:07:17AM +0900, Minchan Kim wrote:
->> > On Wed, 04 Mar 2009 12:26:00 -0500 (EST)
->> > Nicolas Pitre <nico@cam.org> wrote:
->> >
->> > > On Wed, 4 Mar 2009, Minchan Kim wrote:
->> > >
->> > > > On Wed, 04 Mar 2009 00:58:13 -0500 (EST)
->> > > > Nicolas Pitre <nico@cam.org> wrote:
->> > > >
->> > > > > I've implemented highmem for ARM. Â Yes, some ARM machines do have lots
->> > > > > of memory...
->> > > > >
->> > > > > The problem is that most ARM machines have a non IO coherent cache,
->> > > > > meaning that the dma_map_* set of functions must clean and/or invalidate
->> > > > > the affected memory manually. Â And because the majority of those
->> > > > > machines have a VIVT cache, the cache maintenance operations must be
->> > > > > performed using virtual addresses.
->> > > > >
->> > > > > In dma_map_page(), an highmem pages could still be mapped and cached
->> > > > > even after kunmap() was called on it. Â As long as highmem pages are
->> > > > > mapped, page_address(page) is non null and we can use that to
->> > > > > synchronize the cache.
->> > > > > It is unlikely but still possible for kmap() to race and recycle the
->> > > > > obtained virtual address above, and use it for another page though. Â In
->> > > > > that case, the new mapping could end up with dirty cache lines for
->> > > > > another page, and the unsuspecting cache invalidation loop in
->> > > > > dma_map_page() won't notice resulting in data loss. Â Hence the need for
->> > > > > some kind of kmap page pinning which can be used in any context,
->> > > > > including IRQ context.
->> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Confirmed working now on latest 2.6.29-rc6 git.
+
+Thank you very much all for the prompt answer and solution, really impressive.
+
+Back to work on the ultimate custom firewall *evil laugh*.
+
+Cheers,
+Joao Correia
+Centro de Informatica
+Universidade da Beira Interior
+Portugal
+
+On Wed, Mar 4, 2009 at 11:34 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> On Tue, Mar 03, 2009 at 08:50:28PM -0600, John Dykstra wrote:
+>> On Tue, 2009-03-03 at 23:10 +0000, Joao Correia wrote:
+>> > I have confirmed again that the exact same commands (as on the
+>> > original message), work flawlessly on 2.6.28.7 without a hitch, and,
+>> > AFAIK, work as intended. I have also tried the latest 2.6.29-rc6-git7
+>> > and it still fails like on git6.
 >>
->> > > > > This is a RFC patch implementing the necessary part in the core code, as
->> > > > > suggested by RMK. Please comment.
->> > > >
->> > > > I am not sure if i understand your concern totally.
->> > > > I can understand it can be recycled. but Why is it racing ?
->> > >
->> > > Suppose this sequence of events:
->> > >
->> > > Â  - dma_map_page(..., DMA_FROM_DEVICE) is called on a highmem page.
->> > >
->> > > Â  --> Â  Â  - vaddr = page_address(page) is non null. In this case
->> > > Â  Â  Â  Â  Â  Â  it is likely that the page has valid cache lines
->> > > Â  Â  Â  Â  Â  Â  associated with vaddr. Remember that the cache is VIVT.
->> > >
->> > > Â  Â  Â  Â  Â  --> Â  Â  - for (i = vaddr; i < vaddr + PAGE_SIZE; i += 32)
->> > > Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  invalidate_cache_line(i);
->> > >
->> > > Â  *** preemption occurs in the middle of the loop above ***
->> > >
->> > > Â  - kmap_high() is called for a different page.
->> > >
->> > > Â  --> Â  Â  - last_pkmap_nr wraps to zero and flush_all_zero_pkmaps()
->> > > Â  Â  Â  Â  Â  Â  is called. Â The pkmap_count value for the page passed
->> > > Â  Â  Â  Â  Â  Â  to dma_map_page() above happens to be 1, so it is
->> > > Â  Â  Â  Â  Â  Â  unmapped. Â But prior to that, flush_cache_kmaps()
->> > > Â  Â  Â  Â  Â  Â  cleared the cache for it. Â So far so good.
->> >
->> > Thanks for kind explanation.:)
->> >
->> > I thought kmap and dma_map_page usage was following.
->> >
->> > kmap(page);
->> > ...
->> > dma_map_page(...)
->> > Â  invalidate_cache_line
->> >
->> > kunmap(page);
+>> I have also reproduced this on Linus' latest 2.6.29-rc6 tree, using tc
+>> version iproute2-ss071016 and a kernel config with all traffic control
+>> features enabled.
 >>
->> No, that's not the usage at all. Â kmap() can't be called from the
->> contexts which dma_map_page() is called from (iow, IRQ contexts as
->> pointed out in the paragraph I underlined above.)
+>> The error reported by tc comes from the kernel-level check added by:
 >>
->> We're talking about dma_map_page() _internally_ calling kmap_get_page()
->> to _atomically_ and _safely_ check whether the page was kmapped. Â If
->> it was kmapped, we need to pin the page and return its currently mapped
->> address for cache handling and then release that reference.
+>>       commit c1b56878fb68e9c14070939ea4537ad4db79ffae
+>>       Author: Stephen Hemminger <shemminger@vyatta.com>
+>>       Date:   Tue Nov 25 21:14:06 2008 -0800
+>>
+>>       tc: policing requires a rate estimator
+>>
+>>     Found that while trying average rate policing, it was possible to
+>>     request average rate policing without a rate estimator. This results
+>>     in no policing which is harmless but incorrect.
+>>
+>>     Since policing could be setup in two steps, need to check
+>>     in the kernel.
+>>
+>>     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+>>     Signed-off-by: David S. Miller <davem@davemloft.net>
+>>
+>> I got the same error when using the tc version iproute2-ss090115 built
+>> this evening from the public git repository.
+>>
+>>   -- John
+>>
 >
-> Thanks, Russel.
-> I see. That was thing I missed. :)
+> Very nice diagnose, thanks!
+> Jarek P.
 >
->> None of the existing kmap support comes anywhere near to providing a
->> mechanism for this because it can't be used in the contexts under which
->> dma_map_page() is called.
+> PS: after upgrading iproute I couldn't reproduce this seemingly OK
+> test with older versions anymore...
 >
-> Right.
+> ------------------->
+> pkt_sched: act_police: Fix a rate estimator test.
 >
->> If we could do it with existing interfaces, we wouldn't need a new
->> interface would we?
+> A commit c1b56878fb68e9c14070939ea4537ad4db79ffae "tc: policing requires
+> a rate estimator" introduced a test which invalidates previously working
+> configs, based on examples from iproute2: doc/actions/actions-general.
+> This is too rigorous: a rate estimator is needed only when police's
+> "avrate" option is used.
 >
-> OK.
-> As previous said, I don't like kmap_high's irq disable.
-> It's already used in many place. so irq'disable effect might be rather big.
+> Reported-by: Joao Correia <joaomiguelcorreia@gmail.com>
+> Diagnosed-by: John Dykstra <john.dykstra1@gmail.com>
+> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> ---
 >
-> How about new interface which is like KM_IRQ's kmap_atomic slot
-> Â with serializing kmap_atomic_lock?
+>  net/sched/act_police.c |   13 ++++++-------
+>  1 files changed, 6 insertions(+), 7 deletions(-)
 >
-> Let's Cced other experts.
+> diff --git a/net/sched/act_police.c b/net/sched/act_police.c
+> index 5c72a11..f8f047b 100644
+> --- a/net/sched/act_police.c
+> +++ b/net/sched/act_police.c
+> @@ -183,13 +183,6 @@ override:
+>                if (R_tab == NULL)
+>                        goto failure;
 >
-> --
-> Kinds Regards
-> Minchan Kim
+> -               if (!est && (ret == ACT_P_CREATED ||
+> -                            !gen_estimator_active(&police->tcf_bstats,
+> -                                                  &police->tcf_rate_est))) {
+> -                       err = -EINVAL;
+> -                       goto failure;
+> -               }
+> -
+>                if (parm->peakrate.rate) {
+>                        P_tab = qdisc_get_rtab(&parm->peakrate,
+>                                               tb[TCA_POLICE_PEAKRATE]);
+> @@ -205,6 +198,12 @@ override:
+>                                            &police->tcf_lock, est);
+>                if (err)
+>                        goto failure_unlock;
+> +       } else if (tb[TCA_POLICE_AVRATE] &&
+> +                  (ret == ACT_P_CREATED ||
+> +                   !gen_estimator_active(&police->tcf_bstats,
+> +                                         &police->tcf_rate_est))) {
+> +               err = -EINVAL;
+> +               goto failure_unlock;
+>        }
 >
-
-
-
--- 
-Kinds regards,
-Minchan Kim
+>        /* No failure allowed after this point */
+>
