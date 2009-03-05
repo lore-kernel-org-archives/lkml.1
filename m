@@ -1,119 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZCEJaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZCEJaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbZCEJaG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 04:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZCEJ3w
+	id S1754556AbZCEJaw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 04:30:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZCEJao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 04:29:52 -0500
-Received: from sh.osrg.net ([192.16.179.4]:46785 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750944AbZCEJ3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 04:29:50 -0500
-Date: Thu, 5 Mar 2009 18:29:22 +0900
-To: jens.axboe@oracle.com
-Cc: tglx@linutronix.de, James.Bottomley@HansenPartnership.com,
-       jengelh@medozas.de, bharrosh@panasas.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [BUG] 2.6.29-rc6-2450cf in scsi_lib.c (was: Large amount of
-	scsi-sgpool)objects
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090305173952U.fujita.tomonori@lab.ntt.co.jp>
-References: <1236207389.21486.19.camel@localhost.localdomain>
-	<20090305173649M.fujita.tomonori@lab.ntt.co.jp>
-	<20090305173952U.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090305182958Q.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 05 Mar 2009 18:29:24 +0900 (JST)
+	Thu, 5 Mar 2009 04:30:44 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:48508 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbZCEJan (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 04:30:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=cbwrSSxV7t31GXKuykCprApM1o05yTdv2sHRXRHr+B6mhxgMDSsa8CGYLZrnKmxepx
+         bTMCwRL35+ZP1EKGBT0SfYixv8nmK2jpjK/YSjgLX1A3fOzIpQ+VyNdW3bZjx/l2HpzF
+         dronc35s2DjrZD/xYYnSwEdgJGMQ8Aw3ztHlk=
+Message-ID: <49AF9BBC.6090609@panasas.com>
+Date: Thu, 05 Mar 2009 11:30:36 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?J=F6rg-Volker_Peetz?= <jvpeetz@web.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: &&//|| typo ?
+References: <gncm7q$gp8$1@ger.gmane.org>
+In-Reply-To: <gncm7q$gp8$1@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, somehow I forgot to CC Jens...
+On Feb. 16, 2009, 23:35 +0200, Jörg-Volker Peetz <jvpeetz@web.de> wrote:
+> Hi,
+> 
+> inspired by the mail http://lkml.org/lkml/2009/2/15/159
+> I did
+> 
+> grep -Ern '\!=.*\|\|.*\!=' linux-2.6.28.5
+> 
+> and found the following tests which are always true if the tested variable is
+> not NaN:
+> 
+> linux-2.6.28.5/sound/pci/au88x0/au88x0_core.c:2792:	if ((bits != 8) || (bits != 16))
+> 
+> linux-2.6.28.5/sound/oss/ad1848.c:283:		if ( (devc->model != MD_1845) ||
+> (devc->model != MD_1845_SSCAPE))
+> linux-2.6.28.5/sound/oss/ad1848.c:2110:			if (devc->model != MD_1845 ||
+> devc->model != MD_1845_SSCAPE)
+> 
+> linux-2.6.28.5/arch/x86/kvm/vmx.c:1794:	if ((ss.type != 3) || (ss.type != 7))
+> linux-2.6.28.5/arch/x86/kvm/vmx.c:1837:	if ((tr.type != 3) || (tr.type != 11))
+> /* TODO: Check if guest is in IA32e mode */
+> 
+> linux-2.6.28.5/net/sunrpc/auth_unix.c:122:	if (cred->uc_uid != acred->uid ||
+> cred->uc_gid != acred->gid)
 
-On Thu, 5 Mar 2009 17:39:17 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+This is OK. The left leg compares uids and the right one - gids.
 
-> On Thu, 5 Mar 2009 17:36:13 +0900
-> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > 
-> > CC'ed Jens,
-> > 
-> > On Wed, 04 Mar 2009 22:56:29 +0000
-> > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > 
-> > > On Wed, 2009-03-04 at 22:45 +0100, Thomas Gleixner wrote:
-> > > > On Wed, 4 Mar 2009, Thomas Gleixner wrote:
-> > > > 
-> > > > Instrumented the code and the result of the failing request is
-> > > > below. Looks like the function which sets up the request gets
-> > > > nr_phys_segments wrong by one. 
-> > > > 
-> > > > If you need further trace data feel free to ask.
-> > > 
-> > > OK, the mapping all checks out correctly ... there must be something
-> > > wrong with the way we count before mapping.
-> > 
-> > Yeah, looks we miscalculate nr_phys_segments in the merging path.
-> > 
-> > blk_recount_segments() needs to set bi_seg_front_size and
-> > bi_seg_back_size for ll_merge_requests_fn()?
-> > 
-> > =
-> > diff --git a/block/blk-merge.c b/block/blk-merge.c
-> > index a104593..efb65b6 100644
-> > --- a/block/blk-merge.c
-> > +++ b/block/blk-merge.c
-> > @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
-> >  
-> >  void blk_recount_segments(struct request_queue *q, struct bio *bio)
-> >  {
-> > +	unsigned int seg_size;
-> >  	struct bio *nxt = bio->bi_next;
-> >  
-> >  	bio->bi_next = NULL;
-> > -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
-> > +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
-> >  	bio->bi_next = nxt;
-> >  	bio->bi_flags |= (1 << BIO_SEG_VALID);
-> > +
-> > +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
-> > +		bio->bi_seg_front_size = seg_size;
-> > +	if (bio->bi_phys_segments > bio->bi_seg_back_size)
-> > +		bio->bi_seg_back_size = seg_size;
-> > +
-> >  }
-> >  EXPORT_SYMBOL(blk_recount_segments);
+> linux-2.6.28.5/net/sunrpc/svcauth_unix.c:747:	if (svc_getu32(argv) !=
+> htonl(RPC_AUTH_NULL) || svc_getu32(argv) != 0) {
+> linux-2.6.28.5/net/sunrpc/svcauth_unix.c:833:	if (svc_getu32(argv) !=
+> htonl(RPC_AUTH_NULL) || svc_getu32(argv) != 0) {
+
+These two are fine since svc_getu32 will get the next u32
+from the argv kvec every time it's being called.
+
+Benny
+
 > 
-> Duh, here's the proper patch.
+> linux-2.6.28.5/net/sunrpc/auth_gss/gss_krb5_seqnum.c:78:	if ((plain[4] !=
+> plain[5]) || (plain[4] != plain[6])
+> linux-2.6.28.5/net/sunrpc/auth_gss/gss_krb5_seqnum.c:79:				   || (plain[4] !=
+> plain[7]))
 > 
-> diff --git a/block/blk-merge.c b/block/blk-merge.c
-> index a104593..06e0db4 100644
-> --- a/block/blk-merge.c
-> +++ b/block/blk-merge.c
-> @@ -111,12 +111,19 @@ void blk_recalc_rq_segments(struct request *rq)
->  
->  void blk_recount_segments(struct request_queue *q, struct bio *bio)
->  {
-> +	unsigned int seg_size;
->  	struct bio *nxt = bio->bi_next;
->  
->  	bio->bi_next = NULL;
-> -	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, NULL);
-> +	bio->bi_phys_segments = __blk_recalc_rq_segments(q, bio, &seg_size);
->  	bio->bi_next = nxt;
->  	bio->bi_flags |= (1 << BIO_SEG_VALID);
-> +
-> +	if (bio->bi_phys_segments == 1 && seg_size > bio->bi_seg_front_size)
-> +		bio->bi_seg_front_size = seg_size;
-> +	if (seg_size > bio->bi_seg_back_size)
-> +		bio->bi_seg_back_size = seg_size;
-> +
->  }
->  EXPORT_SYMBOL(blk_recount_segments);
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> linux-2.6.28.5/drivers/block/paride/pf.c:569:		if ((buf[k + offs] != 0x20) ||
+> (buf[k + offs] != l))
+> 
+> already known:
+> 
+> linux-2.6.28.5/drivers/block/paride/pg.c:425:		if (c != ' ' || c != l)
+> 
+> linux-2.6.28.5/drivers/block/paride/pt.c:506:		if ((buf[k + offs] != 0x20) ||
+> (buf[k + offs] != l))
+> 
+> linux-2.6.28.5/drivers/misc/sgi-gru/grukservices.c:612:	if (word0 != word1 ||
+> word0 != MAGIC) {
+> 
+> linux-2.6.28.5/drivers/scsi/gvp11.c:283:	if (qq != q || qq != 0xff)	/* should be
+> read only, all 1's */
+> 
+> linux-2.6.28.5/drivers/scsi/FlashPoint.c:6045:				if(bit_cnt != 0 || bit_cnt != 8)
+> 
+
