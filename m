@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbZCEPRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZCEPUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755867AbZCEPRr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 10:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZCEPRd
+	id S1755392AbZCEPUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 10:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZCEPUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 10:17:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42105 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755083AbZCEPRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 10:17:31 -0500
-Subject: Re: [git-pull -tip] x86: msr architecture debug code
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090305143726.GC7347@alberich.amd.com>
-References: <1236008575.3332.2.camel@localhost.localdomain>
-	 <20090302205437.GB14471@elte.hu> <20090305135444.GB7347@alberich.amd.com>
-	 <1236262346.2527.3.camel@ht.satnam>
-	 <20090305143726.GC7347@alberich.amd.com>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 20:46:56 +0530
-Message-Id: <1236266216.2527.18.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 10:20:04 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:51779 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbZCEPUB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 10:20:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=egQl/f+8Dx4nfQ0Wk5y6BWhQYuFG8Cnftzb3QeiEiLm5J2cfYFHf8j+WVyI/Jkgg/K
+         NU2FhGAK2OCoarxycj4fh3dqQrz8JsdRuuFVT6wGTVTIDP7ZDJqgeghykttvjFZSsm+6
+         8CQz2VzE40Sc1WNWKyPkt8TGLMHslZpTbhpRA=
+MIME-Version: 1.0
+Reply-To: petkovbb@gmail.com
+In-Reply-To: <200903051549.22518.bzolnier@gmail.com>
+References: <1236158216-23052-1-git-send-email-petkovbb@gmail.com>
+	 <200903051312.29784.bzolnier@gmail.com>
+	 <9ea470500903050553m6ab9dfa5hab340213388a4c67@mail.gmail.com>
+	 <200903051549.22518.bzolnier@gmail.com>
+Date: Thu, 5 Mar 2009 16:19:57 +0100
+Message-ID: <9ea470500903050719m7952f84ct56475c6445846eeb@mail.gmail.com>
+Subject: Re: [PATCH 3/3] ide-{cd,floppy}: do not map all cmds to an sg
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 15:37 +0100, Andreas Herrmann wrote:
+Hi,
 
-> 
-> IMHO, there is no need to do this in-kernel.
-> 
+> Unrelated to the original issue that the patch tries to fix
+> (sg mapping no data commands which OOPS-es w/ DEBUG_VIRTUAL=y):
+> - moving ide_init_sg_cmd()+ide_map_sg() to ide_issue_pc()
+> - converting the code to use blk_rq_bytes()
 
-Ingo already replied to this comment in his previous emails.
+aah, ok, now I could get exactly what you meant :). However, (!) ide-floppy is
+potentially broken in the same way for data-less cmds since we unconditionally
+map an rq to an sg there _too_. That was  the reason for the other changes. And
+yes, I should've been more clear in the changelog.
 
-Thanks,
+> [ Moreover if you actually cared to write down the proper changelog
+>  I'm pretty sure that you would ask yourself whether these changes
+>  really belong to a bugfix patch... ]
 
---
-JSR
-
+-- 
+Regards/Gruss,
+Boris
