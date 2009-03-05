@@ -1,46 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbZCENpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZCENqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbZCENpr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:45:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZCENpi
+	id S1757065AbZCENqG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbZCENpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:45:38 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:35251 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972AbZCENph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:45:37 -0500
-Date: Thu, 5 Mar 2009 14:45:28 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Markus <M4rkusXXL@web.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Zdenek Kabelac <zkabelac@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: drop_caches ...
-Message-ID: <20090305134528.GC646@ics.muni.cz>
-References: <200903041057.34072.M4rkusXXL@web.de> <200903041947.41542.M4rkusXXL@web.de> <20090305004850.GA6045@localhost> <200903051255.35407.M4rkusXXL@web.de> <20090305133603.GA22442@localhost>
+	Thu, 5 Mar 2009 08:45:40 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40804 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754754AbZCENpj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 08:45:39 -0500
+Date: Thu, 5 Mar 2009 14:48:06 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arve Hj?nnev?g <arve@android.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090305134806.GA1697@elf.ucw.cz>
+References: <200902190004.18878.rjw@sisk.pl> <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090305133603.GA22442@localhost>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+In-Reply-To: <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 05 Mar 2009 14:45:11 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 09:36:03PM +0800, Wu Fengguang wrote:
->           size = file size in bytes
->         cached = cached pages
+On Wed 2009-02-18 18:31:15, Alan Stern wrote:
+> On Thu, 19 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> So it's normal that (size > cached).
+> > > If some devices are autosuspended after a local inactivity timeout, I
+> > > don't want to wait for those devices to autosuspend if I know the code
+> > > that needed to run is done. This could cause delays in the normal
+> > > case,
+> > 
+> > Isn't it a matter of adjusting the inactivity timeouts in a suitable way?
+> 
+> It's not that simple.  A single device driver has a very local view, 
+> not suitable for deciding whether the entire system should go to sleep.
+> 
+> So for example, a disk driver might think it's appropriate to spin down 
+> the disk after 10 seconds of inactivity.  But an overall system monitor 
+> might realize that nothing is going on right now and want to put the 
+> system to sleep immediately, without waiting the 10 seconds for the 
+> disk to autosuspend.
 
-I guess, the question was how it can happen that (cached > size).
+Hmm, I'm not sure. If system is so busy that it keeps the disk up, it
+may not be good idea to sleep whole system.
 
+Example: "idle fileserver". Current command is done, so we seem to be
+idle; but when we sleep, new command comes. While system really is
+idle, it is bad idea to suspend.
+
+If the overall system monitor can decide disk will not be used, it can
+just sleep the disk.
+
+> > > and it could prevent suspend if a background process (not using
+> > > wakelocks) is accessing a disk more frequently than its idle timeout.
+> > 
+> > Well, actually, shouldn't it prevent suspend from happening?  Arguably, it just
+> > means that the disk is continuously being accessed with respect to the inactive
+> > timeout granularity.
+> 
+> That's true, but it shows the problem of making the autosleep decision
+> based on disk activity.  An auto-sleep should not have to wait for
+> every device (or some suitable subset) to become idle for some minimum
+> time; it should be able to kick in at short notice.
+
+I believe we do want to wake for timeouts, as not all sources of
+wakeup are local.
+								Pavel
 -- 
-Luká¹ Hejtmánek
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
