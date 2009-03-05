@@ -1,112 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZCENNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbZCENPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZCENNw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 08:13:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbZCENMy
+	id S1755703AbZCENPy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 08:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZCENPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 08:12:54 -0500
-Received: from h155.mvista.com ([63.81.120.155]:62581 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757278AbZCENMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 08:12:52 -0500
-Message-ID: <49AFCFDB.9080203@ru.mvista.com>
-Date: Thu, 05 Mar 2009 16:12:59 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 5 Mar 2009 08:15:46 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:57936 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751430AbZCENPo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 08:15:44 -0500
+Date: Thu, 5 Mar 2009 18:45:38 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 11/11] ftrace plugin for kernel symbol tracing using HW
+	Breakpoint interfaces
+Message-ID: <20090305131538.GA32076@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090305043440.189041194@linux.vnet.ibm.com> <20090305044333.GM17747@in.ibm.com> <20090305063703.GB5359@nowhere> <20090305091611.GB16026@elte.hu>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] ide: merge ->atapi_*put_bytes and ->ata_*put_data
- methods
-References: <200803302141.03013.bzolnier@gmail.com>
-In-Reply-To: <200803302141.03013.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090305091611.GB16026@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Mar 05, 2009 at 10:16:11AM +0100, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > On Thu, Mar 05, 2009 at 10:13:33AM +0530, prasad@linux.vnet.ibm.com wrote:
+> > > This patch adds an ftrace plugin to detect and profile memory access over
+> > > kernel variables. It uses HW Breakpoint interfaces to 'watch memory
+> > > addresses.
+> > > 
+> > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
+> > > ---
+> > 
+> > 
+> > Hi,
+> > 
+> > Nice feature. And moreover the standardized hardware 
+> > breakpoints could be helpful for tracing.
+> 
+> yeah. The feature is much more alive now.
+> 
+> > Just some comments below.
+> 
+> One other thing:
+> 
+> +#ifdef CONFIG_FTRACE_SELFTEST
+> +int trace_selftest_startup_ksym(struct tracer *trace, struct trace_array *tr)
+> +{
+> +       /* TODO: Will be implemented later */
+> +       return 0;
+> +}
+> +#endif /* CONFIG_FTRACE_SELFTEST */
+> 
+> This needs to be implemented before i can pick the code up into 
+> tip:tracing, as otherwise we will not notice it fast enough if 
+> some of this stuff breaks.
+> 
+> Basically the ftrace plugin will be the main usage vector of 
+> this facility, so the self-test is a must-have.
+> 
+> Looks very nice otherwise.
+> 
+> 	Ingo
 
-Bartlomiej Zolnierkiewicz wrote:
+Thanks for the comments.
 
-> * Merge ->atapi_{in,out}put_bytes and ->ata_{in,out}put_data methods
->   into new ->{in,out}put_data methods which take number of bytes to
->   transfer as an argument and always do padding.
+Test-cases for the hardware breakpoint interfaces can be the following:
 
-> While at it:
+- Basic sanity test to check if the API is intact
+- Perform various types of memory accesses, like read, write (I/O and 
+  others when implemented) on a dummy kernel variable and verify the 
+  trigger of the exception handler.
 
-> * Use 'hwif' or 'drive->hwif' instead of 'HWIF(drive)'.
+While the above can be a part of trace_selftest_startup_ksym(),
+rigorous testing would involve:
 
-> There should be no functional changes caused by this patch (all users
-> of ->ata_{in,out}put_data methods were using multiply-of-4 word counts).
+i) stressing the HW breakpoint infrastructure to confirm sane behaviour
+when interoperated with other users of a)breakpoint register b)the
+do_debug() exception. This will involve simultaneous use of kprobes,
+hardware breakpoint interface and requests from user-space (say through
+GDB).
+ii) Verifying successful HB_NUM number of register_ requests.
+iii) Verifying right priority resolution, and handling user-space
+requests.
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+These, in my opinion, would better fit in a full-featured test-suite
+such as LTP, as opposed to startup testing in ftrace.
 
-    Congratulations -- you introduced a bug with this patch. ;-)
+I will implement trace_selftest_startup_ksym() to contain the first two
+test-cases in the next iteration of this code.
 
-> Index: b/drivers/ide/ide-iops.c
-> ===================================================================
-> --- a/drivers/ide/ide-iops.c
-> +++ b/drivers/ide/ide-iops.c
-> @@ -191,34 +191,45 @@ static void ata_vlb_sync(ide_drive_t *dr
->  
->  /*
->   * This is used for most PIO data transfers *from* the IDE interface
-> + *
-> + * These routines will round up any request for an odd number of bytes,
-> + * so if an odd len is specified, be sure that there's at least one
-> + * extra byte allocated for the buffer.
->   */
-> -static void ata_input_data(ide_drive_t *drive, void *buffer, u32 wcount)
-> +static void ata_input_data(ide_drive_t *drive, void *buf, unsigned int len)
->  {
->  	ide_hwif_t *hwif = drive->hwif;
->  	struct ide_io_ports *io_ports = &hwif->io_ports;
-> +	unsigned long data_addr = io_ports->data_addr;
->  	u8 io_32bit = drive->io_32bit;
->  
-> +	len++;
-> +
+Thanks,
+K.Prasad
 
-    Now where is the symmetric len++ in ata_output_data()?
 
->  	if (io_32bit) {
->  		if (io_32bit & 2) {
->  			unsigned long flags;
->  
->  			local_irq_save(flags);
->  			ata_vlb_sync(drive, io_ports->nsect_addr);
-> -			hwif->INSL(io_ports->data_addr, buffer, wcount);
-> +			hwif->INSL(data_addr, buf, len / 4);
->  			local_irq_restore(flags);
->  		} else
-> -			hwif->INSL(io_ports->data_addr, buffer, wcount);
-> +			hwif->INSL(data_addr, buf, len / 4);
-> +
-> +		if ((len & 3) >= 2)
-> +			hwif->INSW(data_addr, (u8 *)buf + (len & ~3), 1);
->  	} else
-> -		hwif->INSW(io_ports->data_addr, buffer, wcount << 1);
-> +		hwif->INSW(data_addr, buf, len / 2);
->  }
->  
->  /*
->   * This is used for most PIO data transfers *to* the IDE interface
->   */
-> -static void ata_output_data(ide_drive_t *drive, void *buffer, u32 wcount)
-> +static void ata_output_data(ide_drive_t *drive, void *buf, unsigned int len)
->  {
->  	ide_hwif_t *hwif = drive->hwif;
->  	struct ide_io_ports *io_ports = &hwif->io_ports;
-> +	unsigned long data_addr = io_ports->data_addr;
->  	u8 io_32bit = drive->io_32bit;
->  
->  	if (io_32bit) {
+Thanks,
+K.Prasad
 
-    Patch coming. It turned out to be really good thing that I decided to look 
-into these methods...
 
-MBR, Sergei
