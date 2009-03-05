@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbZCEMZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZCEM1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbZCEMZx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 07:25:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZCEMZm
+	id S1754755AbZCEM1Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 07:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZCEM1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 07:25:42 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:59372 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752943AbZCEMZl (ORCPT
+	Thu, 5 Mar 2009 07:27:16 -0500
+Received: from batfish.pepperfish.net ([87.237.62.180]:43333 "EHLO
+	flounder.pepperfish.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752488AbZCEM1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 07:25:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=vdr7TPHD7BJEIRuIDmn0fm2WAnD8N/EP/FUoh9X1EBa+31mDGNyOh7ILAvRelaM1im
-         NDi6/kEEyeVr89LxAqG6miRzieSVxYV4S5ieIiko9ZEdVPFqkvGYpgr5e868D+3cVceE
-         Kh2oBq+1kSniJHxLHX4qmLU5P3bVEx2tZJi3E=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 2/3] ide-floppy: use ide_pio_bytes()
-Date: Thu, 5 Mar 2009 13:27:49 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc6-next-20090304; KDE/4.2.0; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <1236158216-23052-1-git-send-email-petkovbb@gmail.com> <1236158216-23052-3-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1236158216-23052-3-git-send-email-petkovbb@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 5 Mar 2009 07:27:15 -0500
+Subject: Re: [PATCH] GPIOLIB: Allow GPIOs to be named
+From: Daniel Silverstone <dsilvers@simtec.co.uk>
+Reply-To: dsilvers@simtec.co.uk
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090113131417.fe36d9bb.akpm@linux-foundation.org>
+References: <1231504690.8511.8.camel@petitemort>
+	 <20090113131417.fe36d9bb.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Simtec Electronics
+Date: Thu, 05 Mar 2009 12:27:10 +0000
+Message-Id: <1236256030.21294.4.camel@petitemort>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903051327.49984.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 March 2009, Borislav Petkov wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> * Fix ide_init_sg_cmd() setup for non-fs requests.
-> 
-> * Convert ide_pc_intr() to use ide_pio_bytes() for floppy media.
-> 
-> * Remove no longer needed ide_io_buffers() and sg/sg_cnt fields
->   from struct ide_atapi_pc.
-> 
-> * Remove partial completions; kill idefloppy_update_buffers(), as a
->   result.
-> 
-> * Add some more debugging statements.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+On Tue, 2009-01-13 at 13:14 -0800, Andrew Morton wrote:
+> > I was unable to find anything in MAINTAINERS or at the top of gpiolib.c
+> > to indicate who to CC, hence sending this only to the list. Below is a
+> > patch against 2150edc6c5cf00f7adb54538b9ea2a3e9cedca3f.
+> gpio core is developed/maintained by David Brownell.  Who owes us a
+> MAINTAINERS update ;)
 
-thanks, applied 1-2
+David, have you had a chance to review this patch? It was also
+added-to-mm on the 13th Jan as gpiolib-allow-gpios-to-be-named.patch --
+I believe you were CCed on this add.
+
+With -rc8 looming, I am anxious to know if this is acceptable for going
+into the .30 merge window.
+
+Regards,
+
+Daniel.
+
+-- 
+Daniel Silverstone                              http://www.simtec.co.uk/
+PGP mail accepted and encouraged.            Key Id: 2BC8 4016 2068 7895
+
+
