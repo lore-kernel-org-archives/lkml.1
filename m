@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbZCEXbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbZCEXbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758171AbZCEXbV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbZCEXaY
+	id S1758224AbZCEXbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbZCEXbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:30:24 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:48208 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:31:03 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:48312 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758103AbZCEXaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:30:21 -0500
-Message-Id: <20090305225519.056985711@polymtl.ca>
+	id S1758169AbZCEXbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:31:00 -0500
+Message-Id: <20090305225515.540448009@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:48:01 -0500
+Date: Thu, 05 Mar 2009 17:47:45 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,581 +31,711 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 33/41] LTTng dynamic tracing support with kprobes
-Content-Disposition: inline; filename=lttng-kprobes-support.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:15 +0000
+Subject: [RFC patch 17/41] LTTng - serialization
+Content-Disposition: inline; filename=lttng-serialize.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:11 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Kprobe support to LTTng, so we can use
-
-/mnt/debugfs/ltt/kprobe/enable
-/mnt/debugfs/ltt/kprobe/disable
-/mnt/debugfs/ltt/kprobe/list
-
-to respectively enable, disable and list(!) all LTTng-kprobes.
-
-An event kernel.kprobes will be logged. It records the instruction pointer
-associated with the probe hit.
+Generic serialization mechanism : takes the variable argument list and
+serializes it them in the trace buffers.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/ltt-tracer.h |    8 
- kernel/kallsyms.c          |    1 
- ltt/Kconfig                |   15 +
- ltt/Makefile               |    1 
- ltt/ltt-kprobes.c          |  479 +++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 504 insertions(+)
+ ltt/ltt-serialize.c |  685 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 685 insertions(+)
 
-Index: linux-2.6-lttng/ltt/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/ltt/Kconfig	2009-03-05 16:09:59.000000000 -0500
-+++ linux-2.6-lttng/ltt/Kconfig	2009-03-05 16:10:12.000000000 -0500
-@@ -136,4 +136,19 @@ config LTT_VMCORE
- 
- 	  Special crash extension should be used to extract ltt buffers.
- 
-+config LTT_KPROBES
-+	bool "Linux Trace Toolkit Kprobes Support"
-+	depends on HAVE_KPROBES
-+	select LTT_TRACE_CONTROL
-+	select LTT_FAST_SERIALIZE
-+	select KPROBES
-+	select KALLSYMS
-+	default y
-+	help
-+	  Allows connecting the LTTng tracer on kprobes using simple debugfs
-+	  file operations :
-+	    ltt/kprobes/enable
-+	    ltt/kprobes/disable
-+	    ltt/kprobes/list
-+
- endif # LTT
-Index: linux-2.6-lttng/ltt/Makefile
-===================================================================
---- linux-2.6-lttng.orig/ltt/Makefile	2009-03-05 16:10:10.000000000 -0500
-+++ linux-2.6-lttng/ltt/Makefile	2009-03-05 16:10:12.000000000 -0500
-@@ -14,3 +14,4 @@ obj-$(CONFIG_LTT_FAST_SERIALIZE)	+= ltt-
- obj-$(CONFIG_LTT_TRACE_CONTROL)		+= ltt-trace-control.o
- obj-$(CONFIG_LTT_USERSPACE_EVENT)	+= ltt-userspace-event.o
- obj-$(CONFIG_LTT_FILTER)		+= ltt-filter.o
-+obj-$(CONFIG_LTT_KPROBES)		+= ltt-kprobes.o
-Index: linux-2.6-lttng/ltt/ltt-kprobes.c
+Index: linux-2.6-lttng/ltt/ltt-serialize.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/ltt/ltt-kprobes.c	2009-03-05 16:10:12.000000000 -0500
-@@ -0,0 +1,479 @@
++++ linux-2.6-lttng/ltt/ltt-serialize.c	2009-03-04 14:07:58.000000000 -0500
+@@ -0,0 +1,685 @@
 +/*
-+ * (C) Copyright	2009 -
-+ * 		Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ * LTTng serializing code.
 + *
-+ * LTTng kprobes integration module.
++ * Copyright Mathieu Desnoyers, March 2007.
++ *
++ * Licensed under the GPLv2.
++ *
++ * See this discussion about weirdness about passing va_list and then va_list to
++ * functions. (related to array argument passing). va_list seems to be
++ * implemented as an array on x86_64, but not on i386... This is why we pass a
++ * va_list * to ltt_vtrace.
 + */
 +
++#include <stdarg.h>
++#include <linux/ctype.h>
++#include <linux/string.h>
 +#include <linux/module.h>
-+#include <linux/kprobes.h>
 +#include <linux/ltt-tracer.h>
-+#include <linux/marker.h>
-+#include <linux/mutex.h>
-+#include <linux/jhash.h>
-+#include <linux/seq_file.h>
-+#include <linux/slab.h>
-+#include <linux/debugfs.h>
-+#include <linux/kallsyms.h>
-+#include <linux/ltt-type-serializer.h>
 +
-+#define LTT_KPROBES_DIR 	"kprobes"
-+#define LTT_KPROBES_ENABLE	"enable"
-+#define LTT_KPROBES_DISABLE	"disable"
-+#define LTT_KPROBES_LIST	"list"
-+
-+/* Active LTTng kprobes hash table */
-+static DEFINE_MUTEX(ltt_kprobes_mutex);
-+
-+#define LTT_KPROBE_HASH_BITS	6
-+#define LTT_KPROBE_TABLE_SIZE	(1 << LTT_KPROBE_HASH_BITS)
-+static struct hlist_head ltt_kprobe_table[LTT_KPROBE_TABLE_SIZE];
-+
-+struct kprobe_entry {
-+	struct hlist_node hlist;
-+	struct kprobe kp;
-+	char key[0];
++enum ltt_type {
++	LTT_TYPE_SIGNED_INT,
++	LTT_TYPE_UNSIGNED_INT,
++	LTT_TYPE_STRING,
++	LTT_TYPE_NONE,
 +};
 +
-+static struct dentry *ltt_kprobes_dir,
-+		     *ltt_kprobes_enable_dentry,
-+		     *ltt_kprobes_disable_dentry,
-+		     *ltt_kprobes_list_dentry;
++#define LTT_ATTRIBUTE_NETWORK_BYTE_ORDER (1<<1)
 +
-+static int module_exit;
-+
-+
-+static void trace_kprobe_table_entry(void *call_data, struct kprobe_entry *e)
++/*
++ * Inspired from vsnprintf
++ *
++ * The serialization format string supports the basic printf format strings.
++ * In addition, it defines new formats that can be used to serialize more
++ * complex/non portable data structures.
++ *
++ * Typical use:
++ *
++ * field_name %ctype
++ * field_name #tracetype %ctype
++ * field_name #tracetype %ctype1 %ctype2 ...
++ *
++ * A conversion is performed between format string types supported by GCC and
++ * the trace type requested. GCC type is used to perform type checking on format
++ * strings. Trace type is used to specify the exact binary representation
++ * in the trace. A mapping is done between one or more GCC types to one trace
++ * type. Sign extension, if required by the conversion, is performed following
++ * the trace type.
++ *
++ * If a gcc format is not declared with a trace format, the gcc format is
++ * also used as binary representation in the trace.
++ *
++ * Strings are supported with %s.
++ * A single tracetype (sequence) can take multiple c types as parameter.
++ *
++ * c types:
++ *
++ * see printf(3).
++ *
++ * Note: to write a uint32_t in a trace, the following expression is recommended
++ * si it can be portable:
++ *
++ * ("#4u%lu", (unsigned long)var)
++ *
++ * trace types:
++ *
++ * Serialization specific formats :
++ *
++ * Fixed size integers
++ * #1u     writes uint8_t
++ * #2u     writes uint16_t
++ * #4u     writes uint32_t
++ * #8u     writes uint64_t
++ * #1d     writes int8_t
++ * #2d     writes int16_t
++ * #4d     writes int32_t
++ * #8d     writes int64_t
++ * i.e.:
++ * #1u%lu #2u%lu #4d%lu #8d%lu #llu%hu #d%lu
++ *
++ * * Attributes:
++ *
++ * n:  (for network byte order)
++ * #ntracetype%ctype
++ *            is written in the trace in network byte order.
++ *
++ * i.e.: #bn4u%lu, #n%lu, #b%u
++ *
++ * TODO (eventually)
++ * Variable length sequence
++ * #a #tracetype1 #tracetype2 %array_ptr %elem_size %num_elems
++ *            In the trace:
++ *            #a specifies that this is a sequence
++ *            #tracetype1 is the type of elements in the sequence
++ *            #tracetype2 is the type of the element count
++ *            GCC input:
++ *            array_ptr is a pointer to an array that contains members of size
++ *            elem_size.
++ *            num_elems is the number of elements in the array.
++ * i.e.: #a #lu #lu %p %lu %u
++ *
++ * Callback
++ * #k         callback (taken from the probe data)
++ *            The following % arguments are exepected by the callback
++ *
++ * i.e.: #a #lu #lu #k %p
++ *
++ * Note: No conversion is done from floats to integers, nor from integers to
++ * floats between c types and trace types. float conversion from double to float
++ * or from float to double is also not supported.
++ *
++ * REMOVE
++ * %*b     expects sizeof(data), data
++ *         where sizeof(data) is 1, 2, 4 or 8
++ *
++ * Fixed length struct, union or array.
++ * FIXME: unable to extract those sizes statically.
++ * %*r     expects sizeof(*ptr), ptr
++ * %*.*r   expects sizeof(*ptr), __alignof__(*ptr), ptr
++ * struct and unions removed.
++ * Fixed length array:
++ * [%p]#a[len #tracetype]
++ * i.e.: [%p]#a[12 #lu]
++ *
++ * Variable length sequence
++ * %*.*:*v expects sizeof(*ptr), __alignof__(*ptr), elem_num, ptr
++ *         where elem_num is the number of elements in the sequence
++ */
++static inline const char *parse_trace_type(const char *fmt,
++		char *trace_size, enum ltt_type *trace_type,
++		unsigned long *attributes)
 +{
-+	char namebuf[KSYM_NAME_LEN];
-+	unsigned long addr;
++	int qualifier;		/* 'h', 'l', or 'L' for integer fields */
++				/* 'z' support added 23/7/1999 S.H.    */
++				/* 'z' changed to 'Z' --davidm 1/25/99 */
++				/* 't' added for ptrdiff_t */
 +
-+	if (e->kp.addr) {
-+		sprint_symbol(namebuf,
-+			      (unsigned long)e->kp.addr);
-+		addr = (unsigned long)e->kp.addr;
-+	} else {
-+		strcpy(namebuf, e->kp.symbol_name);
-+		/* TODO : add offset */
-+		addr = kallsyms_lookup_name(namebuf);
++	/* parse attributes. */
++repeat:
++	switch (*fmt) {
++	case 'n':
++		*attributes |= LTT_ATTRIBUTE_NETWORK_BYTE_ORDER;
++		++fmt;
++		goto repeat;
 +	}
-+	if (addr)
-+		__trace_mark(0, kprobe_state, kprobe_table,
-+			call_data,
-+			"ip 0x%lX symbol %s", addr, namebuf);
++
++	/* get the conversion qualifier */
++	qualifier = -1;
++	if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
++	    *fmt == 'Z' || *fmt == 'z' || *fmt == 't' ||
++	    *fmt == 'S' || *fmt == '1' || *fmt == '2' ||
++	    *fmt == '4' || *fmt == 8) {
++		qualifier = *fmt;
++		++fmt;
++		if (qualifier == 'l' && *fmt == 'l') {
++			qualifier = 'L';
++			++fmt;
++		}
++	}
++
++	switch (*fmt) {
++	case 'c':
++		*trace_type = LTT_TYPE_UNSIGNED_INT;
++		*trace_size = sizeof(unsigned char);
++		goto parse_end;
++	case 's':
++		*trace_type = LTT_TYPE_STRING;
++		goto parse_end;
++	case 'p':
++		*trace_type = LTT_TYPE_UNSIGNED_INT;
++		*trace_size = sizeof(void *);
++		goto parse_end;
++	case 'd':
++	case 'i':
++		*trace_type = LTT_TYPE_SIGNED_INT;
++		break;
++	case 'o':
++	case 'u':
++	case 'x':
++	case 'X':
++		*trace_type = LTT_TYPE_UNSIGNED_INT;
++		break;
++	default:
++		if (!*fmt)
++			--fmt;
++		goto parse_end;
++	}
++	switch (qualifier) {
++	case 'L':
++		*trace_size = sizeof(long long);
++		break;
++	case 'l':
++		*trace_size = sizeof(long);
++		break;
++	case 'Z':
++	case 'z':
++		*trace_size = sizeof(size_t);
++		break;
++	case 't':
++		*trace_size = sizeof(ptrdiff_t);
++		break;
++	case 'h':
++		*trace_size = sizeof(short);
++		break;
++	case '1':
++		*trace_size = sizeof(uint8_t);
++		break;
++	case '2':
++		*trace_size = sizeof(uint16_t);
++		break;
++	case '4':
++		*trace_size = sizeof(uint32_t);
++		break;
++	case '8':
++		*trace_size = sizeof(uint64_t);
++		break;
++	default:
++		*trace_size = sizeof(int);
++	}
++
++parse_end:
++	return fmt;
 +}
 +
-+DEFINE_MARKER(kernel, kprobe, "ip %lX");
-+
-+static int ltt_kprobe_handler_pre(struct kprobe *p, struct pt_regs *regs)
++/*
++ * Restrictions:
++ * Field width and precision are *not* supported.
++ * %n not supported.
++ */
++static inline const char *parse_c_type(const char *fmt,
++		char *c_size, enum ltt_type *c_type)
 +{
-+	struct marker *marker;
-+	unsigned long data;
++	int qualifier;		/* 'h', 'l', or 'L' for integer fields */
++				/* 'z' support added 23/7/1999 S.H.    */
++				/* 'z' changed to 'Z' --davidm 1/25/99 */
++				/* 't' added for ptrdiff_t */
 +
-+	data = (unsigned long)p->addr;
-+	marker = &GET_MARKER(kernel, kprobe);
-+	ltt_specialized_trace(marker, marker->single.probe_private,
-+		&data, sizeof(data), sizeof(data));
-+	return 0;
++	/* process flags : ignore standard print formats for now. */
++repeat:
++	switch (*fmt) {
++	case '-':
++	case '+':
++	case ' ':
++	case '#':
++	case '0':
++		++fmt;
++		goto repeat;
++	}
++
++	/* get the conversion qualifier */
++	qualifier = -1;
++	if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
++	    *fmt == 'Z' || *fmt == 'z' || *fmt == 't' ||
++	    *fmt == 'S') {
++		qualifier = *fmt;
++		++fmt;
++		if (qualifier == 'l' && *fmt == 'l') {
++			qualifier = 'L';
++			++fmt;
++		}
++	}
++
++	switch (*fmt) {
++	case 'c':
++		*c_type = LTT_TYPE_UNSIGNED_INT;
++		*c_size = sizeof(unsigned char);
++		goto parse_end;
++	case 's':
++		*c_type = LTT_TYPE_STRING;
++		goto parse_end;
++	case 'p':
++		*c_type = LTT_TYPE_UNSIGNED_INT;
++		*c_size = sizeof(void *);
++		goto parse_end;
++	case 'd':
++	case 'i':
++		*c_type = LTT_TYPE_SIGNED_INT;
++		break;
++	case 'o':
++	case 'u':
++	case 'x':
++	case 'X':
++		*c_type = LTT_TYPE_UNSIGNED_INT;
++		break;
++	default:
++		if (!*fmt)
++			--fmt;
++		goto parse_end;
++	}
++	switch (qualifier) {
++	case 'L':
++		*c_size = sizeof(long long);
++		break;
++	case 'l':
++		*c_size = sizeof(long);
++		break;
++	case 'Z':
++	case 'z':
++		*c_size = sizeof(size_t);
++		break;
++	case 't':
++		*c_size = sizeof(ptrdiff_t);
++		break;
++	case 'h':
++		*c_size = sizeof(short);
++		break;
++	default:
++		*c_size = sizeof(int);
++	}
++
++parse_end:
++	return fmt;
 +}
 +
-+static int ltt_register_kprobe(const char *key)
++static inline size_t serialize_trace_data(struct rchan_buf *buf,
++		size_t buf_offset,
++		char trace_size, enum ltt_type trace_type,
++		char c_size, enum ltt_type c_type,
++		int *largest_align, va_list *args)
 +{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe_entry *e = NULL;
-+	char *symbol_name = NULL;
-+	unsigned long addr;
-+	unsigned int offset = 0;
-+	u32 hash;
-+	size_t key_len = strlen(key) + 1;
-+	int ret;
++	union {
++		unsigned long v_ulong;
++		uint64_t v_uint64;
++		struct {
++			const char *s;
++			size_t len;
++		} v_string;
++	} tmp;
 +
-+	if (key_len == 1)
-+		return -ENOENT;	/* only \0 */
-+
-+	if (sscanf(key, "%li", &addr) != 1)
-+		addr = 0;
-+
-+	if (!addr) {
-+		const char *symbol_end = NULL;
-+		unsigned int symbol_len;	/* includes final \0 */
-+
-+		symbol_end = strchr(key, ' ');
-+		if (symbol_end)
-+			symbol_len = symbol_end - key + 1;
-+		else
-+			symbol_len = key_len;
-+		symbol_name = kmalloc(symbol_len, GFP_KERNEL);
-+		if (!symbol_name) {
-+			ret = -ENOMEM;
-+			goto error;
-+		}
-+		memcpy(symbol_name, key, symbol_len - 1);
-+		symbol_name[symbol_len-1] = '\0';
-+		if (symbol_end) {
-+			symbol_end++;	/* start of offset */
-+			if (sscanf(symbol_end, "%i", &offset) != 1)
-+				offset = 0;
-+		}
-+	}
-+
-+	hash = jhash(key, key_len-1, 0);
-+	head = &ltt_kprobe_table[hash & ((1 << LTT_KPROBE_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist) {
-+		if (!strcmp(key, e->key)) {
-+			printk(KERN_NOTICE "Kprobe %s busy\n", key);
-+			ret = -EBUSY;
-+			goto error;
-+		}
-+	}
 +	/*
-+	 * Using kzalloc here to allocate a variable length element. Could
-+	 * cause some memory fragmentation if overused.
++	 * Be careful about sign extension here.
++	 * Sign extension is done with the destination (trace) type.
 +	 */
-+	e = kzalloc(sizeof(struct kprobe_entry) + key_len, GFP_KERNEL);
-+	if (!e) {
-+		ret = -ENOMEM;
-+		goto error;
-+	}
-+	memcpy(e->key, key, key_len);
-+	hlist_add_head(&e->hlist, head);
-+	e->kp.pre_handler = ltt_kprobe_handler_pre;
-+	e->kp.symbol_name = symbol_name;
-+	e->kp.offset = offset;
-+	e->kp.addr = (void *)addr;
-+	ret = register_kprobe(&e->kp);
-+	if (ret < 0)
-+		goto error_list_del;
-+	trace_kprobe_table_entry(NULL, e);
-+	return 0;
-+
-+error_list_del:
-+	hlist_del(&e->hlist);
-+error:
-+	kfree(symbol_name);
-+	kfree(e);
-+	return ret;
-+}
-+
-+static int ltt_unregister_kprobe(const char *key)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe_entry *e;
-+	int found = 0;
-+	size_t key_len = strlen(key) + 1;
-+	u32 hash;
-+
-+	hash = jhash(key, key_len-1, 0);
-+	head = &ltt_kprobe_table[hash & ((1 << LTT_KPROBE_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist) {
-+		if (!strcmp(key, e->key)) {
-+			found = 1;
++	switch (trace_type) {
++	case LTT_TYPE_SIGNED_INT:
++		switch (c_size) {
++		case 1:
++			tmp.v_ulong = (long)(int8_t)va_arg(*args, int);
 +			break;
++		case 2:
++			tmp.v_ulong = (long)(int16_t)va_arg(*args, int);
++			break;
++		case 4:
++			tmp.v_ulong = (long)(int32_t)va_arg(*args, int);
++			break;
++		case 8:
++			tmp.v_uint64 = va_arg(*args, int64_t);
++			break;
++		default:
++			BUG();
 +		}
++		break;
++	case LTT_TYPE_UNSIGNED_INT:
++		switch (c_size) {
++		case 1:
++			tmp.v_ulong = (unsigned long)(uint8_t)
++					va_arg(*args, unsigned int);
++			break;
++		case 2:
++			tmp.v_ulong = (unsigned long)(uint16_t)
++					va_arg(*args, unsigned int);
++			break;
++		case 4:
++			tmp.v_ulong = (unsigned long)(uint32_t)
++					va_arg(*args, unsigned int);
++			break;
++		case 8:
++			tmp.v_uint64 = va_arg(*args, uint64_t);
++			break;
++		default:
++			BUG();
++		}
++		break;
++	case LTT_TYPE_STRING:
++		tmp.v_string.s = va_arg(*args, const char *);
++		if ((unsigned long)tmp.v_string.s < PAGE_SIZE)
++			tmp.v_string.s = "<NULL>";
++		tmp.v_string.len = strlen(tmp.v_string.s)+1;
++		if (buf)
++			ltt_relay_write(buf, buf_offset, tmp.v_string.s,
++				tmp.v_string.len);
++		buf_offset += tmp.v_string.len;
++		goto copydone;
++	default:
++		BUG();
 +	}
-+	if (!found)
-+		return -ENOENT;
-+	hlist_del(&e->hlist);
-+	unregister_kprobe(&e->kp);
-+	kfree(e->kp.symbol_name);
-+	kfree(e);
-+	return 0;
++
++	/*
++	 * If trace_size is lower or equal to 4 bytes, there is no sign
++	 * extension to do because we are already encoded in a long. Therefore,
++	 * we can combine signed and unsigned ops. 4 bytes float also works
++	 * with this, because we do a simple copy of 4 bytes into 4 bytes
++	 * without manipulation (and we do not support conversion from integers
++	 * to floats).
++	 * It is also the case if c_size is 8 bytes, which is the largest
++	 * possible integer.
++	 */
++	if (ltt_get_alignment()) {
++		buf_offset += ltt_align(buf_offset, trace_size);
++		if (largest_align)
++			*largest_align = max_t(int, *largest_align, trace_size);
++	}
++	if (trace_size <= 4 || c_size == 8) {
++		if (buf) {
++			switch (trace_size) {
++			case 1:
++				if (c_size == 8)
++					ltt_relay_write(buf, buf_offset,
++					(uint8_t[]){ (uint8_t)tmp.v_uint64 },
++					sizeof(uint8_t));
++				else
++					ltt_relay_write(buf, buf_offset,
++					(uint8_t[]){ (uint8_t)tmp.v_ulong },
++					sizeof(uint8_t));
++				break;
++			case 2:
++				if (c_size == 8)
++					ltt_relay_write(buf, buf_offset,
++					(uint16_t[]){ (uint16_t)tmp.v_uint64 },
++					sizeof(uint16_t));
++				else
++					ltt_relay_write(buf, buf_offset,
++					(uint16_t[]){ (uint16_t)tmp.v_ulong },
++					sizeof(uint16_t));
++				break;
++			case 4:
++				if (c_size == 8)
++					ltt_relay_write(buf, buf_offset,
++					(uint32_t[]){ (uint32_t)tmp.v_uint64 },
++					sizeof(uint32_t));
++				else
++					ltt_relay_write(buf, buf_offset,
++					(uint32_t[]){ (uint32_t)tmp.v_ulong },
++					sizeof(uint32_t));
++				break;
++			case 8:
++				/*
++				 * c_size cannot be other than 8 here because
++				 * trace_size > 4.
++				 */
++				ltt_relay_write(buf, buf_offset,
++				(uint64_t[]){ (uint64_t)tmp.v_uint64 },
++				sizeof(uint64_t));
++				break;
++			default:
++				BUG();
++			}
++		}
++		buf_offset += trace_size;
++		goto copydone;
++	} else {
++		/*
++		 * Perform sign extension.
++		 */
++		if (buf) {
++			switch (trace_type) {
++			case LTT_TYPE_SIGNED_INT:
++				ltt_relay_write(buf, buf_offset,
++					(int64_t[]){ (int64_t)tmp.v_ulong },
++					sizeof(int64_t));
++				break;
++			case LTT_TYPE_UNSIGNED_INT:
++				ltt_relay_write(buf, buf_offset,
++					(uint64_t[]){ (uint64_t)tmp.v_ulong },
++					sizeof(uint64_t));
++				break;
++			default:
++				BUG();
++			}
++		}
++		buf_offset += trace_size;
++		goto copydone;
++	}
++
++copydone:
++	return buf_offset;
 +}
 +
-+static void ltt_unregister_all_kprobes(void)
++notrace size_t ltt_serialize_data(struct rchan_buf *buf, size_t buf_offset,
++			struct ltt_serialize_closure *closure,
++			void *serialize_private, int *largest_align,
++			const char *fmt, va_list *args)
 +{
-+	struct kprobe_entry *e;
-+	struct hlist_head *head;
-+	struct hlist_node *node, *tmp;
-+	unsigned int i;
++	char trace_size = 0, c_size = 0;	/*
++						 * 0 (unset), 1, 2, 4, 8 bytes.
++						 */
++	enum ltt_type trace_type = LTT_TYPE_NONE, c_type = LTT_TYPE_NONE;
++	unsigned long attributes = 0;
 +
-+	for (i = 0; i < LTT_KPROBE_TABLE_SIZE; i++) {
-+		head = &ltt_kprobe_table[i];
-+		hlist_for_each_entry_safe(e, node, tmp, head, hlist) {
-+			hlist_del(&e->hlist);
-+			unregister_kprobe(&e->kp);
-+			kfree(e->kp.symbol_name);
-+			kfree(e);
++	for (; *fmt ; ++fmt) {
++		switch (*fmt) {
++		case '#':
++			/* tracetypes (#) */
++			++fmt;			/* skip first '#' */
++			if (*fmt == '#')	/* Escaped ## */
++				break;
++			attributes = 0;
++			fmt = parse_trace_type(fmt, &trace_size, &trace_type,
++				&attributes);
++			break;
++		case '%':
++			/* c types (%) */
++			++fmt;			/* skip first '%' */
++			if (*fmt == '%')	/* Escaped %% */
++				break;
++			fmt = parse_c_type(fmt, &c_size, &c_type);
++			/*
++			 * Output c types if no trace types has been
++			 * specified.
++			 */
++			if (!trace_size)
++				trace_size = c_size;
++			if (trace_type == LTT_TYPE_NONE)
++				trace_type = c_type;
++			if (c_type == LTT_TYPE_STRING)
++				trace_type = LTT_TYPE_STRING;
++			/* perform trace write */
++			buf_offset = serialize_trace_data(buf,
++						buf_offset, trace_size,
++						trace_type, c_size, c_type,
++						largest_align, args);
++			trace_size = 0;
++			c_size = 0;
++			trace_type = LTT_TYPE_NONE;
++			c_size = LTT_TYPE_NONE;
++			attributes = 0;
++			break;
++			/* default is to skip the text, doing nothing */
 +		}
 +	}
++	return buf_offset;
 +}
++EXPORT_SYMBOL_GPL(ltt_serialize_data);
 +
 +/*
-+ * Allows to specify either
-+ * - symbol
-+ * - symbol offset
-+ * - address
++ * Calculate data size
++ * Assume that the padding for alignment starts at a sizeof(void *) address.
 + */
-+static ssize_t enable_op_write(struct file *file,
-+	const char __user *user_buf, size_t count, loff_t *ppos)
++static notrace size_t ltt_get_data_size(struct ltt_serialize_closure *closure,
++				void *serialize_private, int *largest_align,
++				const char *fmt, va_list *args)
 +{
-+	int err, buf_size;
-+	char buf[NAME_MAX];
-+	char *end;
++	ltt_serialize_cb cb = closure->callbacks[0];
++	closure->cb_idx = 0;
++	return (size_t)cb(NULL, 0, closure, serialize_private,
++				largest_align, fmt, args);
++}
 +
-+	mutex_lock(&ltt_kprobes_mutex);
-+	if (module_exit) {
-+		err = -EPERM;
-+		goto error;
++static notrace
++void ltt_write_event_data(struct rchan_buf *buf, size_t buf_offset,
++				struct ltt_serialize_closure *closure,
++				void *serialize_private, int largest_align,
++				const char *fmt, va_list *args)
++{
++	ltt_serialize_cb cb = closure->callbacks[0];
++	closure->cb_idx = 0;
++	buf_offset += ltt_align(buf_offset, largest_align);
++	cb(buf, buf_offset, closure, serialize_private, NULL, fmt, args);
++}
++
++
++notrace void ltt_vtrace(const struct marker *mdata, void *probe_data,
++			void *call_data, const char *fmt, va_list *args)
++{
++	int largest_align, ret;
++	struct ltt_active_marker *pdata;
++	uint16_t eID;
++	size_t data_size, slot_size;
++	unsigned int chan_index;
++	struct ltt_channel_struct *channel;
++	struct ltt_trace_struct *trace, *dest_trace = NULL;
++	struct rchan_buf *buf;
++	void *transport_data;
++	uint64_t tsc;
++	long buf_offset;
++	va_list args_copy;
++	struct ltt_serialize_closure closure;
++	struct ltt_probe_private_data *private_data = call_data;
++	void *serialize_private = NULL;
++	int cpu;
++	unsigned int rflags;
++
++	/*
++	 * This test is useful for quickly exiting static tracing when no trace
++	 * is active. We expect to have an active trace when we get here.
++	 */
++	if (unlikely(ltt_traces.num_active_traces == 0))
++		return;
++
++	rcu_read_lock_sched_notrace();
++	cpu = smp_processor_id();
++	__get_cpu_var(ltt_nesting)++;
++
++	pdata = (struct ltt_active_marker *)probe_data;
++	eID = mdata->event_id;
++	chan_index = mdata->channel_id;
++	closure.callbacks = pdata->probe->callbacks;
++
++	if (unlikely(private_data)) {
++		dest_trace = private_data->trace;
++		if (private_data->serializer)
++			closure.callbacks = &private_data->serializer;
++		serialize_private = private_data->serialize_private;
 +	}
 +
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto error;
-+	buf[buf_size] = '\0';
-+	end = strchr(buf, '\n');
-+	if (end)
-+		*end = '\0';
-+	err = ltt_register_kprobe(buf);
-+	if (err)
-+		goto error;
-+	mutex_unlock(&ltt_kprobes_mutex);
++	va_copy(args_copy, *args);
++	/*
++	 * Assumes event payload to start on largest_align alignment.
++	 */
++	largest_align = 1;	/* must be non-zero for ltt_align */
++	data_size = ltt_get_data_size(&closure, serialize_private,
++					&largest_align, fmt, &args_copy);
++	largest_align = min_t(int, largest_align, sizeof(void *));
++	va_end(args_copy);
 +
-+	return count;
-+error:
-+	mutex_unlock(&ltt_kprobes_mutex);
-+	return err;
-+}
++	/* Iterate on each trace */
++	list_for_each_entry_rcu(trace, &ltt_traces.head, list) {
++		/*
++		 * Expect the filter to filter out events. If we get here,
++		 * we went through tracepoint activation as a first step.
++		 */
++		if (unlikely(dest_trace && trace != dest_trace))
++			continue;
++		if (unlikely(!trace->active))
++			continue;
++		if (unlikely(!ltt_run_filter(trace, eID)))
++			continue;
++#ifdef CONFIG_LTT_DEBUG_EVENT_SIZE
++		rflags = LTT_RFLAG_ID_SIZE;
++#else
++		if (unlikely(eID >= LTT_FREE_EVENTS))
++			rflags = LTT_RFLAG_ID;
++		else
++			rflags = 0;
++#endif
++		/*
++		 * Skip channels added after trace creation.
++		 */
++		if (unlikely(chan_index >= trace->nr_channels))
++			continue;
++		channel = &trace->channels[chan_index];
++		if (!channel->active)
++			continue;
 +
-+static const struct file_operations ltt_kprobes_enable = {
-+	.write = enable_op_write,
-+};
++		/* reserve space : header and data */
++		ret = ltt_reserve_slot(trace, channel, &transport_data,
++					data_size, &slot_size, &buf_offset,
++					&tsc, &rflags,
++					largest_align, cpu);
++		if (unlikely(ret < 0))
++			continue; /* buffer full */
 +
-+static ssize_t disable_op_write(struct file *file,
-+	const char __user *user_buf, size_t count, loff_t *ppos)
-+{
-+	int err, buf_size;
-+	char buf[NAME_MAX];
-+	char *end;
-+
-+	mutex_lock(&ltt_kprobes_mutex);
-+	if (module_exit)
-+		goto end;
-+
-+	buf_size = min(count, sizeof(buf) - 1);
-+	err = copy_from_user(buf, user_buf, buf_size);
-+	if (err)
-+		goto error;
-+	buf[buf_size] = '\0';
-+	end = strchr(buf, '\n');
-+	if (end)
-+		*end = '\0';
-+	err = ltt_unregister_kprobe(buf);
-+	if (err)
-+		goto error;
-+end:
-+	mutex_unlock(&ltt_kprobes_mutex);
-+	return count;
-+error:
-+	mutex_unlock(&ltt_kprobes_mutex);
-+	return err;
-+}
-+
-+static const struct file_operations ltt_kprobes_disable = {
-+	.write = disable_op_write,
-+};
-+
-+/*
-+ * This seqfile read is not perfectly safe, as a kprobe could be removed from
-+ * the hash table between two reads. This will result in an incomplete output.
-+ */
-+static struct kprobe_entry *ltt_find_next_kprobe(struct kprobe_entry *prev)
-+{
-+	struct kprobe_entry *e;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	unsigned int i;
-+	int found = 0;
-+
-+	if (prev == (void *)-1UL)
-+		return NULL;
-+
-+	if (!prev)
-+		found = 1;
-+
-+	for (i = 0; i < LTT_KPROBE_TABLE_SIZE; i++) {
-+		head = &ltt_kprobe_table[i];
-+		hlist_for_each_entry(e, node, head, hlist) {
-+			if (found)
-+				return e;
-+			if (e == prev)
-+				found = 1;
-+		}
++		va_copy(args_copy, *args);
++		/* FIXME : could probably encapsulate transport better. */
++		buf = ((struct rchan *)channel->trans_channel_data)->buf[cpu];
++		/* Out-of-order write : header and data */
++		buf_offset = ltt_write_event_header(trace,
++					channel, buf, buf_offset,
++					eID, data_size, tsc, rflags);
++		ltt_write_event_data(buf, buf_offset, &closure,
++					serialize_private,
++					largest_align, fmt, &args_copy);
++		va_end(args_copy);
++		/* Out-of-order commit */
++		ltt_commit_slot(channel, &transport_data, buf_offset,
++				slot_size);
 +	}
-+	return NULL;
++	__get_cpu_var(ltt_nesting)--;
++	rcu_read_unlock_sched_notrace();
 +}
++EXPORT_SYMBOL_GPL(ltt_vtrace);
 +
-+static void *lk_next(struct seq_file *m, void *p, loff_t *pos)
++notrace void ltt_trace(const struct marker *mdata, void *probe_data,
++		       void *call_data, const char *fmt, ...)
 +{
-+	m->private = ltt_find_next_kprobe(m->private);
-+	if (!m->private) {
-+		m->private = (void *)-1UL;
-+		return NULL;
-+	}
-+	return m->private;
++	va_list args;
++
++	va_start(args, fmt);
++	ltt_vtrace(mdata, probe_data, call_data, fmt, &args);
++	va_end(args);
 +}
-+
-+static void *lk_start(struct seq_file *m, loff_t *pos)
-+{
-+	mutex_lock(&ltt_kprobes_mutex);
-+	if (!*pos)
-+		m->private = NULL;
-+	m->private = ltt_find_next_kprobe(m->private);
-+	if (!m->private) {
-+		m->private = (void *)-1UL;
-+		return NULL;
-+	}
-+	return m->private;
-+}
-+
-+static void lk_stop(struct seq_file *m, void *p)
-+{
-+	mutex_unlock(&ltt_kprobes_mutex);
-+}
-+
-+static int lk_show(struct seq_file *m, void *p)
-+{
-+	struct kprobe_entry *e = m->private;
-+	seq_printf(m, "%s\n", e->key);
-+	return 0;
-+}
-+
-+static const struct seq_operations ltt_kprobes_list_op = {
-+	.start = lk_start,
-+	.next = lk_next,
-+	.stop = lk_stop,
-+	.show = lk_show,
-+};
-+
-+static int ltt_kprobes_list_open(struct inode *inode, struct file *file)
-+{
-+	int ret;
-+
-+	ret = seq_open(file, &ltt_kprobes_list_op);
-+	if (ret == 0)
-+		((struct seq_file *)file->private_data)->private = NULL;
-+	return ret;
-+}
-+
-+static int ltt_kprobes_list_release(struct inode *inode, struct file *file)
-+{
-+	struct seq_file *seq = file->private_data;
-+
-+	seq->private = NULL;
-+	return seq_release(inode, file);
-+}
-+
-+static const struct file_operations ltt_kprobes_list = {
-+	.open = ltt_kprobes_list_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = ltt_kprobes_list_release,
-+};
-+
-+void ltt_dump_kprobes_table(void *call_data)
-+{
-+	struct kprobe_entry *e;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	unsigned int i;
-+
-+	for (i = 0; i < LTT_KPROBE_TABLE_SIZE; i++) {
-+		head = &ltt_kprobe_table[i];
-+		hlist_for_each_entry(e, node, head, hlist)
-+			trace_kprobe_table_entry(call_data, e);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(ltt_dump_kprobes_table);
-+
-+static int __init ltt_kprobes_init(void)
-+{
-+	struct dentry *ltt_root_dentry;
-+	int ret = 0;
-+
-+	printk(KERN_INFO "LTT : ltt-kprobes init\n");
-+	mutex_lock(&ltt_kprobes_mutex);
-+
-+	ltt_root_dentry = get_ltt_root();
-+	if (!ltt_root_dentry) {
-+		ret = -ENOENT;
-+		goto err_no_root;
-+	}
-+
-+	ltt_kprobes_dir = debugfs_create_dir(LTT_KPROBES_DIR, ltt_root_dentry);
-+	if (!ltt_kprobes_dir) {
-+		printk(KERN_ERR
-+		       "ltt_kprobes_init: failed to create dir %s\n",
-+			LTT_KPROBES_DIR);
-+		ret = -ENOMEM;
-+		goto err_no_dir;
-+	}
-+
-+	ltt_kprobes_enable_dentry = debugfs_create_file(LTT_KPROBES_ENABLE,
-+		S_IWUSR, ltt_kprobes_dir, NULL,
-+		&ltt_kprobes_enable);
-+	if (IS_ERR(ltt_kprobes_enable_dentry) || !ltt_kprobes_enable_dentry) {
-+		printk(KERN_ERR
-+		       "ltt_kprobes_init: failed to create file %s\n",
-+			LTT_KPROBES_ENABLE);
-+		ret = -ENOMEM;
-+		goto err_no_enable;
-+	}
-+
-+	ltt_kprobes_disable_dentry = debugfs_create_file(LTT_KPROBES_DISABLE,
-+		S_IWUSR, ltt_kprobes_dir, NULL,
-+		&ltt_kprobes_disable);
-+	if (IS_ERR(ltt_kprobes_disable_dentry) || !ltt_kprobes_disable_dentry) {
-+		printk(KERN_ERR
-+		       "ltt_kprobes_init: failed to create file %s\n",
-+			LTT_KPROBES_DISABLE);
-+		ret = -ENOMEM;
-+		goto err_no_disable;
-+	}
-+
-+	ltt_kprobes_list_dentry = debugfs_create_file(LTT_KPROBES_LIST,
-+		S_IWUSR, ltt_kprobes_dir, NULL,
-+		&ltt_kprobes_list);
-+	if (IS_ERR(ltt_kprobes_list_dentry) || !ltt_kprobes_list_dentry) {
-+		printk(KERN_ERR
-+		       "ltt_kprobes_init: failed to create file %s\n",
-+			LTT_KPROBES_LIST);
-+		ret = -ENOMEM;
-+		goto err_no_list;
-+	}
-+
-+	mutex_unlock(&ltt_kprobes_mutex);
-+	return ret;
-+
-+err_no_list:
-+	debugfs_remove(ltt_kprobes_disable_dentry);
-+err_no_disable:
-+	debugfs_remove(ltt_kprobes_enable_dentry);
-+err_no_enable:
-+	debugfs_remove(ltt_kprobes_dir);
-+err_no_dir:
-+err_no_root:
-+	mutex_unlock(&ltt_kprobes_mutex);
-+	return ret;
-+}
-+module_init(ltt_kprobes_init);
-+
-+static void __exit ltt_kprobes_exit(void)
-+{
-+	printk(KERN_INFO "LTT : ltt-kprobes exit\n");
-+	mutex_lock(&ltt_kprobes_mutex);
-+	module_exit = 1;
-+	debugfs_remove(ltt_kprobes_list_dentry);
-+	debugfs_remove(ltt_kprobes_disable_dentry);
-+	debugfs_remove(ltt_kprobes_enable_dentry);
-+	debugfs_remove(ltt_kprobes_dir);
-+	ltt_unregister_all_kprobes();
-+	mutex_unlock(&ltt_kprobes_mutex);
-+}
-+module_exit(ltt_kprobes_exit);
++EXPORT_SYMBOL_GPL(ltt_trace);
 +
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("Linux Trace Toolkit Kprobes Support");
-Index: linux-2.6-lttng/include/linux/ltt-tracer.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/ltt-tracer.h	2009-03-05 16:09:59.000000000 -0500
-+++ linux-2.6-lttng/include/linux/ltt-tracer.h	2009-03-05 16:10:12.000000000 -0500
-@@ -672,6 +672,14 @@ extern void ltt_dump_marker_state(struct
- void ltt_lock_traces(void);
- void ltt_unlock_traces(void);
- 
-+#ifdef CONFIG_LTT_KPROBES
-+extern void ltt_dump_kprobes_table(void *call_data);
-+#else
-+static inline void ltt_dump_kprobes_table(void *call_data)
-+{
-+}
-+#endif
-+
- /* Relay IOCTL */
- 
- /* Get the next sub buffer that can be read. */
-Index: linux-2.6-lttng/kernel/kallsyms.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kallsyms.c	2009-03-05 16:08:41.000000000 -0500
-+++ linux-2.6-lttng/kernel/kallsyms.c	2009-03-05 16:10:12.000000000 -0500
-@@ -160,6 +160,7 @@ unsigned long kallsyms_lookup_name(const
- 	}
- 	return module_kallsyms_lookup_name(name);
- }
-+EXPORT_SYMBOL_GPL(kallsyms_lookup_name);
- 
- static unsigned long get_symbol_pos(unsigned long addr,
- 				    unsigned long *symbolsize,
++MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Serializer");
 
 -- 
 Mathieu Desnoyers
