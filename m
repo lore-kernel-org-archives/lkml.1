@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbZCEHhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZCEHpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbZCEHhs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 02:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZCEHhi
+	id S1755324AbZCEHpz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 02:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZCEHpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 02:37:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45517 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbZCEHhi (ORCPT
+	Thu, 5 Mar 2009 02:45:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38014
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750728AbZCEHpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 02:37:38 -0500
-Subject: Re: [Bug #12809] iozone regression with 2.6.29-rc6
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "Lin, Ming M" <ming.m.lin@intel.com>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236219189.2567.123.camel@ymzhang>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-	 <SLCXkuHtxAO.A.9MB.pUarJB@chimera> <20090305010920.GB11575@localhost>
-	 <1236218012.2567.115.camel@ymzhang>  <20090305020408.GA26425@localhost>
-	 <1236219189.2567.123.camel@ymzhang>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 08:37:29 +0100
-Message-Id: <1236238649.5330.10132.camel@laptop>
+	Thu, 5 Mar 2009 02:45:42 -0500
+Date: Wed, 04 Mar 2009 23:45:26 -0800 (PST)
+Message-Id: <20090304.234526.185561836.davem@davemloft.net>
+To: kaber@trash.net
+Cc: bart@jukie.net, greearb@candelatech.com, shemminger@vyatta.com,
+       dada1@cosmosbay.com, frank.blaschka@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.29-rc* QinQ vlan trunking regression
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49AF7FD3.5010709@trash.net>
+References: <20090304.231911.213286076.davem@davemloft.net>
+	<49AF7E93.2010800@trash.net>
+	<49AF7FD3.5010709@trash.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(list restored)
+From: Patrick McHardy <kaber@trash.net>
+Date: Thu, 05 Mar 2009 08:31:31 +0100
 
-On Thu, 2009-03-05 at 10:13 +0800, Zhang, Yanmin wrote:
+> Patrick McHardy wrote:
+> > David Miller wrote:
+> >> From: Patrick McHardy <kaber@trash.net>
+> >> Date: Thu, 05 Mar 2009 08:12:50 +0100
+> >>
+> >>>> We probably need both fixes to cover everything.
+> >>>>
+> >>> Yes, just the second one still crashes. I'm about to retry using both.
+> >>
+> >> Here is the updated version just for the record:
+> >>
+> >> vlan: Fix vlan-in-vlan crashes.
+> > This still crashes. I'll have another look at the code.
+> 
+> This one combined with your patch fixes the crash. The code was calling
+> vlan_dev_neigh_setup recursively.
+> 
+> Signed-off-by: Patrick McHardy <kaber@trash.net>
+> 
+> (or Tested-by: in case you want to roll it into your patch).
 
-> My idea:
-> 1) When the main thread traps into kernel and find need to write back pages; it just starts
-> write back, but it needn't change timestamp (???or something like that) on writeback; and start
-> pdflush;
-> 2) Later on pdflush could pick up the file to write back for other pages on the same file;
-> 3) The target is to let pdflush to writeback pages and main testing thread continues on its own
-> work, so we can benefit from SMP.
+Great work, thanks Patrick!
 
-No!
-
-This is not about parallelism, this is about making sure there is a
-limited number of dirty pages, that means the tasks generating dirty
-pages will _have_ to wait. You simply cannot delegate that.
-
-Furthermore, the task throttling explicitly wants to throttle the task
-that generates all those dirty pages more than other tasks. So pushing
-the throttle out to pdflush will destroy the whole scheme.
-
-The reason we want to make the heavy dirtier throttle sooner is that
-other tasks, who only occasionally dirty a page, don't get caught in the
-massive throttle latency.
-
+I'll get this all integrated and push it out to Linus.
