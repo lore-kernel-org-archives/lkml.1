@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZCEX2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZCEX3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757930AbZCEX2r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 18:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757824AbZCEX17
+	id S1756318AbZCEX3H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 18:29:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbZCEX2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 18:27:59 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:47828 "EHLO smtp.polymtl.ca"
+	Thu, 5 Mar 2009 18:28:15 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:47869 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757342AbZCEX15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 18:27:57 -0500
-Message-Id: <20090305225518.148142886@polymtl.ca>
+	id S1757422AbZCEX2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 18:28:12 -0500
+Message-Id: <20090305225515.964678663@polymtl.ca>
 References: <20090305224728.947235917@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Mar 2009 17:47:57 -0500
+Date: Thu, 05 Mar 2009 17:47:47 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
@@ -31,172 +31,188 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        mrubin@google.com, md@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 29/41] LTTng menus
-Content-Disposition: inline; filename=lttng-menus.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:14 +0000
+Subject: [RFC patch 19/41] Sort module list by pointer address to get coherent sleepable seq_file iterators
+Content-Disposition: inline; filename=module.c-sort-module-list.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu,  5 Mar 2009 23:14:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LTTng build Kconfig and makefiles.
+A race that appears both in /proc/modules and in kallsyms: if, between the
+seq file reads, the process is put to sleep and at this moment a module is
+or removed from the module list, the listing will skip an amount of
+modules/symbols corresponding to the amount of elements present in the unloaded
+module, but at the current position in the list if the iteration is located
+after the removed module.
+
+The cleanest way I found to deal with this problem is to sort the module list.
+We can then keep the old struct module * as the old iterator, knowing the it may
+be removed between the seq file reads, but we only use it as "get next". If it
+is not present in the module list, the next pointer will be used.
+
+By doing this, removing a given module will now only fuzz the output related to
+this specific module, not any random module anymore. Since modprobe uses
+/proc/modules, it might be important to make sure multiple concurrent running
+modprobes won't interfere with each other.
+
+
+Small test program for this:
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define BUFSIZE 1024
+
+int main()
+{
+	int fd = open("/proc/modules", O_RDONLY);
+	char buf[BUFSIZE];
+	ssize_t size;
+
+	do {
+		size = read(fd, buf, 1);
+		printf("%c", buf[0]);
+		usleep(100000);
+	} while(size > 0);
+
+	close(fd);
+	return 0;
+}
+
+
+Actual test (kernel 2.6.23-rc3):
+
+dijkstra:~# lsmod
+Module                  Size  Used by
+pl2303                 18564  0
+usbserial              29032  1 pl2303
+ppdev                   7844  0
+sky2                   37476  0
+skge                   36368  0
+rtc                    10104  0
+snd_hda_intel         265628  0
+
+  (here, while we are printing the 2nd line, I rmmod pl2303)
+compudj@dijkstra:~/test$ ./module
+pl2303 18564 0 - Live 0xf886e000
+usbserial 29032 1 pl2303, Live 0xf8865000
+sky2 37476 0 - Live 0xf884f000
+skge 36368 0 - Live 0xf8838000
+rtc 10104 0 - Live 0xf8825000
+
+We see the the 2nd line is garbage.
+
+Now, with my patch applied:
+  (here, while we are printing the rtc module, I rmmod rtc)
+nd_hda_intel 268708 0 - Live 0xf8820000
+ltt_control 2372 0 - Live 0xf8866000
+rtc 10392 0 - Live 0xf886d000
+skge 36768 0 - Live 0xf8871000
+ltt_statedump 8516 0 - Live 0xf887b000
+
+We see that since the rtc line was already in the buffer, it has been
+printed completely.
+
+
+  (here, while we are printing the skge module, I rmmod rtc)
+snd_hda_intel 268708 0 - Live 0xf8820000
+ltt_control 2372 0 - Live 0xf8866000
+rtc 10392 0 - Live 0xf886d000
+skge 36768 0 - Live 0xf8871000
+ltt_statedump 8516 0 - Live 0xf887b000
+sky2 38420 0 - Live 0xf88cd000
+
+We see that the iteration continued at the same position even though the
+rtc module, located in earlier addresses, was removed.
+
+Changelog:
+
+When reading the data by small chunks (i.e. byte by byte), the index (ppos) is
+incremented by seq_read() directly and no "next" callback is called when going
+to the next module.
+
+Therefore, use ppos instead of m->private to deal with the fact that this index
+is incremented directly to pass to the next module in seq_read() after the
+buffer has been emptied.
+
+Before fix, it prints the first module indefinitely. The patch fixes
+this.
+
+Changelog:
+- Remove module_mutex usage: depend on functions implemented in module.c for
+  that.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- ltt/Kconfig  |  127 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- ltt/Makefile |   14 ++++++
- 2 files changed, 141 insertions(+)
+ kernel/module.c |   27 +++++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-lttng/ltt/Kconfig
+Index: linux-2.6-lttng/kernel/module.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/ltt/Kconfig	2009-03-05 16:09:08.000000000 -0500
-@@ -0,0 +1,127 @@
-+menuconfig LTT
-+	bool "Linux Trace Toolkit Next Generation (LTTng)"
-+	depends on EXPERIMENTAL
-+	select MARKERS
-+	select TRACEPOINTS
-+	default y
-+	help
-+	  It is possible for the kernel to log important events to a trace
-+	  facility. Doing so enables the use of the generated traces in order
-+	  to reconstruct the dynamic behavior of the kernel, and hence the
-+	  whole system.
-+
-+	  The tracing process contains 4 parts :
-+	      1) The logging of events by key parts of the kernel.
-+	      2) The tracer that keeps the events in a data buffer (uses
-+	         relay).
-+	      3) A trace daemon that interacts with the tracer and is
-+	         notified every time there is a certain quantity of data to
-+	         read from the tracer.
-+	      4) A trace event data decoder that reads the accumulated data
-+	         and formats it in a human-readable format.
-+
-+	  If you say Y, the first component will be built into the kernel.
-+
-+	  For more information on kernel tracing, lttctl, lttd or lttv,
-+	  please check the following address :
-+	       http://ltt.polymtl.ca
-+
-+if LTT
-+
-+config LTT_RELAY_ALLOC
-+	def_bool n
-+
-+config LTT_RELAY_LOCKED
-+	tristate "Linux Trace Toolkit Lock-Protected Data Relay"
-+	select DEBUG_FS
-+	select LTT_RELAY_ALLOC
-+	depends on LTT_TRACER
-+	default n
-+	help
-+	  Support using the slow spinlock and interrupt disable algorithm to log
-+	  the data obtained through LTT.
-+
-+config LTT_RELAY_CHECK_RANDOM_ACCESS
-+	bool "Debug check for random access in ltt relay buffers"
-+	depends on LTT_RELAY_ALLOC
-+	default n
-+	help
-+	  Add checks for random access to LTTng relay buffers. Given those
-+	  buffers are a linked list, such access are rather slow. Rare accesses
-+	  are OK; they can be caused by large writes (more than a page large) or
-+	  by reentrancy (e.g. interrupt nesting over the tracing code).
-+
-+config LTT_SERIALIZE
-+	tristate "Linux Trace Toolkit Serializer"
-+	depends on LTT_RELAY_ALLOC
-+	default y
-+	help
-+	  Library for serializing information from format string and argument
-+	  list to the trace buffers.
-+
-+config LTT_FAST_SERIALIZE
-+	tristate "Linux Trace Toolkit Custom Serializer"
-+	depends on LTT_RELAY_ALLOC
-+	default y
-+	help
-+	  Library for serializing information from custom, efficient, tracepoint
-+	  probes.
-+
-+config LTT_TRACE_CONTROL
-+	tristate "Linux Trace Toolkit Trace Controller"
-+	depends on LTT_TRACER
-+	default m
-+	help
-+	  If you enable this option, the debugfs-based Linux Trace Toolkit Trace
-+	  Controller will be either built in the kernel or as module.
-+
-+config LTT_TRACER
-+	tristate "Linux Trace Toolkit Tracer"
-+	default y
-+	help
-+	  If you enable this option, the Linux Trace Toolkit Tracer will be
-+	  either built in the kernel or as module.
-+
-+	  Critical parts of the kernel will call upon the kernel tracing
-+	  function. The data is then recorded by the tracer if a trace daemon
-+	  is running in user-space and has issued a "start" command.
-+
-+	  For more information on kernel tracing, the trace daemon or the event
-+	  decoder, please check the following address :
-+	       http://www.opersys.com/ltt
-+	  See also the experimental page of the project :
-+	       http://ltt.polymtl.ca
-+
-+config LTT_ALIGNMENT
-+	bool "Align Linux Trace Toolkit Traces"
-+	default n
-+	help
-+	  This option enables dynamic alignment of data in buffers. The
-+	  alignment is made on the smallest size between architecture size
-+	  and the size of the value to be written.
-+
-+	  Dynamically calculating the offset of the data has a performance cost,
-+	  but it is more efficient on some architectures (especially 64 bits) to
-+	  align data than to write it unaligned.
-+
-+config LTT_CHECK_ARCH_EFFICIENT_UNALIGNED_ACCESS
-+	def_bool y
-+	select LTT_ALIGNMENT if !HAVE_EFFICIENT_UNALIGNED_ACCESS
-+
-+config LTT_DEBUG_EVENT_SIZE
-+	bool "Add event size field to LTT events for tracer debugging"
-+	default n
-+	help
-+	  Tracer-internal option to help debugging event type encoding problems.
-+
-+config LTT_VMCORE
-+	bool "Support trace extraction from crash dump"
-+	default y
-+	help
-+	  If you enable this option, the Linux Trace Toolkit Tracer will
-+	  support extacting ltt log from vmcore, which can be generated with
-+	  kdump or LKCD tools.
-+
-+	  Special crash extension should be used to extract ltt buffers.
-+
-+endif # LTT
-Index: linux-2.6-lttng/ltt/Makefile
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/ltt/Makefile	2009-03-05 16:09:20.000000000 -0500
-@@ -0,0 +1,14 @@
-+#
-+# Makefile for the LTT objects.
-+#
-+
-+obj-$(CONFIG_MARKERS)			+= ltt-channels.o
-+obj-$(CONFIG_LTT)			+= ltt-core.o
-+obj-$(CONFIG_LTT_TRACER)		+= ltt-tracer.o
-+obj-$(CONFIG_LTT_TRACE_CONTROL)		+= ltt-marker-control.o
-+obj-$(CONFIG_LTT_RELAY_LOCKED)		+= ltt-relay-locked.o
-+obj-$(CONFIG_LTT_RELAY_ALLOC)		+= ltt-relay-alloc.o
-+obj-$(CONFIG_LTT_SERIALIZE)		+= ltt-serialize.o
-+obj-$(CONFIG_LTT_STATEDUMP)		+= ltt-statedump.o
-+obj-$(CONFIG_LTT_FAST_SERIALIZE)	+= ltt-type-serializer.o
-+obj-$(CONFIG_LTT_TRACE_CONTROL)		+= ltt-trace-control.o
+--- linux-2.6-lttng.orig/kernel/module.c	2009-03-05 15:29:39.000000000 -0500
++++ linux-2.6-lttng/kernel/module.c	2009-03-05 15:45:33.000000000 -0500
+@@ -66,7 +66,9 @@
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+ 
+ /* List of modules, protected by module_mutex or preempt_disable
+- * (delete uses stop_machine/add uses RCU list operations). */
++ * (delete uses stop_machine/add uses RCU list operations).
++ * Sorted by ascending list node address.
++ */
+ static DEFINE_MUTEX(module_mutex);
+ static LIST_HEAD(modules);
+ 
+@@ -1877,6 +1879,7 @@ static noinline struct module *load_modu
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+ 	unsigned long *mseg;
+ 	mm_segment_t old_fs;
++	struct module *iter;
+ 
+ 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
+ 	       umod, len, uargs);
+@@ -2260,8 +2263,24 @@ static noinline struct module *load_modu
+ 	 * function to insert in a way safe to concurrent readers.
+ 	 * The mutex protects against concurrent writers.
+ 	 */
+-	list_add_rcu(&mod->list, &modules);
+ 
++	/*
++	 * We sort the modules by struct module pointer address to permit
++	 * correct iteration over modules of, at least, kallsyms for preemptible
++	 * operations, such as read(). Sorting by struct module pointer address
++	 * is equivalent to sort by list node address.
++	 */
++	list_for_each_entry_reverse(iter, &modules, list) {
++		BUG_ON(iter == mod);	/* Should never be in the list twice */
++		if (iter < mod) {
++			/* We belong to the location right after iter. */
++			list_add_rcu(&mod->list, &iter->list);
++			goto module_added;
++		}
++	}
++	/* We should be added at the head of the list */
++	list_add_rcu(&mod->list, &modules);
++module_added:
+ 	err = parse_args(mod->name, mod->args, kp, num_kp, NULL);
+ 	if (err < 0)
+ 		goto unlink;
+@@ -2618,12 +2637,12 @@ static char *module_flags(struct module 
+ static void *m_start(struct seq_file *m, loff_t *pos)
+ {
+ 	mutex_lock(&module_mutex);
+-	return seq_list_start(&modules, *pos);
++	return seq_sorted_list_start(&modules, pos);
+ }
+ 
+ static void *m_next(struct seq_file *m, void *p, loff_t *pos)
+ {
+-	return seq_list_next(p, &modules, pos);
++	return seq_sorted_list_next(p, &modules, pos);
+ }
+ 
+ static void m_stop(struct seq_file *m, void *p)
 
 -- 
 Mathieu Desnoyers
