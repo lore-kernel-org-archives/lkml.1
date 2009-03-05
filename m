@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbZCEPsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZCEPvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754800AbZCEPsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 10:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZCEPsF
+	id S1755310AbZCEPvX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 10:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZCEPvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 10:48:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48550 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754230AbZCEPsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 10:48:04 -0500
-Subject: Re: [git-pull -tip] x86: msr architecture debug code
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090305143726.GC7347@alberich.amd.com>
-References: <1236008575.3332.2.camel@localhost.localdomain>
-	 <20090302205437.GB14471@elte.hu> <20090305135444.GB7347@alberich.amd.com>
-	 <1236262346.2527.3.camel@ht.satnam>
-	 <20090305143726.GC7347@alberich.amd.com>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 21:17:37 +0530
-Message-Id: <1236268057.2527.23.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+	Thu, 5 Mar 2009 10:51:15 -0500
+Received: from 81-7-68-229.static.zebra.lt ([81.7.68.229]:50932 "EHLO
+	teltonika.lt" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751187AbZCEPvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 10:51:14 -0500
+Message-ID: <49AFF4EA.6000504@teltonika.lt>
+Date: Thu, 05 Mar 2009 17:51:06 +0200
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Darius <augulis.darius@gmail.com>
+CC: linux-arm-kernel@lists.arm.linux.org.uk,
+       Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MX1 fix include
+References: <gkfn87$uo4$1@ger.gmane.org>	<20090113100333.GC11228@pengutronix.de> <499ACF91.1070003@gmail.com>
+In-Reply-To: <499ACF91.1070003@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2009-03-05 at 15:37 +0100, Andreas Herrmann wrote:
-> On Thu, Mar 05, 2009 at 07:42:26PM +0530, Jaswinder Singh Rajput wrote:
-> > On Thu, 2009-03-05 at 14:54 +0100, Andreas Herrmann wrote:
-> > 
-> > > All nice suggestions but why in-kernel?
-> > > 
-> > 
-> > In Kernel Space:
-> > 
-> > We can read/write MSRs and can change the bits and see it effect without
-> > writing any code.
+Darius wrote:
+> Sascha Hauer wrote:
+>> On Mon, Jan 12, 2009 at 04:22:57PM +0200, Darius wrote:
+>>> From: Darius Augulis <augulis.darius@gmail.com>
+>>>
+>>> Includes missed irqs.h in devices.c and mx1ads.c.
+>> Looks good, thanks.
 > 
-> Sorry, I can't (or maybe I don't like to) follow.
+> Hi Sascha,
 > 
-> (BTW, you don't even need to write C-code. You can use a one-liner in perl
-> or python to seek and read any MSR using /dev/cpu/*/msr.)
+> probably you forgot to merge this in next rc (2), please do this ASAP in next rc, if possible.
+
+Hi Sasha,
+
+Will you submit this patch upstream?
+It is definitely 2.6.29 material since it is not possible to compile MX1 without it!
+
+Paulius Zaleckas
+
+> BR,
+> Darius
 > 
-
-You are running these commands on shell when every thing is working.
-
-What you will do if you are not getting the shell and kernel is dumping
-or rebooting before that.
-
---
-JSR
-
+>> BTW do you plan to integrate the missing pieces from arch-imx into
+>> arch-mx1, like SDHC and framebuffer? I think we should add these before
+>> removing arch-imx.
+>>
+>> Sascha
+>>
+>>> Signed-off-by: Darius Augulis <augulis.darius@gmail.com>
+>>>
+>>> Index: linux-2.6.29-rc1/arch/arm/mach-mx1/devices.c
+>>> ===================================================================
+>>> --- linux-2.6.29-rc1.orig/arch/arm/mach-mx1/devices.c
+>>> +++ linux-2.6.29-rc1/arch/arm/mach-mx1/devices.c
+>>> @@ -23,6 +23,8 @@
+>>>  #include <linux/init.h>
+>>>  #include <linux/platform_device.h>
+>>>  #include <linux/gpio.h>
+>>> +
+>>> +#include <mach/irqs.h>
+>>>  #include <mach/hardware.h>
+>>>  
+>>>  static struct resource imx_csi_resources[] = {
+>>> Index: linux-2.6.29-rc1/arch/arm/mach-mx1/mx1ads.c
+>>> ===================================================================
+>>> --- linux-2.6.29-rc1.orig/arch/arm/mach-mx1/mx1ads.c
+>>> +++ linux-2.6.29-rc1/arch/arm/mach-mx1/mx1ads.c
+>>> @@ -21,6 +21,7 @@
+>>>  #include <asm/mach/arch.h>
+>>>  #include <asm/mach/time.h>
+>>>  
+>>> +#include <mach/irqs.h>
+>>>  #include <mach/hardware.h>
+>>>  #include <mach/common.h>
+>>>  #include <mach/imx-uart.h>
+>>> -------------------------------------------------------------------
+>>> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+>>> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+>>> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+>>>
+> 
+> 
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> 
