@@ -1,44 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZCEOu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZCEOyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZCEOu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 09:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZCEOuA
+	id S1755804AbZCEOyA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 09:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZCEOxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 09:50:00 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:45134 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754693AbZCEOt6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 09:49:58 -0500
-Date: Thu, 5 Mar 2009 09:39:03 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 3/6] slub: introduce __kfree_rcu
-In-Reply-To: <49AF28C4.1000300@cn.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0903050938300.22053@qirst.com>
-References: <49AD343E.6010903@cn.fujitsu.com> <alpine.DEB.1.10.0903041003200.3850@qirst.com> <49AF28C4.1000300@cn.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 5 Mar 2009 09:53:52 -0500
+Received: from mga03.intel.com ([143.182.124.21]:45738 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751858AbZCEOxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 09:53:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,307,1233561600"; 
+   d="scan'208";a="117101360"
+Date: Thu, 5 Mar 2009 22:52:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Markus <M4rkusXXL@web.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Zdenek Kabelac <zkabelac@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Subject: Re: drop_caches ...
+Message-ID: <20090305145253.GA23945@localhost>
+References: <200903041057.34072.M4rkusXXL@web.de> <200903051505.26584.M4rkusXXL@web.de> <20090305142230.GA23465@localhost> <200903051543.22516.M4rkusXXL@web.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903051543.22516.M4rkusXXL@web.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009, Lai Jiangshan wrote:
+On Thu, Mar 05, 2009 at 04:43:22PM +0200, Markus wrote:
+> > > > Could you please try the attached patch which will also show the
+> > > > user and process that opened these files? It adds three more 
+> fields
+> > > > when CONFIG_PROC_FILECACHE_EXTRAS is selected.
+> > > > 
+> > > > Thanks,
+> > > > Fengguang
+> > > >  
+> > > > On Thu, Mar 05, 2009 at 01:55:35PM +0200, Markus wrote:
+> > > > > 
+> > > > > # sort -n -k 3 filecache-2009-03-05 | tail -n 5
+> > > > >      15886       7112     7112     100      1    d- 00:08
+> > > > > (tmpfs)        /dev/zero\040(deleted)
+> > > > >      16209      35708    35708     100      1    d- 00:08
+> > > > > (tmpfs)        /dev/zero\040(deleted)
+> > > > >      16212      82128    82128     100      1    d- 00:08
+> > > > > (tmpfs)        /dev/zero\040(deleted)
+> > > > >      15887     340024   340024     100      1    d- 00:08
+> > > > > (tmpfs)        /dev/zero\040(deleted)
+> > > > >      15884     455008   455008     100      1    d- 00:08
+> > > > > (tmpfs)        /dev/zero\040(deleted)
+> > > > > 
+> > > > > The sum of the third column is 1013 MB.
+> > > > > To note the biggest ones (or do you want the whole file?)... and 
+> > > thats 
+> > > > > after a sync and a drop_caches! (Can be seen in the commands 
+> given.)
+> > > 
+> > > I could, but I know where these things belong to. Its from sphinx (a 
+> > > mysql indexer) searchd. It loads parts of the index into memory.
+> > > The sizes looked well-known and killing the searchd will 
+> reduce "cached" 
+> > > to a normal amount ;)
+> > 
+> > And it's weird about the file name: /dev/zero.  I wonder how it
+> > managed to create that file, and then delete it, inside a tmpfs!
+> 
+> I dont know exactly. But in the source its just a:
+> ... mmap ( NULL, m_iLength, PROT_READ | PROT_WRITE, MAP_SHARED | 
+> MAP_ANON, -1, 0 );
+> Perhaps thats the way shared anonymous memory is handled?!
 
-> The first parameter of __kfree_rcu() is unused in slab,slub,slqb.
-> (I used it before, for CONFIG_SLUB_DEBUG=y ...etc. But I found
-> these debugging code is needless)
->
-> Object sizes of the memory objects in slob's kmalloc-slab are various.
-> We hardly calculate the start address of the object from the rcu address.
+Good to know this. The corresponding kernel function is:
 
-But you can start with the descriptor at the beginning of the page and
-scan until you find the object.
+        /**     
+         * shmem_zero_setup - setup a shared anonymous mapping
+         * @vma: the vma to be mmapped is prepared by do_mmap_pgoff
+         */
+        int shmem_zero_setup(struct vm_area_struct *vma)
+        {       
+                struct file *file;
+                loff_t size = vma->vm_end - vma->vm_start;
+                
+                file = shmem_file_setup("dev/zero", size, vma->vm_flags);
+
+Here goes the /dev/zero ^_^
+
+> > Just out of curiosity, are they shm objects? Can you show us the
+> > output of 'df'? In your convenient time.
+> 
+> Thats all:
+> # df -h
+> Filesystem            Size  Used Avail Use% Mounted on
+> /dev/md6               14G  7.9G  5.9G  58% /
+> udev                   10M  304K  9.8M   3% /dev
+> cachedir              4.0M  100K  4.0M   3% /lib64/splash/cache
+> /dev/md4               19G   15G  3.2G  82% /home
+> /dev/md3              8.3G  4.5G  3.8G  55% /usr/portage
+
+> shm                   2.0G     0  2.0G   0% /dev/shm
+
+shm objects will be accounted here. It's clean.
+
+Thanks,
+Fengguang
 
