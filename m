@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZCEUaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757100AbZCEUbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbZCEUaa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 15:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZCEU2n
+	id S1757100AbZCEUbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 15:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbZCEU2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 15:28:43 -0500
-Received: from [213.79.90.228] ([213.79.90.228]:46817 "EHLO
+	Thu, 5 Mar 2009 15:28:48 -0500
+Received: from [213.79.90.228] ([213.79.90.228]:46829 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755229AbZCEU2m (ORCPT
+	by vger.kernel.org with ESMTP id S1755655AbZCEU2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 15:28:42 -0500
-Date: Thu, 5 Mar 2009 23:28:40 +0300
+	Thu, 5 Mar 2009 15:28:46 -0500
+Date: Thu, 5 Mar 2009 23:28:44 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/11] sdhci: Add get_{max,timeout}_clock callbacks
-Message-ID: <20090305202840.GF28709@oksana.dev.rtsoft.ru>
+Subject: [PATCH 08/11] sdhci: Add quirk for controllers that need small
+	delays for PIO
+Message-ID: <20090305202844.GH28709@oksana.dev.rtsoft.ru>
 References: <20090305202737.GA24166@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -29,76 +30,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ben Dooks <ben-linux@fluff.org>
+Small udelay is needed to make eSDHC work in PIO mode. Without
+the delay reading causes endless interrupt storm, and writing
+corrupts data. The first guess would be that we must wait for
+some bit in some register, but I didn't find any reliable bits
+that change before and after the delay.
 
-Some controllers do not provide clock information in their capabilities
-(in the Samsung case, it is because there are multiple clock sources
-available to the controller). Add hooks to allow the system to supply
-clock information.
-
-p.s.
-In the original Ben's patch there was a bug that makes sdhci_add_host()
-return -ENODEV even if callbacks were specified. This is fixed now.
-
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   22 +++++++++++++++-------
+ drivers/mmc/host/sdhci.c |    3 +++
  drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 17 insertions(+), 7 deletions(-)
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 8aaf3a5..cca80d3 100644
+index a476616..4382f53 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -1729,19 +1729,27 @@ int sdhci_add_host(struct sdhci_host *host)
+@@ -391,6 +391,9 @@ static void sdhci_transfer_pio(struct sdhci_host *host)
+ 		mask = ~0;
  
- 	host->max_clk =
- 		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
-+	host->max_clk *= 1000000;
- 	if (host->max_clk == 0) {
--		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
--			"frequency.\n", mmc_hostname(mmc));
--		return -ENODEV;
-+		if (!host->ops->get_max_clock) {
-+			printk(KERN_ERR
-+			       "%s: Hardware doesn't specify base clock "
-+			       "frequency.\n", mmc_hostname(mmc));
-+			return -ENODEV;
-+		}
-+		host->max_clk = host->ops->get_max_clock(host);
- 	}
--	host->max_clk *= 1000000;
- 
- 	host->timeout_clk =
- 		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
- 	if (host->timeout_clk == 0) {
--		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
--			"frequency.\n", mmc_hostname(mmc));
--		return -ENODEV;
-+		if (!host->ops->get_timeout_clock) {
-+			printk(KERN_ERR
-+			       "%s: Hardware doesn't specify timeout clock "
-+			       "frequency.\n", mmc_hostname(mmc));
-+			return -ENODEV;
-+		}
-+		host->timeout_clk = host->ops->get_timeout_clock(host);
- 	}
- 	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
- 		host->timeout_clk *= 1000;
+ 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
++		if (host->quirks & SDHCI_QUIRK_PIO_NEEDS_DELAY)
++			udelay(100);
++
+ 		if (host->data->flags & MMC_DATA_READ)
+ 			sdhci_read_block_pio(host);
+ 		else
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index d0d812e..34f1849 100644
+index 18a334a..8c41667 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -281,6 +281,8 @@ struct sdhci_ops {
- 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
+@@ -218,6 +218,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<16)
+ /* Controller has nonstandard clock management */
+ #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<17)
++/* Controller does not like fast PIO transfers */
++#define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<18)
  
- 	int		(*enable_dma)(struct sdhci_host *host);
-+	unsigned int	(*get_max_clock)(struct sdhci_host *host);
-+	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
- };
- 
- extern void sdhci_writel(struct sdhci_host *host, u32 val, int reg);
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
 -- 
 1.5.6.5
 
