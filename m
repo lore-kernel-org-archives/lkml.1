@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZCEBVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZCEBdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbZCEBVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Mar 2009 20:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZCEBVg
+	id S1754484AbZCEBdw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Mar 2009 20:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZCEBdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Mar 2009 20:21:36 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59453 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750928AbZCEBVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Mar 2009 20:21:35 -0500
-Message-ID: <49AF28C4.1000300@cn.fujitsu.com>
-Date: Thu, 05 Mar 2009 09:20:04 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 3/6] slub: introduce __kfree_rcu
-References: <49AD343E.6010903@cn.fujitsu.com> <alpine.DEB.1.10.0903041003200.3850@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0903041003200.3850@qirst.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Mar 2009 20:33:42 -0500
+Received: from mga02.intel.com ([134.134.136.20]:31873 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751077AbZCEBdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Mar 2009 20:33:41 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,304,1233561600"; 
+   d="asc'?scan'208";a="495050224"
+Subject: Re: [PATCH] fix DMI for EFI
+From: Huang Ying <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Brian Maly <bmaly@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090304175418.GB29823@elte.hu>
+References: <49A9F597.4010601@redhat.com>
+	 <86802c440902281856h1dc950e7me8568cd5dca59da9@mail.gmail.com>
+	 <49ADEDA3.1030406@redhat.com> <20090304110022.GB18165@elte.hu>
+	 <49AE9850.9020103@redhat.com>  <20090304175418.GB29823@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-236M7aES5dQZkOV/Aoox"
+Date: Thu, 05 Mar 2009 09:33:38 +0800
+Message-Id: <1236216818.24215.24.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 3 Mar 2009, Lai Jiangshan wrote:
-> 
->> +
->> +void __kfree_rcu(const void *x, struct rcu_head *rcu)
->> +{
->> +	call_rcu(rcu, kfree_rcu_callback);
->> +}
->> +EXPORT_SYMBOL(__kfree_rcu);
->> +
-> 
-> The parameter x is unused why require it? I see that SLOB needs it. Cant
-> you do a similar trick as in SLUB just calculating the start address of
-> the object from the rcu address?
-> 
+
+--=-236M7aES5dQZkOV/Aoox
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2009-03-05 at 01:54 +0800, Ingo Molnar wrote:
+> * Brian Maly <bmaly@redhat.com> wrote:
+>=20
+> >
+> >
+> >> Hm, could we ever find ourselves in the positition of having to access=
+=20
+> >> the DMI strings table in the EFI init code, to implement a quirk? I=20
+> >> think that's quite plausible.
+> >
+> >> OTOH, with some DMI quirks in EFI tables it's a bit of a chicken and=20
+> >> egg problem. Can DMI strings ever be outside of EFI tables on EFI=20
+> >> systems?
+> >
+> >> 	Ingo
+> >
+> > Right now it is EFI that loads the dmi tables (and all other=20
+> > tables such as ACPI), so it is a chicken and the egg. I think=20
+> > that if dmi is ever needed by EFI, the dmi scan will have to=20
+> > be moved inside efi_init. We could move the dmi scan into=20
+> > efi_init and do the dmi scan the moment we have the dmi table.=20
+> > Thats really the soonest point we could scan on EFI systems.=20
+> > Im OK with moving dmi to efi_init if you prefer.
+>=20
+> Your patch looks fine, but i'd like to hear the opinion of Ying=20
+> Huang as well.
+
+This patch is OK for me.
+
+Thanks,
+Huang Ying
 
 
-The first parameter of __kfree_rcu() is unused in slab,slub,slqb.
-(I used it before, for CONFIG_SLUB_DEBUG=y ...etc. But I found
-these debugging code is needless)
+--=-236M7aES5dQZkOV/Aoox
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Object sizes of the memory objects in slob's kmalloc-slab are various.
-We hardly calculate the start address of the object from the rcu address.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Lai
+iEYEABECAAYFAkmvK+MACgkQKhFGF+eHlpjzxQCgkdMnzW5yolv13cMqmbYZ+uJD
+mGAAnA+LoOkkfzDKIOlCqyvFSHgTPTHh
+=5D7M
+-----END PGP SIGNATURE-----
 
+--=-236M7aES5dQZkOV/Aoox--
 
