@@ -1,130 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZCFPiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZCFPih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZCFPiV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZCFPiJ
+	id S1756086AbZCFPih (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZCFPiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:38:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60733 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754693AbZCFPiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:38:07 -0500
-Message-ID: <49B14352.2040705@redhat.com>
-Date: Fri, 06 Mar 2009 10:37:54 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 6 Mar 2009 10:38:24 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:48163 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756177AbZCFPiX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 10:38:23 -0500
+Date: Fri, 6 Mar 2009 21:08:08 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Eric Paris <eparis@redhat.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: lockdep warning with 2.6.29-rc6-mm1 (mmotm 24-feb-2009)
+Message-ID: <20090306153808.GA863@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090304125709.GA6251@balbir.in.ibm.com> <1236173267.5330.7487.camel@laptop> <20090304174115.GE25962@elte.hu> <20090305070045.GC11916@wotan.suse.de>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -tip 4/4] Atomic text_poke() with fixmap
-References: <49B1428A.9050500@redhat.com>
-In-Reply-To: <49B1428A.9050500@redhat.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090305070045.GC11916@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use fixmaps instead of vmap/vunmap in text_poke() for avoiding page allocation
-and delayed unmapping.
+* Nick Piggin <npiggin@suse.de> [2009-03-05 08:00:45]:
 
-At the result of above change, text_poke() becomes atomic and can be called
-from stop_machine() etc.
+> On Wed, Mar 04, 2009 at 06:41:15PM +0100, Ingo Molnar wrote:
+> > 
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Wed, 2009-03-04 at 18:27 +0530, Balbir Singh wrote:
+> > > > I see the following on my machine. My understanding is that the
+> > > > lockdep warning is complaining about a potential deadlock while
+> > > > reclaiming, where we could end up waiting on holding inotify_mutex,
+> > > > and we could end up calling reclaim with inotify_mutex held.
+> > > > 
+> > > > The race seems rare, since one path shows a new inode being created
+> > > > and the other one being deleted. It seems like a false positive unless
+> > > > the inode's in question turn out to be potentially the same.
+> > > 
+> > > Its not a false positive until you can guarantee the inodes will _never_
+> > > be the same.
+> > > 
+> > > This thing has been reported numerous times, Ingo even posted 
+> > > a potential fix for it, Nick poked the inotify people to speak 
+> > > up, but they have so far been silent on the issue :-(
+> > 
+> > that particular fix is upstream, via:
+> > 
+> >   3023a3e: inotify: fix GFP_KERNEL related deadlock
+> > 
+> > so does this reproduce with latest .29-rc7-ish kernels too - or 
+> > do we have some other problem in this area too?
+> 
+> Well as I said, I think it is just a bandaid to shut up lockdep,
+> because I think inotify always is guaranteed to have a ref on
+> the inode at this point so it should not be subject to reclaim.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/fixmap.h |    2 ++
- arch/x86/kernel/alternative.c |   24 +++++++++++++++---------
- 2 files changed, 17 insertions(+), 9 deletions(-)
+I got dropped from the cc and thus could not respond earlier. The
+problem can be seen even in 2.6.29-rc7-mm1.
 
-Index: linux-2.6-tip/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
-+++ linux-2.6-tip/arch/x86/kernel/alternative.c
-@@ -13,7 +13,9 @@
- #include <asm/nmi.h>
- #include <asm/vsyscall.h>
- #include <asm/cacheflush.h>
-+#include <asm/tlbflush.h>
- #include <asm/io.h>
-+#include <asm/fixmap.h>
-
- #define MAX_PATCH_LEN (255-1)
-
-@@ -505,15 +507,16 @@ void *text_poke_early(void *addr, const
-  * It means the size must be writable atomically and the address must be aligned
-  * in a way that permits an atomic write. It also makes sure we fit on a single
-  * page.
-+ *
-+ * Note: Must be called under text_mutex.
-  */
- void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
- {
-+	unsigned long flags;
- 	char *vaddr;
--	int nr_pages = 2;
- 	struct page *pages[2];
- 	int i;
-
--	might_sleep();
- 	if (!core_kernel_text((unsigned long)addr)) {
- 		pages[0] = vmalloc_to_page(addr);
- 		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
-@@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
- 		pages[1] = virt_to_page(addr + PAGE_SIZE);
- 	}
- 	BUG_ON(!pages[0]);
--	if (!pages[1])
--		nr_pages = 1;
--	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
--	BUG_ON(!vaddr);
--	local_irq_disable();
-+	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
-+	if (pages[1])
-+		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
-+	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
-+	local_irq_save(flags);
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
--	local_irq_enable();
--	vunmap(vaddr);
-+	local_irq_restore(flags);
-+	clear_fixmap(FIX_TEXT_POKE0);
-+	if (pages[1])
-+		clear_fixmap(FIX_TEXT_POKE1);
-+	local_flush_tlb();
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-Index: linux-2.6-tip/arch/x86/include/asm/fixmap.h
-===================================================================
---- linux-2.6-tip.orig/arch/x86/include/asm/fixmap.h
-+++ linux-2.6-tip/arch/x86/include/asm/fixmap.h
-@@ -111,6 +111,8 @@ enum fixed_addresses {
- #ifdef CONFIG_PARAVIRT
- 	FIX_PARAVIRT_BOOTMAP,
- #endif
-+	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
-+	FIX_TEXT_POKE1,
- 	__end_of_permanent_fixed_addresses,
- #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
- 	FIX_OHCI1394_BASE,
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+	Balbir
