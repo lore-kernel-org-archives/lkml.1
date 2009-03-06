@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZCFGbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZCFGiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbZCFGbh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZCFG3c
+	id S1753708AbZCFGiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZCFGiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:29:32 -0500
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:49873 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753932AbZCFG3b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 01:29:31 -0500
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH V3 6/6] sched: Fix sd_parent_degenerate for
-	SD_POWERSAVINGS_BALANCE.
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
-       "Balbir Singh" <balbir@in.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>
-Cc: "Dipankar Sarma" <dipankar@in.ibm.com>, efault@gmx.de, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Fri, 06 Mar 2009 11:59:21 +0530
-Message-ID: <20090306062921.9445.60671.stgit@sofia.in.ibm.com>
-In-Reply-To: <20090306060513.9445.28732.stgit@sofia.in.ibm.com>
-References: <20090306060513.9445.28732.stgit@sofia.in.ibm.com>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 6 Mar 2009 01:38:04 -0500
+Received: from mail.gmx.net ([213.165.64.20]:35555 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751303AbZCFGiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 01:38:03 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+sqi5SkmysJpm7XlJANF8cGnsVxRJJ3Lf1f5DAG/
+	pQLoqj1/cihtts
+Subject: Re: [PATCH] perfcounters: IRQ and NMI support on AMD CPUs
+From: Mike Galbraith <efault@gmx.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1236283315.6457.4.camel@localhost.localdomain>
+References: <1236273633.5187.286.camel@laptop>
+	 <1236277959.3316.3.camel@localhost.localdomain>
+	 <1236278730.5187.378.camel@laptop>
+	 <1236279393.3316.13.camel@localhost.localdomain>
+	 <1236281661.5187.432.camel@laptop>  <20090305194127.GA2039@elte.hu>
+	 <1236283315.6457.4.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 07:37:53 +0100
+Message-Id: <1236321473.6030.8.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently a sched_domain having a single group can be prevented from getting
-degenerated if it contains a SD_POWERSAVINGS_BALANCE flag. But since it has
-only one group, it won't have any scope for performing powersavings balance as
-it does not have a sibling group to pull from.
+On Fri, 2009-03-06 at 01:31 +0530, Jaswinder Singh Rajput wrote:
+> On Thu, 2009-03-05 at 20:41 +0100, Ingo Molnar wrote:
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Fri, 2009-03-06 at 00:26 +0530, Jaswinder Singh Rajput wrote:
+> > > 
+> > > > But kerneltop is still not working and I am not getting any NMI Interrupts.
+> > > 
+> > > Does the below work for you?
+> > > 
+> > > The BKGD suggests its 48 for all existing machines (it 
+> > > certainly is for mine).
+> > 
+> > Yeah, this did the trick on AMD/Barcelona!
+> > 
+> 
+> Nice.
+> 
+> but on my AMD box I got interrupts and NMI for some time:
+> 
+> NMI:        100    1108209   Non-maskable interrupts
+> LOC:        213     192815   Local timer interrupts
+> CNT:        100    1108206   Performance counter interrupts
+> RES:      21132      20397   Rescheduling interrupts
+> 
+> but kerneltop does not show anything, it only shows # irqs/sec for some
+> time and then irqs also become 0.
 
-Apart from not provide any powersavings, it also fails to participate
-in normal load-balancing.
+Hm.  Kerneltop on my Q6600 has ceased to function with n 1 as well, but
+n 0 still works.  Zero NMIs.
 
-Fix this by allowing such a sched_domain to degenerate and pass on the
-responsibility of performing the POWERSAVINGS_BALANCE to it's parent domain.
+Perfstat has also gone south.
+perfstat: perfstat.c:423: main: Assertion `res == sizeof(single_count)' failed.
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
-
- kernel/sched.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 35e1651..d27b8e3 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6970,6 +6970,20 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
- 				SD_SHARE_PKG_RESOURCES);
- 		if (nr_node_ids == 1)
- 			pflags &= ~SD_SERIALIZE;
-+
-+		/*
-+		 * If the only flag that is preventing us from degenerating
-+		 * a domain with a single group is SD_POWERSAVINGS_BALANCE
-+		 * check if it can be transferred to the new parent,
-+		 * and degenerate this domain. With a single
-+		 * group, it anyway can't contribute to power-aware load
-+		 * balancing.
-+		 */
-+		if (pflags & SD_POWERSAVINGS_BALANCE && parent->parent) {
-+			pflags &= ~SD_POWERSAVINGS_BALANCE;
-+			parent->parent->flags |=
-+				sd_power_saving_flags(parent->level);
-+		}
- 	}
- 	if (~cflags & pflags)
- 		return 0;
+	-Mike
 
