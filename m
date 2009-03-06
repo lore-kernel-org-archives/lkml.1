@@ -1,91 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbZCFMh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbZCFMsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647AbZCFMh7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 07:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZCFMhu
+	id S1754564AbZCFMsi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 07:48:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZCFMs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 07:37:50 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:38368 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751561AbZCFMht (ORCPT
+	Fri, 6 Mar 2009 07:48:28 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:37052 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750724AbZCFMs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 07:37:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Cc4vTjNHZuilkMCibunuwDOKy1Uko/PI91uIWKFgsRCMvZlrfmG8aKeGvxhedAhb26
-         VnVxqCSQLarIy9vJMaxU332tIdmSvM5uPJulvaI4/5+KJTPR814aZadmjOw1txEhWuXo
-         MMVPNdGZ7kc9SNVz6qVNMnUKvXV4L7sVcvzQY=
-Date: Fri, 6 Mar 2009 20:38:02 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: [Patch] uml: don't use a too long string literal
-Message-ID: <20090306123802.GE8991@hack.private>
+	Fri, 6 Mar 2009 07:48:27 -0500
+Date: Fri, 6 Mar 2009 13:48:24 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
+    RAM as block device
+In-Reply-To: <20090306074639.GN11787@kernel.dk>
+Message-ID: <alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk> <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
+ <20090306074639.GN11787@kernel.dk>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 6 Mar 2009, Jens Axboe wrote:
+> On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> > But then I noticed ps3vram_make_request() may be called concurrently,
+> > so I had to add a mutex to avoid data corruption. This slows the
+> > driver down, and in the end, the version with a thread turns out to be
+> > ca. 1% faster. The version without a thread is about 50 lines less
+> > code, though.
+> 
+> That is correct, ->make_request_fn may get reentered. I'm not surprised
+> that performance dropped if you just shoved everything under a mutex.
+> You could be a little more smart and queue concurrent bio's for
+> processing when the current one is complete though, there are several
+> approaches there that be a lot faster than going all the way through the
+> IO stack and scheduler just to avoid concurrency.
 
-uml uses a concatenated string literal to store the contents of .config,
-but .config file content is varaible, it can be very long.
+Yes, using a spinlock and queueing requests on a list if the driver is busy can
+be done after 2.6.29...
 
-Use an array of string literals instead.
+With kind regards,
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Jeff Dike <jdike@addtoit.com>
+Geert Uytterhoeven
+Software Architect
 
----
-diff --git a/arch/um/kernel/Makefile b/arch/um/kernel/Makefile
-index 499e5e9..388ec0a 100644
---- a/arch/um/kernel/Makefile
-+++ b/arch/um/kernel/Makefile
-@@ -28,7 +28,7 @@ $(obj)/config.tmp: $(objtree)/.config FORCE
- 	$(call if_changed,quote1)
- 
- quiet_cmd_quote1 = QUOTE   $@
--      cmd_quote1 = sed -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' \
-+      cmd_quote1 = sed -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n",/' \
- 		   $< > $@
- 
- $(obj)/config.c: $(src)/config.c.in $(obj)/config.tmp FORCE
-@@ -36,9 +36,9 @@ $(obj)/config.c: $(src)/config.c.in $(obj)/config.tmp FORCE
- 
- quiet_cmd_quote2 = QUOTE   $@
-       cmd_quote2 = sed -e '/CONFIG/{'          \
--		  -e 's/"CONFIG"\;/""/'        \
-+		  -e 's/"CONFIG"//'            \
- 		  -e 'r $(obj)/config.tmp'     \
- 		  -e 'a \'                     \
--		  -e '""\;'                    \
-+		  -e '""'                      \
- 		  -e '}'                       \
- 		  $< > $@
-diff --git a/arch/um/kernel/config.c.in b/arch/um/kernel/config.c.in
-index c062cbf..bee154d 100644
---- a/arch/um/kernel/config.c.in
-+++ b/arch/um/kernel/config.c.in
-@@ -7,11 +7,15 @@
- #include <stdlib.h>
- #include "init.h"
- 
--static __initdata char *config = "CONFIG";
-+static __initdata const char *config[] = {
-+"CONFIG"
-+};
- 
- static int __init print_config(char *line, int *add)
- {
--	printf("%s", config);
-+	int i;
-+	for (i = 0; i < sizeof(config)/sizeof(config[0]); i++)
-+		printf("%s", config[i]);
- 	exit(0);
- }
- 
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
