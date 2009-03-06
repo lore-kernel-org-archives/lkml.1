@@ -1,108 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZCFWd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZCFWiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbZCFWd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 17:33:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbZCFWdq
+	id S1755459AbZCFWiq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 17:38:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbZCFWif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 17:33:46 -0500
-Received: from xenotime.net ([72.52.64.118]:60603 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753193AbZCFWdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 17:33:44 -0500
-Message-ID: <49B1A52C.4080702@xenotime.net>
-Date: Fri, 06 Mar 2009 14:35:24 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Yu Zhao <yu.zhao@intel.com>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v10 6/7] PCI: document SR-IOV sysfs entries
-References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-7-git-send-email-yu.zhao@intel.com> <20090306211614.GI25995@parisc-linux.org>
-In-Reply-To: <20090306211614.GI25995@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Mar 2009 17:38:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39815 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755394AbZCFWif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 17:38:35 -0500
+Date: Fri, 6 Mar 2009 14:37:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       graf.yang@analog.com, cooloney@kernel.org
+Subject: Re: [PATCH 01/18] Blackfin Serial Driver: Add a debug function to
+ serial driver.
+Message-Id: <20090306143749.5d4e8459.akpm@linux-foundation.org>
+In-Reply-To: <1236321780-28718-2-git-send-email-cooloney@kernel.org>
+References: <1236321780-28718-1-git-send-email-cooloney@kernel.org>
+	<1236321780-28718-2-git-send-email-cooloney@kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> Randy, can you wordsmith this one?
+On Fri,  6 Mar 2009 14:42:43 +0800
+Bryan Wu <cooloney@kernel.org> wrote:
 
-I'll try.
-
-> I think I'm starting to understand the difference between physfn and
-> dep_link, but an example would definitely help.  It may or may not be
-> appropriate to put it in.
+> From: Graf Yang <graf.yang@analog.com>
 > 
-> On Fri, Feb 20, 2009 at 02:54:47PM +0800, Yu Zhao wrote:
->> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
->> ---
->>  Documentation/ABI/testing/sysfs-bus-pci |   27 +++++++++++++++++++++++++++
->>  1 files changed, 27 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
->> index ceddcff..84dc100 100644
->> --- a/Documentation/ABI/testing/sysfs-bus-pci
->> +++ b/Documentation/ABI/testing/sysfs-bus-pci
->> @@ -9,3 +9,30 @@ Description:
->>  		that some devices may have malformatted data.  If the
->>  		underlying VPD has a writable section then the
->>  		corresponding section of this file will be writable.
->> +
->> +What:		/sys/bus/pci/devices/.../virtfn/N
->> +Date:		February 2009
->> +Contact:	Yu Zhao <yu.zhao@intel.com>
->> +Description:
->> +		This symbol link appears when hardware supports SR-IOV
+> Signed-off-by: Graf Yang <graf.yang@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/serial/bfin_5xx.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 44 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+> index 318d69d..52ccc27 100644
+> --- a/drivers/serial/bfin_5xx.c
+> +++ b/drivers/serial/bfin_5xx.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/tty.h>
+>  #include <linux/tty_flip.h>
+>  #include <linux/serial_core.h>
+> +#include <stdarg.h>
+>  
+>  #if defined(CONFIG_KGDB_SERIAL_CONSOLE) || \
+>  	defined(CONFIG_KGDB_SERIAL_CONSOLE_MODULE)
+> @@ -1177,6 +1178,49 @@ struct console __init *bfin_earlyserial_init(unsigned int port,
+>  
+>  #endif /* CONFIG_EARLY_PRINTK */
+>  
+> +#ifdef CONFIG_DEBUG_KERNEL
+> +void bfin_serial_debug(const char *fmt, ...)
+> +{
+> +	struct bfin_serial_port *uart = &bfin_serial_ports[0];
+> +	unsigned short status, tmp;
+> +	int flags, i, count;
+> +	char buf[128];
+> +	va_list ap;
+> +
+> +	if (bfin_serial_console.index < 0)
+> +		return;		/* Too early. */
+> +
+> +	va_start(ap, fmt);
+> +	vsprintf(buf, fmt, ap);
+> +	va_end(ap);
+> +	count = strlen(buf);
+> +
+> +	spin_lock_irqsave(&uart->port.lock, flags);
+> +
+> +	for (i = 0; i < count; i++) {
+> +		do {
+> +			status = UART_GET_LSR(uart);
+> +		} while (!(status & THRE));
+> +
+> +#ifndef CONFIG_BF54x
+> +		tmp = UART_GET_LCR(uart);
+> +		tmp &= ~DLAB;
+> +		UART_PUT_LCR(uart, tmp);
+> +#endif
+> +		UART_PUT_CHAR(uart, buf[i]);
+> +		if (buf[i] == '\n') {
+> +			do {
+> +				status = UART_GET_LSR(uart);
+> +			} while (!(status & THRE));
+> +			UART_PUT_CHAR(uart, '\r');
+> +		}
+> +	}
+> +
+> +	spin_unlock_irqrestore(&uart->port.lock, flags);
+> +}
+> +EXPORT_SYMBOL(bfin_serial_debug);
+> +#endif
 
-		     symbolic                          supports the SR-IOV
+This function is used in later bugfix patches - otherwise it wouldn't
+be a 2.6.29 patch.
 
->> +		capability and Physical Function driver has enabled it.
-
-		               ^the | its | a
-
->> +		The symbol link points to the PCI device sysfs entry of
-
-		    symbolic 
-
->> +		Virtual Function whose index is N (0...MaxVFs-1).
-
-		the Virtual Function
-
->> +
->> +What:		/sys/bus/pci/devices/.../virtfn/dep_link
->> +Date:		February 2009
->> +Contact:	Yu Zhao <yu.zhao@intel.com>
->> +Description:
->> +		This symbol link appears when hardware supports SR-IOV
-
-		     symbolic                          supports the SR-IOV
-
->> +		capability and Physical Function driver has enabled it,
-
-		               ^its | the | a
-
->> +		and this device has vendor specific dependencies with
->> +		others. The symbol link points to the PCI device sysfs
-
-		            symbolic
-
->> +		entry of Physical Function this device depends on.
->> +
->> +What:		/sys/bus/pci/devices/.../physfn
->> +Date:		February 2009
->> +Contact:	Yu Zhao <yu.zhao@intel.com>
->> +Description:
->> +		This symbol link appears when a device is Virtual Function.
-
-		     symbolic                          is a Virtual Function.
-
->> +		The symbol link points to the PCI device sysfs entry of
-
-		    symbolic                                   entry of the
-
->> +		Physical Function this device associates with.
-
+I shall update the changelog to reflect this.
