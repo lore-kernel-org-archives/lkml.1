@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZCFKeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZCFKgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbZCFKeY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 05:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZCFKeP
+	id S1754946AbZCFKgU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 05:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZCFKgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 05:34:15 -0500
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:58059 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059AbZCFKeO (ORCPT
+	Fri, 6 Mar 2009 05:36:05 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59025 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752888AbZCFKgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 05:34:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=AkGrGaNo0HqyID/M1XmbwWWGgY3QsGw8m8Q71Zq9lyKxveSq+oc8/fWALPWkLZ6rDH
-         0o4TU6xw5vSTDG/r43EorQFFdJ32uXC1jMkNkWBLeEE5TpClAwOe5pdzOv5CnAvR42lZ
-         aXAtQiqtC0E06i1JFPdFGBXN5viMkw1aBz29U=
-Subject: usb-storage: Wait less time for settling when a memory device is
- connected
-From: Martin Bammer <mrbm74@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 11:34:07 +0100
-Message-Id: <1236335647.16732.12.camel@localhost>
+	Fri, 6 Mar 2009 05:36:03 -0500
+Date: Fri, 6 Mar 2009 19:34:38 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [RFC][PATCH 0/3] memory controller soft limit (Yet Another One) v1
+Message-Id: <20090306193438.8084837d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090306185440.66b92ca3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090306092323.21063.93169.sendpatchset@localhost.localdomain>
+	<20090306185440.66b92ca3.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I was wondering why the usb-storage driver waits for my usb-stick and my
-sdhc-card 5s before scanning. IMHO this is only needed for HDs. I've
-created a patch for the driver which shortens the timeout to 1s when a
-memory device is detected.
-But I'm not shure if the detection code is right for all devices. This
-maybe has to be tested and discussed.
-I've tested it with a usb-stick, a sdhc-card and a usb-harddrive.
-This patch is created for kernel 2.6.27.18.
+I don't say this should go but there are big distance between Balbir and me, so
+showing what I'm thinking of in a patch. 
 
-Please CC me for answers to this thread.
+[1/3] interface of softlimit.
+[2/3] recalaim logic of softlimit
+[3/3] documenation.
 
---- a/drivers/usb/storage/usb.c 2009-03-03 23:33:37.000000000 +0100
-+++ b/drivers/usb/storage/usb.c 2009-03-03 23:32:44.000000000 +0100
-@@ -913,10 +913,16 @@ static int usb_stor_scan_thread(void * _
+Characteristic is.
+
+  1. No hook to fast path.
+  2. memory.softlimit_priority file is used in addtion to memory.softlimit file.
+  3. vicitm cgroup at softlimit depends on priority given by user.
+  4. softlimit can be set to any cgroup even if it's children in hierarchy.
+  5. has some logic to sync with kswapd()'s balance_pgdat().
+
+This patch should be sophisticated to some extent.(and may have bug.)
+
+Example) Assume group_A which uses hierarchy and childrsn 01, 02, 03.
+         The lower number priority, the less memory is reclaimd. 
+
+   /group_A/    softlimit=300M      priority=0  (priority0 is ignored)
+            01/ softlimit=unlimited priority=1
+            02/ softlimit=unlimited priority=3
+            03/ softlimit=unlimited priority=3
  
-        set_freezable();
- 
-+       /* Shorten delay time for memory sticks/cards */
-+       if ((1 == us->pusb_dev->descriptor.iManufacturer)
-+           && (2 == us->pusb_dev->descriptor.iProduct)
-+           && (3 == us->pusb_dev->descriptor.iSerialNumber)
-+           && (delay_use > 0)) delay_use = 1;
-+
-        /* Wait for the timeout to expire or for a disconnect */
-        if (delay_use > 0) {
-                printk(KERN_DEBUG "usb-storage: waiting for device "
--                               "to settle before scanning\n");
-+                               "to settle before scanning for %d
-seconds\n", delay_use);
-                wait_event_freezable_timeout(us->delay_wait,
-                                test_bit(US_FLIDX_DONT_SCAN,
-&us->dflags),
-                                delay_use * HZ);
+  1. When kswapd runs, memory will be reclaimed by 02 and 03 in round-robin.
+  2. If no memory can be reclaimed from 02 and 03, memory will be reclaimed from 01
+  3. If no memory can be reclaimed from 01,02,03, global shrink_zone() is called.
 
+I'm sorry if my response is too slow.
+
+Thanks,
+-Kame
 
