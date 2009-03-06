@@ -1,84 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZCFQKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZCFQKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZCFQKR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbZCFQKE
+	id S1756547AbZCFQKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbZCFQK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:10:04 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:38611 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752019AbZCFQKD (ORCPT
+	Fri, 6 Mar 2009 11:10:26 -0500
+Received: from rv-out-0506.google.com ([209.85.198.232]:12534 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754889AbZCFQKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:10:03 -0500
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH] w1: coding style cleanups in w1_io.c
-Date: Fri,  6 Mar 2009 17:09:50 +0100
-Message-Id: <1236355790-13856-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.1.3
+	Fri, 6 Mar 2009 11:10:24 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [RFC] drivers/base: Add bus_register_notifier_alldev() variant
+Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>
+Date: Fri, 06 Mar 2009 09:10:19 -0700
+Message-ID: <20090306160818.404.92700.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a number of coding style issues I stubled over.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
+bus_register_notifier_alldev() is a variation on bus_register_notifier()
+which also triggers the notifier callback for devices already on the bus
+and already bound to drivers.
+
+This function is useful for the case where a driver needs to get a
+reference to a struct device other than the one it is bound to and
+it is not known if the device will be bound before or after this
+function is called.  For example, an Ethernet device connected to
+a PHY that is probed separately.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+CC: linux-kernel@vger.kernel.org
+CC: linuxppc-dev@ozlabs.org
+CC: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/w1/w1_io.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/w1/w1_io.c b/drivers/w1/w1_io.c
-index 442bd8b..3ebe972 100644
---- a/drivers/w1/w1_io.c
-+++ b/drivers/w1/w1_io.c
-@@ -69,7 +69,7 @@ static u8 w1_touch_bit(struct w1_master *dev, int bit)
- 		return w1_read_bit(dev);
- 	else {
- 		w1_write_bit(dev, 0);
--		return(0);
-+		return 0;
- 	}
+I'm using this as part of some changes to phylib to make it easier for
+Ethernet drivers to find their PHY device.  Before I'm completely committed
+to this approach I'd like some feedback on this change to drivers core.
+
+Thanks,
+g.
+
+
+ drivers/base/bus.c     |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/device.h |    2 ++
+ 2 files changed, 49 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 83f32b8..6edde85 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -962,6 +962,53 @@ int bus_register_notifier(struct bus_type *bus, struct notifier_block *nb)
  }
+ EXPORT_SYMBOL_GPL(bus_register_notifier);
  
-@@ -184,17 +184,17 @@ static u8 w1_read_bit(struct w1_master *dev)
-  */
- u8 w1_triplet(struct w1_master *dev, int bdir)
++/**
++ * bus_register_notifier_alldev_helper - internal support function
++ * Used by bus_register_notifier_alldev() to create ADD and BOUND events
++ * for devices.
++ */
++static int bus_register_notifier_alldev_helper(struct device *dev, void *data)
++{
++	struct notifier_block *nb = data;
++	nb->notifier_call(nb, BUS_NOTIFY_ADD_DEVICE, dev);
++	if (dev->driver)
++		nb->notifier_call(nb, BUS_NOTIFY_BOUND_DRIVER, dev);
++	return 0;
++}
++
++/**
++ * bus_register_notifier_alldev - Register for bus events; include existing devs
++ * @bus: pointer to bus_type
++ * @nb: pointer to notifier block to register with the bus
++ *
++ * Similar to bus_register_notifier() except it also generates events for
++ * devices already on the bus when the notifier is registered.  When this
++ * function is called the notifier is called once for each device with
++ * the BUS_NOTIFY_ADD_DEVICE event, and once for each device registered to
++ * a driver * with the BUS_NOTIFY_BOUND_DRIVER event.
++ *
++ * There is a small chance that the notifier could be called more than once
++ * for a device.  This would happen if a new device was registered on the bus
++ * or bound to a driver between the call to bus_register_notifier() and the
++ * call to bus_for_each_dev().  The only way I can see to protect against
++ * this would be to take the klist_devices spinlock while calling the
++ * notifier; but that would be a Very Bad Thing (tm).  Caller needs to be
++ * aware that a notifier called before this function returns might get
++ * called a second time on the same device.
++ */
++int bus_register_notifier_alldev(struct bus_type *b, struct notifier_block *nb)
++{
++	int ret;
++
++	ret = bus_register_notifier(b, nb);
++	if (ret == 0) {
++		bus_for_each_dev(b, NULL, nb,
++				 bus_register_notifier_alldev_helper);
++	}
++	return ret;
++}
++EXPORT_SYMBOL_GPL(bus_register_notifier_alldev);
++
+ int bus_unregister_notifier(struct bus_type *bus, struct notifier_block *nb)
  {
--	if ( dev->bus_master->triplet )
--		return(dev->bus_master->triplet(dev->bus_master->data, bdir));
-+	if (dev->bus_master->triplet)
-+		return dev->bus_master->triplet(dev->bus_master->data, bdir);
- 	else {
- 		u8 id_bit   = w1_touch_bit(dev, 1);
- 		u8 comp_bit = w1_touch_bit(dev, 1);
- 		u8 retval;
+ 	return blocking_notifier_chain_unregister(&bus->p->bus_notifier, nb);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 45e5b19..05c7d5b 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -103,6 +103,8 @@ struct notifier_block;
  
--		if ( id_bit && comp_bit )
--			return(0x03);  /* error */
-+		if (id_bit && comp_bit)
-+			return 0x03;  /* error */
+ extern int bus_register_notifier(struct bus_type *bus,
+ 				 struct notifier_block *nb);
++extern int bus_register_notifier_alldev(struct bus_type *b,
++					struct notifier_block *nb);
+ extern int bus_unregister_notifier(struct bus_type *bus,
+ 				   struct notifier_block *nb);
  
--		if ( !id_bit && !comp_bit ) {
-+		if (!id_bit && !comp_bit) {
- 			/* Both bits are valid, take the direction given */
- 			retval = bdir ? 0x04 : 0;
- 		} else {
-@@ -203,11 +203,11 @@ u8 w1_triplet(struct w1_master *dev, int bdir)
- 			retval = id_bit ? 0x05 : 0x02;
- 		}
- 
--		if ( dev->bus_master->touch_bit )
-+		if (dev->bus_master->touch_bit)
- 			w1_touch_bit(dev, bdir);
- 		else
- 			w1_write_bit(dev, bdir);
--		return(retval);
-+		return retval;
- 	}
- }
- 
--- 
-1.6.1.3
 
