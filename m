@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZCFTQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZCFTR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbZCFTQz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbZCFTQo
+	id S1757464AbZCFTR7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZCFTRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:16:44 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:62908 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbZCFTQn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:16:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fHvQaR4w18gmYd7klDYx6KSg+bT/47CyhAXDcxx8A8QUbbJryunpzOpxBaDe8zHWye
-         a7jguDV5FKRgRJHuawRN1vKQQln0+zUqe+q02LxGDM2fJipk0vckcM3HcSnH//i0kNc5
-         xLLvbM417XcLL+6fHrE4q3QO95mzADOONcHiY=
-Date: Fri, 6 Mar 2009 22:16:41 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 03/18] dma-debug: add hash functions for
-	dma_debug_entries
-Message-ID: <20090306191641.GF7420@localhost>
-References: <1236346229-6618-1-git-send-email-joerg.roedel@amd.com> <1236346229-6618-4-git-send-email-joerg.roedel@amd.com> <20090306135052.GE5988@nowhere> <20090306184514.GE7420@localhost> <20090306191059.GE7329@nowhere>
+	Fri, 6 Mar 2009 14:17:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60322 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755176AbZCFTRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 14:17:50 -0500
+Date: Fri, 6 Mar 2009 20:17:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
+	implementation in favour of ftrace_bprintk
+Message-ID: <20090306191732.GA32249@elte.hu>
+References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com> <20090306170222.GA11285@elte.hu> <20090306171413.GB32128@elte.hu> <alpine.DEB.2.00.0903061302210.23248@gandalf.stny.rr.com> <20090306184904.GA24571@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090306191059.GE7329@nowhere>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090306184904.GA24571@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Frederic Weisbecker - Fri, Mar 06, 2009 at 08:11:00PM +0100]
-| On Fri, Mar 06, 2009 at 09:45:14PM +0300, Cyrill Gorcunov wrote:
-| > [Frederic Weisbecker - Fri, Mar 06, 2009 at 02:50:52PM +0100]
-| > ...
-| > | > +/*
-| > | > + * Add an entry to a hash bucket
-| > | > + */
-| > | > +static void hash_bucket_add(struct hash_bucket *bucket,
-| > | > +			    struct dma_debug_entry *entry)
-| > | > +{
-| > | > +	list_add_tail(&entry->list, &bucket->list);
-| > | > +}
-| > | > +
-| > | > +/*
-| > | > + * Remove entry from a hash bucket list
-| > | > + */
-| > | > +static void hash_bucket_del(struct dma_debug_entry *entry)
-| > | > +{
-| > | > +	list_del(&entry->list);
-| > | > +}
-| > | 
-| > | 
-| > | Perhaps the two wrappers above are unnecessary, since they are actually
-| > | used once and only wrap a single list operation. No?
-| > | 
-| > | Frederic.
-| > 
-| > Hi Frederic,
-| > 
-| > I think it would be better to make them 'inline' only but remain
-| > the wrappers as is, since it show logic flow and hides internal data
-| > details. But it's my personal opinion.
-| 
-| 
-| Yeah, I guess it's only a matter of taste :-)
-| Anyway, as you said, it should be inlined.
 
-Nod :) The only problem could be (it depends) -- is that
-if one day some locking would be needed instead of fixing
-one function you would need to grep all list_add/del entries :)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-| 
-|  
-	- Cyrill -
+> > You can go ahead and merge it into tracing/ftrace, and then 
+> > I can work with that to fix up the formatting.
+> 
+> triggers this build failure on certain configs:
+> 
+> kernel/trace/trace.c:1205: error: implicit declaration of function 'vbin_printf'
+> kernel/trace/trace_output.c:64: error: implicit declaration of function 'bstr_printf'
+> 
+> so i've excluded it from tip:master again for now.
+
+ah, disregard this - that's a testing fluke - i have put it back 
+again.
+
+(a test-system got hold of an intermediate merge and found a 
+build bug in it.)
+
+	Ingo
