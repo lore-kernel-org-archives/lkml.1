@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZCFRyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZCFR5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZCFRyu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 12:54:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbZCFRyk
+	id S1756107AbZCFR5U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 12:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZCFR5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 12:54:40 -0500
-Received: from zelda.netsplit.com ([87.194.19.211]:38659 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbZCFRyj (ORCPT
+	Fri, 6 Mar 2009 12:57:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45791 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbZCFR5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 12:54:39 -0500
-From: Scott James Remnant <scott@canonical.com>
-Date: Fri, 6 Mar 2009 17:50:47 +0000
-Subject: [PATCH] floppy: Provide a PNP device table in the module.
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Message-Id: <E1LfeFk-0002mD-OE@zelda.netsplit.com>
+	Fri, 6 Mar 2009 12:57:10 -0500
+Subject: Re: [Patch] mm tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com
+In-Reply-To: <1236361106.6326.595.camel@laptop>
+References: <1233306324.11332.11.camel@nigel-laptop>
+	 <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com>
+	 <20090306105627.3EF0.A69D9226@jp.fujitsu.com>
+	 <alpine.DEB.2.00.0903052124240.14535@gandalf.stny.rr.com>
+	 <20090306110423.GD21168@elte.hu>
+	 <1236342797.3154.1.camel@dhcp47-138.lab.bos.redhat.com>
+	 <20090306135547.GB21907@elte.hu>
+	 <1236358657.1476.56.camel@dhcp-100-19-198.bos.redhat.com>
+	 <20090306171016.GA32128@elte.hu>  <1236361106.6326.595.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 18:56:37 +0100
+Message-Id: <1236362197.6326.615.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The missing device table means that the floppy module is not
-auto-loaded, even when the appropriate PNP device (0700) is found.
+On Fri, 2009-03-06 at 18:38 +0100, Peter Zijlstra wrote:
+> On Fri, 2009-03-06 at 18:10 +0100, Ingo Molnar wrote:
+> > Looks pretty good and useful to me. I've Cc:-ed more mm folks, 
+> > it would be nice to hear their opinion about these tracepoints.
+> > 
+> > Andrew, Nick, Peter, what do you think?
+> 
+> Bit sad we use the struct mm_struct * as mm identifier (little %lx vs %p
+> confusion there too), but I suppose there simply isn't anything better.
 
-We don't actually use the table in the module, since the device doesn't
-have a struct pnp_driver, but it's sufficient to cause an alias in the
-module that udev/modprobe will use.
+> Things missing, 
 
-Signed-off-by: Scott James Remnant <scott@canonical.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
----
- drivers/block/floppy.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 83d8ed3..7aa1264 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -177,6 +177,7 @@ static int print_unex = 1;
- #include <linux/interrupt.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/buffer_head.h>	/* for invalidate_buffers() */
- #include <linux/mutex.h>
- 
-@@ -4598,6 +4599,13 @@ MODULE_AUTHOR("Alain L. Knaff");
- MODULE_SUPPORTED_DEVICE("fd");
- MODULE_LICENSE("GPL");
- 
-+/* This doesn't actually get used other than for module information */
-+static const struct pnp_device_id floppy_pnpids[] = {
-+	{ "PNP0700", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(pnp, floppy_pnpids);
-+
- #else
- 
- __setup("floppy=", floppy_setup);
--- 
-1.6.0.5
+Why only anon and filemap, that misses out on all the funky driver
+->fault() handlers.
 
