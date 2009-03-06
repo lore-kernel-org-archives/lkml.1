@@ -1,151 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZCFScz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZCFSe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbZCFScz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbZCFScq
+	id S1756745AbZCFSe6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZCFSet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:32:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47776 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbZCFScp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:32:45 -0500
-Message-ID: <49B16C69.6060203@redhat.com>
-Date: Fri, 06 Mar 2009 13:33:13 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
+	Fri, 6 Mar 2009 13:34:49 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52759 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbZCFSer (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:34:47 -0500
+Date: Fri, 6 Mar 2009 13:34:43 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ltt-dev@lists.casi.polymtl.ca, Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -tip 4/4] Atomic text_poke() with fixmap take2
-References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com> <20090306181356.GD14236@Krystal>
-In-Reply-To: <20090306181356.GD14236@Krystal>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com
+Subject: Re: [RFC patch 00/41] LTTng 0.105 core for Linux 2.6.27-rc9
+In-Reply-To: <20090305224728.947235917@polymtl.ca>
+Message-ID: <alpine.DEB.2.00.0903061321110.23248@gandalf.stny.rr.com>
+References: <20090305224728.947235917@polymtl.ca>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
->> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
->>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
->>  	}
->>  	BUG_ON(!pages[0]);
->> -	if (!pages[1])
->> -		nr_pages = 1;
->> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
->> -	BUG_ON(!vaddr);
->> -	local_irq_disable();
->> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
+
+Hi Mathieu,
+
+Thanks for posting this. But it might be better to post in much smaller 
+chunks. Lets work out the little things first. Posting 41 patches is a bit 
+overwhelming. Took me a few hours to look at them all, and when I got to 
+the end, I forgot what was at the beginning.
+
+There's also minor changes to core kernel infrastructure code. seq_file, 
+exporting functions, and such. These really need to be packaged 
+separately, and sent to the proper maintainers. Having them in a patch 
+bomb does not get the proper focus that they need.
+
+
+On Thu, 5 Mar 2009, Mathieu Desnoyers wrote:
+
+> Hi,
 > 
-> Can the set_fixmap/clear_fixmap/local_flush_tlb be called within
-> local_irq_save ? If yes, that would be better, especially for the SMP
-> alternatives code, which would rely on interrupt disabling in text_poke
-> for consistency (the mutex is not needed there).
+> I spent the last 4-5 months working with the Fujitsu team at implementing the
+> tracer elements identified as goals at Kernel Summit 2008 and at the following
+> Plumber Conference. My idea was to incremententally adapt the LTTng tracer,
+> currently used in the industry and well tested, to those requirements.
 
-Yes, that just changes pte.
+We really need to work together on this too. The biggest requirement that 
+came out of that conference was to have a "single unified buffering 
+system". And this was discussed quite heavily on LKML afterwards. All 
+development was done incrementally and publicly.
 
----
-Use fixmaps instead of vmap/vunmap in text_poke() for avoiding page allocation
-and delayed unmapping.
+> 
+> I spent the last days rearranging/folding/inspecting the LTTng patchset
+> to prepare it for an LKML post. The version 0.105 in the LTTng git tree
+> corresponds to the patchset I am posting here. The said patchset will
+> only include the core features of LTTng, excluding the timestamping
+> infrastructure (trace clock) and excluding the instrumentation.
+> 
+> The corresponding git tree contains also the trace clock patches and the lttng
+> instrumentation. The trace clock is required to use the tracer, but it can be
+> used without the instrumentation : there is already a kprobes and userspace
+> event support included in this patchset.
+> 
+> This tracer exports binary data through buffers using splice(). The resulting
+> binary files can be parsed from userspace because the format string metadata is
+> exported in the files. The event set can be enhanced by adding tracepoints to
+> the kernel code and by creating probe modules, which connects callbacks to the
+> tracepoints and contain the format string metainformation. Those callbacks are
+> responsible for writing the data in the trace buffers. This separation between
+> the trace buffer format string and the tracepoints is done on purpose so the
+> core kernel instrumentation (tracepoints) is not exported to userspace, which
+> will make maintainance much easier.
 
-At the result of above change, text_poke() becomes atomic and can be called
-from stop_machine() etc.
+I've discussed this in my previous email. There is still a separation with
+the TRACE_EVENT_FORMAT and the maintainers code. The format sting is 
+"hint" only and may change without notice. LTTng could use it or ignore 
+it, it is up to the tracer to actually export that string. ftrace chose to 
+export it because it was a simple way to extract that information. My 
+utility will need to do a bit more work when the events get more complex, 
+but the way it is set up, we can do that on a case by case basis.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/fixmap.h |    2 ++
- arch/x86/kernel/alternative.c |   24 +++++++++++++++---------
- 2 files changed, 17 insertions(+), 9 deletions(-)
 
-Index: linux-2.6-tip/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
-+++ linux-2.6-tip/arch/x86/kernel/alternative.c
-@@ -13,7 +13,9 @@
- #include <asm/nmi.h>
- #include <asm/vsyscall.h>
- #include <asm/cacheflush.h>
-+#include <asm/tlbflush.h>
- #include <asm/io.h>
-+#include <asm/fixmap.h>
+> 
+> The tree including the trace clock patches is available at :
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
+> branch : 2.6.29-rc7-lttng-0.105
+> 
+> Project website : http://www.lttng.org/
+> 
+> Information about how to install and use the tracer is available at :
+> 
+> http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
+> 
+> The size of the LTTng core patchset is 41 patches. The diffstat details
+> as follow :
 
- #define MAX_PATCH_LEN (255-1)
 
-@@ -505,15 +507,16 @@ void *text_poke_early(void *addr, const
-  * It means the size must be writable atomically and the address must be aligned
-  * in a way that permits an atomic write. It also makes sure we fit on a single
-  * page.
-+ *
-+ * Note: Must be called under text_mutex.
-  */
- void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
- {
-+	unsigned long flags;
- 	char *vaddr;
--	int nr_pages = 2;
- 	struct page *pages[2];
- 	int i;
+Again, this is overwhelming. This needs to be broken up into a small 
+subsets that can be examined piece by piece.
 
--	might_sleep();
- 	if (!core_kernel_text((unsigned long)addr)) {
- 		pages[0] = vmalloc_to_page(addr);
- 		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
-@@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
- 		pages[1] = virt_to_page(addr + PAGE_SIZE);
- 	}
- 	BUG_ON(!pages[0]);
--	if (!pages[1])
--		nr_pages = 1;
--	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
--	BUG_ON(!vaddr);
--	local_irq_disable();
-+	local_irq_save(flags);
-+	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
-+	if (pages[1])
-+		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
-+	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
--	local_irq_enable();
--	vunmap(vaddr);
-+	clear_fixmap(FIX_TEXT_POKE0);
-+	if (pages[1])
-+		clear_fixmap(FIX_TEXT_POKE1);
-+	local_flush_tlb();
-+	local_irq_restore(flags);
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-Index: linux-2.6-tip/arch/x86/include/asm/fixmap.h
-===================================================================
---- linux-2.6-tip.orig/arch/x86/include/asm/fixmap.h
-+++ linux-2.6-tip/arch/x86/include/asm/fixmap.h
-@@ -111,6 +111,8 @@ enum fixed_addresses {
- #ifdef CONFIG_PARAVIRT
- 	FIX_PARAVIRT_BOOTMAP,
- #endif
-+	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
-+	FIX_TEXT_POKE1,
- 	__end_of_permanent_fixed_addresses,
- #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
- 	FIX_OHCI1394_BASE,
--- 
-Masami Hiramatsu
+> 
+>  include/linux/ltt-core.h                                  |   35 
+>  include/linux/ltt-relay.h                                 |  161 +
+>  include/linux/ltt-tracer.h                                |   43 
+>  include/linux/marker.h                                    |  121 
+>  kernel/marker.c                                           |  353 ++
+>  kernel/module.c                                           |   31 
+>  linux-2.6-lttng/Documentation/markers.txt                 |   17 
+>  linux-2.6-lttng/MAINTAINERS                               |    7 
+>  linux-2.6-lttng/Makefile                                  |    2 
+>  linux-2.6-lttng/arch/powerpc/kernel/traps.c               |    5 
+>  linux-2.6-lttng/arch/powerpc/platforms/cell/spufs/spufs.h |    6 
+>  linux-2.6-lttng/arch/sparc/Makefile                       |    2 
+>  linux-2.6-lttng/arch/x86/kernel/dumpstack.c               |    5 
+>  linux-2.6-lttng/arch/x86/mm/fault.c                       |    1 
+>  linux-2.6-lttng/fs/ext4/fsync.c                           |    8 
+>  linux-2.6-lttng/fs/ext4/ialloc.c                          |   17 
+>  linux-2.6-lttng/fs/ext4/inode.c                           |   79 
+>  linux-2.6-lttng/fs/ext4/mballoc.c                         |   71 
+>  linux-2.6-lttng/fs/ext4/mballoc.h                         |    2 
+>  linux-2.6-lttng/fs/ext4/super.c                           |    6 
+>  linux-2.6-lttng/fs/jbd2/checkpoint.c                      |    7 
+>  linux-2.6-lttng/fs/jbd2/commit.c                          |   12 
+>  linux-2.6-lttng/fs/pipe.c                                 |    5 
+>  linux-2.6-lttng/fs/select.c                               |   41 
+>  linux-2.6-lttng/fs/seq_file.c                             |   45 
+>  linux-2.6-lttng/fs/splice.c                               |    1 
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+There is a lot of code above that needs to be in their own patch series.
+Maintainers do not have the time to pick through 41 patches to find out 
+which patch might deal with their code.
 
-e-mail: mhiramat@redhat.com
+Thanks,
 
+-- Steve
+
+
+>  linux-2.6-lttng/include/linux/immediate.h                 |   94 
+>  linux-2.6-lttng/include/linux/kvm_host.h                  |   12 
+>  linux-2.6-lttng/include/linux/ltt-channels.h              |   94 
+>  linux-2.6-lttng/include/linux/ltt-core.h                  |   47 
+>  linux-2.6-lttng/include/linux/ltt-relay.h                 |  186 +
+>  linux-2.6-lttng/include/linux/ltt-tracer.h                |  731 ++++++
+>  linux-2.6-lttng/include/linux/ltt-type-serializer.h       |  107 
+>  linux-2.6-lttng/include/linux/marker.h                    |   16 
+>  linux-2.6-lttng/include/linux/module.h                    |    6 
+>  linux-2.6-lttng/include/linux/poll.h                      |    2 
+>  linux-2.6-lttng/include/linux/seq_file.h                  |   20 
+>  linux-2.6-lttng/include/trace/ext4.h                      |  129 +
+>  linux-2.6-lttng/include/trace/jbd2.h                      |   19 
+>  linux-2.6-lttng/init/Kconfig                              |    2 
+>  linux-2.6-lttng/kernel/kallsyms.c                         |    1 
+>  linux-2.6-lttng/kernel/marker.c                           |   12 
+>  linux-2.6-lttng/kernel/module.c                           |   32 
+>  linux-2.6-lttng/ltt/Kconfig                               |  130 +
+>  linux-2.6-lttng/ltt/Makefile                              |   15 
+>  linux-2.6-lttng/ltt/ltt-channels.c                        |  338 ++
+>  linux-2.6-lttng/ltt/ltt-core.c                            |  101 
+>  linux-2.6-lttng/ltt/ltt-filter.c                          |   66 
+>  linux-2.6-lttng/ltt/ltt-kprobes.c                         |  479 +++
+>  linux-2.6-lttng/ltt/ltt-marker-control.c                  |  265 ++
+>  linux-2.6-lttng/ltt/ltt-relay-alloc.c                     |  715 +++++
+>  linux-2.6-lttng/ltt/ltt-relay-locked.c                    | 1704 ++++++++++++++
+>  linux-2.6-lttng/ltt/ltt-serialize.c                       |  685 +++++
+>  linux-2.6-lttng/ltt/ltt-trace-control.c                   | 1061 ++++++++
+>  linux-2.6-lttng/ltt/ltt-tracer.c                          | 1210 +++++++++
+>  linux-2.6-lttng/ltt/ltt-type-serializer.c                 |   96 
+>  linux-2.6-lttng/ltt/ltt-userspace-event.c                 |  131 +
+>  linux-2.6-lttng/samples/markers/Makefile                  |    2 
+>  linux-2.6-lttng/samples/markers/marker-example.c          |    4 
+>  linux-2.6-lttng/samples/markers/probe-example.c           |   10 
+>  linux-2.6-lttng/samples/markers/test-multi.c              |  120 
+>  linux-2.6-lttng/virt/kvm/kvm_trace.c                      |   12 
+>  ltt/Kconfig                                               |   24 
+>  ltt/Makefile                                              |    2 
+>  ltt/ltt-relay-alloc.c                                     |   80 
+>  65 files changed, 9445 insertions(+), 398 deletions(-)
+> 
+> 
+> Comments are welcome.
+> 
+> Mathieu
+> 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
