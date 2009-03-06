@@ -1,91 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZCFPKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZCFPOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZCFPKA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZCFPJv
+	id S1754628AbZCFPOb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:14:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZCFPOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:09:51 -0500
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:41830 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZCFPJv (ORCPT
+	Fri, 6 Mar 2009 10:14:22 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:47460 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753590AbZCFPOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:09:51 -0500
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090305220044.GA2819@x200.localdomain>
-References: <20090305163857.0C18F3FD@kernel>
-	 <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz>
-	 <20090305210840.GA2499@x200.localdomain>
-	 <1236288427.22399.122.camel@nimitz>
-	 <20090305220044.GA2819@x200.localdomain>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 16:08:41 +0100
-Message-Id: <1236352121.5732.80.camel@bahia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Mar 2009 10:14:21 -0500
+X-Greylist: delayed 2179 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Mar 2009 10:14:21 EST
+Date: Fri, 6 Mar 2009 09:35:43 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Am??rico Wang <xiyou.wangcong@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Rob Landley <rob@landley.net>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix ARCH=um segfault on x86-64.
+Message-ID: <20090306143543.GA6983@c2.user-mode-linux.org>
+References: <200903060042.19084.rob@landley.net> <20090306084848.GO22605@hack.private> <10f740e80903060150p565e9703u81d4fe47cb599ab@mail.gmail.com> <10f740e80903060151w779bbd11ld2fcc437ac7ac321@mail.gmail.com> <20090306111834.GC8991@hack.private>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090306111834.GC8991@hack.private>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 01:00 +0300, Alexey Dobriyan wrote:
-> On Thu, Mar 05, 2009 at 01:27:07PM -0800, Dave Hansen wrote:
-> > > Imagine, unsupported file is opened between userspace checks
-> > > for /proc/*/checkpointable and /proc/*/fdinfo/*/checkpointable
-> > > and whatever, you stil have to do all the checks inside checkpoint(2).
-> > 
-> > Alexey, we have two problems here.  I completely agree that we have to
-> > do complete and thorough checks of each file descriptor at
-> > sys_checkpoint().  Any checks made at other times should not be trusted.
-> > 
-> > The other side is what Ingo has been asking for.  How do we *know* when
-> > we are checkpointable *before* we call (and without calling)
-> 
-> This "without calling checkpoint(2)" results in much complications
-> as demonstrated.
-> 
-> task_struct and file are not like other structures because they are exposed
-> in /proc. For PROC_FS=n kernels, one can't even check.
-> 
-> You can do checkpoint(2) without actual dump. You pass, you're most
-> certainly checkpointable (with inevitable race condition in mind).
-> 
+On Fri, Mar 06, 2009 at 07:18:34PM +0800, Am??rico Wang wrote:
+> It does work well x86_64, but my question is that whether this will
+> break i386 or not, since before, CONFIG_3_LEVEL_PGTABLES depends on
+> EXPERIMENTAL on i386, this patch removes it.
 
-Ahhh thank you very much Alexey ! I wanted to explain this to Dave a few
-monthes ago but I failed... probably because of my poor English skills.
+As long as CONFIG_3_LEVEL_PGTABLES is off on 32-bit, it should be fine.
 
-https://lists.linux-foundation.org/pipermail/containers/2008-October/013549.html
+It did work, last I checked, but 3-level page tables on 32-bit is a
+very rarely used combination, and not useful.
 
-Why would we add checking all over the place when it MUST be done on the
-sys_checkpoint() path ? The checkpoint(2) dry-run is definitely the way
-to go.
+				Jeff
 
-> With time the amount of stuff C/R won't support will approach zero,
-> but the infrastructure for "checkpointable" will stay constant.
-> If it's too much right now, it will be way too much in future.
-> 
-> > sys_checkpoint()?  You are yet to acknowledge that this is a valid use
-> > case, but it is exactly what Ingo is asking for, I believe.
-> 
-> It's a valid requirement.
-> 
-> > If nice printk()s are sufficient to cover what Ingo wants, I'm quite
-> > happy to remove the /proc files.  
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
 -- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
-
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
-
+Work email - jdike at linux dot intel dot com
