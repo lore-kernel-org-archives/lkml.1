@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbZCFTNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbZCFTOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbZCFTNS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZCFTNE
+	id S1757281AbZCFTOP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:14:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbZCFTN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:13:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46744 "EHLO mx2.mail.elte.hu"
+	Fri, 6 Mar 2009 14:13:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41005 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754498AbZCFTNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:13:02 -0500
-Date: Fri, 6 Mar 2009 20:12:49 +0100
+	id S1754498AbZCFTN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 14:13:58 -0500
+Date: Fri, 6 Mar 2009 20:13:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: introduce bootmem_state -v2
-Message-ID: <20090306191249.GC28582@elte.hu>
-References: <1236257708-27269-7-git-send-email-penberg@cs.helsinki.fi> <49B02498.9080300@kernel.org> <49B02C68.1030203@cs.helsinki.fi> <49B0640A.5080607@kernel.org> <20090306145928.GE21907@elte.hu> <49B16DA6.4090108@kernel.org>
+To: Daniel Yeisley <dan.yeisley@unisys.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, stable@kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/apic] x86: MSI: check for BIOS assigned addresses
+Message-ID: <20090306191345.GD28582@elte.hu>
+References: <1236352309.31604.2.camel@localhost.localdomain> <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org> <20090306184514.GC15526@elte.hu> <1236364109.31604.10.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49B16DA6.4090108@kernel.org>
+In-Reply-To: <1236364109.31604.10.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,51 +36,42 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Daniel Yeisley <dan.yeisley@unisys.com> wrote:
 
+> On Fri, 2009-03-06 at 19:45 +0100, Ingo Molnar wrote:
+> > * Daniel Yeisley <dan.yeisley@unisys.com> wrote:
+> > 
+> > > Commit-ID:  affd49d36e2e2df4cbb3e07a57db901c23823b6a
+> > > Gitweb:     http://git.kernel.org/tip/affd49d36e2e2df4cbb3e07a57db901c23823b6a
+> > > Author:     "Daniel Yeisley" <dan.yeisley@unisys.com>
+> > > AuthorDate: Fri, 6 Mar 2009 10:11:49 -0500
+> > > Commit:     Ingo Molnar <mingo@elte.hu>
+> > > CommitDate: Fri, 6 Mar 2009 19:32:44 +0100
+> > > 
+> > > x86: MSI: check for BIOS assigned addresses
+> > > 
+> > > Impact: fix ACPI hotplug on certain systems
+> > 
+> > Note, this commit means that i moved the commit over from 
+> > tip:x86/urgent into tip:x86/apic - i.e. with a 2.6.30 merge 
+> > date. When exactly was this regression introduced? I think this 
+> > code never really accepted the MSI settings from the firmware, 
+> > so changing that behavior might affect a lot of systems.
+> > 
+> > So i'm uneasy about applying this fix this late in the .29 
+> > cycle, but marked it for -stable backport so it could hit 
+> > 2.6.29.1 if it stays problem-free.
+> > 
+> > 	Ingo
 > 
-> Impact: cleanup
-> 
-> extend after_bootmem and after_init_bootmem to bootmem_state
-> and will have BEFORE_BOOTMEM, DURING_BOOTMEM, AFTER_BOOTMEM
-> 
-> v2: style changes according to ingo
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/kernel/setup.c |    1 +
->  arch/x86/mm/init.c      |   13 +++++++------
->  arch/x86/mm/init_32.c   |   28 ++++++++++++++++++++--------
->  arch/x86/mm/init_64.c   |   33 +++++++++++++++++++--------------
->  include/linux/mm.h      |    9 +++++++++
->  5 files changed, 56 insertions(+), 28 deletions(-)
+> I initially noticed the problem on a 2.6.18 kernel.  ACPI 
+> hotplugging didn't work unless I booted with pci=nomsi.  I 
+> don't have a problem with waiting until 2.6.30 to make sure it 
+> is thoroughly tested.
 
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h
-> +++ linux-2.6/include/linux/mm.h
-> @@ -1067,6 +1067,15 @@ extern void __init mmap_init(void);
->  extern void show_mem(void);
->  extern void si_meminfo(struct sysinfo * val);
->  extern void si_meminfo_node(struct sysinfo *val, int nid);
-> +
-> +enum bootmem_state {
-> +	BEFORE_BOOTMEM,
-> +	DURING_BOOTMEM,
-> +	AFTER_BOOTMEM
-> +};
-> +
-> +extern enum bootmem_state bootmem_state;
-> +
->  extern int after_bootmem;
+Okay - so it's an ancient bug. The current track should thus be 
+fine.
 
-Btw., the after_bootmem variable itself should either move to 
-x86 (and arch/sh), or should be defined in mm/bootmem.c.
-
-Right now we have this weird mm.h construct that is not actually 
-useful to generic code.
-
-Andrew, what would be your preference?
+Thanks,
 
 	Ingo
