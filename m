@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZCFSpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZCFSqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757380AbZCFSpv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbZCFSpW
+	id S1754728AbZCFSqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbZCFSpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:45:22 -0500
-Received: from ti-out-0910.google.com ([209.85.142.191]:3953 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756781AbZCFSpU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:45:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kMAVkmge/gDnX53J10+ywknCYIVlOG0RXfi7B2kC/HukqjRUKzRoZJj2vRKfSSAPtE
-         tj6mzJpOn9jiLOqj0JCsDu/FQo7jPkveGbkhTj6YZe9Zv4dIJ8hwjopA4pEEgV9xe9UL
-         KizvUtTYWv4WYiIt5AxcMKlTbSxLpNefDhsUw=
-Date: Fri, 6 Mar 2009 21:45:14 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 03/18] dma-debug: add hash functions for
-	dma_debug_entries
-Message-ID: <20090306184514.GE7420@localhost>
-References: <1236346229-6618-1-git-send-email-joerg.roedel@amd.com> <1236346229-6618-4-git-send-email-joerg.roedel@amd.com> <20090306135052.GE5988@nowhere>
+	Fri, 6 Mar 2009 13:45:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56430 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757051AbZCFSpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:45:33 -0500
+Date: Fri, 6 Mar 2009 19:45:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, stable@kernel.org, dan.yeisley@unisys.com,
+       tglx@linutronix.de
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/apic] x86: MSI: check for BIOS assigned addresses
+Message-ID: <20090306184514.GC15526@elte.hu>
+References: <1236352309.31604.2.camel@localhost.localdomain> <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090306135052.GE5988@nowhere>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Frederic Weisbecker - Fri, Mar 06, 2009 at 02:50:52PM +0100]
-...
-| > +/*
-| > + * Add an entry to a hash bucket
-| > + */
-| > +static void hash_bucket_add(struct hash_bucket *bucket,
-| > +			    struct dma_debug_entry *entry)
-| > +{
-| > +	list_add_tail(&entry->list, &bucket->list);
-| > +}
-| > +
-| > +/*
-| > + * Remove entry from a hash bucket list
-| > + */
-| > +static void hash_bucket_del(struct dma_debug_entry *entry)
-| > +{
-| > +	list_del(&entry->list);
-| > +}
-| 
-| 
-| Perhaps the two wrappers above are unnecessary, since they are actually
-| used once and only wrap a single list operation. No?
-| 
-| Frederic.
 
-Hi Frederic,
+* Daniel Yeisley <dan.yeisley@unisys.com> wrote:
 
-I think it would be better to make them 'inline' only but remain
-the wrappers as is, since it show logic flow and hides internal data
-details. But it's my personal opinion.
+> Commit-ID:  affd49d36e2e2df4cbb3e07a57db901c23823b6a
+> Gitweb:     http://git.kernel.org/tip/affd49d36e2e2df4cbb3e07a57db901c23823b6a
+> Author:     "Daniel Yeisley" <dan.yeisley@unisys.com>
+> AuthorDate: Fri, 6 Mar 2009 10:11:49 -0500
+> Commit:     Ingo Molnar <mingo@elte.hu>
+> CommitDate: Fri, 6 Mar 2009 19:32:44 +0100
+> 
+> x86: MSI: check for BIOS assigned addresses
+> 
+> Impact: fix ACPI hotplug on certain systems
 
-| 
-...
+Note, this commit means that i moved the commit over from 
+tip:x86/urgent into tip:x86/apic - i.e. with a 2.6.30 merge 
+date. When exactly was this regression introduced? I think this 
+code never really accepted the MSI settings from the firmware, 
+so changing that behavior might affect a lot of systems.
 
-	- Cyrill -
+So i'm uneasy about applying this fix this late in the .29 
+cycle, but marked it for -stable backport so it could hit 
+2.6.29.1 if it stays problem-free.
+
+	Ingo
