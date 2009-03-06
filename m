@@ -1,81 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZCFTJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZCFTLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbZCFTJg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:09:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZCFTJY
+	id S1756362AbZCFTLT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZCFTLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:09:24 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:55329 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756834AbZCFTJX (ORCPT
+	Fri, 6 Mar 2009 14:11:00 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:53501 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754498AbZCFTK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:09:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ekxiMgRnyyM24WpSK3+YHciBxG9f4xsxcWoOU2vTZwmtxPN7oQCX0SZuw1ct/LFiei
-         meH4zjiQciM8FnCJ4h008vIKJwlwlOmyDhMZ5OqiEnmNKmlAgJHjrD4knpb1IRfO8k8n
-         QFv67fvNOYdawJBuYLn+RsQp/mc4KkZ5fZmX8=
-Date: Fri, 6 Mar 2009 20:09:17 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+	Fri, 6 Mar 2009 14:10:59 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah0FAMoAsUlMQW1W/2dsb2JhbACBTtUOgVOCNQY
+Date: Fri, 6 Mar 2009 14:10:52 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
-	implementation in favour of ftrace_bprintk
-Message-ID: <20090306190917.GD7329@nowhere>
-References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com> <20090306170222.GA11285@elte.hu> <20090306171413.GB32128@elte.hu> <alpine.DEB.2.00.0903061302210.23248@gandalf.stny.rr.com> <20090306184904.GA24571@elte.hu>
-MIME-Version: 1.0
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com
+Subject: Re: [PATCH 0/5] [RFC] binary reading of ftrace ring buffers
+Message-ID: <20090306191052.GB16067@Krystal>
+References: <20090304024921.153061228@goodmis.org> <20090304170015.GB1150@Krystal> <alpine.DEB.2.00.0903061124400.23248@gandalf.stny.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090306184904.GA24571@elte.hu>
+In-Reply-To: <alpine.DEB.2.00.0903061124400.23248@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:05:16 up 6 days, 15:31,  2 users,  load average: 1.16, 1.06,
+	0.93
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 07:49:04PM +0100, Ingo Molnar wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > On Fri, 6 Mar 2009, Ingo Molnar wrote:
-> > > > 
-> > > > i've put them into a separate branch forked off 
-> > > > tip:tracing/ftrace: tip:tracing/printk. The two vsprintf 
-> > > > patches are in tip:core/printk and merged into tracing/ftrace.
-> > > > 
-> > > > You can thus apply your current enhancements without any 
-> > > > interaction with me - and merge tracing/printk into the 
-> > > > tip:tracing/ftrace branch on your own schedule, ok?
+> On Wed, 4 Mar 2009, Mathieu Desnoyers wrote:
 > > > 
-> > > ah - i misunderstood - i see that it interacts with your commits 
-> > > from last night.
+> > > From previous patches, we have in include/trace/sched_event_types.h:
 > > > 
-> > > I've excluded tip:tracing/printk from tip:master for now and 
-> > > will let you guys fix it up when you have time for it.
+> > > #undef TRACE_SYSTEM
+> > > #define TRACE_SYSTEM sched
+> > > 
+> > > TRACE_EVENT_FORMAT(sched_switch,
+> > > 	TPPROTO(struct rq *rq, struct task_struct *prev,
+> > > 		struct task_struct *next),
+> > > 	TPARGS(rq, prev, next),
+> > > 	TPFMT("task %s:%d ==> %s:%d",
+> > > 	      prev->comm, prev->pid, next->comm, next->pid),
+> > > 	TRACE_STRUCT(
+> > > 		TRACE_FIELD(pid_t, prev_pid, prev->pid)
+> > > 		TRACE_FIELD(int, prev_prio, prev->prio)
+> > > 		TRACE_FIELD_SPECIAL(char next_comm[TASK_COMM_LEN],
+> > > 				    next_comm,
+> > > 				    TPCMD(memcpy(TRACE_ENTRY->next_comm,
+> > > 						 next->comm,
+> > > 						 TASK_COMM_LEN)))
+> > > 		TRACE_FIELD(pid_t, next_pid, next->pid)
+> > > 		TRACE_FIELD(int, next_prio, next->prio)
+> > > 	),
+> > > 	TPRAWFMT("prev %d:%d ==> next %s:%d:%d")
+> > > 	);
+> > > 
 > > 
-> > Ingo,
+> > I fear that putting these user-visible format strings in tracepoint
+> > header files will create a big maintainability issue.
 > > 
-> > It compiles fine. Only a new item in the struct was added, nothing was 
-> > removed. It just prints out a bit funny ;-)
+> > I'll post the LTTng patchset in a jiffy, where the format string
+> > awareness is done in a tracer-specific module. I don't understand why
+> > Peter Z. is not yelling against your tracepoints modifications : they
+> > are actually presenting to userspace an interface that is meant to
+> > eventually change.
 > > 
-> > You can go ahead and merge it into tracing/ftrace, and then I 
-> > can work with that to fix up the formatting.
+> > I used a separate layer for format string presentation for this very
+> > purpose : I don't want to tie the kernel code instrumentation
+> > (tracepoints) to any kind of user-visible API.
+> > 
 > 
-> triggers this build failure on certain configs:
+> Hi Mathieu,
 > 
-> kernel/trace/trace.c:1205: error: implicit declaration of function 'vbin_printf'
-> kernel/trace/trace_output.c:64: error: implicit declaration of function 'bstr_printf'
+> Sorry for the late reply, I started to reply but was distracted, and sadly 
+> forgot about it :-(  (and I rebooted the box that had the reply window 
+> open)
 > 
-> so i've excluded it from tip:master again for now.
 > 
-> 	Ingo
+> Just a couple of points to make.
+> 
+> 1)  The raw format string is a "hint" for userspace to read the buffers.
+> The offset and sizeof is the real data that userspace should use. The
+> print format can be just a way to help them out. But it is by no means 
+> something that is expected to be constant.
+> 
+> It is also used internal by ftrace because it needs a way to read the 
+> "fast C style recording" records. It is better to print some text than to 
+> have a bunch of hex print out in the screen. Say you have the C style 
+> recording enabled and you take an oops. With ftrace_dumps_on_oops set, the 
+> buffers will be printed to the console.  This lets ftrace have a means to 
+> print out the events.
+> 
+> 2) The difference between this and markers is that the format string is 
+> bound to the declaration in the trace header. Not in the code itself. The 
+> maintainer should only see the trace point function call. It should only 
+> look like a function call and not some funky printf string that the 
+> maintainer might not care about.
+> 
+> If the code changes and it breaks the format string, it is up to the 
+> tracing maintainers to fix it. If the format string was embedded within 
+> the code, then the maintainer would be burdoned with that duty. But here 
+> the format string is in the include/trace directory and any breakage there 
+> should definitely be fixed by a some tracing maintainer. Not the 
+> maintainer of the subsystem. Unless of course that maintainer wants to fix 
+> it ;-)
+> 
+> 
+> 3) TRACE_EVENT_FORMAT is an extension to TRACE_FORMAT. Developers may 
+> choose to use the more simple, but a bit more expensive TRACE_FORMAT if 
+> they choose to. Perhaps it may be more prudent to anyway. Recently
+> Peter Zijlstra was tracing locks and just wanted to trace the name. 
+> There's really no difference in copying the name via a C style (strcpy) or 
+> having a printf formatting do the work. Here is a case where just using 
+> TRACE_FORMAT is a reasonable solution.
+> 
+> 4) I actually avoided moving the format string into the tracing utility. 
+> The tracing utility can ignore it if it wants. I orginially had the 
+> headers included in the kernel/trace/events.c file and found that was too 
+> cumbersome. I did not like the fact that I needed to go into some tracing 
+> infrastructure to add an event.  It was a burdon to me to add a new event 
+> and I wrote the code!  That's why I moved it all into the include/trace 
+> directory. One stop shopping.
+> 
+> A developer to add new events only needs to add the trace points in their 
+> code and then update the files (perhaps add new ones) in include/trace. No 
+> need to dig through the kernel source to find out where else they need to 
+> go.
+> 
+> 
+> I see that you published your patch queue. I've looked at most of the 
+> patches already. I'll make my comments shortly.
+> 
 
+Hi Steve,
 
-This is weird. Can you send me one of these configs please?
+I totally agree that we want something like a format string to identify
+the data we export. My disagreement is on the location where such
+identification belongs. I have the funny feeling that you are currently
+creating no less than full-blown callbacks expressed as a weird, custom,
+macros-based, header definition, and I think it's seriously wrong.
 
+To paraphrase Andrew Morton : we are writing in C. Let's keep it that
+way.
+
+This is why I strongly prefer to use the tracepoint callback -> marker
+format string approach rather that putting any sort of format string in
+the tracepoint header.
+
+If what you really worry about is to have the ability to "quickly" add
+debug-style instrumentation when you write code, then you do not want,
+nor should ever, use a tracepoint, because tracepoint location is not
+meant to be decided without careful consideration. Markers are there
+fore this : you can add a quick-and-dirty one-liner :
+
+  trace_mark(group, event, "field_identifier1 %u  f_ident2 %u", ...);
+
+In your source code and you are all set. I don't see the problem with
+such approach ?
+
+Mathieu
+
+> Thanks,
+> 
+> -- Steve
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
