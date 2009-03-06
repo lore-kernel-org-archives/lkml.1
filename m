@@ -1,53 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbZCFUqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZCFUwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756759AbZCFUqu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:46:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZCFUq0
+	id S1756081AbZCFUwR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbZCFUv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:46:26 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:46014 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755742AbZCFUq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:46:26 -0500
-Date: Fri, 6 Mar 2009 21:46:23 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       John.Linn@xilinx.com, sr@denx.de
-Subject: Re: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
-Message-ID: <20090306204623.GJ11787@kernel.dk>
-References: <20090228204622.29719.55082.stgit@localhost.localdomain> <fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
+	Fri, 6 Mar 2009 15:51:58 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:36067 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753976AbZCFUv5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 15:51:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=eGM0sJXrjIK1RE9PIRY0nLnhD5ppvKK97Xee0+y3qrT2k2fhsiIVpDCert38vFe+/k
+         VrOYRatJlW12mKQr8Wy/OaJzlI+xUU3MMaRWKXQTN7NWy+I2KTZ1K2Rix050dQcdEMlX
+         3TbC5UZzjsSpUK7UTmlUuoTlFVj6l+0xX8p1w=
+Date: Fri, 6 Mar 2009 21:51:42 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: netdev@vger.kernel.org
+Cc: Andy Fleming <afleming@freescale.com>,
+       Trent Piepho <tpiepho@freescale.com>, Jean Delvare <khali@linux-fr.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] phylib: convert state_queue work to delayed_work
+Message-ID: <20090306205139.GA30500@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06 2009, Grant Likely wrote:
-> Oops, sorry Jens.  I forgot to CC: you on this patch.
-> 
-> g.
-> 
-> On Sat, Feb 28, 2009 at 1:46 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > From: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > The SystemACE driver does not handle an empty CF slot gracefully.  An
-> > empty CF slot ends up hanging the system.  This patch adds a check for
-> > the CF state and stops trying to process requests if the slot is empty.
+It closes a race in phy_stop_machine when reprogramming of phy_timer
+(from phy_state_machine) happens between del_timer_sync and cancel_work_sync.
 
-So with patches like this, it's always nice to know what your target is.
-Do you want this in .29, or just queued up for .30? It's not always easy
-to judge the urgency of such patches :-)
+Without this change it could lead to crash if phy_device would be freed after
+phy_stop_machine (timer would fire and schedule freed work).
 
-Also, I note that you are using end_request() throughout the driver. We
-really want to get away from that, you should be using blk_end_request()
-as that will handle full requests and not just segment-by-segment. No
-worries for this patch, but you may want to consider that for a future
-patch.
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Andy Fleming <afleming@freescale.com>
+Cc: Trent Piepho <tpiepho@freescale.com>
+---
 
+This patch was only compile tested.
+
+---
+ drivers/net/phy/phy.c |   41 +++++++++++------------------------------
+ include/linux/phy.h   |    3 +--
+ 2 files changed, 12 insertions(+), 32 deletions(-)
+
+diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+index e4ede60..58b73b0 100644
+--- a/drivers/net/phy/phy.c
++++ b/drivers/net/phy/phy.c
+@@ -414,7 +414,6 @@ EXPORT_SYMBOL(phy_start_aneg);
+ 
+ static void phy_change(struct work_struct *work);
+ static void phy_state_machine(struct work_struct *work);
+-static void phy_timer(unsigned long data);
+ 
+ /**
+  * phy_start_machine - start PHY state machine tracking
+@@ -434,11 +433,8 @@ void phy_start_machine(struct phy_device *phydev,
+ {
+ 	phydev->adjust_state = handler;
+ 
+-	INIT_WORK(&phydev->state_queue, phy_state_machine);
+-	init_timer(&phydev->phy_timer);
+-	phydev->phy_timer.function = &phy_timer;
+-	phydev->phy_timer.data = (unsigned long) phydev;
+-	mod_timer(&phydev->phy_timer, jiffies + HZ);
++	INIT_DELAYED_WORK(&phydev->state_queue, phy_state_machine);
++	schedule_delayed_work(&phydev->state_queue, jiffies + HZ);
+ }
+ 
+ /**
+@@ -451,8 +447,7 @@ void phy_start_machine(struct phy_device *phydev,
+  */
+ void phy_stop_machine(struct phy_device *phydev)
+ {
+-	del_timer_sync(&phydev->phy_timer);
+-	cancel_work_sync(&phydev->state_queue);
++	cancel_delayed_work_sync(&phydev->state_queue);
+ 
+ 	mutex_lock(&phydev->lock);
+ 	if (phydev->state > PHY_UP)
+@@ -680,11 +675,9 @@ static void phy_change(struct work_struct *work)
+ 	if (err)
+ 		goto irq_enable_err;
+ 
+-	/* Stop timer and run the state queue now.  The work function for
+-	 * state_queue will start the timer up again.
+-	 */
+-	del_timer(&phydev->phy_timer);
+-	schedule_work(&phydev->state_queue);
++	/* reschedule state queue work to run as soon as possible */
++	cancel_delayed_work_sync(&phydev->state_queue);
++	schedule_delayed_work(&phydev->state_queue, 0);
+ 
+ 	return;
+ 
+@@ -761,14 +754,13 @@ EXPORT_SYMBOL(phy_start);
+ /**
+  * phy_state_machine - Handle the state machine
+  * @work: work_struct that describes the work to be done
+- *
+- * Description: Scheduled by the state_queue workqueue each time
+- *   phy_timer is triggered.
+  */
+ static void phy_state_machine(struct work_struct *work)
+ {
++	struct delayed_work *dwork =
++			container_of(work, struct delayed_work, work);
+ 	struct phy_device *phydev =
+-			container_of(work, struct phy_device, state_queue);
++			container_of(dwork, struct phy_device, state_queue);
+ 	int needs_aneg = 0;
+ 	int err = 0;
+ 
+@@ -946,17 +938,6 @@ static void phy_state_machine(struct work_struct *work)
+ 	if (err < 0)
+ 		phy_error(phydev);
+ 
+-	mod_timer(&phydev->phy_timer, jiffies + PHY_STATE_TIME * HZ);
+-}
+-
+-/* PHY timer which schedules the state machine work */
+-static void phy_timer(unsigned long data)
+-{
+-	struct phy_device *phydev = (struct phy_device *)data;
+-
+-	/*
+-	 * PHY I/O operations can potentially sleep so we ensure that
+-	 * it's done from a process context
+-	 */
+-	schedule_work(&phydev->state_queue);
++	schedule_delayed_work(&phydev->state_queue,
++				jiffies + PHY_STATE_TIME * HZ);
+ }
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index d7e54d9..32cf14a 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -315,8 +315,7 @@ struct phy_device {
+ 
+ 	/* Interrupt and Polling infrastructure */
+ 	struct work_struct phy_queue;
+-	struct work_struct state_queue;
+-	struct timer_list phy_timer;
++	struct delayed_work state_queue;
+ 	atomic_t irq_disable;
+ 
+ 	struct mutex lock;
 -- 
-Jens Axboe
+1.6.0.6
 
