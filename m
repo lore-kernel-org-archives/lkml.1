@@ -1,85 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbZCFGsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZCFGsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbZCFGsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbZCFGrH
+	id S1756586AbZCFGsv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756274AbZCFGrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:47:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56783 "EHLO hera.kernel.org"
+	Fri, 6 Mar 2009 01:47:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56782 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755696AbZCFGrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755731AbZCFGrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Mar 2009 01:47:05 -0500
 From: Tejun Heo <tj@kernel.org>
 To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        linux-kernel@vger.kernel.org, hpa@zytor.com, efault@gmx.de,
        jaswinder@kernel.org, cooloney@kernel.org
-Subject: [GIT PULL] x86, percpu: implement and use reserved percpu alloc
-Date: Fri,  6 Mar 2009 15:46:20 +0900
-Message-Id: <1236321988-19457-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 3/8] percpu: improve first chunk initial area map handling
+Date: Fri,  6 Mar 2009 15:46:23 +0900
+Message-Id: <1236321988-19457-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 06:46:35 +0000 (UTC)
+In-Reply-To: <1236321988-19457-1-git-send-email-tj@kernel.org>
+References: <1236321988-19457-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 06:46:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: no functional change
 
-Hello,
+When the first chunk is created, its initial area map is not allocated
+because kmalloc isn't online yet.  The map is allocated and
+initialized on the first allocation request on the chunk.  This works
+fine but the scattering of initialization logic between the init
+function and allocation path is a bit confusing.
 
-Please pull from the following git vector.
+This patch makes the first chunk initialize and use minimal statically
+allocated map from pcpu_setpu_first_chunk().  The map resizing path
+still needs to handle this specially but it's more straight-forward
+and gives more latitude to the init path.  This will ease future
+changes.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ mm/percpu.c |   53 +++++++++++++++++++++++++++--------------------------
+ 1 files changed, 27 insertions(+), 26 deletions(-)
 
-This patchset implements reserved percpu alloc from the first chunk
-and uses it for static perpcu variables in modules on x86_64.  This is
-necessary because x86_64 expects symbols to be relocatable using 32bit
-relocations but dynamic percpu allocation does not guarantee it
-leading to relocation overflow during module load.
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 9531590..503ccad 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -93,9 +93,6 @@ static size_t pcpu_chunk_struct_size __read_mostly;
+ void *pcpu_base_addr __read_mostly;
+ EXPORT_SYMBOL_GPL(pcpu_base_addr);
+ 
+-/* the size of kernel static area */
+-static int pcpu_static_size __read_mostly;
+-
+ /*
+  * One mutex to rule them all.
+  *
+@@ -316,15 +313,28 @@ static int pcpu_split_block(struct pcpu_chunk *chunk, int i, int head, int tail)
+ 
+ 	/* reallocation required? */
+ 	if (chunk->map_alloc < target) {
+-		int new_alloc = chunk->map_alloc;
++		int new_alloc;
+ 		int *new;
+ 
++		new_alloc = PCPU_DFL_MAP_ALLOC;
+ 		while (new_alloc < target)
+ 			new_alloc *= 2;
+ 
+-		new = pcpu_realloc(chunk->map,
+-				   chunk->map_alloc * sizeof(new[0]),
+-				   new_alloc * sizeof(new[0]));
++		if (chunk->map_alloc < PCPU_DFL_MAP_ALLOC) {
++			/*
++			 * map_alloc smaller than the default size
++			 * indicates that the chunk is one of the
++			 * first chunks and still using static map.
++			 * Allocate a dynamic one and copy.
++			 */
++			new = pcpu_realloc(NULL, 0, new_alloc * sizeof(new[0]));
++			if (new)
++				memcpy(new, chunk->map,
++				       chunk->map_alloc * sizeof(new[0]));
++		} else
++			new = pcpu_realloc(chunk->map,
++					   chunk->map_alloc * sizeof(new[0]),
++					   new_alloc * sizeof(new[0]));
+ 		if (!new)
+ 			return -ENOMEM;
+ 
+@@ -367,22 +377,6 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
+ 	int max_contig = 0;
+ 	int i, off;
+ 
+-	/*
+-	 * The static chunk initially doesn't have map attached
+-	 * because kmalloc wasn't available during init.  Give it one.
+-	 */
+-	if (unlikely(!chunk->map)) {
+-		chunk->map = pcpu_realloc(NULL, 0,
+-				PCPU_DFL_MAP_ALLOC * sizeof(chunk->map[0]));
+-		if (!chunk->map)
+-			return -ENOMEM;
+-
+-		chunk->map_alloc = PCPU_DFL_MAP_ALLOC;
+-		chunk->map[chunk->map_used++] = -pcpu_static_size;
+-		if (chunk->free_size)
+-			chunk->map[chunk->map_used++] = chunk->free_size;
+-	}
+-
+ 	for (i = 0, off = 0; i < chunk->map_used; off += abs(chunk->map[i++])) {
+ 		bool is_last = i + 1 == chunk->map_used;
+ 		int head, tail;
+@@ -874,12 +868,14 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 				     pcpu_populate_pte_fn_t populate_pte_fn)
+ {
+ 	static struct vm_struct first_vm;
++	static int smap[2];
+ 	struct pcpu_chunk *schunk;
+ 	unsigned int cpu;
+ 	int nr_pages;
+ 	int err, i;
+ 
+ 	/* santiy checks */
++	BUILD_BUG_ON(ARRAY_SIZE(smap) >= PCPU_DFL_MAP_ALLOC);
+ 	BUG_ON(!static_size);
+ 	BUG_ON(!unit_size && dyn_size);
+ 	BUG_ON(unit_size && unit_size < static_size + dyn_size);
+@@ -893,7 +889,6 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 		pcpu_unit_pages = max_t(int, PCPU_MIN_UNIT_SIZE >> PAGE_SHIFT,
+ 					PFN_UP(static_size));
+ 
+-	pcpu_static_size = static_size;
+ 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
+ 	pcpu_chunk_size = num_possible_cpus() * pcpu_unit_size;
+ 	pcpu_chunk_struct_size = sizeof(struct pcpu_chunk)
+@@ -912,14 +907,20 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 	schunk = alloc_bootmem(pcpu_chunk_struct_size);
+ 	INIT_LIST_HEAD(&schunk->list);
+ 	schunk->vm = &first_vm;
++	schunk->map = smap;
++	schunk->map_alloc = ARRAY_SIZE(smap);
+ 
+ 	if (dyn_size)
+ 		schunk->free_size = dyn_size;
+ 	else
+-		schunk->free_size = pcpu_unit_size - pcpu_static_size;
++		schunk->free_size = pcpu_unit_size - static_size;
+ 
+ 	schunk->contig_hint = schunk->free_size;
+ 
++	schunk->map[schunk->map_used++] = -static_size;
++	if (schunk->free_size)
++		schunk->map[schunk->map_used++] = schunk->free_size;
++
+ 	/* allocate vm address */
+ 	first_vm.flags = VM_ALLOC;
+ 	first_vm.size = pcpu_chunk_size;
+@@ -948,7 +949,7 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 			*pcpu_chunk_pagep(schunk, cpu, i) = page;
+ 		}
+ 
+-		BUG_ON(i < PFN_UP(pcpu_static_size));
++		BUG_ON(i < PFN_UP(static_size));
+ 
+ 		if (nr_pages < 0)
+ 			nr_pages = i;
+-- 
+1.6.0.2
 
-This can happen to any of the x86_64 percpu first chunk allocators but
-the embedding allocator is most likely to trigger it as the first
-chunk is located in the normal kernel memory allocation area while all
-the other chunks will be allocated in the vmalloc area which is very
-far from the first chunk.
-
-This type of reservation will be necessary for other architectures too
-where addressing mode used for percpu acess uses offsets with limited
-range to access symbols (e.g. ia64 w/ the magic 64k percpu page).
-
-This problem was first reported and bisected by Mike Galbraith[2].
-
-This patchset is against the current x86/core/percpu[1] and contains
-the following patches.
-
- 0001-percpu-clean-up-percpu-constants.patch
- 0002-percpu-cosmetic-renames-in-pcpu_setup_first_chunk.patch
- 0003-percpu-improve-first-chunk-initial-area-map-handlin.patch
- 0004-percpu-use-negative-for-auto-for-pcpu_setup_first_c.patch
- 0005-x86-make-embedding-percpu-allocator-return-excessiv.patch
- 0006-percpu-add-an-indirection-ptr-for-chunk-page-map-ac.patch
- 0007-percpu-module-implement-reserved-allocation-and-us.patch
- 0008-x86-percpu-setup-reserved-percpu-area-for-x86_64.patch
-
-0001-0004 makes misc updates to percpu in preparation of later
-changes.  0005 fixes a case where excessive memory can be set aside in
-the first chunk when using the embedding allocator.  0006-0008
-implement reserved allocation and use it for x86_64.
-
-Bryan Wu, can you please review #0001?  It contains small change in
-blackfin.  It's mostly trivial but just in case.
-
-Diffstat follows.
-
- arch/blackfin/include/asm/percpu.h |   10 -
- arch/x86/kernel/setup_percpu.c     |   73 +++++++---
- include/linux/percpu.h             |   60 +++-----
- kernel/module.c                    |    2 
- mm/percpu.c                        |  267 ++++++++++++++++++++++++++-----------
- 5 files changed, 274 insertions(+), 138 deletions(-)
-
-Thanks.
-
---
-tejun
-
-[1] f254f3909efaf59ca2d0f408de2d044dace60706
-[2] http://thread.gmane.org/gmane.linux.kernel/801799
