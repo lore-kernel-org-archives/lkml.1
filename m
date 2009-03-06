@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbZCFLnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZCFLwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510AbZCFLnU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 06:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZCFLnG
+	id S1753644AbZCFLwM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 06:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZCFLv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 06:43:06 -0500
-Received: from smtp12.mail.tnz.yahoo.co.jp ([203.216.226.140]:34800 "HELO
-	smtp12.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751549AbZCFLnF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 06:43:05 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Mar 2009 06:43:05 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Received:X-Apparently-From:Message-ID:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MIMEOLE;
-  b=bqgcQWBuIzyt8gcRPEL0ooRTLz8s2V6ZMCnVixhIeKibICaQSPdm4OMTSfC52/Ol5k5arX55PdI0/p/OeiE4kGdOWT+kvi00+8yVnHZOoQ8E22z8mNm9d0qfiw4qrQzM  ;
-X-Apparently-From: <n0diamond@yahoo.co.jp>
-Message-ID: <0655A11E08814D889E40E4BB3B61C0AD@DIAMOND8600>
-From: "Norman Diamond" <n0diamond@yahoo.co.jp>
-To: <linux-kernel@vger.kernel.org>
-Cc: "Norman Diamond" <n0diamond@yahoo.co.jp>
-Subject: How to find out if /dev/fd0 represents an existing floppy drive?
-Date: Fri, 6 Mar 2009 20:36:11 +0900
+	Fri, 6 Mar 2009 06:51:57 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57366 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751737AbZCFLv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 06:51:56 -0500
+Date: Fri, 6 Mar 2009 11:51:23 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       srostedt@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       srostedt@redhat.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090306104106.GF31042@elte.hu>
+References: <20090306104106.GF31042@elte.hu>
+Subject: [tip:tracing/ftrace] tracing, power-trace: make it build even if the power-tracer is turned off
+Message-ID: <tip-af438c0f114b6f731b923b5c07150f6159471502@git.kernel.org>
+Git-Commit-ID: af438c0f114b6f731b923b5c07150f6159471502
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-2022-jp";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 11:51:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Long long ago in a galaxy far far away a program could find out if /dev/fd0 
-really represented an existing floppy drive or not.
+Commit-ID:  af438c0f114b6f731b923b5c07150f6159471502
+Gitweb:     http://git.kernel.org/tip/af438c0f114b6f731b923b5c07150f6159471502
+Author:     "Ingo Molnar" <mingo@elte.hu>
+AuthorDate: Fri, 6 Mar 2009 12:47:08 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 6 Mar 2009 12:47:08 +0100
 
-#define FD_DRIVE_PRESENT 8
+tracing, power-trace: make it build even if the power-tracer is turned off
 
-Now that bit is unused.
+Impact: build fix
 
-In this millennium is there some way for a program to find out if /dev/fd0 
-really represents an existing floppy drive?
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+The 'struct power_trace' definition is needed (for the event tracer) even if
+the power-tracer plugin is turned off in the .config.
+
+Cc: Steven Rostedt <srostedt@redhat.com>
+LKML-Reference: <20090306104106.GF31042@elte.hu>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/trace/power.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/include/trace/power.h b/include/trace/power.h
+index 2c733e5..38aca53 100644
+--- a/include/trace/power.h
++++ b/include/trace/power.h
+@@ -11,12 +11,10 @@ enum {
+ };
+ 
+ struct power_trace {
+-#ifdef CONFIG_POWER_TRACER
+ 	ktime_t			stamp;
+ 	ktime_t			end;
+ 	int			type;
+ 	int			state;
+-#endif
+ };
+ 
+ DECLARE_TRACE(power_start,
