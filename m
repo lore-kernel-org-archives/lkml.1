@@ -1,109 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZCFQrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbZCFQtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbZCFQrJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:47:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZCFQqz
+	id S1755899AbZCFQtx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbZCFQto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:46:55 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:45583 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbZCFQqy (ORCPT
+	Fri, 6 Mar 2009 11:49:44 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47554 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbZCFQto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:46:54 -0500
-Message-ID: <49B153A3.8090906@oracle.com>
-Date: Fri, 06 Mar 2009 08:47:31 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 6 Mar 2009 11:49:44 -0500
+Date: Fri, 6 Mar 2009 11:49:40 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
+ implementation in favour of ftrace_bprintk
+In-Reply-To: <1236356510-8381-5-git-send-email-fweisbec@gmail.com>
+Message-ID: <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com>
+References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 3/3] memcg documenation soft limit (Yet Another One)
-References: <20090306092323.21063.93169.sendpatchset@localhost.localdomain>	<20090306185440.66b92ca3.kamezawa.hiroyu@jp.fujitsu.com>	<20090306193438.8084837d.kamezawa.hiroyu@jp.fujitsu.com> <20090306193821.ca2fb628.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090306193821.ca2fb628.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A01020A.49B15344.0046:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+
+On Fri, 6 Mar 2009, Frederic Weisbecker wrote:
+
+> Impact: faster and lighter tracing
 > 
-> Documentation for softlimit (3/3)
+> Now that we have ftrace_bprintk() which is faster and consume lesser
+> memory than ftrace_printk() and has the same purpose, we can now drop
+> the old implementation in favour of the binary one from ftrace_bprintk(),
+> which means we move all the implementation of ftrace_bprintk() to
+> ftrace_printk(), so the Api doesn't change except that we must now use
+> trace_seq_bprintk() to print the TRACE_PRINT entries.
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  Documentation/cgroups/memory.txt |   19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
+> Some changes result of this:
 > 
-> Index: mmotm-2.6.29-Mar3/Documentation/cgroups/memory.txt
-> ===================================================================
-> --- mmotm-2.6.29-Mar3.orig/Documentation/cgroups/memory.txt
-> +++ mmotm-2.6.29-Mar3/Documentation/cgroups/memory.txt
-> @@ -322,6 +322,25 @@ will be charged as a new owner of it.
->    - a cgroup which uses hierarchy and it has child cgroup.
->    - a cgroup which uses hierarchy and not the root of hierarchy.
->  
-> +5.4 softlimit
-> +  Memory cgroup supports softlimit and has 2 params for control.
+> - Previously, ftrace_bprintk depended of a single tracer and couldn't
+>   work without. This tracer has been dropped and the whole implementation
+>   of ftrace_printk() (like the module formats management) is now integrated
+>   in the tracing core (comes with CONFIG_TRACING), though we keep the file
+>   trace_printk (previously trace_bprintk.c) where we can find the module
+>   management. Thus we don't overflow trace.c
+> 
+> - changes some parts to use trace_seq_bprintk() to print TRACE_PRINT entries.
+> 
+> - change a bit ftrace_printk/ftrace_vprintk macros to support non-builtin formats
+>   constants, and fix 'const' qualifiers warnings. But this is all transparent for
+>   developers.
+> 
+> - etc...
+> 
+> V2:
+> 
+> - Rebase against last changes
+> - Fix mispell on the changelog
+> 
+> V3:
+> 
+> - Rebase against last changes (moving ftrace_printk() to kernel.h)
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-                                                parameters
+Very nice Frederic!
 
-> +    - memory.softlimit_in_bytes
-> +	- softlimit to this cgroup.
-         softlimit for this cgroup
-		(i.e., no beginning '-' and no ending '.')
+For some reason I'm still missing patch 1. Perhaps it decided to take the
+scenic route ;-)
 
-
-> +    - memory.softlimit_priority.
-> +	- priority of this cgroup at softlimit reclaim.
-	 priority of this cgroup at softlimit reclaim
-
-> +	  Allowed priority level is 3-0 and 3 is the lowest.
-
-	Not very user friendly...
-
-> +	  If 0, this cgroup will not be target of softlimit.
-> +
-> +  At memory shortage of the system (or local node/zone), softlimit helps
-> +  kswapd(), a global memory recalim kernel thread, and inform victim cgroup
-
-                               reclaim                    informs
-
-> +  to be shrinked to kswapd.
-> +
-> +  Victim selection logic:
-> +  The kernel searches from the lowest priroty(3) up to the highest(1).
-
-                                         priority                     0 ?? (from above)
-
-> +  If it find a cgroup witch has memory larger than softlimit, steal memory
-
-           finds         which
-
-> +  from it.
-> +  If multiple cgroups are on the same priority, each cgroup wil be a
-
-                                                               will
-
-> +  victim in turn.
->  
->  6. Hierarchy support
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 0f5077f..6140922 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -20,7 +20,6 @@ enum trace_type {
+>  	TRACE_WAKE,
+>  	TRACE_STACK,
+>  	TRACE_PRINT,
+> -	TRACE_BPRINTK,
+>  	TRACE_SPECIAL,
+>  	TRACE_MMIO_RW,
+>  	TRACE_MMIO_MAP,
+> @@ -120,16 +119,10 @@ struct userstack_entry {
+>   */
+>  struct print_entry {
+>  	struct trace_entry	ent;
+> -	unsigned long		ip;
+> +	unsigned long 		ip;
+>  	int			depth;
+> -	char			buf[];
+> -};
+> -
 
 
--- 
-~Randy
+Note, this is going to break my recent patch that exports the internal 
+ftrace events. That's OK, I'll fix it after Ingo pulls it in.
+
+Ingo,
+
+Would you prefer that I pull these patches in and then fix the code, and 
+let you pull it from me?
+
+-- Steve
+
