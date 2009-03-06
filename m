@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZCFHBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbZCFHES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZCFHBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 02:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbZCFHBQ
+	id S1754964AbZCFHES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 02:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZCFHEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 02:01:16 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:40069 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbZCFHBQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 02:01:16 -0500
-Date: Fri, 6 Mar 2009 12:31:07 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned timers.
-Message-ID: <20090306070107.GC9190@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090304121249.GA9855@linux.vnet.ibm.com> <20090304121456.GB9855@linux.vnet.ibm.com> <20090305165340.GA6984@redhat.com>
+	Fri, 6 Mar 2009 02:04:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57951 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752020AbZCFHEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 02:04:05 -0500
+Message-ID: <49B0CAEC.80801@cn.fujitsu.com>
+Date: Fri, 06 Mar 2009 15:04:12 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090305165340.GA6984@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [RFC][PATCH] kmemdup_from_user(): introduce
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Oleg Nesterov <oleg@redhat.com> [2009-03-05 17:53:40]:
+I notice there are many places doing copy_from_user() which follows
+kmalloc():
 
-> On 03/04, Arun R Bharadwaj wrote:
-> >
-> > +static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
-> > +{
-> > +	return tbase_get_deferrable(timer->base) |
-> > +				tbase_get_pinned(timer->base);
-> > +}
-> 
-> I'd say this looks a bit strange. Hopefully compiler can optimize this code
-> to return (unsigned long)base & (TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG).
->
+        dst = kmalloc(len, GFP_KERNEL);
+        if (!dst)
+                return -ENOMEM;
+        if (copy_from_user(dst, src, len)) {
+		kfree(dst);
+		return -EFAULT
+	}
 
-Misread the above statement.
-The code is functionally correct. But not sure if the compiler
-optimizes in the way that you have mentioned.
+kmemdup_from_user() is a wrapper of the above code. With this new
+function, we don't have to write 'len' twice, which can lead to
+typos/mistakes. It also produces smaller code.
 
-> > @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
-> >  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
-> >  	unsigned long flags;
-> >
-> > +	timer_set_pinned(timer);
-> 
-> But we never clear TBASE_PINNED_FLAG?
-> 
-> If we use mod_timer() next time, the timer remains "pinned". I do not say
-> this is really wrong, but a bit strange imho.
-> 
-> Oleg.
-> 
+A qucik grep shows 250+ places where kmemdup_from_user() *may* be
+used. I'll prepare a patchset to do this conversion.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/linux/string.h |    1 +
+ mm/util.c              |   24 ++++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 76ec218..397e622 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -105,6 +105,7 @@ extern void * memchr(const void *,int,__kernel_size_t);
+ extern char *kstrdup(const char *s, gfp_t gfp);
+ extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
+ extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
++extern void *kmemdup_from_user(const void __user *src, size_t len, gfp_t gfp);
+ 
+ extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+ extern void argv_free(char **argv);
+diff --git a/mm/util.c b/mm/util.c
+index 37eaccd..a608ebb 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -70,6 +70,30 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
+ EXPORT_SYMBOL(kmemdup);
+ 
+ /**
++ * kmemdup_from_user - duplicate memory region from user space
++ *
++ * @src: source address in user space
++ * @len: number of bytes to copy
++ * @gfp: GFP mask to use
++ */
++void *kmemdup_from_user(const void __user *src, size_t len, gfp_t gfp)
++{
++	void *p;
++
++	p = kmalloc_track_caller(len, gfp);
++	if (!p)
++		return ERR_PTR(-ENOMEM);
++
++	if (copy_from_user(p, src, len)) {
++		kfree(p);
++		return ERR_PTR(-EFAULT);
++	}
++
++	return p;
++}
++EXPORT_SYMBOL(kmemdup_from_user);
++
++/**
+  * __krealloc - like krealloc() but don't free @p.
+  * @p: object to reallocate memory for.
+  * @new_size: how many bytes of memory are required.
+-- 
+1.5.4.rc3
