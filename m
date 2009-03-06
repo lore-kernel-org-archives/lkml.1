@@ -1,128 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZCFShy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbZCFSiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755804AbZCFShy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZCFShp
+	id S1756854AbZCFSiX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZCFSiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:37:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50824 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147AbZCFSho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:37:44 -0500
-Date: Fri, 6 Mar 2009 18:36:28 GMT
-From: Daniel Yeisley <dan.yeisley@unisys.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, stable@kernel.org, dan.yeisley@unisys.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, stable@kernel.org, dan.yeisley@unisys.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1236352309.31604.2.camel@localhost.localdomain>
-References: <1236352309.31604.2.camel@localhost.localdomain>
-Subject: [tip:x86/apic] x86: MSI: check for BIOS assigned addresses
-Message-ID: <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org>
-Git-Commit-ID: affd49d36e2e2df4cbb3e07a57db901c23823b6a
-X-Mailer: tip-git-log-daemon
+	Fri, 6 Mar 2009 13:38:04 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38831 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755162AbZCFSiC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:38:02 -0500
+Date: Fri, 6 Mar 2009 13:37:58 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ltt-dev@lists.casi.polymtl.ca, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mrubin@google.com, md@google.com
+Subject: Re: [RFC patch 01/41] LTTng - core header
+In-Reply-To: <20090305225511.579649827@polymtl.ca>
+Message-ID: <alpine.DEB.2.00.0903061335520.23248@gandalf.stny.rr.com>
+References: <20090305224728.947235917@polymtl.ca> <20090305225511.579649827@polymtl.ca>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 18:36:30 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  affd49d36e2e2df4cbb3e07a57db901c23823b6a
-Gitweb:     http://git.kernel.org/tip/affd49d36e2e2df4cbb3e07a57db901c23823b6a
-Author:     "Daniel Yeisley" <dan.yeisley@unisys.com>
-AuthorDate: Fri, 6 Mar 2009 10:11:49 -0500
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 6 Mar 2009 19:32:44 +0100
 
-x86: MSI: check for BIOS assigned addresses
+On Thu, 5 Mar 2009, Mathieu Desnoyers wrote:
 
-Impact: fix ACPI hotplug on certain systems
-
-When creating MSI addresses the kernel makes them up and writes them to
-the hardware without first checking for what the system BIOS may have
-assigned.  The patch below checks for already assigned values, and
-leaves them alone if they exist.
-
-Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: <stable@kernel.org>
-LKML-Reference: <1236352309.31604.2.camel@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Contains the structures required by the builtin part of the LTTng tracer.
 
 
----
- arch/x86/kernel/apic/io_apic.c |   32 +++++++++++++++++++-------------
- 1 files changed, 19 insertions(+), 13 deletions(-)
+Also note, it is better to push the core changes needed first. This way if 
+something comes up, you can make your changes to your code before it gets 
+into the kernel. This has been the approach I try to use. I send out patch 
+series that modify the core kernel first, see what the feed back is, get 
+them accepted, before continuing with further patches.
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 00e6071..60484e1 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3254,6 +3254,7 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- 	struct irq_cfg *cfg;
- 	int err;
- 	unsigned dest;
-+	struct irq_desc *desc = irq_to_desc(irq);
- 
- 	if (disable_apic)
- 		return -ENXIO;
-@@ -3265,6 +3266,8 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- 
- 	dest = apic->cpu_mask_to_apicid_and(cfg->domain, apic->target_cpus());
- 
-+	read_msi_msg_desc(desc, msg);
-+
- #ifdef CONFIG_INTR_REMAP
- 	if (irq_remapped(irq)) {
- 		struct irte irte;
-@@ -3294,17 +3297,18 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- 	} else
- #endif
- 	{
--		msg->address_hi = MSI_ADDR_BASE_HI;
--		msg->address_lo =
--			MSI_ADDR_BASE_LO |
--			((apic->irq_dest_mode == 0) ?
--				MSI_ADDR_DEST_MODE_PHYSICAL:
--				MSI_ADDR_DEST_MODE_LOGICAL) |
--			((apic->irq_delivery_mode != dest_LowestPrio) ?
--				MSI_ADDR_REDIRECTION_CPU:
--				MSI_ADDR_REDIRECTION_LOWPRI) |
--			MSI_ADDR_DEST_ID(dest);
--
-+		if (!msg->address_hi && !msg->address_lo) {
-+			msg->address_hi = MSI_ADDR_BASE_HI;
-+			msg->address_lo =
-+				MSI_ADDR_BASE_LO |
-+				((apic->irq_dest_mode == 0) ?
-+					MSI_ADDR_DEST_MODE_PHYSICAL :
-+					MSI_ADDR_DEST_MODE_LOGICAL) |
-+				((apic->irq_delivery_mode != dest_LowestPrio) ?
-+					MSI_ADDR_REDIRECTION_CPU :
-+					MSI_ADDR_REDIRECTION_LOWPRI) |
-+				MSI_ADDR_DEST_ID(dest);
-+		}
- 		msg->data =
- 			MSI_DATA_TRIGGER_EDGE |
- 			MSI_DATA_LEVEL_ASSERT |
-@@ -3439,11 +3443,13 @@ static int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc, int irq)
- 	int ret;
- 	struct msi_msg msg;
- 
-+	set_irq_msi(irq, msidesc);
- 	ret = msi_compose_msg(dev, irq, &msg);
--	if (ret < 0)
-+	if (ret < 0) {
-+		set_irq_msi(irq, NULL);
- 		return ret;
-+	}
- 
--	set_irq_msi(irq, msidesc);
- 	write_msi_msg(irq, &msg);
- 
- #ifdef CONFIG_INTR_REMAP
+Thanks,
+
+-- Steve
+
+
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> ---
+>  include/linux/ltt-core.h |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 47 insertions(+)
+> 
+> Index: linux-2.6-lttng/include/linux/ltt-core.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-lttng/include/linux/ltt-core.h	2009-03-04 13:37:26.000000000 -0500
+> @@ -0,0 +1,47 @@
+> +/*
+> + * Copyright (C) 2005,2006 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
+> + *
+> + * This contains the core definitions for the Linux Trace Toolkit.
+> + */
+> +
+> +#ifndef LTT_CORE_H
+> +#define LTT_CORE_H
+> +
+> +#include <linux/list.h>
+> +#include <linux/percpu.h>
+> +
+> +/* ltt's root dir in debugfs */
+> +#define LTT_ROOT        "ltt"
+> +
+> +/*
+> + * All modifications of ltt_traces must be done by ltt-tracer.c, while holding
+> + * the semaphore. Only reading of this information can be done elsewhere, with
+> + * the RCU mechanism : the preemption must be disabled while reading the
+> + * list.
+> + */
+> +struct ltt_traces {
+> +	struct list_head setup_head;	/* Pre-allocated traces list */
+> +	struct list_head head;		/* Allocated Traces list */
+> +	unsigned int num_active_traces;	/* Number of active traces */
+> +} ____cacheline_aligned;
+> +
+> +extern struct ltt_traces ltt_traces;
+> +
+> +/*
+> + * get dentry of ltt's root dir
+> + */
+> +struct dentry *get_ltt_root(void);
+> +
+> +void put_ltt_root(void);
+> +
+> +/* Keep track of trap nesting inside LTT */
+> +DECLARE_PER_CPU(unsigned int, ltt_nesting);
+> +
+> +typedef int (*ltt_run_filter_functor)(void *trace, uint16_t eID);
+> +
+> +extern ltt_run_filter_functor ltt_run_filter;
+> +
+> +extern void ltt_filter_register(ltt_run_filter_functor func);
+> +extern void ltt_filter_unregister(void);
+> +
+> +#endif /* LTT_CORE_H */
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
