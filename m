@@ -1,65 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbZCFQOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751476AbZCFQQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbZCFQOs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:14:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZCFQOi
+	id S1751476AbZCFQQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZCFQQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:14:38 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:18308 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395AbZCFQOh (ORCPT
+	Fri, 6 Mar 2009 11:16:16 -0500
+Received: from usea-naimss2.unisys.com ([192.61.61.104]:4287 "EHLO
+	usea-naimss2.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753373AbZCFQQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:14:37 -0500
-Message-ID: <49B14C12.5050402@oracle.com>
-Date: Fri, 06 Mar 2009 08:15:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-CC: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-sh@vger.kernel.org, yanok@emcraft.com, wd@denx.de
-Subject: Re: [PATCH] Add documentation for "nohlt" kernel parameter
-References: <20090306122925.9779.95415.stgit@Programuotojas>
-In-Reply-To: <20090306122925.9779.95415.stgit@Programuotojas>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Mar 2009 11:16:15 -0500
+X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Mar 2009 11:16:15 EST
+Subject: [PATCH] MSI: check for BIOS assigned addresses
+From: Daniel Yeisley <dan.yeisley@unisys.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 10:11:49 -0500
+Message-Id: <1236352309.31604.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 (2.25.92-1.fc11) 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.49B14BB0.0012:SCFSTAT928724,ss=1,fgs=0
+X-OriginalArrivalTime: 06 Mar 2009 15:41:56.0626 (UTC) FILETIME=[149FFF20:01C99E72]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paulius Zaleckas wrote:
-> As per discussion in:
-> http://marc.info/?l=linux-arm-kernel&m=123633652517391&w=2
-> 
-> Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-> ---
-> 
->  Documentation/kernel-parameters.txt |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 54f21a5..de06666 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1487,7 +1487,9 @@ and is between 256 and 4096 characters. It is defined in the file
->  
->  	noclflush	[BUGS=X86] Don't use the CLFLUSH instruction
->  
-> -	nohlt		[BUGS=ARM,SH]
-> +	nohlt		[BUGS=ARM,SH] Tells the kernel that the sleep(SH) or
-> +			wfi(ARM) instruction doesn't work correctly and not to
-> +			use it. This is also usefull when using JTAG debugger.
-
-			                     useful
->  
->  	no-hlt		[BUGS=X86-32] Tells the kernel that the hlt
->  			instruction doesn't work correctly and not to
+When creating MSI addresses the kernel makes them up and writes them to
+the hardware without first checking for what the system BIOS may have
+assigned.  The patch below checks for already assigned values, and
+leaves them alone if they exist. 
 
 
--- 
-~Randy
+Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
+
+---
+diff -Naurp linux-2.6.29-rc5/arch/x86/kernel/io_apic.c linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c
+--- linux-2.6.29-rc5/arch/x86/kernel/io_apic.c	2009-02-13 18:31:30.000000000 -0500
++++ linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c	2009-03-04 08:25:30.000000000 -0500
+@@ -3258,6 +3258,7 @@ static int msi_compose_msg(struct pci_de
+ 	struct irq_cfg *cfg;
+ 	int err;
+ 	unsigned dest;
++	struct irq_desc *desc = irq_to_desc(irq);
+ 
+ 	cfg = irq_cfg(irq);
+ 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
+@@ -3265,6 +3266,8 @@ static int msi_compose_msg(struct pci_de
+ 		return err;
+ 
+ 	dest = cpu_mask_to_apicid_and(cfg->domain, TARGET_CPUS);
++	
++	read_msi_msg_desc(desc, msg);
+ 
+ #ifdef CONFIG_INTR_REMAP
+ 	if (irq_remapped(irq)) {
+@@ -3295,17 +3298,18 @@ static int msi_compose_msg(struct pci_de
+ 	} else
+ #endif
+ 	{
+-		msg->address_hi = MSI_ADDR_BASE_HI;
+-		msg->address_lo =
+-			MSI_ADDR_BASE_LO |
+-			((INT_DEST_MODE == 0) ?
+-				MSI_ADDR_DEST_MODE_PHYSICAL:
+-				MSI_ADDR_DEST_MODE_LOGICAL) |
+-			((INT_DELIVERY_MODE != dest_LowestPrio) ?
+-				MSI_ADDR_REDIRECTION_CPU:
+-				MSI_ADDR_REDIRECTION_LOWPRI) |
+-			MSI_ADDR_DEST_ID(dest);
+-
++		if (!msg->address_hi && !msg->address_lo) {
++			msg->address_hi = MSI_ADDR_BASE_HI;
++			msg->address_lo = 
++				MSI_ADDR_BASE_LO |
++				((INT_DEST_MODE == 0) ?
++					MSI_ADDR_DEST_MODE_PHYSICAL:
++					MSI_ADDR_DEST_MODE_LOGICAL) |
++				((INT_DELIVERY_MODE != dest_LowestPrio) ?
++					MSI_ADDR_REDIRECTION_CPU:
++					MSI_ADDR_REDIRECTION_LOWPRI) |
++				MSI_ADDR_DEST_ID(dest); 
++		}
+ 		msg->data =
+ 			MSI_DATA_TRIGGER_EDGE |
+ 			MSI_DATA_LEVEL_ASSERT |
+@@ -3440,11 +3444,13 @@ static int setup_msi_irq(struct pci_dev 
+ 	int ret;
+ 	struct msi_msg msg;
+ 
++	set_irq_msi(irq, msidesc);
+ 	ret = msi_compose_msg(dev, irq, &msg);
+-	if (ret < 0)
++	if (ret < 0) {
++		set_irq_msi(irq, NULL);
+ 		return ret;
++	}
+ 
+-	set_irq_msi(irq, msidesc);
+ 	write_msi_msg(irq, &msg);
+ 
+ #ifdef CONFIG_INTR_REMAP
+
+
