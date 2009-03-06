@@ -1,104 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZCFTDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbZCFTEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbZCFTDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZCFTDI
+	id S1756120AbZCFTEF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:04:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbZCFTDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:03:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49534 "EHLO mx2.redhat.com"
+	Fri, 6 Mar 2009 14:03:53 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:53415 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbZCFTDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:03:05 -0500
-Subject: Re: [Patch] mm tracepoints
-From: Larry Woodman <lwoodman@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com
-In-Reply-To: <1236361106.6326.595.camel@laptop>
-References: <1233306324.11332.11.camel@nigel-laptop>
-	 <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com>
-	 <20090306105627.3EF0.A69D9226@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0903052124240.14535@gandalf.stny.rr.com>
-	 <20090306110423.GD21168@elte.hu>
-	 <1236342797.3154.1.camel@dhcp47-138.lab.bos.redhat.com>
-	 <20090306135547.GB21907@elte.hu>
-	 <1236358657.1476.56.camel@dhcp-100-19-198.bos.redhat.com>
-	 <20090306171016.GA32128@elte.hu>  <1236361106.6326.595.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 14:06:14 -0500
-Message-Id: <1236366374.1476.79.camel@dhcp-100-19-198.bos.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751164AbZCFTDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 14:03:52 -0500
+Date: Fri, 6 Mar 2009 20:03:50 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing
+	video      RAM as block device
+Message-ID: <20090306190350.GD11787@kernel.dk>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk> <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be> <20090306074639.GN11787@kernel.dk> <alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be> <20090306125832.GX11787@kernel.dk> <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 18:38 +0100, Peter Zijlstra wrote:
-> On Fri, 2009-03-06 at 18:10 +0100, Ingo Molnar wrote:
-> > Looks pretty good and useful to me. I've Cc:-ed more mm folks, 
-> > it would be nice to hear their opinion about these tracepoints.
-> > 
-> > Andrew, Nick, Peter, what do you think?
+On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
+> On Fri, 6 Mar 2009, Jens Axboe wrote:
+> > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
+> > > On Fri, 6 Mar 2009, Jens Axboe wrote:
+> > > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> > > > > But then I noticed ps3vram_make_request() may be called concurrently,
+> > > > > so I had to add a mutex to avoid data corruption. This slows the
+> > > > > driver down, and in the end, the version with a thread turns out to be
+> > > > > ca. 1% faster. The version without a thread is about 50 lines less
+> > > > > code, though.
+> > > >
+> > > > That is correct, ->make_request_fn may get reentered. I'm not surprised
+> > > > that performance dropped if you just shoved everything under a mutex.
+> > > > You could be a little more smart and queue concurrent bio's for
+> > > > processing when the current one is complete though, there are several
+> > > > approaches there that be a lot faster than going all the way through the
+> > > > IO stack and scheduler just to avoid concurrency.
+> > >
+> > > Yes, using a spinlock and queueing requests on a list if the driver is
+> > > busy can be done after 2.6.29...
+> >
+> > Certainly. Even just replacing your current mutex with a spinlock during
+> > the memcpy() would surely be a lot faster. Or even just grabbing the
+> > mutex before calling into the write for the duration of the bio. The way
+> > you do it is certain context switch death :-)
 > 
-> Bit sad we use the struct mm_struct * as mm identifier (little %lx vs %p
-> confusion there too), but I suppose there simply isn't anything better.
-> 
-> Exposing kernel pointers like that might upset some of the security
-> folks, not sure if I care though.
-> 
-> I'm missing the fault_filemap_read counterpart of fault_anon_pgin.
+> It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so
+> I cannot use a spinlock.
 
-filemap_fault handles both the initial fault when the pte is zero and
-pagein when the page has been reclaimed.  It was impossible to implement
-them as separate handlers in __do_fault() without changing the
-underlying MM code.
+Ah right, I hadn't looked close enough. But putting the mutex_lock()
+outside of the bio_for_each_segment() is going to be much faster than
+getting/releasing it for each segment.
 
-> 
-> Once you have anon/filemap symmetric, you might consider folding these
-> and doing the anon argument thing you do elsewhere.
-> 
-> Initially I was thinking we lacked the kswapd vs direct reclaim
-> information on the pgout data, but since we log the pid:comm for each
-> event...
-
-They are separate, trace_mm_kswapd_runs() and
-trace_mm_directreclaim_reclaimall().
-trace_mm_directreclaim_reclaimzone() is for the zone_reclaim path where
-we do local zone reclamation rather than falling off to the next zone in
-the zone list.
-
-> 
-> Which brings us to mm_pdflush_*, we can already see its pdflush from
-> pid:comm, then again, it fits the naming style. Same for
-> mm_directreclaim*() - we already know its direct, since its not kswapd
-> doing it.
-> 
-
-Like I said above there are 2 direct reclaim paths: one is teh call to
-try_to_free_pages() out of __alloc_pages_internal() and the other is the
-call to shrink_zone() out of __zone_reclaim().  I made a distinction
-between these because the first calls shrink_zone for each zone in the
-zone list when memory is really low(below min) where the second calls
-shrink_zone for the local zone to prevent memory allocation from a
-remote node.
-
-> Finally, we have page_free, but not page_alloc? Oh, it is there, just
-> not in the obvious place.
-
-In order to get the zone free information it has to be in down in
-get_page_from_freelist.
-
-> 
-> 
-> Things missing, we trace unmap, but not mmap, mprotect, mlock?
-> 
-I was concentrating more on the operations that traced a page moving
-throughout the system.  mmap and mprotect operate on the virtual address
-space instead of the pages mapped in that address space.
-
-
-Larry
-
+-- 
+Jens Axboe
 
