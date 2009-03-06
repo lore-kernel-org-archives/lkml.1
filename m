@@ -1,87 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbZCFQFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZCFQIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbZCFQFp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbZCFQFh
+	id S1755774AbZCFQIk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:08:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbZCFQIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:05:37 -0500
-Received: from mail-gx0-f163.google.com ([209.85.217.163]:44653 "EHLO
-	mail-gx0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754251AbZCFQFg convert rfc822-to-8bit (ORCPT
+	Fri, 6 Mar 2009 11:08:32 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:35997 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754876AbZCFQIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:05:36 -0500
+	Fri, 6 Mar 2009 11:08:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=r21cbiM1qBlPqpEutEg03jdmus0k94Xh2A0agq9NPAIIEYOVkYI+bgDqKpbvMwr5E4
+         fcbz+rC2ULpd331tNz+4jprrWcQZwN2UcOyhDjD/SFnE6EP+SzJBDU/9gnhVMgMhAhCj
+         Zzc10I5van1Fbsr50OP7nKsx5H46+0RWb3nSc=
+Date: Fri, 6 Mar 2009 19:08:34 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: linkage.h - guard assembler specifics by __ASSEMBLY__
+Message-ID: <20090306160833.GB7420@localhost>
 MIME-Version: 1.0
-In-Reply-To: <20090228204622.29719.55082.stgit@localhost.localdomain>
-References: <20090228204622.29719.55082.stgit@localhost.localdomain>
-Date: Fri, 6 Mar 2009 09:05:33 -0700
-Message-ID: <fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
-Subject: Re: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       John.Linn@xilinx.com, sr@denx.de
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, sorry Jens.  I forgot to CC: you on this patch.
+Stephen Rothwell reported
+|
+|Today's linux-next build (x86_64 allmodconfig) produced this warning:
+|
+|In file included from drivers/char/epca.c:49:
+|drivers/char/digiFep1.h:7:1: warning: "GLOBAL" redefined
+|In file included from include/linux/linkage.h:5,
+|                 from include/linux/kernel.h:11,
+|                 from arch/x86/include/asm/system.h:10,
+|                 from arch/x86/include/asm/processor.h:17,
+|                 from include/linux/prefetch.h:14,
+|                 from include/linux/list.h:6,
+|                 from include/linux/module.h:9,
+|                 from drivers/char/epca.c:29:
+|arch/x86/include/asm/linkage.h:55:1: warning: this is the location of the previous definition
+|
+|Probably introduced by commit 95695547a7db44b88a7ee36cf5df188de267e99e
+|("x86: asm linkage - introduce GLOBAL macro") from the x86 tree.
+|
 
-g.
+Any assembler specific snippets being placed in headers
+are to be protected by __ASSEMBLY__. Fixed.
 
-On Sat, Feb 28, 2009 at 1:46 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> The SystemACE driver does not handle an empty CF slot gracefully.  An
-> empty CF slot ends up hanging the system.  This patch adds a check for
-> the CF state and stops trying to process requests if the slot is empty.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
->  drivers/block/xsysace.c |   22 ++++++++++++++++++++++
->  1 files changed, 22 insertions(+), 0 deletions(-)
->
->
-> diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-> index 381d686..ec5b8ca 100644
-> --- a/drivers/block/xsysace.c
-> +++ b/drivers/block/xsysace.c
-> @@ -489,6 +489,28 @@ static void ace_fsm_dostate(struct ace_device *ace)
->                ace->fsm_state, ace->id_req_count);
->  #endif
->
-> +       /* Verify that there is actually a CF in the slot.  If not, then
-> +        * bail out back to the idle state and wake up all the waiters */
-> +       status = ace_in32(ace, ACE_STATUS);
-> +       if ((status & ACE_STATUS_CFDETECT) == 0) {
-> +               ace->fsm_state = ACE_FSM_STATE_IDLE;
-> +               ace->media_change = 1;
-> +               set_capacity(ace->gd, 0);
-> +               dev_info(ace->dev, "No CF in slot\n");
-> +
-> +               /* Drop all pending requests */
-> +               while ((req = elv_next_request(ace->queue)) != NULL)
-> +                       end_request(req, 0);
-> +
-> +               /* Drop back to IDLE state and notify waiters */
-> +               ace->fsm_state = ACE_FSM_STATE_IDLE;
-> +               ace->id_result = -EIO;
-> +               while (ace->id_req_count) {
-> +                       complete(&ace->id_completion);
-> +                       ace->id_req_count--;
-> +               }
-> +       }
-> +
->        switch (ace->fsm_state) {
->        case ACE_FSM_STATE_IDLE:
->                /* See if there is anything to do */
->
->
+Also move __ALIGN definition under the same protection as well.
 
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
 
+Ingo, Stephen -- check it please (until I miss something)
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+ arch/x86/include/asm/linkage.h |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.git/arch/x86/include/asm/linkage.h
+===================================================================
+--- linux-2.6.git.orig/arch/x86/include/asm/linkage.h
++++ linux-2.6.git/arch/x86/include/asm/linkage.h
+@@ -4,11 +4,6 @@
+ #undef notrace
+ #define notrace __attribute__((no_instrument_function))
+ 
+-#ifdef CONFIG_X86_64
+-#define __ALIGN .p2align 4,,15
+-#define __ALIGN_STR ".p2align 4,,15"
+-#endif
+-
+ #ifdef CONFIG_X86_32
+ #define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
+ /*
+@@ -50,16 +45,25 @@
+ 	__asmlinkage_protect_n(ret, "g" (arg1), "g" (arg2), "g" (arg3), \
+ 			      "g" (arg4), "g" (arg5), "g" (arg6))
+ 
+-#endif
++#endif /* CONFIG_X86_32 */
++
++#ifdef __ASSEMBLY__
+ 
+ #define GLOBAL(name)	\
+ 	.globl name;	\
+ 	name:
+ 
++#ifdef CONFIG_X86_64
++#define __ALIGN .p2align 4,,15
++#define __ALIGN_STR ".p2align 4,,15"
++#endif
++
+ #ifdef CONFIG_X86_ALIGNMENT_16
+ #define __ALIGN .align 16,0x90
+ #define __ALIGN_STR ".align 16,0x90"
+ #endif
+ 
++#endif /* __ASSEMBLY__ */
++
+ #endif /* _ASM_X86_LINKAGE_H */
+ 
