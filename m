@@ -1,135 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbZCFGsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbZCFGsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756509AbZCFGsQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZCFGrG
+	id S1756502AbZCFGsd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbZCFGrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:47:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56769 "EHLO hera.kernel.org"
+	Fri, 6 Mar 2009 01:47:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56783 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756290AbZCFGrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 01:47:01 -0500
+	id S1755696AbZCFGrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 01:47:05 -0500
 From: Tejun Heo <tj@kernel.org>
 To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        linux-kernel@vger.kernel.org, hpa@zytor.com, efault@gmx.de,
        jaswinder@kernel.org, cooloney@kernel.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 1/8] percpu: clean up percpu constants
-Date: Fri,  6 Mar 2009 15:46:21 +0900
-Message-Id: <1236321988-19457-2-git-send-email-tj@kernel.org>
+Subject: [GIT PULL] x86, percpu: implement and use reserved percpu alloc
+Date: Fri,  6 Mar 2009 15:46:20 +0900
+Message-Id: <1236321988-19457-1-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1236321988-19457-1-git-send-email-tj@kernel.org>
-References: <1236321988-19457-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 06:46:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 06:46:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleaup
 
-Make the following cleanups.
+Hello,
 
-* There isn't much arch-specific about PERCPU_MODULE_RESERVE.  Always
-  define it whether arch overrides PERCPU_ENOUGH_ROOM or not.
+Please pull from the following git vector.
 
-* blackfin overrides PERCPU_ENOUGH_ROOM to align static area size.  Do
-  it by default.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
 
-* percpu allocation sizes doesn't have much to do with the page size.
-  Don't use PAGE_SHIFT in their definition.
+This patchset implements reserved percpu alloc from the first chunk
+and uses it for static perpcu variables in modules on x86_64.  This is
+necessary because x86_64 expects symbols to be relocatable using 32bit
+relocations but dynamic percpu allocation does not guarantee it
+leading to relocation overflow during module load.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Bryan Wu <cooloney@kernel.org>
----
- arch/blackfin/include/asm/percpu.h |   10 ----------
- include/linux/percpu.h             |   24 +++++++++++++-----------
- 2 files changed, 13 insertions(+), 21 deletions(-)
+This can happen to any of the x86_64 percpu first chunk allocators but
+the embedding allocator is most likely to trigger it as the first
+chunk is located in the normal kernel memory allocation area while all
+the other chunks will be allocated in the vmalloc area which is very
+far from the first chunk.
 
-diff --git a/arch/blackfin/include/asm/percpu.h b/arch/blackfin/include/asm/percpu.h
-index 797c0c1..c94c7bc 100644
---- a/arch/blackfin/include/asm/percpu.h
-+++ b/arch/blackfin/include/asm/percpu.h
-@@ -3,14 +3,4 @@
- 
- #include <asm-generic/percpu.h>
- 
--#ifdef CONFIG_MODULES
--#define PERCPU_MODULE_RESERVE 8192
--#else
--#define PERCPU_MODULE_RESERVE 0
--#endif
--
--#define PERCPU_ENOUGH_ROOM \
--	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
--	 PERCPU_MODULE_RESERVE)
--
- #endif	/* __ARCH_BLACKFIN_PERCPU__ */
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 545b068..2d34b03 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -5,6 +5,7 @@
- #include <linux/slab.h> /* For kmalloc() */
- #include <linux/smp.h>
- #include <linux/cpumask.h>
-+#include <linux/pfn.h>
- 
- #include <asm/percpu.h>
- 
-@@ -52,17 +53,18 @@
- #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
- #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
- 
--/* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
--#ifndef PERCPU_ENOUGH_ROOM
-+/* enough to cover all DEFINE_PER_CPUs in modules */
- #ifdef CONFIG_MODULES
--#define PERCPU_MODULE_RESERVE	8192
-+#define PERCPU_MODULE_RESERVE		(8 << 10)
- #else
--#define PERCPU_MODULE_RESERVE	0
-+#define PERCPU_MODULE_RESERVE		0
- #endif
- 
-+#ifndef PERCPU_ENOUGH_ROOM
- #define PERCPU_ENOUGH_ROOM						\
--	(__per_cpu_end - __per_cpu_start + PERCPU_MODULE_RESERVE)
--#endif	/* PERCPU_ENOUGH_ROOM */
-+	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) +	\
-+	 PERCPU_MODULE_RESERVE)
-+#endif
- 
- /*
-  * Must be an lvalue. Since @var must be a simple identifier,
-@@ -79,7 +81,7 @@
- #ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
- 
- /* minimum unit size, also is the maximum supported allocation size */
--#define PCPU_MIN_UNIT_SIZE		(16UL << PAGE_SHIFT)
-+#define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(64 << 10)
- 
- /*
-  * PERCPU_DYNAMIC_RESERVE indicates the amount of free area to piggy
-@@ -96,15 +98,15 @@
- #ifndef PERCPU_DYNAMIC_RESERVE
- #  if BITS_PER_LONG > 32
- #    ifdef CONFIG_MODULES
--#      define PERCPU_DYNAMIC_RESERVE	(6 << PAGE_SHIFT)
-+#      define PERCPU_DYNAMIC_RESERVE	(24 << 10)
- #    else
--#      define PERCPU_DYNAMIC_RESERVE	(4 << PAGE_SHIFT)
-+#      define PERCPU_DYNAMIC_RESERVE	(16 << 10)
- #    endif
- #  else
- #    ifdef CONFIG_MODULES
--#      define PERCPU_DYNAMIC_RESERVE	(4 << PAGE_SHIFT)
-+#      define PERCPU_DYNAMIC_RESERVE	(16 << 10)
- #    else
--#      define PERCPU_DYNAMIC_RESERVE	(2 << PAGE_SHIFT)
-+#      define PERCPU_DYNAMIC_RESERVE	(8 << 10)
- #    endif
- #  endif
- #endif	/* PERCPU_DYNAMIC_RESERVE */
--- 
-1.6.0.2
+This type of reservation will be necessary for other architectures too
+where addressing mode used for percpu acess uses offsets with limited
+range to access symbols (e.g. ia64 w/ the magic 64k percpu page).
 
+This problem was first reported and bisected by Mike Galbraith[2].
+
+This patchset is against the current x86/core/percpu[1] and contains
+the following patches.
+
+ 0001-percpu-clean-up-percpu-constants.patch
+ 0002-percpu-cosmetic-renames-in-pcpu_setup_first_chunk.patch
+ 0003-percpu-improve-first-chunk-initial-area-map-handlin.patch
+ 0004-percpu-use-negative-for-auto-for-pcpu_setup_first_c.patch
+ 0005-x86-make-embedding-percpu-allocator-return-excessiv.patch
+ 0006-percpu-add-an-indirection-ptr-for-chunk-page-map-ac.patch
+ 0007-percpu-module-implement-reserved-allocation-and-us.patch
+ 0008-x86-percpu-setup-reserved-percpu-area-for-x86_64.patch
+
+0001-0004 makes misc updates to percpu in preparation of later
+changes.  0005 fixes a case where excessive memory can be set aside in
+the first chunk when using the embedding allocator.  0006-0008
+implement reserved allocation and use it for x86_64.
+
+Bryan Wu, can you please review #0001?  It contains small change in
+blackfin.  It's mostly trivial but just in case.
+
+Diffstat follows.
+
+ arch/blackfin/include/asm/percpu.h |   10 -
+ arch/x86/kernel/setup_percpu.c     |   73 +++++++---
+ include/linux/percpu.h             |   60 +++-----
+ kernel/module.c                    |    2 
+ mm/percpu.c                        |  267 ++++++++++++++++++++++++++-----------
+ 5 files changed, 274 insertions(+), 138 deletions(-)
+
+Thanks.
+
+--
+tejun
+
+[1] f254f3909efaf59ca2d0f408de2d044dace60706
+[2] http://thread.gmane.org/gmane.linux.kernel/801799
