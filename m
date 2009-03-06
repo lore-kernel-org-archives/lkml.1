@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbZCFXBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZCFXDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbZCFXBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 18:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZCFXBT
+	id S1756916AbZCFXDv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 18:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZCFXDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 18:01:19 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:52252 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753435AbZCFXBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 18:01:18 -0500
-Message-ID: <49B1AB3A.2050303@us.ibm.com>
-Date: Fri, 06 Mar 2009 15:01:14 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "lkml, " <linux-kernel@vger.kernel.org>
-Subject: Re: Dynamically determine if kernel includes CFS Scheduler
-References: <49B18B2E.606@us.ibm.com> <20090306225312.GA25593@silver.sucs.org>
-In-Reply-To: <20090306225312.GA25593@silver.sucs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 6 Mar 2009 18:03:42 -0500
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:46060 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753202AbZCFXDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 18:03:41 -0500
+Subject: Process accounting in interrupt diabled cases
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: schwidefsky@de.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       virtualization@lists.linux-foundation.org
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Fri, 06 Mar 2009 15:03:35 -0800
+Message-Id: <1236380615.4637.67.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sitsofe Wheeler wrote:
-> On Fri, Mar 06, 2009 at 12:44:30PM -0800, Darren Hart wrote:
->> I've received an internal request for a means to determine at run-time 
->> if the CFS scheduler is included in the running kernel.  Looking through 
->> the git commit log and the /proc/sys/kernel filesystem, I think I see 
->> two approaches:
-> 
-> Sounds dangerous (you are dependent on scheduler beahviour) but if it
-> exists you could check /proc/config.gz (or the config file in the /boot
-> directory)...
-> 
+Hi,
 
-So I am of course in agreement with both you and Peter.  In this case, 
-the development team of an existing product is trying to move away from 
-heavy use of sched_yield(), and the CFS scheduler provides some 
-motivation for that as the behavior of sched_yield() changed (again). 
-As we know, this behavior should not be depended upon, but lots of 
-applications do it unfortunately.  So, in this case the development team 
-would like to move to becoming less dependent on it, but unfortunately 
-do not feel it is feasible to make the change unconditionally as it has 
-the potential to destabilize the existing installations, etc.  They 
-would like to be able to say, use this new approach using fewer 
-sched_yield() calls on kernels with CFS.
+I am not sure, but I think this may be a process accounting bug.
 
-I understand it isn't ideal, and I have of course provided that 
-feedback, but I would like to provide them with all the information I can.
+If interrupts are disabled for a considerable amount of time ( say
+multiple ticks), the process accounting code will still account a single
+tick for such cases, on the next interrupt tick.
+Shouldn't we have some way to fix that case like we do for NO_HZ
+restart_sched_tick case, where we account for multiple idle ticks.
+ 
+IOW, doesn't process accounting need to account for these cases when
+interrupts are disabled for more than one tick period?
+
+I stumbled across this while trying to find a solution to figure out the
+amount of stolen time from Linux, when it is running under a hypervisor.
+One of the solutions could be to ask the hypervisor directly for this
+info, but in my quest to find a generic solution I think the below would
+work too.
+The total process time accounted by the system on a cpu ( system, idle,
+wait and etc) when deducted from the amount TSC counter has advanced
+since boot, should give us this info about the cputime stolen from the
+kernel  (by either hypervisor or other cases like say, SMI) on a
+particular CPU. 
+i.e. PCPU_STOLEN = (TSC since boot)  - (PCPU-idle + system + wait + ...)
+
+But for this to work the above problem about process accounting in
+interrupt disabled cases need to work correctly. 
+
+Let me know if I overlooking any case where the above assumption might
+not hold true.
 
 Thanks,
+Alok
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+
+
