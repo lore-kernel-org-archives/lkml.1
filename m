@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZCFJpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZCFJrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbZCFJpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 04:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZCFJpf
+	id S1754683AbZCFJrm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 04:47:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZCFJra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 04:45:35 -0500
-Received: from mail-qy0-f122.google.com ([209.85.221.122]:58128 "EHLO
-	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbZCFJpe (ORCPT
+	Fri, 6 Mar 2009 04:47:30 -0500
+Received: from batfish.pepperfish.net ([87.237.62.180]:54039 "EHLO
+	flounder.pepperfish.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750865AbZCFJr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 04:45:34 -0500
-X-Greylist: delayed 443 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Mar 2009 04:45:33 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NMm4lu6b3iaAvxAhPc/pHTz8My3Ozi8clI8ipTJlDyNb8bzu9E+aCLvlJognsmQG4e
-         dBUIVRUQnHsvayLvyh7ZHPWriB4XDOZzSf3ftJLpKxivp8GlMchvdMqccOKw5rBiK1lD
-         O7D5pOL6jeG2HTi3zN3t7Jn9bdoE8sage+smQ=
-Date: Fri, 6 Mar 2009 01:38:00 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH] Input: bf54x-keys: Fix typo
-Message-ID: <20090306093642.GA24864@dtor-d630.eng.vmware.com>
-References: <1236310491-24387-1-git-send-email-cooloney@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236310491-24387-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Mar 2009 04:47:28 -0500
+Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
+From: Daniel Silverstone <dsilvers@simtec.co.uk>
+Reply-To: dsilvers@simtec.co.uk
+To: Richard Hughes <hughsient@gmail.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org,
+       len.brown@intel.com
+In-Reply-To: <1236330536.12838.2.camel@hughsie-work.lan>
+References: <20090306003941.GA32403@srcf.ucam.org>
+	 <20090306005234.GA32539@srcf.ucam.org>
+	 <1236330536.12838.2.camel@hughsie-work.lan>
+Content-Type: text/plain
+Organization: Simtec Electronics
+Date: Fri, 06 Mar 2009 09:47:23 +0000
+Message-Id: <1236332843.19146.4.camel@petitemort>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan,
+On Fri, 2009-03-06 at 09:08 +0000, Richard Hughes wrote:
+> On Fri, 2009-03-06 at 00:52 +0000, Matthew Garrett wrote:
+> > Calling the ENAB method on Toshiba laptops results in notifications 
+> > being sent when laptop hotkeys are pressed. This patch simply calls that 
+> > method and sets up an input device if it's successful.
+> Great news - no polling!
 
-On Fri, Mar 06, 2009 at 11:34:51AM +0800, Bryan Wu wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
-> 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  drivers/input/keyboard/bf54x-keys.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/input/keyboard/bf54x-keys.c b/drivers/input/keyboard/bf54x-keys.c
-> index ee855c5..c6f4e16 100644
-> --- a/drivers/input/keyboard/bf54x-keys.c
-> +++ b/drivers/input/keyboard/bf54x-keys.c
-> @@ -212,7 +212,7 @@ static int __devinit bfin_kpad_probe(struct platform_device *pdev)
->  	if (!pdata->debounce_time || pdata->debounce_time > MAX_MULT ||
->  	    !pdata->coldrive_time || pdata->coldrive_time > MAX_MULT) {
->  		printk(KERN_ERR DRV_NAME
-> -			": Invalid Debounce/Columdrive Time from pdata\n");
-> +			": Invalid Debounce/Columndrive Time from platform data\n");
+No polling is definitely a good thing.
 
-Applied, but lowered severity form error to warning since the driver
-is still functional even with bad timing values in platform data.
+> Definitely +1 from me.
+
+I'll be a touch less gung-ho than Richard though.
+
+Have you looked at whether or not this method functions on more than the
+one laptop? Toshiba are notoriously good at getting their own interfaces
+wrong from one laptop to another. In addition, the fn+whatever keymaps
+are often different between laptops, especially for things like the WWW
+or MAIL buttons. Presumably if the hotkeys fail to activate then the
+normal /proc/acpi/toshiba/keys thing will continue?
+
+How will it interact with software stacks like HAL when the lock button
+is pressed?
+
+The patch itself looks clean and nice, I'm just concerned about its
+behaviour from laptop-to-laptop. Particularly the key-map thing.
+
+D.
 
 -- 
-Dmitry
+Daniel Silverstone                              http://www.simtec.co.uk/
+PGP mail accepted and encouraged.            Key Id: 2BC8 4016 2068 7895
+
+
