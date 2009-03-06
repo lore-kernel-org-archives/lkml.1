@@ -1,96 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZCFP5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZCFQDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbZCFP5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:57:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbZCFP4Y
+	id S1755361AbZCFQDA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:03:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbZCFQCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:56:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39432 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756082AbZCFP4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:56:22 -0500
-Date: Fri, 6 Mar 2009 16:55:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Daniel Walker <dwalker@fifo99.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       akpm@linux-foundation.org, gregkh@suse.de, tglx@linutronix.de,
-       sarah.a.sharp@intel.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
-Message-ID: <20090306155527.GA24448@elte.hu>
-References: <1236298195.5937.112.camel@desktop> <Pine.LNX.4.44L0.0903060958130.3461-100000@iolanthe.rowland.org>
+	Fri, 6 Mar 2009 11:02:47 -0500
+Received: from clegg.madduck.net ([193.242.105.96]:33757 "EHLO
+	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbZCFQCq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 11:02:46 -0500
+Date: Fri, 6 Mar 2009 16:17:15 +0100
+From: martin f krafft <madduck@debian.org>
+To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Future of md multipath
+Message-ID: <20090306151715.GD6030@lapse.rw.madduck.net>
+Mail-Followup-To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090303180433.GA27569@lst.de> <18863.15828.150450.275712@notabene.brown> <20090305130017.GA1696@piper.oerlikon.madduck.net> <18864.46425.242906.213929@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="osDK9TLjxFScVI/L"
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903060958130.3461-100000@iolanthe.rowland.org>
+In-Reply-To: <18864.46425.242906.213929@notabene.brown>
+X-Motto: Keep the good times rollin'
+X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.29-rc7-686 i686
+Organization: The Debian project
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alan Stern <stern@rowland.harvard.edu> wrote:
+--osDK9TLjxFScVI/L
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, 5 Mar 2009, Daniel Walker wrote:
-> 
-> > On Thu, 2009-03-05 at 15:59 -0800, Randy Dunlap wrote:
-> > 
-> > > > - a.) Host/target system needs to have USB debug port capability.
-> > > > + a.) You will need two USB ports. One on the client/console system and one on 
-> > > > +     the target system.
-> > > > + 
-> > > > + b.) The client/console and target USB ports must have the debug port
-> > > > +     capability.
-> > > 
-> > > Is that correct on the (ugh, I think that the naming/terminology is
-> > > still mucked up, but you didn't do that) host/target system?
-> > > 
-> > > On the client/console (which I would call the host and I would call the
-> > > "Host/target" here just the Target system), a USB debug port is needed,
-> > > but on the Host/target, it should just look like a USB device.
-> > > At least that was the intent AFAIK/IIRC.  No?
-> > > 
-> > 
-> > >From the rest of document I assumed Host/target was referring to both
-> > sides of the connection. So you would need USB on both sides for this
-> > thing to work. I assumed Client/console was just the host. I guess that
-> > is all kind of confusing tho ..
-> 
-> The term "Host" is too confusing to be used here; it has too 
-> many other meanings.  "Target" is good.
+also sprach Neil Brown <neilb@suse.de> [2009.03.06.0632 +0100]:
+> > I understand that dm-multipath is more favourable, but unless
+> > there's a riskless way to convert mdadm multipath into dm-multipath
+> > on old systems, I don't think we have the option of deprecating it,
+> > unless deprecation lasts for several years.
+>=20
+> Always the practical one, aren't you :-)
 
-I used Host/Target for that reason, consistently so. The combo 
-gives us the best of both worlds.
+Goes with the territory. Debian does not need to make long term
+support guarantees. They're inherent in our quality assurance,
+security support, and chaotic organisation. :)
 
-> "Client" is probably okay too, but I don't like "Console" so 
-> much because both machines will have a console.  "Debugging 
-> console" is more accurate but also more cumbersome.
+> I wonder how hard it would be to get mdadm to assemble a multipath
+> using the 'dm' code rather than the 'md' code....
+> Or to get the md layer in the kernel to hook in to the dm multipath
+> implementation.
 
-I used client/console term for that reason.
+A migration isn't possible?
 
-> > The document indicates you need this one capability on your 
-> > USB port in addition to the USB device (check the complete 
-> > document for how to find the capability). So both host and 
-> > target need this one capability, and then you also need the 
-> > USB device for the whole thing to work.
-> 
-> In fact the original document was rather clear about this; it 
-> says only that the target machine needs the debug capability.  
-> The client machine uses its normal USB driver and treats the 
-> debugging cable as a normal USB serial device.
+> I think it is probably worth putting in a printk now to say "You
+> should probably be using dm-multipath".  But we probably do need
+> to leave the code there for a while longer..
 
-yes.
+Maybe it would be possible to disable creation of new multipath
+arrays, but still to support existing ones, insert the warning, and
+quote a fixed deprecation date, say, 5 years into the future?
 
-btw., i think this document is being over-engineered. 
-Significantly so.
+--=20
+ .''`.   martin f. krafft <madduck@d.o>      Related projects:
+: :'  :  proud Debian developer               http://debiansystem.info
+`. `'`   http://people.debian.org/~madduck    http://vcs-pkg.org
+  `-  Debian - when you have better things to do than fixing systems
+=20
+god is dead.
+    -- nietzsche
+nietzsche is dead.
+    -- god
+nietzsche is god.
+    -- dead
 
-	Ingo
+--osDK9TLjxFScVI/L
+Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
+Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmxPnsACgkQIgvIgzMMSnUQcQCff50ZnDoBq+g8Ek7c3O47GmPH
+vKcAnRIu96ezlsqesT+c4i7mJOH8Sn5k
+=F9q5
+-----END PGP SIGNATURE-----
+
+--osDK9TLjxFScVI/L--
