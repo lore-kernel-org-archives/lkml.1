@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZCFQDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbZCFQFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbZCFQDA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbZCFQCr
+	id S1756111AbZCFQFp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbZCFQFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:02:47 -0500
-Received: from clegg.madduck.net ([193.242.105.96]:33757 "EHLO
-	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbZCFQCq (ORCPT
+	Fri, 6 Mar 2009 11:05:37 -0500
+Received: from mail-gx0-f163.google.com ([209.85.217.163]:44653 "EHLO
+	mail-gx0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754251AbZCFQFg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:02:46 -0500
-Date: Fri, 6 Mar 2009 16:17:15 +0100
-From: martin f krafft <madduck@debian.org>
-To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Future of md multipath
-Message-ID: <20090306151715.GD6030@lapse.rw.madduck.net>
-Mail-Followup-To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090303180433.GA27569@lst.de> <18863.15828.150450.275712@notabene.brown> <20090305130017.GA1696@piper.oerlikon.madduck.net> <18864.46425.242906.213929@notabene.brown>
+	Fri, 6 Mar 2009 11:05:36 -0500
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="osDK9TLjxFScVI/L"
-Content-Disposition: inline
-In-Reply-To: <18864.46425.242906.213929@notabene.brown>
-X-Motto: Keep the good times rollin'
-X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.29-rc7-686 i686
-Organization: The Debian project
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090228204622.29719.55082.stgit@localhost.localdomain>
+References: <20090228204622.29719.55082.stgit@localhost.localdomain>
+Date: Fri, 6 Mar 2009 09:05:33 -0700
+Message-ID: <fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
+Subject: Re: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       John.Linn@xilinx.com, sr@denx.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oops, sorry Jens.  I forgot to CC: you on this patch.
 
---osDK9TLjxFScVI/L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+g.
 
-also sprach Neil Brown <neilb@suse.de> [2009.03.06.0632 +0100]:
-> > I understand that dm-multipath is more favourable, but unless
-> > there's a riskless way to convert mdadm multipath into dm-multipath
-> > on old systems, I don't think we have the option of deprecating it,
-> > unless deprecation lasts for several years.
->=20
-> Always the practical one, aren't you :-)
+On Sat, Feb 28, 2009 at 1:46 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> The SystemACE driver does not handle an empty CF slot gracefully.  An
+> empty CF slot ends up hanging the system.  This patch adds a check for
+> the CF state and stops trying to process requests if the slot is empty.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+>  drivers/block/xsysace.c |   22 ++++++++++++++++++++++
+>  1 files changed, 22 insertions(+), 0 deletions(-)
+>
+>
+> diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+> index 381d686..ec5b8ca 100644
+> --- a/drivers/block/xsysace.c
+> +++ b/drivers/block/xsysace.c
+> @@ -489,6 +489,28 @@ static void ace_fsm_dostate(struct ace_device *ace)
+>                ace->fsm_state, ace->id_req_count);
+>  #endif
+>
+> +       /* Verify that there is actually a CF in the slot.  If not, then
+> +        * bail out back to the idle state and wake up all the waiters */
+> +       status = ace_in32(ace, ACE_STATUS);
+> +       if ((status & ACE_STATUS_CFDETECT) == 0) {
+> +               ace->fsm_state = ACE_FSM_STATE_IDLE;
+> +               ace->media_change = 1;
+> +               set_capacity(ace->gd, 0);
+> +               dev_info(ace->dev, "No CF in slot\n");
+> +
+> +               /* Drop all pending requests */
+> +               while ((req = elv_next_request(ace->queue)) != NULL)
+> +                       end_request(req, 0);
+> +
+> +               /* Drop back to IDLE state and notify waiters */
+> +               ace->fsm_state = ACE_FSM_STATE_IDLE;
+> +               ace->id_result = -EIO;
+> +               while (ace->id_req_count) {
+> +                       complete(&ace->id_completion);
+> +                       ace->id_req_count--;
+> +               }
+> +       }
+> +
+>        switch (ace->fsm_state) {
+>        case ACE_FSM_STATE_IDLE:
+>                /* See if there is anything to do */
+>
+>
 
-Goes with the territory. Debian does not need to make long term
-support guarantees. They're inherent in our quality assurance,
-security support, and chaotic organisation. :)
 
-> I wonder how hard it would be to get mdadm to assemble a multipath
-> using the 'dm' code rather than the 'md' code....
-> Or to get the md layer in the kernel to hook in to the dm multipath
-> implementation.
 
-A migration isn't possible?
-
-> I think it is probably worth putting in a printk now to say "You
-> should probably be using dm-multipath".  But we probably do need
-> to leave the code there for a while longer..
-
-Maybe it would be possible to disable creation of new multipath
-arrays, but still to support existing ones, insert the warning, and
-quote a fixed deprecation date, say, 5 years into the future?
-
---=20
- .''`.   martin f. krafft <madduck@d.o>      Related projects:
-: :'  :  proud Debian developer               http://debiansystem.info
-`. `'`   http://people.debian.org/~madduck    http://vcs-pkg.org
-  `-  Debian - when you have better things to do than fixing systems
-=20
-god is dead.
-    -- nietzsche
-nietzsche is dead.
-    -- god
-nietzsche is god.
-    -- dead
-
---osDK9TLjxFScVI/L
-Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
-Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmxPnsACgkQIgvIgzMMSnUQcQCff50ZnDoBq+g8Ek7c3O47GmPH
-vKcAnRIu96ezlsqesT+c4i7mJOH8Sn5k
-=F9q5
------END PGP SIGNATURE-----
-
---osDK9TLjxFScVI/L--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
