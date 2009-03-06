@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZCFLTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbZCFLUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbZCFLTh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 06:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZCFLTQ
+	id S1755894AbZCFLUu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 06:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZCFLUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 06:19:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45957 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755818AbZCFLTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 06:19:15 -0500
-Date: Fri, 6 Mar 2009 12:18:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH][GIT PULL] add tracing_on/tracing_off to kernel.h
-Message-ID: <20090306111856.GJ21168@elte.hu>
-References: <alpine.DEB.2.00.0903051120110.26101@gandalf.stny.rr.com>
+	Fri, 6 Mar 2009 06:20:40 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1382 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbZCFLUj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 06:20:39 -0500
+Date: Fri, 6 Mar 2009 11:10:03 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier.adi@gmail.com>
+Message-ID: <20090306110949.GC6493@sirena.org.uk>
+References: <1236326010-683-1-git-send-email-cooloney@kernel.org> <1236326010-683-5-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903051120110.26101@gandalf.stny.rr.com>
+In-Reply-To: <1236326010-683-5-git-send-email-cooloney@kernel.org>
+X-Cookie: Q: How do you keep a moron in suspense?
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [alsa-devel] [PATCH 4/5] ASoC: Blackfin: drop pointless casts
+	due to dma updates
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 06, 2009 at 03:53:29PM +0800, Bryan Wu wrote:
+> From: Mike Frysinger <vapier.adi@gmail.com>
+> 
+> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  sound/blackfin/bf53x_sport.c |   55 ++++++++++++++++++-----------------------
+>  1 files changed, 24 insertions(+), 31 deletions(-)
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (1):
->       tracing: add tracing_on/tracing_off to kernel.h
-> 
-> ----
->  include/linux/kernel.h      |   29 ++++++++++++++++++++++++++++-
->  include/linux/ring_buffer.h |   15 ---------------
->  2 files changed, 28 insertions(+), 16 deletions(-)
-
-Pulled, thanks Steve!
-
-	Ingo
+Mainline doesn't have a sound/blackfin directory at all as far as I can
+tell so this patch doesn't apply?  The only mainline support I can see
+for blackfin audio is sound/soc/blackfin which only has a generic
+bf5xx-sport file.  A similar cleanup was done there a while ago.
