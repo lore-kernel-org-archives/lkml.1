@@ -1,61 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZCFSES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZCFSJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbZCFSES (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZCFSEH
+	id S1756198AbZCFSJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbZCFSJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:04:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53265 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZCFSEG (ORCPT
+	Fri, 6 Mar 2009 13:09:17 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:33157 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750728AbZCFSJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:04:06 -0500
-Date: Fri, 6 Mar 2009 13:04:00 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
+	Fri, 6 Mar 2009 13:09:17 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah0FALvysElMQW1W/2dsb2JhbACBTtUUhAgG
+Date: Fri, 6 Mar 2009 13:09:11 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
- implementation in favour of ftrace_bprintk
-In-Reply-To: <20090306171413.GB32128@elte.hu>
-Message-ID: <alpine.DEB.2.00.0903061302210.23248@gandalf.stny.rr.com>
-References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com> <20090306170222.GA11285@elte.hu> <20090306171413.GB32128@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH -tip 0/4] Text edit lock and atomic text_poke()
+Message-ID: <20090306180911.GB14236@Krystal>
+References: <49B1428A.9050500@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <49B1428A.9050500@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:07:34 up 6 days, 14:33,  1 user,  load average: 0.29, 0.45,
+	0.50
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 6 Mar 2009, Ingo Molnar wrote:
-> > 
-> > i've put them into a separate branch forked off 
-> > tip:tracing/ftrace: tip:tracing/printk. The two vsprintf 
-> > patches are in tip:core/printk and merged into tracing/ftrace.
-> > 
-> > You can thus apply your current enhancements without any 
-> > interaction with me - and merge tracing/printk into the 
-> > tip:tracing/ftrace branch on your own schedule, ok?
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Hi,
 > 
-> ah - i misunderstood - i see that it interacts with your commits 
-> from last night.
+> Here is a series of patches which introduce text_mutex for protecting
+> editing kernel text from each other subsystems, and make text_poke()
+> atomic by using fixmap.
 > 
-> I've excluded tip:tracing/printk from tip:master for now and 
-> will let you guys fix it up when you have time for it.
+> BTW,
+> 
+> > Paravirt and alternatives are always done when SMP is inactive, so there is no
+> > need to use locks.
+> 
+> Mathieu, I'm not sure that means. alternatives will be called from module
+> init code and other place where the system has already been running multi-
+> -threads(and they use smp_alt mutex). So, is it possible that those functions
+> will sleep or yield to another process?
+> 
 
-Ingo,
+As I remember, module code uses text_poke_early when modifying the
+module text _before_ the module is made available to the rest of the
+kernel. Therefore, it behaves as if it was in a UP system, and that's
+ok, because only one CPU has to touch the text. Therefore, there is no
+need to use text_poke, and therefore no need to take the text mutex.
 
-It compiles fine. Only a new item in the struct was added, nothing was 
-removed. It just prints out a bit funny ;-)
+Or maybe has it changed ? But I doubt so.
 
-You can go ahead and merge it into tracing/ftrace, and then I can work 
-with that to fix up the formatting.
+Mathieu
 
--- Steve
+> Anyway, I added a new patch which locks text_mutex in alternative_smp_*.
+> 
+> Thank you,
+> 
+>  arch/x86/include/asm/fixmap.h |    2 ++
+>  arch/x86/kernel/alternative.c |   29 ++++++++++++++++++++---------
+>  include/linux/memory.h        |    6 ++++++
+>  kernel/kprobes.c              |   15 +++++++++++++--
+>  mm/memory.c                   |    9 +++++++++
+>  5 files changed, 50 insertions(+), 11 deletions(-)
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
