@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZCFSqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbZCFStd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZCFSqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbZCFSpf
+	id S1757103AbZCFStd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZCFStY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:45:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56430 "EHLO mx3.mail.elte.hu"
+	Fri, 6 Mar 2009 13:49:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39322 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757051AbZCFSpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:45:33 -0500
-Date: Fri, 6 Mar 2009 19:45:14 +0100
+	id S1751401AbZCFStY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:49:24 -0500
+Date: Fri, 6 Mar 2009 19:49:04 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, stable@kernel.org, dan.yeisley@unisys.com,
-       tglx@linutronix.de
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/apic] x86: MSI: check for BIOS assigned addresses
-Message-ID: <20090306184514.GC15526@elte.hu>
-References: <1236352309.31604.2.camel@localhost.localdomain> <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
+	implementation in favour of ftrace_bprintk
+Message-ID: <20090306184904.GA24571@elte.hu>
+References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com> <20090306170222.GA11285@elte.hu> <20090306171413.GB32128@elte.hu> <alpine.DEB.2.00.0903061302210.23248@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org>
+In-Reply-To: <alpine.DEB.2.00.0903061302210.23248@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,27 +40,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Daniel Yeisley <dan.yeisley@unisys.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Commit-ID:  affd49d36e2e2df4cbb3e07a57db901c23823b6a
-> Gitweb:     http://git.kernel.org/tip/affd49d36e2e2df4cbb3e07a57db901c23823b6a
-> Author:     "Daniel Yeisley" <dan.yeisley@unisys.com>
-> AuthorDate: Fri, 6 Mar 2009 10:11:49 -0500
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 6 Mar 2009 19:32:44 +0100
 > 
-> x86: MSI: check for BIOS assigned addresses
+> On Fri, 6 Mar 2009, Ingo Molnar wrote:
+> > > 
+> > > i've put them into a separate branch forked off 
+> > > tip:tracing/ftrace: tip:tracing/printk. The two vsprintf 
+> > > patches are in tip:core/printk and merged into tracing/ftrace.
+> > > 
+> > > You can thus apply your current enhancements without any 
+> > > interaction with me - and merge tracing/printk into the 
+> > > tip:tracing/ftrace branch on your own schedule, ok?
+> > 
+> > ah - i misunderstood - i see that it interacts with your commits 
+> > from last night.
+> > 
+> > I've excluded tip:tracing/printk from tip:master for now and 
+> > will let you guys fix it up when you have time for it.
 > 
-> Impact: fix ACPI hotplug on certain systems
+> Ingo,
+> 
+> It compiles fine. Only a new item in the struct was added, nothing was 
+> removed. It just prints out a bit funny ;-)
+> 
+> You can go ahead and merge it into tracing/ftrace, and then I 
+> can work with that to fix up the formatting.
 
-Note, this commit means that i moved the commit over from 
-tip:x86/urgent into tip:x86/apic - i.e. with a 2.6.30 merge 
-date. When exactly was this regression introduced? I think this 
-code never really accepted the MSI settings from the firmware, 
-so changing that behavior might affect a lot of systems.
+triggers this build failure on certain configs:
 
-So i'm uneasy about applying this fix this late in the .29 
-cycle, but marked it for -stable backport so it could hit 
-2.6.29.1 if it stays problem-free.
+kernel/trace/trace.c:1205: error: implicit declaration of function 'vbin_printf'
+kernel/trace/trace_output.c:64: error: implicit declaration of function 'bstr_printf'
+
+so i've excluded it from tip:master again for now.
 
 	Ingo
