@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbZCFPwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZCFPzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756467AbZCFPwT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbZCFPwF
+	id S1756206AbZCFPzf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbZCFPz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:52:05 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37900 "HELO
+	Fri, 6 Mar 2009 10:55:26 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:58138 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755256AbZCFPwC (ORCPT
+	with SMTP id S1754581AbZCFPzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:52:02 -0500
-Date: Fri, 6 Mar 2009 10:52:00 -0500 (EST)
+	Fri, 6 Mar 2009 10:55:25 -0500
+Date: Fri, 6 Mar 2009 10:55:23 -0500 (EST)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@iolanthe.rowland.org
 To: Daniel Walker <dwalker@fifo99.com>
@@ -20,55 +20,30 @@ cc: Randy Dunlap <randy.dunlap@oracle.com>, Yinghai Lu <yinghai@kernel.org>,
        <tglx@linutronix.de>, <sarah.a.sharp@intel.com>, <mingo@elte.hu>,
        <linux-tip-commits@vger.kernel.org>
 Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
-In-Reply-To: <1236298195.5937.112.camel@desktop>
-Message-ID: <Pine.LNX.4.44L0.0903060958130.3461-100000@iolanthe.rowland.org>
+In-Reply-To: <1236351828.5937.130.camel@desktop>
+Message-ID: <Pine.LNX.4.44L0.0903061052510.3461-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009, Daniel Walker wrote:
+On Fri, 6 Mar 2009, Daniel Walker wrote:
 
-> On Thu, 2009-03-05 at 15:59 -0800, Randy Dunlap wrote:
+> On Fri, 2009-03-06 at 09:57 -0500, Alan Stern wrote:
 > 
-> > > - a.) Host/target system needs to have USB debug port capability.
-> > > + a.) You will need two USB ports. One on the client/console system and one on 
-> > > +     the target system.
-> > > + 
-> > > + b.) The client/console and target USB ports must have the debug port
-> > > +     capability.
-> > 
-> > Is that correct on the (ugh, I think that the naming/terminology is
-> > still mucked up, but you didn't do that) host/target system?
-> > 
-> > On the client/console (which I would call the host and I would call the
-> > "Host/target" here just the Target system), a USB debug port is needed,
-> > but on the Host/target, it should just look like a USB device.
-> > At least that was the intent AFAIK/IIRC.  No?
-> > 
+> > It is _not_ diehard, at least not according to Linus.  He has posted a 
+> > couple of messages expressing his opinion that overall readability is 
+> > more important than sticking rigidly to 80 columns.
 > 
-> >From the rest of document I assumed Host/target was referring to both
-> sides of the connection. So you would need USB on both sides for this
-> thing to work. I assumed Client/console was just the host. I guess that
-> is all kind of confusing tho ..
+> My experience has been that anyone sending over 80 columns is sure to
+> get slammed, just like with this document patch. So when I say it's die
+> hard that's what I mean. Plus we have the checkpatch clean phenomenon.
+> So Linus may not care but everyone else on this list does seem to care..
 
-The term "Host" is too confusing to be used here; it has too many other 
-meanings.  "Target" is good.
-
-"Client" is probably okay too, but I don't like "Console" so much
-because both machines will have a console.  "Debugging console" is more
-accurate but also more cumbersome.
-
-> The document indicates you need this one capability on your USB port in
-> addition to the USB device (check the complete document for how to find
-> the capability). So both host and target need this one capability, and
-> then you also need the USB device for the whole thing to work.
-
-In fact the original document was rather clear about this; it says only
-that the target machine needs the debug capability.  The client machine 
-uses its normal USB driver and treats the debugging cable as a normal 
-USB serial device.
+Well, I wouldn't have said anything if you ran over by only a few 
+characters.  But your line was 97 characters long!
 
 Alan Stern
+
 
