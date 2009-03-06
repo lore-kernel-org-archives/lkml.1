@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbZCFSZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbZCFSZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbZCFSZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZCFSYx
+	id S1756947AbZCFSZm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbZCFSYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 6 Mar 2009 13:24:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42030 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756671AbZCFSYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Mar 2009 13:24:53 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:34454 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756798AbZCFSYw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:24:52 -0500
-Date: Fri, 6 Mar 2009 12:24:51 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090306182451.GA6307@us.ibm.com>
-References: <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz> <20090305210840.GA2499@x200.localdomain> <1236288427.22399.122.camel@nimitz> <20090305220044.GA2819@x200.localdomain> <1236291865.22399.139.camel@nimitz> <20090306143425.GA31250@us.ibm.com> <1236354509.10626.29.camel@nimitz> <20090306162337.GA3040@us.ibm.com> <1236357965.10626.51.camel@nimitz>
+Date: Fri, 6 Mar 2009 19:24:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com
+Subject: Re: [Patch] mm tracepoints
+Message-ID: <20090306182419.GA28631@elte.hu>
+References: <alpine.DEB.2.00.0903052124240.14535@gandalf.stny.rr.com> <20090306110423.GD21168@elte.hu> <1236342797.3154.1.camel@dhcp47-138.lab.bos.redhat.com> <20090306135547.GB21907@elte.hu> <1236358657.1476.56.camel@dhcp-100-19-198.bos.redhat.com> <20090306171016.GA32128@elte.hu> <1236361106.6326.595.camel@laptop> <1236362197.6326.615.camel@laptop> <20090306180154.GA20292@elte.hu> <1236363625.6326.641.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236357965.10626.51.camel@nimitz>
+In-Reply-To: <1236363625.6326.641.camel@laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Fri, 2009-03-06 at 10:23 -0600, Serge E. Hallyn wrote:
-> > Which imo is fine, but my question is whether that leaves any actual
-> > value in the persistent per-resource uncheckpointable flag.
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Fri, 2009-03-06 at 19:01 +0100, Ingo Molnar wrote:
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Fri, 2009-03-06 at 18:38 +0100, Peter Zijlstra wrote:
+> > > > On Fri, 2009-03-06 at 18:10 +0100, Ingo Molnar wrote:
+> > > > > Looks pretty good and useful to me. I've Cc:-ed more mm folks, 
+> > > > > it would be nice to hear their opinion about these tracepoints.
+> > > > > 
+> > > > > Andrew, Nick, Peter, what do you think?
+> > > > 
+> > > > Bit sad we use the struct mm_struct * as mm identifier (little %lx vs %p
+> > > > confusion there too), but I suppose there simply isn't anything better.
+> > > 
+> > > > Things missing, 
+> > > 
+> > > Why only anon and filemap, that misses out on all the funky 
+> > > driver ->fault() handlers.
+> > 
+> > btw., does it include shm faults? I think all of this would 
+> > be handled if the tracepoint was at handle_mm_fault(), 
+> > right?
 > 
-> OK, let's take a look back at this discussion a little bit and how we
-> got here.
-> 
-> Ingo quotes:
-> > Yeah, per resource it should be. That's per task in the normal 
-> > case - except for threaded workloads where it's shared by 
-> > threads.
-> 
-> > Uncheckpointable should be a one-way flag anyway. We want this 
-> > to become usable, so uncheckpointable functionality should be as 
-> > painful as possible, to make sure it's getting fixed ...
-> 
-> > Is there any automated test that could discover C/R breakage via 
-> > brute force? All that matters in such cases is to get the "you 
-> > broke stuff" information as soon as possible. If it comes at an 
-> > early stage developers can generally just fix stuff.
-> 
-> You add these things together and you get what I posted.  My patch is:
-> 1. per resource
-> 2. has a one way flag
-> 3. Gives messages to developers at an early stage (dmesg) and lets them
->    explore it more thoroughly (/proc)
-> 
-> But, these "early stage" messages are completely opposed to an approach
-> that uses sys_checkpoint() in some form (like with a -1 fd as an
-> argument).
+> Partially, you wouldn't be able to do the file:offset thing 
+> you asked for.
 
-Well I disagree with that.  The 'early stage' messages could be seen as
-either:
+That could be done further down in filemap_fault(). I.e. have an 
+all-encompassing tracepoint for all things [user-] page faults, 
+and a few opt-in places for more interesting specific fault 
+types.
 
-	1. a short-term way to prioritize resources to support
-	or
-	2. a long-term way to catch new resources introduced
-	without checkpoint/restart support
+> But yeah, also hugetlb seems to be missing.
 
-I don't believe 2. would work.  I think 1. would work, but that we
-risk imposing permanent code changes to support a temporary goal.
+Probably not that huge of an issue, given how rare those faults 
+are ;-)
 
-In contrast, the sys_checkpoint() check will always be needed to
-check whether a particular application is checkpointable.  For
-instance a task will never be checkpointable if it shares a mm-struct
-with a task not being checkpointed.
-
-> Think of it like lockdep.  We *could* have designed lockdep to simply
-> give us a nice message whenever we do an a/b b/a deadlock.  That would
-> be helpful.  Or, we could design it to record all lock acquisitions that
-> didn't deadlock to see if they ever possibly deadlock.  (We did the
-> second one, btw).  That gave an early, useful, warning that developers
-> could fix before we encounter an actual problem.  I'm advocating such a
-> mechanism for c/r.  
-
-If you can convince me that it'll do that you'll have me on board :)
-
--serge
+	Ingo
