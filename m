@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZCFVSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZCFVYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbZCFVSp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 16:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbZCFVSe
+	id S1755649AbZCFVYW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 16:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbZCFVYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 16:18:34 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:39884 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753594AbZCFVSd (ORCPT
+	Fri, 6 Mar 2009 16:24:09 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:52789 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753768AbZCFVYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 16:18:33 -0500
-Date: Fri, 6 Mar 2009 15:18:32 -0600
-From: scameron@beardog.cca.cpqcorp.net
-To: Grant Grundler <grundler@google.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, mike.miller@hp.com,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
-Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-Message-ID: <20090306211832.GV15340@beardog.cca.cpqcorp.net>
-References: <20090306085529.GP11787@kernel.dk> <20090306181302X.fujita.tomonori@lab.ntt.co.jp> <20090306092114.GS11787@kernel.dk> <20090306182705P.fujita.tomonori@lab.ntt.co.jp> <20090306093520.GV11787@kernel.dk> <20090306143856.GT15340@beardog.cca.cpqcorp.net> <da824cf30903061259j4a37ab7cneea308c736da469d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <da824cf30903061259j4a37ab7cneea308c736da469d@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Fri, 6 Mar 2009 16:24:07 -0500
+Message-ID: <49B1949E.2000300@oracle.com>
+Date: Fri, 06 Mar 2009 13:24:46 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-media@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -next] dvb/frontends: fix duplicate 'debug' symbol
+References: <20090306191311.697e7b97.sfr@canb.auug.org.au>
+In-Reply-To: <20090306191311.697e7b97.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.49B1943A.01AE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 12:59:48PM -0800, Grant Grundler wrote:
-> On Fri, Mar 6, 2009 at 6:38 AM,  <scameron@beardog.cca.cpqcorp.net> wrote:
-> ...
-> > The command buffers have to be in the first 4GB of memory, as the command
-> > register is only 32 bits, so they are allocated by pci_alloc_consistent.
-> 
-> Huh?!!
-> ISTR the mpt2sas driver is indicating it can handle 64-bit DMA masks for
-> both streaming and control data. I need to double check to be sure of that.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-it is something specific to smart array.  The command register that we
-stuff the bus address of the command into is only 32 bits wide.  Everything
-else it does is 64 bits.
-> 
-> 
-> > However, the chained SG lists don't have that limitation, so I think they
-> > can be kmalloc'ed, and so not chew up and unreasonable amount of the
-> > pci_alloc_consistent memory and get a larger number of SGs.   ...right?
-> > Maybe that's the better way to do it.
-> 
-> I thought the driver was tracking this and using the appropriate construct
-> based on which DMA mask is in effect.
+Fix dvb frontend debug variable to be static, to avoid linker
+errors:
 
-The DMA mask is insufficiently expressive to describe the limitations and
-capabilities of the Smart array.  There's no way to describe with a single
-DMA mask that the command register is 32-bits, but everything else is 64
-bits.
+drivers/built-in.o:(.data+0xf4b0): multiple definition of `debug'
+arch/x86/kernel/built-in.o:(.kprobes.text+0x90): first defined here
+ld: Warning: size of symbol `debug' changed from 85 in arch/x86/kernel/built-in.o to 4 in drivers/built-in.o
 
--- steve
+It would also be Good if arch/x86/kernel/entry_32.S didn't have a
+non-static 'debug' symbol.  OTOH, it helps catch things like this one.
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/media/dvb/frontends/stv0900_core.c |    4 ++--
+ drivers/media/dvb/frontends/stv0900_priv.h |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+--- linux-next-20090306.orig/drivers/media/dvb/frontends/stv0900_core.c
++++ linux-next-20090306/drivers/media/dvb/frontends/stv0900_core.c
+@@ -34,8 +34,8 @@
+ #include "stv0900_priv.h"
+ #include "stv0900_init.h"
+ 
+-int debug = 1;
+-module_param(debug, int, 0644);
++static int stvdebug = 1;
++module_param_named(debug, stvdebug, int, 0644);
+ 
+ /* internal params node */
+ struct stv0900_inode {
+--- linux-next-20090306.orig/drivers/media/dvb/frontends/stv0900_priv.h
++++ linux-next-20090306/drivers/media/dvb/frontends/stv0900_priv.h
+@@ -62,11 +62,11 @@
+ 
+ #define dmd_choose(a, b)	(demod = STV0900_DEMOD_2 ? b : a))
+ 
+-extern int debug;
++static int stvdebug;
+ 
+ #define dprintk(args...) \
+ 	do { \
+-		if (debug) \
++		if (stvdebug) \
+ 			printk(KERN_DEBUG args); \
+ 	} while (0)
+ 
