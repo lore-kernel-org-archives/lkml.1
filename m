@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbZCFLSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbZCFLSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbZCFLSb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 06:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZCFLSW
+	id S1755599AbZCFLSq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 06:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZCFLSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 06:18:22 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:23939 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbZCFLSV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 06:18:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=oZWtdwQnyUp8juTBaXUbKqwWuYDpNLSMNzF/daCd2XKbSfCYT9rxAZpbuiS1mRAj0G
-         RZwamlvt6Gbk6YNwxFNCl2U7vJJWkJfPFAi3OLQ2chP15c9GOU46tIBIoqhWo88aKG9Z
-         LVgYa3pbJdNfIF15nluzobjy7b/j0e91KGZ+E=
-Date: Fri, 6 Mar 2009 19:18:34 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Rob Landley <rob@landley.net>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix ARCH=um segfault on x86-64.
-Message-ID: <20090306111834.GC8991@hack.private>
-References: <200903060042.19084.rob@landley.net> <20090306084848.GO22605@hack.private> <10f740e80903060150p565e9703u81d4fe47cb599ab@mail.gmail.com> <10f740e80903060151w779bbd11ld2fcc437ac7ac321@mail.gmail.com>
+	Fri, 6 Mar 2009 06:18:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45793 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755402AbZCFLSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 06:18:30 -0500
+Date: Fri, 6 Mar 2009 12:18:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [x86-tip] overflow in relocation type 11 val 39ffdd0e8690
+Message-ID: <20090306111822.GI21168@elte.hu>
+References: <1236287654.3677.3.camel@localhost.localdomain> <20090305212535.GA13848@elte.hu> <1236288780.3677.9.camel@localhost.localdomain> <49B083AC.1070505@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <10f740e80903060151w779bbd11ld2fcc437ac7ac321@mail.gmail.com>
+In-Reply-To: <49B083AC.1070505@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 10:51:12AM +0100, Geert Uytterhoeven wrote:
->On Fri, Mar 6, 2009 at 10:50, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Fri, Mar 6, 2009 at 09:48, Américo Wang <xiyou.wangcong@gmail.com> wrote:
->>> On Fri, Mar 06, 2009 at 12:42:14AM -0600, Rob Landley wrote:
->>>>Apparently, nobody other than me has ever attempted to use User Mode Linux
->>>>built from 2.6.28 on x86-64, because it doesn't work.  It still doesn't work
->>>>in current git.  I complained about it not working back in January:
->>>>
->>>>http://sourceforge.net/mailarchive/forum.php?thread_name=200901130159.04389.rob%40landley.net&forum_name=user-
->>>>mode-linux-devel
->>>>http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00669.html
->>>>
->>>>And today, I bothered to track down why.
->>>>
->>>>This is the commit that broke it, when Peter Anvin merged x86 and x86-64 for
->>>>ARCH=um: http://kernel.org/hg/linux-2.6/rev/117978
->>>>
->>>>Here's a patch that fixes it for me:
->>>
->>> Thanks, Bob!
->>
->> I've just did a build of plain v2.6.28 on amd64 aka x86-64. The
->> resulting image ran fine.
->
->So I'm wondering: why does it work for me and not for you?
->
 
-It does work well x86_64, but my question is that whether this will
-break i386 or not, since before, CONFIG_3_LEVEL_PGTABLES depends on
-EXPERIMENTAL on i386, this patch removes it.
+* Tejun Heo <tj@kernel.org> wrote:
 
--- 
-Do what you love, f**k the rest! F**k the regulations!
- 
+> Jaswinder Singh Rajput wrote:
+> > On Thu, 2009-03-05 at 22:25 +0100, Ingo Molnar wrote:
+> >> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >>
+> >>> On latest tip I am getting:
+> >>>
+> >>> [  124.169475] overflow in relocation type 11 val 39ffdd0e8690
+> >>> [  124.169508] `msr_debug' likely not compiled with -mcmodel=kernel
+> >>> [  146.582299] overflow in relocation type 11 val 39ffdd0e8690
+> >>> [  146.582299] `msr_debug' likely not compiled with -mcmodel=kernel
+> >>> [  836.653168] overflow in relocation type 11 val 39ffdd0e8690
+> >>> [  836.653201] `msr_debug' likely not compiled with -mcmodel=kernel
+> >>>
+> >>> But 1d10914bf2c8 was working fine.
+> > 
+> > No it is also not fine :( for percpu.
+> > 
+> >> That's a linker bug - Tejun Cc:-ed.
+> >>
+> > 
+> > Problem is basically with 64 bit percpu on 32 bit it is OK. Ahh, Here is
+> > the solution:
+> > 
+> > http://lkml.org/lkml/2009/3/3/129
+> > 
+> > because of commit 8ac83757149 of Tejun Heo.
+> 
+> Yeah, patchset almost ready.  Please wait a bit more.
+> 
+> Thanks.
+
+Latest tip:master should have your fixes for modules and kernel 
+text getting farther than ~2GB apart from each other on 64-bit.
+
+	Ingo
