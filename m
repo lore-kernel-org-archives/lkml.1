@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZCFTJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZCFTJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756761AbZCFTJT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZCFTJF
+	id S1756954AbZCFTJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:09:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZCFTJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:09:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34953 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbZCFTJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:09:04 -0500
-Date: Fri, 6 Mar 2009 20:08:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Fri, 6 Mar 2009 14:09:24 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:55329 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756834AbZCFTJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 14:09:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ekxiMgRnyyM24WpSK3+YHciBxG9f4xsxcWoOU2vTZwmtxPN7oQCX0SZuw1ct/LFiei
+         meH4zjiQciM8FnCJ4h008vIKJwlwlOmyDhMZ5OqiEnmNKmlAgJHjrD4knpb1IRfO8k8n
+         QFv67fvNOYdawJBuYLn+RsQp/mc4KkZ5fZmX8=
+Date: Fri, 6 Mar 2009 20:09:17 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH -tip 4/4] Atomic text_poke() with fixmap take2
-Message-ID: <20090306190828.GA28582@elte.hu>
-References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com> <20090306181356.GD14236@Krystal> <49B16C69.6060203@redhat.com>
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
+	implementation in favour of ftrace_bprintk
+Message-ID: <20090306190917.GD7329@nowhere>
+References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com> <20090306170222.GA11285@elte.hu> <20090306171413.GB32128@elte.hu> <alpine.DEB.2.00.0903061302210.23248@gandalf.stny.rr.com> <20090306184904.GA24571@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49B16C69.6060203@redhat.com>
+In-Reply-To: <20090306184904.GA24571@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 06, 2009 at 07:49:04PM +0100, Ingo Molnar wrote:
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > 
+> > On Fri, 6 Mar 2009, Ingo Molnar wrote:
+> > > > 
+> > > > i've put them into a separate branch forked off 
+> > > > tip:tracing/ftrace: tip:tracing/printk. The two vsprintf 
+> > > > patches are in tip:core/printk and merged into tracing/ftrace.
+> > > > 
+> > > > You can thus apply your current enhancements without any 
+> > > > interaction with me - and merge tracing/printk into the 
+> > > > tip:tracing/ftrace branch on your own schedule, ok?
+> > > 
+> > > ah - i misunderstood - i see that it interacts with your commits 
+> > > from last night.
+> > > 
+> > > I've excluded tip:tracing/printk from tip:master for now and 
+> > > will let you guys fix it up when you have time for it.
+> > 
+> > Ingo,
+> > 
+> > It compiles fine. Only a new item in the struct was added, nothing was 
+> > removed. It just prints out a bit funny ;-)
+> > 
+> > You can go ahead and merge it into tracing/ftrace, and then I 
+> > can work with that to fix up the formatting.
+> 
+> triggers this build failure on certain configs:
+> 
+> kernel/trace/trace.c:1205: error: implicit declaration of function 'vbin_printf'
+> kernel/trace/trace_output.c:64: error: implicit declaration of function 'bstr_printf'
+> 
+> so i've excluded it from tip:master again for now.
+> 
+> 	Ingo
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
->  		pages[1] = virt_to_page(addr + PAGE_SIZE);
->  	}
->  	BUG_ON(!pages[0]);
-> -	if (!pages[1])
-> -		nr_pages = 1;
-> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-> -	BUG_ON(!vaddr);
-> -	local_irq_disable();
-> +	local_irq_save(flags);
-> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
-> +	if (pages[1])
-> +		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
-> +	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
->  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-> -	local_irq_enable();
-> -	vunmap(vaddr);
-> +	clear_fixmap(FIX_TEXT_POKE0);
-> +	if (pages[1])
-> +		clear_fixmap(FIX_TEXT_POKE1);
-> +	local_flush_tlb();
-> +	local_irq_restore(flags);
->  	sync_core();
+This is weird. Can you send me one of these configs please?
 
-I'm not sure at all about this widening of the irq-atomic 
-section and the idea of allowing non-locked access on single-CPU 
-situations - we dont really want to micro-optimize any of this 
-on such a level, holding the text lock is a robust rule all code 
-should be listening to. (Creating locking assymetry always 
-inserts a certain amount of fragility - adding to an already 
-fragile concept here.)
-
-And note that there's no reason why text_poke could not be used 
-in stop_machine_run() - the stop_machine_run() handler must not 
-take the text_lock of course - but outside code calling 
-stop_machine_run() can do it and can hence serialize properly.
-
-Note that even if we did this then your v2 patch is not fully 
-correct: you need to move the sync_core() at the end of the 
-sequence inside the critical section too. (right now this is 
-mostly harmless because the INVLPG inside the clear_fixmap() 
-happens to be serializing so it has an implicit sync_core() 
-property - but nevertheless we better do this straight away to 
-not cause problems later down the line.)
-
-	Ingo
