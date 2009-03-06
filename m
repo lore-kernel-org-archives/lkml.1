@@ -1,88 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZCFUdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZCFUhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbZCFUdb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZCFUdV
+	id S1754816AbZCFUhu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZCFUhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:33:21 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43130 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751168AbZCFUdV (ORCPT
+	Fri, 6 Mar 2009 15:37:39 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:49040 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753794AbZCFUhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:33:21 -0500
-Date: Fri, 6 Mar 2009 15:33:16 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kernel development list <linux-kernel@vger.kernel.org>
-cc: David Airlie <airlied@linux.ie>
-Subject: Problems with AGPGART/drm and X11 2D-acceleration
-Message-ID: <Pine.LNX.4.44L0.0903061522001.2715-100000@iolanthe.rowland.org>
+	Fri, 6 Mar 2009 15:37:38 -0500
+Date: Fri, 6 Mar 2009 13:37:18 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH v10 4/7] PCI: add SR-IOV API for Physical Function driver
+Message-ID: <20090306203717.GG25995@parisc-linux.org>
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-5-git-send-email-yu.zhao@intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235112888-9524-5-git-send-email-yu.zhao@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been experiencing problems running X with recent kernels.  
-Without 2D-acceleration everything seems to work okay, but scrolling is
-uncomfortably slow.  With acceleration enabled...
+On Fri, Feb 20, 2009 at 02:54:45PM +0800, Yu Zhao wrote:
+> +	virtfn->sysdata = dev->bus->sysdata;
+> +	virtfn->dev.parent = dev->dev.parent;
+> +	virtfn->dev.bus = dev->dev.bus;
+> +	virtfn->devfn = devfn;
+> +	virtfn->hdr_type = PCI_HEADER_TYPE_NORMAL;
+> +	virtfn->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
+> +	virtfn->error_state = pci_channel_io_normal;
+> +	virtfn->current_state = PCI_UNKNOWN;
+> +	virtfn->is_pcie = 1;
+> +	virtfn->pcie_type = PCI_EXP_TYPE_ENDPOINT;
+> +	virtfn->dma_mask = 0xffffffff;
+> +	virtfn->vendor = dev->vendor;
+> +	virtfn->subsystem_vendor = dev->subsystem_vendor;
+> +	virtfn->class = dev->class;
 
-Under 2.6.27.19, X runs okay.  But the dmesg log gets these error
-messages when X start:
+There seems to be a certain amount of commonality between this and
+pci_scan_device().  Have you considered trying to make a common helper
+function, or does it not work out well?
 
-[   54.375769] [drm] Initialized drm 1.1.0 20060810
-[   54.441049] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[   54.441521] pci 0000:00:02.0: setting latency timer to 64
-[   54.442380] [drm] Initialized i915 1.6.0 20060119 on minor 0
-[   54.543516] [drm:i915_getparam] *ERROR* Unknown parameter 5
-[   55.292058] [drm:i915_getparam] *ERROR* Unknown parameter 5
+> +	pci_device_add(virtfn, virtfn->bus);
 
-Under 2.6.28.7, X fails during startup and exits with an error message.  
-Dmesg says:
+Greg is probably going to ding you here for adding the device, then
+creating the symlinks.  I believe it's now best practice to create the
+symlinks first, so there's no window where userspace can get confused.
 
-[   63.129319] [drm] Initialized drm 1.1.0 20060810
-[   63.196690] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[   63.196704] pci 0000:00:02.0: setting latency timer to 64
-[   63.197679] [drm] Initialized i915 1.6.0 20080730 on minor 0
-[   63.457664] [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
-[   63.457673] [drm:i915_gem_object_pin] *ERROR* Failure to bind: -12
+> +	mutex_unlock(&iov->pdev->sriov->lock);
 
-Under 2.6.29-rc6, X hangs during startup.  I have to reboot the machine
-to recover.  Dmesg says only:
+I question the existance of this mutex now.  What's it protecting?
 
-[   57.001997] [drm] Initialized drm 1.1.0 20060810
-[   57.121966] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[   57.121980] pci 0000:00:02.0: setting latency timer to 64
-[   57.127739] [drm] Initialized i915 1.6.0 20080730 on minor 0
+Aren't we going to be implicitly protected by virtue of the Physical
+Function device driver being the only one calling this function, and the
+driver will be calling it from the ->probe routine which is not called
+simultaneously for the same device.
 
-Relevant device info:
+> +	virtfn->physfn = pci_dev_get(dev);
+> +
+> +	rc = pci_bus_add_device(virtfn);
+> +	if (rc)
+> +		goto failed1;
+> +	sprintf(buf, "%d", id);
 
-# lspci -v -s 0:2.0
-00:02.0 VGA compatible controller: Intel Corporation 82845G/GL[Brookdale-G]/GE Chipset Integrated Graphics Device (rev 03) (prog-if 00 [VGA controller])
-        Subsystem: Intel Corporation Device 5247
-        Flags: bus master, fast devsel, latency 0, IRQ 16
-        Memory at f0000000 (32-bit, prefetchable) [size=128M]
-        Memory at ffa80000 (32-bit, non-prefetchable) [size=512K]
-        Capabilities: [d0] Power Management version 1
-        Kernel modules: intelfb
+%u, perhaps?  And maybe 'id' should always be unsigned?  Just a thought.
 
->From /etc/X11/xorg.conf:
+> +	rc = sysfs_create_link(&iov->dev.kobj, &virtfn->dev.kobj, buf);
+> +	if (rc)
+> +		goto failed1;
+> +	rc = sysfs_create_link(&virtfn->dev.kobj, &dev->dev.kobj, "physfn");
+> +	if (rc)
+> +		goto failed2;
 
-Section "Device"
-        Identifier  "Card0"
-        Driver      "intel"
-        VendorName  "Intel Corporation"
-        BoardName   "82845G/GL[Brookdale-G]/GE Chipset Integrated Graphics Device"
-        BusID       "PCI:0:2:0"
-        Option      "AccelMethod"       "XAA"
-#       Option      "NoAccel" "yes"
-        Option      "BackingStore"      "on"
-EndSection
+I'm glad to see these symlinks documented in later patches!
 
-I use XAA because the default EXA method causes X to hang during 
-startup even under 2.6.27.
+> +	nres = 0;
+> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+> +		res = dev->resource + PCI_SRIOV_RESOURCES + i;
+> +		if (!res->parent)
+> +			continue;
+> +		nres++;
+> +	}
 
-Any advice or suggestions for things to try?
+Can't this be written more simply as:
 
-Alan Stern
+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+		res = dev->resource + PCI_SRIOV_RESOURCES + i;
+		if (res->parent)
+			nres++;
+	}
+?
 
+> +	if (nres != iov->nres) {
+> +		dev_err(&dev->dev, "no enough MMIO for SR-IOV\n");
+> +		return -ENOMEM;
+> +	}
+
+Randy, can you help us out with better wording here?
+
+> +		dev_err(&dev->dev, "no enough bus range for SR-IOV\n");
+
+and here.
+
+> +	if (iov->link != dev->devfn) {
+> +		rc = -ENODEV;
+> +		list_for_each_entry(link, &dev->bus->devices, bus_list) {
+> +			if (link->sriov && link->devfn == iov->link)
+> +				rc = sysfs_create_link(&iov->dev.kobj,
+> +						&link->dev.kobj, "dep_link");
+
+I skipped to the end and read patch 7/7 and I still don't understand
+what dep_link is for.  Can you explain please?  In particular, how is it
+different from physfn?
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
