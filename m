@@ -1,71 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZCFPgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZCFPgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbZCFPgF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbZCFPfx
+	id S1755217AbZCFPgc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbZCFPgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:35:53 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:40139 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754208AbZCFPfx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:35:53 -0500
-Date: Fri, 6 Mar 2009 09:35:49 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg Kurz <gkurz@fr.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090306153549.GA898@us.ibm.com>
-References: <20090305163857.0C18F3FD@kernel> <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz> <20090305210840.GA2499@x200.localdomain> <1236288427.22399.122.camel@nimitz> <20090305220044.GA2819@x200.localdomain> <1236352121.5732.80.camel@bahia>
+	Fri, 6 Mar 2009 10:36:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60590 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754514AbZCFPgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 10:36:18 -0500
+Message-ID: <49B142D8.7020601@redhat.com>
+Date: Fri, 06 Mar 2009 10:35:52 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236352121.5732.80.camel@bahia>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH -tip 1/4] Text Edit Lock - Architecture Independent Code (v2)
+References: <49B1428A.9050500@redhat.com>
+In-Reply-To: <49B1428A.9050500@redhat.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg Kurz (gkurz@fr.ibm.com):
-> On Fri, 2009-03-06 at 01:00 +0300, Alexey Dobriyan wrote:
-> > On Thu, Mar 05, 2009 at 01:27:07PM -0800, Dave Hansen wrote:
-> > > > Imagine, unsupported file is opened between userspace checks
-> > > > for /proc/*/checkpointable and /proc/*/fdinfo/*/checkpointable
-> > > > and whatever, you stil have to do all the checks inside checkpoint(2).
-> > > 
-> > > Alexey, we have two problems here.  I completely agree that we have to
-> > > do complete and thorough checks of each file descriptor at
-> > > sys_checkpoint().  Any checks made at other times should not be trusted.
-> > > 
-> > > The other side is what Ingo has been asking for.  How do we *know* when
-> > > we are checkpointable *before* we call (and without calling)
-> > 
-> > This "without calling checkpoint(2)" results in much complications
-> > as demonstrated.
-> > 
-> > task_struct and file are not like other structures because they are exposed
-> > in /proc. For PROC_FS=n kernels, one can't even check.
-> > 
-> > You can do checkpoint(2) without actual dump. You pass, you're most
-> > certainly checkpointable (with inevitable race condition in mind).
-> > 
-> 
-> Ahhh thank you very much Alexey ! I wanted to explain this to Dave a few
-> monthes ago but I failed... probably because of my poor English skills.
-> 
-> https://lists.linux-foundation.org/pipermail/containers/2008-October/013549.html
-> 
-> Why would we add checking all over the place when it MUST be done on the
-> sys_checkpoint() path ? The checkpoint(2) dry-run is definitely the way
-> to go.
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-I'm sure Dave understood that this was possible :)
+This is an architecture independant synchronization around kernel text
+modifications through use of a global mutex.
 
-But what you and Alexey are proposing does not and cannot fullfill
-Ingo's requirement.
+A mutex has been chosen so that kprobes, the main user of this, can sleep during
+memory allocation between the memory read of the instructions it must replace
+and the memory write of the breakpoint.
 
--serge
+Other user of this interface: immediate values.
+
+Paravirt and alternatives are always done when SMP is inactive, so there is no
+need to use locks.
+
+Changelog :
+Export text_mutex directly.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/memory.h |    6 ++++++
+ mm/memory.c            |    9 +++++++++
+ 2 files changed, 15 insertions(+)
+
+Index: 2.6.29-rc7/include/linux/memory.h
+===================================================================
+--- 2.6.29-rc7.orig/include/linux/memory.h
++++ 2.6.29-rc7/include/linux/memory.h
+@@ -99,4 +99,10 @@ enum mem_add_context { BOOT, HOTPLUG };
+ #define hotplug_memory_notifier(fn, pri) do { } while (0)
+ #endif
+
++/*
++ * Kernel text modification mutex, used for code patching. Users of this lock
++ * can sleep.
++ */
++extern struct mutex text_mutex;
++
+ #endif /* _LINUX_MEMORY_H_ */
+Index: 2.6.29-rc7/mm/memory.c
+===================================================================
+--- 2.6.29-rc7.orig/mm/memory.c
++++ 2.6.29-rc7/mm/memory.c
+@@ -48,6 +48,8 @@
+ #include <linux/rmap.h>
+ #include <linux/module.h>
+ #include <linux/delayacct.h>
++#include <linux/kprobes.h>
++#include <linux/mutex.h>
+ #include <linux/init.h>
+ #include <linux/writeback.h>
+ #include <linux/memcontrol.h>
+@@ -99,6 +101,13 @@ int randomize_va_space __read_mostly =
+ 					2;
+ #endif
+
++/*
++ * mutex protecting text section modification (dynamic code patching).
++ * some users need to sleep (allocating memory...) while they hold this lock.
++ */
++DEFINE_MUTEX(text_mutex);
++EXPORT_SYMBOL_GPL(text_mutex);
++
+ static int __init disable_randmaps(char *s)
+ {
+ 	randomize_va_space = 0;
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
