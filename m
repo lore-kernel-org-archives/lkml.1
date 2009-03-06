@@ -1,159 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZCFUwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbZCFU4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbZCFUwR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbZCFUv6
+	id S1756329AbZCFU4R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbZCFUz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:51:58 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:36067 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753976AbZCFUv5 (ORCPT
+	Fri, 6 Mar 2009 15:55:59 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:56455 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557AbZCFUz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:51:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=eGM0sJXrjIK1RE9PIRY0nLnhD5ppvKK97Xee0+y3qrT2k2fhsiIVpDCert38vFe+/k
-         VrOYRatJlW12mKQr8Wy/OaJzlI+xUU3MMaRWKXQTN7NWy+I2KTZ1K2Rix050dQcdEMlX
-         3TbC5UZzjsSpUK7UTmlUuoTlFVj6l+0xX8p1w=
-Date: Fri, 6 Mar 2009 21:51:42 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: netdev@vger.kernel.org
-Cc: Andy Fleming <afleming@freescale.com>,
-       Trent Piepho <tpiepho@freescale.com>, Jean Delvare <khali@linux-fr.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] phylib: convert state_queue work to delayed_work
-Message-ID: <20090306205139.GA30500@joi>
+	Fri, 6 Mar 2009 15:55:58 -0500
+X-IronPort-AV: E=Sophos;i="4.38,316,1233532800"; 
+   d="scan'208";a="152091884"
+From: Roland Dreier <rdreier@cisco.com>
+To: davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: Remove KERN_ERR output if nForce2 chipset not found
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 06 Mar 2009 12:55:56 -0800
+Message-ID: <ada3adqid5v.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 06 Mar 2009 20:55:56.0655 (UTC) FILETIME=[F22847F0:01C99E9D]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It closes a race in phy_stop_machine when reprogramming of phy_timer
-(from phy_state_machine) happens between del_timer_sync and cancel_work_sync.
+Distribution kernels are building cpufreq drivers into the kernel to get
+faster boot; if the nForce2 driver is built in, then on systems that are
+not supported by the driver (ie nearly all current systems), the message
 
-Without this change it could lead to crash if phy_device would be freed after
-phy_stop_machine (timer would fire and schedule freed work).
+    cpufreq: No nForce2 chipset.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Andy Fleming <afleming@freescale.com>
-Cc: Trent Piepho <tpiepho@freescale.com>
+is printed at the KERN_ERR level, which means it goes to the console
+even if quiet boot is turned on.
+
+The best way to handle this is just to delete the message, since the
+likelihood of it ever being of any use to anyone is very low, and other
+cpufreq drivers don't print anything if no matching hardware is found.
+
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 ---
+ arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-This patch was only compile tested.
-
----
- drivers/net/phy/phy.c |   41 +++++++++++------------------------------
- include/linux/phy.h   |    3 +--
- 2 files changed, 12 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
-index e4ede60..58b73b0 100644
---- a/drivers/net/phy/phy.c
-+++ b/drivers/net/phy/phy.c
-@@ -414,7 +414,6 @@ EXPORT_SYMBOL(phy_start_aneg);
+diff --git a/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c b/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
+index 965ea52..055fca3 100644
+--- a/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
++++ b/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
+@@ -419,10 +419,8 @@ static int __init nforce2_init(void)
+ 	/* TODO: do we need to detect the processor? */
  
- static void phy_change(struct work_struct *work);
- static void phy_state_machine(struct work_struct *work);
--static void phy_timer(unsigned long data);
+ 	/* detect chipset */
+-	if (nforce2_detect_chipset()) {
+-		printk(KERN_ERR "cpufreq: No nForce2 chipset.\n");
++	if (nforce2_detect_chipset())
+ 		return -ENODEV;
+-	}
  
- /**
-  * phy_start_machine - start PHY state machine tracking
-@@ -434,11 +433,8 @@ void phy_start_machine(struct phy_device *phydev,
- {
- 	phydev->adjust_state = handler;
- 
--	INIT_WORK(&phydev->state_queue, phy_state_machine);
--	init_timer(&phydev->phy_timer);
--	phydev->phy_timer.function = &phy_timer;
--	phydev->phy_timer.data = (unsigned long) phydev;
--	mod_timer(&phydev->phy_timer, jiffies + HZ);
-+	INIT_DELAYED_WORK(&phydev->state_queue, phy_state_machine);
-+	schedule_delayed_work(&phydev->state_queue, jiffies + HZ);
+ 	return cpufreq_register_driver(&nforce2_driver);
  }
- 
- /**
-@@ -451,8 +447,7 @@ void phy_start_machine(struct phy_device *phydev,
-  */
- void phy_stop_machine(struct phy_device *phydev)
- {
--	del_timer_sync(&phydev->phy_timer);
--	cancel_work_sync(&phydev->state_queue);
-+	cancel_delayed_work_sync(&phydev->state_queue);
- 
- 	mutex_lock(&phydev->lock);
- 	if (phydev->state > PHY_UP)
-@@ -680,11 +675,9 @@ static void phy_change(struct work_struct *work)
- 	if (err)
- 		goto irq_enable_err;
- 
--	/* Stop timer and run the state queue now.  The work function for
--	 * state_queue will start the timer up again.
--	 */
--	del_timer(&phydev->phy_timer);
--	schedule_work(&phydev->state_queue);
-+	/* reschedule state queue work to run as soon as possible */
-+	cancel_delayed_work_sync(&phydev->state_queue);
-+	schedule_delayed_work(&phydev->state_queue, 0);
- 
- 	return;
- 
-@@ -761,14 +754,13 @@ EXPORT_SYMBOL(phy_start);
- /**
-  * phy_state_machine - Handle the state machine
-  * @work: work_struct that describes the work to be done
-- *
-- * Description: Scheduled by the state_queue workqueue each time
-- *   phy_timer is triggered.
-  */
- static void phy_state_machine(struct work_struct *work)
- {
-+	struct delayed_work *dwork =
-+			container_of(work, struct delayed_work, work);
- 	struct phy_device *phydev =
--			container_of(work, struct phy_device, state_queue);
-+			container_of(dwork, struct phy_device, state_queue);
- 	int needs_aneg = 0;
- 	int err = 0;
- 
-@@ -946,17 +938,6 @@ static void phy_state_machine(struct work_struct *work)
- 	if (err < 0)
- 		phy_error(phydev);
- 
--	mod_timer(&phydev->phy_timer, jiffies + PHY_STATE_TIME * HZ);
--}
--
--/* PHY timer which schedules the state machine work */
--static void phy_timer(unsigned long data)
--{
--	struct phy_device *phydev = (struct phy_device *)data;
--
--	/*
--	 * PHY I/O operations can potentially sleep so we ensure that
--	 * it's done from a process context
--	 */
--	schedule_work(&phydev->state_queue);
-+	schedule_delayed_work(&phydev->state_queue,
-+				jiffies + PHY_STATE_TIME * HZ);
- }
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index d7e54d9..32cf14a 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -315,8 +315,7 @@ struct phy_device {
- 
- 	/* Interrupt and Polling infrastructure */
- 	struct work_struct phy_queue;
--	struct work_struct state_queue;
--	struct timer_list phy_timer;
-+	struct delayed_work state_queue;
- 	atomic_t irq_disable;
- 
- 	struct mutex lock;
--- 
-1.6.0.6
-
