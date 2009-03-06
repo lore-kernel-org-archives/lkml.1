@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZCFGug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbZCFGuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbZCFGug (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbZCFGrP
+	id S1756884AbZCFGuw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbZCFGsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:47:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56819 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756279AbZCFGrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 01:47:12 -0500
-From: Tejun Heo <tj@kernel.org>
-To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, efault@gmx.de,
-       jaswinder@kernel.org, cooloney@kernel.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 6/8] percpu: add an indirection ptr for chunk page map access
-Date: Fri,  6 Mar 2009 15:46:26 +0900
-Message-Id: <1236321988-19457-7-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1236321988-19457-1-git-send-email-tj@kernel.org>
-References: <1236321988-19457-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 06:46:39 +0000 (UTC)
+	Fri, 6 Mar 2009 01:48:05 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:56941 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756028AbZCFGsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 01:48:03 -0500
+Date: Fri, 6 Mar 2009 06:47:40 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [RFC][PATCH 0/4] Rework disabling of interrupts during suspend-resume
+Message-ID: <20090306064740.GA20587@silver.sucs.org>
+References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl> <alpine.LFD.2.00.0903051542270.19207@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903051542270.19207@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: allow sharing page map, no functional difference yet
+On Thu, Mar 05, 2009 at 03:44:22PM -0800, Linus Torvalds wrote:
+> 
+ Side note - I've tested them on the EeePC that had trouble resuming due to 
+> interrupt timings, and it suspends and resumes fine with these patches 
+> (modulo some new X problems, but that's what I get for living with 
+> Fedora-11 testing).
 
-Make chunk->page access indirect by adding a pointer and renaming the
-actual array to page_ar.  This will be used by future changes.
+Since you have an EeePC I'm guessing your graphics card is an i9xx of
+some variety. The i9xx kernel driver seems to have been recently
+reworked so even those people who aren't using GEM yet are seeing issues
+here and there (some with VT switching, some with suspend to ram and
+others with suspend to disk). I actually don't know if the stuff poping
+up is any more than usual but if so I'm hoping most new issues go away
+once the dust settles...
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- mm/percpu.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/mm/percpu.c b/mm/percpu.c
-index a84cf99..5b47d9f 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -80,7 +80,8 @@ struct pcpu_chunk {
- 	int			map_alloc;	/* # of map entries allocated */
- 	int			*map;		/* allocation map */
- 	bool			immutable;	/* no [de]population allowed */
--	struct page		*page[];	/* #cpus * UNIT_PAGES */
-+	struct page		**page;		/* points to page array */
-+	struct page		*page_ar[];	/* #cpus * UNIT_PAGES */
- };
- 
- static int pcpu_unit_pages __read_mostly;
-@@ -696,6 +697,7 @@ static struct pcpu_chunk *alloc_pcpu_chunk(void)
- 				  PCPU_DFL_MAP_ALLOC * sizeof(chunk->map[0]));
- 	chunk->map_alloc = PCPU_DFL_MAP_ALLOC;
- 	chunk->map[chunk->map_used++] = pcpu_unit_size;
-+	chunk->page = chunk->page_ar;
- 
- 	chunk->vm = get_vm_area(pcpu_chunk_size, GFP_KERNEL);
- 	if (!chunk->vm) {
-@@ -918,6 +920,7 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
- 	schunk->vm = &first_vm;
- 	schunk->map = smap;
- 	schunk->map_alloc = ARRAY_SIZE(smap);
-+	schunk->page = schunk->page_ar;
- 	schunk->free_size = dyn_size;
- 	schunk->contig_hint = schunk->free_size;
- 
 -- 
-1.6.0.2
-
+Sitsofe | http://sucs.org/~sits/
