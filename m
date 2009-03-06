@@ -1,121 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbZCFCWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbZCFCX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510AbZCFCWK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 21:22:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZCFCVz
+	id S1754403AbZCFCX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 21:23:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZCFCXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 21:21:55 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40561 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZCFCVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 21:21:54 -0500
-Date: Thu, 5 Mar 2009 21:21:50 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Darren Hart <dvhltc@us.ibm.com>
-cc: "lkml, " <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [TIP][RFC 6/7] futex: add requeue_pi calls
-In-Reply-To: <49B07F87.2020808@us.ibm.com>
-Message-ID: <alpine.DEB.2.00.0903052119300.14535@gandalf.stny.rr.com>
-References: <49AC73A9.4040804@us.ibm.com> <49AC77D1.6090106@us.ibm.com> <49AE3386.1070604@us.ibm.com> <49B00302.5000607@us.ibm.com> <49B07F87.2020808@us.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Mar 2009 21:23:50 -0500
+Received: from fifo99.com ([67.223.236.141]:40368 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752707AbZCFCXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 21:23:49 -0500
+Subject: Re: [tip:x86/doc] x86/doc: mini-howto for using earlyprintk=dbgp
+From: Daniel Walker <dwalker@fifo99.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Yinghai Lu <yinghai@kernel.org>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, akpm@linux-foundation.org, gregkh@suse.de,
+       tglx@linutronix.de, sarah.a.sharp@intel.com, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <49B0674B.2000604@oracle.com>
+References: <Pine.LNX.4.44L0.0903051751330.2174-100000@iolanthe.rowland.org>
+	 <1236296921.5937.109.camel@desktop>  <49B0674B.2000604@oracle.com>
+Content-Type: text/plain
+Date: Thu, 05 Mar 2009 18:23:46 -0800
+Message-Id: <1236306226.5937.120.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-03-05 at 15:59 -0800, Randy Dunlap wrote:
 
-On Thu, 5 Mar 2009, Darren Hart wrote:
+> Is that correct on the (ugh, I think that the naming/terminology is
+> still mucked up, but you didn't do that) host/target system?
 > 
-> As it turns out I missed setting RT_MUTEX_HAS_WAITERS on the rt_mutex in
-> rt_mutex_start_proxy_lock() - seems awfully silly in retrospect - but a
-> little non-obvious while writing it.  I added mark_rt_mutex_waiters()
-> after the call to task_blocks_on_rt_mutex() and the test has completed
-> more than 400 iterations successfully (it would fail after no more than
-> 2 most of the time before).
-> 
-> Steven, there are several ways to set RT_MUTEX_HAS_WAITERS - but this
-> seemed like a reasonable approach, would you agree?  Since I'm holding
-> the wait_lock I don't technically need the atomic cmpxchg and could
-> probably just set it explicity - do you have a preference?
+> On the client/console (which I would call the host and I would call the
+> "Host/target" here just the Target system), a USB debug port is needed,
+> but on the Host/target, it should just look like a USB device.
+> At least that was the intent AFAIK/IIRC.  No?
 > 
 
-> +
-> +/**
-> + * rt_mutex_finish_proxy_lock - Complete the taking of the lock initialized
-> on
-> + *                              our behalf by another thread.
-> + * @lock: the rt_mutex we were woken on
-> + * @to: the timeout, null if none. hrtimer should already have been started.
-> + * @waiter: the pre-initialized rt_mutex_waiter
-> + * @detect_deadlock: for use by __rt_mutex_slowlock
-> + *
-> + * Special API call for PI-futex requeue support
-> + */
-> +int rt_mutex_finish_proxy_lock(struct rt_mutex *lock,
-> +			       struct hrtimer_sleeper *to,
-> +			       struct rt_mutex_waiter *waiter,
-> +			       int detect_deadlock)
-> +{
-> +	int ret;
-> +
-> +	if (waiter->task)
-> +		schedule_rt_mutex(lock);
-> +
-> +	spin_lock(&lock->wait_lock);
-> +
-> +	set_current_state(TASK_INTERRUPTIBLE);
-> +
-> +	ret = __rt_mutex_slowlock(lock, TASK_INTERRUPTIBLE, to, waiter,
-> +				  detect_deadlock);
-> +
-> +	set_current_state(TASK_RUNNING);
-> +
-> +	if (unlikely(waiter->task))
-> +		remove_waiter(lock, waiter);
-> +
-> +	/*
-> +	 * try_to_take_rt_mutex() sets the waiter bit unconditionally. We
-> might
-> +	 * have to fix that up.
-> +	 */
-> +	fixup_rt_mutex_waiters(lock);
+The document indicates you need this one capability on your USB port in
+addition to the USB device (check the complete document for how to find
+the capability). So both host and target need this one capability, and
+then you also need the USB device for the whole thing to work.
 
-Darren,
-
-I take it you are talking about the above.
-
- static void fixup_rt_mutex_waiters(struct rt_mutex *lock)
- {
-	if (!rt_mutex_has_waiters(lock))
-		clear_rt_mutex_waiters(lock);
- }
-
-So it only clears the bit if there are no waiters. Yep, that should be 
-fine. The task clearing the bit is the owner and you have the wait_lock. 
-This should work.
-
--- Steve
-
-
-> +
-> +	spin_unlock(&lock->wait_lock);
-> +
-> +	/*
-> +	 * Readjust priority, when we did not get the lock. We might have been
-> +	 * the pending owner and boosted. Since we did not take the lock, the
-> +	 * PI boost has to go.
-> +	 */
-> +	if (unlikely(ret))
-> +		rt_mutex_adjust_prio(current);
-> +
-> +	return ret;
-> +}
-
+Daniel
 
