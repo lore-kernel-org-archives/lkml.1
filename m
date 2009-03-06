@@ -1,99 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbZCFTQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZCFTQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbZCFTQi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZCFTQ2
+	id S1756663AbZCFTQz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbZCFTQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:16:28 -0500
-Received: from n29.bullet.mail.mud.yahoo.com ([68.142.207.48]:25552 "HELO
-	n29.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754516AbZCFTQ0 (ORCPT
+	Fri, 6 Mar 2009 14:16:44 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:62908 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754516AbZCFTQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:16:26 -0500
-X-Yahoo-Newman-Id: 926145.85921.bm@omp423.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Lbo4jI4fB96zIYeSJZMNYgvgJRIXj14DaaP/TsVGMXToTPnjEKRWfYTrOY4cD7+PoB430MrHh+8MIr0Xdd4HhxHLgFX564My4zbhX2CR+gxeANEA54uu8IKaGvNbKRc4PHaeVqDo+4qMPiklqFMllyn4cWjqgcqfPH8r1uQ+oK8=  ;
-X-YMail-OSG: 9sWYWD8VM1nXUTHQZqoo4sc_d.6GLYZf8VZ.ka9zytqiJ8NeMepdEd4OccGzYXPXG3nMm7rnGeJjO52c756t8fXU4FVmViAj.1e3i6gEsX69JxNanZTBTkwoeR_dheL_C0YYRLUqYH86JonnP6JCZOZvRfQw0SnRNLurwTrv0Bky9RFEBHHF_Xfszg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Subject: Re: [PATCH] regulator: twl4030 VAUX3 supports 3.0V
-Date: Fri, 6 Mar 2009 11:16:20 -0800
-User-Agent: KMail/1.9.10
-Cc: lrg@slimlogic.co.uk, LKML <linux-kernel@vger.kernel.org>,
-       "linux-omap Mailing List" <linux-omap@vger.kernel.org>
-References: <49B11EB0.30809@nokia.com>
-In-Reply-To: <49B11EB0.30809@nokia.com>
+	Fri, 6 Mar 2009 14:16:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fHvQaR4w18gmYd7klDYx6KSg+bT/47CyhAXDcxx8A8QUbbJryunpzOpxBaDe8zHWye
+         a7jguDV5FKRgRJHuawRN1vKQQln0+zUqe+q02LxGDM2fJipk0vckcM3HcSnH//i0kNc5
+         xLLvbM417XcLL+6fHrE4q3QO95mzADOONcHiY=
+Date: Fri, 6 Mar 2009 22:16:41 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 03/18] dma-debug: add hash functions for
+	dma_debug_entries
+Message-ID: <20090306191641.GF7420@localhost>
+References: <1236346229-6618-1-git-send-email-joerg.roedel@amd.com> <1236346229-6618-4-git-send-email-joerg.roedel@amd.com> <20090306135052.GE5988@nowhere> <20090306184514.GE7420@localhost> <20090306191059.GE7329@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903061116.21544.david-b@pacbell.net>
+In-Reply-To: <20090306191059.GE7329@nowhere>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 March 2009, Adrian Hunter wrote:
-> TWL4030 and TWL5030 support 3.0V on VAUX3.
+[Frederic Weisbecker - Fri, Mar 06, 2009 at 08:11:00PM +0100]
+| On Fri, Mar 06, 2009 at 09:45:14PM +0300, Cyrill Gorcunov wrote:
+| > [Frederic Weisbecker - Fri, Mar 06, 2009 at 02:50:52PM +0100]
+| > ...
+| > | > +/*
+| > | > + * Add an entry to a hash bucket
+| > | > + */
+| > | > +static void hash_bucket_add(struct hash_bucket *bucket,
+| > | > +			    struct dma_debug_entry *entry)
+| > | > +{
+| > | > +	list_add_tail(&entry->list, &bucket->list);
+| > | > +}
+| > | > +
+| > | > +/*
+| > | > + * Remove entry from a hash bucket list
+| > | > + */
+| > | > +static void hash_bucket_del(struct dma_debug_entry *entry)
+| > | > +{
+| > | > +	list_del(&entry->list);
+| > | > +}
+| > | 
+| > | 
+| > | Perhaps the two wrappers above are unnecessary, since they are actually
+| > | used once and only wrap a single list operation. No?
+| > | 
+| > | Frederic.
+| > 
+| > Hi Frederic,
+| > 
+| > I think it would be better to make them 'inline' only but remain
+| > the wrappers as is, since it show logic flow and hides internal data
+| > details. But it's my personal opinion.
+| 
+| 
+| Yeah, I guess it's only a matter of taste :-)
+| Anyway, as you said, it should be inlined.
 
-I double checked several technical reference manuals, and they
-say otherwise.   The 3.0V settings in VAUX3_DEDICATED are very
-consistently labeled as "TI cannot support these values", for
-all current versions of chips with a VAUX3 supply:
+Nod :) The only problem could be (it depends) -- is that
+if one day some locking would be needed instead of fixing
+one function you would need to grep all list_add/del entries :)
 
-  TWL4030 ES3.1
-  TWL5030 ES1.1
-  TPS65930 ES1.0 (more or less a cost-reduced TWL5030)
-  TPS65950 ES1.0 (more or less TWL5030)
-
-So, NAK on this.
-
-Do you really need 3.0V out of that regulator?  If so,
-then I'd rather see a patch exposing that CONFIG_*
-setting to enable all the unsupported/out-of-range
-values, rather than just selectively hacking those
-tables to permit some (but not all) of them to be used
-out-of-range.
-
-
-> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
-> ---
-> 
-> According to TI:
-> http://community.ti.com/forums/t/3777.aspx
-
-That looks to me like some random TI developer reading the
-manual and ignoring the label on those settings:  Yes if you
-set that value it'll probably work.  But no, if you rely on
-that it's working out-of-spec, and is clearly marked as such.
-
-
- 
-> 
-> 
->  drivers/regulator/twl4030-regulator.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/regulator/twl4030-regulator.c b/drivers/regulator/twl4030-regulator.c
-> index 8655443..1755026 100644
-> --- a/drivers/regulator/twl4030-regulator.c
-> +++ b/drivers/regulator/twl4030-regulator.c
-> @@ -224,7 +224,7 @@ static const u16 VAUX2_VSEL_table[] = {
->  };
->  static const u16 VAUX3_VSEL_table[] = {
->  	1500, 1800, 2500, 2800,
-> -	UNSUP(3000), UNSUP(3000), UNSUP(3000), UNSUP(3000),
-> +	3000, 3000, 3000, 3000,
->  };
->  static const u16 VAUX4_VSEL_table[] = {
->  	700, 1000, 1200, UNSUP(1300),
-> -- 
-> 1.5.6.3
-> 
-> 
-
-
-
+| 
+|  
+	- Cyrill -
