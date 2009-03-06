@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZCFDN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZCFDOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbZCFDN7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 22:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZCFDNt
+	id S1754762AbZCFDOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 22:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZCFDOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 22:13:49 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:57053 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752647AbZCFDNs (ORCPT
+	Thu, 5 Mar 2009 22:14:05 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:47224 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754449AbZCFDOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 22:13:48 -0500
-Subject: Re: Linux 2.6.29-rc6
-From: john stultz <johnstul@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jesper Krogh <jesper@krogh.cc>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-In-Reply-To: <20090305084338.GA16026@elte.hu>
-References: <1236029277.7756.0.camel@localhost.localdomain>
-	 <49ACC853.8070205@krogh.cc> <1236110026.6068.18.camel@localhost>
-	 <49AD90E2.7050209@krogh.cc> <1236118969.6068.87.camel@localhost>
-	 <49AE9EA4.2080500@krogh.cc> <49AECA3B.5030503@krogh.cc>
-	 <1236193075.3793.63.camel@jstultz-laptop>
-	 <1236220759.6863.7.camel@localhost.localdomain>
-	 <1236221530.6863.9.camel@localhost.localdomain>
-	 <20090305084338.GA16026@elte.hu>
-Content-Type: text/plain
-Date: Thu, 05 Mar 2009 19:13:36 -0800
-Message-Id: <1236309216.7766.248.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 22:14:04 -0500
+X-IronPort-AV: E=Sophos;i="4.38,311,1233550800"; 
+   d="scan'208";a="83876381"
+From: Bryan Wu <cooloney@kernel.org>
+To: drzeus-mmc@drzeus.cx
+Cc: linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] mmc: align data size for host which only supports power-of-2 block
+Date: Fri,  6 Mar 2009 11:15:21 +0800
+Message-Id: <1236309321-23955-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 09:43 +0100, Ingo Molnar wrote:
-> * john stultz <johnstul@us.ibm.com> wrote:
-> 
-> > > Ingo, Thomas: On the hardware I'm testing the fast-pit 
-> > > calibration only triggers probably 80-90% of the time. About 
-> > > 10-20% of the time, the initial check to 
-> > > pit_expect_msb(0xff) fails (count=0), so we may need to look 
-> > > more at this approach.
-> 
-> We definitely need to improve calibration quality.
-> 
-> The question is - why does fast-calibration fail 10-20% of the 
-> time on your test-system? Also, why exactly do we miscalibrate? 
-> Could you please have a look at that?
+From: Cliff Cai <cliff.cai@analog.com>
 
-Working on it, I just wanted to let you know I was seeing some different
-odd behavior then Jesper.
+Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/mmc/core/core.c  |    8 +++++++-
+ include/linux/mmc/host.h |    1 +
+ 2 files changed, 8 insertions(+), 1 deletions(-)
 
-> One theory would be that the PIT readout is unreliable. Windows 
-> does not make use of it, so it's not the most tested aspect of 
-> the PIT. Is that what happens on your box?
-
-Still looking into it, but from my initial debugging it seems that by
-reading the PIT very quickly after setting it, we may be getting junk
-values. If I re-read the PIT again, I see the expected 0xff value. 
-
-Its been somewhat of a heisenbug, as if I add any printk's or even just
-a mb() after the outb it seems to make the problem go away (or just rare
-enough I don't have the patience to reproduce it :)
-
-So I don't know if a small delay is appropriate here (seems counter
-productive to the whole fast-pit calibration ;) or if we should just try
-to catch these bad reads and try again before failing?
-
-Thoughts?
-
-thanks
--john
-
-
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index df6ce4a..15119df 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -321,7 +321,13 @@ unsigned int mmc_align_data_size(struct mmc_card *card, unsigned int sz)
+ 	 * the core about its problems yet, so for now we just 32-bit
+ 	 * align the size.
+ 	 */
+-	sz = ((sz + 3) / 4) * 4;
++
++	/* Align size for host which only supports power-of-2 block */
++	if (card->host->powerof2_block) {
++		if (sz & (sz - 1))
++			sz = 1 << fls(sz);
++	} else
++		sz = ((sz + 3) / 4) * 4;
+ 
+ 	return sz;
+ }
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index 4e45725..7416ed1 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -162,6 +162,7 @@ struct mmc_host {
+ 	struct dentry		*debugfs_root;
+ 
+ 	unsigned long		private[0] ____cacheline_aligned;
++	unsigned int		powerof2_block;	/* host only supports power-of-2 block */
+ };
+ 
+ extern struct mmc_host *mmc_alloc_host(int extra, struct device *);
+-- 
+1.5.6.3
