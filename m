@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCFI2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZCFI21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZCFI2J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 03:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZCFI14
+	id S1754651AbZCFI21 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 03:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZCFI2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 03:27:56 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65408 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbZCFI1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 03:27:55 -0500
-Message-ID: <49B0DE89.9000401@cn.fujitsu.com>
-Date: Fri, 06 Mar 2009 16:27:53 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] kmemdup_from_user(): introduce
-References: <49B0CAEC.80801@cn.fujitsu.com> <20090306082056.GB3450@x200.localdomain>
-In-Reply-To: <20090306082056.GB3450@x200.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Mar 2009 03:28:15 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53733 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754464AbZCFI2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 03:28:13 -0500
+Subject: Re: [patch 2/2] lockdep: initialize lockdep debugging statistics
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0903051355010.25505@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0903050223240.30401@chino.kir.corp.google.com>
+	 <1236250159.4228.186.camel@laptop> <20090305110522.GI32407@elte.hu>
+	 <alpine.DEB.2.00.0903051355010.25505@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 09:28:03 +0100
+Message-Id: <1236328083.5187.1213.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Fri, Mar 06, 2009 at 03:04:12PM +0800, Li Zefan wrote:
->> I notice there are many places doing copy_from_user() which follows
->> kmalloc():
->>
->>         dst = kmalloc(len, GFP_KERNEL);
->>         if (!dst)
->>                 return -ENOMEM;
->>         if (copy_from_user(dst, src, len)) {
->> 		kfree(dst);
->> 		return -EFAULT
->> 	}
->>
->> kmemdup_from_user() is a wrapper of the above code. With this new
->> function, we don't have to write 'len' twice, which can lead to
->> typos/mistakes. It also produces smaller code.
-> 
-> Name totally sucks, it mixes kernel idiom of allocation with purely
-> userspace function.
-> 
+On Thu, 2009-03-05 at 13:57 -0800, David Rientjes wrote:
+> It shouldn't be dropped, the initialization is necessary because we can't 
+> rely on atomic_t's implementation.
 
-I'm not good at English, and I don't know why "kernel memory duplicated
-from user space" is so bad...
+I'm a bit slow, please use more words and explain this to me.
 
-or memdup_user() ?
+Before replying please read:
 
->> A qucik grep shows 250+ places where kmemdup_from_user() *may* be
->> used. I'll prepare a patchset to do this conversion.
-> 
-> 250?
-> 
+ea435467500612636f8f4fb639ff6e76b2496e4b
 
-I just found out how many copy_from_user() following km/zalloc(), so
-not all of them are replace-able.
+and stare at the output of:
 
-> Let's not add wrapper for every two lines that happen to be used
-> together.
-> 
+git grep "define[ \t]*ATOMIC_INIT\>"
 
-Why not if we have good reasons? And I don't think we can call this
-"happen to" if there are 250+ of them?
-
-> BTW, can we drop strstarts() and kzfree() on the same reasoning?
-> 
 
