@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbZCFGJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbZCFGOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752302AbZCFGJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:09:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZCFGJk
+	id S1751971AbZCFGOz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:14:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZCFGOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:09:40 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:21165 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbZCFGJj (ORCPT
+	Fri, 6 Mar 2009 01:14:45 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:34798 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbZCFGOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 01:09:39 -0500
-Message-ID: <49B0BE07.5080803@nokia.com>
-Date: Fri, 06 Mar 2009 08:09:11 +0200
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 6 Mar 2009 01:14:44 -0500
+Date: Fri, 6 Mar 2009 11:44:38 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com
+Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned timers.
+Message-ID: <20090306061438.GB9190@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090304121249.GA9855@linux.vnet.ibm.com> <20090304121456.GB9855@linux.vnet.ibm.com> <20090305165340.GA6984@redhat.com>
 MIME-Version: 1.0
-To: ext Hannes Eder <hannes@hanneseder.net>
-CC: "trivial@kernel.org" <trivial@kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 06/15] NULL noise: drivers/mtd/tests/mtd_*test.c
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net> <20090305191457.30062.43881.stgit@f10box.hanneseder.net>
-In-Reply-To: <20090305191457.30062.43881.stgit@f10box.hanneseder.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 06 Mar 2009 06:09:22.0498 (UTC) FILETIME=[17F81220:01C99E22]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090305165340.GA6984@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Eder wrote:
-> Fix this sparse warnings:
->   drivers/mtd/tests/mtd_oobtest.c:139:33: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:192:33: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:219:41: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:284:25: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:525:25: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:545:25: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:569:33: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:589:33: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:613:33: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:633:33: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:673:41: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_oobtest.c:701:33: warning: Using plain integer as NULL pointer
->   drivers/mtd/tests/mtd_readtest.c:74:41: warning: Using plain integer as NULL pointer
+* Oleg Nesterov <oleg@redhat.com> [2009-03-05 17:53:40]:
+
+> On 03/04, Arun R Bharadwaj wrote:
+> >
+> > +static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
+> > +{
+> > +	return tbase_get_deferrable(timer->base) |
+> > +				tbase_get_pinned(timer->base);
+> > +}
 > 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> Acked-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> I'd say this looks a bit strange. Hopefully compiler can optimize this code
+> to return (unsigned long)base & (TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG).
+>
 
-Yes, please, take this patch.
+Yes, it does.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+> > @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
+> >  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+> >  	unsigned long flags;
+> >
+> > +	timer_set_pinned(timer);
+> 
+> But we never clear TBASE_PINNED_FLAG?
+> 
+> If we use mod_timer() next time, the timer remains "pinned". I do not say
+> this is really wrong, but a bit strange imho.
+> 
+> Oleg.
+>
+
+The pinned timer would expect to continue firing on the same CPU
+although it does a mod_timer() the next time, right?
+Thats why I have not cleared the TBASE_PINNED_FLAG.
+
+--arun
