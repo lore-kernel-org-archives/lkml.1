@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZCFFzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbZCFGJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZCFFzl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 00:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbZCFFzc
+	id S1752302AbZCFGJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZCFGJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 00:55:32 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:45610 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbZCFFzb (ORCPT
+	Fri, 6 Mar 2009 01:09:40 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:21165 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbZCFGJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 00:55:31 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hid/apple: add module parameter to swap the Command and Option keys
-References: <87zlfz8bc1.fsf@burly.wgtn.ondioline.org>
-	<49B0B785.4010806@oracle.com>
-Date: Fri, 06 Mar 2009 18:55:29 +1300
-In-Reply-To: <49B0B785.4010806@oracle.com> (Randy Dunlap's message of "Thu, 05
-	Mar 2009 21:41:25 -0800")
-Message-ID: <87vdqn8ab2.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.91 (gnu/linux)
+	Fri, 6 Mar 2009 01:09:39 -0500
+Message-ID: <49B0BE07.5080803@nokia.com>
+Date: Fri, 06 Mar 2009 08:09:11 +0200
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: ext Hannes Eder <hannes@hanneseder.net>
+CC: "trivial@kernel.org" <trivial@kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 06/15] NULL noise: drivers/mtd/tests/mtd_*test.c
+References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net> <20090305191457.30062.43881.stgit@f10box.hanneseder.net>
+In-Reply-To: <20090305191457.30062.43881.stgit@f10box.hanneseder.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 06 Mar 2009 06:09:22.0498 (UTC) FILETIME=[17F81220:01C99E22]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap <randy.dunlap@oracle.com> writes:
+Hannes Eder wrote:
+> Fix this sparse warnings:
+>   drivers/mtd/tests/mtd_oobtest.c:139:33: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:192:33: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:219:41: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:284:25: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:525:25: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:545:25: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:569:33: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:589:33: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:613:33: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:633:33: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:673:41: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_oobtest.c:701:33: warning: Using plain integer as NULL pointer
+>   drivers/mtd/tests/mtd_readtest.c:74:41: warning: Using plain integer as NULL pointer
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> Acked-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-> Paul Collins wrote:
->> Apple keyboards have the Command keys (a.k.a. the Apple or "waffle" key)
->> in the positions normally occupied on PC keyboards by the Alt/AltGr keys,
->> and the Option or Alt keys in the position occupied by the so-called
->> Windows keys.  Folks who have been using PC-type computers for too long
->> generally have insurmountable muscle memory in this regard.
->> 
->> This patch adds a module parameter, defaulting to off, that swaps these keys.
->
-> Where do you suggest that this option be documented?
-
-Existing practice is to not document hid-apple options
-
-        [burly(linux-2.6)] grep -r fnmode Documentation/ | wc -l
-        0
-
-so I'm open to suggestions.
+Yes, please, take this patch.
 
 -- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
