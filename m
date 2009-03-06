@@ -1,82 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZCFHlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbZCFHq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbZCFHlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 02:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZCFHli
+	id S1754968AbZCFHq5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 02:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZCFHqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 02:41:38 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:40600 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbZCFHlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 02:41:37 -0500
-Date: Wed, 4 Mar 2009 07:43:54 +0100
-From: Nico Schottelius <nico-linux-20090213@schottelius.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-       Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>,
-       Nico Schottelius <nico-linux-20090213@schottelius.org>
-Subject: Re: [Bug #12705] X200: Brightness broken since
-	2.6.29-rc4-58-g4c098bc
-Message-ID: <20090304064354.GA19776@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090213@schottelius.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-	Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera> <SLCXkuHtxAO.A.gvC.UVarJB@chimera>
+	Fri, 6 Mar 2009 02:46:48 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:40551 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751549AbZCFHqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 02:46:47 -0500
+Date: Fri, 6 Mar 2009 08:46:39 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing
+	video    RAM as block device
+Message-ID: <20090306074639.GN11787@kernel.dk>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk> <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <SLCXkuHtxAO.A.gvC.UVarJB@chimera>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc4-ikn-00001-gd5b5623 x86_64)
+In-Reply-To: <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> On Thu, 5 Mar 2009, Jens Axboe wrote:
+> > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> > > On Thu, 5 Mar 2009, Jens Axboe wrote:
+> > > > On Wed, Mar 04 2009, Geert Uytterhoeven wrote:
+> > > > > Below is the rewrite of the PS3 Video RAM Storage Driver as a plain block
+> > > > > device, as requested by Arnd Bergmann.
+> 
+> > > > I'd rewrite this as a ->make_request_fn handler instead. Then you can
+> > > > get rid of the kernel thread. IOW, change
+> > > >
+> > > > queue = blk_init_queue(ps3vram_request, &priv->lock);
+> > > >
+> > > > to
+> > > >
+> > > > queue = blk_alloc_queue(GFP_KERNEL);
+> > > > blk_queue_make_request(queue, ps3vram_make_request);
+> > >
+> > > Thanks, I didn't know that part...
+> > >
+> > > > Add error handling of course, and call blk_queue_max_*() to set your
+> > > > limits for this device.
+> > >
+> > > I took out the blk_queue_max_*() calls (compared to ps3disk.c), as
+> > > none of the limits apply, and the defaults are fine.
+> > >
+> > > Is that OK, or is it better to make it explicit?
+> >
+> > I think it's always good to make it explicit. Plus for this case you
+> > definitely need it, as blk_init_queue() wont do it for you anymore.
+> 
+> blk_queue_make_request() does it for me, too:
+> 
+> void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
+> {
+> 	...
+> 	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
+> 	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
+> 	...
+> 	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
+> 	...
+> 	blk_queue_max_sectors(q, SAFE_MAX_SECTORS);
+> 	...
+> }
+> 
+> struct request_queue *
+> blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
+> {
+> 	...
+> 	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
+> 
+> 	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
+> 	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
+> 	...
+> }
 
---ReaqsoxgOBHFXBhH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Indeed, there's some duplicated code in blk_init_queue_node(), I'll make
+sure to get rid of that!
 
-Rafael J. Wysocki [Tue, Mar 03, 2009 at 08:25:55PM +0100]:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->=20
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
+> > > > Then add a ps3vram_make_request() ala:
+> > >
+> > > > static void ps3vram_do_request(struct request_queue *q, struct bio *bio)
+> > > > {
+> 
+> > > > }
+> > > >
+> > > > I just typed it here, so if it doesn't compile you get to keep the
+> > > > pieces :-)
+> > >
+> > > OK, I'll give it a try...
+> > >
+> > > BTW, does this mean the `simple' way, which I used based on LDD3, is
+> > > deprecated?
+> >
+> > Depends.. It's obviously not a very effective approach, since you punt
+> > to a thread for each request. But if you need the IO scheduler helping
+> > you with merging and sorting (for a rotational device), it still has
+> > some merit. For this particular case, the ->make_request_fn approach is
+> > much better.
+> 
+> Without the thread, performance indeed increased.
+> 
+> But then I noticed ps3vram_make_request() may be called concurrently,
+> so I had to add a mutex to avoid data corruption. This slows the
+> driver down, and in the end, the version with a thread turns out to be
+> ca. 1% faster. The version without a thread is about 50 lines less
+> code, though.
 
-Well, well... nobody really cares about this bug, so it's still
-there. Seems this automatic reminder will be persistent until 2.6.30.
+That is correct, ->make_request_fn may get reentered. I'm not surprised
+that performance dropped if you just shoved everything under a mutex.
+You could be a little more smart and queue concurrent bio's for
+processing when the current one is complete though, there are several
+approaches there that be a lot faster than going all the way through the
+IO stack and scheduler just to avoid concurrency.
 
-Nico
+-- 
+Jens Axboe
 
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---ReaqsoxgOBHFXBhH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmuIyoACgkQuL75KpiFGIwlkACgiZ4TlBbu689VrSk0Gq16SB4+
-I+UAoOxdttdCdrlhGqH2731IFFofv/Ha
-=oP8u
------END PGP SIGNATURE-----
-
---ReaqsoxgOBHFXBhH--
