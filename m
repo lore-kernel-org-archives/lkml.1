@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZCFSii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbZCFSjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbZCFSii (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756868AbZCFSiK
+	id S1757183AbZCFSjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbZCFSim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:38:10 -0500
-Received: from mx48.mail.ru ([94.100.176.62]:21657 "EHLO mx48.mail.ru"
+	Fri, 6 Mar 2009 13:38:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37530 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756840AbZCFSiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:38:09 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
-To: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Fri, 06 Mar 2009 21:37:50 +0300
-References: <20090306003941.GA32403@srcf.ucam.org> <20090306005234.GA32539@srcf.ucam.org>
-User-Agent: KNode/0.99.01
+	id S1757147AbZCFSil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:38:41 -0500
+Date: Fri, 6 Mar 2009 19:38:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [git pull] RCU fix
+Message-ID: <20090306183826.GA12276@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Lfevu-000MzF-00.arvidjaar-mail-ru@mx48.mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
+Linus,
 
-> Calling the ENAB method on Toshiba laptops results in notifications
-> being sent when laptop hotkeys are pressed. This patch simply calls that
-> method and sets up an input device if it's successful.
->     
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> 
+Please pull the latest core-fixes-for-linus git tree from:
 
-Works on my Toshiba Portege 4000. I tried to enable it directly in keyboard  controller using 
-information from Toshiba Linux pages but it failed. Thank you!
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
-Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+ Thanks,
 
-Trivial cleanup below. Also the patch should remove /proc/acpi/toshiba/keys. It will consume hot keys 
-as soon as they are pressed, so user space watching this file has very little chances to ever see 
-them.
+	Ingo
 
----
-
-Subject: [PATCH] Trivial fixes to enable Toshiba keyboard patch
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-
-Fix type of third parameter of toshiba_acpi_notify.
-Remove extraneous white space in function invocation.
-
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
----
-
- drivers/platform/x86/toshiba_acpi.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+------------------>
+Eric Dumazet (1):
+      rcu: increment quiescent state counter in ksoftirqd()
 
 
-diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
-index 604f9fa..c334007 100644
---- a/drivers/platform/x86/toshiba_acpi.c
-+++ b/drivers/platform/x86/toshiba_acpi.c
-@@ -793,7 +793,7 @@ static int toshiba_acpi_setkeycode(struct input_dev *dev, int scancode,
- 	return -EINVAL;
- }
- 
--static void toshiba_acpi_notify(acpi_handle handle, u32 event, void **data)
-+static void toshiba_acpi_notify(acpi_handle handle, u32 event, void *data)
- {
- 	u32 hci_result, value;
- 	struct key_entry *key;
-@@ -851,7 +851,7 @@ static int toshiba_acpi_setup_keyboard(char *device)
- 		return -ENODEV;
- 	}
- 
--	status = acpi_install_notify_handler (handle, ACPI_DEVICE_NOTIFY,
-+	status = acpi_install_notify_handler(handle, ACPI_DEVICE_NOTIFY,
- 					      toshiba_acpi_notify, NULL);
- 	if (ACPI_FAILURE(status)) {
- 		printk(MY_INFO "Unable to install hotkey notification\n");
+ kernel/softirq.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index bdbe9de..9041ea7 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -626,6 +626,7 @@ static int ksoftirqd(void * __bind_cpu)
+ 			preempt_enable_no_resched();
+ 			cond_resched();
+ 			preempt_disable();
++			rcu_qsctr_inc((long)__bind_cpu);
+ 		}
+ 		preempt_enable();
+ 		set_current_state(TASK_INTERRUPTIBLE);
