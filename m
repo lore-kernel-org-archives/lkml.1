@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZCFIZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCFI2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbZCFIZQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 03:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZCFIZB
+	id S1754205AbZCFI2J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 03:28:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZCFI14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 03:25:01 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42815 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751549AbZCFIZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 03:25:01 -0500
-Message-ID: <49B0DDD6.2080608@redhat.com>
-Date: Fri, 06 Mar 2009 09:24:54 +0100
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Fri, 6 Mar 2009 03:27:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:65408 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbZCFI1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 03:27:55 -0500
+Message-ID: <49B0DE89.9000401@cn.fujitsu.com>
+Date: Fri, 06 Mar 2009 16:27:53 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Alexander Holler <holler@ahsoftware.de>
-CC: linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>
-Subject: Re: [PATCH] Re: Oops using 2.6.28.n after a lazy umount of a crypted
- loop-device
-References: <49AFA565.6030902@ahsoftware.de> <49AFBE4A.1010605@redhat.com> <49B0BFBD.7060208@ahsoftware.de>
-In-Reply-To: <49B0BFBD.7060208@ahsoftware.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] kmemdup_from_user(): introduce
+References: <49B0CAEC.80801@cn.fujitsu.com> <20090306082056.GB3450@x200.localdomain>
+In-Reply-To: <20090306082056.GB3450@x200.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Holler wrote:
-> Milan Broz schrieb:
->> Please Can you try attached patch if helps here?
->> (Patch is not perfect, but should help, at least identify that
->> it is the same problem I am fixing:-)
+Alexey Dobriyan wrote:
+> On Fri, Mar 06, 2009 at 03:04:12PM +0800, Li Zefan wrote:
+>> I notice there are many places doing copy_from_user() which follows
+>> kmalloc():
+>>
+>>         dst = kmalloc(len, GFP_KERNEL);
+>>         if (!dst)
+>>                 return -ENOMEM;
+>>         if (copy_from_user(dst, src, len)) {
+>> 		kfree(dst);
+>> 		return -EFAULT
+>> 	}
+>>
+>> kmemdup_from_user() is a wrapper of the above code. With this new
+>> function, we don't have to write 'len' twice, which can lead to
+>> typos/mistakes. It also produces smaller code.
 > 
-> The patch works (I had to add an #include <linux/delay.h> /* msleep */).
-
-ok, thanks.
-
-
-> I've tested it using 2.6.28.7 and the script below. With your patch the 
-> script was running over night looping about 400 times without any error. 
-> A crosscheck without the patch needed only 10 iterations to get an oops. 
-> So I assume you have fixed the problem I had. ;)
+> Name totally sucks, it mixes kernel idiom of allocation with purely
+> userspace function.
 > 
-> There stills seems to be another problem left, I've got 3 times the 
-> kernel-message
+
+I'm not good at English, and I don't know why "kernel memory duplicated
+from user space" is so bad...
+
+or memdup_user() ?
+
+>> A qucik grep shows 250+ places where kmemdup_from_user() *may* be
+>> used. I'll prepare a patchset to do this conversion.
 > 
-> device-mapper: ioctl: unable to remove open device 
-> temporary-cryptsetup-21571
+> 250?
+> 
 
-This is bug in cryptsetup related to udev (udev should not touch temporary
-cryptsetup device) which is fixed upstream, but there is no
-new release yet (Fedora has this patched, not sure about other distros)
+I just found out how many copy_from_user() following km/zalloc(), so
+not all of them are replace-able.
 
-see http://code.google.com/p/cryptsetup/source/detail?r=32 and other patches.
+> Let's not add wrapper for every two lines that happen to be used
+> together.
+> 
 
-Milan
---
-mbroz@redhat.com
+Why not if we have good reasons? And I don't think we can call this
+"happen to" if there are 250+ of them?
+
+> BTW, can we drop strstarts() and kzfree() on the same reasoning?
+> 
 
