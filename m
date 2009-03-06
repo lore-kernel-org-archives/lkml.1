@@ -1,94 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbZCFTHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZCFTJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbZCFTHM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:07:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbZCFTG4
+	id S1756761AbZCFTJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZCFTJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:06:56 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:43959 "EHLO kernel.dk"
+	Fri, 6 Mar 2009 14:09:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34953 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbZCFTG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:06:56 -0500
-Date: Fri, 6 Mar 2009 20:06:53 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: scameron@beardog.cca.cpqcorp.net
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, mike.miller@hp.com,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
-Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-Message-ID: <20090306190653.GE11787@kernel.dk>
-References: <20090306085529.GP11787@kernel.dk> <20090306181302X.fujita.tomonori@lab.ntt.co.jp> <20090306092114.GS11787@kernel.dk> <20090306182705P.fujita.tomonori@lab.ntt.co.jp> <20090306093520.GV11787@kernel.dk> <20090306143856.GT15340@beardog.cca.cpqcorp.net>
+	id S1752499AbZCFTJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 14:09:04 -0500
+Date: Fri, 6 Mar 2009 20:08:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH -tip 4/4] Atomic text_poke() with fixmap take2
+Message-ID: <20090306190828.GA28582@elte.hu>
+References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com> <20090306181356.GD14236@Krystal> <49B16C69.6060203@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090306143856.GT15340@beardog.cca.cpqcorp.net>
+In-Reply-To: <49B16C69.6060203@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06 2009, scameron@beardog.cca.cpqcorp.net wrote:
-> On Fri, Mar 06, 2009 at 10:35:21AM +0100, Jens Axboe wrote:
-> > On Fri, Mar 06 2009, FUJITA Tomonori wrote:
-> > > On Fri, 6 Mar 2009 10:21:14 +0100
-> > > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > On Fri, Mar 06 2009, FUJITA Tomonori wrote:
-> > > > > On Fri, 6 Mar 2009 09:55:29 +0100
-> > > > > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > > 
-> > > > > > > If it's settable at init time, that would probably be enough for
-> > > > > > > the vast majority of uses (and more flexible than what we have now)
-> > > > > > > and a lot easier to implement.
-> > > > > > 
-> > > > > > Completely agree, don't waste time implementing something that nobody
-> > > > > > will ever touch. The only reason to fiddle with such a setting would be
-> > > > > > to increase it, because ios are too small. And even finding out that the
-> > > > > > segment limit is the one killing you would take some insight and work
-> > > > > > from the user.
-> > > > > > 
-> > > > > > Just make it Big Enough to cover most cases. 32 is definitely small, 256
-> > > > > > entries would get you 1MB ios which I guess is more appropriate.
-> > > > > 
-> > > > > I guess that the dynamic scheme is overdoing but seems that vendors
-> > > > > like some way to configure the sg entry size. The new MPT2SAS driver
-> > > > > has SCSI_MPT2SAS_MAX_SGE kernel config option:
-> > > > > 
-> > > > > http://marc.info/?l=linux-scsi&m=123619290803547&w=2
-> > > > > 
-> > > > > 
-> > > > > The kernel module option for this might be appropriate.
-> > > > 
-> > > > Dunno, still seems pretty pointless to me. The config option there
-> > > > quotes memory consumption as the reason to reduce the number of sg
-> > > > entries, however I think that's pretty silly. Additionally, a kernel
-> > > > config entry just means that customers will be stuck with a fixed value
-> > > > anyway. So I just don't see any merit to doing it that way either.
-> > > 
-> > > Yeah, agreed. the kernel config option is pretty pointless. But I'm
-> > > not sure that reducing memory consumption is completely pointless.
-> > 
-> > Agree, depends on how you do it. If you preallocate all the memory
-> > required for 1024 entries times the queue depth, then it may not be that
-> > small. But you can do it a bit more cleverly than that, and then I don't
-> > think it makes a lot of sense to provide any options for shrinking it.
-> 
-> The reason I mentioned making the number of SGs configurable is because with
-> a lot of controllers in the box (say 8, or ridiculous numbers of controllers
-> are potentially possible on some big ia64 boxes) then the memory available
-> by way of pci_alloc_consistent can be exhausted, and we have seen that happen.
-> 
-> The command buffers have to be in the first 4GB of memory, as the command
-> register is only 32 bits, so they are allocated by pci_alloc_consistent.
-> However, the chained SG lists don't have that limitation, so I think they
-> can be kmalloc'ed, and so not chew up and unreasonable amount of the
-> pci_alloc_consistent memory and get a larger number of SGs.   ...right?
-> Maybe that's the better way to do it.
 
-You can use GFP_DMA32 for kmalloc() allocations below 4G. But you could
-just keep the command allocation with pci_alloc_consistent() and
-allocate the sgtables with ordinary kmalloc, as you suggest.
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
--- 
-Jens Axboe
+> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
+>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
+>  	}
+>  	BUG_ON(!pages[0]);
+> -	if (!pages[1])
+> -		nr_pages = 1;
+> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+> -	BUG_ON(!vaddr);
+> -	local_irq_disable();
+> +	local_irq_save(flags);
+> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
+> +	if (pages[1])
+> +		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
+> +	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
+>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+> -	local_irq_enable();
+> -	vunmap(vaddr);
+> +	clear_fixmap(FIX_TEXT_POKE0);
+> +	if (pages[1])
+> +		clear_fixmap(FIX_TEXT_POKE1);
+> +	local_flush_tlb();
+> +	local_irq_restore(flags);
+>  	sync_core();
 
+I'm not sure at all about this widening of the irq-atomic 
+section and the idea of allowing non-locked access on single-CPU 
+situations - we dont really want to micro-optimize any of this 
+on such a level, holding the text lock is a robust rule all code 
+should be listening to. (Creating locking assymetry always 
+inserts a certain amount of fragility - adding to an already 
+fragile concept here.)
+
+And note that there's no reason why text_poke could not be used 
+in stop_machine_run() - the stop_machine_run() handler must not 
+take the text_lock of course - but outside code calling 
+stop_machine_run() can do it and can hence serialize properly.
+
+Note that even if we did this then your v2 patch is not fully 
+correct: you need to move the sync_core() at the end of the 
+sequence inside the critical section too. (right now this is 
+mostly harmless because the INVLPG inside the clear_fixmap() 
+happens to be serializing so it has an implicit sync_core() 
+property - but nevertheless we better do this straight away to 
+not cause problems later down the line.)
+
+	Ingo
