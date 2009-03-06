@@ -1,195 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZCFG3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZCFG3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbZCFG3i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZCFG3J
+	id S1754595AbZCFG3x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZCFG3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:29:09 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:49710 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751233AbZCFG3F (ORCPT
+	Fri, 6 Mar 2009 01:29:15 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58639 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752252AbZCFG3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 01:29:05 -0500
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH V3 0/6] sched: Extend sched_mc/smt_power_savings framework
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
-       "Balbir Singh" <balbir@in.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>
-Cc: "Dipankar Sarma" <dipankar@in.ibm.com>, efault@gmx.de, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Date: Fri, 06 Mar 2009 11:58:49 +0530
-Message-ID: <20090306060513.9445.28732.stgit@sofia.in.ibm.com>
-User-Agent: StGIT/0.14.2
+	Fri, 6 Mar 2009 01:29:13 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH for tip][bugfix] ftrace: fix deadlock when setting set_ftrace_pid
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090306151155.0778.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri,  6 Mar 2009 15:29:04 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-This is the version 3 of the patch series that extends the existing
-sched_smt_/mc_power_savings framework to work on platforms
-that have on-chip memory controllers making each of the cpu-package
-a 'node'. I have incorporated the review comments from my previous posting in
-this series.
+Impact: fix deadlock bug
 
-I am also working on reviving the find_busiest_group() cleanup that was
-proposed by vaidy earlier. But since it involves quite a bit of code movement,
-it requires a wider review. Hence I will post it as a seperate thread.
+reproduce way:
+	# cd /sys/kernel/debug/tracing
+	# echo $$ > set_ftrace_pid
 
-Changes from V2: (Found here:  --> http://lkml.org/lkml/2009/3/3/109)
-- Patches have been split up in an incremental manner for easy review.
-- Fixed comments for some variables.
-- Renamed some variables to better reflect their usage.
+	then, console become hangup.
 
-Changes from V1: (Found here: --> http://lkml.org/lkml/2009/2/16/221)
-- Added comments to explain power-saving part in find_busiest_group()
-- Added comments for the different sched_domain levels.
+detail:
+when writing set_ftracepid, kernel callstack is following
 
-Background
-------------------------------------------------------------------
-On machines with on-chip memory controller, each physical CPU
-package forms a NUMA node and the CPU level sched_domain will have
-only one group.  This prevents any form of power saving balance across
-these nodes.  Enabling the sched_mc_power_savings tunable to work as
-designed on these new single CPU NUMA node machines will help task
-consolidation and save power as we did in other multi core multi
-socket platforms.
+	ftrace_pid_write()
+		mutex_lock(&ftrace_lock);
+		ftrace_update_pid_func()
+			mutex_lock(&ftrace_lock);
+			mutex_unlock(&ftrace_lock);
+		mutex_unlock(&ftrace_lock);
 
-Consolidation across NODES have implications of cross-node memory
-access and other NUMA locality issues.  Even under such constraints
-there could be scope for power savings vs performance tradeoffs and
-hence making the sched_mc_powersavings work as expected on these
-platform is justified.
+then, system alaways deadlock when ftrace_pid_write() is called.
 
-sched_mc/smt_power_savings is still a tunable and power savings benefits
-and performance would vary depending on the workload and the system
-topology and hardware features.
-
-The patch series has been tested on a 2-Socket Quad-core Dual threaded
-box with kernbench as the workload, varying the number of threads.
+In past days, ftrace_pid_write() use ftrace_start_lock, but
+commit e6ea44e9b4c12325337cd1c06103cd515a1c02b2 consolidate
+ftrace_start_lock to ftrace_lock.
 
 
-+------------------------------------------------------------------------+
-|Test: make -j4                                                          |
-+-----------+----------+--------+---------+-------------+----------------+
-| sched_smt | sched_mc | %Power | Time    | % Package 0 | % Package 1    |
-|           |          |        |  (s)    |     idle    |   idle         |
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 35.34 |Core4: 62.01    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 58.34 |Core5: 17.41    |
-|     0     |    0     |  100   |  107.84 +-------------+----------------+
-|           |          |        |         |Core2: 63.97 |Core6: 60.29    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 68.64 |Core7: 61.46    |
-+-----------+----------+--------+---------+-------------+----------------+
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 34.28 |Core4: 18.26    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 99.19 |Core5: 18.54    |
-|     0     |    2     |  99.89 |  109.91 +-------------+----------------+
-|           |          |        |         |Core2: 99.89 |Core6: 21.54    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 99.91 |Core7: 23.21    |
-+-----------+----------+--------+---------+-------------+----------------+
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 20.17 |Core4: 69.30    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 50.22 |Core5: 55.97    |
-|     2     |    2     |  95.03 |  139.95 +-------------+----------------+
-|           |          |        |         |Core2: 83.95 |Core6: 92.70    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 88.95 |Core7: 95.58    |
-+-----------+----------+--------+---------+-------------+----------------+
-
-+------------------------------------------------------------------------+
-|Test: make -j6                                                          |
-+-----------+----------+--------+---------+-------------+----------------+
-| sched_smt | sched_mc | %Power | Time    | % Package 0 | % Package 1    |
-|           |          |        |  (s)    |     idle    |   idle         |
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 25.35 |Core4: 41.07    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 43.84 |Core5: 19.95    |
-|     0     |    0     |  100   |  77.67  +-------------+----------------+
-|           |          |        |         |Core2: 43.23 |Core6: 42.82    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 47.66 |Core7: 45.96    |
-+-----------+----------+--------+---------+-------------+----------------+
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 24.13 |Core4: 41.80    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 51.51 |Core5: 23.61    |
-|     0     |    2     |  99.41 |  81.50  +-------------+----------------+
-|           |          |        |         |Core2: 55.43 |Core6: 38.67    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 57.79 |Core7: 38.84    |
-+-----------+----------+--------+---------+-------------+----------------+
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0:  7.75 |Core4: 94.45    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 19.04 |Core5: 67.42    |
-|     2     |    2     |  93.32 | 100.39  +-------------+----------------+
-|           |          |        |         |Core2: 28.29 |Core6: 96.90    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 66.63 |Core7: 99.86    |
-+-----------+----------+--------+---------+-------------+----------------+
-
-+------------------------------------------------------------------------+
-|Test: make -j8                                                          |
-+-----------+----------+--------+---------+-------------+----------------+
-| sched_smt | sched_mc | %Power | Time    | % Package 0 | % Package 1    |
-|           |          |        |  (s)    |     idle    |   idle         |
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 18.17 |Core4: 33.38    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 34.62 |Core5: 19.58    |
-|     0     |    0     |  100   |  63.82  +-------------+----------------+
-|           |          |        |         |Core2: 31.99 |Core6: 32.35    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 34.59 |Core7: 29.99    |
-+-----------+----------+--------+---------+-------------+----------------+
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 15.20 |Core4: 41.41    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 28.45 |Core5: 21.32    |
-|     0     |    2     |  99.17 |  65.65  +-------------+----------------+
-|           |          |        |         |Core2: 31.14 |Core6: 41.26    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 30.52 |Core7: 42.95    |
-+-----------+----------+--------+---------+-------------+----------------+
-+-----------+----------+--------+---------+-------------+----------------+
-|           |          |        |         |Core0: 16.65 |Core4: 79.04    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core1: 26.74 |Core5: 50.98    |
-|     2     |    2     |  89.58 |  82.83  +-------------+----------------+
-|           |          |        |         |Core2: 30.42 |Core6: 81.33    |
-|           |          |        |         +-------------+----------------+
-|           |          |        |         |Core3: 35.57 |Core7: 90.03    |
-+-----------+----------+--------+---------+-------------+----------------+
-
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 5a3a06b..0d3b393 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -218,10 +218,8 @@ static void ftrace_update_pid_func(void)
+ {
+ 	ftrace_func_t func;
+ 
+-	mutex_lock(&ftrace_lock);
+-
+ 	if (ftrace_trace_function == ftrace_stub)
+-		goto out;
++		return;
+ 
+ 	func = ftrace_trace_function;
+ 
+@@ -238,9 +236,6 @@ static void ftrace_update_pid_func(void)
+ #else
+ 	__ftrace_trace_function = func;
+ #endif
+-
+- out:
+-	mutex_unlock(&ftrace_lock);
+ }
+ 
+ /* set when tracing only a pid */
 
-Gautham R Shenoy (6):
-      sched: Fix sd_parent_degenerate for SD_POWERSAVINGS_BALANCE.
-      sched: Arbitrate the nomination of preferred_wakeup_cpu
-      sched: Rename the variable sched_mc_preferred_wakeup_cpu
-      sched: Add Comments at the beginning of find_busiest_group.
-      sched: Record the current active power savings level
-      sched: code cleanup - sd_power_saving_flags(), sd_balance_for_*_power()
 
-
- include/linux/sched.h    |   66 +++++++++++++++++----------------
- include/linux/topology.h |    6 +--
- kernel/sched.c           |   92 +++++++++++++++++++++++++++++++++++++++++++---
- kernel/sched_fair.c      |    4 +-
- 4 files changed, 123 insertions(+), 45 deletions(-)
-
--- 
-Thanks and Regards
-gautham.
