@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbZCFRh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZCFRiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbZCFRh5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 12:37:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbZCFRhs
+	id S1755104AbZCFRiz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 12:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbZCFRiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 12:37:48 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:63278 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753626AbZCFRhs (ORCPT
+	Fri, 6 Mar 2009 12:38:46 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44085 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbZCFRip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 12:37:48 -0500
-Message-ID: <49B15F35.2010909@free.fr>
-Date: Fri, 06 Mar 2009 18:36:53 +0100
-From: Cedric Le Goater <legoater@free.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Greg Kurz <gkurz@fr.ibm.com>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-References: <20090305163857.0C18F3FD@kernel>	<20090305174037.GA2274@x200.localdomain>	<1236280567.22399.99.camel@nimitz>	<20090305210840.GA2499@x200.localdomain>	<1236288427.22399.122.camel@nimitz>	<20090305220044.GA2819@x200.localdomain>	<1236352121.5732.80.camel@bahia> <20090306153549.GA898@us.ibm.com>
-In-Reply-To: <20090306153549.GA898@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Mar 2009 12:38:45 -0500
+Subject: Re: [Patch] mm tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com
+In-Reply-To: <20090306171016.GA32128@elte.hu>
+References: <1233306324.11332.11.camel@nigel-laptop>
+	 <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com>
+	 <20090306105627.3EF0.A69D9226@jp.fujitsu.com>
+	 <alpine.DEB.2.00.0903052124240.14535@gandalf.stny.rr.com>
+	 <20090306110423.GD21168@elte.hu>
+	 <1236342797.3154.1.camel@dhcp47-138.lab.bos.redhat.com>
+	 <20090306135547.GB21907@elte.hu>
+	 <1236358657.1476.56.camel@dhcp-100-19-198.bos.redhat.com>
+	 <20090306171016.GA32128@elte.hu>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 18:38:26 +0100
+Message-Id: <1236361106.6326.595.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Greg Kurz (gkurz@fr.ibm.com):
->> On Fri, 2009-03-06 at 01:00 +0300, Alexey Dobriyan wrote:
->>> On Thu, Mar 05, 2009 at 01:27:07PM -0800, Dave Hansen wrote:
->>>>> Imagine, unsupported file is opened between userspace checks
->>>>> for /proc/*/checkpointable and /proc/*/fdinfo/*/checkpointable
->>>>> and whatever, you stil have to do all the checks inside checkpoint(2).
->>>> Alexey, we have two problems here.  I completely agree that we have to
->>>> do complete and thorough checks of each file descriptor at
->>>> sys_checkpoint().  Any checks made at other times should not be trusted.
->>>>
->>>> The other side is what Ingo has been asking for.  How do we *know* when
->>>> we are checkpointable *before* we call (and without calling)
->>> This "without calling checkpoint(2)" results in much complications
->>> as demonstrated.
->>>
->>> task_struct and file are not like other structures because they are exposed
->>> in /proc. For PROC_FS=n kernels, one can't even check.
->>>
->>> You can do checkpoint(2) without actual dump. You pass, you're most
->>> certainly checkpointable (with inevitable race condition in mind).
->>>
->> Ahhh thank you very much Alexey ! I wanted to explain this to Dave a few
->> monthes ago but I failed... probably because of my poor English skills.
->>
->> https://lists.linux-foundation.org/pipermail/containers/2008-October/013549.html
->>
->> Why would we add checking all over the place when it MUST be done on the
->> sys_checkpoint() path ? The checkpoint(2) dry-run is definitely the way
->> to go.
+On Fri, 2009-03-06 at 18:10 +0100, Ingo Molnar wrote:
+> Looks pretty good and useful to me. I've Cc:-ed more mm folks, 
+> it would be nice to hear their opinion about these tracepoints.
 > 
-> I'm sure Dave understood that this was possible :)
-> 
-> But what you and Alexey are proposing does not and cannot fullfill
-> Ingo's requirement.
+> Andrew, Nick, Peter, what do you think?
 
-And if Ingo's requirement is fulfilled, would any C/R patchset be acceptable ?
+Bit sad we use the struct mm_struct * as mm identifier (little %lx vs %p
+confusion there too), but I suppose there simply isn't anything better.
 
-C.  
+Exposing kernel pointers like that might upset some of the security
+folks, not sure if I care though.
+
+I'm missing the fault_filemap_read counterpart of fault_anon_pgin.
+
+Once you have anon/filemap symmetric, you might consider folding these
+and doing the anon argument thing you do elsewhere.
+
+Initially I was thinking we lacked the kswapd vs direct reclaim
+information on the pgout data, but since we log the pid:comm for each
+event...
+
+Which brings us to mm_pdflush_*, we can already see its pdflush from
+pid:comm, then again, it fits the naming style. Same for
+mm_directreclaim*() - we already know its direct, since its not kswapd
+doing it.
+
+Finally, we have page_free, but not page_alloc? Oh, it is there, just
+not in the obvious place.
+
+
+Things missing, we trace unmap, but not mmap, mprotect, mlock?
+
+pagelock perhaps?
+
+
+
