@@ -1,126 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZCFUhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZCFUlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbZCFUhu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZCFUhj
+	id S1756123AbZCFUlh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZCFUl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:37:39 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49040 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753794AbZCFUhi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:37:38 -0500
-Date: Fri, 6 Mar 2009 13:37:18 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Yu Zhao <yu.zhao@intel.com>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH v10 4/7] PCI: add SR-IOV API for Physical Function driver
-Message-ID: <20090306203717.GG25995@parisc-linux.org>
-References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-5-git-send-email-yu.zhao@intel.com>
+	Fri, 6 Mar 2009 15:41:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56244 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751147AbZCFUl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 15:41:27 -0500
+Message-ID: <49B18A38.9090902@kernel.org>
+Date: Fri, 06 Mar 2009 12:40:24 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235112888-9524-5-git-send-email-yu.zhao@intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: introduce bootmem_state -v2
+References: <1236257708-27269-7-git-send-email-penberg@cs.helsinki.fi> <49B02498.9080300@kernel.org> <49B02C68.1030203@cs.helsinki.fi> <49B0640A.5080607@kernel.org> <20090306145928.GE21907@elte.hu> <49B16DA6.4090108@kernel.org> <20090306191249.GC28582@elte.hu> <49B17E6C.2040702@kernel.org> <20090306201503.GC4278@elte.hu>
+In-Reply-To: <20090306201503.GC4278@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 02:54:45PM +0800, Yu Zhao wrote:
-> +	virtfn->sysdata = dev->bus->sysdata;
-> +	virtfn->dev.parent = dev->dev.parent;
-> +	virtfn->dev.bus = dev->dev.bus;
-> +	virtfn->devfn = devfn;
-> +	virtfn->hdr_type = PCI_HEADER_TYPE_NORMAL;
-> +	virtfn->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
-> +	virtfn->error_state = pci_channel_io_normal;
-> +	virtfn->current_state = PCI_UNKNOWN;
-> +	virtfn->is_pcie = 1;
-> +	virtfn->pcie_type = PCI_EXP_TYPE_ENDPOINT;
-> +	virtfn->dma_mask = 0xffffffff;
-> +	virtfn->vendor = dev->vendor;
-> +	virtfn->subsystem_vendor = dev->subsystem_vendor;
-> +	virtfn->class = dev->class;
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> Ingo Molnar wrote:
+>>> * Yinghai Lu <yinghai@kernel.org> wrote:
+>>>
+>>>> Impact: cleanup
+>>>>
+>>>> extend after_bootmem and after_init_bootmem to bootmem_state
+>>>> and will have BEFORE_BOOTMEM, DURING_BOOTMEM, AFTER_BOOTMEM
+>>>>
+>>>> v2: style changes according to ingo
+>>>>
+>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>
+>>>> ---
+>>>>  arch/x86/kernel/setup.c |    1 +
+>>>>  arch/x86/mm/init.c      |   13 +++++++------
+>>>>  arch/x86/mm/init_32.c   |   28 ++++++++++++++++++++--------
+>>>>  arch/x86/mm/init_64.c   |   33 +++++++++++++++++++--------------
+>>>>  include/linux/mm.h      |    9 +++++++++
+>>>>  5 files changed, 56 insertions(+), 28 deletions(-)
+>>>> Index: linux-2.6/include/linux/mm.h
+>>>> ===================================================================
+>>>> --- linux-2.6.orig/include/linux/mm.h
+>>>> +++ linux-2.6/include/linux/mm.h
+>>>> @@ -1067,6 +1067,15 @@ extern void __init mmap_init(void);
+>>>>  extern void show_mem(void);
+>>>>  extern void si_meminfo(struct sysinfo * val);
+>>>>  extern void si_meminfo_node(struct sysinfo *val, int nid);
+>>>> +
+>>>> +enum bootmem_state {
+>>>> +	BEFORE_BOOTMEM,
+>>>> +	DURING_BOOTMEM,
+>>>> +	AFTER_BOOTMEM
+>>>> +};
+>>>> +
+>>>> +extern enum bootmem_state bootmem_state;
+>>>> +
+>>>>  extern int after_bootmem;
+>>> Btw., the after_bootmem variable itself should either move 
+>>> to x86 (and arch/sh), or should be defined in mm/bootmem.c.
+>>>
+>>> Right now we have this weird mm.h construct that is not 
+>>> actually useful to generic code.
+>> with this patch, only sh is using after_bootmem. could
+>> 1. make sh to use bootmem_state
+>> 2. then remove after_bootmem
+> 
+> Hm, lets leave arch/sh alone for now i think - the commits are 
+> desintd for the x86 tree.
+> 
+> But we should move our after_bootmem to arch/x86/include/ and 
+> not pollute mm.h with it. It's an x86 internal detail for now.
+> 
 
-There seems to be a certain amount of commonality between this and
-pci_scan_device().  Have you considered trying to make a common helper
-function, or does it not work out well?
+you mean move bootmem_state to arch/x86/include ?
+with this patch are not using after_bootmem anymore.
 
-> +	pci_device_add(virtfn, virtfn->bus);
-
-Greg is probably going to ding you here for adding the device, then
-creating the symlinks.  I believe it's now best practice to create the
-symlinks first, so there's no window where userspace can get confused.
-
-> +	mutex_unlock(&iov->pdev->sriov->lock);
-
-I question the existance of this mutex now.  What's it protecting?
-
-Aren't we going to be implicitly protected by virtue of the Physical
-Function device driver being the only one calling this function, and the
-driver will be calling it from the ->probe routine which is not called
-simultaneously for the same device.
-
-> +	virtfn->physfn = pci_dev_get(dev);
-> +
-> +	rc = pci_bus_add_device(virtfn);
-> +	if (rc)
-> +		goto failed1;
-> +	sprintf(buf, "%d", id);
-
-%u, perhaps?  And maybe 'id' should always be unsigned?  Just a thought.
-
-> +	rc = sysfs_create_link(&iov->dev.kobj, &virtfn->dev.kobj, buf);
-> +	if (rc)
-> +		goto failed1;
-> +	rc = sysfs_create_link(&virtfn->dev.kobj, &dev->dev.kobj, "physfn");
-> +	if (rc)
-> +		goto failed2;
-
-I'm glad to see these symlinks documented in later patches!
-
-> +	nres = 0;
-> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-> +		res = dev->resource + PCI_SRIOV_RESOURCES + i;
-> +		if (!res->parent)
-> +			continue;
-> +		nres++;
-> +	}
-
-Can't this be written more simply as:
-
-	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-		res = dev->resource + PCI_SRIOV_RESOURCES + i;
-		if (res->parent)
-			nres++;
-	}
-?
-
-> +	if (nres != iov->nres) {
-> +		dev_err(&dev->dev, "no enough MMIO for SR-IOV\n");
-> +		return -ENOMEM;
-> +	}
-
-Randy, can you help us out with better wording here?
-
-> +		dev_err(&dev->dev, "no enough bus range for SR-IOV\n");
-
-and here.
-
-> +	if (iov->link != dev->devfn) {
-> +		rc = -ENODEV;
-> +		list_for_each_entry(link, &dev->bus->devices, bus_list) {
-> +			if (link->sriov && link->devfn == iov->link)
-> +				rc = sysfs_create_link(&iov->dev.kobj,
-> +						&link->dev.kobj, "dep_link");
-
-I skipped to the end and read patch 7/7 and I still don't understand
-what dep_link is for.  Can you explain please?  In particular, how is it
-different from physfn?
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+YH
