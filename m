@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbZCFCAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZCFCLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309AbZCFCAa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 21:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZCFCAU
+	id S1754690AbZCFCLz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 21:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbZCFCLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 21:00:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44539 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752862AbZCFCAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 21:00:19 -0500
-Message-ID: <49B083AC.1070505@kernel.org>
-Date: Fri, 06 Mar 2009 11:00:12 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 5 Mar 2009 21:11:45 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36432 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbZCFCLo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 21:11:44 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Larry Woodman <lwoodman@redhat.com>
+Subject: Re: [Patch] mm tracepoints
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rostedt@goodmis.org, peterz@infradead.org,
+       fweisbec@gmail.com
+In-Reply-To: <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com>
+References: <1233306324.11332.11.camel@nigel-laptop> <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com>
+Message-Id: <20090306105627.3EF0.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [x86-tip] overflow in relocation type 11 val 39ffdd0e8690
-References: <1236287654.3677.3.camel@localhost.localdomain>	 <20090305212535.GA13848@elte.hu> <1236288780.3677.9.camel@localhost.localdomain>
-In-Reply-To: <1236288780.3677.9.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 01:59:52 +0000 (UTC)
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri,  6 Mar 2009 11:11:39 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> On Thu, 2009-03-05 at 22:25 +0100, Ingo Molnar wrote:
->> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
->>
->>> On latest tip I am getting:
->>>
->>> [  124.169475] overflow in relocation type 11 val 39ffdd0e8690
->>> [  124.169508] `msr_debug' likely not compiled with -mcmodel=kernel
->>> [  146.582299] overflow in relocation type 11 val 39ffdd0e8690
->>> [  146.582299] `msr_debug' likely not compiled with -mcmodel=kernel
->>> [  836.653168] overflow in relocation type 11 val 39ffdd0e8690
->>> [  836.653201] `msr_debug' likely not compiled with -mcmodel=kernel
->>>
->>> But 1d10914bf2c8 was working fine.
+> I've implemented several mm tracepoints to track page allocation and
+> freeing, various types of pagefaults and unmaps, and critical page
+> reclamation routines.  This is useful for debugging memory allocation
+> issues and system performance problems under heavy memory loads:
 > 
-> No it is also not fine :( for percpu.
-> 
->> That's a linker bug - Tejun Cc:-ed.
->>
-> 
-> Problem is basically with 64 bit percpu on 32 bit it is OK. Ahh, Here is
-> the solution:
-> 
-> http://lkml.org/lkml/2009/3/3/129
-> 
-> because of commit 8ac83757149 of Tejun Heo.
+> # tracer: mm
+> #
+> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> #              | |       |          |         |
+>          pdflush-624   [004]   184.293169: wb_kupdate:
+> (mm_pdflush_kupdate) count=3e48
+>          pdflush-624   [004]   184.293439: get_page_from_freelist:
+> (mm_page_allocation) pfn=447c27 zone_free=1940910
+>         events/6-33    [006]   184.962879: free_hot_cold_page:
+> (mm_page_free) pfn=44bba9
+>       irqbalance-8313  [001]   188.042951: unmap_vmas:
+> (mm_anon_userfree) mm=ffff88044a7300c0 address=7f9a2eb70000 pfn=24c29a
+>              cat-9122  [005]   191.141173: filemap_fault:
+> (mm_filemap_fault) primary fault: mm=ffff88024c9d8f40 address=3cea2dd000
+> pfn=44d68e
+>              cat-9122  [001]   191.143036: handle_mm_fault:
+> (mm_anon_fault) mm=ffff88024c8beb40 address=7fffbde99f94 pfn=24ce22
+> ...
 
-Yeah, patchset almost ready.  Please wait a bit more.
+Hi Larry,
 
-Thanks.
+I've started to evaluate your patch.
 
--- 
-tejun
+firstly, this patch can't apply tip/master.
+secondly, I don't think the address of mm_struct and pfn help to analysis.
+administrator don't know the page is which file's cache.
+
+
+
