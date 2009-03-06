@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbZCFTEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbZCFTHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756120AbZCFTEF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 14:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbZCFTDx
+	id S1755874AbZCFTHM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 14:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbZCFTG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 14:03:53 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:53415 "EHLO kernel.dk"
+	Fri, 6 Mar 2009 14:06:56 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:43959 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164AbZCFTDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 14:03:52 -0500
-Date: Fri, 6 Mar 2009 20:03:50 +0100
+	id S1752499AbZCFTG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 14:06:56 -0500
+Date: Fri, 6 Mar 2009 20:06:53 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
-       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing
-	video      RAM as block device
-Message-ID: <20090306190350.GD11787@kernel.dk>
-References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk> <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be> <20090306074639.GN11787@kernel.dk> <alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be> <20090306125832.GX11787@kernel.dk> <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
+To: scameron@beardog.cca.cpqcorp.net
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mike.miller@hp.com,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+Message-ID: <20090306190653.GE11787@kernel.dk>
+References: <20090306085529.GP11787@kernel.dk> <20090306181302X.fujita.tomonori@lab.ntt.co.jp> <20090306092114.GS11787@kernel.dk> <20090306182705P.fujita.tomonori@lab.ntt.co.jp> <20090306093520.GV11787@kernel.dk> <20090306143856.GT15340@beardog.cca.cpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
+In-Reply-To: <20090306143856.GT15340@beardog.cca.cpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
-> On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
-> > > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
-> > > > > But then I noticed ps3vram_make_request() may be called concurrently,
-> > > > > so I had to add a mutex to avoid data corruption. This slows the
-> > > > > driver down, and in the end, the version with a thread turns out to be
-> > > > > ca. 1% faster. The version without a thread is about 50 lines less
-> > > > > code, though.
-> > > >
-> > > > That is correct, ->make_request_fn may get reentered. I'm not surprised
-> > > > that performance dropped if you just shoved everything under a mutex.
-> > > > You could be a little more smart and queue concurrent bio's for
-> > > > processing when the current one is complete though, there are several
-> > > > approaches there that be a lot faster than going all the way through the
-> > > > IO stack and scheduler just to avoid concurrency.
-> > >
-> > > Yes, using a spinlock and queueing requests on a list if the driver is
-> > > busy can be done after 2.6.29...
-> >
-> > Certainly. Even just replacing your current mutex with a spinlock during
-> > the memcpy() would surely be a lot faster. Or even just grabbing the
-> > mutex before calling into the write for the duration of the bio. The way
-> > you do it is certain context switch death :-)
+On Fri, Mar 06 2009, scameron@beardog.cca.cpqcorp.net wrote:
+> On Fri, Mar 06, 2009 at 10:35:21AM +0100, Jens Axboe wrote:
+> > On Fri, Mar 06 2009, FUJITA Tomonori wrote:
+> > > On Fri, 6 Mar 2009 10:21:14 +0100
+> > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > On Fri, Mar 06 2009, FUJITA Tomonori wrote:
+> > > > > On Fri, 6 Mar 2009 09:55:29 +0100
+> > > > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > > 
+> > > > > > > If it's settable at init time, that would probably be enough for
+> > > > > > > the vast majority of uses (and more flexible than what we have now)
+> > > > > > > and a lot easier to implement.
+> > > > > > 
+> > > > > > Completely agree, don't waste time implementing something that nobody
+> > > > > > will ever touch. The only reason to fiddle with such a setting would be
+> > > > > > to increase it, because ios are too small. And even finding out that the
+> > > > > > segment limit is the one killing you would take some insight and work
+> > > > > > from the user.
+> > > > > > 
+> > > > > > Just make it Big Enough to cover most cases. 32 is definitely small, 256
+> > > > > > entries would get you 1MB ios which I guess is more appropriate.
+> > > > > 
+> > > > > I guess that the dynamic scheme is overdoing but seems that vendors
+> > > > > like some way to configure the sg entry size. The new MPT2SAS driver
+> > > > > has SCSI_MPT2SAS_MAX_SGE kernel config option:
+> > > > > 
+> > > > > http://marc.info/?l=linux-scsi&m=123619290803547&w=2
+> > > > > 
+> > > > > 
+> > > > > The kernel module option for this might be appropriate.
+> > > > 
+> > > > Dunno, still seems pretty pointless to me. The config option there
+> > > > quotes memory consumption as the reason to reduce the number of sg
+> > > > entries, however I think that's pretty silly. Additionally, a kernel
+> > > > config entry just means that customers will be stuck with a fixed value
+> > > > anyway. So I just don't see any merit to doing it that way either.
+> > > 
+> > > Yeah, agreed. the kernel config option is pretty pointless. But I'm
+> > > not sure that reducing memory consumption is completely pointless.
+> > 
+> > Agree, depends on how you do it. If you preallocate all the memory
+> > required for 1024 entries times the queue depth, then it may not be that
+> > small. But you can do it a bit more cleverly than that, and then I don't
+> > think it makes a lot of sense to provide any options for shrinking it.
 > 
-> It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so
-> I cannot use a spinlock.
+> The reason I mentioned making the number of SGs configurable is because with
+> a lot of controllers in the box (say 8, or ridiculous numbers of controllers
+> are potentially possible on some big ia64 boxes) then the memory available
+> by way of pci_alloc_consistent can be exhausted, and we have seen that happen.
+> 
+> The command buffers have to be in the first 4GB of memory, as the command
+> register is only 32 bits, so they are allocated by pci_alloc_consistent.
+> However, the chained SG lists don't have that limitation, so I think they
+> can be kmalloc'ed, and so not chew up and unreasonable amount of the
+> pci_alloc_consistent memory and get a larger number of SGs.   ...right?
+> Maybe that's the better way to do it.
 
-Ah right, I hadn't looked close enough. But putting the mutex_lock()
-outside of the bio_for_each_segment() is going to be much faster than
-getting/releasing it for each segment.
+You can use GFP_DMA32 for kmalloc() allocations below 4G. But you could
+just keep the command allocation with pci_alloc_consistent() and
+allocate the sgtables with ordinary kmalloc, as you suggest.
 
 -- 
 Jens Axboe
