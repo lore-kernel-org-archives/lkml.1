@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZCFVGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbZCFVG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbZCFVGK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 16:06:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZCFVF4
+	id S1756530AbZCFVG2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 16:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZCFVGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 16:05:56 -0500
-Received: from ag-out-0708.google.com ([72.14.246.251]:54865 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753007AbZCFVFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 16:05:55 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC] Warn driver authors about adding device attributes
-To: linux-kernel@vger.kernel.org, gregkh@suse.de, kay.sievers@vrfy.org
-Date: Fri, 06 Mar 2009 14:05:39 -0700
-Message-ID: <20090306210258.24123.50321.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Fri, 6 Mar 2009 16:06:12 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35286 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755344AbZCFVGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 16:06:10 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] cpufreq: Remove KERN_ERR output if nForce2 chipset not found
+Date: Fri, 6 Mar 2009 16:06:04 -0500
+User-Agent: KMail/1.11.0 (Linux/2.6.27.15-170.2.24.fc10.x86_64; KDE/4.2.0; x86_64; ; )
+Cc: davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <ada3adqid5v.fsf@cisco.com>
+In-Reply-To: <ada3adqid5v.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903061606.05975.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Friday 06 March 2009 15:55:56 Roland Dreier wrote:
+> Distribution kernels are building cpufreq drivers into the kernel to get
+> faster boot; if the nForce2 driver is built in, then on systems that are
+> not supported by the driver (ie nearly all current systems), the message
+> 
+>     cpufreq: No nForce2 chipset.
+> 
+> is printed at the KERN_ERR level, which means it goes to the console
+> even if quiet boot is turned on.
+> 
+> The best way to handle this is just to delete the message, since the
+> likelihood of it ever being of any use to anyone is very low, and other
+> cpufreq drivers don't print anything if no matching hardware is found.
+> 
+> Signed-off-by: Roland Dreier <rolandd@cisco.com>
 
-Add a blurb to the driver-model documentation about how (not) to add
-extra attributes to a struct device at driver probe time.
+Nb: Matthew Garrett submitted a similar-but-different patch a week or
+two ago on the cpufreq list that demoted the message to KERN_INFO.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-
----
-
-Kay, Greg;
-
-Is this an accurate description of how device drivers should approach adding
-additional device attributes?
-
-Thanks,
-g.
-
- Documentation/driver-model/device.txt |   32 ++++++++++++++++++++++++++++++++
- 1 files changed, 32 insertions(+), 0 deletions(-)
-
-
-diff --git a/Documentation/driver-model/device.txt b/Documentation/driver-model/device.txt
-index a05ec50..d181d15 100644
---- a/Documentation/driver-model/device.txt
-+++ b/Documentation/driver-model/device.txt
-@@ -160,3 +160,35 @@ device_remove_file(dev,&dev_attr_power);
- 
- The file name will be 'power' with a mode of 0644 (-rw-r--r--).
- 
-+Word of warning:  While the kernel allows device_create_file() and
-+device_remove_file() to be called on a device at any time, userspace has
-+strict expectations on when attributes get created.  When a new device is
-+registered in the kernel, a uevent is generated to notify userspace (like
-+udev) that a new device is available.  If attributes are added after the
-+device is registered, then userspace won't get notified and userspace will
-+not know about the new attributes.
-+
-+This is important for device driver that need to publish additional
-+attributes for a device at driver probe time.  If the device driver simply
-+calls device_create_file() on the device structure passed to it, then
-+userspace will never be notified of the new attributes.  Instead, it should
-+probably use class_create() and class->dev_attrs to set up a list of
-+desired attributes in the modules_init function, and then in the .probe()
-+hook, and then use device_create() to create a new device as a child
-+of the probed device.  The new device will generate a new uevent and
-+properly advertise the new attributes to userspace.
-+
-+For example, if a driver wanted to add the following attributes:
-+struct device_attribute mydriver_attribs[] = {
-+	__ATTR(port_count, 0444, port_count_show),
-+	__ATTR(serial_number, 0444, serial_number_show),
-+	NULL
-+};
-+
-+Then in the module init function is would do:
-+	mydriver_class = class_create(THIS_MODULE, "my_attrs");
-+	mydriver_class.dev_attr = mydriver_attribs;
-+
-+And assuming 'dev' is the struct device passed into the probe hook, the driver
-+probe function would do something like:
-+	create_device(&mydriver_class, dev, chrdev, &private_data, "my_name");
-
+-- 
+Jarod Wilson
+jarod@redhat.com
