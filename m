@@ -1,367 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZCFPkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZCFPmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZCFPkI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZCFPjy
+	id S1755966AbZCFPmN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZCFPmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:39:54 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:64559 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbZCFPjw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:39:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qFr5QgM7BiPnd87WgnE2qrWo4V1xrGoo5wywjPk5xq5r1CHEcAPjPh3ZDDe77MT9aj
-         i01PcYG6j1dkFXl7XtpiliuQn1Z0fdXMA1xiXyoGXn3hNawC+EEw9Xc+nIX4alY4l4pz
-         y8C44S3J6dv9blnlh15ggLoV79dUGVHn0+d/Y=
-Date: Sat, 7 Mar 2009 00:39:45 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, jirislaby@gmail.com,
-       rmk+lkml@arm.linux.org.uk
-Subject: [PATCH] generic debug pagealloc (-v3)
-Message-ID: <20090306153943.GB6915@localhost.localdomain>
-References: <20090305145926.GA27015@localhost.localdomain> <20090305143150.136e2708.akpm@linux-foundation.org> <20090306032814.GA9874@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-In-Reply-To: <20090306032814.GA9874@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Mar 2009 10:42:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53501 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754345AbZCFPl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 10:41:59 -0500
+Subject: Re: lockdep warning with 2.6.29-rc6-mm1 (mmotm 24-feb-2009)
+From: Eric Paris <eparis@redhat.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20090306153808.GA863@balbir.in.ibm.com>
+References: <20090304125709.GA6251@balbir.in.ibm.com>
+	 <1236173267.5330.7487.camel@laptop> <20090304174115.GE25962@elte.hu>
+	 <20090305070045.GC11916@wotan.suse.de>
+	 <20090306153808.GA863@balbir.in.ibm.com>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 10:42:35 -0500
+Message-Id: <1236354155.18817.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_DEBUG_PAGEALLOC is now supported by x86, powerpc, sparc64, and s390.
-This patch implements it for the rest of the architectures by filling the
-pages with poison byte patterns after free_pages() and verifying the poison
-patterns before alloc_pages().
+On Fri, 2009-03-06 at 21:08 +0530, Balbir Singh wrote:
+> * Nick Piggin <npiggin@suse.de> [2009-03-05 08:00:45]:
+> 
+> > On Wed, Mar 04, 2009 at 06:41:15PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > > 
+> > > > On Wed, 2009-03-04 at 18:27 +0530, Balbir Singh wrote:
+> > > > > I see the following on my machine. My understanding is that the
+> > > > > lockdep warning is complaining about a potential deadlock while
+> > > > > reclaiming, where we could end up waiting on holding inotify_mutex,
+> > > > > and we could end up calling reclaim with inotify_mutex held.
+> > > > > 
+> > > > > The race seems rare, since one path shows a new inode being created
+> > > > > and the other one being deleted. It seems like a false positive unless
+> > > > > the inode's in question turn out to be potentially the same.
+> > > > 
+> > > > Its not a false positive until you can guarantee the inodes will _never_
+> > > > be the same.
+> > > > 
+> > > > This thing has been reported numerous times, Ingo even posted 
+> > > > a potential fix for it, Nick poked the inotify people to speak 
+> > > > up, but they have so far been silent on the issue :-(
+> > > 
+> > > that particular fix is upstream, via:
+> > > 
+> > >   3023a3e: inotify: fix GFP_KERNEL related deadlock
+> > > 
+> > > so does this reproduce with latest .29-rc7-ish kernels too - or 
+> > > do we have some other problem in this area too?
+> > 
+> > Well as I said, I think it is just a bandaid to shut up lockdep,
+> > because I think inotify always is guaranteed to have a ref on
+> > the inode at this point so it should not be subject to reclaim.
+> 
+> I got dropped from the cc and thus could not respond earlier. The
+> problem can be seen even in 2.6.29-rc7-mm1.
 
-This generic one cannot detect invalid page accesses immediately but invalid
-read access may cause invalid dereference by poisoned memory and invalid write
-access can be detected after a long delay.
+Ok, I'll take a look at it this afternoon.  Sadly I know those
+allocations and object lifetimes all to well now.
 
-* v3
-- Comments for poisoning highmem pages
-- Sanity check for highmem pages
-- Detect single bit error
+-Eric
 
-* v2
-- Skip poisoning for highmem pages
-- Romove duplidate poison pattern checking
-
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-arch@vger.kernel.org
-Cc: linux-mm@kvack.org
----
- arch/avr32/mm/fault.c      |   18 --------
- arch/powerpc/Kconfig       |    3 +
- arch/powerpc/Kconfig.debug |    1 
- arch/s390/Kconfig          |    3 +
- arch/s390/Kconfig.debug    |    1 
- arch/sparc/Kconfig         |    3 +
- arch/sparc/Kconfig.debug   |    3 -
- arch/x86/Kconfig           |    3 +
- arch/x86/Kconfig.debug     |    1 
- include/linux/mm_types.h   |    4 +
- include/linux/poison.h     |    3 +
- lib/Kconfig.debug          |    1 
- mm/Kconfig.debug           |    8 +++
- mm/Makefile                |    1 
- mm/debug-pagealloc.c       |   91 +++++++++++++++++++++++++++++++++++++++++++++
- 15 files changed, 125 insertions(+), 19 deletions(-)
-
-Index: 2.6-poison/include/linux/poison.h
-===================================================================
---- 2.6-poison.orig/include/linux/poison.h
-+++ 2.6-poison/include/linux/poison.h
-@@ -17,6 +17,9 @@
-  */
- #define TIMER_ENTRY_STATIC	((void *) 0x74737461)
- 
-+/********** mm/debug-pagealloc.c **********/
-+#define PAGE_POISON 0xaa
-+
- /********** mm/slab.c **********/
- /*
-  * Magic nums for obj red zoning.
-Index: 2.6-poison/mm/debug-pagealloc.c
-===================================================================
---- /dev/null
-+++ 2.6-poison/mm/debug-pagealloc.c
-@@ -0,0 +1,91 @@
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+
-+static void poison_page(struct page *page)
-+{
-+	void *addr;
-+
-+	if (PageHighMem(page)) {
-+		/*
-+		 * Skip poisoning for highmem pages
-+		 */
-+		return;
-+	}
-+	page->poison = true;
-+	addr = page_address(page);
-+	memset(addr, PAGE_POISON, PAGE_SIZE);
-+}
-+
-+static void poison_pages(struct page *page, int n)
-+{
-+	int i;
-+
-+	for (i = 0; i < n; i++)
-+		poison_page(page + i);
-+}
-+
-+static bool single_bit_flip(unsigned char a, unsigned char b)
-+{
-+	unsigned char error = a ^ b;
-+
-+	return error && !(error & (error - 1));
-+}
-+
-+static void check_poison_mem(unsigned char *mem, size_t bytes)
-+{
-+	unsigned char *start;
-+	unsigned char *end;
-+
-+	for (start = mem; start < mem + bytes; start++) {
-+		if (*start != PAGE_POISON)
-+			break;
-+	}
-+	if (start == mem + bytes)
-+		return;
-+
-+	for (end = mem + bytes - 1; end > start; end--) {
-+		if (*end != PAGE_POISON)
-+			break;
-+	}
-+	if (start == end && single_bit_flip(*start, PAGE_POISON))
-+		printk(KERN_ERR "Single bit error: %p\n", start);
-+	else
-+		printk(KERN_ERR "Page corruption: %p-%p\n", start, end);
-+
-+	print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1, start,
-+			end - start + 1, 1);
-+}
-+
-+static void unpoison_page(struct page *page)
-+{
-+	void *addr;
-+
-+	if (!page->poison)
-+		return;
-+	/*
-+	 * The highmem pages should not be poisoned
-+	 */
-+	BUG_ON(PageHighMem(page));
-+	addr = page_address(page);
-+	check_poison_mem(addr, PAGE_SIZE);
-+	page->poison = false;
-+}
-+
-+static void unpoison_pages(struct page *page, int n)
-+{
-+	int i;
-+
-+	for (i = 0; i < n; i++)
-+		unpoison_page(page + i);
-+}
-+
-+void kernel_map_pages(struct page *page, int numpages, int enable)
-+{
-+	if (!debug_pagealloc_enabled)
-+		return;
-+
-+	if (enable)
-+		unpoison_pages(page, numpages);
-+	else
-+		poison_pages(page, numpages);
-+}
-Index: 2.6-poison/mm/Kconfig.debug
-===================================================================
---- /dev/null
-+++ 2.6-poison/mm/Kconfig.debug
-@@ -0,0 +1,8 @@
-+config PAGE_POISONING
-+	bool "Debug page memory allocations"
-+	depends on !ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	select DEBUG_PAGEALLOC
-+	help
-+	   Fill the pages with poison patterns after free_pages() and verify
-+	   the patterns before alloc_pages(). This results in a large slowdown,
-+	   but helps to find certain types of memory corruptions.
-Index: 2.6-poison/mm/Makefile
-===================================================================
---- 2.6-poison.orig/mm/Makefile
-+++ 2.6-poison/mm/Makefile
-@@ -33,3 +33,4 @@ obj-$(CONFIG_MIGRATION) += migrate.o
- obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
-+obj-$(CONFIG_PAGE_POISONING) += debug-pagealloc.o
-Index: 2.6-poison/lib/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/lib/Kconfig.debug
-+++ 2.6-poison/lib/Kconfig.debug
-@@ -796,6 +796,7 @@ config SYSCTL_SYSCALL_CHECK
- 	  to properly maintain and use. This enables checks that help
- 	  you to keep things correct.
- 
-+source mm/Kconfig.debug
- source kernel/trace/Kconfig
- 
- config PROVIDE_OHCI1394_DMA_INIT
-Index: 2.6-poison/arch/powerpc/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/powerpc/Kconfig.debug
-+++ 2.6-poison/arch/powerpc/Kconfig.debug
-@@ -30,6 +30,7 @@ config DEBUG_STACK_USAGE
- config DEBUG_PAGEALLOC
-         bool "Debug page memory allocations"
-         depends on DEBUG_KERNEL && !HIBERNATION
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
-         help
-           Unmap pages from the kernel linear mapping after free_pages().
-           This results in a large slowdown, but helps to find certain types
-Index: 2.6-poison/arch/s390/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/s390/Kconfig.debug
-+++ 2.6-poison/arch/s390/Kconfig.debug
-@@ -9,6 +9,7 @@ source "lib/Kconfig.debug"
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
- 	depends on DEBUG_KERNEL
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a slowdown, but helps to find certain types of
-Index: 2.6-poison/arch/sparc/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/sparc/Kconfig.debug
-+++ 2.6-poison/arch/sparc/Kconfig.debug
-@@ -24,7 +24,8 @@ config STACK_DEBUG
- 
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
--	depends on SPARC64 && DEBUG_KERNEL && !HIBERNATION
-+	depends on DEBUG_KERNEL && !HIBERNATION
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a large slowdown, but helps to find certain types
-Index: 2.6-poison/arch/x86/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/x86/Kconfig
-+++ 2.6-poison/arch/x86/Kconfig
-@@ -160,6 +160,9 @@ config AUDIT_ARCH
- config ARCH_SUPPORTS_OPTIMIZED_INLINING
- 	def_bool y
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y
-+
- # Use the generic interrupt handling code in kernel/irq/:
- config GENERIC_HARDIRQS
- 	bool
-Index: 2.6-poison/arch/x86/Kconfig.debug
-===================================================================
---- 2.6-poison.orig/arch/x86/Kconfig.debug
-+++ 2.6-poison/arch/x86/Kconfig.debug
-@@ -75,6 +75,7 @@ config DEBUG_STACK_USAGE
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
- 	depends on DEBUG_KERNEL
-+	depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a large slowdown, but helps to find certain types
-Index: 2.6-poison/arch/powerpc/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/powerpc/Kconfig
-+++ 2.6-poison/arch/powerpc/Kconfig
-@@ -227,6 +227,9 @@ config PPC_OF_PLATFORM_PCI
- 	depends on PPC64 # not supported on 32 bits yet
- 	default n
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-Index: 2.6-poison/arch/sparc/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/sparc/Kconfig
-+++ 2.6-poison/arch/sparc/Kconfig
-@@ -124,6 +124,9 @@ config ARCH_NO_VIRT_TO_BUS
- config OF
- 	def_bool y
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y if SPARC64
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-Index: 2.6-poison/arch/avr32/mm/fault.c
-===================================================================
---- 2.6-poison.orig/arch/avr32/mm/fault.c
-+++ 2.6-poison/arch/avr32/mm/fault.c
-@@ -250,21 +250,3 @@ asmlinkage void do_bus_error(unsigned lo
- 	dump_dtlb();
- 	die("Bus Error", regs, SIGKILL);
- }
--
--/*
-- * This functionality is currently not possible to implement because
-- * we're using segmentation to ensure a fixed mapping of the kernel
-- * virtual address space.
-- *
-- * It would be possible to implement this, but it would require us to
-- * disable segmentation at startup and load the kernel mappings into
-- * the TLB like any other pages. There will be lots of trickery to
-- * avoid recursive invocation of the TLB miss handler, though...
-- */
--#ifdef CONFIG_DEBUG_PAGEALLOC
--void kernel_map_pages(struct page *page, int numpages, int enable)
--{
--
--}
--EXPORT_SYMBOL(kernel_map_pages);
--#endif
-Index: 2.6-poison/arch/s390/Kconfig
-===================================================================
---- 2.6-poison.orig/arch/s390/Kconfig
-+++ 2.6-poison/arch/s390/Kconfig
-@@ -72,6 +72,9 @@ config PGSTE
- config VIRT_CPU_ACCOUNTING
- 	def_bool y
- 
-+config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	def_bool y
-+
- mainmenu "Linux Kernel Configuration"
- 
- config S390
-Index: 2.6-poison/include/linux/mm_types.h
-===================================================================
---- 2.6-poison.orig/include/linux/mm_types.h
-+++ 2.6-poison/include/linux/mm_types.h
-@@ -94,6 +94,10 @@ struct page {
- 	void *virtual;			/* Kernel virtual address (NULL if
- 					   not kmapped, ie. highmem) */
- #endif /* WANT_PAGE_VIRTUAL */
-+
-+#ifdef CONFIG_PAGE_POISONING
-+	bool poison;
-+#endif /* CONFIG_PAGE_POISONING */
- };
- 
- /*
