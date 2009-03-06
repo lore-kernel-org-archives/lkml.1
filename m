@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbZCFLOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbZCFLPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbZCFLOX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 06:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbZCFLN6
+	id S1755452AbZCFLPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 06:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZCFLPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 06:13:58 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2423 "EHLO
+	Fri, 6 Mar 2009 06:15:22 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2432 "EHLO
 	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755172AbZCFLN5 (ORCPT
+	with ESMTP id S1752724AbZCFLPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 06:13:57 -0500
-Date: Fri, 6 Mar 2009 11:13:44 +0000
+	Fri, 6 Mar 2009 06:15:21 -0500
+Date: Fri, 6 Mar 2009 11:15:02 +0000
 From: Mark Brown <broonie@sirena.org.uk>
 To: Bryan Wu <cooloney@kernel.org>
 Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
        Mike Frysinger <vapier.adi@gmail.com>
-Message-ID: <20090306111344.GD6493@sirena.org.uk>
-References: <1236326010-683-1-git-send-email-cooloney@kernel.org> <1236326010-683-4-git-send-email-cooloney@kernel.org>
+Message-ID: <20090306111502.GE6493@sirena.org.uk>
+References: <1236326010-683-1-git-send-email-cooloney@kernel.org> <1236326010-683-6-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236326010-683-4-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1236326010-683-6-git-send-email-cooloney@kernel.org>
 X-Cookie: Q: How do you keep a moron in suspense?
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SA-Exim-Connect-IP: 82.41.28.43
 X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [alsa-devel] [PATCH 3/5] ASoC: Blackfin: move gpio_err behind
-	the define that is only user of it
+Subject: Re: [alsa-devel] [PATCH 5/5] ASoC: Blackfin: fix typo in MUTE
+	definition
 X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
 X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 03:53:28PM +0800, Bryan Wu wrote:
+On Fri, Mar 06, 2009 at 03:53:30PM +0800, Bryan Wu wrote:
 > From: Mike Frysinger <vapier.adi@gmail.com>
 > 
+> Reported-by: Rob Maris <maris.rob@vdi.de>
 > Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
 > Signed-off-by: Bryan Wu <cooloney@kernel.org>
 
