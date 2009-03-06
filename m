@@ -1,132 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZCFRDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbZCFRE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbZCFRDr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 12:03:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbZCFRCs
+	id S1756380AbZCFRE2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 12:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZCFRDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 12:02:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59467 "EHLO mx2.mail.elte.hu"
+	Fri, 6 Mar 2009 12:03:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58561 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756393AbZCFRCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 12:02:45 -0500
-Date: Fri, 6 Mar 2009 18:02:22 +0100
+	id S1756581AbZCFRDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 12:03:19 -0500
+Date: Fri, 6 Mar 2009 17:01:15 GMT
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
-	implementation in favour of ftrace_bprintk
-Message-ID: <20090306170222.GA11285@elte.hu>
-References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1236356510-8381-5-git-send-email-fweisbec@gmail.com>
+References: <1236356510-8381-5-git-send-email-fweisbec@gmail.com>
+Subject: [tip:tracing/printk] tracing: trace_bprintk() cleanups
+Message-ID: <tip-9de36825b321fe9fe9cf73260554251af579f4ca@git.kernel.org>
+Git-Commit-ID: 9de36825b321fe9fe9cf73260554251af579f4ca
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 17:01:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  9de36825b321fe9fe9cf73260554251af579f4ca
+Gitweb:     http://git.kernel.org/tip/9de36825b321fe9fe9cf73260554251af579f4ca
+Author:     "Ingo Molnar" <mingo@elte.hu>
+AuthorDate: Fri, 6 Mar 2009 17:52:03 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 6 Mar 2009 17:59:12 +0100
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+tracing: trace_bprintk() cleanups
 
-> 
-> 
-> On Fri, 6 Mar 2009, Frederic Weisbecker wrote:
-> 
-> > Impact: faster and lighter tracing
-> > 
-> > Now that we have ftrace_bprintk() which is faster and consume lesser
-> > memory than ftrace_printk() and has the same purpose, we can now drop
-> > the old implementation in favour of the binary one from ftrace_bprintk(),
-> > which means we move all the implementation of ftrace_bprintk() to
-> > ftrace_printk(), so the Api doesn't change except that we must now use
-> > trace_seq_bprintk() to print the TRACE_PRINT entries.
-> > 
-> > Some changes result of this:
-> > 
-> > - Previously, ftrace_bprintk depended of a single tracer and couldn't
-> >   work without. This tracer has been dropped and the whole implementation
-> >   of ftrace_printk() (like the module formats management) is now integrated
-> >   in the tracing core (comes with CONFIG_TRACING), though we keep the file
-> >   trace_printk (previously trace_bprintk.c) where we can find the module
-> >   management. Thus we don't overflow trace.c
-> > 
-> > - changes some parts to use trace_seq_bprintk() to print TRACE_PRINT entries.
-> > 
-> > - change a bit ftrace_printk/ftrace_vprintk macros to support non-builtin formats
-> >   constants, and fix 'const' qualifiers warnings. But this is all transparent for
-> >   developers.
-> > 
-> > - etc...
-> > 
-> > V2:
-> > 
-> > - Rebase against last changes
-> > - Fix mispell on the changelog
-> > 
-> > V3:
-> > 
-> > - Rebase against last changes (moving ftrace_printk() to kernel.h)
-> > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> 
-> Very nice Frederic!
-> 
-> For some reason I'm still missing patch 1. Perhaps it decided to take the
-> scenic route ;-)
-> 
-> > diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> > index 0f5077f..6140922 100644
-> > --- a/kernel/trace/trace.h
-> > +++ b/kernel/trace/trace.h
-> > @@ -20,7 +20,6 @@ enum trace_type {
-> >  	TRACE_WAKE,
-> >  	TRACE_STACK,
-> >  	TRACE_PRINT,
-> > -	TRACE_BPRINTK,
-> >  	TRACE_SPECIAL,
-> >  	TRACE_MMIO_RW,
-> >  	TRACE_MMIO_MAP,
-> > @@ -120,16 +119,10 @@ struct userstack_entry {
-> >   */
-> >  struct print_entry {
-> >  	struct trace_entry	ent;
-> > -	unsigned long		ip;
-> > +	unsigned long 		ip;
-> >  	int			depth;
-> > -	char			buf[];
-> > -};
-> > -
-> 
-> 
-> Note, this is going to break my recent patch that exports the 
-> internal ftrace events. That's OK, I'll fix it after Ingo 
-> pulls it in.
-> 
-> Ingo,
-> 
-> Would you prefer that I pull these patches in and then fix the 
-> code, and let you pull it from me?
+Impact: cleanup
 
-i've put them into a separate branch forked off 
-tip:tracing/ftrace: tip:tracing/printk. The two vsprintf patches 
-are in tip:core/printk and merged into tracing/ftrace.
+Remove a few leftovers and clean up the code a bit.
 
-You can thus apply your current enhancements without any 
-interaction with me - and merge tracing/printk into the 
-tip:tracing/ftrace branch on your own schedule, ok?
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1236356510-8381-5-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ kernel/module.c      |    6 ------
+ kernel/trace/trace.h |   19 ++++++++-----------
+ 2 files changed, 8 insertions(+), 17 deletions(-)
+
+diff --git a/kernel/module.c b/kernel/module.c
+index 2dece10..22d7379 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2158,12 +2158,6 @@ static noinline struct module *load_module(void __user *umod,
+ 					&mod->num_tracepoints);
+ #endif
+ 
+-#ifdef CONFIG_TRACE_BPRINTK
+-	mod->trace_bprintk_fmt_start = section_objs(hdr, sechdrs, secstrings,
+-			"__trace_bprintk_fmt", sizeof(char *),
+-			&mod->num_trace_bprintk_fmt);
+-#endif
+-
+ #ifdef CONFIG_MODVERSIONS
+ 	if ((mod->num_syms && !mod->crcs)
+ 	    || (mod->num_gpl_syms && !mod->gpl_crcs)
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 6140922..2bfb7d1 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -119,14 +119,11 @@ struct userstack_entry {
+  */
+ struct print_entry {
+ 	struct trace_entry	ent;
+-	unsigned long 		ip;
++	unsigned long		ip;
+ 	int			depth;
+ 	const char		*fmt;
+-	u32 			buf[];
++	u32			buf[];
+ };
+-#ifdef CONFIG_TRACE_BPRINTK
+-extern int trace_bprintk_enable;
+-#endif
+ 
+ #define TRACE_OLD_SIZE		88
+ 
+@@ -199,7 +196,7 @@ struct kmemtrace_free_entry {
+  * trace_flag_type is an enumeration that holds different
+  * states when a trace occurs. These are:
+  *  IRQS_OFF		- interrupts were disabled
+- *  IRQS_NOSUPPORT 	- arch does not support irqs_disabled_flags
++ *  IRQS_NOSUPPORT	- arch does not support irqs_disabled_flags
+  *  NEED_RESCED		- reschedule is requested
+  *  HARDIRQ		- inside an interrupt handler
+  *  SOFTIRQ		- inside a softirq handler
+@@ -302,7 +299,7 @@ extern void __ftrace_bad_type(void);
+ 		IF_ASSIGN(var, ent, struct ftrace_graph_ret_entry,	\
+ 			  TRACE_GRAPH_RET);		\
+ 		IF_ASSIGN(var, ent, struct hw_branch_entry, TRACE_HW_BRANCHES);\
+- 		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
++		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
+ 		IF_ASSIGN(var, ent, struct kmemtrace_alloc_entry,	\
+ 			  TRACE_KMEM_ALLOC);	\
+ 		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
+@@ -325,8 +322,8 @@ enum print_line_t {
+  * flags value in struct tracer_flags.
+  */
+ struct tracer_opt {
+-	const char 	*name; /* Will appear on the trace_options file */
+-	u32 		bit; /* Mask assigned in val field in tracer_flags */
++	const char	*name; /* Will appear on the trace_options file */
++	u32		bit; /* Mask assigned in val field in tracer_flags */
+ };
+ 
+ /*
+@@ -335,7 +332,7 @@ struct tracer_opt {
+  */
+ struct tracer_flags {
+ 	u32			val;
+-	struct tracer_opt 	*opts;
++	struct tracer_opt	*opts;
+ };
+ 
+ /* Makes more easy to define a tracer opt */
+@@ -390,7 +387,7 @@ struct tracer {
+ 	int			(*set_flag)(u32 old_flags, u32 bit, int set);
+ 	struct tracer		*next;
+ 	int			print_max;
+-	struct tracer_flags 	*flags;
++	struct tracer_flags	*flags;
+ 	struct tracer_stat	*stats;
+ };
+ 
