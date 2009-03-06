@@ -1,164 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbZCFUqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbZCFUqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756347AbZCFUqe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZCFUqY
+	id S1756759AbZCFUqu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:46:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZCFUq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:46:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41123 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754374AbZCFUqX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:46:23 -0500
-Date: Fri, 6 Mar 2009 12:45:51 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, jirislaby@gmail.com,
-       rmk+lkml@arm.linux.org.uk
-Subject: Re: [PATCH] generic debug pagealloc (-v3)
-Message-Id: <20090306124551.beb5b131.akpm@linux-foundation.org>
-In-Reply-To: <20090306153943.GB6915@localhost.localdomain>
-References: <20090305145926.GA27015@localhost.localdomain>
-	<20090305143150.136e2708.akpm@linux-foundation.org>
-	<20090306032814.GA9874@localhost.localdomain>
-	<20090306153943.GB6915@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Mar 2009 15:46:26 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:46014 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755742AbZCFUq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 15:46:26 -0500
+Date: Fri, 6 Mar 2009 21:46:23 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       John.Linn@xilinx.com, sr@denx.de
+Subject: Re: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
+Message-ID: <20090306204623.GJ11787@kernel.dk>
+References: <20090228204622.29719.55082.stgit@localhost.localdomain> <fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Mar 2009 00:39:45 +0900
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
-
-> CONFIG_DEBUG_PAGEALLOC is now supported by x86, powerpc, sparc64, and s390.
-> This patch implements it for the rest of the architectures by filling the
-> pages with poison byte patterns after free_pages() and verifying the poison
-> patterns before alloc_pages().
+On Fri, Mar 06 2009, Grant Likely wrote:
+> Oops, sorry Jens.  I forgot to CC: you on this patch.
 > 
-> This generic one cannot detect invalid page accesses immediately but invalid
-> read access may cause invalid dereference by poisoned memory and invalid write
-> access can be detected after a long delay.
+> g.
 > 
-> ...
->
-> +static void poison_page(struct page *page)
-> +{
-> +	void *addr;
-> +
-> +	if (PageHighMem(page)) {
-> +		/*
-> +		 * Skip poisoning for highmem pages
-> +		 */
+> On Sat, Feb 28, 2009 at 1:46 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > The SystemACE driver does not handle an empty CF slot gracefully.  An
+> > empty CF slot ends up hanging the system.  This patch adds a check for
+> > the CF state and stops trying to process requests if the slot is empty.
 
-This isn't a good comment - what it tells us is already utterly obvious
-from the code, and the reader is left with no clue as to _why_ the code
-does this.
+So with patches like this, it's always nice to know what your target is.
+Do you want this in .29, or just queued up for .30? It's not always easy
+to judge the urgency of such patches :-)
 
-> +		return;
-> +	}
-> +	page->poison = true;
-> +	addr = page_address(page);
-> +	memset(addr, PAGE_POISON, PAGE_SIZE);
-> +}
-> +
-> +static void poison_pages(struct page *page, int n)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < n; i++)
-> +		poison_page(page + i);
-> +}
-> +
-> +static bool single_bit_flip(unsigned char a, unsigned char b)
-> +{
-> +	unsigned char error = a ^ b;
-> +
-> +	return error && !(error & (error - 1));
-> +}
-> +
-> +static void check_poison_mem(unsigned char *mem, size_t bytes)
-> +{
-> +	unsigned char *start;
-> +	unsigned char *end;
-> +
-> +	for (start = mem; start < mem + bytes; start++) {
-> +		if (*start != PAGE_POISON)
-> +			break;
-> +	}
-> +	if (start == mem + bytes)
-> +		return;
-> +
-> +	for (end = mem + bytes - 1; end > start; end--) {
-> +		if (*end != PAGE_POISON)
-> +			break;
-> +	}
-> +	if (start == end && single_bit_flip(*start, PAGE_POISON))
-> +		printk(KERN_ERR "Single bit error: %p\n", start);
-> +	else
-> +		printk(KERN_ERR "Page corruption: %p-%p\n", start, end);
-> +
-> +	print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1, start,
-> +			end - start + 1, 1);
+Also, I note that you are using end_request() throughout the driver. We
+really want to get away from that, you should be using blk_end_request()
+as that will handle full requests and not just segment-by-segment. No
+worries for this patch, but you may want to consider that for a future
+patch.
 
-These messages should be self-identifying in some fashion.  A message
-like "Single bit error" could come from almost any part of the kernel. 
-Something like "pagealloc: single bit error", perhaps?
-
-There's a decent chance that if this warning triggers once, it will
-trigger a thousand times, depending upon the nature of the fault.  So
-it would be sensible to put some constraint upon the reporting.  That
-could be time-based (include/linux/ratelimit.h) or perhaps just stop at
-ten or whatever.
-
-If this message ever comes out, the chances are high that we'll really
-really want to know which kernel subsystem owned that page.  Because if
-it's a software fault, this will help us find the bug.  A suitable way
-of doing this is to run dump_stack().  This will also cause the reports
-to be tracked by kerneloops.org.
-
-> --- 2.6-poison.orig/include/linux/mm_types.h
-> +++ 2.6-poison/include/linux/mm_types.h
-> @@ -94,6 +94,10 @@ struct page {
->  	void *virtual;			/* Kernel virtual address (NULL if
->  					   not kmapped, ie. highmem) */
->  #endif /* WANT_PAGE_VIRTUAL */
-> +
-> +#ifdef CONFIG_PAGE_POISONING
-> +	bool poison;
-> +#endif /* CONFIG_PAGE_POISONING */
->  };
->  
-
-Adding 32 bits to the pageframe for a single feature which needs one
-bit is rather sad.  Sure, this is a super-slow feature and nobody will
-be turning it on in production.  But I wonder if we can do better.
-
-
-#ifdef CONFIG_WANT_PAGE_DEBUG_FLAGS
-	unsigned long debug_flags;	/* Use atomic bitops on this */
-#endif
-};
-
-#define PAGE_DEBUG_FLAG_PAGEALLOC	0
-#define PAGE_DEBUG_SOMETHING_ELSE	1
-etc
-
-
-Now, your feature needs to turn on CONFIG_WANT_PAGE_DEBUG_FLAGS.  Other
-debug features can do so as well.
-
-But we do need to ensure that CONFIG_WANT_PAGE_DEBUG_FLAGS reliably
-gets turned off when no debug features are enabling it!  It would be
-sad if a developer were to enable your feature, then disable it, then
-run `oldconfig', then have a pageframe which contains an extra unused
-long.  I don't trust the Kconfig system ;)
-
-
-Maybe this is all a bit overdesigned, dunno.  If someone else later
-comes along wanting to add more debug stuff then they'll need to
-do this, might as well do it now?
+-- 
+Jens Axboe
 
