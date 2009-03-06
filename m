@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZCFWWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZCFWd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbZCFWWf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 17:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbZCFWWZ
+	id S1756435AbZCFWd5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 17:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbZCFWdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 17:22:25 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41735
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753973AbZCFWWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 17:22:25 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: [PATCH] Fix ARCH=um segfault on x86-64.
-Date: Fri, 6 Mar 2009 16:22:21 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
-Cc: "Am??rico Wang" <xiyou.wangcong@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <200903060042.19084.rob@landley.net> <20090306111834.GC8991@hack.private> <20090306143543.GA6983@c2.user-mode-linux.org>
-In-Reply-To: <20090306143543.GA6983@c2.user-mode-linux.org>
+	Fri, 6 Mar 2009 17:33:46 -0500
+Received: from xenotime.net ([72.52.64.118]:60603 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753193AbZCFWdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 17:33:44 -0500
+Message-ID: <49B1A52C.4080702@xenotime.net>
+Date: Fri, 06 Mar 2009 14:35:24 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Yu Zhao <yu.zhao@intel.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v10 6/7] PCI: document SR-IOV sysfs entries
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-7-git-send-email-yu.zhao@intel.com> <20090306211614.GI25995@parisc-linux.org>
+In-Reply-To: <20090306211614.GI25995@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903061622.22289.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 March 2009 08:35:43 Jeff Dike wrote:
-> On Fri, Mar 06, 2009 at 07:18:34PM +0800, Am??rico Wang wrote:
-> > It does work well x86_64, but my question is that whether this will
-> > break i386 or not, since before, CONFIG_3_LEVEL_PGTABLES depends on
-> > EXPERIMENTAL on i386, this patch removes it.
->
-> As long as CONFIG_3_LEVEL_PGTABLES is off on 32-bit, it should be fine.
->
-> It did work, last I checked, but 3-level page tables on 32-bit is a
-> very rarely used combination, and not useful.
+Matthew Wilcox wrote:
+> Randy, can you wordsmith this one?
 
-I have no idea if my patch is the _right_ fix, I just know I couldn't use UML 
-for 2 months and now I can.
+I'll try.
 
-If you enable CONFIG_EXPERIMENTAL, then it writes it out to the config file.  
-If you don't, it hides it and doesn't write it out even though the value would 
-be y.  (The visibility predicates affect the resulting data.)
+> I think I'm starting to understand the difference between physfn and
+> dep_link, but an example would definitely help.  It may or may not be
+> appropriate to put it in.
+> 
+> On Fri, Feb 20, 2009 at 02:54:47PM +0800, Yu Zhao wrote:
+>> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+>> ---
+>>  Documentation/ABI/testing/sysfs-bus-pci |   27 +++++++++++++++++++++++++++
+>>  1 files changed, 27 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
+>> index ceddcff..84dc100 100644
+>> --- a/Documentation/ABI/testing/sysfs-bus-pci
+>> +++ b/Documentation/ABI/testing/sysfs-bus-pci
+>> @@ -9,3 +9,30 @@ Description:
+>>  		that some devices may have malformatted data.  If the
+>>  		underlying VPD has a writable section then the
+>>  		corresponding section of this file will be writable.
+>> +
+>> +What:		/sys/bus/pci/devices/.../virtfn/N
+>> +Date:		February 2009
+>> +Contact:	Yu Zhao <yu.zhao@intel.com>
+>> +Description:
+>> +		This symbol link appears when hardware supports SR-IOV
 
-Rob
+		     symbolic                          supports the SR-IOV
+
+>> +		capability and Physical Function driver has enabled it.
+
+		               ^the | its | a
+
+>> +		The symbol link points to the PCI device sysfs entry of
+
+		    symbolic 
+
+>> +		Virtual Function whose index is N (0...MaxVFs-1).
+
+		the Virtual Function
+
+>> +
+>> +What:		/sys/bus/pci/devices/.../virtfn/dep_link
+>> +Date:		February 2009
+>> +Contact:	Yu Zhao <yu.zhao@intel.com>
+>> +Description:
+>> +		This symbol link appears when hardware supports SR-IOV
+
+		     symbolic                          supports the SR-IOV
+
+>> +		capability and Physical Function driver has enabled it,
+
+		               ^its | the | a
+
+>> +		and this device has vendor specific dependencies with
+>> +		others. The symbol link points to the PCI device sysfs
+
+		            symbolic
+
+>> +		entry of Physical Function this device depends on.
+>> +
+>> +What:		/sys/bus/pci/devices/.../physfn
+>> +Date:		February 2009
+>> +Contact:	Yu Zhao <yu.zhao@intel.com>
+>> +Description:
+>> +		This symbol link appears when a device is Virtual Function.
+
+		     symbolic                          is a Virtual Function.
+
+>> +		The symbol link points to the PCI device sysfs entry of
+
+		    symbolic                                   entry of the
+
+>> +		Physical Function this device associates with.
+
