@@ -1,106 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbZCFLKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZCFLNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbZCFLKO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 06:10:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZCFLJ7
+	id S1755032AbZCFLNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 06:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZCFLNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 06:09:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36521 "EHLO hera.kernel.org"
+	Fri, 6 Mar 2009 06:13:23 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:62449 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZCFLJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 06:09:58 -0500
-Date: Fri, 6 Mar 2009 11:09:23 GMT
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       srostedt@redhat.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
-       laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <20090306151155.0778.A69D9226@jp.fujitsu.com>
-References: <20090306151155.0778.A69D9226@jp.fujitsu.com>
-Subject: [tip:tracing/ftrace] tracing: fix deadlock when setting set_ftrace_pid
-Message-ID: <tip-10dd3ebe213c31bff14b4dae3c5d32a76b1fad7c@git.kernel.org>
-Git-Commit-ID: 10dd3ebe213c31bff14b4dae3c5d32a76b1fad7c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 11:09:25 +0000 (UTC)
+	id S1751887AbZCFLNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 06:13:22 -0500
+Date: Fri, 06 Mar 2009 20:13:19 +0900 (JST)
+Message-Id: <20090306.201319.95063735.anemo@mba.ocn.ne.jp>
+To: dan.j.williams@intel.com
+Cc: thierry.reding@avionic-design.de, haavard.skinnemoen@atmel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] dmaengine: Fix oops on dmatest module unload.
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <e9c3a7c20903041503lb2f55fct3ec39f268e609317@mail.gmail.com>
+References: <1234441811-9628-1-git-send-email-thierry.reding@avionic-design.de>
+	<e9c3a7c20902121612q724d0931ifb70d559081f206d@mail.gmail.com>
+	<e9c3a7c20903041503lb2f55fct3ec39f268e609317@mail.gmail.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  10dd3ebe213c31bff14b4dae3c5d32a76b1fad7c
-Gitweb:     http://git.kernel.org/tip/10dd3ebe213c31bff14b4dae3c5d32a76b1fad7c
-Author:     "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-AuthorDate: Fri, 6 Mar 2009 15:29:04 +0900
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 6 Mar 2009 12:07:38 +0100
+On Wed, 4 Mar 2009 16:03:47 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
+> ...and now it is unapplied :-).  The problem with this patch is that
+> it releases the channel before dmatest is done with it.  'Cleanup'
+> followed by 'release' is the right order, just need to save ->chan
+> before it gets freed.
 
-tracing: fix deadlock when setting set_ftrace_pid
-
-Impact: fix deadlock while using set_ftrace_pid
-
-Reproducer:
-
-	# cd /sys/kernel/debug/tracing
-	# echo $$ > set_ftrace_pid
-
-	then, console becomes hung.
-
-Details:
-
-when writing set_ftracepid, kernel callstack is following
-
-	ftrace_pid_write()
-		mutex_lock(&ftrace_lock);
-		ftrace_update_pid_func()
-			mutex_lock(&ftrace_lock);
-			mutex_unlock(&ftrace_lock);
-		mutex_unlock(&ftrace_lock);
-
-then, system always deadlocks when ftrace_pid_write() is called.
-
-In past days, ftrace_pid_write() used ftrace_start_lock, but
-commit e6ea44e9b4c12325337cd1c06103cd515a1c02b2 consolidated
-ftrace_start_lock to ftrace_lock.
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <srostedt@redhat.com>
-LKML-Reference: <20090306151155.0778.A69D9226@jp.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+Oh that's right.  I tested your fix in async_tx tree and it works
+fine.  Thanks!
 
 ---
- kernel/trace/ftrace.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index d7a06a0..d33d306 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -218,10 +218,8 @@ static void ftrace_update_pid_func(void)
- {
- 	ftrace_func_t func;
- 
--	mutex_lock(&ftrace_lock);
--
- 	if (ftrace_trace_function == ftrace_stub)
--		goto out;
-+		return;
- 
- 	func = ftrace_trace_function;
- 
-@@ -238,9 +236,6 @@ static void ftrace_update_pid_func(void)
- #else
- 	__ftrace_trace_function = func;
- #endif
--
-- out:
--	mutex_unlock(&ftrace_lock);
- }
- 
- /* set when tracing only a pid */
+Atsushi Nemoto
