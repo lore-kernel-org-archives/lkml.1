@@ -1,129 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZCFQa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZCFQb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752898AbZCFQa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCFQaO
+	id S1755774AbZCFQb0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZCFQbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:30:14 -0500
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:57416 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZCFQaM (ORCPT
+	Fri, 6 Mar 2009 11:31:13 -0500
+Received: from usea-naimss3.unisys.com ([192.61.61.105]:3583 "EHLO
+	usea-naimss3.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbZCFQbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:30:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Bx8g7K7FfwdzIgrkcTjZVLZCcr5xlJO8l6hvfp7q0WVTOdwqJOFAe3Ybrido1TVcbh
-         toA2eIR6CV4FpLXeISllv00H09eq1UbMHsN38wz6IuCN/VLg/3AaEv6eihacpvZ1A+CQ
-         m9hctrCRDbZ3XQSV97uIrUJMuyMhNGN6MDgeY=
-From: Frederic Weisbecker <fweisbec@gmail.com>
+	Fri, 6 Mar 2009 11:31:12 -0500
+Subject: Re: [PATCH] MSI: check for BIOS assigned addresses
+From: Daniel Yeisley <dan.yeisley@unisys.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 0/5 v3] Binary ftrace_printk
-Date: Fri,  6 Mar 2009 17:21:45 +0100
-Message-Id: <1236356510-8381-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.1
+Cc: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20090306162402.GA8936@elte.hu>
+References: <1236352309.31604.2.camel@localhost.localdomain>
+	 <20090306162402.GA8936@elte.hu>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 10:56:49 -0500
+Message-Id: <1236355009.31604.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 (2.25.92-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Mar 2009 16:26:57.0371 (UTC) FILETIME=[5E64FAB0:01C99E78]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changelog V3:
+ACPI hotplug doesn't work.
 
-Rebase the whole against latest tip/master
-
-Changelog V2:
-
-This new iteration addresses Steven's reviews.
-Notably:
-
-- only build the ftrace_printk format section if CONFIG_TRACING is set
-- be scheduler tracing safe (don't use preempt_enable directly from
-  ftrace_printk to avoid tracing recursion)
-- fix a loss of format string when a module is unloaded. Since we can loose
-  it on the ring-buffer if it is in overwrite mode, we don't keep track
-  of the format given by the modules to free them. We just copy their
-  ftrace_printk string format forever. Note that it is safe against duplicate
-  strings since we verify if the string is already present in our list before
-  allocating a new one.
+Dan
 
 
-Changelog V1:
-
-An new optimization is making its way to ftrace. Its purpose is to
-make ftrace_printk() consuming less memory and become faster.
-
-Written by Lai Jiangshan, the approach is to delay the formatting
-job from tracing time to output time.
-Currently, a call to ftrace_printk will format the whole string and
-insert it into the ring buffer. Then you can read it on /debug/tracing/trace
-file.
-
-The new implementation stores the address of the format string and
-the binary parameters into the ring buffer, making the packet more compact
-and faster to insert.
-Later, when the user exports the traces, the format string is retrieved
-with the binary parameters and the formatting job is eventually done.
-
-Here is the result of a small comparative benchmark while putting the following
-ftrace_printk on the timer interrupt. ftrace_printk is the old implementation,
-ftrace_bprintk is a the new one:
-
-ftrace_printk("This is the timer interrupt: %llu", jiffies_64);
-
-After some time running on low load (no X, no really active processes):
-
-ftrace_printk:  duration average: 2044 ns, avg of bytes stored per entry: 39
-ftrace_bprintk: duration average: 1426 ns, avg of bytes stored per entry: 16
-
-Higher load (started X and launched a cat running on a X console looping on
-traces printing):
-
-ftrace_printk:  duration average: 8812 ns
-ftrace_bprintk: duration average: 2611 ns
-
-Which means the new implementation can be 70 % faster on higher load.
-And it consumes lesser memory on the ring buffer.
-
-The three first patches rebase against latest -tip the ftrace_bprintk work done
-by Lai few monthes ago.
-
-The two others integrate ftrace_bprintk as a replacement for the old
-ftrace_printk implementation and factorize the printf style format decoding
-which is now used by three functions.
-
-Frederic Weisbecker (2):
-  tracing/core: drop the old ftrace_printk implementation in favour of
-    ftrace_bprintk
-  vsprintf: unify the format decoding layer for its 3 users
-
-Lai Jiangshan (3):
-  add binary printf
-  ftrace: infrastructure for supporting binary record
-  ftrace: add ftrace_bprintk()
-
- include/asm-generic/vmlinux.lds.h    |    9 +
- include/linux/ftrace.h               |    1 -
- include/linux/kernel.h               |   34 +-
- include/linux/module.h               |    5 +
- include/linux/string.h               |    7 +
- kernel/module.c                      |    6 +
- kernel/trace/Kconfig                 |    1 +
- kernel/trace/Makefile                |    1 +
- kernel/trace/trace.c                 |  141 +++---
- kernel/trace/trace.h                 |    8 +-
- kernel/trace/trace_functions_graph.c |    6 +-
- kernel/trace/trace_mmiotrace.c       |    9 +-
- kernel/trace/trace_output.c          |   41 ++-
- kernel/trace/trace_output.h          |    2 +
- kernel/trace/trace_printk.c          |  138 +++++
- lib/Kconfig                          |    3 +
- lib/vsprintf.c                       | 1006 ++++++++++++++++++++++++++--------
- 17 files changed, 1096 insertions(+), 322 deletions(-)
- create mode 100644 kernel/trace/trace_printk.c
+On Fri, 2009-03-06 at 17:24 +0100, Ingo Molnar wrote:
+> * Daniel Yeisley <dan.yeisley@unisys.com> wrote:
+> 
+> > When creating MSI addresses the kernel makes them up and 
+> > writes them to the hardware without first checking for what 
+> > the system BIOS may have assigned.  The patch below checks for 
+> > already assigned values, and leaves them alone if they exist.
+> > 
+> > Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
+> 
+> What happens without this fix - do you get non-working cards? 
+> Boot hang? Or a suboptimal layout?
+> 
+> 	Ingo
 
