@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZCFOHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZCFO0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZCFOHK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 09:07:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZCFOGt
+	id S1754809AbZCFO0r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 09:26:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZCFO0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 09:06:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41770 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754452AbZCFOGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 09:06:48 -0500
-Date: Fri, 6 Mar 2009 15:06:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH] x86: make text_poke() atomic using fixmap
-Message-ID: <20090306140612.GA8566@elte.hu>
-References: <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <49AC7453.8020307@redhat.com> <20090303002214.GA4147@elte.hu> <49AC7A5F.7080009@redhat.com> <49AD5B55.10002@redhat.com> <20090305103852.GD32407@elte.hu>
+	Fri, 6 Mar 2009 09:26:38 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:38976 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751001AbZCFO0h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 09:26:37 -0500
+Date: Fri, 6 Mar 2009 15:26:34 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
+     RAM as block device
+In-Reply-To: <20090306125832.GX11787@kernel.dk>
+Message-ID: <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk> <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
+ <20090306074639.GN11787@kernel.dk> <alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be> <20090306125832.GX11787@kernel.dk>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090305103852.GD32407@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
-> > Hi Ingo,
+On Fri, 6 Mar 2009, Jens Axboe wrote:
+> On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
+> > On Fri, 6 Mar 2009, Jens Axboe wrote:
+> > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> > > > But then I noticed ps3vram_make_request() may be called concurrently,
+> > > > so I had to add a mutex to avoid data corruption. This slows the
+> > > > driver down, and in the end, the version with a thread turns out to be
+> > > > ca. 1% faster. The version without a thread is about 50 lines less
+> > > > code, though.
+> > >
+> > > That is correct, ->make_request_fn may get reentered. I'm not surprised
+> > > that performance dropped if you just shoved everything under a mutex.
+> > > You could be a little more smart and queue concurrent bio's for
+> > > processing when the current one is complete though, there are several
+> > > approaches there that be a lot faster than going all the way through the
+> > > IO stack and scheduler just to avoid concurrency.
 > > 
-> > Here is the patch which uses fixmaps instead of vmap in 
-> > text_poke(). This made the code much simpler than I thought 
-> > :).
+> > Yes, using a spinlock and queueing requests on a list if the driver is
+> > busy can be done after 2.6.29...
 > 
-> Looks good to me at a quick glance albeit Linus had second 
-> thoughts about using fixmaps for this in the past. But with 
-> delayed-flush for vmaps i think fixmaps are again the simpler 
-> and more robust - albeit more limited - choice ...
-> 
-> In any case, the x86 tree already unified fixmap.h so could 
-> you please resend the whole series as a 0/3, 1/3, 2/3, 3/3 
-> thing against tip:master, starting a new thread on lkml? (this 
-> thread is already way too deep)
+> Certainly. Even just replacing your current mutex with a spinlock during
+> the memcpy() would surely be a lot faster. Or even just grabbing the
+> mutex before calling into the write for the duration of the bio. The way
+> you do it is certain context switch death :-)
 
-Ping? I think there's agreement and it would be nice to fix this 
-in .30. Looks too complex for .29 - maybe backportable to .29.1 
-if it stays problem-free in testing.
+It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so I cannot
+use a spinlock.
 
-	Ingo
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
