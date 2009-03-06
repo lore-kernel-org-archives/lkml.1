@@ -1,105 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751476AbZCFQQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbZCFQQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751476AbZCFQQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZCFQQQ
+	id S1756589AbZCFQQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbZCFQQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:16:16 -0500
-Received: from usea-naimss2.unisys.com ([192.61.61.104]:4287 "EHLO
-	usea-naimss2.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753373AbZCFQQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:16:15 -0500
-X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Mar 2009 11:16:15 EST
-Subject: [PATCH] MSI: check for BIOS assigned addresses
-From: Daniel Yeisley <dan.yeisley@unisys.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 10:11:49 -0500
-Message-Id: <1236352309.31604.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 (2.25.92-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2009 15:41:56.0626 (UTC) FILETIME=[149FFF20:01C99E72]
+	Fri, 6 Mar 2009 11:16:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43029 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755418AbZCFQQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 11:16:23 -0500
+Date: Fri, 6 Mar 2009 16:15:28 GMT
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, sfr@canb.auug.org.au, tglx@linutronix.de,
+       gorcunov@gmail.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, tglx@linutronix.de, sfr@canb.auug.org.au,
+       gorcunov@gmail.com, mingo@elte.hu
+In-Reply-To: <20090306160833.GB7420@localhost>
+References: <20090306160833.GB7420@localhost>
+Subject: [tip:x86/asm] x86: linkage.h - guard assembler specifics by __ASSEMBLY__
+Message-ID: <tip-7ab152470e8416ef2a44c800fdc157e2192f2974@git.kernel.org>
+Git-Commit-ID: 7ab152470e8416ef2a44c800fdc157e2192f2974
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 16:15:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When creating MSI addresses the kernel makes them up and writes them to
-the hardware without first checking for what the system BIOS may have
-assigned.  The patch below checks for already assigned values, and
-leaves them alone if they exist. 
+Commit-ID:  7ab152470e8416ef2a44c800fdc157e2192f2974
+Gitweb:     http://git.kernel.org/tip/7ab152470e8416ef2a44c800fdc157e2192f2974
+Author:     "Cyrill Gorcunov" <gorcunov@gmail.com>
+AuthorDate: Fri, 6 Mar 2009 19:08:34 +0300
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 6 Mar 2009 17:14:12 +0100
 
+x86: linkage.h - guard assembler specifics by __ASSEMBLY__
 
-Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
+Stephen Rothwell reported:
+
+|Today's linux-next build (x86_64 allmodconfig) produced this warning:
+|
+|In file included from drivers/char/epca.c:49:
+|drivers/char/digiFep1.h:7:1: warning: "GLOBAL" redefined
+|In file included from include/linux/linkage.h:5,
+|                 from include/linux/kernel.h:11,
+|                 from arch/x86/include/asm/system.h:10,
+|                 from arch/x86/include/asm/processor.h:17,
+|                 from include/linux/prefetch.h:14,
+|                 from include/linux/list.h:6,
+|                 from include/linux/module.h:9,
+|                 from drivers/char/epca.c:29:
+|arch/x86/include/asm/linkage.h:55:1: warning: this is the location of the previous definition
+|
+|Probably introduced by commit 95695547a7db44b88a7ee36cf5df188de267e99e
+|("x86: asm linkage - introduce GLOBAL macro") from the x86 tree.
+
+Any assembler specific snippets being placed in headers
+are to be protected by __ASSEMBLY__. Fixed.
+
+Also move __ALIGN definition under the same protection as well.
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+LKML-Reference: <20090306160833.GB7420@localhost>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
 
 ---
-diff -Naurp linux-2.6.29-rc5/arch/x86/kernel/io_apic.c linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c
---- linux-2.6.29-rc5/arch/x86/kernel/io_apic.c	2009-02-13 18:31:30.000000000 -0500
-+++ linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c	2009-03-04 08:25:30.000000000 -0500
-@@ -3258,6 +3258,7 @@ static int msi_compose_msg(struct pci_de
- 	struct irq_cfg *cfg;
- 	int err;
- 	unsigned dest;
-+	struct irq_desc *desc = irq_to_desc(irq);
+ arch/x86/include/asm/linkage.h |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/include/asm/linkage.h b/arch/x86/include/asm/linkage.h
+index 9320e2a..a0d70b4 100644
+--- a/arch/x86/include/asm/linkage.h
++++ b/arch/x86/include/asm/linkage.h
+@@ -4,11 +4,6 @@
+ #undef notrace
+ #define notrace __attribute__((no_instrument_function))
  
- 	cfg = irq_cfg(irq);
- 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
-@@ -3265,6 +3266,8 @@ static int msi_compose_msg(struct pci_de
- 		return err;
- 
- 	dest = cpu_mask_to_apicid_and(cfg->domain, TARGET_CPUS);
-+	
-+	read_msi_msg_desc(desc, msg);
- 
- #ifdef CONFIG_INTR_REMAP
- 	if (irq_remapped(irq)) {
-@@ -3295,17 +3298,18 @@ static int msi_compose_msg(struct pci_de
- 	} else
- #endif
- 	{
--		msg->address_hi = MSI_ADDR_BASE_HI;
--		msg->address_lo =
--			MSI_ADDR_BASE_LO |
--			((INT_DEST_MODE == 0) ?
--				MSI_ADDR_DEST_MODE_PHYSICAL:
--				MSI_ADDR_DEST_MODE_LOGICAL) |
--			((INT_DELIVERY_MODE != dest_LowestPrio) ?
--				MSI_ADDR_REDIRECTION_CPU:
--				MSI_ADDR_REDIRECTION_LOWPRI) |
--			MSI_ADDR_DEST_ID(dest);
+-#ifdef CONFIG_X86_64
+-#define __ALIGN .p2align 4,,15
+-#define __ALIGN_STR ".p2align 4,,15"
+-#endif
 -
-+		if (!msg->address_hi && !msg->address_lo) {
-+			msg->address_hi = MSI_ADDR_BASE_HI;
-+			msg->address_lo = 
-+				MSI_ADDR_BASE_LO |
-+				((INT_DEST_MODE == 0) ?
-+					MSI_ADDR_DEST_MODE_PHYSICAL:
-+					MSI_ADDR_DEST_MODE_LOGICAL) |
-+				((INT_DELIVERY_MODE != dest_LowestPrio) ?
-+					MSI_ADDR_REDIRECTION_CPU:
-+					MSI_ADDR_REDIRECTION_LOWPRI) |
-+				MSI_ADDR_DEST_ID(dest); 
-+		}
- 		msg->data =
- 			MSI_DATA_TRIGGER_EDGE |
- 			MSI_DATA_LEVEL_ASSERT |
-@@ -3440,11 +3444,13 @@ static int setup_msi_irq(struct pci_dev 
- 	int ret;
- 	struct msi_msg msg;
+ #ifdef CONFIG_X86_32
+ #define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
+ /*
+@@ -50,16 +45,25 @@
+ 	__asmlinkage_protect_n(ret, "g" (arg1), "g" (arg2), "g" (arg3), \
+ 			      "g" (arg4), "g" (arg5), "g" (arg6))
  
-+	set_irq_msi(irq, msidesc);
- 	ret = msi_compose_msg(dev, irq, &msg);
--	if (ret < 0)
-+	if (ret < 0) {
-+		set_irq_msi(irq, NULL);
- 		return ret;
-+	}
+-#endif
++#endif /* CONFIG_X86_32 */
++
++#ifdef __ASSEMBLY__
  
--	set_irq_msi(irq, msidesc);
- 	write_msi_msg(irq, &msg);
+ #define GLOBAL(name)	\
+ 	.globl name;	\
+ 	name:
  
- #ifdef CONFIG_INTR_REMAP
-
-
++#ifdef CONFIG_X86_64
++#define __ALIGN .p2align 4,,15
++#define __ALIGN_STR ".p2align 4,,15"
++#endif
++
+ #ifdef CONFIG_X86_ALIGNMENT_16
+ #define __ALIGN .align 16,0x90
+ #define __ALIGN_STR ".align 16,0x90"
+ #endif
+ 
++#endif /* __ASSEMBLY__ */
++
+ #endif /* _ASM_X86_LINKAGE_H */
+ 
