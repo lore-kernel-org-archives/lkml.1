@@ -1,95 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897AbZCFOfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbZCFOjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751897AbZCFOfI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 09:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbZCFOez
+	id S1754395AbZCFOjT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 09:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZCFOi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 09:34:55 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:44400 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbZCFOey (ORCPT
+	Fri, 6 Mar 2009 09:38:58 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:8695 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbZCFOi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 09:34:54 -0500
-Date: Fri, 6 Mar 2009 08:34:25 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090306143425.GA31250@us.ibm.com>
-References: <20090305163857.0C18F3FD@kernel> <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz> <20090305210840.GA2499@x200.localdomain> <1236288427.22399.122.camel@nimitz> <20090305220044.GA2819@x200.localdomain> <1236291865.22399.139.camel@nimitz>
-MIME-Version: 1.0
+	Fri, 6 Mar 2009 09:38:57 -0500
+Date: Fri, 6 Mar 2009 08:38:56 -0600
+From: scameron@beardog.cca.cpqcorp.net
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mike.miller@hp.com,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+Message-ID: <20090306143856.GT15340@beardog.cca.cpqcorp.net>
+References: <20090306085529.GP11787@kernel.dk> <20090306181302X.fujita.tomonori@lab.ntt.co.jp> <20090306092114.GS11787@kernel.dk> <20090306182705P.fujita.tomonori@lab.ntt.co.jp> <20090306093520.GV11787@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236291865.22399.139.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090306093520.GV11787@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Fri, 2009-03-06 at 01:00 +0300, Alexey Dobriyan wrote:
-> > On Thu, Mar 05, 2009 at 01:27:07PM -0800, Dave Hansen wrote:
-> > > > Imagine, unsupported file is opened between userspace checks
-> > > > for /proc/*/checkpointable and /proc/*/fdinfo/*/checkpointable
-> > > > and whatever, you stil have to do all the checks inside checkpoint(2).
-> > > 
-> > > Alexey, we have two problems here.  I completely agree that we have to
-> > > do complete and thorough checks of each file descriptor at
-> > > sys_checkpoint().  Any checks made at other times should not be trusted.
-> > > 
-> > > The other side is what Ingo has been asking for.  How do we *know* when
-> > > we are checkpointable *before* we call (and without calling)
+On Fri, Mar 06, 2009 at 10:35:21AM +0100, Jens Axboe wrote:
+> On Fri, Mar 06 2009, FUJITA Tomonori wrote:
+> > On Fri, 6 Mar 2009 10:21:14 +0100
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
 > > 
-> > This "without calling checkpoint(2)" results in much complications
-> > as demonstrated.
+> > > On Fri, Mar 06 2009, FUJITA Tomonori wrote:
+> > > > On Fri, 6 Mar 2009 09:55:29 +0100
+> > > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > 
+> > > > > > If it's settable at init time, that would probably be enough for
+> > > > > > the vast majority of uses (and more flexible than what we have now)
+> > > > > > and a lot easier to implement.
+> > > > > 
+> > > > > Completely agree, don't waste time implementing something that nobody
+> > > > > will ever touch. The only reason to fiddle with such a setting would be
+> > > > > to increase it, because ios are too small. And even finding out that the
+> > > > > segment limit is the one killing you would take some insight and work
+> > > > > from the user.
+> > > > > 
+> > > > > Just make it Big Enough to cover most cases. 32 is definitely small, 256
+> > > > > entries would get you 1MB ios which I guess is more appropriate.
+> > > > 
+> > > > I guess that the dynamic scheme is overdoing but seems that vendors
+> > > > like some way to configure the sg entry size. The new MPT2SAS driver
+> > > > has SCSI_MPT2SAS_MAX_SGE kernel config option:
+> > > > 
+> > > > http://marc.info/?l=linux-scsi&m=123619290803547&w=2
+> > > > 
+> > > > 
+> > > > The kernel module option for this might be appropriate.
+> > > 
+> > > Dunno, still seems pretty pointless to me. The config option there
+> > > quotes memory consumption as the reason to reduce the number of sg
+> > > entries, however I think that's pretty silly. Additionally, a kernel
+> > > config entry just means that customers will be stuck with a fixed value
+> > > anyway. So I just don't see any merit to doing it that way either.
+> > 
+> > Yeah, agreed. the kernel config option is pretty pointless. But I'm
+> > not sure that reducing memory consumption is completely pointless.
 > 
-> I'll let you take that up with Ingo. :)
-> 
-> > task_struct and file are not like other structures because they are exposed
-> > in /proc.
-> 
-> Very true.  But, we can always use the task as a proxy to say whether
-> any of this tasks's *resources* are uncheckpointable.  Is this task's
-> ipc_namespace checkpointable, etc...
-> 
-> > For PROC_FS=n kernels, one can't even check.
-> 
-> Definitely.  I'd be happy to make this check require PROC=y or even
-> DEBUGFS=y.  I just want to make the mechanism usable for developers so
-> they're more motivated to find and fix checkpoint issues.
-> 
-> > You can do checkpoint(2) without actual dump. You pass, you're most
-> > certainly checkpointable (with inevitable race condition in mind).
-> 
-> OK, so you envision this as maybe calling sys_checkpoint() with a -1 fd
-> or something?  I'm generally OK with that.  If the /proc stuff is really
-> the sticking point here, I'd be happy to stick it at the end of the
-> series so we can throw it away more easily.
+> Agree, depends on how you do it. If you preallocate all the memory
+> required for 1024 entries times the queue depth, then it may not be that
+> small. But you can do it a bit more cleverly than that, and then I don't
+> think it makes a lot of sense to provide any options for shrinking it.
 
-Yeah thing is I definately like what Alexey is suggesting.
+The reason I mentioned making the number of SGs configurable is because with
+a lot of controllers in the box (say 8, or ridiculous numbers of controllers
+are potentially possible on some big ia64 boxes) then the memory available
+by way of pci_alloc_consistent can be exhausted, and we have seen that happen.
 
-The only reason for going the route of Dave's patches is to implement
-the pain Ingo wants to inflict to push us to faster support the
-resources which users actually want/need.  As Alexey says that's
-a temporary gain and therefore not worth permanent code.
+The command buffers have to be in the first 4GB of memory, as the command
+register is only 32 bits, so they are allocated by pci_alloc_consistent.
+However, the chained SG lists don't have that limitation, so I think they
+can be kmalloc'ed, and so not chew up and unreasonable amount of the
+pci_alloc_consistent memory and get a larger number of SGs.   ...right?
+Maybe that's the better way to do it.
 
-Oh, right, there's the second reason:
-
-> > With time the amount of stuff C/R won't support will approach zero,
-> > but the infrastructure for "checkpointable" will stay constant.
-> > If it's too much right now, it will be way too much in future.
-> 
-> What have you seen in OpenVZ?  Do new things that are not checkpointable
-> pop up very often?
-
-Realistically, do you think the uncheckpointable stuff would catch a
-brand-new unsupported feature?  If it has a file interface then I
-suppose it would.  Well, might.  I wouldn't be surprised if the authors
-would cut and paste enough code to paste the .checkpoint =
-generic_file_checkpoint line :)
-
--serge
+-- steve
