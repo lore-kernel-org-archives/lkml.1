@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbZCFSQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbZCFSTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbZCFSQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:16:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZCFSQr
+	id S1754514AbZCFSTS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZCFSTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:16:47 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:59333 "EHLO
+	Fri, 6 Mar 2009 13:19:04 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:59531 "EHLO
 	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZCFSQq (ORCPT
+	with ESMTP id S1750880AbZCFSTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:16:46 -0500
+	Fri, 6 Mar 2009 13:19:02 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah0FAAfysElMQW1W/2dsb2JhbACBTtUQhAgG
-Date: Fri, 6 Mar 2009 13:11:33 -0500
+X-IronPort-Anti-Spam-Result: Ah0FAGD0sElMQW1W/2dsb2JhbACBTtR8hAgG
+Date: Fri, 6 Mar 2009 13:13:56 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -25,88 +25,118 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH -tip 3/4]Text Edit Lock - Smp alternatives support
-Message-ID: <20090306181133.GC14236@Krystal>
-References: <49B1428A.9050500@redhat.com> <49B14332.9030109@redhat.com>
+Subject: Re: [PATCH -tip 4/4] Atomic text_poke() with fixmap
+Message-ID: <20090306181356.GD14236@Krystal>
+References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49B14332.9030109@redhat.com>
+In-Reply-To: <49B14352.2040705@redhat.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:10:19 up 6 days, 14:36,  1 user,  load average: 0.34, 0.44,
-	0.48
+X-Uptime: 13:12:17 up 6 days, 14:38,  1 user,  load average: 1.21, 0.63,
+	0.54
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Use the mutual exclusion provided by the text edit lock in alternatives code.
-> Since alternative_smp_* will be called from module init code, etc,
-> we'd better protect it from other subsystems.
+> Use fixmaps instead of vmap/vunmap in text_poke() for avoiding page allocation
+> and delayed unmapping.
+> 
+> At the result of above change, text_poke() becomes atomic and can be called
+> from stop_machine() etc.
 > 
 > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 > Cc: Ingo Molnar <mingo@elte.hu>
 > ---
->  arch/x86/kernel/alternative.c |    5 +++++
->  1 file changed, 5 insertions(+)
+>  arch/x86/include/asm/fixmap.h |    2 ++
+>  arch/x86/kernel/alternative.c |   24 +++++++++++++++---------
+>  2 files changed, 17 insertions(+), 9 deletions(-)
 > 
-> Index: 2.6.29-rc7/arch/x86/kernel/alternative.c
+> Index: linux-2.6-tip/arch/x86/kernel/alternative.c
 > ===================================================================
-> --- 2.6.29-rc7.orig/arch/x86/kernel/alternative.c
-> +++ 2.6.29-rc7/arch/x86/kernel/alternative.c
-> @@ -5,6 +5,7 @@
->  #include <linux/kprobes.h>
->  #include <linux/mm.h>
->  #include <linux/vmalloc.h>
-> +#include <linux/memory.h>
->  #include <asm/alternative.h>
->  #include <asm/sections.h>
->  #include <asm/pgtable.h>
-> @@ -226,6 +227,7 @@ static void alternatives_smp_lock(u8 **s
+> --- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
+> +++ linux-2.6-tip/arch/x86/kernel/alternative.c
+> @@ -13,7 +13,9 @@
+>  #include <asm/nmi.h>
+>  #include <asm/vsyscall.h>
+>  #include <asm/cacheflush.h>
+> +#include <asm/tlbflush.h>
+>  #include <asm/io.h>
+> +#include <asm/fixmap.h>
+> 
+>  #define MAX_PATCH_LEN (255-1)
+> 
+> @@ -505,15 +507,16 @@ void *text_poke_early(void *addr, const
+>   * It means the size must be writable atomically and the address must be aligned
+>   * in a way that permits an atomic write. It also makes sure we fit on a single
+>   * page.
+> + *
+> + * Note: Must be called under text_mutex.
+>   */
+>  void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
 >  {
->  	u8 **ptr;
+> +	unsigned long flags;
+>  	char *vaddr;
+> -	int nr_pages = 2;
+>  	struct page *pages[2];
+>  	int i;
 > 
-> +	mutex_lock(&text_mutex);
->  	for (ptr = start; ptr < end; ptr++) {
->  		if (*ptr < text)
->  			continue;
-> @@ -234,6 +236,7 @@ static void alternatives_smp_lock(u8 **s
->  		/* turn DS segment override prefix into lock prefix */
->  		text_poke(*ptr, ((unsigned char []){0xf0}), 1);
->  	};
-> +	mutex_unlock(&text_mutex);
->  }
-> 
->  static void alternatives_smp_unlock(u8 **start, u8 **end, u8 *text, u8 *text_end)
-> @@ -243,6 +246,7 @@ static void alternatives_smp_unlock(u8 *
->  	if (noreplace_smp)
->  		return;
-> 
-> +	mutex_lock(&text_mutex);
->  	for (ptr = start; ptr < end; ptr++) {
->  		if (*ptr < text)
->  			continue;
-> @@ -251,6 +255,7 @@ static void alternatives_smp_unlock(u8 *
->  		/* turn lock prefix into DS segment override prefix */
->  		text_poke(*ptr, ((unsigned char []){0x3E}), 1);
->  	};
-> +	mutex_unlock(&text_mutex);
+> -	might_sleep();
+>  	if (!core_kernel_text((unsigned long)addr)) {
+>  		pages[0] = vmalloc_to_page(addr);
+>  		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
+> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
+>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
+>  	}
+>  	BUG_ON(!pages[0]);
+> -	if (!pages[1])
+> -		nr_pages = 1;
+> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+> -	BUG_ON(!vaddr);
+> -	local_irq_disable();
+> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
 
-And for these cases, the "alternatives_smp_lock" and
-"alternatives_smp_unlock", the system is running as uniprocessor.
-Therefore it's enough to disable interrupts within text_poke to make it
-work correctly.
+Can the set_fixmap/clear_fixmap/local_flush_tlb be called within
+local_irq_save ? If yes, that would be better, especially for the SMP
+alternatives code, which would rely on interrupt disabling in text_poke
+for consistency (the mutex is not needed there).
 
 Mathieu
 
->  }
-> 
->  struct smp_alt_module {
+> +	if (pages[1])
+> +		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
+> +	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
+> +	local_irq_save(flags);
+>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+> -	local_irq_enable();
+> -	vunmap(vaddr);
+> +	local_irq_restore(flags);
+> +	clear_fixmap(FIX_TEXT_POKE0);
+> +	if (pages[1])
+> +		clear_fixmap(FIX_TEXT_POKE1);
+> +	local_flush_tlb();
+>  	sync_core();
+>  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+>  	   that causes hangs on some VIA CPUs. */
+> Index: linux-2.6-tip/arch/x86/include/asm/fixmap.h
+> ===================================================================
+> --- linux-2.6-tip.orig/arch/x86/include/asm/fixmap.h
+> +++ linux-2.6-tip/arch/x86/include/asm/fixmap.h
+> @@ -111,6 +111,8 @@ enum fixed_addresses {
+>  #ifdef CONFIG_PARAVIRT
+>  	FIX_PARAVIRT_BOOTMAP,
+>  #endif
+> +	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
+> +	FIX_TEXT_POKE1,
+>  	__end_of_permanent_fixed_addresses,
+>  #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+>  	FIX_OHCI1394_BASE,
 > -- 
 > Masami Hiramatsu
 > 
