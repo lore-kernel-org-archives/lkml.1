@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZCFXDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZCFXEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZCFXDv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 18:03:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZCFXDm
+	id S1757452AbZCFXEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 18:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZCFXEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 18:03:42 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:46060 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753202AbZCFXDl (ORCPT
+	Fri, 6 Mar 2009 18:04:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55216 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751803AbZCFXEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 18:03:41 -0500
-Subject: Process accounting in interrupt diabled cases
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: schwidefsky@de.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       virtualization@lists.linux-foundation.org
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Fri, 06 Mar 2009 15:03:35 -0800
-Message-Id: <1236380615.4637.67.camel@alok-dev1>
+	Fri, 6 Mar 2009 18:04:13 -0500
+Date: Fri, 6 Mar 2009 15:03:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: adobriyan@gmail.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH -v2] memdup_user(): introduce
+Message-Id: <20090306150335.c512c1b6.akpm@linux-foundation.org>
+In-Reply-To: <49B0F1B9.1080903@cn.fujitsu.com>
+References: <49B0CAEC.80801@cn.fujitsu.com>
+	<20090306082056.GB3450@x200.localdomain>
+	<49B0DE89.9000401@cn.fujitsu.com>
+	<20090306003900.a031a914.akpm@linux-foundation.org>
+	<49B0E67C.2090404@cn.fujitsu.com>
+	<20090306011548.ffdf9cbc.akpm@linux-foundation.org>
+	<49B0F1B9.1080903@cn.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 06 Mar 2009 17:49:45 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-I am not sure, but I think this may be a process accounting bug.
+> I notice there are many places doing copy_from_user() which follows
+> kmalloc():
+> 
+>         dst = kmalloc(len, GFP_KERNEL);
+>         if (!dst)
+>                 return -ENOMEM;
+>         if (copy_from_user(dst, src, len)) {
+> 		kfree(dst);
+> 		return -EFAULT
+> 	}
+> 
+> memdup_user() is a wrapper of the above code. With this new function,
+> we don't have to write 'len' twice, which can lead to typos/mistakes.
+> It also produces smaller code and kernel text.
+> 
+> A quick grep shows 250+ places where memdup_user() *may* be used. I'll
+> prepare a patchset to do this conversion.
+> 
+> v1 -> v2: change the name from kmemdup_from_user to memdup_user.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+> 
+> Can this get into 2.6.29, so I can prepare patches based on linux-next?
+> And this won't cause regression, since no one uses it yet. :)
 
-If interrupts are disabled for a considerable amount of time ( say
-multiple ticks), the process accounting code will still account a single
-tick for such cases, on the next interrupt tick.
-Shouldn't we have some way to fix that case like we do for NO_HZ
-restart_sched_tick case, where we account for multiple idle ticks.
- 
-IOW, doesn't process accounting need to account for these cases when
-interrupts are disabled for more than one tick period?
-
-I stumbled across this while trying to find a solution to figure out the
-amount of stolen time from Linux, when it is running under a hypervisor.
-One of the solutions could be to ask the hypervisor directly for this
-info, but in my quest to find a generic solution I think the below would
-work too.
-The total process time accounted by the system on a cpu ( system, idle,
-wait and etc) when deducted from the amount TSC counter has advanced
-since boot, should give us this info about the cputime stolen from the
-kernel  (by either hypervisor or other cases like say, SMI) on a
-particular CPU. 
-i.e. PCPU_STOLEN = (TSC since boot)  - (PCPU-idle + system + wait + ...)
-
-But for this to work the above problem about process accounting in
-interrupt disabled cases need to work correctly. 
-
-Let me know if I overlooking any case where the above assumption might
-not hold true.
-
-Thanks,
-Alok
-
+I'd be OK with doing that from a patch logistics point of view, but I'd
+prefer to leave a patch like this for a few days to gather more
+feedback from other developers, which might push this into 2.6.30.
 
 
+> diff --git a/include/linux/string.h b/include/linux/string.h
+> index 76ec218..79f30f3 100644
+> --- a/include/linux/string.h
+> +++ b/include/linux/string.h
+> @@ -12,6 +12,7 @@
+>  #include <linux/stddef.h>	/* for NULL */
+>  
+>  extern char *strndup_user(const char __user *, long);
+> +extern void *memdup_user(const void __user *, size_t, gfp_t);
+>  
+>  /*
+>   * Include machine specific inline routines
+> diff --git a/mm/util.c b/mm/util.c
+> index 37eaccd..3d21c21 100644
+> --- a/mm/util.c
+> +++ b/mm/util.c
+> @@ -70,6 +70,32 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
+>  EXPORT_SYMBOL(kmemdup);
+>  
+>  /**
+> + * memdup_user - duplicate memory region from user space
+> + *
+> + * @src: source address in user space
+> + * @len: number of bytes to copy
+> + * @gfp: GFP mask to use
+> + *
+> + * Returns an ERR_PTR() on failure.
+> + */
+> +void *memdup_user(const void __user *src, size_t len, gfp_t gfp)
+> +{
+> +	void *p;
+> +
+> +	p = kmalloc_track_caller(len, gfp);
+> +	if (!p)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	if (copy_from_user(p, src, len)) {
+> +		kfree(p);
+> +		return ERR_PTR(-EFAULT);
+> +	}
+> +
+> +	return p;
+> +}
+> +EXPORT_SYMBOL(memdup_user);
+> +
+> +/**
+>   * __krealloc - like krealloc() but don't free @p.
+>   * @p: object to reallocate memory for.
+>   * @new_size: how many bytes of memory are required.
+> -- 
+> 1.5.4.rc3
