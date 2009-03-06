@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZCFUIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbZCFUJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbZCFUIk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZCFUIP
+	id S1755879AbZCFUJz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZCFUJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:08:15 -0500
-Received: from phoenix3.szarvasnet.hu ([87.101.127.16]:56505 "EHLO
-	phoenix3.szarvasnet.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbZCFUIO convert rfc822-to-8bit (ORCPT
+	Fri, 6 Mar 2009 15:09:44 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:49613 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754561AbZCFUJn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:08:14 -0500
-X-Greylist: delayed 1941 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Mar 2009 15:08:13 EST
-Message-ID: <49B17B12.3050200@openwrt.org>
-Date: Fri, 06 Mar 2009 20:35:46 +0100
-From: Gabor Juhos <juhosg@openwrt.org>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 6 Mar 2009 15:09:43 -0500
+Date: Fri, 6 Mar 2009 13:09:42 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v10 2/7] PCI: restore saved SR-IOV state
+Message-ID: <20090306200941.GE25995@parisc-linux.org>
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-3-git-send-email-yu.zhao@intel.com>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 6 (ath9k)
-References: <20090306191311.697e7b97.sfr@canb.auug.org.au> <49B17320.8010000@oracle.com>
-In-Reply-To: <49B17320.8010000@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-X-Antivirus: avast! (VPS 090305-1, 2009.03.05), Outbound message
-X-Antivirus-Status: Clean
-Content-Transfer-Encoding: 8BIT
-X-VBMS: A15C8761299 | phoenix3 | 127.0.0.1 |  | <juhosg@openwrt.org> | 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235112888-9524-3-git-send-email-yu.zhao@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap írta:
-> Stephen Rothwell wrote:
->> Hi all,
->>
->> Linus' release of -rc7 seems to have stirred people up a bit ...
->>
->> Changes since 20090305:
-> 
-> 
-> when CONFIG_RFKILL=n, ath9k/virtual.c causes:
-> 
-> (.text+0x224e83): undefined reference to `ath_radio_disable'
-> (.text+0x224e8b): undefined reference to `ath_radio_enable'
-> 
-> 
+On Fri, Feb 20, 2009 at 02:54:43PM +0800, Yu Zhao wrote:
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-Hi,
+It needs a changelog ...
 
-I have submitted a patch for this already:
-http://marc.info/?l=linux-wireless&m=123633468314970&w=2
+> +static void sriov_restore_state(struct pci_dev *dev)
+> +{
+[...]
+> +}
+> +
+[...]
+> +/**
+> + * pci_restore_iov_state - restore the state of the IOV capability
+> + * @dev: the PCI device
+> + */
+> +void pci_restore_iov_state(struct pci_dev *dev)
+> +{
+> +	if (dev->sriov)
+> +		sriov_restore_state(dev);
+> +}
 
-Should I send it to somewhere else as well?
+Apart from the design pattern I mentioned in my previous email also
+appearing here, I see no problems with this patch.
 
-Gabor
-
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
