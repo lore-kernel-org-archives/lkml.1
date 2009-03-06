@@ -1,52 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbZCFJtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZCFJuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbZCFJtu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 04:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZCFJtk
+	id S1755521AbZCFJuM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 04:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbZCFJtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 04:49:40 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:35489 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbZCFJtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 04:49:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=RZThOOMaI4i6DxlCXNsQubWK1bNA/SfTHjjRlK90++3dKKK9pigN82SpGgVRxUZei7
-         I6wzbBOpQjeA2xR1BSo2A5dMdEy2t7yJ73Z1yEJmfsCGSxpeV2sOE8ff5atqBiYpU7FN
-         T2KSpErvQhPOCQ7ghIaV5rjmHLr9X/Jkn5fu4=
-Message-ID: <49B0F1D0.9070707@gmail.com>
-Date: Fri, 06 Mar 2009 10:50:08 +0100
-From: Karl Beldan <karl.beldan@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Fri, 6 Mar 2009 04:49:47 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49824 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754878AbZCFJtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 04:49:46 -0500
+Message-ID: <49B0F1B9.1080903@cn.fujitsu.com>
+Date: Fri, 06 Mar 2009 17:49:45 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Bryan Wu <cooloney@kernel.org>
-CC: broonie@opensource.wolfsonmicro.com, Cliff Cai <cliff.cai@analog.com>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH 2/5] ASoC: ssm2602 codec: fix bug - kernel
- will crash when record and play in bf527-ezkit
-References: <1236326010-683-1-git-send-email-cooloney@kernel.org> <1236326010-683-3-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1236326010-683-3-git-send-email-cooloney@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [PATCH -v2] memdup_user(): introduce
+References: <49B0CAEC.80801@cn.fujitsu.com>	<20090306082056.GB3450@x200.localdomain>	<49B0DE89.9000401@cn.fujitsu.com>	<20090306003900.a031a914.akpm@linux-foundation.org>	<49B0E67C.2090404@cn.fujitsu.com> <20090306011548.ffdf9cbc.akpm@linux-foundation.org>
+In-Reply-To: <20090306011548.ffdf9cbc.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Wu wrote:
-> From: Cliff Cai <cliff.cai@analog.com>
-> 
-> set constraint only if the value is not 0, change the configuring way for sport
-> 
-> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  sound/soc/codecs/ssm2602.c |   29 ++++++++++++++---------------
->  1 files changed, 14 insertions(+), 15 deletions(-)
->
-What tree is this against ?
+I notice there are many places doing copy_from_user() which follows
+kmalloc():
 
+        dst = kmalloc(len, GFP_KERNEL);
+        if (!dst)
+                return -ENOMEM;
+        if (copy_from_user(dst, src, len)) {
+		kfree(dst);
+		return -EFAULT
+	}
+
+memdup_user() is a wrapper of the above code. With this new function,
+we don't have to write 'len' twice, which can lead to typos/mistakes.
+It also produces smaller code and kernel text.
+
+A quick grep shows 250+ places where memdup_user() *may* be used. I'll
+prepare a patchset to do this conversion.
+
+v1 -> v2: change the name from kmemdup_from_user to memdup_user.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+
+Can this get into 2.6.29, so I can prepare patches based on linux-next?
+And this won't cause regression, since no one uses it yet. :)
+
+---
+ include/linux/string.h |    1 +
+ mm/util.c              |   26 ++++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 76ec218..79f30f3 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -12,6 +12,7 @@
+ #include <linux/stddef.h>	/* for NULL */
+ 
+ extern char *strndup_user(const char __user *, long);
++extern void *memdup_user(const void __user *, size_t, gfp_t);
+ 
+ /*
+  * Include machine specific inline routines
+diff --git a/mm/util.c b/mm/util.c
+index 37eaccd..3d21c21 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -70,6 +70,32 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
+ EXPORT_SYMBOL(kmemdup);
+ 
+ /**
++ * memdup_user - duplicate memory region from user space
++ *
++ * @src: source address in user space
++ * @len: number of bytes to copy
++ * @gfp: GFP mask to use
++ *
++ * Returns an ERR_PTR() on failure.
++ */
++void *memdup_user(const void __user *src, size_t len, gfp_t gfp)
++{
++	void *p;
++
++	p = kmalloc_track_caller(len, gfp);
++	if (!p)
++		return ERR_PTR(-ENOMEM);
++
++	if (copy_from_user(p, src, len)) {
++		kfree(p);
++		return ERR_PTR(-EFAULT);
++	}
++
++	return p;
++}
++EXPORT_SYMBOL(memdup_user);
++
++/**
+  * __krealloc - like krealloc() but don't free @p.
+  * @p: object to reallocate memory for.
+  * @new_size: how many bytes of memory are required.
 -- 
-Karl Beldan
+1.5.4.rc3
+
