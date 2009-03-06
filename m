@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZCFSVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZCFSWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbZCFSVa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZCFSVV
+	id S1756598AbZCFSWg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZCFSW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:21:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41875 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752983AbZCFSVV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:21:21 -0500
-Subject: Re: [Patch] mm tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
+	Fri, 6 Mar 2009 13:22:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40225 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750880AbZCFSW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:22:26 -0500
+Message-ID: <49B1697D.60602@kernel.org>
+Date: Fri, 06 Mar 2009 10:20:45 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Larry Woodman <lwoodman@redhat.com>,
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com
-In-Reply-To: <20090306180154.GA20292@elte.hu>
-References: <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com>
-	 <20090306105627.3EF0.A69D9226@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0903052124240.14535@gandalf.stny.rr.com>
-	 <20090306110423.GD21168@elte.hu>
-	 <1236342797.3154.1.camel@dhcp47-138.lab.bos.redhat.com>
-	 <20090306135547.GB21907@elte.hu>
-	 <1236358657.1476.56.camel@dhcp-100-19-198.bos.redhat.com>
-	 <20090306171016.GA32128@elte.hu> <1236361106.6326.595.camel@laptop>
-	 <1236362197.6326.615.camel@laptop>  <20090306180154.GA20292@elte.hu>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 19:20:25 +0100
-Message-Id: <1236363625.6326.641.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: introduce bootmem_state
+References: <1236257708-27269-7-git-send-email-penberg@cs.helsinki.fi> <49B02498.9080300@kernel.org> <49B02C68.1030203@cs.helsinki.fi> <49B0640A.5080607@kernel.org> <20090306145928.GE21907@elte.hu>
+In-Reply-To: <20090306145928.GE21907@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 19:01 +0100, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> > On Fri, 2009-03-06 at 18:38 +0100, Peter Zijlstra wrote:
-> > > On Fri, 2009-03-06 at 18:10 +0100, Ingo Molnar wrote:
-> > > > Looks pretty good and useful to me. I've Cc:-ed more mm folks, 
-> > > > it would be nice to hear their opinion about these tracepoints.
-> > > > 
-> > > > Andrew, Nick, Peter, what do you think?
-> > > 
-> > > Bit sad we use the struct mm_struct * as mm identifier (little %lx vs %p
-> > > confusion there too), but I suppose there simply isn't anything better.
-> > 
-> > > Things missing, 
-> > 
-> > Why only anon and filemap, that misses out on all the funky 
-> > driver ->fault() handlers.
+>> Impact: cleanup
+>>
+>> extend after_bootmem and after_init_bootmem to bootmem_state 
+>> and will have BEFORE_BOOTMEM, DURING_BOOTMEM, AFTER_BOOTMEM
 > 
-> btw., does it include shm faults? I think all of this would be 
-> handled if the tracepoint was at handle_mm_fault(), right?
+> Ok, that indeed makes all these bootstrap initialization details 
+> cleaner and more transparent.
+> 
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> ---
+>>  arch/x86/kernel/setup.c |    1 +
+>>  arch/x86/mm/init.c      |   13 +++++++------
+>>  arch/x86/mm/init_32.c   |   28 ++++++++++++++++++++--------
+>>  arch/x86/mm/init_64.c   |   33 +++++++++++++++++++--------------
+>>  include/linux/mm.h      |    8 ++++++++
+>>  5 files changed, 55 insertions(+), 28 deletions(-)
+> 
+> Note: "git grep after_bootmem" will show you another affected 
+> architecture as well.
 
-Partially, you wouldn't be able to do the file:offset thing you asked
-for.
+that is sh, will send patch to them later if needed.
 
-But yeah, also hugetlb seems to be missing.
+> 
+>> +++ linux-2.6/include/linux/mm.h
+>> @@ -1067,6 +1067,14 @@ extern void __init mmap_init(void);
+>>  extern void show_mem(void);
+>>  extern void si_meminfo(struct sysinfo * val);
+>>  extern void si_meminfo_node(struct sysinfo *val, int nid);
+>> +
+>> +enum bootmem_state_t {
+>> +	BEFORE_BOOTMEM = 0,
+> 
+> (nit: =0 is not required. )
+some other enum, has it too...
+> 
+>> +	DURING_BOOTMEM,
+>> +	AFTER_BOOTMEM
+>> +};
+>> +extern enum bootmem_state_t bootmem_state;
+> 
+> (nit: we put newlines after enum definitions)
 
+ok
+
+YH
