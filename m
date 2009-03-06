@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbZCFPQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbZCFPQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbZCFPQU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbZCFPP5
+	id S1755794AbZCFPQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZCFPQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:15:57 -0500
-Received: from mga01.intel.com ([192.55.52.88]:12619 "EHLO mga01.intel.com"
+	Fri, 6 Mar 2009 10:16:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39355 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755478AbZCFPPz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:15:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,315,1233561600"; 
-   d="scan'208";a="670913502"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Fri, 6 Mar 2009 15:15:46 +0000
-Subject: RE: [patch 1/4] x86, bts: add selftest for BTS
-Thread-Topic: [patch 1/4] x86, bts: add selftest for BTS
-Thread-Index: AcmeaGwa+zwosY/7Sfitizypj3fWUAABZzGQ
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A5A120A@irsmsx504.ger.corp.intel.com>
-References: <20090305161711.A16434@sedona.ch.intel.com>
- <20090306143237.GC21907@elte.hu>
-In-Reply-To: <20090306143237.GC21907@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	id S1755113AbZCFPQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 10:16:14 -0500
+Date: Fri, 6 Mar 2009 15:15:36 GMT
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       eranian@googlemail.com, markus.t.metzger@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       eranian@googlemail.com, markus.t.metzger@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090305085721.A22550@sedona.ch.intel.com>
+References: <20090305085721.A22550@sedona.ch.intel.com>
+Subject: [tip:x86/urgent] x86, pebs: correct qualifier passed to ds_write_config() from ds_request_pebs()
+Message-ID: <tip-73bf1b62f561fc8ecb00e2810efe4fe769f4933e@git.kernel.org>
+Git-Commit-ID: 73bf1b62f561fc8ecb00e2810efe4fe769f4933e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 15:15:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Friday, March 06, 2009 3:33 PM
->To: Metzger, Markus T
+Commit-ID:  73bf1b62f561fc8ecb00e2810efe4fe769f4933e
+Gitweb:     http://git.kernel.org/tip/73bf1b62f561fc8ecb00e2810efe4fe769f4933e
+Author:     "Markus Metzger" <markus.t.metzger@intel.com>
+AuthorDate: Thu, 5 Mar 2009 08:57:21 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 6 Mar 2009 16:13:15 +0100
+
+x86, pebs: correct qualifier passed to ds_write_config() from ds_request_pebs()
+
+ds_write_config() can write the BTS as well as the PEBS part of
+the DS config. ds_request_pebs() passes the wrong qualifier, which
+results in the wrong configuration to be written.
+
+Reported-by: Stephane Eranian <eranian@googlemail.com>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+LKML-Reference: <20090305085721.A22550@sedona.ch.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
->> +#ifdef CONFIG_X86_DS_SELFTEST
->> +static int ds_selftest_bts_consistency(const struct bts_trace *trace)
->
->Consider putting this into ds_selftest.c instead of adding a
->large #ifdef block to ds.c.
+---
+ arch/x86/kernel/ds.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-Thanks for your comments.
-
-I will correct the style problems, move this into ds_selftest.c,
-and resend the entire series next week.
-
-regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index de7cdbd..87b67e3 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -729,7 +729,7 @@ struct pebs_tracer *ds_request_pebs(struct task_struct *task,
+ 
+ 	spin_unlock_irqrestore(&ds_lock, irq);
+ 
+-	ds_write_config(tracer->ds.context, &tracer->trace.ds, ds_bts);
++	ds_write_config(tracer->ds.context, &tracer->trace.ds, ds_pebs);
+ 	ds_resume_pebs(tracer);
+ 
+ 	return tracer;
