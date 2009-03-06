@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbZCFD2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZCFDa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbZCFD2e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 22:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZCFD2X
+	id S1755171AbZCFDa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 22:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZCFDaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 22:28:23 -0500
-Received: from rv-out-0506.google.com ([209.85.198.236]:13805 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbZCFD2W (ORCPT
+	Thu, 5 Mar 2009 22:30:14 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:23483 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752647AbZCFDaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 22:28:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BiQCzOBcPivkYrcOY9eWcoRetGCZHsYOBJD+mngahJv2fR7dwVqv4tRF2Qq/RJfo2K
-         9ueBk++aHgucmuo/2u9I+oskAHaL/01+yMWtvGIoCCJ1fYU/hAsz+iqJEBvTKbYydBM9
-         gQ8oGpfildH5bppEjh8jAcCYA/0dY6FL6UNq8=
-Date: Fri, 6 Mar 2009 12:28:14 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, jirislaby@gmail.com,
-       rmk+lkml@arm.linux.org.uk
-Subject: Re: [PATCH] generic debug pagealloc (-v2)
-Message-ID: <20090306032814.GA9874@localhost.localdomain>
-References: <20090305145926.GA27015@localhost.localdomain> <20090305143150.136e2708.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090305143150.136e2708.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Mar 2009 22:30:13 -0500
+X-IronPort-AV: E=Sophos;i="4.38,312,1233550800"; 
+   d="scan'208";a="83876970"
+From: Bryan Wu <cooloney@kernel.org>
+To: dwmw2@infradead.org
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] mtd: CFI: fix bug - bonnie++ error on BF548 NOR flash
+Date: Fri,  6 Mar 2009 11:32:18 +0800
+Message-Id: <1236310338-24256-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 02:31:50PM -0800, Andrew Morton wrote:
-> > +#include <linux/kernel.h>
-> > +#include <linux/mm.h>
-> > +
-> > +static void poison_page(struct page *page)
-> > +{
-> > +	void *addr;
-> > +
-> > +	if (PageHighMem(page))
-> > +		return; /* i goofed */
-> 
-> heh.  A more complete comment would be needed here.
-> 
-> Also, as this is a kernel bug, perhaps some sort of runtime warning?
+From: Graf Yang <graf.yang@analog.com>
 
-It just skips the poisoning for highmem pages.
-Any page poisoning can be skipped safely if it doesn't set the page->poison
-flag. So I'm going to put
+The function inval_cache_and_wait_for_operation() is called both
+by write and erase operation. If erase call it and stayed there, then write
+call it and male-cleared chip->erase_suspended, the time out error may arise.
 
-/*
- * skipping the page poisoning for highmem pages
- */
+Signed-off-by: Graf Yang <graf.yang@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/mtd/chips/cfi_cmdset_0001.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-> > +	page->poison = true;
-> > +	addr = page_address(page);
-> > +	memset(addr, PAGE_POISON, PAGE_SIZE);
-> > +}
-
-...
-
-> > +static void unpoison_page(struct page *page)
-> > +{
-> > +	void *addr;
-> > +
-> 
-> Shouldn't we check PageHighmem() here also?
-
-It should not happen because page->poison flag is not set for highmem pages.
-But it's good for sanity checking. So I'll have a BUG_ON here.
-
-> > +	if (!page->poison)
-> > +		return;
-> > +
-
-	BUG_ON(PageHighMem(page));
-
-> > +	addr = page_address(page);
-> > +	check_poison_mem(addr, PAGE_SIZE);
-> > +	page->poison = false;
-> > +}
+diff --git a/drivers/mtd/chips/cfi_cmdset_0001.c b/drivers/mtd/chips/cfi_cmdset_0001.c
+index f5ab6fa..c151075 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0001.c
++++ b/drivers/mtd/chips/cfi_cmdset_0001.c
+@@ -1236,10 +1236,14 @@ static int inval_cache_and_wait_for_operation(
+ 			remove_wait_queue(&chip->wq, &wait);
+ 			spin_lock(chip->mutex);
+ 		}
+-		if (chip->erase_suspended || chip->write_suspended)  {
+-			/* Suspend has occured while sleep: reset timeout */
++		if (chip->erase_suspended && chip_state == FL_ERASING)  {
++			/* Erase suspend has occured while sleep: reset timeout */
+ 			timeo = reset_timeo;
+ 			chip->erase_suspended = 0;
++		}
++		if (chip->write_suspended && chip_state == FL_WRITING)  {
++			/* Write suspend has occured while sleep: reset timeout */
++			timeo = reset_timeo;
+ 			chip->write_suspended = 0;
+ 		}
+ 	}
+-- 
+1.5.6.3
