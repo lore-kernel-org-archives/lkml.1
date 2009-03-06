@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZCFSBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZCFSCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZCFSBm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZCFSBd
+	id S1754899AbZCFSCZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:02:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZCFSCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:01:33 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:33476 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750967AbZCFSBd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:01:33 -0500
-Subject: Re: Regression - locking (all from 2.6.28)
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jan sonnek <ha2nny@gmail.com>,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <1236360415.10626.67.camel@nimitz>
-References: <49AC334A.9030800@gmail.com>
-	 <20090302121127.e46dc4be.akpm@linux-foundation.org>
-	 <1236076864.8547.20.camel@pc1117.cambridge.arm.com>
-	 <1236092480.8547.67.camel@pc1117.cambridge.arm.com>
-	 <1236214452.22399.68.camel@nimitz>
-	 <1236357616.3882.66.camel@pc1117.cambridge.arm.com>
-	 <1236358369.10626.58.camel@nimitz>
-	 <1236359888.3882.77.camel@pc1117.cambridge.arm.com>
-	 <1236360415.10626.67.camel@nimitz>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 06 Mar 2009 18:00:36 +0000
-Message-Id: <1236362436.3882.80.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2009 18:00:51.0006 (UTC) FILETIME=[7C4D75E0:01C99E85]
+	Fri, 6 Mar 2009 13:02:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58962 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024AbZCFSCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:02:15 -0500
+Date: Fri, 6 Mar 2009 19:01:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com
+Subject: Re: [Patch] mm tracepoints
+Message-ID: <20090306180154.GA20292@elte.hu>
+References: <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com> <20090306105627.3EF0.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903052124240.14535@gandalf.stny.rr.com> <20090306110423.GD21168@elte.hu> <1236342797.3154.1.camel@dhcp47-138.lab.bos.redhat.com> <20090306135547.GB21907@elte.hu> <1236358657.1476.56.camel@dhcp-100-19-198.bos.redhat.com> <20090306171016.GA32128@elte.hu> <1236361106.6326.595.camel@laptop> <1236362197.6326.615.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236362197.6326.615.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 09:26 -0800, Dave Hansen wrote:
-> On Fri, 2009-03-06 at 17:18 +0000, Catalin Marinas wrote:
-> > > > Are the pgdat->node_start_pfn and pgdat->node_spanned_pages always
-> > > > valid? Thanks.
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Fri, 2009-03-06 at 18:38 +0100, Peter Zijlstra wrote:
+> > On Fri, 2009-03-06 at 18:10 +0100, Ingo Molnar wrote:
+> > > Looks pretty good and useful to me. I've Cc:-ed more mm folks, 
+> > > it would be nice to hear their opinion about these tracepoints.
 > > > 
-> > > The variables themselves?  I'm sure there's a window in early boot where
-> > > they aren't valid, but other than that they should be OK unless you're
-> > > int the middle of a hotplug operation.
-> > > 
-> > > See pgdat_resize_(un)lock() in include/linux/memory_hotplug.h.
+> > > Andrew, Nick, Peter, what do you think?
 > > 
-> > I wouldn't hold a lock for that long. It's not really critical to scan
-> > all the page structures at a time as there are subsequent scans as well,
-> > so some can be missed.
+> > Bit sad we use the struct mm_struct * as mm identifier (little %lx vs %p
+> > confusion there too), but I suppose there simply isn't anything better.
 > 
-> I think you should be more worried about consistency rather than missing
-> entries.  Take these two lines of code:
+> > Things missing, 
 > 
-> 	start_pfn = node->node_start_pfn;
-> 	/* hotplug occurs here */
-> 	end_pfn = start_pfn + node->node_spanned_pages;
-> 
-> What if someone comes in and adds memory to the node, at the beginning
-> of the node, after you have calculated start_pfn?  Try to think of what
-> value you'll get for end_pfn and whether it is consistent and was *ever*
-> valid at all.  Would that oops the kernel?
+> Why only anon and filemap, that misses out on all the funky 
+> driver ->fault() handlers.
 
-I assume pfn_valid() should handle this and kmemleak wouldn't scan the
-page, unless we need locks around pfn_valid as well but I haven't seen
-any used in the kernel.
+btw., does it include shm faults? I think all of this would be 
+handled if the tracepoint was at handle_mm_fault(), right?
 
--- 
-Catalin
-
+	Ingo
