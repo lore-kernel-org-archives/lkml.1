@@ -1,77 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZCFO3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZCFOc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbZCFO3b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 09:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbZCFO2p
+	id S1755161AbZCFOc7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 09:32:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZCFOct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 09:28:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42125 "EHLO hera.kernel.org"
+	Fri, 6 Mar 2009 09:32:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46182 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755167AbZCFO2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 09:28:43 -0500
-Date: Fri, 6 Mar 2009 14:28:01 GMT
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1236266541.31324.14.camel@penberg-laptop>
-References: <1236266541.31324.14.camel@penberg-laptop>
-Subject: [tip:x86/mm] x86: init_memory_mapping() PSE and PGE setup ifdef removal
-Message-ID: <tip-ac4d3bfdd9e27bfcc0b016c7ac364acb166455a1@git.kernel.org>
-Git-Commit-ID: ac4d3bfdd9e27bfcc0b016c7ac364acb166455a1
-X-Mailer: tip-git-log-daemon
+	id S1753864AbZCFOct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 09:32:49 -0500
+Date: Fri, 6 Mar 2009 15:32:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
+       markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
+       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com
+Subject: Re: [patch 1/4] x86, bts: add selftest for BTS
+Message-ID: <20090306143237.GC21907@elte.hu>
+References: <20090305161711.A16434@sedona.ch.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 14:28:03 +0000 (UTC)
+In-Reply-To: <20090305161711.A16434@sedona.ch.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ac4d3bfdd9e27bfcc0b016c7ac364acb166455a1
-Gitweb:     http://git.kernel.org/tip/ac4d3bfdd9e27bfcc0b016c7ac364acb166455a1
-Author:     "Pekka Enberg" <penberg@cs.helsinki.fi>
-AuthorDate: Thu, 5 Mar 2009 17:22:21 +0200
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 6 Mar 2009 15:25:53 +0100
 
-x86: init_memory_mapping() PSE and PGE setup ifdef removal
+* Markus Metzger <markus.t.metzger@intel.com> wrote:
 
-Impact: cleanup
+> +#ifdef CONFIG_X86_DS_SELFTEST
+> +static int ds_selftest_bts_consistency(const struct bts_trace *trace)
 
-Section 3.10 ("PAE-Enabled Paging in IA-32e Mode") of the Intel manual
-states that The CR4.PSE bit is ignored in IA-32e mode. In 64-bit mode,
-PGE is enabled at early boot so there's no need to hide setting them up
-in an ifdef.
+Consider putting this into ds_selftest.c instead of adding a 
+large #ifdef block to ds.c.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-LKML-Reference: <1236266541.31324.14.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> +	if (trace->ds.end !=
+> +	    (char *) trace->ds.begin + (trace->ds.n * trace->ds.size)) {
 
+That extra space character after the type cast is not 
+needed.
 
----
- arch/x86/mm/init.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+> +	/* Check a few things which do not belong to this test.
+> +	 * They should be covered by other tests. */
 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 5d06d25..e7d8bb5 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -223,7 +223,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	if (nx_enabled)
- 		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
- 
--#ifdef CONFIG_X86_32
- 	/* Enable PSE if available */
- 	if (cpu_has_pse)
- 		set_in_cr4(X86_CR4_PSE);
-@@ -233,7 +232,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 		set_in_cr4(X86_CR4_PGE);
- 		__supported_pte_mask |= _PAGE_GLOBAL;
- 	}
--#endif
- 
- 	if (use_gbpages)
- 		page_size_mask |= 1 << PG_LEVEL_1G;
+Please use the customary comment style of:
+
+  /*
+   * Comment .....
+   * ...... goes here:
+   */
+
+> +		index = ((void *) at - trace->ds.begin) / trace->ds.size;
+
+cast.
+
+> +#define DS_SELFTEST_SIZEOF_BUFFER 1021 /* intentionally chose an odd size */
+> +static int ds_selftest_bts(void)
+
+We put newlines after definitions.
+
+Also, DS_SELFTEST_SIZEOF_BUFFER is an odd name - why not 
+DS_SELFTEST_BUFFER_SIZE ?
+
+> +	tracer =
+> +		ds_request_bts(/* task = */ NULL, buffer,
+> +			       DS_SELFTEST_SIZEOF_BUFFER,
+> +			       /* ovfl = */ NULL, /* th = */ (size_t)-1,
+> +			       BTS_KERNEL);
+
+that looks weird. Why not:
+
+	tracer = ds_request_bts(NULL, buffer, DS_SELFTEST_BUFFER_SIZE,
+				NULL, (size_t)-1, BTS_KERNEL);
+
+> +	/* The return from the initialization call should already give
+> +	 * us enough trace. */
+
+Comment style.
+
+> +		/* It is possible but highly unlikely that we got a
+> +		 * buffer overflow and end up at exactly the same
+> +		 * position we started from.
+> +		 * Let's issue a warning, but continue. */
+
+ditto.
+
+> +	/* Let's read the trace again. Since we suspended tracing, we should
+> +	 * get the same result. */
+
+ditto.
+
+> +		/* It is possible but highly unlikely that we got a
+> +		 * buffer overflow and end up at exactly the same
+> +		 * position we started from.
+> +		 * Let's issue a warning and check the full trace. */
+
+ditto.
+
+> +		/* We had a buffer overflow - the entire buffer should
+> +		 * contain trace records. */
+
+ditto.
+
+> +		/* It is quite likely that the buffer did not
+> +		 * overflow. Let's just check the delta trace. */
+
+ditto.
+
+> +#ifdef CONFIG_X86_DS_SELFTEST
+> +	if (ds_cfg.ctl[dsf_bts]) {
+> +		int error;
+> +
+> +		printk(KERN_INFO "[ds] bts selftest...");
+> +		error = ds_selftest_bts();
+> +		printk(KERN_CONT "%s.\n", (error ? "failed" : "passed"));
+> +
+> +		if (error) {
+> +			WARN(1, "[ds] selftest failed. disabling bts.\n");
+> +			ds_cfg.ctl[dsf_bts] = 0;
+> +		}
+> +	}
+> +#endif /* CONFIG_X86_DS_SELFTEST */
+
+This bit should be in a helper function i guess - so the ugly 
+#ifdef goes out of a function.
+
+Thanks,
+
+	Ingo
