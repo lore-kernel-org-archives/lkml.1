@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZCFGv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZCFG4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZCFGv4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZCFGvp
+	id S1754428AbZCFG4U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbZCFG4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:51:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39924 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751362AbZCFGvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 01:51:44 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19oGid+wFlousW3RvnmnIWRDqcR86koyFe2PCh0GR
-	bzn5BKf/lXdzaX
-Subject: Re: [PATCH] perfcounters: IRQ and NMI support on AMD CPUs
-From: Mike Galbraith <efault@gmx.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236321473.6030.8.camel@marge.simson.net>
-References: <1236273633.5187.286.camel@laptop>
-	 <1236277959.3316.3.camel@localhost.localdomain>
-	 <1236278730.5187.378.camel@laptop>
-	 <1236279393.3316.13.camel@localhost.localdomain>
-	 <1236281661.5187.432.camel@laptop>  <20090305194127.GA2039@elte.hu>
-	 <1236283315.6457.4.camel@localhost.localdomain>
-	 <1236321473.6030.8.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 07:51:40 +0100
-Message-Id: <1236322300.6263.1.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Fri, 6 Mar 2009 01:56:12 -0500
+Received: from ozlabs.org ([203.10.76.45]:45676 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751406AbZCFG4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 01:56:11 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: lguest: unhandled trap 13 in current -rc
+Date: Fri, 6 Mar 2009 17:26:03 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <4993CCCE.6040403@trash.net> <49AE8C57.4080502@trash.net>
+In-Reply-To: <49AE8C57.4080502@trash.net>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Message-Id: <200903061726.04101.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 07:37 +0100, Mike Galbraith wrote:
-> On Fri, 2009-03-06 at 01:31 +0530, Jaswinder Singh Rajput wrote:
-> > On Thu, 2009-03-05 at 20:41 +0100, Ingo Molnar wrote:
-> > > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > 
-> > > > On Fri, 2009-03-06 at 00:26 +0530, Jaswinder Singh Rajput wrote:
-> > > > 
-> > > > > But kerneltop is still not working and I am not getting any NMI Interrupts.
-> > > > 
-> > > > Does the below work for you?
-> > > > 
-> > > > The BKGD suggests its 48 for all existing machines (it 
-> > > > certainly is for mine).
-> > > 
-> > > Yeah, this did the trick on AMD/Barcelona!
-> > > 
+On Thursday 05 March 2009 00:42:39 Patrick McHardy wrote:
+> Patrick McHardy wrote:
+> > When trying to run lguest in the current -rc, I get an "unhandled
+> > trap 13" and it stops. The address resolves to the rdmsr intruction
+> > in native_read_msr_safe(). -rc2 works fine, but I couldn't find
+> > any changes that looks related.
 > > 
-> > Nice.
-> > 
-> > but on my AMD box I got interrupts and NMI for some time:
-> > 
-> > NMI:        100    1108209   Non-maskable interrupts
-> > LOC:        213     192815   Local timer interrupts
-> > CNT:        100    1108206   Performance counter interrupts
-> > RES:      21132      20397   Rescheduling interrupts
-> > 
-> > but kerneltop does not show anything, it only shows # irqs/sec for some
-> > time and then irqs also become 0.
+> > .config is attached, more information available on request.
 > 
-> Hm.  Kerneltop on my Q6600 has ceased to function with n 1 as well, but
-> n 0 still works.  Zero NMIs.
-> 
-> Perfstat has also gone south.
-> perfstat: perfstat.c:423: main: Assertion `res == sizeof(single_count)' failed.
+> For the record, this is still broken in -rc7.
 
-Ah, my woes are gonna be 2743a5b0fa6f309da904f2190a9cc25deee34dbd.
+(Sorry, I missed the first mail to lkml).
 
-Never mind.
+Reproduced on one of my test machines (kvm doesn't show the problem here).
 
-	-Mike
+Subject: lguest: fix crash 'unhandled trap 13 at <native_read_msr_safe>'
 
+Impact: fix lguest boot crash on modern Intel machines
+
+The code in early_init_intel does:
+
+	if (c->x86 > 6 || (c->x86 == 6 && c->x86_model >= 0xd)) {
+		u64 misc_enable;
+
+		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
+
+And that rdmsr faults (not allowed from non-0 PL).  We can get around
+this by mugging the family ID part of the cpuid.  5 seems like a good
+number.
+
+Of course, this is a hack (how very lguest!).  We could just indicate
+that we don't support MSRs, or implement lguest_rdmst.
+
+Reported-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
+--- a/arch/x86/lguest/boot.c
++++ b/arch/x86/lguest/boot.c
+@@ -343,6 +350,11 @@ static void lguest_cpuid(unsigned int *a
+ 		 * flush_tlb_user() for both user and kernel mappings unless
+ 		 * the Page Global Enable (PGE) feature bit is set. */
+ 		*dx |= 0x00002000;
++		/* We also lie, and say we're family id 5.  6 or greater
++		 * leads to a rdmsr in early_init_intel which we can't handle.
++		 * Family ID is returned as bits 8-12 in ax. */
++		*ax &= 0xFFFFF0FF;
++		*ax |= 0x00000500;
+ 		break;
+ 	case 0x80000000:
+ 		/* Futureproof this a little: if they ask how much extended
