@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZCFPf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZCFPgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZCFPf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZCFPfR
+	id S1754927AbZCFPgF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:36:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbZCFPfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:35:17 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60549 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753435AbZCFPfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:35:16 -0500
-Message-ID: <49B1428A.9050500@redhat.com>
-Date: Fri, 06 Mar 2009 10:34:34 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 6 Mar 2009 10:35:53 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:40139 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbZCFPfx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 10:35:53 -0500
+Date: Fri, 6 Mar 2009 09:35:49 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Greg Kurz <gkurz@fr.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       containers <containers@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
+Message-ID: <20090306153549.GA898@us.ibm.com>
+References: <20090305163857.0C18F3FD@kernel> <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz> <20090305210840.GA2499@x200.localdomain> <1236288427.22399.122.camel@nimitz> <20090305220044.GA2819@x200.localdomain> <1236352121.5732.80.camel@bahia>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -tip 0/4] Text edit lock and atomic text_poke()
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236352121.5732.80.camel@bahia>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Quoting Greg Kurz (gkurz@fr.ibm.com):
+> On Fri, 2009-03-06 at 01:00 +0300, Alexey Dobriyan wrote:
+> > On Thu, Mar 05, 2009 at 01:27:07PM -0800, Dave Hansen wrote:
+> > > > Imagine, unsupported file is opened between userspace checks
+> > > > for /proc/*/checkpointable and /proc/*/fdinfo/*/checkpointable
+> > > > and whatever, you stil have to do all the checks inside checkpoint(2).
+> > > 
+> > > Alexey, we have two problems here.  I completely agree that we have to
+> > > do complete and thorough checks of each file descriptor at
+> > > sys_checkpoint().  Any checks made at other times should not be trusted.
+> > > 
+> > > The other side is what Ingo has been asking for.  How do we *know* when
+> > > we are checkpointable *before* we call (and without calling)
+> > 
+> > This "without calling checkpoint(2)" results in much complications
+> > as demonstrated.
+> > 
+> > task_struct and file are not like other structures because they are exposed
+> > in /proc. For PROC_FS=n kernels, one can't even check.
+> > 
+> > You can do checkpoint(2) without actual dump. You pass, you're most
+> > certainly checkpointable (with inevitable race condition in mind).
+> > 
+> 
+> Ahhh thank you very much Alexey ! I wanted to explain this to Dave a few
+> monthes ago but I failed... probably because of my poor English skills.
+> 
+> https://lists.linux-foundation.org/pipermail/containers/2008-October/013549.html
+> 
+> Why would we add checking all over the place when it MUST be done on the
+> sys_checkpoint() path ? The checkpoint(2) dry-run is definitely the way
+> to go.
 
-Here is a series of patches which introduce text_mutex for protecting
-editing kernel text from each other subsystems, and make text_poke()
-atomic by using fixmap.
+I'm sure Dave understood that this was possible :)
 
-BTW,
+But what you and Alexey are proposing does not and cannot fullfill
+Ingo's requirement.
 
-> Paravirt and alternatives are always done when SMP is inactive, so there is no
-> need to use locks.
-
-Mathieu, I'm not sure that means. alternatives will be called from module
-init code and other place where the system has already been running multi-
--threads(and they use smp_alt mutex). So, is it possible that those functions
-will sleep or yield to another process?
-
-Anyway, I added a new patch which locks text_mutex in alternative_smp_*.
-
-Thank you,
-
- arch/x86/include/asm/fixmap.h |    2 ++
- arch/x86/kernel/alternative.c |   29 ++++++++++++++++++++---------
- include/linux/memory.h        |    6 ++++++
- kernel/kprobes.c              |   15 +++++++++++++--
- mm/memory.c                   |    9 +++++++++
- 5 files changed, 50 insertions(+), 11 deletions(-)
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+-serge
