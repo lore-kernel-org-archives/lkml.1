@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZCFURT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZCFUUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbZCFURT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbZCFURI
+	id S1756363AbZCFUUh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbZCFUU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:17:08 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:31779 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292AbZCFURH (ORCPT
+	Fri, 6 Mar 2009 15:20:26 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:54484 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbZCFUU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:17:07 -0500
-Subject: Re: [PATCH] PCIe: AER: during disable, check subordinate before
- walking
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: jbarnes@virtuousgeek.org, matthew@wil.cx,
-       linux-pci <linux-pci@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090306022840.GC30103@ldl.fc.hp.com>
-References: <20090306022840.GC30103@ldl.fc.hp.com>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 13:17:05 -0700
-Message-Id: <1236370625.1168.7.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Mar 2009 15:20:26 -0500
+Date: Fri, 6 Mar 2009 13:20:24 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v10 3/7] PCI: reserve bus range for SR-IOV device
+Message-ID: <20090306202024.GF25995@parisc-linux.org>
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-4-git-send-email-yu.zhao@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1235112888-9524-4-git-send-email-yu.zhao@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 19:28 -0700, Alex Chiang wrote: 
-> Commit 47a8b0cc (Enable PCIe AER only after checking firmware
-> support) wants to walk the PCI bus in the remove path to disable
-> AER, and calls pci_walk_bus for downstream bridges.
-> 
-> Unfortunately, in the remove path, we remove devices and bridges
-> in a depth-first manner, starting with the furthest downstream
-> bridge and working our way backwards.
-> 
-> The furthest downstream bridges will not have a dev->subordinate,
-> and we hit a NULL deref in pci_walk_bus.
-> 
-> Check for dev->subordinate first before attempting to walk the
-> PCI hierarchy below us.
-> 
-
-Looks good.
-
-Acked-by: Andrew Patterson <andrew.patterson@hp.com>
-
-> Cc: Andrew Patterson <andrew.patterson@hp.com>
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> Willy, this is .29 material, please push to Linus, thanks.
-> 
-> ---
-> diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
-> index aebb5f6..677d680 100644
-> --- a/drivers/pci/pcie/aer/aerdrv_core.c
-> +++ b/drivers/pci/pcie/aer/aerdrv_core.c
-> @@ -133,6 +133,9 @@ static void set_downstream_devices_error_reporting(struct pci_dev *dev,
->  						   bool enable)
->  {
->  	set_device_error_reporting(dev, &enable);
+On Fri, Feb 20, 2009 at 02:54:44PM +0800, Yu Zhao wrote:
+> +static inline void virtfn_bdf(struct pci_dev *dev, int id, u8 *busnr, u8 *devfn)
+> +{
+> +	u16 bdf;
 > +
-> +	if (!dev->subordinate)
-> +		return;
->  	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
->  }
->  
+> +	bdf = (dev->bus->number << 8) + dev->devfn +
+> +	      dev->sriov->offset + dev->sriov->stride * id;
+> +	*busnr = bdf >> 8;
+> +	*devfn = bdf & 0xff;
+> +}
+
+I find the interface here a bit clunky -- a function returning void
+while having two OUT parameters.  How about this variation on the theme
+(viewers are encouraged to come up with their own preferred
+implementations and interfaces):
+
+static inline __pure u16 virtfn_bdf(struct pci_dev *dev, int id)
+{
+	return (dev->bus->number << 8) + dev->devfn + dev->sriov->offset +
+		dev->sriov->stride * id;
+}
+
+#define VIRT_BUS(dev, id)	(virtfn_bdf(dev, id) >> 8)
+#define VIRT_DEVFN(dev, id)	(virtfn_bdf(dev, id) & 0xff)
+
+We rely on GCC to do CSE and not actually invoke virtfn_bdf more than
+once.
 
 -- 
-Andrew Patterson
-Hewlett-Packard Company
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
