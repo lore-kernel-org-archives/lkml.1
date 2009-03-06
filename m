@@ -1,126 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZCFEGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbZCFERT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754162AbZCFEGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 23:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZCFEFs
+	id S1754426AbZCFERT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 23:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbZCFERE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 23:05:48 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:54895 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbZCFEFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 23:05:47 -0500
-X-IronPort-AV: E=Sophos;i="4.38,312,1233550800"; 
-   d="scan'208";a="83878061"
-From: Bryan Wu <cooloney@kernel.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] net: fix some trailing whitespaces
-Date: Fri,  6 Mar 2009 12:07:54 +0800
-Message-Id: <1236312474-25468-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Thu, 5 Mar 2009 23:17:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45453 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753082AbZCFERB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 23:17:01 -0500
+Message-ID: <49B0A371.4040208@kernel.org>
+Date: Thu, 05 Mar 2009 20:15:45 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>, Prakash Punnoor <prakash@punnoor.de>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: don't enable too many HT MSI mapping
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200903040815.38387.prakash@punnoor.de> <20090305171514.GB1021@parisc-linux.org> <200903060045.13509.prakash@punnoor.de> <20090306011036.GB829@parisc-linux.org>
+In-Reply-To: <20090306011036.GB829@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Graf Yang <graf.yang@analog.com>
+please check v4:
 
-Signed-off-by: Graf Yang <graf.yang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
+[PATCH] pci: don't enable too much HT MSI mapping -v4
+
+Impact: fix bug
+
+Prakash reported that his c51-mcp51 system ondie sound card doesn't work MSI
+but if he hack out the HT-MSI on mcp51, the MSI will work well with sound card.
+
+this patch rework the nv_msi_ht_cap_quirk()
+and will only try to avoid to enable ht_msi on device following that root dev,
+and don't touch that root dev
+
+v3: will enable c51...
+v4: will enable c51 kind of without leaf too.
+
+Reported-by: Prakash Punnoor <prakash@punnoor.de>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
- include/linux/if_ether.h  |    8 ++++----
- include/linux/netdevice.h |   10 +++++-----
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/pci/quirks.c |  116 ++++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 83 insertions(+), 33 deletions(-)
 
-diff --git a/include/linux/if_ether.h b/include/linux/if_ether.h
-index 7f3c735..0216e1b 100644
---- a/include/linux/if_ether.h
-+++ b/include/linux/if_ether.h
-@@ -17,7 +17,7 @@
-  *		as published by the Free Software Foundation; either version
-  *		2 of the License, or (at your option) any later version.
-  */
-- 
-+
- #ifndef _LINUX_IF_ETHER_H
- #define _LINUX_IF_ETHER_H
+Index: linux-2.6/drivers/pci/quirks.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/quirks.c
++++ linux-2.6/drivers/pci/quirks.c
+@@ -2053,6 +2053,65 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_NV
+ 			PCI_DEVICE_ID_NVIDIA_NVENET_15,
+ 			nvenet_msi_disable);
  
-@@ -25,7 +25,7 @@
- 
- /*
-  *	IEEE 802.3 Ethernet magic constants.  The frame sizes omit the preamble
-- *	and FCS/CRC (frame check sequence). 
-+ *	and FCS/CRC (frame check sequence).
-  */
- 
- #define ETH_ALEN	6		/* Octets in one ethernet addr	 */
-@@ -83,7 +83,7 @@
- /*
-  *	Non DIX types. Won't clash for 1500 types.
-  */
-- 
++static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
++{
++	int pos, ttl = 48;
++	int found = 0;
 +
- #define ETH_P_802_3	0x0001		/* Dummy type for 802.3 frames  */
- #define ETH_P_AX25	0x0002		/* Dummy protocol id for AX.25  */
- #define ETH_P_ALL	0x0003		/* Every packet (be careful!!!) */
-@@ -109,7 +109,7 @@
- /*
-  *	This is an Ethernet frame header.
-  */
-- 
++	/* check if there is HT MSI cap or enabled on this device */
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
 +
- struct ethhdr {
- 	unsigned char	h_dest[ETH_ALEN];	/* destination eth addr	*/
- 	unsigned char	h_source[ETH_ALEN];	/* source ether addr	*/
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index ec54785..2ddd625 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -96,7 +96,7 @@ struct wireless_dev;
-  *	Compute the worst case header length according to the protocols
-  *	used.
-  */
-- 
++		if (found < 1)
++			found = 1;
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++					 &flags) == 0) {
++			if (flags & HT_MSI_FLAGS_ENABLE) {
++				if (found < 2) {
++					found = 2;
++					break;
++				}
++			}
++		}
++		pos = pci_find_next_ht_capability(dev, pos,
++						  HT_CAPTYPE_MSI_MAPPING);
++	}
 +
- #if defined(CONFIG_WLAN_80211) || defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
- # if defined(CONFIG_MAC80211_MESH)
- #  define LL_MAX_HEADER 128
-@@ -124,7 +124,7 @@ struct wireless_dev;
-  *	Network device statistics. Akin to the 2.0 ether stats but
-  *	with byte counters.
-  */
-- 
++	return found;
++}
 +
- struct net_device_stats
++static int __devinit host_bridge_with_leaf(struct pci_dev *host_bridge)
++{
++	struct pci_dev *dev;
++	int pos;
++	int i, dev_no;
++	int found = 0;
++
++	dev_no = host_bridge->devfn >> 3;
++	for (i = dev_no + 1; i < 0x20; i++) {
++		dev = pci_get_slot(host_bridge->bus, PCI_DEVFN(i, 0));
++		if (!dev)
++			continue;
++
++		/* found next host bridge ?*/
++		pos = pci_find_ht_capability(dev, HT_CAPTYPE_SLAVE);
++		if (pos != 0) {
++			pci_dev_put(dev);
++			break;
++		}
++
++		if (ht_check_msi_mapping(dev)) {
++			found = 1;
++			pci_dev_put(dev);
++			break;
++		}
++		pci_dev_put(dev);
++	}
++
++	return found;
++}
++
+ static void __devinit nv_ht_enable_msi_mapping(struct pci_dev *dev)
  {
- 	unsigned long	rx_packets;		/* total packets received	*/
-@@ -285,7 +285,7 @@ enum netdev_state_t
+ 	struct pci_dev *host_bridge;
+@@ -2077,6 +2136,10 @@ static void __devinit nv_ht_enable_msi_m
+ 	if (!found)
+ 		return;
  
- /*
-  * This structure holds at boot time configured netdevice settings. They
-- * are then used in the device probing. 
-+ * are then used in the device probing.
-  */
- struct netdev_boot_setup {
- 	char name[IFNAMSIZ];
-@@ -740,7 +740,7 @@ struct net_device
- 	void			*dsa_ptr;	/* dsa specific data */
- #endif
- 	void 			*atalk_ptr;	/* AppleTalk link 	*/
--	void			*ip_ptr;	/* IPv4 specific data	*/  
-+	void			*ip_ptr;	/* IPv4 specific data	*/
- 	void                    *dn_ptr;        /* DECnet specific data */
- 	void                    *ip6_ptr;       /* IPv6 specific data */
- 	void			*ec_ptr;	/* Econet specific data	*/
-@@ -753,7 +753,7 @@ struct net_device
-  */
- 	unsigned long		last_rx;	/* Time of last Rx	*/
- 	/* Interface address info used in eth_type_trans() */
--	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast 
-+	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast
- 							   because most packets are unicast) */
++	/* don't enable host_bridge with leaf directly here */
++	if (host_bridge == dev && host_bridge_with_leaf(host_bridge))
++		goto out;
++
+ 	/* root did that ! */
+ 	if (msi_ht_cap_enabled(host_bridge))
+ 		goto out;
+@@ -2097,7 +2160,7 @@ static void __devinit ht_disable_msi_map
  
- 	unsigned char		broadcast[MAX_ADDR_LEN];	/* hw bcast add	*/
--- 
-1.5.6.3
+ 		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
+ 					 &flags) == 0) {
+-			dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
++			dev_info(&dev->dev, "Disabling HT MSI Mapping\n");
+ 
+ 			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
+ 					      flags & ~HT_MSI_FLAGS_ENABLE);
+@@ -2107,35 +2170,7 @@ static void __devinit ht_disable_msi_map
+ 	}
+ }
+ 
+-static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
+-{
+-	int pos, ttl = 48;
+-	int found = 0;
+-
+-	/* check if there is HT MSI cap or enabled on this device */
+-	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
+-	while (pos && ttl--) {
+-		u8 flags;
+-
+-		if (found < 1)
+-			found = 1;
+-		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
+-					 &flags) == 0) {
+-			if (flags & HT_MSI_FLAGS_ENABLE) {
+-				if (found < 2) {
+-					found = 2;
+-					break;
+-				}
+-			}
+-		}
+-		pos = pci_find_next_ht_capability(dev, pos,
+-						  HT_CAPTYPE_MSI_MAPPING);
+-	}
+-
+-	return found;
+-}
+-
+-static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
++static void __devinit __nv_msi_ht_cap_quirk(struct pci_dev *dev, int all)
+ {
+ 	struct pci_dev *host_bridge;
+ 	int pos;
+@@ -2164,7 +2199,10 @@ static void __devinit nv_msi_ht_cap_quir
+ 		/* Host bridge is to HT */
+ 		if (found == 1) {
+ 			/* it is not enabled, try to enable it */
+-			nv_ht_enable_msi_mapping(dev);
++			if (all)
++				ht_enable_msi_mapping(dev);
++			else
++				nv_ht_enable_msi_mapping(dev);
+ 		}
+ 		return;
+ 	}
+@@ -2176,8 +2214,20 @@ static void __devinit nv_msi_ht_cap_quir
+ 	/* Host bridge is not to HT, disable HT MSI mapping on this device */
+ 	ht_disable_msi_mapping(dev);
+ }
+-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, nv_msi_ht_cap_quirk);
+-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, PCI_ANY_ID, nv_msi_ht_cap_quirk);
++
++static void __devinit nv_msi_ht_cap_quirk_all(struct pci_dev *dev)
++{
++	return __nv_msi_ht_cap_quirk(dev, 1);
++}
++
++static void __devinit nv_msi_ht_cap_quirk_leaf(struct pci_dev *dev)
++{
++	return __nv_msi_ht_cap_quirk(dev, 0);
++}
++
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, nv_msi_ht_cap_quirk_leaf);
++
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, PCI_ANY_ID, nv_msi_ht_cap_quirk_all);
+ 
+ static void __devinit quirk_msi_intx_disable_bug(struct pci_dev *dev)
+ {
