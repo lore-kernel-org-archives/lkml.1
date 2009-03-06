@@ -1,160 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbZCFV5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZCFV7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbZCFV5n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 16:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZCFV5d
+	id S1756069AbZCFV7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 16:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbZCFV7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 16:57:33 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48783 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbZCFV5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 16:57:33 -0500
-Message-ID: <49B19C5B.30805@redhat.com>
-Date: Fri, 06 Mar 2009 16:57:47 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH -tip 5/4] Expands irq-off region in text_poke()
-References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com> <20090306181356.GD14236@Krystal> <49B16C69.6060203@redhat.com> <20090306190828.GA28582@elte.hu> <20090306191517.GG14236@Krystal> <20090306192246.GF28582@elte.hu> <49B186A9.3030506@redhat.com> <20090306210116.GB20603@Krystal>
-In-Reply-To: <20090306210116.GB20603@Krystal>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+	Fri, 6 Mar 2009 16:59:21 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33057 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752843AbZCFV7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 16:59:20 -0500
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: scameron@beardog.cca.cpqcorp.net
+Cc: Grant Grundler <grundler@google.com>, Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mike.miller@hp.com,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
+In-Reply-To: <20090306211832.GV15340@beardog.cca.cpqcorp.net>
+References: <20090306085529.GP11787@kernel.dk>
+	 <20090306181302X.fujita.tomonori@lab.ntt.co.jp>
+	 <20090306092114.GS11787@kernel.dk>
+	 <20090306182705P.fujita.tomonori@lab.ntt.co.jp>
+	 <20090306093520.GV11787@kernel.dk>
+	 <20090306143856.GT15340@beardog.cca.cpqcorp.net>
+	 <da824cf30903061259j4a37ab7cneea308c736da469d@mail.gmail.com>
+	 <20090306211832.GV15340@beardog.cca.cpqcorp.net>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 15:59:10 -0600
+Message-Id: <1236376750.20520.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Ingo Molnar wrote:
->>> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
->>>
->>>> * Ingo Molnar (mingo@elte.hu) wrote:
->>>>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>>>>
->>>>>> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
->>>>>>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
->>>>>>  	}
->>>>>>  	BUG_ON(!pages[0]);
->>>>>> -	if (!pages[1])
->>>>>> -		nr_pages = 1;
->>>>>> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
->>>>>> -	BUG_ON(!vaddr);
->>>>>> -	local_irq_disable();
->>>>>> +	local_irq_save(flags);
->>>>>> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
->>>>>> +	if (pages[1])
->>>>>> +		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
->>>>>> +	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
->>>>>>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
->>>>>> -	local_irq_enable();
->>>>>> -	vunmap(vaddr);
->>>>>> +	clear_fixmap(FIX_TEXT_POKE0);
->>>>>> +	if (pages[1])
->>>>>> +		clear_fixmap(FIX_TEXT_POKE1);
->>>>>> +	local_flush_tlb();
->>>>>> +	local_irq_restore(flags);
->>>>>>  	sync_core();
->>>>> I'm not sure at all about this widening of the irq-atomic 
->>>>> section and the idea of allowing non-locked access on single-CPU 
->>>>> situations - we dont really want to micro-optimize any of this 
->>>>> on such a level, holding the text lock is a robust rule all code 
->>>>> should be listening to. (Creating locking assymetry always 
->>>>> inserts a certain amount of fragility - adding to an already 
->>>>> fragile concept here.)
->>>>>
->>>>> And note that there's no reason why text_poke could not be used 
->>>>> in stop_machine_run() - the stop_machine_run() handler must not 
->>>>> take the text_lock of course - but outside code calling 
->>>>> stop_machine_run() can do it and can hence serialize properly.
->>>>>
->>>>> Note that even if we did this then your v2 patch is not fully 
->>>>> correct: you need to move the sync_core() at the end of the 
->>>>> sequence inside the critical section too. (right now this is 
->>>>> mostly harmless because the INVLPG inside the clear_fixmap() 
->>>>> happens to be serializing so it has an implicit sync_core() 
->>>>> property - but nevertheless we better do this straight away to 
->>>>> not cause problems later down the line.)
->>>>>
->>>>> 	Ingo
->>>> Agreed. The alternatives_smp_lock/alternatives_smp_unlock 
->>>> specific case does not bring us much if it has no perceivable 
->>>> performance impact. It's better to keep a standard interface 
->>>> and clear requirements.
->>> Note that i dont object to another aspect of this same change: 
->>> the fact that it makes the whole sequence more atomic and more 
->>> defensive [which is never bad of fragile interfaces].
->>>
->>> I only got worried about the "lets use this without the text 
->>> lock" ideas.
->>>
->>> So if Masami-san sends a delta patch with a different changelog 
->>> and with the sync_core() bit moved inside the critical section, 
->>> i'll apply that too.
->> OK, here is the delta patch.
->>
->> Expand irq-atomic region to cover fixmap using code and sync_core.
->>
->> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->> Cc: Ingo Molnar <mingo@elte.hu>
->> ---
->>  arch/x86/kernel/alternative.c |    4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> Index: linux-2.6-tip/arch/x86/kernel/alternative.c
->> ===================================================================
->> --- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
->> +++ linux-2.6-tip/arch/x86/kernel/alternative.c
->> @@ -526,13 +526,12 @@ void *__kprobes text_poke(void *addr, co
->>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
->>  	}
->>  	BUG_ON(!pages[0]);
->> +	local_irq_save(flags);
->>  	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
->>  	if (pages[1])
->>  		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
->>  	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
->> -	local_irq_save(flags);
->>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
->> -	local_irq_restore(flags);
->>  	clear_fixmap(FIX_TEXT_POKE0);
->>  	if (pages[1])
->>  		clear_fixmap(FIX_TEXT_POKE1);
->> @@ -540,6 +539,7 @@ void *__kprobes text_poke(void *addr, co
->>  	sync_core();
->>  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
->>  	   that causes hangs on some VIA CPUs. */
->> +	local_irq_restore(flags);
->>  	for (i = 0; i < len; i++)
->>  		BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
+On Fri, 2009-03-06 at 15:18 -0600, scameron@beardog.cca.cpqcorp.net
+wrote:
+> On Fri, Mar 06, 2009 at 12:59:48PM -0800, Grant Grundler wrote:
+> > On Fri, Mar 6, 2009 at 6:38 AM,  <scameron@beardog.cca.cpqcorp.net> wrote:
+> > ...
+> > > The command buffers have to be in the first 4GB of memory, as the command
+> > > register is only 32 bits, so they are allocated by pci_alloc_consistent.
+> > 
+> > Huh?!!
+> > ISTR the mpt2sas driver is indicating it can handle 64-bit DMA masks for
+> > both streaming and control data. I need to double check to be sure of that.
 > 
-> I think irq off should cover the BUG_ON too. This safety check assumes
-> we are the only ones modifying "addr".
+> it is something specific to smart array.  The command register that we
+> stuff the bus address of the command into is only 32 bits wide.  Everything
+> else it does is 64 bits.
+> > 
+> > 
+> > > However, the chained SG lists don't have that limitation, so I think they
+> > > can be kmalloc'ed, and so not chew up and unreasonable amount of the
+> > > pci_alloc_consistent memory and get a larger number of SGs.   ...right?
+> > > Maybe that's the better way to do it.
+> > 
+> > I thought the driver was tracking this and using the appropriate construct
+> > based on which DMA mask is in effect.
+> 
+> The DMA mask is insufficiently expressive to describe the limitations and
+> capabilities of the Smart array.  There's no way to describe with a single
+> DMA mask that the command register is 32-bits, but everything else is 64
+> bits.
 
-I think others don't change without text_mutex, don't it?
+Actually, there is ... it's what you're doing: use a coherent mask of 32
+bits and a dma mask of 64bits.
 
-Thank you,
+The aic79xx has exactly the same problem (its internal sequencer only
+has a 32 bit wide programme counter, so it can only execute sequencer
+scripts if they're in the first 4GB of memory).  I think it's fairly
+common amongst intelligent controllers that are old enough to have been
+32 bit only but which got extended to work on 64 bits.
 
--- 
-Masami Hiramatsu
+To get ordinary memory for this, you just use GFP_DMA32 as has been
+previously stated.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+James
 
-e-mail: mhiramat@redhat.com
 
