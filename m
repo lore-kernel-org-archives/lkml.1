@@ -1,141 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZCFROi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756372AbZCFRTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbZCFROi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 12:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZCFRO0
+	id S1756372AbZCFRTV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 12:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZCFRTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 12:14:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43705 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbZCFROZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 12:14:25 -0500
-Date: Fri, 6 Mar 2009 18:14:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 4/5 v3] tracing/core: drop the old ftrace_printk
-	implementation in favour of ftrace_bprintk
-Message-ID: <20090306171413.GB32128@elte.hu>
-References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903061146000.23248@gandalf.stny.rr.com> <20090306170222.GA11285@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090306170222.GA11285@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 6 Mar 2009 12:19:12 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47483 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754352AbZCFRTL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 12:19:11 -0500
+Subject: Re: Regression - locking (all from 2.6.28)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jan sonnek <ha2nny@gmail.com>,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <1236358369.10626.58.camel@nimitz>
+References: <49AC334A.9030800@gmail.com>
+	 <20090302121127.e46dc4be.akpm@linux-foundation.org>
+	 <1236076864.8547.20.camel@pc1117.cambridge.arm.com>
+	 <1236092480.8547.67.camel@pc1117.cambridge.arm.com>
+	 <1236214452.22399.68.camel@nimitz>
+	 <1236357616.3882.66.camel@pc1117.cambridge.arm.com>
+	 <1236358369.10626.58.camel@nimitz>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 06 Mar 2009 17:18:08 +0000
+Message-Id: <1236359888.3882.77.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Mar 2009 17:18:22.0639 (UTC) FILETIME=[8D5B83F0:01C99E7F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
+On Fri, 2009-03-06 at 08:52 -0800, Dave Hansen wrote:
+> On Fri, 2009-03-06 at 16:40 +0000, Catalin Marinas wrote:
+> > It seems that node_start_pfn() isn't present on all the architectures. I
+> > ended up with something like below:
+> > 
+> > +	/* struct page scanning for each node */
+> > +	for_each_online_node(i) {
+> > +		pg_data_t *pgdat = NODE_DATA(i);
+> > +		unsigned long start_pfn = pgdat->node_start_pfn;
+> > +		unsigned long end_pfn = start_pfn +
+> > +			pgdat->node_spanned_pages - 1;
+> > +		unsigned long pfn;
+> > +
+> > +		for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+> > +			struct page *page;
+> > +
+> > +			if (!pfn_valid(pfn))
+> > +				continue;
+> > +			page = pfn_to_page(pfn);
+> > +			/* only scan if page is in use */
+> > +			if (page_count(page) == 0)
+> > +				continue;
+> > +			scan_block(page, page + 1, NULL);
+> > +		}
+> > +	}
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > 
-> > On Fri, 6 Mar 2009, Frederic Weisbecker wrote:
-> > 
-> > > Impact: faster and lighter tracing
-> > > 
-> > > Now that we have ftrace_bprintk() which is faster and consume lesser
-> > > memory than ftrace_printk() and has the same purpose, we can now drop
-> > > the old implementation in favour of the binary one from ftrace_bprintk(),
-> > > which means we move all the implementation of ftrace_bprintk() to
-> > > ftrace_printk(), so the Api doesn't change except that we must now use
-> > > trace_seq_bprintk() to print the TRACE_PRINT entries.
-> > > 
-> > > Some changes result of this:
-> > > 
-> > > - Previously, ftrace_bprintk depended of a single tracer and couldn't
-> > >   work without. This tracer has been dropped and the whole implementation
-> > >   of ftrace_printk() (like the module formats management) is now integrated
-> > >   in the tracing core (comes with CONFIG_TRACING), though we keep the file
-> > >   trace_printk (previously trace_bprintk.c) where we can find the module
-> > >   management. Thus we don't overflow trace.c
-> > > 
-> > > - changes some parts to use trace_seq_bprintk() to print TRACE_PRINT entries.
-> > > 
-> > > - change a bit ftrace_printk/ftrace_vprintk macros to support non-builtin formats
-> > >   constants, and fix 'const' qualifiers warnings. But this is all transparent for
-> > >   developers.
-> > > 
-> > > - etc...
-> > > 
-> > > V2:
-> > > 
-> > > - Rebase against last changes
-> > > - Fix mispell on the changelog
-> > > 
-> > > V3:
-> > > 
-> > > - Rebase against last changes (moving ftrace_printk() to kernel.h)
-> > > 
-> > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > 
-> > Very nice Frederic!
-> > 
-> > For some reason I'm still missing patch 1. Perhaps it decided to take the
-> > scenic route ;-)
-> > 
-> > > diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> > > index 0f5077f..6140922 100644
-> > > --- a/kernel/trace/trace.h
-> > > +++ b/kernel/trace/trace.h
-> > > @@ -20,7 +20,6 @@ enum trace_type {
-> > >  	TRACE_WAKE,
-> > >  	TRACE_STACK,
-> > >  	TRACE_PRINT,
-> > > -	TRACE_BPRINTK,
-> > >  	TRACE_SPECIAL,
-> > >  	TRACE_MMIO_RW,
-> > >  	TRACE_MMIO_MAP,
-> > > @@ -120,16 +119,10 @@ struct userstack_entry {
-> > >   */
-> > >  struct print_entry {
-> > >  	struct trace_entry	ent;
-> > > -	unsigned long		ip;
-> > > +	unsigned long 		ip;
-> > >  	int			depth;
-> > > -	char			buf[];
-> > > -};
-> > > -
-> > 
-> > 
-> > Note, this is going to break my recent patch that exports the 
-> > internal ftrace events. That's OK, I'll fix it after Ingo 
-> > pulls it in.
-> > 
-> > Ingo,
-> > 
-> > Would you prefer that I pull these patches in and then fix the 
-> > code, and let you pull it from me?
-> 
-> i've put them into a separate branch forked off 
-> tip:tracing/ftrace: tip:tracing/printk. The two vsprintf 
-> patches are in tip:core/printk and merged into tracing/ftrace.
-> 
-> You can thus apply your current enhancements without any 
-> interaction with me - and merge tracing/printk into the 
-> tip:tracing/ftrace branch on your own schedule, ok?
+> What does scan_block() actually scan?  Is that second argument
+> inclusive?
 
-ah - i misunderstood - i see that it interacts with your commits 
-from last night.
+No, it's exclusive. In the above case, it just scans a struct page at
+the given pointer.
 
-I've excluded tip:tracing/printk from tip:master for now and 
-will let you guys fix it up when you have time for it.
+> I think you will miss scanning the contents of the last 'struct page' if
+> you do it this way because of the -1 you do to end_pfn.
 
-	Ingo
+Fixed.
+
+> > Are the pgdat->node_start_pfn and pgdat->node_spanned_pages always
+> > valid? Thanks.
+> 
+> The variables themselves?  I'm sure there's a window in early boot where
+> they aren't valid, but other than that they should be OK unless you're
+> int the middle of a hotplug operation.
+> 
+> See pgdat_resize_(un)lock() in include/linux/memory_hotplug.h.
+
+I wouldn't hold a lock for that long. It's not really critical to scan
+all the page structures at a time as there are subsequent scans as well,
+so some can be missed.
+
+-- 
+Catalin
+
