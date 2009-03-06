@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbZCFOuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbZCFOxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbZCFOuR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 09:50:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZCFOuD
+	id S1755290AbZCFOxd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 09:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZCFOxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 09:50:03 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43361 "EHLO mx2.redhat.com"
+	Fri, 6 Mar 2009 09:53:24 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43460 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753450AbZCFOuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 09:50:02 -0500
-Message-ID: <49B137F7.9040207@redhat.com>
-Date: Fri, 06 Mar 2009 09:49:27 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1751488AbZCFOxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 09:53:23 -0500
+Date: Fri, 6 Mar 2009 15:50:02 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
+       arjan@infradead.org, svaidy@linux.vnet.ibm.com
+Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer migration.
+Message-ID: <20090306145002.GA5828@redhat.com>
+References: <20090304121249.GA9855@linux.vnet.ibm.com> <20090304121937.GE9855@linux.vnet.ibm.com> <20090305162329.GA5294@redhat.com> <20090306032122.GA32316@in.ibm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH] x86: make text_poke() atomic using fixmap
-References: <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <49AC7453.8020307@redhat.com> <20090303002214.GA4147@elte.hu> <49AC7A5F.7080009@redhat.com> <49AD5B55.10002@redhat.com> <20090305103852.GD32407@elte.hu> <20090306140612.GA8566@elte.hu>
-In-Reply-To: <20090306140612.GA8566@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090306032122.GA32316@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On 03/06, Gautham R Shenoy wrote:
+>
+> On Thu, Mar 05, 2009 at 05:23:29PM +0100, Oleg Nesterov wrote:
+> > On 03/04, Arun R Bharadwaj wrote:
+> > >
+> > > +++ linux.trees.git/kernel/sched.c
+> > > @@ -4009,6 +4009,11 @@ static struct {
+> > >  	.load_balancer = ATOMIC_INIT(-1),
+> > >  };
+> > >
+> > > +inline int get_nohz_load_balancer(void)
+> >
+> > inline?
+> > 
+> > > +{
+> > > +	return atomic_read(&nohz.load_balancer);
+> > > +}
+> >
+> > Shouldn't we reset .load_balancer when this CPU is CPU_DOWN'ed ?
+> > Otherwise the timer can migrate to the dead CPU.
+>
+> In the select_nohz_load_balancer() code, we check if this CPU is in the
+> cpu_active_map. If no, then this CPU relinquishes being the idle
+> load balancer.
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>
->>> Hi Ingo,
->>>
->>> Here is the patch which uses fixmaps instead of vmap in 
->>> text_poke(). This made the code much simpler than I thought 
->>> :).
->> Looks good to me at a quick glance albeit Linus had second 
->> thoughts about using fixmaps for this in the past. But with 
->> delayed-flush for vmaps i think fixmaps are again the simpler 
->> and more robust - albeit more limited - choice ...
->>
->> In any case, the x86 tree already unified fixmap.h so could 
->> you please resend the whole series as a 0/3, 1/3, 2/3, 3/3 
->> thing against tip:master, starting a new thread on lkml? (this 
->> thread is already way too deep)
-> 
-> Ping? I think there's agreement and it would be nice to fix this 
-> in .30. Looks too complex for .29 - maybe backportable to .29.1 
-> if it stays problem-free in testing.
+I don't understand this code, but I am not sure select_nohz_load_balancer()
+is always called on cpu_down() path before migrate_timers/migrate_hrtimers.
 
-Sorry for later, I'll post it as soon as possible.
+If this is true, then there is no problem.
 
-> 
-> 	Ingo
+> Also, the timer migration code in the CPU down path would
+> migrate any timers queued onto this CPU, right ?
 
--- 
-Masami Hiramatsu
+Yes, but if .load_balancer is not cleared before the timer migration,
+mod_timer() can move the timer to the dead CPU after migration.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Oleg.
 
