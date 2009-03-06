@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbZCFQk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZCFQod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753579AbZCFQk7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbZCFQku
+	id S1752777AbZCFQod (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:44:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbZCFQoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:40:50 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:42722 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750960AbZCFQku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:40:50 -0500
-Subject: Re: Regression - locking (all from 2.6.28)
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jan sonnek <ha2nny@gmail.com>,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <1236214452.22399.68.camel@nimitz>
-References: <49AC334A.9030800@gmail.com>
-	 <20090302121127.e46dc4be.akpm@linux-foundation.org>
-	 <1236076864.8547.20.camel@pc1117.cambridge.arm.com>
-	 <1236092480.8547.67.camel@pc1117.cambridge.arm.com>
-	 <1236214452.22399.68.camel@nimitz>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 06 Mar 2009 16:40:16 +0000
-Message-Id: <1236357616.3882.66.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2009 16:40:30.0977 (UTC) FILETIME=[43576710:01C99E7A]
+	Fri, 6 Mar 2009 11:44:24 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35057 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763AbZCFQoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 11:44:24 -0500
+Date: Fri, 6 Mar 2009 08:42:27 -0800
+From: Greg KH <gregkh@suse.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       phil@hannent.co.uk, mwilder@cs.nmsu.edu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Re: build issue #591 for v2.6.29-rc7-3-g559595a
+	:drivers/staging/mimio/mimio.ko
+Message-ID: <20090306164227.GA24492@suse.de>
+References: <200903060928.24462.toralf.foerster@gmx.de> <49B1517C.7000809@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49B1517C.7000809@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-04 at 16:54 -0800, Dave Hansen wrote:
-> On Tue, 2009-03-03 at 15:01 +0000, Catalin Marinas wrote:
-> > > +     /* mem_map scanning */
-> > > +     for_each_online_node(i) {
-> > > +             struct page *page, *end;
-> > > +
-> > > +             page = NODE_MEM_MAP(i);
-> > > +             end  = page + NODE_DATA(i)->node_spanned_pages;
-> > > +
-> > > +             scan_block(page, end, NULL);
-> > > +     }
-[...]
-> One completely unoptimized thing you can do which will scan a 'struct
-> page' at a time is this:
+On Fri, Mar 06, 2009 at 08:38:20AM -0800, Randy Dunlap wrote:
+> Toralf Förster wrote:
+> > Hello,
+> > 
+> > the build (.config attached) failed, make ends with :
+> > ...
+> >   CC      arch/x86/boot/video-bios.o
+> >   LD      arch/x86/boot/setup.elf
+> >   OBJCOPY arch/x86/boot/setup.bin
+> >   OBJCOPY arch/x86/boot/vmlinux.bin
+> >   HOSTCC  arch/x86/boot/tools/build
+> >   BUILD   arch/x86/boot/bzImage
+> > Root device is (3, 8)
+> > Setup is 22056 bytes (padded to 22528 bytes).
+> > System is 3078 kB
+> > CRC b46a0cef
+> > Kernel: arch/x86/boot/bzImage is ready  (#6)
+> >   Building modules, stage 2.
+> >   MODPOST 327 modules
+> > ERROR: "input_register_device" [drivers/staging/mimio/mimio.ko] undefined!
+> > ERROR: "input_allocate_device" [drivers/staging/mimio/mimio.ko] undefined!
+> > ERROR: "input_event" [drivers/staging/mimio/mimio.ko] undefined!
+> > ERROR: "input_close_device" [drivers/staging/mimio/mimio.ko] undefined!
+> > ERROR: "input_free_device" [drivers/staging/mimio/mimio.ko] undefined!
+> > ERROR: "input_unregister_device" [drivers/staging/mimio/mimio.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > make: *** [modules] Error 2
+> > 
+> > The build was made with :
+> > $>make randconfig; make clean; make
+> > 
+> > Here's the config:
 > 
-> 	for_each_online_node(i) {
-> 		unsigned long pfn;
-> 		for (pfn = node_start_pfn(i); pfn < node_end_pfn(i); pfn++) {
-> 			struct page *page;
-> 			if (!pfn_valid(pfn))
-> 				continue;
-> 			page = pfn_to_page(pfn);
-> 			scan_block(page, page+1, NULL);
-> 		}
-> 	}
+> [snip]
+> 
+> I posted a patch for this on Feb. 20.
+> Where is it, Greg?  (yes, you were cc-ed on it)
 
-It seems that node_start_pfn() isn't present on all the architectures. I
-ended up with something like below:
+It's in my queue, sorry, have been traveling this week :(
 
-+	/* struct page scanning for each node */
-+	for_each_online_node(i) {
-+		pg_data_t *pgdat = NODE_DATA(i);
-+		unsigned long start_pfn = pgdat->node_start_pfn;
-+		unsigned long end_pfn = start_pfn +
-+			pgdat->node_spanned_pages - 1;
-+		unsigned long pfn;
-+
-+		for (pfn = start_pfn; pfn < end_pfn; pfn++) {
-+			struct page *page;
-+
-+			if (!pfn_valid(pfn))
-+				continue;
-+			page = pfn_to_page(pfn);
-+			/* only scan if page is in use */
-+			if (page_count(page) == 0)
-+				continue;
-+			scan_block(page, page + 1, NULL);
-+		}
-+	}
+thanks,
 
-Are the pgdat->node_start_pfn and pgdat->node_spanned_pages always
-valid? Thanks.
-
--- 
-Catalin
-
+greg k-h
