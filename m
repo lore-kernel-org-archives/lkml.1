@@ -1,156 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZCFNew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZCFNf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbZCFNew (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 08:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZCFNa6
+	id S1755393AbZCFNf0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 08:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbZCFNbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 08:30:58 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:51929
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754168AbZCFNau (ORCPT
+	Fri, 6 Mar 2009 08:31:00 -0500
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:54825 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754224AbZCFNau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Mar 2009 08:30:50 -0500
-X-BigFish: VPS-1(z5edJzzzzzz32i65h)
+X-BigFish: VPS-5(zz146fK18c1Kzzzzz32i65h)
 X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KG36UY-01-JL5-01
+X-FB-SS: 5,
+X-WSS-ID: 0KG36UU-03-1UP-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: mingo@redhat.com
 CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 17/18] dma-debug: Documentation update
-Date: Fri, 6 Mar 2009 14:30:28 +0100
-Message-ID: <1236346229-6618-18-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 08/18] dma-debug: add core checking functions
+Date: Fri, 6 Mar 2009 14:30:19 +0100
+Message-ID: <1236346229-6618-9-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1236346229-6618-1-git-send-email-joerg.roedel@amd.com>
 References: <1236346229-6618-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 06 Mar 2009 13:30:30.0526 (UTC) FILETIME=[B824A1E0:01C99E5F]
+X-OriginalArrivalTime: 06 Mar 2009 13:30:30.0261 (UTC) FILETIME=[B7FC3250:01C99E5F]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add documentation about DMA-API debugging to DMA-API.txt
+Impact: add functions to check on dma unmap and sync
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- Documentation/DMA-API.txt |  106 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 106 insertions(+), 0 deletions(-)
+ lib/dma-debug.c |  188 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 187 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
-index 2a3fcc5..d9aa43d 100644
---- a/Documentation/DMA-API.txt
-+++ b/Documentation/DMA-API.txt
-@@ -609,3 +609,109 @@ size is the size (and should be a page-sized multiple).
- The return value will be either a pointer to the processor virtual
- address of the memory, or an error (via PTR_ERR()) if any part of the
- region is occupied.
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 20d6cdb..d0cb47a 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -17,10 +17,13 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  */
+ 
++#include <linux/dma-mapping.h>
+ #include <linux/dma-debug.h>
+ #include <linux/spinlock.h>
+ #include <linux/debugfs.h>
++#include <linux/device.h>
+ #include <linux/types.h>
++#include <linux/sched.h>
+ #include <linux/list.h>
+ #include <linux/slab.h>
+ 
+@@ -50,7 +53,7 @@ struct dma_debug_entry {
+ struct hash_bucket {
+ 	struct list_head list;
+ 	spinlock_t lock;
+-} __cacheline_aligned_in_smp;
++} ____cacheline_aligned_in_smp;
+ 
+ /* Hash list to save the allocated dma addresses */
+ static struct hash_bucket dma_entry_hash[HASH_SIZE];
+@@ -85,6 +88,36 @@ static struct dentry *show_num_errors_dent  __read_mostly;
+ static struct dentry *num_free_entries_dent __read_mostly;
+ static struct dentry *min_free_entries_dent __read_mostly;
+ 
++static const char *type2name[4] = { "single", "page",
++				    "scather-gather", "coherent" };
 +
-+Part III - Debug drivers use of the DMA-API
-+-------------------------------------------
++static const char *dir2name[4] = { "DMA_BIDIRECTIONAL", "DMA_TO_DEVICE",
++				   "DMA_FROM_DEVICE", "DMA_NONE" };
 +
-+The DMA-API as described above as some constraints. DMA addresses must be
-+released with the corresponding function with the same size for example. With
-+the advent of hardware IOMMUs it becomes more and more important that drivers
-+do not violate those constraints. In the worst case such a violation can
-+result in data corruption up to destroyed filesystems.
++/*
++ * The access to some variables in this macro is racy. We can't use atomic_t
++ * here because all these variables are exported to debugfs. Some of them even
++ * writeable. This is also the reason why a lock won't help much. But anyway,
++ * the races are no big deal. Here is why:
++ *
++ *   error_count: the addition is racy, but the worst thing that can happen is
++ *                that we don't count some errors
++ *   show_num_errors: the subtraction is racy. Also no big deal because in
++ *                    worst case this will result in one warning more in the
++ *                    system log than the user configured. This variable is
++ *                    writeable via debugfs.
++ */
++#define err_printk(dev, format, arg...) do {			\
++		error_count += 1;				\
++		if (show_all_errors || show_num_errors > 0) {	\
++			WARN(1, "%s %s: " format,		\
++			     dev_driver_string(dev),		\
++			     dev_name(dev) , ## arg);		\
++		}						\
++		if (!show_all_errors && show_num_errors > 0)	\
++			show_num_errors -= 1;			\
++	} while (0);
 +
-+To debug drivers and find bugs in the usage of the DMA-API checking code can
-+be compiled into the kernel which will tell the developer about those
-+violations. If your architecture supports it you can select the "Enable
-+debugging of DMA-API usage" option in your kernel configuration. Enabling this
-+option has a performance impact. Do not enable it in production kernels.
+ /*
+  * Hash related functions
+  *
+@@ -380,3 +413,156 @@ static __init int dma_debug_entries_cmdline(char *str)
+ __setup("dma_debug=", dma_debug_cmdline);
+ __setup("dma_debug_entries=", dma_debug_entries_cmdline);
+ 
++static void check_unmap(struct dma_debug_entry *ref)
++{
++	struct dma_debug_entry *entry;
++	struct hash_bucket *bucket;
++	unsigned long flags;
 +
-+If you boot the resulting kernel will contain code which does some bookkeeping
-+about what DMA memory was allocated for which device. If this code detects an
-+error it prints a warning message with some details into your kernel log. An
-+example warning message may look like this:
++	if (dma_mapping_error(ref->dev, ref->dev_addr))
++		return;
 +
-+------------[ cut here ]------------
-+WARNING: at /data2/repos/linux-2.6-iommu/lib/dma-debug.c:448
-+	check_unmap+0x203/0x490()
-+Hardware name:
-+forcedeth 0000:00:08.0: DMA-API: device driver frees DMA memory with wrong
-+	function [device address=0x00000000640444be] [size=66 bytes] [mapped as
-+single] [unmapped as page]
-+Modules linked in: nfsd exportfs bridge stp llc r8169
-+Pid: 0, comm: swapper Tainted: G        W  2.6.28-dmatest-09289-g8bb99c0 #1
-+Call Trace:
-+ <IRQ>  [<ffffffff80240b22>] warn_slowpath+0xf2/0x130
-+ [<ffffffff80647b70>] _spin_unlock+0x10/0x30
-+ [<ffffffff80537e75>] usb_hcd_link_urb_to_ep+0x75/0xc0
-+ [<ffffffff80647c22>] _spin_unlock_irqrestore+0x12/0x40
-+ [<ffffffff8055347f>] ohci_urb_enqueue+0x19f/0x7c0
-+ [<ffffffff80252f96>] queue_work+0x56/0x60
-+ [<ffffffff80237e10>] enqueue_task_fair+0x20/0x50
-+ [<ffffffff80539279>] usb_hcd_submit_urb+0x379/0xbc0
-+ [<ffffffff803b78c3>] cpumask_next_and+0x23/0x40
-+ [<ffffffff80235177>] find_busiest_group+0x207/0x8a0
-+ [<ffffffff8064784f>] _spin_lock_irqsave+0x1f/0x50
-+ [<ffffffff803c7ea3>] check_unmap+0x203/0x490
-+ [<ffffffff803c8259>] debug_dma_unmap_page+0x49/0x50
-+ [<ffffffff80485f26>] nv_tx_done_optimized+0xc6/0x2c0
-+ [<ffffffff80486c13>] nv_nic_irq_optimized+0x73/0x2b0
-+ [<ffffffff8026df84>] handle_IRQ_event+0x34/0x70
-+ [<ffffffff8026ffe9>] handle_edge_irq+0xc9/0x150
-+ [<ffffffff8020e3ab>] do_IRQ+0xcb/0x1c0
-+ [<ffffffff8020c093>] ret_from_intr+0x0/0xa
-+ <EOI> <4>---[ end trace f6435a98e2a38c0e ]---
++	bucket = get_hash_bucket(ref, &flags);
++	entry = hash_bucket_find(bucket, ref);
 +
-+The driver developer can find the driver and the device including a stacktrace
-+of the DMA-API call which caused this warning.
++	if (!entry) {
++		err_printk(ref->dev, "DMA-API: device driver tries "
++			   "to free DMA memory it has not allocated "
++			   "[device address=0x%016llx] [size=%llu bytes]\n",
++			   ref->dev_addr, ref->size);
++		goto out;
++	}
 +
-+Per default only the first error will result in a warning message. All other
-+errors will only silently counted. This limitation exist to prevent the code
-+from flooding your kernel log. To support debugging a device driver this can
-+be disabled via debugfs. See the debugfs interface documentation below for
-+details.
++	if (ref->size != entry->size) {
++		err_printk(ref->dev, "DMA-API: device driver frees "
++			   "DMA memory with different size "
++			   "[device address=0x%016llx] [map size=%llu bytes] "
++			   "[unmap size=%llu bytes]\n",
++			   ref->dev_addr, entry->size, ref->size);
++	}
 +
-+The debugfs directory for the DMA-API debugging code is called dma-api/. In
-+this directory the following files can currently be found:
++	if (ref->type != entry->type) {
++		err_printk(ref->dev, "DMA-API: device driver frees "
++			   "DMA memory with wrong function "
++			   "[device address=0x%016llx] [size=%llu bytes] "
++			   "[mapped as %s] [unmapped as %s]\n",
++			   ref->dev_addr, ref->size,
++			   type2name[entry->type], type2name[ref->type]);
++	} else if ((entry->type == dma_debug_coherent) &&
++		   (ref->paddr != entry->paddr)) {
++		err_printk(ref->dev, "DMA-API: device driver frees "
++			   "DMA memory with different CPU address "
++			   "[device address=0x%016llx] [size=%llu bytes] "
++			   "[cpu alloc address=%p] [cpu free address=%p]",
++			   ref->dev_addr, ref->size,
++			   (void *)entry->paddr, (void *)ref->paddr);
++	}
 +
-+	dma-api/all_errors	This file contains a numeric value. If this
-+				value is not equal to zero the debugging code
-+				will print a warning for every error it finds
-+				into the kernel log. Be carefull with this
-+				option. It can easily flood your logs.
++	if (ref->sg_call_ents && ref->type == dma_debug_sg &&
++	    ref->sg_call_ents != entry->sg_call_ents) {
++		err_printk(ref->dev, "DMA-API: device driver frees "
++			   "DMA sg list with different entry count "
++			   "[map count=%d] [unmap count=%d]\n",
++			   entry->sg_call_ents, ref->sg_call_ents);
++	}
 +
-+	dma-api/disabled	This read-only file contains the character 'Y'
-+				if the debugging code is disabled. This can
-+				happen when it runs out of memory or if it was
-+				disabled at boot time
++	/*
++	 * This may be no bug in reality - but most implementations of the
++	 * DMA API don't handle this properly, so check for it here
++	 */
++	if (ref->direction != entry->direction) {
++		err_printk(ref->dev, "DMA-API: device driver frees "
++			   "DMA memory with different direction "
++			   "[device address=0x%016llx] [size=%llu bytes] "
++			   "[mapped with %s] [unmapped with %s]\n",
++			   ref->dev_addr, ref->size,
++			   dir2name[entry->direction],
++			   dir2name[ref->direction]);
++	}
 +
-+	dma-api/error_count	This file is read-only and shows the total
-+				numbers of errors found.
++	hash_bucket_del(entry);
++	dma_entry_free(entry);
 +
-+	dma-api/num_errors	The number in this file shows how many
-+				warnings will be printed to the kernel log
-+				before it stops. This number is initialized to
-+				one at system boot and be set by writing into
-+				this file
++out:
++	put_hash_bucket(bucket, &flags);
++}
 +
-+	dma-api/min_free_entries
-+				This read-only file can be read to get the
-+				minimum number of free dma_debug_entries the
-+				allocator has ever seen. If this value goes
-+				down to zero the code will disable itself
-+				because it is not longer reliable.
++static void check_for_stack(struct device *dev, void *addr)
++{
++	if (object_is_on_stack(addr))
++		err_printk(dev, "DMA-API: device driver maps memory from stack"
++				" [addr=%p]\n", addr);
++}
 +
-+	dma-api/num_free_entries
-+				The current number of free dma_debug_entries
-+				in the allocator.
++static void check_sync(struct device *dev, dma_addr_t addr,
++		       u64 size, u64 offset, int direction, bool to_cpu)
++{
++	struct dma_debug_entry ref = {
++		.dev            = dev,
++		.dev_addr       = addr,
++		.size           = size,
++		.direction      = direction,
++	};
++	struct dma_debug_entry *entry;
++	struct hash_bucket *bucket;
++	unsigned long flags;
 +
-+If you have this code compiled into your kernel it will be enabled by default.
-+If you want to boot without the bookkeeping anyway you can provide
-+'dma_debug=off' as a boot parameter. This will disable DMA-API debugging.
-+Notice that you can not enable it again at runtime. You have to reboot to do
-+so.
++	bucket = get_hash_bucket(&ref, &flags);
 +
-+When the code disables itself at runtime this is most likely because it ran
-+out of dma_debug_entries. These entries are preallocated at boot. The number
-+of preallocated entries is defined per architecture. If it is too low for you
-+boot with 'dma_debug_entries=<your_desired_number>' to overwrite the
-+architectural default.
++	entry = hash_bucket_find(bucket, &ref);
++
++	if (!entry) {
++		err_printk(dev, "DMA-API: device driver tries "
++				"to sync DMA memory it has not allocated "
++				"[device address=0x%016llx] [size=%llu bytes]\n",
++				addr, size);
++		goto out;
++	}
++
++	if ((offset + size) > entry->size) {
++		err_printk(dev, "DMA-API: device driver syncs"
++				" DMA memory outside allocated range "
++				"[device address=0x%016llx] "
++				"[allocation size=%llu bytes] [sync offset=%llu] "
++				"[sync size=%llu]\n", entry->dev_addr, entry->size,
++				offset, size);
++	}
++
++	if (direction != entry->direction) {
++		err_printk(dev, "DMA-API: device driver syncs "
++				"DMA memory with different direction "
++				"[device address=0x%016llx] [size=%llu bytes] "
++				"[mapped with %s] [synced with %s]\n",
++				addr, entry->size,
++				dir2name[entry->direction],
++				dir2name[direction]);
++	}
++
++	if (entry->direction == DMA_BIDIRECTIONAL)
++		goto out;
++
++	if (to_cpu && !(entry->direction == DMA_FROM_DEVICE) &&
++		      !(direction == DMA_TO_DEVICE))
++		err_printk(dev, "DMA-API: device driver syncs "
++				"device read-only DMA memory for cpu "
++				"[device address=0x%016llx] [size=%llu bytes] "
++				"[mapped with %s] [synced with %s]\n",
++				addr, entry->size,
++				dir2name[entry->direction],
++				dir2name[direction]);
++
++	if (!to_cpu && !(entry->direction == DMA_TO_DEVICE) &&
++		       !(direction == DMA_FROM_DEVICE))
++		err_printk(dev, "DMA-API: device driver syncs "
++				"device write-only DMA memory to device "
++				"[device address=0x%016llx] [size=%llu bytes] "
++				"[mapped with %s] [synced with %s]\n",
++				addr, entry->size,
++				dir2name[entry->direction],
++				dir2name[direction]);
++
++out:
++	put_hash_bucket(bucket, &flags);
++
++}
++
 -- 
 1.5.6.4
 
