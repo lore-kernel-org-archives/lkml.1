@@ -1,537 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZCFJZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753732AbZCFJbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZCFJZd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 04:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbZCFJYt
+	id S1753732AbZCFJbR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 04:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbZCFJbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 04:24:49 -0500
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:34386 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754950AbZCFJYo (ORCPT
+	Fri, 6 Mar 2009 04:31:01 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:62591 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbZCFJa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 04:24:44 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 06 Mar 2009 14:53:53 +0530
-Message-Id: <20090306092353.21063.11068.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090306092323.21063.93169.sendpatchset@localhost.localdomain>
-References: <20090306092323.21063.93169.sendpatchset@localhost.localdomain>
-Subject: [PATCH 4/4] Memory controller soft limit reclaim on contention (v4)
+	Fri, 6 Mar 2009 04:30:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HBBO01YCOkKwh2ZO9MGOTwYNOhSlOJQdEeKsUOg2XbXwYD22zvt+dktgDAkNolkUkO
+         BDPraDsPl1EB2wISuQo/CkIx4kJKVoxvr3l1MmIgtnyDty1DYVdxVIGvT3/DdoORKO6V
+         eVTgzLxgIhRDfmK/xelEUKRKh3KH+SBZCTVQM=
+MIME-Version: 1.0
+In-Reply-To: <20090303170248.GA7036@infradead.org>
+References: <a4423d670902200952v5dc2fd91w3b54ab1db51a7fe2@mail.gmail.com>
+	 <20090224200740.GA9266@infradead.org> <49AD5401.30803@sandeen.net>
+	 <A277CB1C-4258-42EC-B1D9-F5CAAB962B42@sgi.com>
+	 <20090303170248.GA7036@infradead.org>
+Date: Fri, 6 Mar 2009 12:30:53 +0300
+Message-ID: <a4423d670903060130y61407cccp71d50d13c06a4bd@mail.gmail.com>
+Subject: Re: next-20090220: XFS: inconsistent lock state
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Felix Blyakher <felixb@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Feature: Implement reclaim from groups over their soft limit
+Hi
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Is it the same issue?
 
-Changelog v4...v3
-1. soft_reclaim is now called from balance_pgdat
-2. soft_reclaim is aware of nodes and zones
-3. A mem_cgroup will be throttled if it is undergoing soft limit reclaim
-   and at the same time trying to allocate pages and exceed its soft limit.
-4. A new mem_cgroup_shrink_zone() routine has been added to shrink zones
-   particular to a mem cgroup.
+[ INFO: inconsistent lock state ]
+2.6.29-rc7-next-20090305 #8
+---------------------------------
+inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R} usage.
+kswapd0/318 [HC0[0]:SC0[0]:HE1:SE1] takes:
+ (&(&ip->i_lock)->mr_lock){+++++?}, at: [<ffffffff803cbc4a>]
+xfs_ilock+0xaa/0x120
+{RECLAIM_FS-ON-W} state was registered at:
+  [<ffffffff8026db49>] mark_held_locks+0x69/0x90
+  [<ffffffff8026dbb1>] lockdep_trace_alloc+0x41/0xb0
+  [<ffffffff802c6cbd>] kmem_cache_alloc+0x2d/0x100
+  [<ffffffff803f37e7>] kmem_zone_alloc+0x97/0xe0
+  [<ffffffff803f3849>] kmem_zone_zalloc+0x19/0x50
+  [<ffffffff803b4955>] xfs_da_state_alloc+0x15/0x20
+  [<ffffffff803c0387>] xfs_dir2_node_lookup+0x17/0x110
+  [<ffffffff803b9688>] xfs_dir_lookup+0x1c8/0x1e0
+  [<ffffffff803f08af>] xfs_lookup+0x4f/0xe0
+  [<ffffffff803fcb99>] xfs_vn_lookup+0x49/0x90
+  [<ffffffff802d5556>] do_lookup+0x1b6/0x250
+  [<ffffffff802d5885>] __link_path_walk+0x295/0xec0
+  [<ffffffff802d66ee>] path_walk+0x6e/0xe0
+  [<ffffffff802d6866>] do_path_lookup+0xa6/0x1d0
+  [<ffffffff802d6a65>] path_lookup_open+0x65/0xd0
+  [<ffffffff802d796a>] do_filp_open+0xaa/0x8f0
+  [<ffffffff802c8a48>] do_sys_open+0x78/0x110
+  [<ffffffff802c8b0b>] sys_open+0x1b/0x20
+  [<ffffffff8020bbdb>] system_call_fastpath+0x16/0x1b
+  [<ffffffffffffffff>] 0xffffffffffffffff
+irq event stamp: 531011
+hardirqs last  enabled at (531011): [<ffffffff80284194>]
+__rcu_read_unlock+0xa4/0xc0
+hardirqs last disabled at (531010): [<ffffffff80284149>]
+__rcu_read_unlock+0x59/0xc0
+softirqs last  enabled at (524334): [<ffffffff80249719>]
+__do_softirq+0x139/0x150
+softirqs last disabled at (524329): [<ffffffff8020cd5c>] call_softirq+0x1c/0x30
 
-Changelog v3...v2
-1. Convert several arguments to hierarchical reclaim to flags, thereby
-   consolidating them
-2. The reclaim for soft limits is now triggered from kswapd
-3. try_to_free_mem_cgroup_pages() now accepts an optional zonelist argument
+other info that might help us debug this:
+2 locks held by kswapd0/318:
+ #0:  (shrinker_rwsem){++++..}, at: [<ffffffff802a4c12>] shrink_slab+0x32/0x1c0
+ #1:  (iprune_mutex){+.+.-.}, at: [<ffffffff802dfbc4>]
+shrink_icache_memory+0x84/0x2a0
 
-
-Changelog v2...v1
-1. Added support for hierarchical soft limits
-
-This patch allows reclaim from memory cgroups on contention (via the
-kswapd() path) only if the order is 0.
-
-memory cgroup soft limit reclaim finds the group that exceeds its soft limit
-by the largest amount and reclaims pages from it and then reinserts the
-cgroup into its correct place in the rbtree.
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- include/linux/memcontrol.h |    9 ++
- include/linux/swap.h       |    5 +
- mm/memcontrol.c            |  223 +++++++++++++++++++++++++++++++++++++++++---
- mm/vmscan.c                |   26 +++++
- 4 files changed, 245 insertions(+), 18 deletions(-)
-
-
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 18146c9..16343d0 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -116,6 +116,9 @@ static inline bool mem_cgroup_disabled(void)
- }
- 
- extern bool mem_cgroup_oom_called(struct task_struct *task);
-+unsigned long
-+mem_cgroup_soft_limit_reclaim(int priority, struct zone *zone, int nid,
-+				gfp_t gfp_mask);
- 
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
- struct mem_cgroup;
-@@ -264,6 +267,12 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
- {
- }
- 
-+static inline unsigned long
-+mem_cgroup_soft_limit_reclaim(int priority, struct zone *zone, int nid,
-+				gfp_t gfp_mask)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_CGROUP_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 989eb53..37bc2a9 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -217,6 +217,11 @@ extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
- extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,
- 						  gfp_t gfp_mask, bool noswap,
- 						  unsigned int swappiness);
-+extern unsigned long mem_cgroup_shrink_zone(struct mem_cgroup *mem,
-+						struct zone *zone,
-+						gfp_t gfp_mask,
-+						unsigned int swappiness,
-+						int priority);
- extern int __isolate_lru_page(struct page *page, int mode, int file);
- extern unsigned long shrink_all_memory(unsigned long nr_pages);
- extern int vm_swappiness;
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index d548dd2..3be1f27 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -20,6 +20,7 @@
- #include <linux/res_counter.h>
- #include <linux/memcontrol.h>
- #include <linux/cgroup.h>
-+#include <linux/completion.h>
- #include <linux/mm.h>
- #include <linux/pagemap.h>
- #include <linux/smp.h>
-@@ -191,6 +192,14 @@ struct mem_cgroup {
- 	unsigned long last_tree_update;		/* Last time the tree was */
- 						/* updated in jiffies     */
- 
-+	bool on_tree;				/* Is the node on tree? */
-+	struct completion wait_on_soft_reclaim;
-+	/*
-+	 * Set to > 0, when reclaim is initiated due to 
-+	 * the soft limit being exceeded. It adds an additional atomic
-+	 * operation to page fault path.
-+	 */
-+	int soft_limit_reclaim_count;
- 	/*
- 	 * statistics. This must be placed at the end of memcg.
- 	 */
-@@ -227,18 +236,29 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
- #define MEMFILE_TYPE(val)	(((val) >> 16) & 0xffff)
- #define MEMFILE_ATTR(val)	((val) & 0xffff)
- 
-+/*
-+ * Bits used for hierarchical reclaim bits
-+ */
-+#define MEM_CGROUP_RECLAIM_NOSWAP_BIT	0x0
-+#define MEM_CGROUP_RECLAIM_NOSWAP	(1 << MEM_CGROUP_RECLAIM_NOSWAP_BIT)
-+#define MEM_CGROUP_RECLAIM_SHRINK_BIT	0x1
-+#define MEM_CGROUP_RECLAIM_SHRINK	(1 << MEM_CGROUP_RECLAIM_SHRINK_BIT)
-+#define MEM_CGROUP_RECLAIM_SOFT_BIT	0x2
-+#define MEM_CGROUP_RECLAIM_SOFT		(1 << MEM_CGROUP_RECLAIM_SOFT_BIT)
-+
- static void mem_cgroup_get(struct mem_cgroup *mem);
- static void mem_cgroup_put(struct mem_cgroup *mem);
- static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
- 
--static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-+static void __mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
- {
- 	struct rb_node **p = &mem_cgroup_soft_limit_tree.rb_node;
- 	struct rb_node *parent = NULL;
- 	struct mem_cgroup *mem_node;
--	unsigned long flags;
- 
--	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+	if (mem->on_tree)
-+		return;
-+
- 	while (*p) {
- 		parent = *p;
- 		mem_node = rb_entry(parent, struct mem_cgroup, mem_cgroup_node);
-@@ -255,6 +275,23 @@ static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
- 	rb_insert_color(&mem->mem_cgroup_node,
- 			&mem_cgroup_soft_limit_tree);
- 	mem->last_tree_update = jiffies;
-+	mem->on_tree = true;
-+}
-+
-+static void __mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
-+{
-+	if (!mem->on_tree)
-+		return;
-+	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_tree);
-+	mem->on_tree = false;
-+}
-+
-+static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+	__mem_cgroup_insert_exceeded(mem);
- 	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
- }
- 
-@@ -262,8 +299,34 @@ static void mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
- {
- 	unsigned long flags;
- 	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
--	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_tree);
-+	__mem_cgroup_remove_exceeded(mem);
-+	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-+}
-+
-+static struct mem_cgroup *mem_cgroup_get_largest_soft_limit_exceeding_node(void)
-+{
-+	struct rb_node *rightmost = NULL;
-+	struct mem_cgroup *mem = NULL;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+retry:
-+	rightmost = rb_last(&mem_cgroup_soft_limit_tree);
-+	if (!rightmost)
-+		goto done;		/* Nothing to reclaim from */
-+
-+	mem = rb_entry(rightmost, struct mem_cgroup, mem_cgroup_node);
-+	/*
-+	 * Remove the node now but someone else can add it back,
-+	 * we will to add it back at the end of reclaim to its correct
-+	 * position in the tree.
-+	 */
-+	__mem_cgroup_remove_exceeded(mem);
-+	if (!css_tryget(&mem->css) || !res_counter_soft_limit_excess(&mem->res))
-+		goto retry;
-+done:
- 	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-+	return mem;
- }
- 
- static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
-@@ -324,6 +387,27 @@ static unsigned long mem_cgroup_get_local_zonestat(struct mem_cgroup *mem,
- 	return total;
- }
- 
-+static unsigned long long
-+mem_cgroup_get_node_zone_usage(struct mem_cgroup *mem, struct zone *zone,
-+				int nid)
-+{
-+	int l;
-+	unsigned long long total = 0;
-+	struct mem_cgroup_per_zone *mz;
-+	unsigned long flags;
-+
-+	/*
-+	 * Is holding the zone LRU lock being overly protective?
-+	 * This routine is not invoked from the hot path anyway.
-+	 */
-+	spin_lock_irqsave(&zone->lru_lock, flags);
-+	mz = mem_cgroup_zoneinfo(mem, nid, zone_idx(zone));
-+	for_each_evictable_lru(l)
-+		total += MEM_CGROUP_ZSTAT(mz, l);
-+	spin_unlock_irqrestore(&zone->lru_lock, flags);
-+	return total * PAGE_SIZE;
-+}
-+
- static struct mem_cgroup *mem_cgroup_from_cont(struct cgroup *cont)
- {
- 	return container_of(cgroup_subsys_state(cont,
-@@ -888,14 +972,30 @@ mem_cgroup_select_victim(struct mem_cgroup *root_mem)
-  * If shrink==true, for avoiding to free too much, this returns immedieately.
-  */
- static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
--				   gfp_t gfp_mask, bool noswap, bool shrink)
-+						struct zone *zone,
-+						gfp_t gfp_mask,
-+						unsigned long flags,
-+						int priority)
- {
- 	struct mem_cgroup *victim;
- 	int ret, total = 0;
- 	int loop = 0;
-+	bool noswap = flags & MEM_CGROUP_RECLAIM_NOSWAP;
-+	bool shrink = flags & MEM_CGROUP_RECLAIM_SHRINK;
-+	bool check_soft = flags & MEM_CGROUP_RECLAIM_SOFT;
- 
- 	while (loop < 2) {
- 		victim = mem_cgroup_select_victim(root_mem);
-+		/*
-+		 * In the first loop, don't reclaim from victims below
-+		 * their soft limit
-+		 */
-+		if (!loop && res_counter_check_under_soft_limit(&victim->res)) {
-+			if (victim == root_mem)
-+				loop++;
-+			css_put(&victim->css);
-+			continue;
-+		}
- 		if (victim == root_mem)
- 			loop++;
- 		if (!mem_cgroup_local_usage(&victim->stat)) {
-@@ -904,8 +1004,14 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 			continue;
- 		}
- 		/* we use swappiness of local cgroup */
--		ret = try_to_free_mem_cgroup_pages(victim, gfp_mask, noswap,
--						   get_swappiness(victim));
-+		if (!check_soft)
-+			ret = try_to_free_mem_cgroup_pages(victim, gfp_mask,
-+							noswap,
-+							get_swappiness(victim));
-+		else
-+			ret = mem_cgroup_shrink_zone(victim, zone, gfp_mask,
-+							get_swappiness(victim),
-+							priority);
- 		css_put(&victim->css);
- 		/*
- 		 * At shrinking usage, we can't check we should stop here or
-@@ -915,7 +1021,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 		if (shrink)
- 			return ret;
- 		total += ret;
--		if (mem_cgroup_check_under_limit(root_mem))
-+		if (check_soft) {
-+			if (res_counter_check_under_soft_limit(&root_mem->res))
-+				return total;
-+		} else if (mem_cgroup_check_under_limit(root_mem))
- 			return 1 + total;
- 	}
- 	return total;
-@@ -1025,7 +1134,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 
- 	while (1) {
- 		int ret;
--		bool noswap = false;
-+		unsigned long flags = 0;
- 
- 		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res,
- 						&soft_fail_res);
-@@ -1038,7 +1147,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 				break;
- 			/* mem+swap counter fails */
- 			res_counter_uncharge(&mem->res, PAGE_SIZE);
--			noswap = true;
-+			flags = MEM_CGROUP_RECLAIM_NOSWAP;
- 			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
- 									memsw);
- 		} else
-@@ -1049,8 +1158,8 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 		if (!(gfp_mask & __GFP_WAIT))
- 			goto nomem;
- 
--		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
--							noswap, false);
-+		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, NULL,
-+							gfp_mask, flags, 0);
- 		if (ret)
- 			continue;
- 
-@@ -1082,9 +1191,29 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 	 * soft limit
- 	 */
- 	if (soft_fail_res) {
-+		/*
-+		 * Throttle the task here, if it is undergoing soft limit
-+		 * reclaim and failing soft limits
-+		 */
-+		unsigned long flags;
-+		bool wait = false;
-+
-+		spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+		if (mem->soft_limit_reclaim_count) {
-+			INIT_COMPLETION(mem->wait_on_soft_reclaim);
-+			wait = true;
-+		}
-+		spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
- 		mem_over_soft_limit =
- 			mem_cgroup_from_res_counter(soft_fail_res, res);
- 		mem_cgroup_check_and_update_tree(mem_over_soft_limit, true);
-+		/*
-+		 * We hold the mmap_sem and throttle, I don't think there
-+		 * should be corner cases, but this part could use more
-+		 * review
-+		 */
-+		if (wait)
-+			wait_for_completion(&mem->wait_on_soft_reclaim);
- 	}
- 	return 0;
- nomem:
-@@ -1695,8 +1824,8 @@ int mem_cgroup_shrink_usage(struct page *page,
- 		return 0;
- 
- 	do {
--		progress = mem_cgroup_hierarchical_reclaim(mem,
--					gfp_mask, true, false);
-+		progress = mem_cgroup_hierarchical_reclaim(mem, NULL,
-+					gfp_mask, MEM_CGROUP_RECLAIM_NOSWAP, 0);
- 		progress += mem_cgroup_check_under_limit(mem);
- 	} while (!progress && --retry);
- 
-@@ -1750,8 +1879,9 @@ static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
- 		if (!ret)
- 			break;
- 
--		progress = mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL,
--						   false, true);
-+		progress = mem_cgroup_hierarchical_reclaim(memcg, NULL,
-+						GFP_KERNEL,
-+						MEM_CGROUP_RECLAIM_SHRINK, 0);
- 		curusage = res_counter_read_u64(&memcg->res, RES_USAGE);
- 		/* Usage is reduced ? */
-   		if (curusage >= oldusage)
-@@ -1799,7 +1929,9 @@ int mem_cgroup_resize_memsw_limit(struct mem_cgroup *memcg,
- 		if (!ret)
- 			break;
- 
--		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true, true);
-+		mem_cgroup_hierarchical_reclaim(memcg, NULL, GFP_KERNEL,
-+						MEM_CGROUP_RECLAIM_NOSWAP |
-+						MEM_CGROUP_RECLAIM_SHRINK, 0);
- 		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
- 		/* Usage is reduced ? */
- 		if (curusage >= oldusage)
-@@ -1810,6 +1942,59 @@ int mem_cgroup_resize_memsw_limit(struct mem_cgroup *memcg,
- 	return ret;
- }
- 
-+unsigned long
-+mem_cgroup_soft_limit_reclaim(int priority, struct zone *zone, int nid,
-+				gfp_t gfp_mask)
-+{
-+	unsigned long nr_reclaimed = 0;
-+	struct mem_cgroup *mem;
-+	unsigned long flags;
-+	unsigned long long usage;
-+
-+	/*
-+	 * This loop can run a while, specially if mem_cgroup's continuously
-+	 * keep exceeding their soft limit and putting the system under
-+	 * pressure
-+	 */
-+	do {
-+		mem = mem_cgroup_get_largest_soft_limit_exceeding_node();
-+		if (!mem)
-+			break;
-+		usage = mem_cgroup_get_node_zone_usage(mem, zone, nid);
-+		if (!usage)
-+			goto skip_reclaim;
-+		spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+		mem->soft_limit_reclaim_count++;
-+		spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-+		nr_reclaimed += mem_cgroup_hierarchical_reclaim(mem, zone,
-+						gfp_mask,
-+						MEM_CGROUP_RECLAIM_SOFT,
-+						priority);
-+skip_reclaim:
-+		spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+		/*
-+		 * Don't wake up throttled tasks unless we reclaimed from
-+		 * them
-+		 */
-+		if (usage)
-+			mem->soft_limit_reclaim_count--;
-+		mem->usage_in_excess = res_counter_soft_limit_excess(&mem->res);
-+		/*
-+		 * We need to remove and reinsert the node in its correct
-+		 * position
-+		 */
-+		__mem_cgroup_remove_exceeded(mem);
-+		if (mem->usage_in_excess)
-+			__mem_cgroup_insert_exceeded(mem);
-+		spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-+		if (usage)
-+			complete_all(&mem->wait_on_soft_reclaim);
-+		css_put(&mem->css);
-+		cond_resched();
-+	} while (!nr_reclaimed);
-+	return nr_reclaimed;
-+}
-+
- /*
-  * This routine traverse page_cgroup in given list and drop them all.
-  * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
-@@ -2538,6 +2723,10 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- 	mem->last_scanned_child = 0;
- 	mem->usage_in_excess = 0;
- 	mem->last_tree_update = 0;	/* Yes, time begins at 0 here */
-+	mem->on_tree = false;
-+	init_completion(&mem->wait_on_soft_reclaim);
-+	mem->soft_limit_reclaim_count = 0;
-+
- 	spin_lock_init(&mem->reclaim_param_lock);
- 
- 	if (parent)
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 83f2ca4..2b8cdad 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1737,6 +1737,26 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
- 	zonelist = NODE_DATA(numa_node_id())->node_zonelists;
- 	return do_try_to_free_pages(zonelist, &sc);
- }
-+
-+unsigned long mem_cgroup_shrink_zone(struct mem_cgroup *mem,
-+					struct zone *zone, gfp_t gfp_mask,
-+					unsigned int swappiness,
-+					int priority)
-+{
-+	struct scan_control sc = {
-+		.may_writepage = !laptop_mode,
-+		.may_unmap = 1,
-+		.swap_cluster_max = SWAP_CLUSTER_MAX,
-+		.swappiness = swappiness,
-+		.order = 0,
-+		.mem_cgroup = mem,
-+		.isolate_pages = mem_cgroup_isolate_pages,
-+	};
-+	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
-+			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-+	shrink_zone(priority, zone, &sc);
-+	return sc.nr_reclaimed;
-+}
- #endif
- 
- /*
-@@ -1870,7 +1890,11 @@ loop_again:
- 			 */
- 			if (!zone_watermark_ok(zone, order, 8*zone->pages_high,
- 						end_zone, 0))
--				shrink_zone(priority, zone, &sc);
-+				if ((priority >= DEF_PRIORITY/2) ||
-+					!mem_cgroup_soft_limit_reclaim(priority,
-+						zone, pgdat->node_id,
-+						GFP_KERNEL))
-+					shrink_zone(priority, zone, &sc);
- 			reclaim_state->reclaimed_slab = 0;
- 			nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
- 						lru_pages);
-
--- 
-	Balbir
+stack backtrace:
+Pid: 318, comm: kswapd0 Not tainted 2.6.29-rc7-next-20090305 #8
+Call Trace:
+ [<ffffffff8026ca5d>] print_usage_bug+0x17d/0x190
+ [<ffffffff8026d9ad>] mark_lock+0x31d/0x450
+ [<ffffffff8026cbd0>] ? check_usage_forwards+0x0/0xc0
+ [<ffffffff8026ebcd>] __lock_acquire+0x40d/0x12a0
+ [<ffffffff8026faf1>] lock_acquire+0x91/0xc0
+ [<ffffffff803cbc4a>] ? xfs_ilock+0xaa/0x120
+ [<ffffffff8025f7d0>] down_read_nested+0x50/0x90
+ [<ffffffff803cbc4a>] ? xfs_ilock+0xaa/0x120
+ [<ffffffff803cbc4a>] xfs_ilock+0xaa/0x120
+ [<ffffffff803f09c4>] xfs_free_eofblocks+0x84/0x280
+ [<ffffffff8026ea8c>] ? __lock_acquire+0x2cc/0x12a0
+ [<ffffffff803f144e>] xfs_inactive+0xee/0x540
+ [<ffffffff803fea57>] xfs_fs_clear_inode+0x67/0x70
+ [<ffffffff802df7fa>] clear_inode+0x9a/0x120
+ [<ffffffff802dfa60>] dispose_list+0x30/0x110
+ [<ffffffff802dfd88>] shrink_icache_memory+0x248/0x2a0
+ [<ffffffff802a4d3c>] shrink_slab+0x15c/0x1c0
+ [<ffffffff802a6cba>] kswapd+0x56a/0x6b0
+ [<ffffffff802374b6>] ? finish_task_switch+0x46/0x110
+ [<ffffffff802a4120>] ? isolate_pages_global+0x0/0x270
+ [<ffffffff8025b450>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff802a6750>] ? kswapd+0x0/0x6b0
+ [<ffffffff8025af66>] kthread+0x56/0x90
+ [<ffffffff8020cc5a>] child_rip+0xa/0x20
+ [<ffffffff802374f9>] ? finish_task_switch+0x89/0x110
+ [<ffffffff8063da36>] ? _spin_unlock_irq+0x36/0x60
+ [<ffffffff8020c640>] ? restore_args+0x0/0x30
+ [<ffffffff8025af10>] ? kthread+0x0/0x90
+ [<ffffffff8020cc50>] ? child_rip+0x0/0x20
