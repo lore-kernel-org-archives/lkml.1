@@ -1,152 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbZCFUZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZCFUdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756482AbZCFUZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 15:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZCFUZL
+	id S1754839AbZCFUdb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 15:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZCFUdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 15:25:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45449 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753773AbZCFUZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 15:25:09 -0500
-Message-ID: <49B186A9.3030506@redhat.com>
-Date: Fri, 06 Mar 2009 15:25:13 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 6 Mar 2009 15:33:21 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:43130 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751168AbZCFUdV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 15:33:21 -0500
+Date: Fri, 6 Mar 2009 15:33:16 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kernel development list <linux-kernel@vger.kernel.org>
+cc: David Airlie <airlied@linux.ie>
+Subject: Problems with AGPGART/drm and X11 2D-acceleration
+Message-ID: <Pine.LNX.4.44L0.0903061522001.2715-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -tip 5/4] Expands irq-off region in text_poke()
-References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com> <20090306181356.GD14236@Krystal> <49B16C69.6060203@redhat.com> <20090306190828.GA28582@elte.hu> <20090306191517.GG14236@Krystal> <20090306192246.GF28582@elte.hu>
-In-Reply-To: <20090306192246.GF28582@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
->> * Ingo Molnar (mingo@elte.hu) wrote:
->>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>>
->>>> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
->>>>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
->>>>  	}
->>>>  	BUG_ON(!pages[0]);
->>>> -	if (!pages[1])
->>>> -		nr_pages = 1;
->>>> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
->>>> -	BUG_ON(!vaddr);
->>>> -	local_irq_disable();
->>>> +	local_irq_save(flags);
->>>> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
->>>> +	if (pages[1])
->>>> +		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
->>>> +	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
->>>>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
->>>> -	local_irq_enable();
->>>> -	vunmap(vaddr);
->>>> +	clear_fixmap(FIX_TEXT_POKE0);
->>>> +	if (pages[1])
->>>> +		clear_fixmap(FIX_TEXT_POKE1);
->>>> +	local_flush_tlb();
->>>> +	local_irq_restore(flags);
->>>>  	sync_core();
->>> I'm not sure at all about this widening of the irq-atomic 
->>> section and the idea of allowing non-locked access on single-CPU 
->>> situations - we dont really want to micro-optimize any of this 
->>> on such a level, holding the text lock is a robust rule all code 
->>> should be listening to. (Creating locking assymetry always 
->>> inserts a certain amount of fragility - adding to an already 
->>> fragile concept here.)
->>>
->>> And note that there's no reason why text_poke could not be used 
->>> in stop_machine_run() - the stop_machine_run() handler must not 
->>> take the text_lock of course - but outside code calling 
->>> stop_machine_run() can do it and can hence serialize properly.
->>>
->>> Note that even if we did this then your v2 patch is not fully 
->>> correct: you need to move the sync_core() at the end of the 
->>> sequence inside the critical section too. (right now this is 
->>> mostly harmless because the INVLPG inside the clear_fixmap() 
->>> happens to be serializing so it has an implicit sync_core() 
->>> property - but nevertheless we better do this straight away to 
->>> not cause problems later down the line.)
->>>
->>> 	Ingo
->> Agreed. The alternatives_smp_lock/alternatives_smp_unlock 
->> specific case does not bring us much if it has no perceivable 
->> performance impact. It's better to keep a standard interface 
->> and clear requirements.
-> 
-> Note that i dont object to another aspect of this same change: 
-> the fact that it makes the whole sequence more atomic and more 
-> defensive [which is never bad of fragile interfaces].
-> 
-> I only got worried about the "lets use this without the text 
-> lock" ideas.
-> 
-> So if Masami-san sends a delta patch with a different changelog 
-> and with the sync_core() bit moved inside the critical section, 
-> i'll apply that too.
+I've been experiencing problems running X with recent kernels.  
+Without 2D-acceleration everything seems to work okay, but scrolling is
+uncomfortably slow.  With acceleration enabled...
 
-OK, here is the delta patch.
+Under 2.6.27.19, X runs okay.  But the dmesg log gets these error
+messages when X start:
 
-Expand irq-atomic region to cover fixmap using code and sync_core.
+[   54.375769] [drm] Initialized drm 1.1.0 20060810
+[   54.441049] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   54.441521] pci 0000:00:02.0: setting latency timer to 64
+[   54.442380] [drm] Initialized i915 1.6.0 20060119 on minor 0
+[   54.543516] [drm:i915_getparam] *ERROR* Unknown parameter 5
+[   55.292058] [drm:i915_getparam] *ERROR* Unknown parameter 5
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/alternative.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Under 2.6.28.7, X fails during startup and exits with an error message.  
+Dmesg says:
 
-Index: linux-2.6-tip/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
-+++ linux-2.6-tip/arch/x86/kernel/alternative.c
-@@ -526,13 +526,12 @@ void *__kprobes text_poke(void *addr, co
- 		pages[1] = virt_to_page(addr + PAGE_SIZE);
- 	}
- 	BUG_ON(!pages[0]);
-+	local_irq_save(flags);
- 	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
- 	if (pages[1])
- 		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
- 	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
--	local_irq_save(flags);
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
--	local_irq_restore(flags);
- 	clear_fixmap(FIX_TEXT_POKE0);
- 	if (pages[1])
- 		clear_fixmap(FIX_TEXT_POKE1);
-@@ -540,6 +539,7 @@ void *__kprobes text_poke(void *addr, co
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-+	local_irq_restore(flags);
- 	for (i = 0; i < len; i++)
- 		BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
- 	return addr;
--- 
-Masami Hiramatsu
+[   63.129319] [drm] Initialized drm 1.1.0 20060810
+[   63.196690] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   63.196704] pci 0000:00:02.0: setting latency timer to 64
+[   63.197679] [drm] Initialized i915 1.6.0 20080730 on minor 0
+[   63.457664] [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
+[   63.457673] [drm:i915_gem_object_pin] *ERROR* Failure to bind: -12
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+Under 2.6.29-rc6, X hangs during startup.  I have to reboot the machine
+to recover.  Dmesg says only:
 
-e-mail: mhiramat@redhat.com
+[   57.001997] [drm] Initialized drm 1.1.0 20060810
+[   57.121966] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   57.121980] pci 0000:00:02.0: setting latency timer to 64
+[   57.127739] [drm] Initialized i915 1.6.0 20080730 on minor 0
+
+Relevant device info:
+
+# lspci -v -s 0:2.0
+00:02.0 VGA compatible controller: Intel Corporation 82845G/GL[Brookdale-G]/GE Chipset Integrated Graphics Device (rev 03) (prog-if 00 [VGA controller])
+        Subsystem: Intel Corporation Device 5247
+        Flags: bus master, fast devsel, latency 0, IRQ 16
+        Memory at f0000000 (32-bit, prefetchable) [size=128M]
+        Memory at ffa80000 (32-bit, non-prefetchable) [size=512K]
+        Capabilities: [d0] Power Management version 1
+        Kernel modules: intelfb
+
+>From /etc/X11/xorg.conf:
+
+Section "Device"
+        Identifier  "Card0"
+        Driver      "intel"
+        VendorName  "Intel Corporation"
+        BoardName   "82845G/GL[Brookdale-G]/GE Chipset Integrated Graphics Device"
+        BusID       "PCI:0:2:0"
+        Option      "AccelMethod"       "XAA"
+#       Option      "NoAccel" "yes"
+        Option      "BackingStore"      "on"
+EndSection
+
+I use XAA because the default EXA method causes X to hang during 
+startup even under 2.6.27.
+
+Any advice or suggestions for things to try?
+
+Alan Stern
 
