@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZCFMfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbZCFMfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZCFMfS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 07:35:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbZCFMfE
+	id S1754520AbZCFMfs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 07:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZCFMfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 07:35:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37132 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbZCFMfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 07:35:03 -0500
-Subject: Re: [Patch] mm tracepoints
-From: Larry Woodman <lwoodman@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090306110423.GD21168@elte.hu>
-References: <1233306324.11332.11.camel@nigel-laptop>
-	 <1236291400.1476.50.camel@dhcp-100-19-198.bos.redhat.com>
-	 <20090306105627.3EF0.A69D9226@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0903052124240.14535@gandalf.stny.rr.com>
-	 <20090306110423.GD21168@elte.hu>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 07:33:17 -0500
-Message-Id: <1236342797.3154.1.camel@dhcp47-138.lab.bos.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Mar 2009 07:35:37 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4328 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbZCFMfg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 07:35:36 -0500
+Date: Fri, 6 Mar 2009 12:35:20 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: Cliff Cai <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Message-ID: <20090306123515.GG6493@sirena.org.uk>
+References: <1236326010-683-1-git-send-email-cooloney@kernel.org> <1236326010-683-3-git-send-email-cooloney@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236326010-683-3-git-send-email-cooloney@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [alsa-devel] [PATCH 2/5] ASoC: ssm2602 codec: fix bug - kernel
+	will crash when record and play in bf527-ezkit
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 12:04 +0100, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > On Fri, 6 Mar 2009, KOSAKI Motohiro wrote:
-> > 
-> > > > I've implemented several mm tracepoints to track page allocation and
-> > > > freeing, various types of pagefaults and unmaps, and critical page
-> > > > reclamation routines.  This is useful for debugging memory allocation
-> > > > issues and system performance problems under heavy memory loads:
-> > > > 
-> > > > # tracer: mm
-> > > > #
-> > > > #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> > > > #              | |       |          |         |
-> > > >          pdflush-624   [004]   184.293169: wb_kupdate:
-> > > > (mm_pdflush_kupdate) count=3e48
-> > > >          pdflush-624   [004]   184.293439: get_page_from_freelist:
-> > > > (mm_page_allocation) pfn=447c27 zone_free=1940910
-> > > >         events/6-33    [006]   184.962879: free_hot_cold_page:
-> > > > (mm_page_free) pfn=44bba9
-> > > >       irqbalance-8313  [001]   188.042951: unmap_vmas:
-> > > > (mm_anon_userfree) mm=ffff88044a7300c0 address=7f9a2eb70000 pfn=24c29a
-> > > >              cat-9122  [005]   191.141173: filemap_fault:
-> > > > (mm_filemap_fault) primary fault: mm=ffff88024c9d8f40 address=3cea2dd000
-> > > > pfn=44d68e
-> > > >              cat-9122  [001]   191.143036: handle_mm_fault:
-> > > > (mm_anon_fault) mm=ffff88024c8beb40 address=7fffbde99f94 pfn=24ce22
-> > > > ...
-> > > 
-> > > Hi Larry,
-> > > 
-> > > I've started to evaluate your patch.
-> > > 
-> > > firstly, this patch can't apply tip/master.
-> 
-> yeah, would be nice to have a patch against:
-> 
->   http://people.redhat.com/mingo/tip.git/README
+On Fri, Mar 06, 2009 at 03:53:27PM +0800, Bryan Wu wrote:
 
-Yeah I'll fix that, it is a moving target.
-> 
-> > > secondly, I don't think the address of mm_struct and pfn 
-> > > help to analysis. administrator don't know the page is which 
-> > > file's cache.
-> > 
-> > The mm_struct may not be helpful since there should be a 1 to 
-> > 1 mapping between user tasks and the mm struct. Hmm, maybe 
-> > not, due to threads?
-> 
-> Correct - so the mm ID looks useful.
-> 
-> > But the pfn is helpful since it is a unique identifier for 
-> > what physical page was mapped.
-> 
-> Yeah. Nevertheless some sort of filename:offset indicator would 
-> be nice too. (as an add-on)
+> set constraint only if the value is not 0, change the configuring way for sport
 
-You mean in the filemap pagefault case???
+This changelog doesn't appear to apply to this patch - it looks like
+was copied from the previous one?  This patch appears to suffer from a
+similar issue where only the first format set by an application can ever
+be used, though since this changes the constraints that are set by the
+driver there's no possibility that applications will end up trying to
+use a sample format that the hardware is not configured for.
 
-Thanks, Larry
-
-> 
-> 	Ingo
-
+Do we really need such a heavy handed fix here - what is the issue
+that's being fixed?
