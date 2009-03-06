@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZCFJ4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZCFJ5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbZCFJ4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 04:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbZCFJ4c
+	id S1754959AbZCFJ5E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 04:57:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZCFJ4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 04:56:32 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:58006 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbZCFJ4b (ORCPT
+	Fri, 6 Mar 2009 04:56:49 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:45021 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbZCFJ4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 04:56:31 -0500
-Date: Fri, 6 Mar 2009 09:56:23 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Daniel Silverstone <dsilvers@simtec.co.uk>
-Cc: Richard Hughes <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org,
-       len.brown@intel.com
-Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
-Message-ID: <20090306095623.GA6014@srcf.ucam.org>
-References: <20090306003941.GA32403@srcf.ucam.org> <20090306005234.GA32539@srcf.ucam.org> <1236330536.12838.2.camel@hughsie-work.lan> <1236332843.19146.4.camel@petitemort>
+	Fri, 6 Mar 2009 04:56:48 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=PNey+ymLHXELWzNZUUcnY8+tr4ztavYvzPtoWynXPnrDmf9AeXWaD44RYDqz+rGA9
+	82cALCb9PkwvdpQ43Odlw==
+Date: Fri, 6 Mar 2009 01:56:26 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] lockdep: initialize lockdep debugging statistics
+In-Reply-To: <1236328083.5187.1213.camel@laptop>
+Message-ID: <alpine.DEB.2.00.0903060149540.26215@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>  <alpine.DEB.2.00.0903050223240.30401@chino.kir.corp.google.com>  <1236250159.4228.186.camel@laptop> <20090305110522.GI32407@elte.hu>  <alpine.DEB.2.00.0903051355010.25505@chino.kir.corp.google.com>
+ <1236328083.5187.1213.camel@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236332843.19146.4.camel@petitemort>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 09:47:23AM +0000, Daniel Silverstone wrote:
+On Fri, 6 Mar 2009, Peter Zijlstra wrote:
 
-> Have you looked at whether or not this method functions on more than the
-> one laptop? Toshiba are notoriously good at getting their own interfaces
-> wrong from one laptop to another.
+> I'm a bit slow, please use more words and explain this to me.
+> 
+> Before replying please read:
+> 
+> ea435467500612636f8f4fb639ff6e76b2496e4b
+> 
+> and stare at the output of:
+> 
+> git grep "define[ \t]*ATOMIC_INIT\>"
+> 
 
-It's present on every Toshiba DSDT I have that has a VALD/VALZ method.
+Peter, this is purely a matter of good software engineering practices.  I 
+hadn't realized you were so passionate about avoiding initialization of 
+global atomic_t variables, even though it usually suffices.
 
-> In addition, the fn+whatever keymaps are often different between 
-> laptops, especially for things like the WWW or MAIL buttons. 
-> Presumably if the hotkeys fail to activate then the normal 
-> /proc/acpi/toshiba/keys thing will continue?
+I assume you wouldn't object to removing all such cases in the kernel.
 
-Yes, it'll be as functional as it was previously. They can be remapped 
-on machines that have a different keymap.
- 
-> How will it interact with software stacks like HAL when the lock button
-> is pressed?
+	$ grep -r "atomic_t.*= ATOMIC_INIT(0)" * | wc -l
+	104
 
-I don't really understand the question?
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Unless David Miller has any input, I'll happily defer to your 
+maintainership of lockdep in this matter.  Thanks for looking at the 
+patch.
