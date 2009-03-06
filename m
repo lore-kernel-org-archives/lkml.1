@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZCFPHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZCFPKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbZCFPHZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZCFPHK
+	id S1755377AbZCFPKA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZCFPJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:07:10 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59815 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245AbZCFPHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:07:09 -0500
-Date: Fri, 6 Mar 2009 16:03:35 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned timers.
-Message-ID: <20090306150335.GB5828@redhat.com>
-References: <20090304121249.GA9855@linux.vnet.ibm.com> <20090304121456.GB9855@linux.vnet.ibm.com> <20090305165340.GA6984@redhat.com> <20090306061438.GB9190@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090306061438.GB9190@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Mar 2009 10:09:51 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:41830 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753382AbZCFPJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 10:09:51 -0500
+Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       containers <containers@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090305220044.GA2819@x200.localdomain>
+References: <20090305163857.0C18F3FD@kernel>
+	 <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz>
+	 <20090305210840.GA2499@x200.localdomain>
+	 <1236288427.22399.122.camel@nimitz>
+	 <20090305220044.GA2819@x200.localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 16:08:41 +0100
+Message-Id: <1236352121.5732.80.camel@bahia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/06, Arun R Bharadwaj wrote:
->
-> * Oleg Nesterov <oleg@redhat.com> [2009-03-05 17:53:40]:
->
-> > > @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
-> > >  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
-> > >  	unsigned long flags;
-> > >
-> > > +	timer_set_pinned(timer);
-> >
-> > But we never clear TBASE_PINNED_FLAG?
-> >
-> > If we use mod_timer() next time, the timer remains "pinned". I do not say
-> > this is really wrong, but a bit strange imho.
-> >
-> > Oleg.
-> >
->
-> The pinned timer would expect to continue firing on the same CPU
-> although it does a mod_timer() the next time, right?
+On Fri, 2009-03-06 at 01:00 +0300, Alexey Dobriyan wrote:
+> On Thu, Mar 05, 2009 at 01:27:07PM -0800, Dave Hansen wrote:
+> > > Imagine, unsupported file is opened between userspace checks
+> > > for /proc/*/checkpointable and /proc/*/fdinfo/*/checkpointable
+> > > and whatever, you stil have to do all the checks inside checkpoint(2).
+> > 
+> > Alexey, we have two problems here.  I completely agree that we have to
+> > do complete and thorough checks of each file descriptor at
+> > sys_checkpoint().  Any checks made at other times should not be trusted.
+> > 
+> > The other side is what Ingo has been asking for.  How do we *know* when
+> > we are checkpointable *before* we call (and without calling)
+> 
+> This "without calling checkpoint(2)" results in much complications
+> as demonstrated.
+> 
+> task_struct and file are not like other structures because they are exposed
+> in /proc. For PROC_FS=n kernels, one can't even check.
+> 
+> You can do checkpoint(2) without actual dump. You pass, you're most
+> certainly checkpointable (with inevitable race condition in mind).
+> 
 
-Why? Let's suppose we call queue_delayed_work_on(), and next time
-we use queue_delayed_work() with the same dwork. The timer is still
-pinned, this doesn't look consistent to me.
+Ahhh thank you very much Alexey ! I wanted to explain this to Dave a few
+monthes ago but I failed... probably because of my poor English skills.
 
-> Thats why I have not cleared the TBASE_PINNED_FLAG.
+https://lists.linux-foundation.org/pipermail/containers/2008-October/013549.html
 
-Personally, I don't like this flag. I think that "pinned" should
-be the argument for mod_timer(), not the "property" of timer_list.
+Why would we add checking all over the place when it MUST be done on the
+sys_checkpoint() path ? The checkpoint(2) dry-run is definitely the way
+to go.
 
-Oleg.
+> With time the amount of stuff C/R won't support will approach zero,
+> but the infrastructure for "checkpointable" will stay constant.
+> If it's too much right now, it will be way too much in future.
+> 
+> > sys_checkpoint()?  You are yet to acknowledge that this is a valid use
+> > case, but it is exactly what Ingo is asking for, I believe.
+> 
+> It's a valid requirement.
+> 
+> > If nice printk()s are sufficient to cover what Ingo wants, I'm quite
+> > happy to remove the /proc files.  
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+-- 
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
 
