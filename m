@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZCFASy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZCFATn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbZCFASy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 19:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbZCFASn
+	id S1757516AbZCFATn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 19:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbZCFATe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 19:18:43 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:56564 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755539AbZCFASm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 19:18:42 -0500
-Message-ID: <49B06BDE.4060103@us.ibm.com>
-Date: Thu, 05 Mar 2009 16:18:38 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: g3vbv@blueyonder.co.uk
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Strange problem with FUTEX_WAIT_PRIVATE
-References: <49B04565.2060708@blueyonder.co.uk>
-In-Reply-To: <49B04565.2060708@blueyonder.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Mar 2009 19:19:34 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:43559 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753963AbZCFATd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Mar 2009 19:19:33 -0500
+Date: Thu, 5 Mar 2009 18:19:30 -0600
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH BUGFIX] x86: Prevent /sys/firmware/sgi_uv from being created on non-uv systems
+Message-ID: <20090306001930.GA5881@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sid Boyce wrote:
-> I don't know if it's a kernel problem, I have already posted to openSUSE
-> Factory list without any response. It's either an openSUSE problem or
-> one encountered since about 2.6.29-rc4 I'd guess and through to
-> 2.6.29-rc7-git1.
-> If I execute certain applications as root I never get the GUI output, as
-> user everything works as expected.
-> Below is part of the strace output from "qjackctl". VirtualBox  and
-> others do the same.
-> <<<Previous lines deleted>>
-> stat("/etc/kde4/share/config/oxygenrc", {st_mode=S_IFREG|0644,
-> st_size=55, ...}) = 0
-> stat("/etc/kde4/share/config/oxygenrc", {st_mode=S_IFREG|0644,
-> st_size=55, ...}) = 0
-> fstat(8, {st_mode=S_IFREG|0644, st_size=55, ...}) = 0
-> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
-> = 0x7fba0d1a9000
-> read(8, "[Windeco]\nBlendTitlebarColors=false\nShowStripes=false\n\n",
-> 4096) = 55
-> read(8, "", 4096)                       = 0
-> close(8)                                = 0
-> munmap(0x7fba0d1a9000, 4096)            = 0
-> socket(PF_FILE, SOCK_STREAM, 0)         = 8
-> connect(8, {sa_family=AF_FILE, path=@"/tmp/dbus-8XYkB058j7"}, 23) = 0
-> fcntl(8, F_GETFL)                       = 0x2 (flags O_RDWR)
-> fcntl(8, F_SETFL, O_RDWR|O_NONBLOCK)    = 0
-> fcntl(8, F_GETFD)                       = 0
-> fcntl(8, F_SETFD, FD_CLOEXEC)           = 0
-> geteuid()                               = 0
-> rt_sigaction(SIGPIPE, {0x1, [PIPE], SA_RESTORER|SA_RESTART,
-> 0x7fba0869d6e0}, {SIG_DFL, [], 0}, 8) = 0
-> poll([{fd=8, events=POLLOUT}], 1, 0)    = 1 ([{fd=8, revents=POLLOUT}])
-> write(8, "\0", 1)                       = 1
-> write(8, "AUTH EXTERNAL 30\r\n", 18)    = 18
-> poll([{fd=8, events=POLLIN}], 1, -1)    = 1 ([{fd=8, revents=POLLIN}])
-> read(8, "OK 7c5d389345212834a5f2258649afe483\r\n", 2048) = 37
-> poll([{fd=8, events=POLLOUT}], 1, -1)   = 1 ([{fd=8, revents=POLLOUT}])
-> write(8, "BEGIN\r\n", 7)                = 7
-> poll([{fd=8, events=POLLIN|POLLOUT}], 1, -1) = 1 ([{fd=8,
-> revents=POLLIN|POLLOUT|POLLHUP}])
-> read(8, "", 2048)                       = 0
-> close(8)                                = 0
-> sched_yield()                           = 0
-> sched_yield()                           = 0
-> sched_yield()                           = 0
-> sched_yield()                           = 0
-> <<< many lines of the same truncated>>>
-> sched_yield()                           = 0
-> sched_yield()                           = 0
+/sys/firmware/sgi_uv should only be created on uv systems.
 
-tsk tsk tsk
+Signed-off-by: Russ Anderson <rja@sgi.com>
 
-> futex(0x7722ac, FUTEX_WAIT_PRIVATE, 1, NULL
-> 
-> It never moves beyond that point and I have to CTRL-C back to the prompt.
-> Regards
-> Sid.
+---
+ arch/x86/kernel/uv_sysfs.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-So without an accompanying FUTEX_WAKE this thread will never return 
-(since the timeout is NULL).  I suggest 'strace -f' to follow all 
-threads - do you see the FUTEX_WAKE?  Do you see it when not running as 
-root?
-
+Index: linux/arch/x86/kernel/uv_sysfs.c
+===================================================================
+--- linux.orig/arch/x86/kernel/uv_sysfs.c	2009-03-05 14:22:40.000000000 -0600
++++ linux/arch/x86/kernel/uv_sysfs.c	2009-03-05 14:59:16.000000000 -0600
+@@ -21,6 +21,7 @@
+ 
+ #include <linux/sysdev.h>
+ #include <asm/uv/bios.h>
++#include <asm/genapic.h>
+ 
+ struct kobject *sgi_uv_kobj;
+ 
+@@ -46,6 +47,9 @@ static struct kobj_attribute coherence_i
+ static int __init sgi_uv_sysfs_init(void)
+ {
+ 	unsigned long ret;
++
++	if (!is_uv_system())
++		return -ENODEV;
+ 
+ 	if (!sgi_uv_kobj)
+ 		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
