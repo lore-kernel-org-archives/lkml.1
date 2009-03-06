@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZCFNG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbZCFNIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbZCFNG4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 08:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZCFNGp
+	id S1754905AbZCFNIT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 08:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZCFNIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 08:06:45 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:52448 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbZCFNGo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 08:06:44 -0500
-X-BigFish: VPS-31(zba6iz1432R98dR148cM1805M936fKzzzzz32i6bh61h)
+	Fri, 6 Mar 2009 08:08:07 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:15073
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751919AbZCFNIG convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 08:08:06 -0500
+X-BigFish: VPS-27(zz1432R98dR1805M936fKzzzzz32i6bh61h)
 X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KG35Q7-03-1DV-01
-Date: Fri, 6 Mar 2009 14:06:05 +0100
+X-WSS-ID: 0KG35SS-03-1FK-01
+Date: Fri, 6 Mar 2009 14:07:40 +0100
 From: Joerg Roedel <joerg.roedel@amd.com>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Joerg Roedel <joro@8bytes.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       iommu@lists.linux-foundation.org, mingo@redhat.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] kvm/x86/mmu: handle invlpg on large pages
-Message-ID: <20090306130605.GH8751@amd.com>
-References: <1236255153-4432-1-git-send-email-joerg.roedel@amd.com> <1236255153-4432-5-git-send-email-joerg.roedel@amd.com> <20090305211122.GA5660@amt.cnet>
+Subject: Re: [RFC][GIT PULL] dma-api debugging facility
+Message-ID: <20090306130740.GI8751@amd.com>
+References: <20090305200338.GA31182@amd.com> <20090306055944Q.fujita.tomonori@lab.ntt.co.jp> <20090305223302.GN2125@8bytes.org> <20090305232219.GG24280@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20090305211122.GA5660@amt.cnet>
+In-Reply-To: <20090305232219.GG24280@sequoia.sous-sol.org>
 User-Agent: mutt-ng/devel-r804 (Linux)
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 06 Mar 2009 13:06:05.0895 (UTC) FILETIME=[4F27AD70:01C99E5C]
+X-OriginalArrivalTime: 06 Mar 2009 13:07:41.0001 (UTC) FILETIME=[87D7B390:01C99E5C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 06:11:22PM -0300, Marcelo Tosatti wrote:
-> On Thu, Mar 05, 2009 at 01:12:31PM +0100, Joerg Roedel wrote:
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/kvm/paging_tmpl.h |   12 +++++++++---
-> >  1 files changed, 9 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-> > index 79668ba..aa79396 100644
-> > --- a/arch/x86/kvm/paging_tmpl.h
-> > +++ b/arch/x86/kvm/paging_tmpl.h
-> > @@ -441,6 +441,7 @@ out_unlock:
-> >  static void FNAME(invlpg)(struct kvm_vcpu *vcpu, gva_t gva)
-> >  {
-> >  	struct kvm_shadow_walk_iterator iterator;
-> > +	struct kvm_mmu_page *sp;
-> >  	pt_element_t gpte;
-> >  	gpa_t pte_gpa = -1;
-> >  	int level;
-> > @@ -451,12 +452,17 @@ static void FNAME(invlpg)(struct kvm_vcpu *vcpu, gva_t gva)
-> >  	for_each_shadow_entry(vcpu, gva, iterator) {
-> >  		level = iterator.level;
-> >  		sptep = iterator.sptep;
-> > +		sp = page_header(__pa(sptep));
-> > +
-> > +		if (sp->role.direct) {
-> > +			/* mapped from a guest's large_pte */
-> > +			kvm_mmu_zap_page(vcpu->kvm, sp);
-> > +			kvm_flush_remote_tlbs(vcpu->kvm);
-> > +			return;
-> > +		}
+On Thu, Mar 05, 2009 at 03:22:19PM -0800, Chris Wright wrote:
+> * Joerg Roedel (joro@8bytes.org) wrote:
+> > Thats fixed in the tree above. I will send out the patches tomorrow
+> > seperatly for easier reviewing and commenting.
 > 
-> If the guest has 32-bit pte's there might be:
+> Did you fix the incorrect usage of __cacheline_aligned_in_smp?
 > 
-> - two large shadow entries to cover 4MB
-> - one large shadow entry and one shadow page with 512 4k entries
-> - two shadow pages with 512 4k entries each
+> essentially:
 > 
-> So need to cover all this cases.
+> -} __cacheline_aligned_in_smp;
+> +} ____cacheline_aligned_in_smp;
 
-Right. Thanks for pointing this out. I will post an updated version of
-this patch.
+Yes. This is fixed in the tree too.
 
 	Joerg
 
