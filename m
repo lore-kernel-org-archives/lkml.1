@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZCFDOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZCFDTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZCFDOW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 22:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZCFDOF
+	id S1754144AbZCFDTy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 22:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbZCFDTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 22:14:05 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:47224 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754449AbZCFDOE (ORCPT
+	Thu, 5 Mar 2009 22:19:44 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63024 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbZCFDTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 22:14:04 -0500
-X-IronPort-AV: E=Sophos;i="4.38,311,1233550800"; 
-   d="scan'208";a="83876381"
-From: Bryan Wu <cooloney@kernel.org>
-To: drzeus-mmc@drzeus.cx
-Cc: linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] mmc: align data size for host which only supports power-of-2 block
-Date: Fri,  6 Mar 2009 11:15:21 +0800
-Message-Id: <1236309321-23955-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Thu, 5 Mar 2009 22:19:43 -0500
+Message-Id: <20090306031857.686507907@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 05 Mar 2009 22:18:57 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/3] [GIT PULL] for tip/tracing/ftrace
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Cai <cliff.cai@analog.com>
 
-Signed-off-by: Cliff Cai <cliff.cai@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/mmc/core/core.c  |    8 +++++++-
- include/linux/mmc/host.h |    1 +
- 2 files changed, 8 insertions(+), 1 deletions(-)
+Ingo,
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index df6ce4a..15119df 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -321,7 +321,13 @@ unsigned int mmc_align_data_size(struct mmc_card *card, unsigned int sz)
- 	 * the core about its problems yet, so for now we just 32-bit
- 	 * align the size.
- 	 */
--	sz = ((sz + 3) / 4) * 4;
-+
-+	/* Align size for host which only supports power-of-2 block */
-+	if (card->host->powerof2_block) {
-+		if (sz & (sz - 1))
-+			sz = 1 << fls(sz);
-+	} else
-+		sz = ((sz + 3) / 4) * 4;
- 
- 	return sz;
- }
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 4e45725..7416ed1 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -162,6 +162,7 @@ struct mmc_host {
- 	struct dentry		*debugfs_root;
- 
- 	unsigned long		private[0] ____cacheline_aligned;
-+	unsigned int		powerof2_block;	/* host only supports power-of-2 block */
- };
- 
- extern struct mmc_host *mmc_alloc_host(int extra, struct device *);
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
+
+
+Steven Rostedt (3):
+      tracing: make all file_operations const
+      tracing: move print of event format to separate file
+      tracing: add format files for ftrace default entries
+
+----
+ kernel/trace/Makefile               |    1 +
+ kernel/trace/ftrace.c               |   10 +-
+ kernel/trace/ring_buffer.c          |    2 +-
+ kernel/trace/trace.c                |   24 +++---
+ kernel/trace/trace_event_types.h    |  165 +++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_events.c         |   12 ++-
+ kernel/trace/trace_events_stage_2.h |   53 +-----------
+ kernel/trace/trace_export.c         |   81 +++++++++++++++++
+ kernel/trace/trace_format.h         |   55 ++++++++++++
+ kernel/trace/trace_sysprof.c        |    2 +-
+ 10 files changed, 329 insertions(+), 76 deletions(-)
 -- 
-1.5.6.3
