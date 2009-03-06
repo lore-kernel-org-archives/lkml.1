@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZCFQb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZCFQgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755774AbZCFQb0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZCFQbN
+	id S1753842AbZCFQgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZCFQgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:31:13 -0500
-Received: from usea-naimss3.unisys.com ([192.61.61.105]:3583 "EHLO
-	usea-naimss3.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751354AbZCFQbM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:31:12 -0500
-Subject: Re: [PATCH] MSI: check for BIOS assigned addresses
-From: Daniel Yeisley <dan.yeisley@unisys.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20090306162402.GA8936@elte.hu>
-References: <1236352309.31604.2.camel@localhost.localdomain>
-	 <20090306162402.GA8936@elte.hu>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 10:56:49 -0500
-Message-Id: <1236355009.31604.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 (2.25.92-1.fc11) 
+	Fri, 6 Mar 2009 11:36:07 -0500
+Received: from 81-7-68-229.static.zebra.lt ([81.7.68.229]:55196 "EHLO
+	teltonika.lt" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751064AbZCFQgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 11:36:05 -0500
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Subject: [PATCH v2] Add documentation for "nohlt" kernel parameter
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-sh@vger.kernel.org
+Cc: yanok@emcraft.com, wd@denx.de
+Date: Fri, 06 Mar 2009 18:35:58 +0200
+Message-ID: <20090306163558.11873.5076.stgit@Programuotojas>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2009 16:26:57.0371 (UTC) FILETIME=[5E64FAB0:01C99E78]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI hotplug doesn't work.
+As per discussion in:
+http://marc.info/?l=linux-arm-kernel&m=123633652517391&w=2
 
-Dan
+v2:
+- usefull<->useful
+
+Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+---
+
+ Documentation/kernel-parameters.txt |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
 
-On Fri, 2009-03-06 at 17:24 +0100, Ingo Molnar wrote:
-> * Daniel Yeisley <dan.yeisley@unisys.com> wrote:
-> 
-> > When creating MSI addresses the kernel makes them up and 
-> > writes them to the hardware without first checking for what 
-> > the system BIOS may have assigned.  The patch below checks for 
-> > already assigned values, and leaves them alone if they exist.
-> > 
-> > Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
-> 
-> What happens without this fix - do you get non-working cards? 
-> Boot hang? Or a suboptimal layout?
-> 
-> 	Ingo
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 54f21a5..5d251ad 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1487,7 +1487,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	noclflush	[BUGS=X86] Don't use the CLFLUSH instruction
+ 
+-	nohlt		[BUGS=ARM,SH]
++	nohlt		[BUGS=ARM,SH] Tells the kernel that the sleep(SH) or
++			wfi(ARM) instruction doesn't work correctly and not to
++			use it. This is also useful when using JTAG debugger.
+ 
+ 	no-hlt		[BUGS=X86-32] Tells the kernel that the hlt
+ 			instruction doesn't work correctly and not to
 
