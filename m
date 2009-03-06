@@ -1,111 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZCFLH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZCFLIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbZCFLH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 06:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbZCFLHS
+	id S1754768AbZCFLIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 06:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbZCFLIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 06:07:18 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:63999 "EHLO smtp.mba.ocn.ne.jp"
+	Fri, 6 Mar 2009 06:08:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56392 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZCFLHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 06:07:17 -0500
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] dmaengine: Add privatecnt to revert DMA_PRIVATE propery
-Date: Fri,  6 Mar 2009 20:07:14 +0900
-Message-Id: <1236337634-5110-1-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.3
+	id S1751573AbZCFLIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 06:08:14 -0500
+Date: Fri, 6 Mar 2009 12:08:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH for tip][bugfix] ftrace: fix deadlock when setting
+	set_ftrace_pid
+Message-ID: <20090306110800.GF21168@elte.hu>
+References: <20090306151155.0778.A69D9226@jp.fujitsu.com> <49B0C94E.6020300@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49B0C94E.6020300@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently dma_request_channel() set DMA_PRIVATE capability but never
-clear it.  So if a public channel was once grabbed by
-dma_request_channel(), the device stay PRIVATE forever.  Add
-privatecnt member to dma_device to correctly revert it.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- drivers/dma/dmaengine.c   |    8 ++++++++
- include/linux/dmaengine.h |    9 +++++++++
- 2 files changed, 17 insertions(+), 0 deletions(-)
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 280a9d2..14be8fa 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -507,6 +507,7 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
- 			 * published in the general-purpose allocator
- 			 */
- 			dma_cap_set(DMA_PRIVATE, device->cap_mask);
-+			device->privatecnt++;
- 			err = dma_chan_get(chan);
- 
- 			if (err == -ENODEV) {
-@@ -518,6 +519,8 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
- 				       dma_chan_name(chan), err);
- 			else
- 				break;
-+			if (--device->privatecnt == 0)
-+				dma_cap_clear(DMA_PRIVATE, device->cap_mask);
- 			chan->private = NULL;
- 			chan = NULL;
- 		}
-@@ -537,6 +540,9 @@ void dma_release_channel(struct dma_chan *chan)
- 	WARN_ONCE(chan->client_count != 1,
- 		  "chan reference count %d != 1\n", chan->client_count);
- 	dma_chan_put(chan);
-+	/* drop PRIVATE cap enabled by __dma_request_channel() */
-+	if (--chan->device->privatecnt == 0)
-+		dma_cap_clear(DMA_PRIVATE, chan->device->cap_mask);
- 	chan->private = NULL;
- 	mutex_unlock(&dma_list_mutex);
- }
-@@ -701,6 +707,8 @@ int dma_async_device_register(struct dma_device *device)
- 			}
- 		}
- 	list_add_tail_rcu(&device->global_node, &dma_device_list);
-+	if (dma_has_cap(DMA_PRIVATE, device->cap_mask))
-+		chan->device->privatecnt++;	/* Always private */
- 	dma_channel_rebalance();
- 	mutex_unlock(&dma_list_mutex);
- 
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index f041384..f834fa1 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -209,6 +209,7 @@ struct dma_async_tx_descriptor {
- /**
-  * struct dma_device - info on the entity supplying DMA services
-  * @chancnt: how many DMA channels are supported
-+ * @privatecnt: how many DMA channels are requested by dma_request_channel
-  * @channels: the list of struct dma_chan
-  * @global_node: list_head for global dma_device_list
-  * @cap_mask: one or more dma_capability flags
-@@ -232,6 +233,7 @@ struct dma_async_tx_descriptor {
- struct dma_device {
- 
- 	unsigned int chancnt;
-+	unsigned int privatecnt;
- 	struct list_head channels;
- 	struct list_head global_node;
- 	dma_cap_mask_t  cap_mask;
-@@ -342,6 +344,13 @@ __dma_cap_set(enum dma_transaction_type tx_type, dma_cap_mask_t *dstp)
- 	set_bit(tx_type, dstp->bits);
- }
- 
-+#define dma_cap_clear(tx, mask) __dma_cap_clear((tx), &(mask))
-+static inline void
-+__dma_cap_clear(enum dma_transaction_type tx_type, dma_cap_mask_t *dstp)
-+{
-+	clear_bit(tx_type, dstp->bits);
-+}
-+
- #define dma_cap_zero(mask) __dma_cap_zero(&(mask))
- static inline void __dma_cap_zero(dma_cap_mask_t *dstp)
- {
--- 
-1.5.6.3
+> KOSAKI Motohiro wrote:
+> > Impact: fix deadlock bug
+> > 
+> > reproduce way:
+> > 	# cd /sys/kernel/debug/tracing
+> > 	# echo $$ > set_ftrace_pid
+> > 
+> > 	then, console become hangup.
+> > 
+> > detail:
+> > when writing set_ftracepid, kernel callstack is following
+> > 
+> > 	ftrace_pid_write()
+> > 		mutex_lock(&ftrace_lock);
+> > 		ftrace_update_pid_func()
+> > 			mutex_lock(&ftrace_lock);
+> > 			mutex_unlock(&ftrace_lock);
+> > 		mutex_unlock(&ftrace_lock);
+> > 
+> > then, system alaways deadlock when ftrace_pid_write() is called.
+> > 
+> > In past days, ftrace_pid_write() use ftrace_start_lock, but
+> > commit e6ea44e9b4c12325337cd1c06103cd515a1c02b2 consolidate
+> > ftrace_start_lock to ftrace_lock.
+> > 
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> > index 5a3a06b..0d3b393 100644
+> > --- a/kernel/trace/ftrace.c
+> > +++ b/kernel/trace/ftrace.c
+> > @@ -218,10 +218,8 @@ static void ftrace_update_pid_func(void)
+> >  {
+> >  	ftrace_func_t func;
+> >  
+> > -	mutex_lock(&ftrace_lock);
+> > -
+> >  	if (ftrace_trace_function == ftrace_stub)
+> > -		goto out;
+> > +		return;
+> >  
+> >  	func = ftrace_trace_function;
+> >  
+> > @@ -238,9 +236,6 @@ static void ftrace_update_pid_func(void)
+> >  #else
+> >  	__ftrace_trace_function = func;
+> >  #endif
+> > -
+> > - out:
+> > -	mutex_unlock(&ftrace_lock);
+> >  }
+> >  
+> >  /* set when tracing only a pid */
+> > 
+> > 
+> 
+> Reviewed-By: Lai Jiangshan <laijs@cn.fujitsu.com>
 
+Applied, thanks!
+
+	Ingo
