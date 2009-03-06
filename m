@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZCFQus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZCFQxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbZCFQus (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 11:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbZCFQuk
+	id S1753934AbZCFQxK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 11:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZCFQw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 11:50:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35116 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbZCFQuj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 11:50:39 -0500
-Date: Fri, 6 Mar 2009 11:50:37 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/5 v2] add binary printf
-In-Reply-To: <1236356510-8381-2-git-send-email-fweisbec@gmail.com>
-Message-ID: <alpine.DEB.2.00.0903061149540.23248@gandalf.stny.rr.com>
-References: <1236356510-8381-1-git-send-email-fweisbec@gmail.com> <1236356510-8381-2-git-send-email-fweisbec@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Mar 2009 11:52:56 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:56206 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750849AbZCFQwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 11:52:55 -0500
+Subject: Re: Regression - locking (all from 2.6.28)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jan sonnek <ha2nny@gmail.com>,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <1236357616.3882.66.camel@pc1117.cambridge.arm.com>
+References: <49AC334A.9030800@gmail.com>
+	 <20090302121127.e46dc4be.akpm@linux-foundation.org>
+	 <1236076864.8547.20.camel@pc1117.cambridge.arm.com>
+	 <1236092480.8547.67.camel@pc1117.cambridge.arm.com>
+	 <1236214452.22399.68.camel@nimitz>
+	 <1236357616.3882.66.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 08:52:49 -0800
+Message-Id: <1236358369.10626.58.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 6 Mar 2009, Frederic Weisbecker wrote:
-
-> From: Lai Jiangshan <laijs@cn.fujitsu.com>
+On Fri, 2009-03-06 at 16:40 +0000, Catalin Marinas wrote:
+> It seems that node_start_pfn() isn't present on all the architectures. I
+> ended up with something like below:
 > 
-> Impact: Add APIs for binary trace printk infrastructure
-> 
-> vbin_printf(): write args to binary buffer, string is copied
-> when "%s" is occurred.
-> 
-> bstr_printf(): read from binary buffer for args and format a string
-> 
-> [fweisbec@gmail.com: rebase against latest -tip]
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> +	/* struct page scanning for each node */
+> +	for_each_online_node(i) {
+> +		pg_data_t *pgdat = NODE_DATA(i);
+> +		unsigned long start_pfn = pgdat->node_start_pfn;
+> +		unsigned long end_pfn = start_pfn +
+> +			pgdat->node_spanned_pages - 1;
+> +		unsigned long pfn;
+> +
+> +		for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+> +			struct page *page;
+> +
+> +			if (!pfn_valid(pfn))
+> +				continue;
+> +			page = pfn_to_page(pfn);
+> +			/* only scan if page is in use */
+> +			if (page_count(page) == 0)
+> +				continue;
+> +			scan_block(page, page + 1, NULL);
+> +		}
+> +	}
 
-Well it finally decided to show up.
+What does scan_block() actually scan?  Is that second argument
+inclusive?
 
-for the whole series:
+I think you will miss scanning the contents of the last 'struct page' if
+you do it this way because of the -1 you do to end_pfn.
 
-Acked-by: Steven Rostedt <srostedt@redhat.com>
+> Are the pgdat->node_start_pfn and pgdat->node_spanned_pages always
+> valid? Thanks.
 
--- Steve
+The variables themselves?  I'm sure there's a window in early boot where
+they aren't valid, but other than that they should be OK unless you're
+int the middle of a hotplug operation.
+
+See pgdat_resize_(un)lock() in include/linux/memory_hotplug.h.
+
+-- Dave
 
