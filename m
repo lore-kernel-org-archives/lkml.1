@@ -1,106 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbZCFVft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZCFViU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbZCFVft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 16:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZCFVfl
+	id S1755673AbZCFViU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 16:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZCFViH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 16:35:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33327 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754753AbZCFVfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 16:35:40 -0500
-Date: Fri, 6 Mar 2009 22:35:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: introduce bootmem_state -v2
-Message-ID: <20090306213523.GB3306@elte.hu>
-References: <1236257708-27269-7-git-send-email-penberg@cs.helsinki.fi> <49B02498.9080300@kernel.org> <49B02C68.1030203@cs.helsinki.fi> <49B0640A.5080607@kernel.org> <20090306145928.GE21907@elte.hu> <49B16DA6.4090108@kernel.org> <20090306191249.GC28582@elte.hu> <49B17E6C.2040702@kernel.org> <20090306201503.GC4278@elte.hu> <49B18A38.9090902@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B18A38.9090902@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 6 Mar 2009 16:38:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43694 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753964AbZCFViG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 16:38:06 -0500
+Date: Fri, 6 Mar 2009 13:37:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org, diego.dompe@ridgerun.com,
+       jdk@ti.com
+Subject: Re: [patch 2.6.29-rc7] leds-gpio: just ignore invalid GPIOs
+Message-Id: <20090306133733.9afe1c1c.akpm@linux-foundation.org>
+In-Reply-To: <200903051646.44364.david-b@pacbell.net>
+References: <200903051646.44364.david-b@pacbell.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 5 Mar 2009 16:46:44 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> Ingo Molnar wrote:
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >>> * Yinghai Lu <yinghai@kernel.org> wrote:
-> >>>
-> >>>> Impact: cleanup
-> >>>>
-> >>>> extend after_bootmem and after_init_bootmem to bootmem_state
-> >>>> and will have BEFORE_BOOTMEM, DURING_BOOTMEM, AFTER_BOOTMEM
-> >>>>
-> >>>> v2: style changes according to ingo
-> >>>>
-> >>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>>>
-> >>>> ---
-> >>>>  arch/x86/kernel/setup.c |    1 +
-> >>>>  arch/x86/mm/init.c      |   13 +++++++------
-> >>>>  arch/x86/mm/init_32.c   |   28 ++++++++++++++++++++--------
-> >>>>  arch/x86/mm/init_64.c   |   33 +++++++++++++++++++--------------
-> >>>>  include/linux/mm.h      |    9 +++++++++
-> >>>>  5 files changed, 56 insertions(+), 28 deletions(-)
-> >>>> Index: linux-2.6/include/linux/mm.h
-> >>>> ===================================================================
-> >>>> --- linux-2.6.orig/include/linux/mm.h
-> >>>> +++ linux-2.6/include/linux/mm.h
-> >>>> @@ -1067,6 +1067,15 @@ extern void __init mmap_init(void);
-> >>>>  extern void show_mem(void);
-> >>>>  extern void si_meminfo(struct sysinfo * val);
-> >>>>  extern void si_meminfo_node(struct sysinfo *val, int nid);
-> >>>> +
-> >>>> +enum bootmem_state {
-> >>>> +	BEFORE_BOOTMEM,
-> >>>> +	DURING_BOOTMEM,
-> >>>> +	AFTER_BOOTMEM
-> >>>> +};
-> >>>> +
-> >>>> +extern enum bootmem_state bootmem_state;
-> >>>> +
-> >>>>  extern int after_bootmem;
-> >>> Btw., the after_bootmem variable itself should either move 
-> >>> to x86 (and arch/sh), or should be defined in mm/bootmem.c.
-> >>>
-> >>> Right now we have this weird mm.h construct that is not 
-> >>> actually useful to generic code.
-> >> with this patch, only sh is using after_bootmem. could
-> >> 1. make sh to use bootmem_state
-> >> 2. then remove after_bootmem
-> > 
-> > Hm, lets leave arch/sh alone for now i think - the commits are 
-> > desintd for the x86 tree.
-> > 
-> > But we should move our after_bootmem to arch/x86/include/ and 
-> > not pollute mm.h with it. It's an x86 internal detail for now.
-> > 
+> From: David Brownell <dbrownell@users.sourceforge.net>
 > 
-> you mean move bootmem_state to arch/x86/include ?
-> with this patch are not using after_bootmem anymore.
+> Sometimes it's awkward to make sure that the array in the
+> platform_data handed to the leds-gpio driver has only valid
+> data ... some leds may not be always available, and coping
+> with that currently requires patching or rebuilding the array.
+> 
+> This patch fixes that by making it be OK to pass an invalid
+> GPIO (such as "-EINVAL") ... such table entries are skipped.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Tested-by: Diego Dompe <diego.dompe@ridgerun.com>
+> ---
+> Noted on OMAP3 Beagle board ... one of the three programmable
+> LEDs is driven by a twl4030 GPIO, which might not be configured.
+> (In fact it's a PWM-capable LED, but the PWM support isn't yet
+> available.)
+> 
+>  drivers/leds/leds-gpio.c |   12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
+> 
+> --- a/drivers/leds/leds-gpio.c
+> +++ b/drivers/leds/leds-gpio.c
+> @@ -90,13 +90,19 @@ static int gpio_led_probe(struct platfor
+>  		cur_led = &pdata->leds[i];
+>  		led_dat = &leds_data[i];
+>  
+> +		/* skip leds that aren't available */
+> +		led_dat->gpio = cur_led->gpio;
+> +		if (!gpio_is_valid(led_dat->gpio)) {
+> +			dev_dbg(&pdev->dev, "skipping %s\n", cur_led->name);
+> +			continue;
+> +		}
+> +
+>  		ret = gpio_request(cur_led->gpio, cur_led->name);
+>  		if (ret < 0)
+>  			goto err;
+>  
+>  		led_dat->cdev.name = cur_led->name;
+>  		led_dat->cdev.default_trigger = cur_led->default_trigger;
+> -		led_dat->gpio = cur_led->gpio;
+>  		led_dat->can_sleep = gpio_cansleep(cur_led->gpio);
+>  		led_dat->active_low = cur_led->active_low;
+>  		if (pdata->gpio_blink_set) {
+> @@ -125,6 +131,8 @@ static int gpio_led_probe(struct platfor
+>  err:
+>  	if (i > 0) {
+>  		for (i = i - 1; i >= 0; i--) {
+> +			if (!gpio_is_valid(leds_data[i].gpio))
+> +				continue;
+>  			led_classdev_unregister(&leds_data[i].cdev);
+>  			cancel_work_sync(&leds_data[i].work);
+>  			gpio_free(leds_data[i].gpio);
+> @@ -145,6 +153,8 @@ static int __devexit gpio_led_remove(str
+>  	leds_data = platform_get_drvdata(pdev);
+>  
+>  	for (i = 0; i < pdata->num_leds; i++) {
+> +		if (!gpio_is_valid(leds_data[i].gpio))
+> +			continue;
+>  		led_classdev_unregister(&leds_data[i].cdev);
+>  		cancel_work_sync(&leds_data[i].work);
+>  		gpio_free(leds_data[i].gpio);
 
-Correct. So basically we change x86 to use bootmem_state only, 
-and leave mm.h alone. arch/sh can still use after_bootmem. 
-(which it should likely move to its own header files - but 
-that's for a different patch)
+All this code has changed a lot in linux.next.  Nothing applies and it
+goes beyond my fix-it-up preparedness.
 
-	Ingo
+
