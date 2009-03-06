@@ -1,70 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756364AbZCFSbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZCFScz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756364AbZCFSbJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZCFSaz
+	id S1756510AbZCFScz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbZCFScq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:30:55 -0500
-Received: from rv-out-0506.google.com ([209.85.198.230]:24211 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbZCFSaz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:30:55 -0500
+	Fri, 6 Mar 2009 13:32:46 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47776 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751719AbZCFScp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 13:32:45 -0500
+Message-ID: <49B16C69.6060203@redhat.com>
+Date: Fri, 06 Mar 2009 13:33:13 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <E1LfeFk-0002mD-OE@zelda.netsplit.com>
-References: <E1LfeFk-0002mD-OE@zelda.netsplit.com>
-Date: Fri, 6 Mar 2009 19:30:52 +0100
-Message-ID: <ac3eb2510903061030j339578dfi116ae729f43604d1@mail.gmail.com>
-Subject: Re: [PATCH] floppy: Provide a PNP device table in the module.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Scott James Remnant <scott@canonical.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH -tip 4/4] Atomic text_poke() with fixmap take2
+References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com> <20090306181356.GD14236@Krystal>
+In-Reply-To: <20090306181356.GD14236@Krystal>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 6, 2009 at 18:50, Scott James Remnant <scott@canonical.com> wrote:
-> The missing device table means that the floppy module is not
-> auto-loaded, even when the appropriate PNP device (0700) is found.
->
-> We don't actually use the table in the module, since the device doesn't
-> have a struct pnp_driver, but it's sufficient to cause an alias in the
-> module that udev/modprobe will use.
->
-> Signed-off-by: Scott James Remnant <scott@canonical.com>
-> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-> ---
->  drivers/block/floppy.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-> index 83d8ed3..7aa1264 100644
-> --- a/drivers/block/floppy.c
-> +++ b/drivers/block/floppy.c
-> @@ -177,6 +177,7 @@ static int print_unex = 1;
->  #include <linux/interrupt.h>
->  #include <linux/init.h>
->  #include <linux/platform_device.h>
-> +#include <linux/mod_devicetable.h>
->  #include <linux/buffer_head.h> /* for invalidate_buffers() */
->  #include <linux/mutex.h>
->
-> @@ -4598,6 +4599,13 @@ MODULE_AUTHOR("Alain L. Knaff");
->  MODULE_SUPPORTED_DEVICE("fd");
->  MODULE_LICENSE("GPL");
->
-> +/* This doesn't actually get used other than for module information */
-> +static const struct pnp_device_id floppy_pnpids[] = {
-> +       { "PNP0700", 0 },
-> +       { }
-> +};
-> +MODULE_DEVICE_TABLE(pnp, floppy_pnpids);
-> +
+Mathieu Desnoyers wrote:
+>> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
+>>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
+>>  	}
+>>  	BUG_ON(!pages[0]);
+>> -	if (!pages[1])
+>> -		nr_pages = 1;
+>> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+>> -	BUG_ON(!vaddr);
+>> -	local_irq_disable();
+>> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
+> 
+> Can the set_fixmap/clear_fixmap/local_flush_tlb be called within
+> local_irq_save ? If yes, that would be better, especially for the SMP
+> alternatives code, which would rely on interrupt disabling in text_poke
+> for consistency (the mutex is not needed there).
 
-Looks good to me. Thanks for doing that.
+Yes, that just changes pte.
 
-Acked-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+Use fixmaps instead of vmap/vunmap in text_poke() for avoiding page allocation
+and delayed unmapping.
 
-Kay
+At the result of above change, text_poke() becomes atomic and can be called
+from stop_machine() etc.
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/fixmap.h |    2 ++
+ arch/x86/kernel/alternative.c |   24 +++++++++++++++---------
+ 2 files changed, 17 insertions(+), 9 deletions(-)
+
+Index: linux-2.6-tip/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
++++ linux-2.6-tip/arch/x86/kernel/alternative.c
+@@ -13,7 +13,9 @@
+ #include <asm/nmi.h>
+ #include <asm/vsyscall.h>
+ #include <asm/cacheflush.h>
++#include <asm/tlbflush.h>
+ #include <asm/io.h>
++#include <asm/fixmap.h>
+
+ #define MAX_PATCH_LEN (255-1)
+
+@@ -505,15 +507,16 @@ void *text_poke_early(void *addr, const
+  * It means the size must be writable atomically and the address must be aligned
+  * in a way that permits an atomic write. It also makes sure we fit on a single
+  * page.
++ *
++ * Note: Must be called under text_mutex.
+  */
+ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+ {
++	unsigned long flags;
+ 	char *vaddr;
+-	int nr_pages = 2;
+ 	struct page *pages[2];
+ 	int i;
+
+-	might_sleep();
+ 	if (!core_kernel_text((unsigned long)addr)) {
+ 		pages[0] = vmalloc_to_page(addr);
+ 		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
+@@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
+ 		pages[1] = virt_to_page(addr + PAGE_SIZE);
+ 	}
+ 	BUG_ON(!pages[0]);
+-	if (!pages[1])
+-		nr_pages = 1;
+-	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+-	BUG_ON(!vaddr);
+-	local_irq_disable();
++	local_irq_save(flags);
++	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
++	if (pages[1])
++		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
++	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
+ 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+-	local_irq_enable();
+-	vunmap(vaddr);
++	clear_fixmap(FIX_TEXT_POKE0);
++	if (pages[1])
++		clear_fixmap(FIX_TEXT_POKE1);
++	local_flush_tlb();
++	local_irq_restore(flags);
+ 	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+Index: linux-2.6-tip/arch/x86/include/asm/fixmap.h
+===================================================================
+--- linux-2.6-tip.orig/arch/x86/include/asm/fixmap.h
++++ linux-2.6-tip/arch/x86/include/asm/fixmap.h
+@@ -111,6 +111,8 @@ enum fixed_addresses {
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
++	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
++	FIX_TEXT_POKE1,
+ 	__end_of_permanent_fixed_addresses,
+ #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+ 	FIX_OHCI1394_BASE,
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
