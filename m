@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbZCFPhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZCFPiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbZCFPhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbZCFPhe
+	id S1756014AbZCFPiV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZCFPiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:37:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60668 "EHLO mx2.redhat.com"
+	Fri, 6 Mar 2009 10:38:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60733 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754313AbZCFPhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:37:33 -0500
-Message-ID: <49B14332.9030109@redhat.com>
-Date: Fri, 06 Mar 2009 10:37:22 -0500
+	id S1754693AbZCFPiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 10:38:07 -0500
+Message-ID: <49B14352.2040705@redhat.com>
+Date: Fri, 06 Mar 2009 10:37:54 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
@@ -25,7 +25,7 @@ CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -tip 3/4]Text Edit Lock - Smp alternatives support
+Subject: [PATCH -tip 4/4] Atomic text_poke() with fixmap
 References: <49B1428A.9050500@redhat.com>
 In-Reply-To: <49B1428A.9050500@redhat.com>
 Content-Type: text/plain; charset=ISO-2022-JP
@@ -34,61 +34,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the mutual exclusion provided by the text edit lock in alternatives code.
-Since alternative_smp_* will be called from module init code, etc,
-we'd better protect it from other subsystems.
+Use fixmaps instead of vmap/vunmap in text_poke() for avoiding page allocation
+and delayed unmapping.
+
+At the result of above change, text_poke() becomes atomic and can be called
+from stop_machine() etc.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/alternative.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ arch/x86/include/asm/fixmap.h |    2 ++
+ arch/x86/kernel/alternative.c |   24 +++++++++++++++---------
+ 2 files changed, 17 insertions(+), 9 deletions(-)
 
-Index: 2.6.29-rc7/arch/x86/kernel/alternative.c
+Index: linux-2.6-tip/arch/x86/kernel/alternative.c
 ===================================================================
---- 2.6.29-rc7.orig/arch/x86/kernel/alternative.c
-+++ 2.6.29-rc7/arch/x86/kernel/alternative.c
-@@ -5,6 +5,7 @@
- #include <linux/kprobes.h>
- #include <linux/mm.h>
- #include <linux/vmalloc.h>
-+#include <linux/memory.h>
- #include <asm/alternative.h>
- #include <asm/sections.h>
- #include <asm/pgtable.h>
-@@ -226,6 +227,7 @@ static void alternatives_smp_lock(u8 **s
+--- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
++++ linux-2.6-tip/arch/x86/kernel/alternative.c
+@@ -13,7 +13,9 @@
+ #include <asm/nmi.h>
+ #include <asm/vsyscall.h>
+ #include <asm/cacheflush.h>
++#include <asm/tlbflush.h>
+ #include <asm/io.h>
++#include <asm/fixmap.h>
+
+ #define MAX_PATCH_LEN (255-1)
+
+@@ -505,15 +507,16 @@ void *text_poke_early(void *addr, const
+  * It means the size must be writable atomically and the address must be aligned
+  * in a way that permits an atomic write. It also makes sure we fit on a single
+  * page.
++ *
++ * Note: Must be called under text_mutex.
+  */
+ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
  {
- 	u8 **ptr;
++	unsigned long flags;
+ 	char *vaddr;
+-	int nr_pages = 2;
+ 	struct page *pages[2];
+ 	int i;
 
-+	mutex_lock(&text_mutex);
- 	for (ptr = start; ptr < end; ptr++) {
- 		if (*ptr < text)
- 			continue;
-@@ -234,6 +236,7 @@ static void alternatives_smp_lock(u8 **s
- 		/* turn DS segment override prefix into lock prefix */
- 		text_poke(*ptr, ((unsigned char []){0xf0}), 1);
- 	};
-+	mutex_unlock(&text_mutex);
- }
-
- static void alternatives_smp_unlock(u8 **start, u8 **end, u8 *text, u8 *text_end)
-@@ -243,6 +246,7 @@ static void alternatives_smp_unlock(u8 *
- 	if (noreplace_smp)
- 		return;
-
-+	mutex_lock(&text_mutex);
- 	for (ptr = start; ptr < end; ptr++) {
- 		if (*ptr < text)
- 			continue;
-@@ -251,6 +255,7 @@ static void alternatives_smp_unlock(u8 *
- 		/* turn lock prefix into DS segment override prefix */
- 		text_poke(*ptr, ((unsigned char []){0x3E}), 1);
- 	};
-+	mutex_unlock(&text_mutex);
- }
-
- struct smp_alt_module {
+-	might_sleep();
+ 	if (!core_kernel_text((unsigned long)addr)) {
+ 		pages[0] = vmalloc_to_page(addr);
+ 		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
+@@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
+ 		pages[1] = virt_to_page(addr + PAGE_SIZE);
+ 	}
+ 	BUG_ON(!pages[0]);
+-	if (!pages[1])
+-		nr_pages = 1;
+-	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+-	BUG_ON(!vaddr);
+-	local_irq_disable();
++	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
++	if (pages[1])
++		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
++	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
++	local_irq_save(flags);
+ 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+-	local_irq_enable();
+-	vunmap(vaddr);
++	local_irq_restore(flags);
++	clear_fixmap(FIX_TEXT_POKE0);
++	if (pages[1])
++		clear_fixmap(FIX_TEXT_POKE1);
++	local_flush_tlb();
+ 	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+Index: linux-2.6-tip/arch/x86/include/asm/fixmap.h
+===================================================================
+--- linux-2.6-tip.orig/arch/x86/include/asm/fixmap.h
++++ linux-2.6-tip/arch/x86/include/asm/fixmap.h
+@@ -111,6 +111,8 @@ enum fixed_addresses {
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
++	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
++	FIX_TEXT_POKE1,
+ 	__end_of_permanent_fixed_addresses,
+ #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+ 	FIX_OHCI1394_BASE,
 -- 
 Masami Hiramatsu
 
