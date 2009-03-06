@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZCFGoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbZCFGos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZCFGoc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbZCFGlE
+	id S1755125AbZCFGos (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 01:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZCFGlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:41:04 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:33492 "EHLO
+	Fri, 6 Mar 2009 01:41:05 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:50912 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754613AbZCFGk5 (ORCPT
+	with ESMTP id S1754638AbZCFGk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Mar 2009 01:40:57 -0500
 X-IronPort-AV: E=Sophos;i="4.38,312,1233550800"; 
-   d="scan'208";a="83883658"
+   d="scan'208";a="83883657"
 From: Bryan Wu <cooloney@kernel.org>
 To: alan@lxorguk.ukuu.org.uk
 Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
        Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 13/18] Blackfin Serial Driver: depend on KGDB_SERIAL_CONSOLE being set to N
-Date: Fri,  6 Mar 2009 14:42:55 +0800
-Message-Id: <1236321780-28718-14-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 12/18] Blackfin Serial Driver: fix building when debug is enabled but serial console is disabled
+Date: Fri,  6 Mar 2009 14:42:54 +0800
+Message-Id: <1236321780-28718-13-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1236321780-28718-1-git-send-email-cooloney@kernel.org>
 References: <1236321780-28718-1-git-send-email-cooloney@kernel.org>
@@ -28,27 +28,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mike Frysinger <vapier.adi@gmail.com>
 
-Depend on KGDB_SERIAL_CONSOLE being set to N rather than !Y,
-since it can be built as a module.
-
 Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- drivers/serial/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/serial/bfin_5xx.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 21936c1..87f41ed 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -700,7 +700,7 @@ choice
+diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+index 5193d62..b89861d 100644
+--- a/drivers/serial/bfin_5xx.c
++++ b/drivers/serial/bfin_5xx.c
+@@ -1256,8 +1256,10 @@ void bfin_serial_debug(const char *fmt, ...)
+ 	char buf[128];
+ 	va_list ap;
  
- config SERIAL_BFIN_DMA
- 	bool "DMA mode"
--	depends on !DMA_UNCACHED_NONE && !KGDB_SERIAL_CONSOLE
-+	depends on !DMA_UNCACHED_NONE && KGDB_SERIAL_CONSOLE=n
- 	help
- 	  This driver works under DMA mode. If this option is selected, the
- 	  blackfin simple dma driver is also enabled.
++#ifdef CONFIG_SERIAL_BFIN_CONSOLE
+ 	if (bfin_serial_console.index < 0)
+ 		return;		/* Too early. */
++#endif
+ 
+ 	va_start(ap, fmt);
+ 	vsprintf(buf, fmt, ap);
 -- 
 1.5.6.3
