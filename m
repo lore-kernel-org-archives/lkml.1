@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZCFG6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZCFHBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZCFG6w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 01:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZCFG6j
+	id S1755220AbZCFHBZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 02:01:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbZCFHBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 01:58:39 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59883 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751764AbZCFG6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 01:58:38 -0500
-Message-ID: <49B0C94E.6020300@cn.fujitsu.com>
-Date: Fri, 06 Mar 2009 14:57:18 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 6 Mar 2009 02:01:16 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:40069 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbZCFHBQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 02:01:16 -0500
+Date: Fri, 6 Mar 2009 12:31:07 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com
+Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned timers.
+Message-ID: <20090306070107.GC9190@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090304121249.GA9855@linux.vnet.ibm.com> <20090304121456.GB9855@linux.vnet.ibm.com> <20090305165340.GA6984@redhat.com>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH for tip][bugfix] ftrace: fix deadlock when setting set_ftrace_pid
-References: <20090306151155.0778.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090306151155.0778.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090305165340.GA6984@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Impact: fix deadlock bug
-> 
-> reproduce way:
-> 	# cd /sys/kernel/debug/tracing
-> 	# echo $$ > set_ftrace_pid
-> 
-> 	then, console become hangup.
-> 
-> detail:
-> when writing set_ftracepid, kernel callstack is following
-> 
-> 	ftrace_pid_write()
-> 		mutex_lock(&ftrace_lock);
-> 		ftrace_update_pid_func()
-> 			mutex_lock(&ftrace_lock);
-> 			mutex_unlock(&ftrace_lock);
-> 		mutex_unlock(&ftrace_lock);
-> 
-> then, system alaways deadlock when ftrace_pid_write() is called.
-> 
-> In past days, ftrace_pid_write() use ftrace_start_lock, but
-> commit e6ea44e9b4c12325337cd1c06103cd515a1c02b2 consolidate
-> ftrace_start_lock to ftrace_lock.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 5a3a06b..0d3b393 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -218,10 +218,8 @@ static void ftrace_update_pid_func(void)
->  {
->  	ftrace_func_t func;
->  
-> -	mutex_lock(&ftrace_lock);
-> -
->  	if (ftrace_trace_function == ftrace_stub)
-> -		goto out;
-> +		return;
->  
->  	func = ftrace_trace_function;
->  
-> @@ -238,9 +236,6 @@ static void ftrace_update_pid_func(void)
->  #else
->  	__ftrace_trace_function = func;
->  #endif
-> -
-> - out:
-> -	mutex_unlock(&ftrace_lock);
->  }
->  
->  /* set when tracing only a pid */
-> 
-> 
+* Oleg Nesterov <oleg@redhat.com> [2009-03-05 17:53:40]:
 
-Reviewed-By: Lai Jiangshan <laijs@cn.fujitsu.com>
+> On 03/04, Arun R Bharadwaj wrote:
+> >
+> > +static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
+> > +{
+> > +	return tbase_get_deferrable(timer->base) |
+> > +				tbase_get_pinned(timer->base);
+> > +}
+> 
+> I'd say this looks a bit strange. Hopefully compiler can optimize this code
+> to return (unsigned long)base & (TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG).
+>
 
+Misread the above statement.
+The code is functionally correct. But not sure if the compiler
+optimizes in the way that you have mentioned.
 
+> > @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
+> >  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+> >  	unsigned long flags;
+> >
+> > +	timer_set_pinned(timer);
+> 
+> But we never clear TBASE_PINNED_FLAG?
+> 
+> If we use mod_timer() next time, the timer remains "pinned". I do not say
+> this is really wrong, but a bit strange imho.
+> 
+> Oleg.
+> 
