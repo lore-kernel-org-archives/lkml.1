@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZCFPP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbZCFPQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbZCFPP6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZCFPPs
+	id S1755806AbZCFPQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbZCFPP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:15:48 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:55884 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751624AbZCFPPr (ORCPT
+	Fri, 6 Mar 2009 10:15:57 -0500
+Received: from mga01.intel.com ([192.55.52.88]:12619 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755478AbZCFPPz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:15:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=k28g/MBH7p4+lfVoVaJKIazBQIQt1mwn2RvA0oaIJ4JeaWeJVfrQm8MiXojUf2avVp
-         wTbzWGpnyt8UvyO4Ij6RN9sfrj0rjo5wBGexp2NzFrwnpKrtq67AhTFwbAAVwql47slw
-         Qf/2jDCw8PFXSzsokqGtDSgHcYC6dpCgUVOm0=
-Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
-From: Andreas Robinson <andr345@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       sam@ravnborg.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090305161837.6ba80cc1@infradead.org>
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
-	 <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
-	 <200902181528.29697.rusty@rustcorp.com.au>
-	 <ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
-	 <1234952753.10531.48.camel@andreas-laptop>
-	 <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
-	 <ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com>
-	 <1235216636.7025.1023.camel@andreas-laptop>
-	 <1236004353.10055.49.camel@andreas-laptop>
-	 <20090302082003.1bb7bdc5@infradead.org>
-	 <ac3eb2510903020829s7c876a96y7eb5568eeb9921fd@mail.gmail.com>
-	 <20090302102703.50aaf724@infradead.org>
-	 <1236192430.6785.111.camel@andreas-laptop>
-	 <20090305161837.6ba80cc1@infradead.org>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 16:15:43 +0100
-Message-Id: <1236352543.6594.59.camel@andreas-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Mar 2009 10:15:55 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,315,1233561600"; 
+   d="scan'208";a="670913502"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Date: Fri, 6 Mar 2009 15:15:46 +0000
+Subject: RE: [patch 1/4] x86, bts: add selftest for BTS
+Thread-Topic: [patch 1/4] x86, bts: add selftest for BTS
+Thread-Index: AcmeaGwa+zwosY/7Sfitizypj3fWUAABZzGQ
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A5A120A@irsmsx504.ger.corp.intel.com>
+References: <20090305161711.A16434@sedona.ch.intel.com>
+ <20090306143237.GC21907@elte.hu>
+In-Reply-To: <20090306143237.GC21907@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-05 at 16:18 -0800, Arjan van de Ven wrote:
-> On Wed, 04 Mar 2009 19:47:10 +0100
-> Andreas Robinson <andr345@gmail.com> wrote:
-> 
-> the only thing I can say (the graphs are a bit complex to read) is that
-> you are loading a LOT of very expensive modules that bring you no
-> functionality.
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Friday, March 06, 2009 3:33 PM
+>To: Metzger, Markus T
 
-Well, yes. It is the generic Ubuntu kernel booting in all its bloaty
-glory. :) But this is what most users are stuck with. The distro vendors
-won't change their ways because they want their stuff to run on
-anything.
 
-So I'm not trying to build a custom kernel just for me. I want to find
-ways to have any distro optimize itself to boot in 5-10 seconds on any
-computer it has been installed on, without manual configuration. 
+>> +#ifdef CONFIG_X86_DS_SELFTEST
+>> +static int ds_selftest_bts_consistency(const struct bts_trace *trace)
+>
+>Consider putting this into ds_selftest.c instead of adding a
+>large #ifdef block to ds.c.
 
-> Also I'd love to have seen the scenario where the modules were just
-> build into the kernel; that gives usually a more reliable indication of
-> what is going on...
 
-Alright, I'm on it.
+Thanks for your comments.
 
-Cheers,
-Andreas
+I will correct the style problems, move this into ds_selftest.c,
+and resend the entire series next week.
 
+regards,
+markus.
+
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
