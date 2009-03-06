@@ -1,104 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZCFACR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbZCFAD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbZCFACR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 19:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbZCFACA
+	id S1757143AbZCFAD4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 19:03:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbZCFADs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 19:02:00 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:53632 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754371AbZCFAB7 (ORCPT
+	Thu, 5 Mar 2009 19:03:48 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:61706 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754293AbZCFADr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 19:01:59 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIEAFPyr0lMQW1W/2dsb2JhbACBTtZihAgG
-Date: Thu, 5 Mar 2009 19:01:55 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: mrubin@google.com, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Pekka Paalanen <pq@iki.fi>,
-       "H. Peter Anvin" <hpa@zytor.com>, md@google.com,
-       Tom Zanussi <tzanussi@gmail.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, ltt-dev@lists.casi.polymtl.ca,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Martin Bligh <mbligh@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [ltt-dev] [RFC patch 29/41] LTTng menus
-Message-ID: <20090306000155.GA17881@Krystal>
-References: <20090305224728.947235917@polymtl.ca> <20090305225518.148142886@polymtl.ca> <49B061DA.1010908@oracle.com> <20090305234700.GA17212@Krystal> <49B0658D.1090706@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 5 Mar 2009 19:03:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=bS9ZkQEd9a9iN6ScqSq5s7+kh0Ir2j6lmkY6XZRxVUyTeEC1+INmPAEOWIekB4bJOJ
+         yA3rR6fo1CeT0/dXg38y36mCvFK99/oh55qoGi2iZoO8IOE4j/VCYRMgAJhvc1xj2aSx
+         KybgHpLA2EfmQvIz5qNglTm7uFi8dIU7Lgzic=
+From: Jakub Narebski <jnareb@gmail.com>
+To: Dave <kilroyd@googlemail.com>
+Subject: Re: [Orinoco-users] linux-firmware binary corruption with gitweb
+Date: Fri, 6 Mar 2009 01:03:30 +0100
+User-Agent: KMail/1.9.3
+Cc: Pavel Roskin <proski@gnu.org>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org, orinoco-users@lists.sourceforge.net,
+       dwmw2@infradead.org, "J.H." <warthog19@eaglescrag.net>
+References: <49A98F6A.50702@gmail.com> <m3iqmqt9ox.fsf@localhost.localdomain> <49AF1429.9080009@gmail.com>
+In-Reply-To: <49AF1429.9080009@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49B0658D.1090706@oracle.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:54:11 up 5 days, 20:20,  2 users,  load average: 1.09, 0.93,
-	1.46
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903060103.32653.jnareb@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> >> Mathieu Desnoyers wrote:
-> >>
-> >> <<attachment :(>>
-> >>
-> >>
-> >> +menuconfig LTT
-> >> +	bool "Linux Trace Toolkit Next Generation (LTTng)"
-> >> +	depends on EXPERIMENTAL
-> >> +	select MARKERS
-> >> +	select TRACEPOINTS
-> >> +	default y
-> >>
-> >> Not default 'y', please.
-> >>
-> > 
-> > OK, so default n it is. But I plan to leave the main menu "sub-features" as
-> > default y, given that people get the standard features when they choose
-> > to enable the tracer. Hopefully this is ok ?
+On Thu, 5 March 2009, Dave wrote:
+> Jakub Narebski wrote:
+>> Dave <kilroyd@googlemail.com> writes:
+
+>>>> My strong impression is that the recoding takes place on the server.  I
+>>>> think the bug should be reported to the gitweb maintainers unless it a
+>>>> local breakage on the kernel.org site.
+
+It is on server, but kernel.org runs modified version of gitweb, and
+the bug is in the modifications.  See below.
+
+CC-ed John 'Warthog9' Hawley, maintainer of gitweb on kernel.org
+
+>>>>
+>>> Thanks Pavel.
+>>>
+>>> I just did a quick scan of the gitweb README - is this an issue with the
+>>> $mimetypes_file or $fallback_encoding configurations variables?
+>> 
+>> First, what version of gitweb do you use? It should be in 'Generator'
+>> meta header, or (in older gitweb) in comments in HTML source at the
+>> top of the page.
 > 
-> Sure, as long as it just enables viewing the menu and not adding
-> code to a growing kernel.
+> Not sure where I'd find the meta header,
+
+<meta name="generator" content="gitweb/1.4.5-rc0.GIT-dirty git/1.6.1.1"/>
+
+> but at the top of the HTML: 
 > 
+> <!-- git web interface version 1.4.5-rc0.GIT-dirty, (C) 2005-2006, Kay
+> Sievers <kay.sievers@vrfy.org>, Christian Gierke -->
+> <!-- git core binaries version 1.6.1.1 -->
 
-I want to be sure to understand your point. Would be following be OK ?
+The question was if it is extremely old version of gitweb, without fix
+of raw blob ('blob_plain') output for non-utf8, non-text files. But the
+answer is that it is _modified_ version of gitweb, see below.
 
-Menu [ ] Linux Trace Toolkit Next Generation (LTTng)  --->  (default n)
+> 
+>> Second, the file is actually sent to browser 'as is', using binmode :raw
+>> (or at least should be according to my understanding of Perl). And *.bin
+>> binary file gets application/octet-stream mimetype, and doesn't send any
+>> charset info. git.kernel.org should have modern enough gitweb to use this.
+>> Strange...
+> 
+> Dug around gitweb.perl in the main git repo. Then looked at the
+> git/warthog9/gitweb.git repo (after noting the Git Wiki says kernel.org
+> is running John Hawley's branch).
+> 
+> One notable change to git_blob_plain:
+> 
+>         undef $/;
+>         binmode STDOUT, ':raw';
+> -        print <$fd>;
+> +        #print <$fd>;
+> +        $output .= <$fd>;
+>         binmode STDOUT, ':utf8'; # as set at the beginning of gitweb.cgi
+>         $/ = "\n";
+> 
+>         close $fd;
+> +
+> +        return $output;
+> 
+> If that's the code that's running, doesn't that mean the output mode
+> change doesn't impact the concatenation to $output? So the blob gets utf
+> encoding when actually printed.
 
-Within this menu, the following options enable various tracer modules,
-some of which are typically needed, except in some very specific tracer
-use :
+That is the culprit. kernel.org runs modified version of gitweb, with
+added caching.  I guess that the above change was to have 'blob_plain'
+output cached... but it loses "rawness", and I guess it also loses
+mimetype info (unless "print $cgi->header(...)" is also changed to
+appending to $output).
 
-< >   Linux Trace Toolkit Lock-Protected Data Relay (default n)
-               (default y is planned to be used for the lockless data
-               relay module, which is not posted as part of this patchset)
-[ ]   Debug check for random access in ltt relay buffers (default n)
-<*>   Linux Trace Toolkit Serializer (default y)
--*-   Linux Trace Toolkit Custom Serializer (default y)
--*-   Linux Trace Toolkit Trace Controller (default m)
-<*>   Linux Trace Toolkit Tracer (default y)
-[ ]   Align Linux Trace Toolkit Traces (default n, selected of
-        !HAVE_EFFICIENT_UNALIGNED_ACCESS)
-[ ]   Add event size field to LTT events for tracer debugging (default n)
-<M>   Support logging events from userspace (default m)
-[*]   Support trace extraction from crash dump (default y)
-[*]   Linux Trace Toolkit Kprobes Support (default y)
+One possible solution would be to redirect STDOUT to scalar, and return
+that scalar; do that always when caching _output_, and print :raw all
+cached _output_ data.
+    close STDOUT;
+    open STDOUT, '>', \$output or die "Can't open STDOUT: $!";
 
-I understand from your answer above that just enabling the "LTTng"
-submenu should not activate any of these items, am I correct ?
 
-Mathieu
+BTW. f5aa79d (gitweb: safely output binary files for 'blob_plain' action)
+was my third patch for git...
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jakub Narebski
+Poland
