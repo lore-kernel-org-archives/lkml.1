@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZCFOnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbZCFOuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbZCFOnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 09:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZCFOnE
+	id S1755335AbZCFOuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 09:50:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZCFOuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 09:43:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51055 "EHLO hera.kernel.org"
+	Fri, 6 Mar 2009 09:50:03 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43361 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751488AbZCFOnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 09:43:01 -0500
-Date: Fri, 6 Mar 2009 14:42:26 GMT
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1236265498.31324.12.camel@penberg-laptop>
-References: <1236265498.31324.12.camel@penberg-laptop>
-Subject: [tip:x86/mm] x86: unify noexec handling, fix
-Message-ID: <tip-4b809e98a7f9d88e2cb9574f41efa015844c1470@git.kernel.org>
-Git-Commit-ID: 4b809e98a7f9d88e2cb9574f41efa015844c1470
-X-Mailer: tip-git-log-daemon
+	id S1753450AbZCFOuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 09:50:02 -0500
+Message-ID: <49B137F7.9040207@redhat.com>
+Date: Fri, 06 Mar 2009 09:49:27 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 14:42:28 +0000 (UTC)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH] x86: make text_poke() atomic using fixmap
+References: <20090302222254.GA31962@elte.hu> <49AC63FA.70801@redhat.com> <20090302230915.GA11626@elte.hu> <49AC6DEA.2050304@redhat.com> <20090302234910.GA17956@elte.hu> <49AC7453.8020307@redhat.com> <20090303002214.GA4147@elte.hu> <49AC7A5F.7080009@redhat.com> <49AD5B55.10002@redhat.com> <20090305103852.GD32407@elte.hu> <20090306140612.GA8566@elte.hu>
+In-Reply-To: <20090306140612.GA8566@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4b809e98a7f9d88e2cb9574f41efa015844c1470
-Gitweb:     http://git.kernel.org/tip/4b809e98a7f9d88e2cb9574f41efa015844c1470
-Author:     "Ingo Molnar" <mingo@elte.hu>
-AuthorDate: Fri, 6 Mar 2009 15:37:07 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 6 Mar 2009 15:37:07 +0100
+Hi Ingo,
 
-x86: unify noexec handling, fix
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>>
+>>> Hi Ingo,
+>>>
+>>> Here is the patch which uses fixmaps instead of vmap in 
+>>> text_poke(). This made the code much simpler than I thought 
+>>> :).
+>> Looks good to me at a quick glance albeit Linus had second 
+>> thoughts about using fixmaps for this in the past. But with 
+>> delayed-flush for vmaps i think fixmaps are again the simpler 
+>> and more robust - albeit more limited - choice ...
+>>
+>> In any case, the x86 tree already unified fixmap.h so could 
+>> you please resend the whole series as a 0/3, 1/3, 2/3, 3/3 
+>> thing against tip:master, starting a new thread on lkml? (this 
+>> thread is already way too deep)
+> 
+> Ping? I think there's agreement and it would be nice to fix this 
+> in .30. Looks too complex for .29 - maybe backportable to .29.1 
+> if it stays problem-free in testing.
 
-Impact: build fix
+Sorry for later, I'll post it as soon as possible.
 
-Move the nx_enabled variable to mm/init.c too.
+> 
+> 	Ingo
 
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-LKML-Reference: <1236265498.31324.12.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+-- 
+Masami Hiramatsu
 
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
----
- arch/x86/mm/init.c    |    2 ++
- arch/x86/mm/init_32.c |    2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
+e-mail: mhiramat@redhat.com
 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index e7d8bb5..75e3825 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -25,6 +25,8 @@ int direct_gbpages
- #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
- static int disable_nx __initdata;
- 
-+int nx_enabled;
-+
- /*
-  * noexec = on|off
-  *
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 8ff1173..07bfd60 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -587,8 +587,6 @@ void zap_low_mappings(void)
- 	flush_tlb_all();
- }
- 
--int nx_enabled;
--
- pteval_t __supported_pte_mask __read_mostly = ~(_PAGE_NX | _PAGE_GLOBAL | _PAGE_IOMAP);
- EXPORT_SYMBOL_GPL(__supported_pte_mask);
- 
