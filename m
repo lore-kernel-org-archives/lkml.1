@@ -1,114 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZCFD7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZCFEGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZCFD7T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 22:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZCFD7E
+	id S1754162AbZCFEGB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 23:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZCFEFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 22:59:04 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47521 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbZCFD7E convert rfc822-to-8bit (ORCPT
+	Thu, 5 Mar 2009 23:05:48 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:54895 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbZCFEFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 22:59:04 -0500
-Message-ID: <49B09F7D.2060201@cosmosbay.com>
-Date: Fri, 06 Mar 2009 04:58:53 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: g3vbv@blueyonder.co.uk
-CC: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Strange problem with FUTEX_WAIT_PRIVATE
-References: <49B04565.2060708@blueyonder.co.uk> <49B06BDE.4060103@us.ibm.com> <49B09099.90009@blueyonder.co.uk>
-In-Reply-To: <49B09099.90009@blueyonder.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 06 Mar 2009 04:58:54 +0100 (CET)
+	Thu, 5 Mar 2009 23:05:47 -0500
+X-IronPort-AV: E=Sophos;i="4.38,312,1233550800"; 
+   d="scan'208";a="83878061"
+From: Bryan Wu <cooloney@kernel.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] net: fix some trailing whitespaces
+Date: Fri,  6 Mar 2009 12:07:54 +0800
+Message-Id: <1236312474-25468-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sid Boyce a écrit :
-> Darren Hart wrote:
->> Sid Boyce wrote:
->>> I don't know if it's a kernel problem, I have already posted to openSUSE
->>> Factory list without any response. It's either an openSUSE problem or
->>> one encountered since about 2.6.29-rc4 I'd guess and through to
->>> 2.6.29-rc7-git1.
->>> If I execute certain applications as root I never get the GUI output, as
->>> user everything works as expected.
->>> Below is part of the strace output from "qjackctl". VirtualBox  and
->>> others do the same.
->>> <<<Previous lines deleted>>
->>> stat("/etc/kde4/share/config/oxygenrc", {st_mode=S_IFREG|0644,
->>> st_size=55, ...}) = 0
->>> stat("/etc/kde4/share/config/oxygenrc", {st_mode=S_IFREG|0644,
->>> st_size=55, ...}) = 0
->>> fstat(8, {st_mode=S_IFREG|0644, st_size=55, ...}) = 0
->>> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
->>> = 0x7fba0d1a9000
->>> read(8, "[Windeco]\nBlendTitlebarColors=false\nShowStripes=false\n\n",
->>> 4096) = 55
->>> read(8, "", 4096)                       = 0
->>> close(8)                                = 0
->>> munmap(0x7fba0d1a9000, 4096)            = 0
->>> socket(PF_FILE, SOCK_STREAM, 0)         = 8
->>> connect(8, {sa_family=AF_FILE, path=@"/tmp/dbus-8XYkB058j7"}, 23) = 0
->>> fcntl(8, F_GETFL)                       = 0x2 (flags O_RDWR)
->>> fcntl(8, F_SETFL, O_RDWR|O_NONBLOCK)    = 0
->>> fcntl(8, F_GETFD)                       = 0
->>> fcntl(8, F_SETFD, FD_CLOEXEC)           = 0
->>> geteuid()                               = 0
->>> rt_sigaction(SIGPIPE, {0x1, [PIPE], SA_RESTORER|SA_RESTART,
->>> 0x7fba0869d6e0}, {SIG_DFL, [], 0}, 8) = 0
->>> poll([{fd=8, events=POLLOUT}], 1, 0)    = 1 ([{fd=8, revents=POLLOUT}])
->>> write(8, "\0", 1)                       = 1
->>> write(8, "AUTH EXTERNAL 30\r\n", 18)    = 18
->>> poll([{fd=8, events=POLLIN}], 1, -1)    = 1 ([{fd=8, revents=POLLIN}])
->>> read(8, "OK 7c5d389345212834a5f2258649afe483\r\n", 2048) = 37
->>> poll([{fd=8, events=POLLOUT}], 1, -1)   = 1 ([{fd=8, revents=POLLOUT}])
->>> write(8, "BEGIN\r\n", 7)                = 7
->>> poll([{fd=8, events=POLLIN|POLLOUT}], 1, -1) = 1 ([{fd=8,
->>> revents=POLLIN|POLLOUT|POLLHUP}])
->>> read(8, "", 2048)                       = 0
->>> close(8)                                = 0
->>> sched_yield()                           = 0
->>> sched_yield()                           = 0
->>> sched_yield()                           = 0
->>> sched_yield()                           = 0
->>> <<< many lines of the same truncated>>>
->>> sched_yield()                           = 0
->>> sched_yield()                           = 0
->> tsk tsk tsk
->>
->>> futex(0x7722ac, FUTEX_WAIT_PRIVATE, 1, NULL
->>>
->>> It never moves beyond that point and I have to CTRL-C back to the prompt.
->>> Regards
->>> Sid.
->> So without an accompanying FUTEX_WAKE this thread will never return
->> (since the timeout is NULL).  I suggest 'strace -f' to follow all
->> threads - do you see the FUTEX_WAKE?  Do you see it when not running as
->> root?
->>
-> It was run with "strace -s 256 -f" and FUTEX_WAKE occurs earlier in the
-> strace, it just hangs on the last one. Attaching the full strace output.
-> Regards
-> Sid.
-> 
-grep futex QJ.out
+From: Graf Yang <graf.yang@analog.com>
 
-futex(0x7fff861119dc, FUTEX_WAKE_PRIVATE, 1) = 0
-futex(0x7ff17b172b60, FUTEX_WAKE_PRIVATE, 2147483647) = 0
-futex(0x7ff1798acf40, FUTEX_WAKE_PRIVATE, 2147483647) = 0
-futex(0x7ff17a2310ec, FUTEX_WAKE_PRIVATE, 2147483647) = 0
-futex(0x7ff17a019b88, FUTEX_WAKE_PRIVATE, 2147483647) = 0
-futex(0x76deac, FUTEX_WAIT_PRIVATE, 1, NULL
+Signed-off-by: Graf Yang <graf.yang@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ include/linux/if_ether.h  |    8 ++++----
+ include/linux/netdevice.h |   10 +++++-----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-So nothing calls futex(0x76deac, FUTEX_WAKE_PRIVATE, 1)
-
-According to your strace, this program is monothreaded (no additional 
-thread was created), so I would say program has a bug.
-
-Maybe not 64bit clean, since 0x76deac seems 32bit truncated...
-
-
+diff --git a/include/linux/if_ether.h b/include/linux/if_ether.h
+index 7f3c735..0216e1b 100644
+--- a/include/linux/if_ether.h
++++ b/include/linux/if_ether.h
+@@ -17,7 +17,7 @@
+  *		as published by the Free Software Foundation; either version
+  *		2 of the License, or (at your option) any later version.
+  */
+- 
++
+ #ifndef _LINUX_IF_ETHER_H
+ #define _LINUX_IF_ETHER_H
+ 
+@@ -25,7 +25,7 @@
+ 
+ /*
+  *	IEEE 802.3 Ethernet magic constants.  The frame sizes omit the preamble
+- *	and FCS/CRC (frame check sequence). 
++ *	and FCS/CRC (frame check sequence).
+  */
+ 
+ #define ETH_ALEN	6		/* Octets in one ethernet addr	 */
+@@ -83,7 +83,7 @@
+ /*
+  *	Non DIX types. Won't clash for 1500 types.
+  */
+- 
++
+ #define ETH_P_802_3	0x0001		/* Dummy type for 802.3 frames  */
+ #define ETH_P_AX25	0x0002		/* Dummy protocol id for AX.25  */
+ #define ETH_P_ALL	0x0003		/* Every packet (be careful!!!) */
+@@ -109,7 +109,7 @@
+ /*
+  *	This is an Ethernet frame header.
+  */
+- 
++
+ struct ethhdr {
+ 	unsigned char	h_dest[ETH_ALEN];	/* destination eth addr	*/
+ 	unsigned char	h_source[ETH_ALEN];	/* source ether addr	*/
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index ec54785..2ddd625 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -96,7 +96,7 @@ struct wireless_dev;
+  *	Compute the worst case header length according to the protocols
+  *	used.
+  */
+- 
++
+ #if defined(CONFIG_WLAN_80211) || defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
+ # if defined(CONFIG_MAC80211_MESH)
+ #  define LL_MAX_HEADER 128
+@@ -124,7 +124,7 @@ struct wireless_dev;
+  *	Network device statistics. Akin to the 2.0 ether stats but
+  *	with byte counters.
+  */
+- 
++
+ struct net_device_stats
+ {
+ 	unsigned long	rx_packets;		/* total packets received	*/
+@@ -285,7 +285,7 @@ enum netdev_state_t
+ 
+ /*
+  * This structure holds at boot time configured netdevice settings. They
+- * are then used in the device probing. 
++ * are then used in the device probing.
+  */
+ struct netdev_boot_setup {
+ 	char name[IFNAMSIZ];
+@@ -740,7 +740,7 @@ struct net_device
+ 	void			*dsa_ptr;	/* dsa specific data */
+ #endif
+ 	void 			*atalk_ptr;	/* AppleTalk link 	*/
+-	void			*ip_ptr;	/* IPv4 specific data	*/  
++	void			*ip_ptr;	/* IPv4 specific data	*/
+ 	void                    *dn_ptr;        /* DECnet specific data */
+ 	void                    *ip6_ptr;       /* IPv6 specific data */
+ 	void			*ec_ptr;	/* Econet specific data	*/
+@@ -753,7 +753,7 @@ struct net_device
+  */
+ 	unsigned long		last_rx;	/* Time of last Rx	*/
+ 	/* Interface address info used in eth_type_trans() */
+-	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast 
++	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast
+ 							   because most packets are unicast) */
+ 
+ 	unsigned char		broadcast[MAX_ADDR_LEN];	/* hw bcast add	*/
+-- 
+1.5.6.3
