@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbZCFJOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZCFJQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbZCFJOx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 04:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZCFJOg
+	id S1753880AbZCFJQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 04:16:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbZCFJP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 04:14:36 -0500
-Received: from gate.crashing.org ([63.228.1.57]:38361 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbZCFJOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 04:14:35 -0500
-Subject: Re: [PATCH] generic debug pagealloc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20090303133610.cb771fef.akpm@linux-foundation.org>
-References: <20090303160103.GB5812@localhost.localdomain>
-	 <20090303133610.cb771fef.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 20:14:20 +1100
-Message-Id: <1236330860.7260.128.camel@pasglop>
+	Fri, 6 Mar 2009 04:15:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33131 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750862AbZCFJPz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 04:15:55 -0500
+Date: Fri, 6 Mar 2009 01:15:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] kmemdup_from_user(): introduce
+Message-Id: <20090306011548.ffdf9cbc.akpm@linux-foundation.org>
+In-Reply-To: <49B0E67C.2090404@cn.fujitsu.com>
+References: <49B0CAEC.80801@cn.fujitsu.com>
+	<20090306082056.GB3450@x200.localdomain>
+	<49B0DE89.9000401@cn.fujitsu.com>
+	<20090306003900.a031a914.akpm@linux-foundation.org>
+	<49B0E67C.2090404@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 13:36 -0800, Andrew Morton wrote:
-> Alternatively, we could just not do the kmap_atomic() at all.  i386
-> won't be using this code and IIRC the only other highmem architecture
-> is powerpc32, and ppc32 appears to also have its own DEBUG_PAGEALLOC
-> implementation.  So you could remove the kmap_atomic() stuff and put
-> 
-Actually, ppc32 DEBUG_PAGEALLOC is busted in several ways and probably
-unfixable (though this is still being debated).
+On Fri, 06 Mar 2009 17:01:48 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Cheers,
-Ben.
+> How about memdup_user()? like kstrndup() vs strndup_user().
 
-
+Sounds OK to me.
