@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZCFPr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZCFPsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbZCFPr0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 10:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZCFPrS
+	id S1755990AbZCFPsy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 10:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZCFPsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 10:47:18 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37921 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbZCFPrR (ORCPT
+	Fri, 6 Mar 2009 10:48:45 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:45579 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753517AbZCFPso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 10:47:17 -0500
-Subject: Re: [RFC][PATCH]: wait: don't resched in prepare_to_wait()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <npiggin@suse.de>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090306154144.GA7841@redhat.com>
-References: <1236350377.6326.389.camel@laptop>
-	 <20090306154144.GA7841@redhat.com>
+	Fri, 6 Mar 2009 10:48:44 -0500
+Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       containers <containers@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090306143425.GA31250@us.ibm.com>
+References: <20090305163857.0C18F3FD@kernel>
+	 <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz>
+	 <20090305210840.GA2499@x200.localdomain>
+	 <1236288427.22399.122.camel@nimitz>
+	 <20090305220044.GA2819@x200.localdomain>
+	 <1236291865.22399.139.camel@nimitz>  <20090306143425.GA31250@us.ibm.com>
 Content-Type: text/plain
-Date: Fri, 06 Mar 2009 16:47:04 +0100
-Message-Id: <1236354424.6326.460.camel@laptop>
+Date: Fri, 06 Mar 2009 07:48:29 -0800
+Message-Id: <1236354509.10626.29.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 16:41 +0100, Oleg Nesterov wrote:
-> On 03/06, Peter Zijlstra wrote:
-> >
-> > After prepare to wait, we either call schedule() or find !cond in which
-> > case we'll call finish_wait() which contains another preemption check.
-> >
-> > @@ -73,7 +73,9 @@ prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
-> >  	if (list_empty(&wait->task_list))
-> >  		__add_wait_queue(q, wait);
-> >  	set_current_state(state);
-> > +	preempt_disable();
-> >  	spin_unlock_irqrestore(&q->lock, flags);
-> > +	preempt_enable_no_resched();
+On Fri, 2009-03-06 at 08:34 -0600, Serge E. Hallyn wrote:
+> > > With time the amount of stuff C/R won't support will approach zero,
+> > > but the infrastructure for "checkpointable" will stay constant.
+> > > If it's too much right now, it will be way too much in future.
+> > 
+> > What have you seen in OpenVZ?  Do new things that are not checkpointable
+> > pop up very often?
 > 
-> But this only helps if the task gets TIF_NEED_RESCHED while it was in
-> spin_lock_irqsave() section, right? This window should be very small
-> unless we have the contention.
-> 
-> Or do you have something else in mind?
+> Realistically, do you think the uncheckpointable stuff would catch a
+> brand-new unsupported feature?  If it has a file interface then I
+> suppose it would.  Well, might.  I wouldn't be surprised if the authors
+> would cut and paste enough code to paste the .checkpoint =
+> generic_file_checkpoint line :)
 
-No, that was exactly it, we then get preempted only to go to sleep right
-afterwards, which would cause a schedule anyway.
+Yeah, that's true.  Us maintainers would probably need to keep an eye on
+that.
 
-So its avoiding a schedule.
+-- Dave
 
