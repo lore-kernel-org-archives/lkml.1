@@ -1,67 +1,320 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756515AbZCFRDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbZCFRD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756515AbZCFRDL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 12:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbZCFRCo
+	id S1756413AbZCFRD3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 12:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbZCFRCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 12:02:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59461 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756472AbZCFRCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 12:02:47 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58524 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756471AbZCFRCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Mar 2009 12:02:42 -0500
-Subject: Re: [RFC][PATCH] irq: remove IRQF_DISABLED
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1236335049.6326.114.camel@laptop>
-References: <1235996477.5330.174.camel@laptop>
-	 <alpine.LFD.2.00.0903020852220.3111@localhost.localdomain>
-	 <1236329922.7260.127.camel@pasglop>  <1236330733.6326.15.camel@laptop>
-	 <1236333543.7260.138.camel@pasglop>  <1236335049.6326.114.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 18:02:24 +0100
-Message-Id: <1236358944.6326.538.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
-Content-Transfer-Encoding: 7bit
+Date: Fri, 6 Mar 2009 17:00:57 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <1236356510-8381-4-git-send-email-fweisbec@gmail.com>
+References: <1236356510-8381-4-git-send-email-fweisbec@gmail.com>
+Subject: [tip:tracing/printk] tracing: add trace_bprintk()
+Message-ID: <tip-1ba28e02a18cbdbea123836f6c98efb09cbf59ec@git.kernel.org>
+Git-Commit-ID: 1ba28e02a18cbdbea123836f6c98efb09cbf59ec
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 17:00:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 11:24 +0100, Peter Zijlstra wrote:
-> On Fri, 2009-03-06 at 20:59 +1100, Benjamin Herrenschmidt wrote:
-> > > If you have distinct interrupt priorities, you can
-> > > 
-> > > 1) provide an interrupt stack for each priority
-> > > 2) mask all lower priorities when handling one
-> > > 
-> > > Would that not work?
-> > 
-> > The PIC does that already. IE. it will only interrupt again before
-> > ->eoi() for an interrupt of a higher priority. But by using
-> > IRQF_DISABLED, you mask interrupts in the core, and thus effectively
-> > completely prevents the whole thing.
-> > 
-> > > The problems with enabling irqs in hardirq handlers are that you get
-> > > unlimited irq nesting, which is bad for your stack, furthermore, somehow
-> > > people thing it makes things 'faster' because the irq-off latency goes
-> > > down.
-> > 
-> > No, you don't get unlimited IRQ nesting, at least not on sane archs with
-> > a decent PIC that does things like what I described above :-)
-> 
-> Right, welcome to x86 ;-)
+Commit-ID:  1ba28e02a18cbdbea123836f6c98efb09cbf59ec
+Gitweb:     http://git.kernel.org/tip/1ba28e02a18cbdbea123836f6c98efb09cbf59ec
+Author:     "Lai Jiangshan" <laijs@cn.fujitsu.com>
+AuthorDate: Fri, 6 Mar 2009 17:21:48 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 6 Mar 2009 17:59:11 +0100
 
-Ok, people put me straight here. Since linux not support interrupt
-priorities, wouldn't it simply be a matter of implementing
-local_irq_en/dis-able() as masking the lowest level you use to run
-normal interrupts on?
+tracing: add trace_bprintk()
 
-That will leave your other interrupt level available as NMI/debug
-thingies.
+Impact: add a generic printk() for tracing, like trace_printk()
 
+trace_bprintk() uses the infrastructure to record events on ring_buffer.
+
+[ fweisbec@gmail.com: ported to latest -tip, made it work if
+  !CONFIG_MODULES, never free the format strings from modules
+  because we can't keep track of them and conditionnaly create
+  the ftrace format strings section (reported by Steven Rostedt) ]
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1236356510-8381-4-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/asm-generic/vmlinux.lds.h |    9 ++++
+ include/linux/ftrace.h            |   21 +++++++++
+ include/linux/module.h            |    5 ++
+ kernel/module.c                   |    6 +++
+ kernel/trace/trace.c              |   15 ++++++
+ kernel/trace/trace_bprintk.c      |   87 ++++++++++++++++++++++++++++++++----
+ 6 files changed, 133 insertions(+), 10 deletions(-)
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 0add6b2..48ade31 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -69,6 +69,14 @@
+ #define FTRACE_EVENTS()
+ #endif
+ 
++#ifdef CONFIG_TRACING
++#define TRACE_PRINTKS() VMLINUX_SYMBOL(__start___trace_bprintk_fmt) = .;      \
++			 *(__trace_printk_fmt) /* Trace_printk fmt' pointer */ \
++			 VMLINUX_SYMBOL(__stop___trace_bprintk_fmt) = .;
++#else
++#define TRACE_PRINTKS()
++#endif
++
+ /* .data section */
+ #define DATA_DATA							\
+ 	*(.data)							\
+@@ -100,6 +108,7 @@
+ 		*(__vermagic)		/* Kernel version magic */	\
+ 		*(__markers_strings)	/* Markers: strings */		\
+ 		*(__tracepoints_strings)/* Tracepoints: strings */	\
++		TRACE_PRINTKS()					\
+ 	}								\
+ 									\
+ 	.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {		\
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 1c9cdca..1cc8ca4 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -225,6 +225,27 @@ extern int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr);
+ 
+ #ifdef CONFIG_TRACE_BPRINTK
+ extern int trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
++extern int __trace_bprintk(unsigned long ip, const char *fmt, ...)
++		__attribute__ ((format (printf, 2, 3)));
++
++static inline void  ____trace_bprintk_check_format(const char *fmt, ...)
++		__attribute__ ((format (printf, 1, 2)));
++static inline void ____trace_bprintk_check_format(const char *fmt, ...) {}
++#define __trace_bprintk_check_format(fmt, args...)			\
++do {									\
++	if (0)								\
++		____trace_bprintk_check_format(fmt, ##args);		\
++} while (0)
++
++#define trace_bprintk(fmt, args...)					\
++do {									\
++	static char *__attribute__((section("__trace_bprintk_fmt")))	\
++			trace_bprintk_fmt = fmt;			\
++	__trace_bprintk_check_format(fmt, ##args);			\
++	__trace_bprintk(_THIS_IP_, trace_bprintk_fmt, ##args);	\
++} while (0)
++#else
++#define trace_bprintk trace_printk
+ #endif
+ 
+ /* May be defined in arch */
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 145a755..8cbec97 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -329,6 +329,11 @@ struct module
+ 	unsigned int num_tracepoints;
+ #endif
+ 
++#ifdef CONFIG_TRACE_BPRINTK
++	const char **trace_bprintk_fmt_start;
++	unsigned int num_trace_bprintk_fmt;
++#endif
++
+ #ifdef CONFIG_MODULE_UNLOAD
+ 	/* What modules depend on me? */
+ 	struct list_head modules_which_use_me;
+diff --git a/kernel/module.c b/kernel/module.c
+index 22d7379..2dece10 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2158,6 +2158,12 @@ static noinline struct module *load_module(void __user *umod,
+ 					&mod->num_tracepoints);
+ #endif
+ 
++#ifdef CONFIG_TRACE_BPRINTK
++	mod->trace_bprintk_fmt_start = section_objs(hdr, sechdrs, secstrings,
++			"__trace_bprintk_fmt", sizeof(char *),
++			&mod->num_trace_bprintk_fmt);
++#endif
++
+ #ifdef CONFIG_MODVERSIONS
+ 	if ((mod->num_syms && !mod->crcs)
+ 	    || (mod->num_gpl_syms && !mod->gpl_crcs)
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index ff53509..46b3cd7 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3848,6 +3848,21 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(trace_vbprintk);
+ 
++int __trace_bprintk(unsigned long ip, const char *fmt, ...)
++{
++	int ret;
++	va_list ap;
++
++	if (!fmt)
++		return 0;
++
++	va_start(ap, fmt);
++	ret = trace_vbprintk(ip, fmt, ap);
++	va_end(ap);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(__trace_bprintk);
++
+ static int trace_panic_handler(struct notifier_block *this,
+ 			       unsigned long event, void *unused)
+ {
+diff --git a/kernel/trace/trace_bprintk.c b/kernel/trace/trace_bprintk.c
+index 1f8e532..f4c245a 100644
+--- a/kernel/trace/trace_bprintk.c
++++ b/kernel/trace/trace_bprintk.c
+@@ -19,9 +19,21 @@
+ 
+ #include "trace.h"
+ 
++#ifdef CONFIG_MODULES
++
+ /* binary printk basic */
+ static DEFINE_MUTEX(btrace_mutex);
+-static int btrace_metadata_count;
++/*
++ * modules trace_bprintk()'s formats are autosaved in struct trace_bprintk_fmt
++ * which are queued on trace_bprintk_fmt_list.
++ */
++static LIST_HEAD(trace_bprintk_fmt_list);
++
++struct trace_bprintk_fmt {
++	struct list_head list;
++	char fmt[0];
++};
++
+ 
+ static inline void lock_btrace(void)
+ {
+@@ -33,26 +45,75 @@ static inline void unlock_btrace(void)
+ 	mutex_unlock(&btrace_mutex);
+ }
+ 
+-static void get_btrace_metadata(void)
++
++static inline struct trace_bprintk_fmt *lookup_format(const char *fmt)
+ {
+-	lock_btrace();
+-	btrace_metadata_count++;
+-	unlock_btrace();
++	struct trace_bprintk_fmt *pos;
++	list_for_each_entry(pos, &trace_bprintk_fmt_list, list) {
++		if (!strcmp(pos->fmt, fmt))
++			return pos;
++	}
++	return NULL;
+ }
+ 
+-static void put_btrace_metadata(void)
++static
++void hold_module_trace_bprintk_format(const char **start, const char **end)
+ {
++	const char **iter;
+ 	lock_btrace();
+-	btrace_metadata_count--;
++	for (iter = start; iter < end; iter++) {
++		struct trace_bprintk_fmt *tb_fmt = lookup_format(*iter);
++		if (tb_fmt) {
++			*iter = tb_fmt->fmt;
++			continue;
++		}
++
++		tb_fmt = kmalloc(offsetof(struct trace_bprintk_fmt, fmt)
++				+ strlen(*iter) + 1, GFP_KERNEL);
++		if (tb_fmt) {
++			list_add_tail(&tb_fmt->list, &trace_bprintk_fmt_list);
++			strcpy(tb_fmt->fmt, *iter);
++			*iter = tb_fmt->fmt;
++		} else
++			*iter = NULL;
++	}
+ 	unlock_btrace();
+ }
+ 
++static int module_trace_bprintk_format_notify(struct notifier_block *self,
++		unsigned long val, void *data)
++{
++	struct module *mod = data;
++	if (mod->num_trace_bprintk_fmt) {
++		const char **start = mod->trace_bprintk_fmt_start;
++		const char **end = start + mod->num_trace_bprintk_fmt;
++
++		if (val == MODULE_STATE_COMING)
++			hold_module_trace_bprintk_format(start, end);
++	}
++	return 0;
++}
++
++#else /* !CONFIG_MODULES */
++__init static int
++module_trace_bprintk_format_notify(struct notifier_block *self,
++		unsigned long val, void *data)
++{
++	return 0;
++}
++#endif /* CONFIG_MODULES */
++
++
++__initdata_or_module static
++struct notifier_block module_trace_bprintk_format_nb = {
++	.notifier_call = module_trace_bprintk_format_notify,
++};
++
+ /* events tracer */
+ int trace_bprintk_enable;
+ 
+ static void start_bprintk_trace(struct trace_array *tr)
+ {
+-	get_btrace_metadata();
+ 	tracing_reset_online_cpus(tr);
+ 	trace_bprintk_enable = 1;
+ }
+@@ -61,7 +122,6 @@ static void stop_bprintk_trace(struct trace_array *tr)
+ {
+ 	trace_bprintk_enable = 0;
+ 	tracing_reset_online_cpus(tr);
+-	put_btrace_metadata();
+ }
+ 
+ static int init_bprintk_trace(struct trace_array *tr)
+@@ -81,7 +141,14 @@ static struct tracer bprintk_trace __read_mostly =
+ 
+ static __init int init_bprintk(void)
+ {
+-	return register_tracer(&bprintk_trace);
++	int ret = register_module_notifier(&module_trace_bprintk_format_nb);
++	if (ret)
++		return ret;
++
++	ret = register_tracer(&bprintk_trace);
++	if (ret)
++		unregister_module_notifier(&module_trace_bprintk_format_nb);
++	return ret;
+ }
+ 
+ device_initcall(init_bprintk);
