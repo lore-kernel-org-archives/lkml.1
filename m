@@ -1,57 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbZCFIuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZCFIzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbZCFIuy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 03:50:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZCFIup
+	id S1752888AbZCFIzq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 03:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZCFIzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 03:50:45 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:65339 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZCFIuo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 03:50:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bw6jM4We3BPWSESO3Pst9zYJioGYrNTMDXMWRfuDeduXk3HVfTzwQqlheLV5Y3VcMc
-         yRh4LwbHhhboQeP21QtE9pXCdJJ8UYqgBh5BqpJYDcJ7i8WGIfolbHKFIMCRpp0TYKQa
-         WclDZuL9QnaPmw4eIeYP7FhvZdp99EypBR4XA=
-Date: Fri, 6 Mar 2009 11:57:31 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] kmemdup_from_user(): introduce
-Message-ID: <20090306085731.GA4225@x200.localdomain>
-References: <49B0CAEC.80801@cn.fujitsu.com> <20090306082056.GB3450@x200.localdomain> <49B0DE89.9000401@cn.fujitsu.com> <20090306003900.a031a914.akpm@linux-foundation.org>
+	Fri, 6 Mar 2009 03:55:35 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:41060 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750761AbZCFIze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 03:55:34 -0500
+Date: Fri, 6 Mar 2009 09:55:29 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: scameron@beardog.cca.cpqcorp.net
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mike.miller@hp.com,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
+Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
+Message-ID: <20090306085529.GP11787@kernel.dk>
+References: <20090302145650.GW15340@beardog.cca.cpqcorp.net> <20090303153402A.fujita.tomonori@lab.ntt.co.jp> <20090303162821.GB15340@beardog.cca.cpqcorp.net> <20090305144843N.fujita.tomonori@lab.ntt.co.jp> <20090305142114.GG15340@beardog.cca.cpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090306003900.a031a914.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090305142114.GG15340@beardog.cca.cpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 12:39:00AM -0800, Andrew Morton wrote:
-> On Fri, 06 Mar 2009 16:27:53 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> > > Let's not add wrapper for every two lines that happen to be used
-> > > together.
-> > > 
+On Thu, Mar 05 2009, scameron@beardog.cca.cpqcorp.net wrote:
+> On Thu, Mar 05, 2009 at 02:48:09PM +0900, FUJITA Tomonori wrote:
+> > On Tue, 3 Mar 2009 10:28:21 -0600
+> > scameron@beardog.cca.cpqcorp.net wrote:
 > > 
-> > Why not if we have good reasons? And I don't think we can call this
-> > "happen to" if there are 250+ of them?
+> > > On Tue, Mar 03, 2009 at 03:35:26PM +0900, FUJITA Tomonori wrote:
+> > > > On Mon, 2 Mar 2009 08:56:50 -0600
+> > > > scameron@beardog.cca.cpqcorp.net wrote:
+> > > > 
+> > > > > [...]
+> > > > > > > +     .this_id                = -1,
+> > > > > > > +     .sg_tablesize           = MAXSGENTRIES,
+> > > > > > 
+> > > > > > MAXSGENTRIES (32) is the limitation of hardware? If not, it might be
+> > > > > > better to enlarge this for better performance?
+> > > > > 
+> > > > > Yes, definitely, though this value varies from controller to controller,
+> > > > > so this is just a default value that needs to be overridden, probably
+> > > > > in hpsa_scsi_detect().
+> > > > 
+> > > > I see. If we override this in hpsa_scsi_detect(), we need a trick for
+> > > > SG in CommandList_struct, I guess.
+> > > 
+> > > Yes.  There are some limits to what can be put into CommandList_struct
+> > > directly, but there is also scatter gather chaining, in which we use
+> > > the last element in the CommandList_struct to point to another buffer
+> > > of SG entries.
+> > > 
+> > > If you have a system with a lot of controllers, having a large number of 
+> > > scatter gathers can be a bit of a memory hog, and since this memory is all
+> > > via pci_alloc_consistent, that can be a concern.  It would be nice if
+> > > there was a way for the user to specify differing amounts of scatter
+> > > gathers for different controller instances so for instance the controller
+> > > which he's running his big oracle database, or webserver or whatever on
+> > > gets lots, while the controller he's booted from that's mostly idle
+> > > gets not so many.  I don't know what a good way for a user to identify
+> > > what controller he's talking about in a module parameter would be 
+> > > though.  Maybe by pci domain/bus/device/function?  Maybe something along
+> > > the lines of:
+> > > 
+> > > 	modprobe hpsa dev1=0:0e:00.0 sg1=1000 dev2=0:0b:00.0 sg2=31
+> > > 
+> > > to say that one controller gets 1000 scatter gather elements, but
+> > > another gets only 31.  But PCI busses can change if hardware 
+> > > configuration changes, and this isn't exactly obvious, so seems less
+> > > than ideal.  Any bright ideas on that front?
+> > 
+> > We have /sys/class/scsi_host/host*/sg_tablesize:
+> > 
+> > How about modifying this value on the fly?
+> > 
+> > fujita@clover:/sys/class/scsi_host/host3$ echo 1000 > sg_tablesize
+> > 
 > 
-> The change is a good one.  If a reviewer (me) sees it then you know the
-> code's all right and the review effort becomes less - all you need to check
-> is that the call site is using IS_ERR/PTR_ERR and isn't testing for
-> NULL.  Less code, less chance for bugs.
+> We pci_alloc_consistent that space, so... I think that would mean
+> we'd have to do things considerably differently.  I think we'd have
+> to quit allocating commands in big chunks, and instead of indexing
+> into that chunk we'd probably have to have an array of pointers or
+> something.  If we wanted sg_tablesize adjustable down to single
+> command counts, we'd probably have to allocate each command separately
+> and have an array of pointers to those...
 > 
-> Plus it makes kernel text smaller.
+> e.g. if you did 
 > 
-> Yes, the name is a bit cumbersome.
+> 	echo 1000 > sg_tablesize
+> 	echo 999 > sg_tablesize
+> 
+> you probably wouldn't want to keep the 1000 commands around,
+> and then allocate 999 additional, then let all the outstanding 
+> commands using the first 1000 block complete, then finally free
+> the first block of 1000, leaving just the 999.  You'd probably want
+> instead to free one of the 1000 to get to 999.
+> 
+> Likewise with this:
+> 
+> 	echo 999 > sg_tablesize
+> 	echo 1000 > sg_tablesize
+> 
+> These are somewhat pathological cases, granted.
+> 
+> I'm not sure dynamically modifying the number of SGs a controller
+> can do is something that comes up enough to be worth implementing
+> something so complicated.
+> 
+> If it's settable at init time, that would probably be enough for
+> the vast majority of uses (and more flexible than what we have now)
+> and a lot easier to implement.
 
-Some do NUL-termination afterwards and allocate "len + 1", but copy "len".
-Some don't care.
+Completely agree, don't waste time implementing something that nobody
+will ever touch. The only reason to fiddle with such a setting would be
+to increase it, because ios are too small. And even finding out that the
+segment limit is the one killing you would take some insight and work
+from the user.
+
+Just make it Big Enough to cover most cases. 32 is definitely small, 256
+entries would get you 1MB ios which I guess is more appropriate.
+
+-- 
+Jens Axboe
+
