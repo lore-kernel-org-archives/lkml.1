@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZCFK1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZCFKeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbZCFK1r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 05:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZCFK1i
+	id S1754577AbZCFKeY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 05:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZCFKeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 05:27:38 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:46915 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbZCFK1h (ORCPT
+	Fri, 6 Mar 2009 05:34:15 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:58059 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbZCFKeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 05:27:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=lO449pW8Odiy91umdckzqFjwmfbIVdOfr0WYYjnM3HH3SK7PGvwNI9CCbq7AUx/XG
-	2EP9HCQ974BlTfzjjY/9w==
-Date: Fri, 6 Mar 2009 02:27:25 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] lockdep: initialize lockdep debugging statistics
-In-Reply-To: <1236334756.6326.106.camel@laptop>
-Message-ID: <alpine.DEB.2.00.0903060221500.25972@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>  <alpine.DEB.2.00.0903050223240.30401@chino.kir.corp.google.com>  <1236250159.4228.186.camel@laptop> <20090305110522.GI32407@elte.hu>  <alpine.DEB.2.00.0903051355010.25505@chino.kir.corp.google.com>
-  <1236328083.5187.1213.camel@laptop>  <alpine.DEB.2.00.0903060149540.26215@chino.kir.corp.google.com> <1236334756.6326.106.camel@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 6 Mar 2009 05:34:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=AkGrGaNo0HqyID/M1XmbwWWGgY3QsGw8m8Q71Zq9lyKxveSq+oc8/fWALPWkLZ6rDH
+         0o4TU6xw5vSTDG/r43EorQFFdJ32uXC1jMkNkWBLeEE5TpClAwOe5pdzOv5CnAvR42lZ
+         aXAtQiqtC0E06i1JFPdFGBXN5viMkw1aBz29U=
+Subject: usb-storage: Wait less time for settling when a memory device is
+ connected
+From: Martin Bammer <mrbm74@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 11:34:07 +0100
+Message-Id: <1236335647.16732.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Mar 2009, Peter Zijlstra wrote:
+Hi,
 
-> > Peter, this is purely a matter of good software engineering practices. 
-> 
-> For complex types I would agree, but atomic_t is assumed to be just
-> another int - just with special ops. For such things we can hold that
-> memset('0') will properly initialize them to their 0 value.
-> 
+I was wondering why the usb-storage driver waits for my usb-stick and my
+sdhc-card 5s before scanning. IMHO this is only needed for HDs. I've
+created a patch for the driver which shortens the timeout to 1s when a
+memory device is detected.
+But I'm not shure if the detection code is right for all devices. This
+maybe has to be tested and discussed.
+I've tested it with a usb-stick, a sdhc-card and a usb-harddrive.
+This patch is created for kernel 2.6.27.18.
 
-That's the point about good software engineering practices: atomic_t 
-should not be assumed to be another int.  If its implementation were ever 
-to change even for a single architecture, so would these variable 
-declarations.
+Please CC me for answers to this thread.
 
-> > I assume you wouldn't object to removing all such cases in the kernel.
-> > 
-> >         $ grep -r "atomic_t.*= ATOMIC_INIT(0)" * | wc -l
-> >         104
-> 
-> Only IFF all those cases are for static/global storage.
+--- a/drivers/usb/storage/usb.c 2009-03-03 23:33:37.000000000 +0100
++++ b/drivers/usb/storage/usb.c 2009-03-03 23:32:44.000000000 +0100
+@@ -913,10 +913,16 @@ static int usb_stor_scan_thread(void * _
+ 
+        set_freezable();
+ 
++       /* Shorten delay time for memory sticks/cards */
++       if ((1 == us->pusb_dev->descriptor.iManufacturer)
++           && (2 == us->pusb_dev->descriptor.iProduct)
++           && (3 == us->pusb_dev->descriptor.iSerialNumber)
++           && (delay_use > 0)) delay_use = 1;
++
+        /* Wait for the timeout to expire or for a disconnect */
+        if (delay_use > 0) {
+                printk(KERN_DEBUG "usb-storage: waiting for device "
+-                               "to settle before scanning\n");
++                               "to settle before scanning for %d
+seconds\n", delay_use);
+                wait_event_freezable_timeout(us->delay_wait,
+                                test_bit(US_FLIDX_DONT_SCAN,
+&us->dflags),
+                                delay_use * HZ);
 
-They are.
 
-Anyway, I've already deferred to your maintainership of lockdep about not 
-wanting to initialize global atomics in this part of the kernel, so while 
-I disagree with it from a software engineering perspective, I think I'll 
-be able to move on.
