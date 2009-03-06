@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZCFV7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbZCFWBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbZCFV7c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 16:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbZCFV7V
+	id S1757241AbZCFWBn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 17:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZCFWBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 16:59:21 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:33057 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752843AbZCFV7U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 16:59:20 -0500
-Subject: Re: [PATCH] hpsa: SCSI driver for HP Smart Array controllers
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: scameron@beardog.cca.cpqcorp.net
-Cc: Grant Grundler <grundler@google.com>, Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, mike.miller@hp.com,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       coldwell@redhat.com, hare@novell.com, iss_storagedev@hp.com
-In-Reply-To: <20090306211832.GV15340@beardog.cca.cpqcorp.net>
-References: <20090306085529.GP11787@kernel.dk>
-	 <20090306181302X.fujita.tomonori@lab.ntt.co.jp>
-	 <20090306092114.GS11787@kernel.dk>
-	 <20090306182705P.fujita.tomonori@lab.ntt.co.jp>
-	 <20090306093520.GV11787@kernel.dk>
-	 <20090306143856.GT15340@beardog.cca.cpqcorp.net>
-	 <da824cf30903061259j4a37ab7cneea308c736da469d@mail.gmail.com>
-	 <20090306211832.GV15340@beardog.cca.cpqcorp.net>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 15:59:10 -0600
-Message-Id: <1236376750.20520.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 6 Mar 2009 17:01:34 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39452 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754729AbZCFWBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 17:01:33 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] cpufreq: Remove KERN_ERR output if nForce2 chipset not found
+Date: Fri, 6 Mar 2009 17:01:03 -0500
+User-Agent: KMail/1.11.0 (Linux/2.6.27.15-170.2.24.fc10.x86_64; KDE/4.2.0; x86_64; ; )
+Cc: davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <ada3adqid5v.fsf@cisco.com> <200903061606.05975.jarod@redhat.com> <adaljrigw0a.fsf@cisco.com>
+In-Reply-To: <adaljrigw0a.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903061701.04348.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 15:18 -0600, scameron@beardog.cca.cpqcorp.net
-wrote:
-> On Fri, Mar 06, 2009 at 12:59:48PM -0800, Grant Grundler wrote:
-> > On Fri, Mar 6, 2009 at 6:38 AM,  <scameron@beardog.cca.cpqcorp.net> wrote:
-> > ...
-> > > The command buffers have to be in the first 4GB of memory, as the command
-> > > register is only 32 bits, so they are allocated by pci_alloc_consistent.
-> > 
-> > Huh?!!
-> > ISTR the mpt2sas driver is indicating it can handle 64-bit DMA masks for
-> > both streaming and control data. I need to double check to be sure of that.
+On Friday 06 March 2009 16:51:49 Roland Dreier wrote:
+>  > Nb: Matthew Garrett submitted a similar-but-different patch a week or
+>  > two ago on the cpufreq list that demoted the message to KERN_INFO.
 > 
-> it is something specific to smart array.  The command register that we
-> stuff the bus address of the command into is only 32 bits wide.  Everything
-> else it does is 64 bits.
-> > 
-> > 
-> > > However, the chained SG lists don't have that limitation, so I think they
-> > > can be kmalloc'ed, and so not chew up and unreasonable amount of the
-> > > pci_alloc_consistent memory and get a larger number of SGs.   ...right?
-> > > Maybe that's the better way to do it.
-> > 
-> > I thought the driver was tracking this and using the appropriate construct
-> > based on which DMA mask is in effect.
-> 
-> The DMA mask is insufficiently expressive to describe the limitations and
-> capabilities of the Smart array.  There's no way to describe with a single
-> DMA mask that the command register is 32-bits, but everything else is 64
-> bits.
+> Sorry, missed that.  I considered the demotion to KERN_INFO but a) no
+> other cpufreq drivers seem to print anything if the device isn't found
+> and b) I can't imagine a realistic case of when the message would *ever*
+> be useful.
 
-Actually, there is ... it's what you're doing: use a coherent mask of 32
-bits and a dma mask of 64bits.
+Good points. I wasn't favoring one or the other 'til now, but simply
+returning -ENODEV does indeed seem to be more in line with what other
+freq scaling drivers do.
 
-The aic79xx has exactly the same problem (its internal sequencer only
-has a 32 bit wide programme counter, so it can only execute sequencer
-scripts if they're in the first 4GB of memory).  I think it's fairly
-common amongst intelligent controllers that are old enough to have been
-32 bit only but which got extended to work on 64 bits.
-
-To get ordinary memory for this, you just use GFP_DMA32 as has been
-previously stated.
-
-James
-
-
+-- 
+Jarod Wilson
+jarod@redhat.com
