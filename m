@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbZCFSYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZCFSY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649AbZCFSYm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 13:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZCFSY3
+	id S1756761AbZCFSY6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 13:24:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756660AbZCFSYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 13:24:29 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:58110 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbZCFSY2 (ORCPT
+	Fri, 6 Mar 2009 13:24:34 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:39022 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755398AbZCFSYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 13:24:28 -0500
-Date: Fri, 6 Mar 2009 18:24:25 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Thanasis <thanasis@asyr.hopto.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: jffs2 and kernel config for SDHC Memory Cards
-Message-ID: <20090306182425.GB28349@silver.sucs.org>
-References: <49B127AB.6070202@asyr.hopto.org> <49B12B71.7030300@asyr.hopto.org>
+	Fri, 6 Mar 2009 13:24:33 -0500
+Subject: Re: [PATCH 1/2] resubmit cciss: kernel thread to detect changes on
+	MSA2012
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mike Miller <mike.miller@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>, coldwell@redhat.com,
+       mikem@beardog.cca.cpqcorp.net
+In-Reply-To: <20090306181603.GA30801@roadking.ldev.net>
+References: <20090306181603.GA30801@roadking.ldev.net>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 12:24:27 -0600
+Message-Id: <1236363867.12019.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49B12B71.7030300@asyr.hopto.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 03:56:01PM +0200, Thanasis wrote:
-> on 03/06/2009 03:39 PM Thanasis wrote the following:
-> > I want to use two of these Transcend’s Class 6 SDHC (SD High-Capacity)
-> > Memory Cards,
-> > http://www.transcendusa.com/Products/ModDetail.asp?ModNo=147&LangNo=0&Func1No=1&Func2No=13
-> > as part of the filesystem in a netbook (Acer A110L), will mount /home on
-> > one, and /tmp and /var on the other.
- 
-> Let me rephrase my questions in order to be clearer:
-> Q1: In order to achieve wear leveling should I format them as jffs2?
+On Fri, 2009-03-06 at 12:16 -0600, Mike Miller wrote:
+> Patch 1 of 2
+> 
+> This is a resubmission of yesterdays patch to detect changes on the MSA2012.
+> I hope I've addressed all concerns. This patch rearranges some of the code
+> so we also have coverage in the sg and the ioctl paths as well as the main
+> data path.
+> 
+> The MSA2012 cannot inform the driver of configuration changes since all
+> management is out of band. This is a departure from any storage we have
+> supported in the past. We need some way to detect changes on the topology so
+> we implement this kernel thread. In some instances there's nothing we can do
+> from the driver (like LUN failure) so just print out a message. In the case
+> where logical volumes are added or deleted we call rebuild_lun_table to
+> refreash the driver's view of the world.
+> 
+> Please consider this for inclusion.
 
-This probably won't be very effective as you are already past the
-anecdotal size recommended for jffs2 partitions (I've heard rumours that
-it is best suited to filesystems that are less than 64Mbytes and another
-that says less than 1Gbyte). Additionally you are not providing direct
-access to the raw flash (see
-http://linux-mtd.infradead.org/faq/jffs2.html#L_stick_jffs2 ).
-Performance is probably not gong to be very good.
+I still don't quite see how the thread stops on module removal ... there
+needs to be an explicit kthread_stop() somewhere in the clean up path.
 
-> Q2: In order to achieve wear leveling, any specific options I should
-> enable in kernel (2.6.28) configuration?
+James
 
-You will be wear levelled by the hardware anyway as the hardware only
-provides a block device interface and you don't have access to the raw
-flash. 
 
-ccing Dave Woodhouse as he is the JFFS2 creator.
-
--- 
-Sitsofe | http://sucs.org/~sits/
