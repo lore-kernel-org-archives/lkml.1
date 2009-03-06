@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZCFVYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbZCFVZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbZCFVYW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 16:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbZCFVYJ
+	id S1756036AbZCFVZI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 16:25:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZCFVYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 16:24:09 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:52789 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753768AbZCFVYH (ORCPT
+	Fri, 6 Mar 2009 16:24:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43092 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754459AbZCFVYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 16:24:07 -0500
-Message-ID: <49B1949E.2000300@oracle.com>
-Date: Fri, 06 Mar 2009 13:24:46 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -next] dvb/frontends: fix duplicate 'debug' symbol
-References: <20090306191311.697e7b97.sfr@canb.auug.org.au>
-In-Reply-To: <20090306191311.697e7b97.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Mar 2009 16:24:55 -0500
+Date: Fri, 6 Mar 2009 13:24:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "hartleys" <hartleys@visionengravers.com>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+       alex@digriz.org.uk, vitalywool@gmail.com
+Subject: Re: [PATCH] mtd: plat_nand: add platform probe/remove callbacks
+Message-Id: <20090306132438.e55fef0d.akpm@linux-foundation.org>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909013B7114@mi8nycmail19.Mi8.com>
+References: <BD79186B4FD85F4B8E60E381CAEE1909013B7114@mi8nycmail19.Mi8.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.49B1943A.01AE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, 5 Mar 2009 18:58:12 -0500
+"hartleys" <hartleys@visionengravers.com> wrote:
 
-Fix dvb frontend debug variable to be static, to avoid linker
-errors:
+> From: "hartleys" <hartleys@visionengravers.com>
 
-drivers/built-in.o:(.data+0xf4b0): multiple definition of `debug'
-arch/x86/kernel/built-in.o:(.kprobes.text+0x90): first defined here
-ld: Warning: size of symbol `debug' changed from 85 in arch/x86/kernel/built-in.o to 4 in drivers/built-in.o
+You might want to change your email setup so that the above reads "H
+Hartley Sweeten <hsweeten@visionengravers.com>" or whatever.  Because
+most patch-merging people's tools will end up marking this commit as
+being from someone called "hartleys".
 
-It would also be Good if arch/x86/kernel/entry_32.S didn't have a
-non-static 'debug' symbol.  OTOH, it helps catch things like this one.
+Alternatively, put an explicit From: line at the top of the changelog.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/media/dvb/frontends/stv0900_core.c |    4 ++--
- drivers/media/dvb/frontends/stv0900_priv.h |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> To: <linux-kernel@vger.kernel.org>
+> Cc: <linux-mtd@lists.infradead.org>, "Alexander Clouter" <alex@digriz.org.uk>, "Andrew Morton" <akpm@linux-foundation.org>, <vitalywool@gmail.com>
+> Subject: [PATCH] mtd: plat_nand: add platform probe/remove callbacks
+> Date: Thu, 5 Mar 2009 18:58:12 -0500
+> 
+> Add optional probe and remove callbacks to the plat_nand driver.
+> 
+> Some platforms may require additional setup, such as configuring
+> the memory controller, before the nand device can be accessed.
+> This patch provides an optional callback to handle this setup as
+> well as a callback to teardown the setup.
+> 
+> This patch was originally submitted to linux-mtd but it was
+> suggested I post it here for a broader review.
 
---- linux-next-20090306.orig/drivers/media/dvb/frontends/stv0900_core.c
-+++ linux-next-20090306/drivers/media/dvb/frontends/stv0900_core.c
-@@ -34,8 +34,8 @@
- #include "stv0900_priv.h"
- #include "stv0900_init.h"
- 
--int debug = 1;
--module_param(debug, int, 0644);
-+static int stvdebug = 1;
-+module_param_named(debug, stvdebug, int, 0644);
- 
- /* internal params node */
- struct stv0900_inode {
---- linux-next-20090306.orig/drivers/media/dvb/frontends/stv0900_priv.h
-+++ linux-next-20090306/drivers/media/dvb/frontends/stv0900_priv.h
-@@ -62,11 +62,11 @@
- 
- #define dmd_choose(a, b)	(demod = STV0900_DEMOD_2 ? b : a))
- 
--extern int debug;
-+static int stvdebug;
- 
- #define dprintk(args...) \
- 	do { \
--		if (debug) \
-+		if (stvdebug) \
- 			printk(KERN_DEBUG args); \
- 	} while (0)
- 
+Looks OK to me, but I'm an MTD ignoramus.
+
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Tested-By: Alexander Clouter <alex@digriz.org.uk>
+> 
+> ---
+> 
+> diff --git a/drivers/mtd/nand/plat_nand.c b/drivers/mtd/nand/plat_nand.c
+> index 75f9f48..600fbe9 100644
+
+The patch was quite wordwrapped.  Please fix your email client for next
+time.
+
