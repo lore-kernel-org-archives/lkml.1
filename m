@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbZCFDVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbZCFDYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbZCFDVz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Mar 2009 22:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZCFDVp
+	id S1754408AbZCFDYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Mar 2009 22:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZCFDYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Mar 2009 22:21:45 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:48872 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751412AbZCFDVp (ORCPT
+	Thu, 5 Mar 2009 22:24:39 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35691 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751412AbZCFDYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Mar 2009 22:21:45 -0500
-Date: Fri, 6 Mar 2009 08:51:22 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu, andi@firstfloor.org,
-       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
-       arjan@infradead.org, svaidy@linux.vnet.ibm.com
-Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer migration.
-Message-ID: <20090306032122.GA32316@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20090304121249.GA9855@linux.vnet.ibm.com> <20090304121937.GE9855@linux.vnet.ibm.com> <20090305162329.GA5294@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090305162329.GA5294@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 5 Mar 2009 22:24:39 -0500
+Date: Fri, 6 Mar 2009 12:23:14 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Memory controller soft limit patches (v3)
+Message-Id: <20090306122314.5314c8f5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090305152642.GA5482@balbir.in.ibm.com>
+References: <20090302060519.GG11421@balbir.in.ibm.com>
+	<20090302152128.e74f51ef.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090302063649.GJ11421@balbir.in.ibm.com>
+	<20090302160602.521928a5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090302124210.GK11421@balbir.in.ibm.com>
+	<c31ccd23cb41f0f7594b3f56b20f0165.squirrel@webmail-b.css.fujitsu.com>
+	<20090302174156.GM11421@balbir.in.ibm.com>
+	<20090303085914.555089b1.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090303111244.GP11421@balbir.in.ibm.com>
+	<20090305180410.a44035e0.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090305152642.GA5482@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 05:23:29PM +0100, Oleg Nesterov wrote:
-> On 03/04, Arun R Bharadwaj wrote:
+On Thu, 5 Mar 2009 20:56:42 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-05 18:04:10]:
+> 
+> > On Tue, 3 Mar 2009 16:42:44 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > > I wrote
+> > > > ==
+> > > >  if (victim is not over soft-limit)
+> > > > ==
+> > > > ....Maybe this discussion style is bad and I should explain my approach in patch.
+> > > > (I can't write code today, sorry.)
+> > > > 
+> > 
+> > This is an example of my direction, " do it lazy" softlimit.
+> > 
+> > Maybe this is not perfect but this addresses almost all my concern.
+> > I hope this will be an input for you.
+> > I didn't divide patch into small pieces intentionally to show a big picture.
+> > Thanks,
+> > -Kame
+> > ==
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > An example patch. Don't trust me, this patch may have bugs.
 > >
-> > +++ linux.trees.git/kernel/sched.c
-> > @@ -4009,6 +4009,11 @@ static struct {
-> >  	.load_balancer = ATOMIC_INIT(-1),
-> >  };
-> >
-> > +inline int get_nohz_load_balancer(void)
 > 
-> inline?
+> Well this is not do it lazy, all memcg's are scanned tree is built everytime
+> kswapd invokes soft limit reclaim. With 100 cgroups and 5 nodes, we'll
+> end up scanning cgroups 500 times. There is no ordering of selected
+> victims, so the largest victim might still be running unaffected.
 > 
-> > +{
-> > +	return atomic_read(&nohz.load_balancer);
-> > +}
-> 
-> Shouldn't we reset .load_balancer when this CPU is CPU_DOWN'ed ?
-> Otherwise the timer can migrate to the dead CPU.
+I think of more reasonable one. I'll post today if it goes well.
 
-In the select_nohz_load_balancer() code, we check if this CPU is in the
-cpu_active_map. If no, then this CPU relinquishes being the idle
-load balancer. Also, the timer migration code in the CPU down path would
-migrate any timers queued onto this CPU, right ?
+Thanks,
+-Kame
 
-> 
-> Oleg.
 
--- 
-Thanks and Regards
-gautham
+
